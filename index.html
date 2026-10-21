@@ -68,6 +68,11 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .bx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-md); }
 .bx-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
 .bx-card.wide { grid-column: 1 / -1; }
+.bx-today { border-left: 4px solid #2f5bd3; }
+.bx-todaylist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14.5px; line-height: 1.45; }
+.bx-todaylist li { padding-left: 16px; position: relative; }
+.bx-todaylist li::before { content: ""; position: absolute; left: 0; top: .6em; width: 7px; height: 7px; border-radius: 50%; background: var(--color-fg-muted); }
+.bx-todaylist a { color: var(--color-fg-muted); font-size: 12.5px; }
 .bx-ag { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); }
 .bx-ag h3 { margin: 0 0 6px; font-size: var(--cds-font-size-caption); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); }
 .bx-aglist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
@@ -185,7 +190,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
     <div class="bx-count"><b id="countdown">—</b><span>jours avant le premier tour, le 18 avril 2027</span></div>
     <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
   </header>
-  <nav class="jump" aria-label="Aller à"><a href="#mouvements">Ce qui a bougé</a><a href="#agenda">Agenda</a><a href="#premier-tour">1er tour</a><a href="#sondages-et-paris">Sondages et paris</a><a href="#second-tour">2nd tour</a><a href="#polymarket">Parieurs</a><a href="#duels">Duels</a><a href="#tous-sondages">Tous les sondages</a><a href="#methode">Méthode</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#aujourdhui">Aujourd'hui</a><a href="#mouvements">Ce qui a bougé</a><a href="#agenda">Agenda</a><a href="#premier-tour">1er tour</a><a href="#sondages-et-paris">Sondages et paris</a><a href="#second-tour">2nd tour</a><a href="#polymarket">Parieurs</a><a href="#duels">Duels</a><a href="#tous-sondages">Tous les sondages</a><a href="#methode">Méthode</a></nav>
 
   <div class="bx-tiles" id="tiles" data-source="moyenne_t1 polymarket">
     <div class="bx-tile"><div class="lab">1er des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
@@ -194,6 +199,11 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
     <div class="bx-tile"><div class="lab">4e des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
     <div class="bx-tile"><div class="lab">Favori des parieurs</div><div class="val dash-skeleton">—</div><div class="sub">chances de victoire au 2nd tour selon Polymarket</div></div>
   </div>
+
+  <section class="bx-card bx-today" id="aujourdhui" aria-labelledby="today-h">
+    <h2 id="today-h">Ce qui a changé <span id="today-since"></span></h2>
+    <ul class="bx-todaylist" id="today-list"><li>Chargement…</li></ul>
+  </section>
 
   <div class="bx-grid">
     <section class="bx-card" id="mouvements">
@@ -946,6 +956,52 @@ window.addEventListener('baro:data', function () {
     var ls = document.getElementById('ag-last'); ls.textContent = '';
     ev.forEach(function (e) { ls.appendChild(li(fd(e.date, true), e.evenement, e.source, e.url)); });
     ls.parentNode.hidden = !ev.length;
+  }
+  try { fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(render, function () { render(null); }); } catch (e) { render(null); }
+})();
+</script>
+<script>
+(function () {
+  var nf = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }).format(v); };
+  var fd = function (d) { return new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
+  var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+  function render(feed) {
+    var ul = document.getElementById('today-list'), ds = feed && feed.datasets;
+    if (!ds) { document.getElementById('aujourdhui').hidden = true; return; }
+    var items = [], today = new Date(); today.setHours(0, 0, 0, 0);
+    var ago = function (d) { return Math.round((today - new Date(d + 'T00:00:00')) / 864e5); };
+    // Polymarket : écart entre les deux derniers relevés
+    var ph = ds.polymarket_hist || [], dates = Array.from(new Set(ph.map(function (r) { return r.date; }))).sort();
+    if (dates.length >= 2) {
+      var d1 = dates[dates.length - 1], d0 = dates[dates.length - 2], at = function (c, d) { var r = ph.filter(function (q) { return q.candidat === c && q.date === d; })[0]; return r ? +r.probabilite : null; };
+      var mv = ph.filter(function (r) { return r.date === d1; }).map(function (r) { var a = at(r.candidat, d0); return a == null ? null : { c: r.candidat, v: +r.probabilite, d: +r.probabilite - a }; }).filter(Boolean)
+        .sort(function (a, b) { return Math.abs(b.d) - Math.abs(a.d); }).slice(0, 3);
+      if (mv.length) {
+        var lead = ph.filter(function (r) { return r.date === d1; }).sort(function (a, b) { return b.probabilite - a.probabilite; })[0];
+        items.push('<b>Parieurs (Polymarket), depuis le ' + fd(d0) + ' :</b> ' + mv.map(function (m) {
+          var s = Math.abs(m.d) < 0.05 ? 'stable' : (m.d > 0 ? '▲ +' : '▼ −') + nf(Math.abs(m.d), 1) + ' pt';
+          return esc(m.c) + ' <b>' + s + '</b> (' + nf(m.v, 1) + ' %)';
+        }).join(', ') + '. Favori des parieurs pour le second tour : ' + esc(lead.candidat) + ' (' + nf(+lead.probabilite, 1) + ' %).');
+      }
+    }
+    // Sondages : dernier sondage publié
+    var st = ds.sondages_t1 || [];
+    if (st.length) {
+      var last = st.map(function (r) { return r.date; }).sort().pop(), rows = st.filter(function (r) { return r.date === last; });
+      var inst = Array.from(new Set(rows.map(function (r) { return r.institut; }))), n = ago(last);
+      var top = rows.filter(function (r) { return r.institut === inst[0]; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
+      items.push((n <= 4 ? '<b>Nouveau sondage ' : '<b>Pas de nouveau sondage depuis ' + n + ' jours.</b> Dernier en date : ') + esc(inst.join(', ')) + (n <= 4 ? '</b>' : '') + ' (terrain du ' + esc(rows[0].terrain || fd(last)) + ') : ' +
+        top.map(function (r) { return esc(r.candidat) + ' ' + nf(+r.score, 1) + ' %'; }).join(', ') + '.');
+    }
+    // Événement récent
+    var ev = (ds.evenements || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0];
+    if (ev && ago(ev.date) <= 7) items.push('<b>' + (ago(ev.date) <= 0 ? 'Aujourd\'hui' : 'Le ' + fd(ev.date)) + ' :</b> ' + esc(ev.evenement) + (ev.url ? ' <a href="' + esc(ev.url) + '" target="_blank" rel="noopener">' + esc(ev.source || 'Source') + '</a>' : ''));
+    // Prochain rendez-vous
+    var ag = (ds.agenda_barometre || []).filter(function (a) { return ago(a.date) <= 0; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
+    if (ag) items.push('<b>Prochain rendez-vous, le ' + fd(ag.date) + ' :</b> ' + esc(ag.evenement) + '. Premier tour dans ' + Math.max(0, Math.ceil((new Date('2027-04-18T00:00:00') - today) / 864e5)) + ' jours.');
+    if (feed.updated_iso) { var u = new Date(feed.updated_iso); document.getElementById('today-since').textContent = '· mis à jour le ' + u.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: 'Europe/Paris' }); }
+    ul.innerHTML = items.map(function (t) { return '<li>' + t + '</li>'; }).join('');
+    if (!items.length) document.getElementById('aujourdhui').hidden = true;
   }
   try { fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(render, function () { render(null); }); } catch (e) { render(null); }
 })();
