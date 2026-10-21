@@ -133,6 +133,8 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .daily b { font-weight: 500; color: var(--fr); }
 .since { display: block; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-family: var(--sans); font-size: 13.5px; color: var(--muted); }
 .since b { font-weight: 600; color: var(--fg); }
+.visit { margin: 0; font-size: 14px; line-height: 1.45; padding: 8px 12px; border-left: 3px solid var(--fr); background: var(--panel); border-radius: 0 8px 8px 0; color: var(--fg); }
+.visit b { font-weight: 600; }
 .summary ol { margin: 0; padding: 0; list-style: none; counter-reset: k; display: grid; gap: 10px; }
 .summary li { counter-increment: k; position: relative; padding-left: 30px; font-size: 15px; line-height: 1.45; }
 .summary li::before { content: counter(k); position: absolute; left: 0; top: -2px; font-family: var(--serif); font-size: 20px; color: var(--fr); }
@@ -261,6 +263,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><b>Éducation</b><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
+  <p class="visit" id="visit" hidden></p>
   <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Courbes</a><a href="#depense">Dépense</a><a href="#pisa">PISA</a><a href="#origine">Origine sociale</a><a href="#universites">Universités</a></nav>
 
   <details class="acc" id="acc-today">
@@ -851,6 +854,18 @@ function main(FEED) {
   var idx = Math.floor((day - new Date(2026, 0, 1)) / 864e5);
   document.getElementById('daily-lab').textContent = 'Le chiffre du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
   document.getElementById('daily-text').innerHTML = FACTS[((idx % FACTS.length) + FACTS.length) % FACTS.length];
+  try {
+    var nowV = Date.now(), vis = document.getElementById('visit'), lv = JSON.parse(localStorage.getItem('edu-visite') || 'null');
+    if (lv && nowV - lv.t > 3600e3) {
+      var dv = Math.round((nowV - lv.t) / 864e5), whenV = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.round((nowV - lv.t) / 3600e3) + ' h', pv = [];
+      pv.push(MO.fr.length > lv.n ? 'nouveau chiffre du chômage des moins de 25 ans : <b>' + fmt(MO.fr[nU], 1) + ' %</b> (contre ' + fmt(lv.u, 1) + ' %)' : 'pas de nouveau chiffre du chômage des jeunes');
+      var nav = ((FEED && FEED.datasets && FEED.datasets.actu_education) || []).filter(function (a) { return a.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
+      if (nav) pv.push('<b>' + nav + ' nouvelle' + (nav > 1 ? 's' : '') + ' actualité' + (nav > 1 ? 's' : '') + '</b>');
+      if (dv >= 1) pv.push('un nouveau chiffre du jour et une nouvelle question');
+      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + whenV + ') : ' + pv.join(' ; ') + '.'; vis.hidden = false;
+    } else if (!lv) { vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.'; vis.hidden = false; }
+    if (!lv || nowV - lv.t > 3600e3) localStorage.setItem('edu-visite', JSON.stringify({ t: nowV, u: MO.fr[nU], n: MO.fr.length }));
+  } catch (e) {}
   document.getElementById('teaser-today').innerHTML = 'Budget <b>177&nbsp;M€</b> par jour · Lecture à 17 ans : <b>14&nbsp;%</b> en difficulté · Le chiffre du jour';
 
   // ===== Question du jour =====

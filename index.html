@@ -69,6 +69,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .bx-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
 .bx-card.wide { grid-column: 1 / -1; }
 .bx-today { border-left: 4px solid #2f5bd3; }
+.bx-visit { margin: 0; font-size: 14px; line-height: 1.45; padding: 8px 12px; border-left: 3px solid #2f5bd3; background: var(--color-panel); border-radius: 0 8px 8px 0; }
+.bx-visit b { font-weight: 600; }
 .bx-todaylist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14.5px; line-height: 1.45; }
 .bx-todaylist li { padding-left: 16px; position: relative; }
 .bx-todaylist li::before { content: ""; position: absolute; left: 0; top: .6em; width: 7px; height: 7px; border-radius: 50%; background: var(--color-fg-muted); }
@@ -182,10 +184,11 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 <div id="dash-root">
 
 <div class="bx">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/" aria-current="page">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><span class="soon">Bientôt : Éducation · Santé · Sécurité et justice · Vie des Français</span></nav>
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/" aria-current="page">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><span class="soon">Bientôt : Santé · Sécurité et justice · Vie des Français</span></nav>
   <header class="bx-head">
     <h1 class="bx-title">Baromètre 2027</h1>
     <div class="bx-updated" id="bx-updated">Chargement des données…</div>
+    <p class="bx-visit" id="visit" hidden></p>
     <div class="bx-stale" id="bx-stale" hidden>Données en cours d’actualisation : la dernière mise à jour date de plus d’un jour.</div>
     <div class="bx-count"><b id="countdown">—</b><span>jours avant le premier tour, le 18 avril 2027</span></div>
     <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
@@ -1001,6 +1004,24 @@ window.addEventListener('baro:data', function () {
     if (ag) items.push('<b>Prochain rendez-vous, le ' + fd(ag.date) + ' :</b> ' + esc(ag.evenement) + '. Premier tour dans ' + Math.max(0, Math.ceil((new Date('2027-04-18T00:00:00') - today) / 864e5)) + ' jours.');
     if (feed.updated_iso) { var u = new Date(feed.updated_iso); document.getElementById('today-since').textContent = '· mis à jour le ' + u.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: 'Europe/Paris' }); }
     ul.innerHTML = items.map(function (t) { return '<li>' + t + '</li>'; }).join('');
+    // Depuis votre dernière visite (gardé dans le navigateur du visiteur uniquement)
+    try {
+      var now = Date.now(), vis = document.getElementById('visit'), lv = JSON.parse(localStorage.getItem('baro-visite') || 'null');
+      var pmNow = {}; (ds.polymarket || []).forEach(function (r) { if (r.candidat !== 'Autres candidats') pmNow[r.candidat] = +r.probabilite; });
+      var lastPoll = (ds.sondages_t1 || []).map(function (r) { return r.date; }).sort().pop() || '';
+      if (lv && now - lv.t > 3600e3) {
+        var days = Math.round((now - lv.t) / 864e5), when = days >= 1 ? 'il y a ' + days + ' jour' + (days > 1 ? 's' : '') : 'il y a ' + Math.round((now - lv.t) / 3600e3) + ' h';
+        var polls = {}; (ds.sondages_t1 || []).forEach(function (r) { if (r.date > (lv.poll || '')) polls[r.date + r.institut] = r.institut; });
+        var np = Object.keys(polls).length, parts = [];
+        parts.push(np ? '<b>' + np + ' nouveau' + (np > 1 ? 'x' : '') + ' sondage' + (np > 1 ? 's' : '') + '</b> (' + esc(Array.from(new Set(Object.keys(polls).map(function (k) { return polls[k]; }))).join(', ')) + ')' : 'aucun nouveau sondage');
+        var mv = Object.keys(pmNow).filter(function (c) { return lv.pm && lv.pm[c] != null; }).map(function (c) { return { c: c, d: pmNow[c] - lv.pm[c] }; }).filter(function (m) { return Math.abs(m.d) >= 0.5; }).sort(function (a, b) { return Math.abs(b.d) - Math.abs(a.d); }).slice(0, 3);
+        parts.push(mv.length ? 'chez les parieurs, ' + mv.map(function (m) { return esc(m.c) + ' <b>' + (m.d > 0 ? '▲ +' : '▼ −') + nf(Math.abs(m.d), 1) + ' pt</b>'; }).join(', ') : 'peu de mouvement chez les parieurs');
+        var ne = (ds.evenements || []).filter(function (e) { return e.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
+        if (ne) parts.push('<b>' + ne + ' événement' + (ne > 1 ? 's' : '') + '</b> de campagne');
+        vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + parts.join(' ; ') + '.'; vis.hidden = false;
+      } else if (!lv) { vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.'; vis.hidden = false; }
+      if (!lv || now - lv.t > 3600e3) localStorage.setItem('baro-visite', JSON.stringify({ t: now, poll: lastPoll, pm: pmNow }));
+    } catch (e) {}
     if (!items.length) document.getElementById('aujourdhui').hidden = true;
   }
   try { fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(render, function () { render(null); }); } catch (e) { render(null); }
