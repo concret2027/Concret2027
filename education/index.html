@@ -116,6 +116,7 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .actu .d { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; }
 .actu a { color: var(--muted); font-size: 12px; }
 .actu .next { font-weight: 600; }
+#agenda-edu li { grid-template-columns: 6.6rem minmax(0, 1fr); }
 .upd { margin: -12px 0 0; font-size: 12.5px; color: var(--muted); }
 /* Résumé */
 .summary { display: grid; gap: 10px; }
@@ -256,7 +257,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 </head>
 <body>
 <div class="wrap">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/" aria-current="page">Éducation</a><span class="soon">Bientôt : Sécurité · Vie des Français</span></nav>
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/" aria-current="page">Éducation</a><span class="soon">Bientôt : Santé · Sécurité et justice · Vie des Français</span></nav>
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><b>Éducation</b><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
@@ -305,7 +306,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <details class="acc" id="acc-actu">
     <summary><span class="acc-h">L'actualité de l'éducation</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card"><ul class="actu" id="actu-list"></ul></div>
+    <div class="acc-body card"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-edu"></ul></div>
   </details>
 
   <section class="card quiz" id="quiz" aria-labelledby="quiz-q">
@@ -354,6 +355,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="chart" id="rank-gov"></div>
     <p class="note" id="rank-gov-note"></p>
     <span class="eyebrow" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
+    <p class="note">« Non comparable » : cette année-là, Eurostat signale un changement de méthode dans l'enquête française (rupture de série, en 2003, 2013, 2014, 2021 et 2024). Comparer l'évolution reviendrait à comparer deux mesures différentes, donc l'année ne rapporte ni ne coûte de point. C'est pour cela que Gabriel Attal (2024) n'est jugé que sur trois critères.</p>
     <p class="note">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que ses voisins. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
     <div class="gov-list" id="gov-list"></div>
     <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
@@ -361,8 +363,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card" id="annees" aria-labelledby="yr-title">
     <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
-    <p class="note">Chaque ligne est une année : ● point marqué (mieux que nos voisins), ○ pas de point, ◐ demi-point (égalité), – non comptée (rupture de série). PISA et origine sociale : le résultat d'une vague compte pour chacune des années écoulées depuis la précédente. La note de l'année est la part des points marqués, sur 20, PISA comptant triple.</p>
+    <p class="note">Chaque ligne est une année : ● point marqué (mieux que nos voisins), ○ pas de point, ◐ demi-point (égalité), – non comparable (changement de méthode de l'enquête). PISA et origine sociale : le résultat d'une vague compte pour chacune des années écoulées depuis la précédente. La note de l'année est la part des points marqués, sur 20, PISA comptant triple.</p>
     <div class="tbl-wrap"><table class="yrs"><thead><tr><th>Année</th><th>Premier ministre</th><th title="Décrochage">Décr.</th><th title="Ni emploi ni études">Ni-ni</th><th title="Diplômés du supérieur">Dipl.</th><th title="Chômage des jeunes">Chôm.</th><th title="PISA">PISA</th><th title="Origine sociale">Orig.</th><th>Note</th></tr></thead><tbody id="yr-body"></tbody></table></div>
+    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 2003</button>
   </section>
 
   <section class="card" id="courbes" aria-labelledby="fz-title">
@@ -404,12 +407,12 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card" id="universites" aria-labelledby="u-title">
     <h2 id="u-title"><span class="eyebrow">Universités, classement de Shanghai</span>Quatre universités dans le top 100 mondial, autant que l'Allemagne</h2>
-    <p class="insight">La meilleure université française est passée de la <b>65<sup>e</sup></b> place en 2003 à la <b>13<sup>e</sup></b> en 2025 (Paris-Saclay). Mais ce bond date de 2020 et vient surtout du regroupement d'établissements en grandes universités (Paris-Saclay, PSL, Université Paris Cité), qui additionne leurs publications et leurs prix : le nombre d'universités françaises dans le top 100 n'a, lui, presque pas bougé.</p>
+    <p class="insight">La meilleure université française est passée de la <b>65<sup>e</sup></b> place en 2003 à la <b>13<sup>e</sup></b> en 2026 (Paris-Saclay). Mais ce bond date de 2020 et vient surtout du regroupement d'établissements en grandes universités (Paris-Saclay, PSL, Université Paris Cité), qui additionne leurs publications et leurs prix : le nombre d'universités françaises dans le top 100 n'a, lui, presque pas bougé.</p>
     <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--de)"></i>Allemagne</span></div>
     <div class="chart" id="ch-arwu"></div>
     <span class="eyebrow" style="margin:6px 0 0">États-Unis, même classement</span>
     <div class="chart" id="ch-arwu-us"></div>
-    <p class="note">Nombre d'établissements classés dans les 100 premiers. Les États-Unis dominent mais reculent : 58 universités en 2003, 37 en 2025. 2018 : chiffre américain non vérifié, laissé vide. Le classement de Shanghai mesure la recherche (prix Nobel, médailles Fields, publications, citations), pas la qualité de l'enseignement ; il n'entre pas dans la note, car un regroupement d'universités suffit à faire monter un établissement sans que rien ne change pour les étudiants. Source : <a href="https://www.shanghairanking.com/rankings/arwu/2025">ShanghaiRanking</a>, éditions 2003 à 2025 ; 2018 : <a href="https://www.letudiant.fr/etudes/fac/classement-de-shanghai-2018-quelles-sont-les-19-universites-francaises-du-top-500.html">L'Étudiant</a>.</p>
+    <p class="note">Nombre d'établissements classés dans les 100 premiers. Les États-Unis dominent mais reculent : 58 universités en 2003, 37 en 2026. 2018 : chiffre américain non vérifié, laissé vide. Le classement de Shanghai mesure la recherche (prix Nobel, médailles Fields, publications, citations), pas la qualité de l'enseignement ; il n'entre pas dans la note, car un regroupement d'universités suffit à faire monter un établissement sans que rien ne change pour les étudiants. Source : <a href="https://www.shanghairanking.com/rankings/arwu/2025">ShanghaiRanking</a>, éditions 2003 à 2026 ; 2018 : <a href="https://www.letudiant.fr/etudes/fac/classement-de-shanghai-2018-quelles-sont-les-19-universites-francaises-du-top-500.html">L'Étudiant</a>.</p>
   </section>
 
   <section class="card" aria-labelledby="gl">
@@ -475,11 +478,11 @@ function main(FEED) {
     de: [4.1,4.1,4.1,4.1,4.0,3.9,3.9,4.3,4.3,4.2,4.2,4.2,4.2,4.2,4.1,4.1,4.2,4.3,4.6,4.4,4.4,4.5,4.5,null],
     us: [null,null,null,null,null,null,null,null,null,null,null,null,null,4.9,4.8,5.1,4.9,5.0,5.4,5.4,null,null,null,null] };
   // Classement de Shanghai (ARWU) : nombre d'universités dans le top 100, 2003-2025, et rang de la meilleure université française
-  var ARWU = { y: [2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025],
-    fr: [2,4,4,4,4,3,3,3,3,3,4,4,4,3,3,3,3,5,4,4,4,4,4],
-    de: [5,7,5,5,6,6,5,5,6,4,4,4,4,3,4,4,4,4,4,4,4,4,4],
-    us: [58,51,53,54,54,54,55,54,53,53,52,52,51,50,48,null,45,41,40,39,38,38,37],
-    best: [65,41,46,45,39,42,40,39,40,37,37,35,36,39,40,36,37,14,13,16,15,12,13] };
+  var ARWU = { y: [2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+    fr: [2,4,4,4,4,3,3,3,3,3,4,4,4,3,3,3,3,5,4,4,4,4,4,4],
+    de: [5,7,5,5,6,6,5,5,6,4,4,4,4,3,4,4,4,4,4,4,4,4,4,4],
+    us: [58,51,53,54,54,54,55,54,53,53,52,52,51,50,48,null,45,41,40,39,38,38,37,37],
+    best: [65,41,46,45,39,42,40,39,40,37,37,35,36,39,40,36,37,14,13,16,15,12,13,13] };
   var KEYS = ['el', 'ne', 'te', 'yu', 'pi', 'eq'], CURVES = ['el', 'ne', 'te', 'yu'];
   var at = function (arr, y) { return arr[y - Y0]; };
   function pisaGap(w0, w1) {
@@ -543,7 +546,7 @@ function main(FEED) {
       if (!on[k]) return;
       var l = g.w[k], s = document.createElement('span'), won = d3.sum(l), n = l.length;
       s.className = 'kpi' + (!n ? '' : won / n >= 0.5 ? ' g' : ' b');
-      s.innerHTML = '<em></em><span></span>'; s.firstChild.textContent = S[k].l; s.lastChild.textContent = !n ? 'n.c.' : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n;
+      s.innerHTML = '<em></em><span></span>'; s.firstChild.textContent = S[k].l; s.lastChild.textContent = !n ? (k === 'pi' || k === 'eq' ? 'pas de mesure' : 'non comparable') : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n;
       kp.appendChild(s);
     });
     return kp;
@@ -605,14 +608,20 @@ function main(FEED) {
   }
 
   // ===== Année par année =====
+  var showYears = false;
+  document.getElementById('yr-more').addEventListener('click', function () {
+    showYears = !showYears; this.setAttribute('aria-expanded', showYears); this.textContent = showYears ? 'Masquer les années précédentes' : 'Voir toutes les années, depuis 2003';
+    renderYears();
+  });
   function renderYears() {
     var tb = document.getElementById('yr-body'); tb.textContent = '';
     var lastPres = null;
     for (var y = 2025; y >= 2003; y--) {
+      var hide = !showYears && y < 2024;
       var pres = PRES.filter(function (p) { return y >= p.y0 && y <= p.y1; })[0];
       if (pres && pres !== lastPres) {
         var hr = document.createElement('tr'); hr.className = 'pres-row'; var th = document.createElement('td'); th.colSpan = 9;
-        th.textContent = pres.n + (pres.p ? ' (' + pres.p + ')' : '') + ' · ' + nfmt(noteOf(pres)) + '/20 sur le mandat'; hr.appendChild(th); tb.appendChild(hr); lastPres = pres;
+        th.textContent = pres.n + (pres.p ? ' (' + pres.p + ')' : '') + ' · ' + nfmt(noteOf(pres)) + '/20 sur le mandat'; hr.appendChild(th); hr.hidden = hide; tb.appendChild(hr); lastPres = pres;
       }
       var g = pmOf(y), tr = document.createElement('tr'); tr.id = 'yr-' + y;
       var cells = [y, g ? g.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin') : '—'];
@@ -622,12 +631,12 @@ function main(FEED) {
       KEYS.forEach(function (k, i) {
         var td = document.createElement('td'), m = ms[i]; td.className = 'dot' + (!on[k] ? ' off' : m === 1 ? ' g' : m === 0 ? ' b' : '');
         td.textContent = !on[k] ? '' : m == null ? '–' : m === 1 ? '●' : m === 0 ? '○' : '◐';
-        td.title = S[k].l + ' : ' + (m == null ? (k === 'pi' || k === 'eq' ? 'pas de mesure' : 'non compté (rupture de série)') : m === 1 ? 'mieux que nos voisins' : m === 0 ? 'moins bien que nos voisins' : 'égalité');
+        td.title = S[k].l + ' : ' + (m == null ? (k === 'pi' || k === 'eq' ? 'pas de mesure' : 'non comparable (changement de méthode de l\'enquête)') : m === 1 ? 'mieux que nos voisins' : m === 0 ? 'moins bien que nos voisins' : 'égalité');
         tr.appendChild(td);
       });
       var tdn = document.createElement('td'), n = counted.length ? 20 * wmean(counted) : null;
       tdn.innerHTML = n == null ? '–' : '<span class="yr-note ' + cls(n) + '">' + nfmt(n) + '</span>' + (counted.length < 4 ? '<small> ' + counted.length + ' crit.</small>' : '');
-      tr.appendChild(tdn); tb.appendChild(tr);
+      tr.hidden = hide; tr.appendChild(tdn); tb.appendChild(tr);
     }
   }
 
@@ -726,9 +735,9 @@ function main(FEED) {
       { x: [2001, 2026], xt: [2003, 2012, 2022, 2025], label: 'Écart de score en maths entre élèves favorisés et défavorisés, 2003-2025', dec: 0, unit: ' pts', h: 220 });
     var aser = function (k) { return ARWU.y.map(function (y, j) { return { x: y, v: ARWU[k][j] }; }); };
     lineChart('ch-arwu', [{ c: 'var(--de)', n: 'Allemagne', data: aser('de') }, { c: 'var(--fr)', n: 'France', main: 1, data: aser('fr') }],
-      { x: [2002.5, 2025.5], xt: [2003, 2007, 2011, 2015, 2019, 2023], bands: 1, dec: 0, min: 0, label: 'Nombre d\'universités dans le top 100 du classement de Shanghai, France et Allemagne, 2003-2025' });
+      { x: [2002.5, 2026.5], xt: [2003, 2008, 2013, 2018, 2023, 2026], bands: 1, dec: 0, min: 0, label: 'Nombre d\'universités dans le top 100 du classement de Shanghai, France et Allemagne, 2003-2026' });
     lineChart('ch-arwu-us', [{ c: 'var(--us)', n: 'États-Unis', data: aser('us') }],
-      { x: [2002.5, 2025.5], xt: [2003, 2007, 2011, 2015, 2019, 2023], dec: 0, min: 0, h: 140, label: 'Nombre d\'universités américaines dans le top 100 du classement de Shanghai, 2003-2025' });
+      { x: [2002.5, 2026.5], xt: [2003, 2008, 2013, 2018, 2023, 2026], dec: 0, min: 0, h: 140, label: 'Nombre d\'universités américaines dans le top 100 du classement de Shanghai, 2003-2026' });
     drawMonth();
   }
 
@@ -871,8 +880,22 @@ function main(FEED) {
   (function () {
     var A = (FEED && FEED.datasets && FEED.datasets.actu_education && FEED.datasets.actu_education.length) ? FEED.datasets.actu_education : [
       { date: '2026-09-08', texte: 'PISA 2025 : la France recule de 16 points en maths et de 18 points en lecture par rapport à 2022, et passe sous la moyenne de l\'OCDE dans les trois domaines.', source: 'Ministère de l\'Éducation nationale', url: 'https://www.education.gouv.fr/sites/default/files/document/pisa-2025-une-baisse-des-r-sultats-commune-l-ocde-un-rel-vement-poursuivre-520338.pdf' },
-      { date: '2026-09-01', texte: 'Le chômage des moins de 25 ans s\'établit à 20,6 % en août en France, contre 15,0 % dans la zone euro.', source: 'Eurostat', url: 'https://ec.europa.eu/eurostat/databrowser/view/une_rt_m/default/table' }
+      { date: '2026-08-15', texte: 'Classement de Shanghai 2026 : quatre universités françaises dans le top 100 mondial, Paris-Saclay reste 13e.', source: 'L\'Étudiant', url: 'https://www.letudiant.fr/etudes/fac/classement-de-shanghai-2026-paris-saclay-psl-et-sorbonne-universite-restent-le-top-3-francais.html' }
     ];
+    var AGE = (FEED && FEED.datasets && FEED.datasets.agenda_education && FEED.datasets.agenda_education.length) ? FEED.datasets.agenda_education : [
+      { quand: 'Début novembre', evenement: 'Chômage des moins de 25 ans de septembre (Eurostat)' },
+      { quand: '4e trimestre', evenement: 'L\'état de l\'École 2026 : le bilan annuel des indicateurs de l\'Éducation nationale (DEPP)', url: 'https://www.education.gouv.fr/depp/calendrier-des-publications-statistiques-469412', source: 'Calendrier DEPP' },
+      { quand: '4e trimestre', evenement: 'Nombre d\'élèves à la rentrée 2026, écoles, collèges et lycées (DEPP)', url: 'https://www.education.gouv.fr/depp/calendrier-des-publications-statistiques-469412', source: 'Calendrier DEPP' },
+      { quand: 'Mi-août 2027', evenement: 'Classement de Shanghai 2027' }
+    ];
+    var ag = document.getElementById('agenda-edu');
+    AGE.forEach(function (a) {
+      var li = document.createElement('li'), d = document.createElement('span'), t = document.createElement('span');
+      d.className = 'd'; d.textContent = a.quand || (a.date ? new Date(a.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '');
+      t.textContent = a.evenement + ' ';
+      if (a.url) { var l = document.createElement('a'); l.href = a.url; l.target = '_blank'; l.rel = 'noopener'; l.textContent = a.source || 'Source'; t.appendChild(l); }
+      li.appendChild(d); li.appendChild(t); ag.appendChild(li);
+    });
     A = A.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).slice(0, 6);
     var ul = document.getElementById('actu-list');
     A.forEach(function (a) {
@@ -882,7 +905,7 @@ function main(FEED) {
       if (a.url) { var l = document.createElement('a'); l.href = a.url; l.target = '_blank'; l.rel = 'noopener'; l.textContent = a.source || 'Source'; t.appendChild(l); }
       li.appendChild(d); li.appendChild(t); ul.appendChild(li);
     });
-    document.getElementById('teaser-actu').textContent = A[0].texte;
+    document.getElementById('teaser-actu').textContent = 'À venir, ' + (AGE[0].quand || '').toLowerCase() + ' : ' + AGE[0].evenement + '.';
   })();
 
   // ===== Bilan =====
