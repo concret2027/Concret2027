@@ -108,6 +108,12 @@ section[id], details[id] { scroll-margin-top: 64px; }
 .site a.logo { font-family: var(--serif); font-size: 20px; color: var(--fg); font-weight: 500; margin-right: 6px; }
 .site .soon { color: var(--axis); font-size: 12.5px; }
 .site a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.stale { border: 1px solid var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.actu { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.actu li { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 10px; font-size: 14px; line-height: 1.4; }
+.actu .d { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; }
+.actu a { color: var(--muted); font-size: 12px; }
+.actu .next { font-weight: 600; }
 /* Résumé */
 .summary { display: grid; gap: 10px; }
 .bilan summary { cursor: pointer; list-style: none; display: grid; gap: 2px; }
@@ -227,6 +233,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 <body>
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/">Baromètre 2027</a><a href="/finances/" aria-current="page">Finances publiques</a><span class="soon">Éducation · Sécurité · Vie des Français : bientôt</span></nav>
+  <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><b>Finances publiques</b><span id="today"></span></div>
   <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#courbes">Courbes</a><a href="#richesse">Richesse</a><a href="#marches">Marchés</a></nav>
 
@@ -266,35 +273,39 @@ footer p { margin: 0; } footer a { color: inherit; }
     </div>
   </details>
   <details class="acc" id="acc-month">
-    <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t">Déficit de l'État <b>159,6&nbsp;Md€</b> <i class="r">▲</i> · Chômage <b>8,2&nbsp;%</b> · Inflation <b>3,4&nbsp;%</b></span><span class="acc-cta"></span></summary>
+    <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body card">
       <div class="month">
       <div class="mo">
-        <span class="mo-lab">Budget de l'État · fin août</span>
-        <span class="mo-num">159,6 Md€ <small>de déficit</small></span>
-        <span class="delta up">▲ +2,1 Md€ sur un an</span>
-        <span class="mo-t">Déficit cumulé depuis janvier, contre 157,5 Md€ fin août 2025. Publié le 6 octobre ; prochaine étape : les chiffres de fin septembre.</span>
+        <span class="mo-lab" id="def-lab">Budget de l'État</span>
+        <span class="mo-num" id="def-num">—</span>
+        <span class="delta" id="def-delta"></span>
+        <span class="mo-t" id="def-t"></span>
       </div>
       <div class="mo">
-        <span class="mo-lab">Chômage · août</span>
-        <span class="mo-num">8,2 % <small>en France</small></span>
-        <span class="delta up">1,8 pt au-dessus de la zone euro</span>
-        <span class="mo-t">8,3 % le mois précédent. Zone euro : 6,4 %, stable (Eurostat).</span>
+        <span class="mo-lab" id="u-lab">Chômage</span>
+        <span class="mo-num" id="u-num">—</span>
+        <span class="delta" id="u-delta"></span>
+        <span class="mo-t" id="u-t"></span>
         <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Zone euro</span></div>
         <div class="chart" id="mo-u"></div>
         <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
       </div>
       <div class="mo">
-        <span class="mo-lab">Inflation · septembre</span>
-        <span class="mo-num">3,4 % <small>sur un an</small></span>
-        <span class="delta dn">0,4 pt sous la zone euro</span>
-        <span class="mo-t">Contre 2,6 % en août. Zone euro : 3,8 %. Indice harmonisé ; selon l'indice français de l'Insee, 3,1 %, au plus haut depuis janvier 2024.</span>
+        <span class="mo-lab" id="i-lab">Inflation</span>
+        <span class="mo-num" id="i-num">—</span>
+        <span class="delta" id="i-delta"></span>
+        <span class="mo-t" id="i-t"></span>
         <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Zone euro</span></div>
         <div class="chart" id="mo-i"></div>
         <button class="share" type="button" data-share="inflation">Partager ce graphique</button>
       </div>
     </div>
     </div>
+  </details>
+  <details class="acc" id="acc-actu">
+    <summary><span class="acc-h">L'actualité des finances publiques</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card"><ul class="actu" id="actu-list"></ul></div>
   </details>
   <section class="card quiz" id="quiz" aria-labelledby="quiz-q">
     <span class="eyebrow" id="quiz-day">Question du jour</span>
@@ -540,7 +551,7 @@ function main(FEED) {
   (function () {
     var m = new Date(); m.setHours(0, 0, 0, 0);
     document.getElementById('teaser-today').innerHTML = 'Taux d\'emprunt <b>' + fmt(LIVE.rate, 2) + '&nbsp;%</b> <i class="' + (dRate > 0 ? 'r' : 'g') + '">' + arrow(dRate).trim() + fmt(Math.abs(dRate), 2) + '</i> · Dette <b>+' + fmt(perDayDebt / 1e6) + '&nbsp;M€</b> par jour · Le chiffre du jour';
-    ['acc-today', 'acc-month', 'acc-bilan'].forEach(function (id) {
+    ['acc-today', 'acc-month', 'acc-actu', 'acc-bilan'].forEach(function (id) {
       var d = document.getElementById(id);
       try { if (localStorage.getItem(id) === 'open') d.open = true; } catch (e) {}
       d.addEventListener('toggle', function () {
@@ -910,17 +921,22 @@ function main(FEED) {
   try { var prev = localStorage.getItem(storeKey); if (prev != null) reveal(+prev); } catch (e) {}
 
   // ===== Agenda =====
-  var AG = [
-    { d: new Date(2026, 10, 27), t: 'Insee : comptes du 3e trimestre, déficit trimestriel' },
-    { d: new Date(2026, 11, 18), t: 'Insee : dette publique fin septembre 2026 (le compteur sera recalé)' },
-    { d: new Date(2027, 2, 26), t: 'Insee : comptes 2026 complets, première note du gouvernement Lecornu (date indicative)' }
-  ];
+  var AGF = FEED && FEED.datasets && FEED.datasets.agenda_finances;
+  var AG = (AGF && AGF.length ? AGF : [
+    { date: '2026-10-23', evenement: 'Moody\'s rend sa décision sur la note de la France (aujourd\'hui Aa3, perspective négative)' },
+    { date: '2026-11-27', evenement: 'Insee : comptes du 3e trimestre, déficit trimestriel' },
+    { date: '2026-11-27', evenement: 'S&P rend sa décision sur la note de la France (aujourd\'hui A+, perspective stable)' },
+    { date: '2026-12-18', evenement: 'Insee : dette publique fin septembre 2026 (le compteur sera recalé)' },
+    { date: '2027-03-26', evenement: 'Insee : comptes 2026 complets, première note du gouvernement Lecornu (date indicative)' }
+  ]).map(function (a) { return { d: new Date(a.date + 'T12:00:00'), t: a.evenement }; })
+    .filter(function (a) { return a.d >= new Date(new Date().setHours(0, 0, 0, 0) - 864e5 * 3); })
+    .sort(function (a, b) { return a.d - b.d; }).slice(0, 6);
   var ag = document.getElementById('agenda');
   AG.forEach(function (a) {
     var n = Math.ceil((a.d - new Date().setHours(0, 0, 0, 0)) / 864e5);
     var li = document.createElement('li'); li.innerHTML = '<span class="d"></span><span></span>';
     li.firstChild.textContent = a.d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-    var sm = document.createElement('small'); sm.textContent = n > 0 ? 'dans ' + n + ' j' : 'publié'; li.firstChild.appendChild(sm);
+    var sm = document.createElement('small'); sm.textContent = n > 1 ? 'dans ' + n + ' j' : n === 1 ? 'demain' : n === 0 ? 'aujourd\'hui' : 'passé'; li.firstChild.appendChild(sm);
     li.lastChild.textContent = a.t; ag.appendChild(li);
   });
 
@@ -932,6 +948,27 @@ function main(FEED) {
     iFr: [1.4,1.6,1.7,1.8,1.8,0.9,0.9,0.9,0.6,0.9,0.9,0.8,1.1,0.8,0.8,0.7,0.4,1.1,2.0,2.5,2.8,2.0,2.4,2.6,3.4],
     iEa: [1.7,2.0,2.2,2.4,2.5,2.3,2.2,2.2,1.9,2.0,2.0,2.0,2.2,2.1,2.1,2.0,1.7,1.9,2.6,3.0,3.2,2.8,2.9,3.2,3.8]
   };
+  var DEF = { periode: '2026-08', valeur: 159.6, an_dernier: 157.5, source: 'Ministère de l\'Action et des Comptes publics' };
+  (function () {
+    var fm = FEED && FEED.datasets && FEED.datasets.finances_mois;
+    if (!fm || !fm.length) return;
+    var key = function (i) { var d = new Date(MO.start[0], MO.start[1] + i, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+    var maps = {};
+    [['chomage_fr', 'uFr'], ['chomage_ze', 'uEa'], ['inflation_fr', 'iFr'], ['inflation_ze', 'iEa']].forEach(function (p) {
+      var m = {}; MO[p[1]].forEach(function (v, i) { m[key(i)] = v; });
+      fm.filter(function (r) { return r.indicateur === p[0] && !isNaN(+r.valeur); }).forEach(function (r) { m[r.periode] = +r.valeur; });
+      maps[p[1]] = m;
+    });
+    ['uFr', 'uEa', 'iFr', 'iEa'].forEach(function (k) {
+      var out = [], i = 0; while (maps[k][key(i)] != null) { out.push(maps[k][key(i)]); i++; }
+      MO[k] = out;
+    });
+    var d = fm.filter(function (r) { return r.indicateur === 'deficit_etat' && !isNaN(+r.valeur); }).sort(function (a, b) { return a.periode < b.periode ? -1 : 1; }).pop();
+    if (d) {
+      var n1 = fm.filter(function (r) { return r.indicateur === 'deficit_etat_an_dernier' && r.periode === d.periode; })[0];
+      DEF = { periode: d.periode, valeur: +d.valeur, an_dernier: n1 ? +n1.valeur : null, source: d.source || DEF.source, url: d.url };
+    }
+  })();
   var moDate = function (i) { return new Date(MO.start[0], MO.start[1] + i, 1); };
   var moLab = function (i) { return moDate(i).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }); };
   function miniChart(id, fr, ea, dom, unit) {
@@ -949,6 +986,61 @@ function main(FEED) {
     svg.append('text').attr('x', m.l).attr('y', H - 3).text(moLab(0)).style('font-size', '10px');
     svg.append('text').attr('x', W - m.r).attr('y', H - 3).attr('text-anchor', 'end').text(moLab(n - 1)).style('font-size', '10px');
   }
+  function renderMonth() {
+    var mName = function (i) { return moDate(i).toLocaleDateString('fr-FR', { month: 'long' }); };
+    var set = function (id, html, cls) { var e = document.getElementById(id); e.innerHTML = html; if (cls != null) e.className = 'delta ' + cls; };
+    var dp = new Date(DEF.periode + '-01T12:00:00'), dpName = dp.toLocaleDateString('fr-FR', { month: 'long' });
+    set('def-lab', 'Budget de l\'État · fin ' + dpName);
+    set('def-num', fmt(DEF.valeur, 1) + ' Md€ <small>de déficit</small>');
+    var dd = DEF.an_dernier != null ? Math.round((DEF.valeur - DEF.an_dernier) * 10) / 10 : null;
+    set('def-delta', dd == null ? '' : (dd > 0 ? '▲ +' : '▼ −') + fmt(Math.abs(dd), 1) + ' Md€ sur un an', dd == null ? '' : dd > 0 ? 'up' : 'dn');
+    set('def-t', 'Déficit cumulé depuis janvier' + (DEF.an_dernier != null ? ', contre ' + fmt(DEF.an_dernier, 1) + ' Md€ à la même date l\'an dernier' : '') + '. État seul, hors Sécurité sociale et collectivités.');
+    var nu = MO.uFr.length - 1, ne = MO.uEa.length - 1, gu = Math.round((MO.uFr[nu] - MO.uEa[Math.min(nu, ne)]) * 10) / 10;
+    set('u-lab', 'Chômage · ' + mName(nu));
+    set('u-num', fmt(MO.uFr[nu], 1) + ' % <small>en France</small>');
+    set('u-delta', fmt(Math.abs(gu), 1) + ' pt ' + (gu > 0 ? 'au-dessus' : 'en dessous') + ' de la zone euro', gu > 0 ? 'up' : 'dn');
+    set('u-t', fmt(MO.uFr[nu - 1], 1) + ' % le mois précédent. Zone euro : ' + fmt(MO.uEa[ne], 1) + ' % (Eurostat, données corrigées des variations saisonnières).');
+    var ni = MO.iFr.length - 1, nie = MO.iEa.length - 1, gi = Math.round((MO.iFr[ni] - MO.iEa[Math.min(ni, nie)]) * 10) / 10;
+    set('i-lab', 'Inflation · ' + mName(ni));
+    set('i-num', fmt(MO.iFr[ni], 1) + ' % <small>sur un an</small>');
+    set('i-delta', fmt(Math.abs(gi), 1) + ' pt ' + (gi > 0 ? 'au-dessus' : 'sous') + ' la zone euro', gi > 0 ? 'up' : 'dn');
+    set('i-t', 'Contre ' + fmt(MO.iFr[ni - 1], 1) + ' % le mois précédent. Zone euro : ' + fmt(MO.iEa[nie], 1) + ' %. Indice des prix harmonisé (Eurostat).');
+    document.getElementById('teaser-month').innerHTML = 'Déficit de l\'État <b>' + fmt(DEF.valeur, 1) + '&nbsp;Md€</b>' + (dd > 0 ? ' <i class="r">▲</i>' : dd < 0 ? ' <i class="g">▼</i>' : '') + ' · Chômage <b>' + fmt(MO.uFr[nu], 1) + '&nbsp;%</b> · Inflation <b>' + fmt(MO.iFr[ni], 1) + '&nbsp;%</b>';
+  }
+  renderMonth();
+  // ===== Actualité =====
+  (function () {
+    var A = (FEED && FEED.datasets && FEED.datasets.actu_finances && FEED.datasets.actu_finances.length) ? FEED.datasets.actu_finances : [
+      { date: '2026-10-20', texte: 'L\'écart de taux avec l\'Allemagne atteint 151 points de base, son plus haut niveau sur un an.', source: 'Idéal Investisseur', url: 'https://www.ideal-investisseur.fr/en/markets/oat-bund-spread.html' },
+      { date: '2026-10-13', texte: 'Budget 2027 : l\'Assemblée nationale entame l\'examen du projet de loi de finances après avoir rejeté la motion de rejet. Objectif affiché : un déficit de 5 % du PIB.', source: 'France 24', url: 'https://www.france24.com/fr/france/20261013-budget-2027-debat-ouvert-assemblee-nationale-deficit-dette-retraites' },
+      { date: '2026-10-06', texte: 'Le déficit de l\'État atteint 159,6 Md€ fin août, contre 157,5 Md€ un an plus tôt.', source: 'Boursorama', url: 'https://www.boursorama.com/bourse/actualites/france-le-deficit-budgetaire-s-eleve-a-159-6-mds-a-fin-aout-819c4f38ed198737dc3cec5df74e4b3e' },
+      { date: '2026-10-01', texte: 'Le gouvernement présente le budget 2027 : 43 Md€ d\'économies nouvelles et un record de 340 Md€ d\'emprunts. Le taux à 10 ans frôle 5 %.', source: 'Boursorama', url: 'https://www.boursorama.com/bourse/actualites/taux-les-rendements-obligataires-se-tendent-l-oat-touche-un-sommet-depuis-2002-avant-de-refluer-actualise-835a60194a63a23aa7d9d0789e330791' },
+      { date: '2026-08-28', texte: 'Fitch maintient la note de la France à A+, perspective stable.', source: 'franceinfo', url: 'https://www.franceinfo.fr/economie/croissance/l-agence-de-notation-fitch-maintient-la-note-a-de-la-france-et-sa-perspective-stable-grace-a-une-economie-importante-et-diversifiee_8167253.html' }
+    ];
+    A = A.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).slice(0, 6);
+    var ul = document.getElementById('actu-list');
+    A.forEach(function (a) {
+      var li = document.createElement('li'), d = document.createElement('span'), t = document.createElement('span');
+      d.className = 'd'; d.textContent = new Date(a.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      t.textContent = a.texte + ' ';
+      if (a.url) { var l = document.createElement('a'); l.href = a.url; l.target = '_blank'; l.rel = 'noopener'; l.textContent = a.source || 'Source'; t.appendChild(l); }
+      li.appendChild(d); li.appendChild(t); ul.appendChild(li);
+    });
+    var next = AG.filter(function (a) { return a.d >= new Date(new Date().setHours(0, 0, 0, 0)); })[0];
+    if (next) {
+      var li = document.createElement('li'), d = document.createElement('span'), t = document.createElement('span');
+      d.className = 'd'; d.textContent = 'À venir'; t.className = 'next'; t.textContent = next.d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + ' : ' + next.t + '.';
+      li.appendChild(d); li.appendChild(t); ul.insertBefore(li, ul.firstChild);
+    }
+    document.getElementById('teaser-actu').textContent = next ? 'À venir, le ' + next.d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + ' : ' + next.t.replace(/\s*\(.*\)$/, '') + '.' : A[0].texte;
+  })();
+  // ===== Alerte si la mise à jour automatique n'a pas tourné =====
+  (function () {
+    var el = document.getElementById('stale'), iso = FEED && FEED.updated_iso, msg = null;
+    if (!FEED) msg = 'Les données du jour n\'ont pas pu être chargées : les chiffres affichés peuvent dater.';
+    else if (iso && Date.now() - Date.parse(iso) > 30 * 3600e3) msg = 'Mise à jour en retard : les données datent du ' + FEED.updated + '. La mise à jour automatique de midi n\'a pas tourné.';
+    if (msg && location.hostname !== '' ) { el.textContent = msg; el.hidden = false; }
+  })();
   function drawMonth() { miniChart('mo-u', MO.uFr, MO.uEa, [5.5, 9], ' %'); miniChart('mo-i', MO.iFr, MO.iEa, [0, 4.2], ' %'); }
 
   // ===== Partage en image (fonctionnera pleinement sur concret2027.fr ; ici l'image s'affiche pour un appui long) =====
