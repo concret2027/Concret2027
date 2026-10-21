@@ -68,7 +68,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .jump::-webkit-scrollbar { display: none; }
 .jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
 .jump a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
-section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
+section[id], details[id], .growth[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .flash { animation: flash 1.6s ease-out; }
 @keyframes flash { 0% { background: var(--band); box-shadow: 0 0 0 3px var(--fr); border-radius: 10px; } 100% { box-shadow: 0 0 0 0 transparent; } }
 @media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
@@ -169,6 +169,9 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .mo-num small { font-size: .45em; color: var(--muted); }
 .mo .delta { justify-self: start; }
 .mo-t { font-size: 12.5px; color: var(--muted); }
+.growth { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 6px 24px; border-top: 1px solid var(--line); margin-top: 14px; padding-top: 14px; }
+.growth .mo { padding: 0 !important; border: 0 !important; }
+@media (max-width: 640px) { .growth { grid-template-columns: 1fr; } }
 .metric .foot { font-size: 12.5px; color: var(--muted); }
 .metric .foot b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
 .spark svg { display: block; width: 100%; height: auto; }
@@ -247,7 +250,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><b>Finances publiques</b><span id="today"></span></div>
   <p class="upd" id="upd">Chargement des données…</p>
-  <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#courbes">Courbes</a><a href="#richesse">Richesse</a><a href="#marches">Marchés</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#acc-month">Ce mois-ci</a><a href="#croissance">Croissance</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#courbes">Courbes</a><a href="#richesse">Richesse</a><a href="#marches">Marchés</a></nav>
 
 
   <details class="acc" id="acc-today">
@@ -313,6 +316,19 @@ footer p { margin: 0; } footer a { color: inherit; }
         <button class="share" type="button" data-share="inflation">Partager ce graphique</button>
       </div>
     </div>
+    <div class="growth" id="croissance">
+      <div class="mo">
+        <span class="mo-lab" id="g-lab">Croissance du PIB</span>
+        <span class="mo-num" id="g-num">—</span>
+        <span class="delta" id="g-delta"></span>
+        <span class="mo-t" id="g-t"></span>
+      </div>
+      <div class="mo">
+        <span class="mo-lab">Croissance trimestre par trimestre</span>
+        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--ea)"></i>Zone euro</span></div>
+        <div class="chart" id="mo-g"></div>
+      </div>
+    </div>
     </div>
   </details>
   <details class="acc" id="acc-actu">
@@ -333,31 +349,31 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card" id="bulletin" aria-labelledby="gov-title">
     <h2 id="gov-title"><span class="eyebrow">Le bulletin économique</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
     <button class="share" id="share-rank" type="button" style="justify-self:start;margin:0" aria-label="Partager le classement">Partager le classement</button>
-    <p class="explain"><b>La règle :</b> chaque année, sur 8 critères, on regarde si la France a fait mieux ou moins bien que la zone euro. Une année gagnée compte 1, une année perdue 0. <b>10/20 = la France a fait mieux qu'elle une année sur deux.</b> 20/20 = mieux chaque année, sur tout.</p>
+    <p class="explain"><b>La règle :</b> chaque année et pour chacun des 8 critères, la France <b>marque 1 point</b> si elle fait mieux que la moyenne de la zone euro, <b>0 point</b> si elle fait moins bien. La note sur 20 est la part des points marqués. <b>10/20 = la France a fait mieux que la zone euro une fois sur deux.</b> 20/20 = mieux à chaque fois.</p>
     <details class="how">
       <summary>Comment la note est calculée, avec un exemple</summary>
       <div class="how-body">
-        <p><b>1. Chaque année, un match France contre zone euro.</b> Pour chaque critère, on compare l'évolution de la France sur l'année à celle de la moyenne des pays de la zone euro. Si la France a fait mieux, elle gagne l'année (1 point) ; sinon, elle la perd (0). Égalité : un demi-point.</p>
-        <p><b>2. Une note par critère.</b> On fait la moyenne des années du mandat. Un gouvernement de 3 ans qui gagne 1 année sur 3 a donc 1/3 sur ce critère.</p>
+        <p><b>1. Chaque année, une comparaison avec la zone euro.</b> Pour chaque critère, on compare l'évolution de la France sur l'année à celle de la moyenne des pays de la zone euro. Si la France a fait mieux, elle marque 1 point ; sinon, 0. Égalité : un demi-point.</p>
+        <p><b>2. Une note par critère.</b> On additionne les points du mandat et on divise par le nombre d'années. Un gouvernement de 3 ans qui marque 1 point sur 3 a donc 1/3 sur ce critère.</p>
         <p><b>3. La note finale</b> est la moyenne des 8 critères, ramenée sur 20.</p>
         <div class="ex">
           <b>Exemple : François Bayrou, 2025</b>
-          <p><b>Dette :</b> elle a pris 3,0 points de PIB en France, 0,8 dans la zone euro. La France a fait moins bien : <b>année perdue (0)</b>.</p>
-          <p><b>Dépenses publiques :</b> +0,2 point de PIB en France, +0,5 dans la zone euro. Elles ont moins augmenté chez nous : <b>année gagnée (1)</b>.</p>
-          <p>Même exercice sur les autres critères. Bayrou en gagne 3 sur 7 (les prélèvements 2025 ne sont pas encore publiés) : 3 ÷ 7 × 20 = <b>8,6/20</b>.</p>
+          <p><b>Dette :</b> elle a pris 3,0 points de PIB en France, 0,8 dans la zone euro. La France a fait moins bien : <b>0 point</b>.</p>
+          <p><b>Dépenses publiques :</b> +0,2 point de PIB en France, +0,5 dans la zone euro. Elles ont moins augmenté chez nous : <b>1 point</b>.</p>
+          <p>Même exercice sur les autres critères. Bayrou marque 3 points sur 7 (les prélèvements 2025 ne sont pas encore publiés) : 3 ÷ 7 × 20 = <b>8,6/20</b>.</p>
         </div>
-        <p style="font-weight:600;margin-top:4px">Les 8 critères : quand la France gagne-t-elle l'année ?</p>
+        <p style="font-weight:600;margin-top:4px">Les 8 critères : quand la France marque-t-elle le point ?</p>
         <table class="seuils"><tbody>
-          <tr><td>Dette<span>La dette publique (État, Sécurité sociale, collectivités) en % du PIB. La France gagne si sa dette augmente moins, ou baisse plus, que celle de la zone euro.</span></td></tr>
-          <tr><td>Déficit<span>Ce qui manque chaque année entre dépenses et recettes publiques, en % du PIB. La France gagne si son déficit se réduit plus, ou se creuse moins, que celui de la zone euro.</span></td></tr>
-          <tr><td>Dépenses publiques<span>Tout ce que dépensent l'État, la Sécurité sociale et les collectivités, en % du PIB. La France gagne si ses dépenses augmentent moins que dans la zone euro.</span></td></tr>
-          <tr><td>Prélèvements<span>Impôts et cotisations sociales, en % du PIB. La France gagne si ses prélèvements augmentent moins (ou baissent plus) que dans la zone euro.</span></td></tr>
-          <tr><td>Richesse par habitant<span>Le PIB par habitant, c'est-à-dire la richesse produite par personne. La France gagne si le sien progresse plus vite que celui de la zone euro.</span></td></tr>
-          <tr><td>Emploi<span>Le taux de chômage. La France gagne si son chômage baisse plus, ou monte moins, que dans la zone euro.</span></td></tr>
-          <tr><td>Commerce extérieur<span>Ce que la France vend à l'étranger rapporté à ce qu'elle y achète (exportations ÷ importations). La France gagne si ce rapport s'améliore plus que dans la zone euro.</span></td></tr>
-          <tr><td>Coût de la dette<span>Les intérêts payés sur la dette, en % du PIB. La France gagne si ses intérêts augmentent moins, ou baissent plus, que dans la zone euro.</span></td></tr>
+          <tr><td>Dette<span>La dette publique (État, Sécurité sociale, collectivités) en % du PIB. La France marque le point si sa dette augmente moins, ou baisse plus, que celle de la zone euro.</span></td></tr>
+          <tr><td>Déficit<span>Ce qui manque chaque année entre dépenses et recettes publiques, en % du PIB. La France marque le point si son déficit se réduit plus, ou se creuse moins, que celui de la zone euro.</span></td></tr>
+          <tr><td>Dépenses publiques<span>Tout ce que dépensent l'État, la Sécurité sociale et les collectivités, en % du PIB. La France marque le point si ses dépenses augmentent moins que dans la zone euro.</span></td></tr>
+          <tr><td>Prélèvements<span>Impôts et cotisations sociales, en % du PIB. La France marque le point si ses prélèvements augmentent moins (ou baissent plus) que dans la zone euro.</span></td></tr>
+          <tr><td>Croissance par habitant<span>La croissance du PIB par habitant, c'est-à-dire de la richesse produite par personne. C'est le critère « croissance » du bulletin : on la mesure par habitant pour ne pas avantager les pays dont la population augmente vite. La France marque le point si la sienne est plus forte que celle de la zone euro.</span></td></tr>
+          <tr><td>Emploi<span>Le taux de chômage. La France marque le point si son chômage baisse plus, ou monte moins, que dans la zone euro.</span></td></tr>
+          <tr><td>Commerce extérieur<span>Ce que la France vend à l'étranger rapporté à ce qu'elle y achète (exportations ÷ importations). La France marque le point si ce rapport s'améliore plus que dans la zone euro.</span></td></tr>
+          <tr><td>Coût de la dette<span>Les intérêts payés sur la dette, en % du PIB. La France marque le point si ses intérêts augmentent moins, ou baissent plus, que dans la zone euro.</span></td></tr>
         </tbody></table>
-        <p class="note">Choix assumé de Concret : moins de dépenses ou de prélèvements que nos voisins compte comme une année gagnée. Chaque année est attribuée au Premier ministre en poste la majeure partie de l'année ; les présidents sont notés sur toutes leurs années. Limite : une année gagnée de justesse compte autant qu'une année gagnée largement, et un gouvernement d'un an se joue sur peu de matchs. Les séries Eurostat commençant en 1995, l'année 1995 ne compte que pour la croissance et l'emploi.</p>
+        <p class="note">Choix assumé de Concret : moins de dépenses ou de prélèvements que nos voisins rapporte un point. Chaque année est attribuée au Premier ministre en poste la majeure partie de l'année ; les présidents sont notés sur toutes leurs années. Limite : un point marqué de justesse vaut autant qu'un point marqué largement, et un gouvernement d'un an est jugé sur peu de comparaisons. Les séries Eurostat commençant en 1995, l'année 1995 ne compte que pour la croissance et l'emploi.</p>
       </div>
     </details>
     <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
@@ -370,7 +386,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="chart" id="rank-gov"></div>
     <p class="note" id="rank-gov-note"></p>
     <span class="eyebrow" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
-    <p class="note">Pour chaque critère : nombre d'années où la France a fait mieux que la zone euro. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins une année sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'une sur deux.</p>
+    <p class="note">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que la zone euro. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
     <div class="gov-list" id="gov-list"></div>
     <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
   </section>
@@ -427,7 +443,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   </section>
 
   <footer>
-    <p><b>Sources.</b> Dette fin T2 2026 : <a href="https://www.insee.fr/fr/statistiques/9053525">Insee, 29 sept. 2026</a>. Comptes 2025 et intérêts : <a href="https://www.insee.fr/fr/statistiques/fichier/version-html/8997691/ip2106.pdf">Insee Première, mai 2026</a>. Budgets 2026 : Défense hors pensions (<a href="https://www.senat.fr/rap/l25-139-38/l25-139-38_mono.html">Sénat, PLF 2026</a>), Éducation nationale hors pensions (PLF 2026), Ondam 2026 (<a href="https://www.banquedesterritoires.fr/loi-de-financement-de-la-securite-sociale-pour-2026-quels-credits-quelles-nouveautes">LFSS 2026</a>). Séries 1995-2025 : Eurostat (gov_10a_main, gov_10dd_edpt1, gov_10a_taxag) ; États-Unis : FMI (dette, solde, dépenses, via Our World in Data et FRED) et UNU-WIDER via Our World in Data (prélèvements) ; taux à 10 ans mensuels et annuels : Eurostat (irt_lt_mcby_m, irt_lt_mcby_a) ; taux quotidiens : Idéal Investisseur ; 340 Md€ d'emprunts prévus en 2027 : Agence France Trésor, citée par Boursorama ; PIB par habitant, chômage et balance commerciale : Banque mondiale (NY.GDP.PCAP.PP.KD, SL.UEM.TOTL.ZS, NE.RSB.GNFS.ZS). Taux du 20 oct. 2026 : Idéal Investisseur et ANSA. Publications du mois : déficit de l'État fin août (ministère de l'Action et des Comptes publics, via Boursorama), chômage d'août (Eurostat), inflation de septembre (Eurostat, Insee).</p>
+    <p><b>Sources.</b> Dette fin T2 2026 : <a href="https://www.insee.fr/fr/statistiques/9053525">Insee, 29 sept. 2026</a>. Comptes 2025 et intérêts : <a href="https://www.insee.fr/fr/statistiques/fichier/version-html/8997691/ip2106.pdf">Insee Première, mai 2026</a>. Budgets 2026 : Défense hors pensions (<a href="https://www.senat.fr/rap/l25-139-38/l25-139-38_mono.html">Sénat, PLF 2026</a>), Éducation nationale hors pensions (PLF 2026), Ondam 2026 (<a href="https://www.banquedesterritoires.fr/loi-de-financement-de-la-securite-sociale-pour-2026-quels-credits-quelles-nouveautes">LFSS 2026</a>). Séries 1995-2025 : Eurostat (gov_10a_main, gov_10dd_edpt1, gov_10a_taxag) ; croissance trimestrielle : Eurostat (namq_10_gdp) ; États-Unis : FMI (dette, solde, dépenses, via Our World in Data et FRED) et UNU-WIDER via Our World in Data (prélèvements) ; taux à 10 ans mensuels et annuels : Eurostat (irt_lt_mcby_m, irt_lt_mcby_a) ; taux quotidiens : Idéal Investisseur ; 340 Md€ d'emprunts prévus en 2027 : Agence France Trésor, citée par Boursorama ; PIB par habitant, chômage et balance commerciale : Banque mondiale (NY.GDP.PCAP.PP.KD, SL.UEM.TOTL.ZS, NE.RSB.GNFS.ZS). Taux du 20 oct. 2026 : Idéal Investisseur et ANSA. Publications du mois : déficit de l'État fin août (ministère de l'Action et des Comptes publics, via Boursorama), chômage d'août (Eurostat), inflation de septembre (Eurostat, Insee).</p>
     <p><b>Méthode.</b> Le taux d'emprunt et la dette sont mis à jour automatiquement chaque jour à midi à partir des dernières publications (Idéal Investisseur pour les taux, Insee pour la dette). Le compteur part du dernier chiffre trimestriel de l'Insee et prolonge le rythme des six mois précédents : c'est une estimation, recalée à chaque publication. Population : 69 millions. Les comparaisons rapportent les intérêts 2025 aux budgets 2026. Smic net : 1 477,93 € par mois depuis le 1er juin 2026. <span id="updated-note"></span></p>
   </footer>
 </div>
@@ -593,7 +609,7 @@ function main(FEED) {
   }
 
   document.querySelectorAll('.jump a').forEach(function (a) {
-    a.addEventListener('click', function () { var t = document.querySelector(a.getAttribute('href')); if (t && t.tagName === 'DETAILS') t.open = true; });
+    a.addEventListener('click', function () { var t = document.querySelector(a.getAttribute('href')); var dt = t && t.closest('details'); if (dt) dt.open = true; });
   });
   // ===== Menus dépliables : aperçu dans l'en-tête et mémoire de l'état ouvert/fermé =====
   (function () {
@@ -696,7 +712,7 @@ function main(FEED) {
   // Chaque critère = France en % de la zone euro, orienté pour que plus de 100 % = mieux. Points = 2,5 × pourcentage.
   var CRIT = [
     { k: 'dette', l: 'Dette' }, { k: 'deficit', l: 'Déficit' }, { k: 'dep', l: 'Dépenses' }, { k: 'po', l: 'Prélèvements' },
-    { k: 'pib', l: 'Richesse/hab.' }, { k: 'emploi', l: 'Emploi' }, { k: 'com', l: 'Commerce' }, { k: 'int', l: 'Coût de la dette' }
+    { k: 'pib', l: 'Croissance/hab.' }, { k: 'emploi', l: 'Emploi' }, { k: 'com', l: 'Commerce' }, { k: 'int', l: 'Coût de la dette' }
   ];
   // Chaque année : 1 si la France fait mieux que la zone euro, 0 sinon, 0,5 en cas d'égalité.
   function match(fr, ea, lowerIsBetter) {
@@ -755,7 +771,7 @@ function main(FEED) {
     [0, 5, 10, 15, 20].forEach(function (t) {
       svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 4).attr('y2', H - 20).attr('stroke', t === 10 ? 'var(--fg)' : 'var(--grid)').attr('stroke-dasharray', t === 10 ? '4 3' : null);
       svg.append('text').attr('x', x(t)).attr('y', top - 8).attr('text-anchor', 'middle').text(t).style('fill', t === 10 ? 'var(--fg)' : null).style('font-weight', t === 10 ? 700 : null);
-      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = mieux qu\'elle 1 année sur 2').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
+      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = mieux que la zone euro 1 fois sur 2').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
     });
     list.forEach(function (r, i) {
       var y = top + i * rh, name = small ? r.g.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin') : r.g.n;
@@ -769,7 +785,7 @@ function main(FEED) {
       svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n)).style('fill', inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
     });
     var best = list[0], above = list.filter(function (r) { return r.n >= 10; }).length;
-    document.getElementById('rank-' + rankMode + '-note').textContent = (above ? above + ' sur ' + list.length + ' ont fait mieux que la zone euro au moins une année sur deux. ' : 'Avec ces critères, aucun n\'a fait mieux que la zone euro une année sur deux. ') +
+    document.getElementById('rank-' + rankMode + '-note').textContent = (above ? above + ' sur ' + list.length + ' ont fait mieux que la zone euro au moins une fois sur deux. ' : 'Avec ces critères, aucun n\'a fait mieux que la zone euro une fois sur deux. ') +
       'Meilleure note : ' + best.g.n + ' (' + nfmt(best.n) + '/20).' + (rankMode === 'pres' ? ' Chirac inclut les cinq ans de cohabitation avec Lionel Jospin ; Macron est noté sur 2017-2025.' : ' Lecornu sera noté au printemps 2027 ; Barnier (sept.-déc. 2024) n\'a pas d\'année complète.');
   }
   var showAll = false;
@@ -802,7 +818,7 @@ function main(FEED) {
       if (!on[c.k]) return;
       var l = g.w[c.k], k = document.createElement('span'), won = d3.sum(l), n = l.length;
       k.className = 'kpi' + (!n ? '' : won / n >= 0.5 ? ' g' : ' b');
-      k.innerHTML = '<em></em><span></span>'; k.firstChild.textContent = c.l; k.lastChild.textContent = !n ? 'n.d.' : fmt(won, won % 1 ? 1 : 0) + ' sur ' + n + (n > 1 ? ' ans' : ' an');
+      k.innerHTML = '<em></em><span></span>'; k.firstChild.textContent = c.l; k.lastChild.textContent = !n ? 'n.d.' : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n;
       kp.appendChild(k);
     });
     return kp;
@@ -811,7 +827,7 @@ function main(FEED) {
     if (mode === 'pres') {
       var box = document.getElementById('pres-detail'); box.textContent = ''; box.hidden = false;
       var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span class="note"></span>';
-      who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + (g.p ? ', ' + g.p : '') + '. Années gagnées face à la zone euro :';
+      who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + (g.p ? ', ' + g.p : '') + '. Points marqués face à la zone euro :';
       box.appendChild(who); box.appendChild(chipsFor(g));
       box.classList.remove('flash'); void box.offsetWidth; box.classList.add('flash');
       box.scrollIntoView({ block: 'nearest' });
@@ -1029,6 +1045,51 @@ function main(FEED) {
       DEF = { periode: d.periode, valeur: +d.valeur, an_dernier: n1 ? +n1.valeur : null, source: d.source || DEF.source, url: d.url };
     }
   })();
+  // ===== Croissance du PIB, trimestrielle (Eurostat namq_10_gdp, volumes CVS-CJO) =====
+  var GQ = { start: [2023, 1],
+    fr: [0.1,0.9,0.4,0.5,0.2,0.2,0.4,0.0,0.2,0.2,0.4,0.3,-0.2,0.0], ea: [-0.2,0.2,0.2,0.1,0.5,0.2,0.6,0.3,0.5,0.0,0.3,0.2,0.0,0.6],
+    frA: [1.5,2.0,1.9,2.0,2.1,1.3,1.4,0.9,0.8,0.8,0.8,1.1,0.7,0.5], eaA: [1.2,0.5,0.2,0.3,0.9,1.0,1.3,1.6,1.6,1.4,1.1,1.1,0.6,1.2] };
+  (function () {
+    var ft = FEED && FEED.datasets && FEED.datasets.finances_trim;
+    if (!ft || !ft.length) return;
+    var key = function (i) { var q = GQ.start[1] - 1 + i; return (GQ.start[0] + Math.floor(q / 4)) + '-Q' + (q % 4 + 1); };
+    [['pib_fr_t', 'fr'], ['pib_ze_t', 'ea'], ['pib_fr_a', 'frA'], ['pib_ze_a', 'eaA']].forEach(function (p) {
+      var m = {}; GQ[p[1]].forEach(function (v, i) { m[key(i)] = v; });
+      ft.filter(function (r) { return r.indicateur === p[0] && !isNaN(parseFloat(r.valeur)); }).forEach(function (r) { m[String(r.periode).replace('T', 'Q')] = +r.valeur; });
+      var out = [], i = 0; while (m[key(i)] != null) { out.push(m[key(i)]); i++; }
+      GQ[p[1]] = out;
+    });
+  })();
+  var gqLab = function (i, long) { var q = GQ.start[1] - 1 + i, y = GQ.start[0] + Math.floor(q / 4), n = q % 4 + 1; return long ? (n === 1 ? '1er' : n + 'e') + ' trimestre ' + y : 'T' + n + ' ' + String(y).slice(2); };
+  var sgn = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d == null ? 1 : d); };
+  function growthChart() {
+    var box = document.getElementById('mo-g'); if (!box) return; box.textContent = '';
+    var n = GQ.fr.length, W = Math.max(260, box.clientWidth), H = 150, m = { t: 12, r: 6, b: 20, l: 30 };
+    var all = GQ.fr.concat(GQ.ea), lo = Math.min(-0.4, d3.min(all)), hi = Math.max(1, d3.max(all));
+    var x = d3.scaleBand().domain(d3.range(n)).range([m.l, W - m.r]).paddingInner(.28).paddingOuter(.1), bw = x.bandwidth() / 2;
+    var y = d3.scaleLinear().domain([lo, hi]).nice().range([H - m.b, m.t]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Croissance trimestrielle du PIB, France et zone euro, ' + gqLab(0, 1) + ' à ' + gqLab(n - 1, 1));
+    y.ticks(4).forEach(function (t) {
+      svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', t === 0 ? 'var(--axis)' : 'var(--grid)');
+      svg.append('text').attr('x', m.l - 5).attr('y', y(t) + 4).attr('text-anchor', 'end').text(fmt(t, 1)).style('font-size', '10px');
+    });
+    [[GQ.fr, 'var(--fr)', 0], [GQ.ea, 'var(--ea)', 1]].forEach(function (s) {
+      s[0].forEach(function (v, i) { svg.append('rect').attr('x', x(i) + s[2] * bw).attr('width', bw - 1).attr('y', Math.min(y(v), y(0))).attr('height', Math.max(1, Math.abs(y(v) - y(0)))).attr('fill', s[1]).attr('rx', 1.5); });
+    });
+    d3.range(n).forEach(function (i) { if ((i % 4 === 0 && n - 1 - i >= 2) || i === n - 1) svg.append('text').attr('x', x(i) + bw).attr('y', H - 5).attr('text-anchor', 'middle').text(gqLab(i)).style('font-size', '10px'); });
+    hover(box, svg, H, m, d3.range(n).map(function (i) {
+      return { px: x(i) + bw, t: gqLab(i, 1), note: 'Sur un an : France ' + sgn(GQ.frA[i]) + ' %, zone euro ' + sgn(GQ.eaA[i]) + ' %',
+        rows: [{ c: 'var(--fr)', n: 'France', py: y(GQ.fr[i]), s: sgn(GQ.fr[i]) + ' %' }, { c: 'var(--ea)', n: 'Zone euro', py: y(GQ.ea[i]), s: sgn(GQ.ea[i]) + ' %' }] };
+    }));
+  }
+  (function () {
+    var n = GQ.fr.length - 1, g = Math.round((GQ.fr[n] - GQ.ea[n]) * 10) / 10;
+    var set = function (id, html, cls) { var e = document.getElementById(id); e.innerHTML = html; if (cls != null) e.className = 'delta ' + cls; };
+    set('g-lab', 'Croissance du PIB · ' + gqLab(n, 1));
+    set('g-num', sgn(GQ.fr[n]) + ' % <small>sur un trimestre</small>');
+    set('g-delta', g === 0 ? 'comme la zone euro' : fmt(Math.abs(g), 1) + ' pt ' + (g < 0 ? 'sous' : 'au-dessus de') + ' la zone euro (' + sgn(GQ.ea[n]) + ' %)', g < 0 ? 'up' : g > 0 ? 'dn' : '');
+    set('g-t', 'Sur un an : ' + sgn(GQ.frA[n]) + ' % en France, ' + sgn(GQ.eaA[n]) + ' % dans la zone euro. Trimestre précédent : ' + sgn(GQ.fr[n - 1]) + ' %. Publié tous les trimestres (Insee, puis Eurostat) : la première estimation tombe un mois après la fin du trimestre. Volumes corrigés des variations saisonnières.');
+  })();
   var moDate = function (i) { return new Date(MO.start[0], MO.start[1] + i, 1); };
   var moLab = function (i) { return moDate(i).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }); };
   function miniChart(id, fr, ea, dom, unit) {
@@ -1115,7 +1176,7 @@ function main(FEED) {
     else if (iso && Date.now() - Date.parse(iso) > 30 * 3600e3) msg = 'Mise à jour en retard : les données datent du ' + FEED.updated + '. La mise à jour automatique de midi n\'a pas tourné.';
     if (msg && location.hostname !== '' ) { el.textContent = msg; el.hidden = false; }
   })();
-  function drawMonth() { miniChart('mo-u', MO.uFr, MO.uEa, [5.5, 9], ' %'); miniChart('mo-i', MO.iFr, MO.iEa, [0, 4.2], ' %'); }
+  function drawMonth() { growthChart(); miniChart('mo-u', MO.uFr, MO.uEa, [5.5, 9], ' %'); miniChart('mo-i', MO.iFr, MO.iEa, [0, 4.2], ' %'); }
 
   // ===== Partage en image (fonctionnera pleinement sur concret2027.fr ; ici l'image s'affiche pour un appui long) =====
   function wrapText(ctx, text, x, y, maxW, lh) {
@@ -1171,7 +1232,7 @@ function main(FEED) {
         x.fillStyle = '#1c1d22'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText(nfmt(r.v), x0 + bw * r.v / 20 + 14, y + 52);
       });
       var lx = x0 + bw / 2; x.strokeStyle = '#1c1d22'; x.setLineDash([10, 8]); x.lineWidth = 3; x.beginPath(); x.moveTo(lx, y0 - 10); x.lineTo(lx, y0 + rows.length * 120); x.stroke(); x.setLineDash([]);
-      x.fillStyle = '#1c1d22'; x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.textAlign = 'center'; x.fillText('10 = mieux que la zone euro 1 année sur 2', lx, y0 + rows.length * 120 + 44); x.textAlign = 'left';
+      x.fillStyle = '#1c1d22'; x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.textAlign = 'center'; x.fillText('10 = mieux que la zone euro 1 fois sur 2', lx, y0 + rows.length * 120 + 44); x.textAlign = 'left';
     }
     x.fillStyle = '#2f5bd3'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText('concret2027.fr', 80, H - 90);
     x.fillStyle = '#62646d'; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; x.fillText('Sources : Insee, Eurostat, Banque mondiale', 80, H - 48);
