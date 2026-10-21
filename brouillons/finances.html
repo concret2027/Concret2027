@@ -132,6 +132,7 @@ section[id], details[id] { scroll-margin-top: 64px; }
 .delta.up { color: var(--bad); background: var(--s-bad); }
 .delta.dn { color: var(--ok); background: var(--s-good); }
 .month { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.mo .share { justify-self: start; }
 @media (max-width: 640px) { .month { grid-template-columns: 1fr; } .mo + .mo { border-left: 0 !important; border-top: 1px solid var(--line); padding-left: 0 !important; padding-top: 12px; } .mo { padding-right: 0 !important; padding-bottom: 12px; } }
 .mo { display: grid; gap: 5px; align-content: start; padding-right: 14px; }
 .mo + .mo { border-left: 1px solid var(--line); padding-left: 14px; }
@@ -223,12 +224,14 @@ footer p { margin: 0; } footer a { color: inherit; }
         <div class="row"><span class="num">4,93<small>%</small></span><span class="delta up">▲ +0,08 pt depuis hier</span><span class="delta up">▲ +1,5 pt en un an</span></div>
         <div class="spark" id="spark-rate"></div>
         <div class="foot">En un an, le taux est passé de <b>3,44 %</b> à <b>4,93 %</b>. La seule hausse d'hier (+0,08 pt), si elle tenait, coûterait <b>≈ 270 M€ d'intérêts par an</b> sur les 340 Md€ que l'État empruntera en 2027.</div>
+        <button class="share" type="button" data-share="taux">Partager ce graphique</button>
       </div>
       <div class="metric">
         <span class="lab">Dette publique</span>
         <div class="row"><span class="num">119<small>% du PIB</small></span><span class="delta up">▲ +1,5 pt en un trimestre</span></div>
         <div class="spark" id="spark"></div>
         <div class="foot"><b id="debt">—</b> au total (estimation), dont <b id="today-debt">—</b> ajoutés depuis minuit · <b id="percap">—</b> par habitant. Chaque jour, la dette prend de quoi payer <b>42 000 salariés au Smic</b> pendant un an.</div>
+        <button class="share" type="button" data-share="dette">Partager ce graphique</button>
       </div>
     </div>
     <div class="equiv-wrap">
@@ -257,12 +260,18 @@ footer p { margin: 0; } footer a { color: inherit; }
         <span class="mo-num">8,2 % <small>en France</small></span>
         <span class="delta up">1,8 pt au-dessus de la zone euro</span>
         <span class="mo-t">8,3 % le mois précédent. Zone euro : 6,4 %, stable (Eurostat).</span>
+        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Zone euro</span></div>
+        <div class="chart" id="mo-u"></div>
+        <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
       </div>
       <div class="mo">
         <span class="mo-lab">Inflation · septembre</span>
         <span class="mo-num">3,4 % <small>sur un an</small></span>
         <span class="delta dn">0,4 pt sous la zone euro</span>
         <span class="mo-t">Contre 2,6 % en août. Zone euro : 3,8 %. Indice harmonisé ; selon l'indice français de l'Insee, 3,1 %, au plus haut depuis janvier 2024.</span>
+        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Zone euro</span></div>
+        <div class="chart" id="mo-i"></div>
+        <button class="share" type="button" data-share="inflation">Partager ce graphique</button>
       </div>
     </div>
     </div>
@@ -852,6 +861,33 @@ footer p { margin: 0; } footer a { color: inherit; }
     li.lastChild.textContent = a.t; ag.appendChild(li);
   });
 
+  // ===== Séries mensuelles (Eurostat), sept. 2024 → dernier mois =====
+  var MO = {
+    start: [2024, 8],
+    uFr: [7.5,7.4,7.4,7.3,7.3,7.5,7.6,7.5,7.6,7.7,7.7,7.8,7.9,8.0,8.0,8.0,8.1,8.2,8.2,8.3,8.4,8.3,8.3,8.2],
+    uEa: [6.3,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4],
+    iFr: [1.4,1.6,1.7,1.8,1.8,0.9,0.9,0.9,0.6,0.9,0.9,0.8,1.1,0.8,0.8,0.7,0.4,1.1,2.0,2.5,2.8,2.0,2.4,2.6,3.4],
+    iEa: [1.7,2.0,2.2,2.4,2.5,2.3,2.2,2.2,1.9,2.0,2.0,2.0,2.2,2.1,2.1,2.0,1.7,1.9,2.6,3.0,3.2,2.8,2.9,3.2,3.8]
+  };
+  var moDate = function (i) { return new Date(MO.start[0], MO.start[1] + i, 1); };
+  var moLab = function (i) { return moDate(i).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }); };
+  function miniChart(id, fr, ea, dom, unit) {
+    var box = document.getElementById(id); if (!box) return; box.textContent = '';
+    var W = Math.max(240, box.clientWidth), H = 130, m = { t: 10, r: 38, b: 18, l: 4 };
+    var n = Math.max(fr.length, ea.length), x = d3.scaleLinear().domain([0, n - 1]).range([m.l, W - m.r]), y = d3.scaleLinear().domain(dom).range([H - m.b, m.t]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'France et zone euro, ' + moLab(0) + ' à ' + moLab(n - 1));
+    y.ticks(3).forEach(function (t) { svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)'); });
+    var line = d3.line().x(function (d, i) { return x(i); }).y(function (d) { return y(d); }).curve(d3.curveMonotoneX);
+    svg.append('path').datum(ea).attr('d', line).attr('fill', 'none').attr('stroke', 'var(--ea)').attr('stroke-width', 1.6).attr('stroke-dasharray', '5 4');
+    svg.append('path').datum(fr).attr('d', line).attr('fill', 'none').attr('stroke', 'var(--fr)').attr('stroke-width', 2.2);
+    var ends = [[fr, 'var(--fr)'], [ea, 'var(--ea)']].map(function (s) { var i = s[0].length - 1; svg.append('circle').attr('cx', x(i)).attr('cy', y(s[0][i])).attr('r', 3).attr('fill', s[1]); return { x: x(i), y: y(s[0][i]), t: fmt(s[0][i], 1) + unit, c: s[1] }; }).sort(function (a, b) { return a.y - b.y; });
+    if (ends[1].y - ends[0].y < 12) { var mid = (ends[0].y + ends[1].y) / 2; ends[0].y = mid - 6; ends[1].y = mid + 6; }
+    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 5).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', 600).style('font-size', '10.5px'); });
+    svg.append('text').attr('x', m.l).attr('y', H - 3).text(moLab(0)).style('font-size', '10px');
+    svg.append('text').attr('x', W - m.r).attr('y', H - 3).attr('text-anchor', 'end').text(moLab(n - 1)).style('font-size', '10px');
+  }
+  function drawMonth() { miniChart('mo-u', MO.uFr, MO.uEa, [5.5, 9], ' %'); miniChart('mo-i', MO.iFr, MO.iEa, [0, 4.2], ' %'); }
+
   // ===== Partage en image (fonctionnera pleinement sur concret2027.fr ; ici l'image s'affiche pour un appui long) =====
   function wrapText(ctx, text, x, y, maxW, lh) {
     var words = text.split(' '), line = '';
@@ -871,6 +907,26 @@ footer p { margin: 0; } footer a { color: inherit; }
       x.fillStyle = '#1c1d22'; x.font = '400 78px Newsreader, Georgia, serif';
       var txt = document.getElementById('daily-text').textContent.replace(/(\d) (?=(M€|Md€|€|%|jours|ans|salariés))/g, '$1\u00a0');
       wrapText(x, txt, 80, 420, W - 160, 100);
+    } else if (CHARTS[kind]) {
+      var C = CHARTS[kind]();
+      x.fillText(C.kicker.toUpperCase(), 80, 175);
+      x.fillStyle = '#1c1d22'; x.font = '400 150px Newsreader, Georgia, serif'; x.fillText(C.big, 76, 360);
+      x.fillStyle = C.good ? '#1f8a4c' : '#c43d3d'; x.font = '600 38px "Inter Tight", system-ui, sans-serif'; x.fillText(C.delta, 80, 430);
+      var gx = 80, gy = 500, gw = W - 330, gh = 420, all = [];
+      C.series.forEach(function (s) { all = all.concat(s.v); });
+      var lo = C.dom ? C.dom[0] : Math.min.apply(null, all), hi = C.dom ? C.dom[1] : Math.max.apply(null, all);
+      x.strokeStyle = '#e2e2dc'; x.lineWidth = 2; for (var k = 0; k <= 4; k++) { var yy = gy + gh * k / 4; x.beginPath(); x.moveTo(gx, yy); x.lineTo(gx + gw, yy); x.stroke(); }
+      C.series.forEach(function (s) {
+        var n = s.v.length; x.strokeStyle = s.c; x.lineWidth = s.main ? 8 : 5; x.setLineDash(s.dash ? [16, 12] : []); x.beginPath();
+        s.v.forEach(function (v, i) { var px = gx + gw * i / (n - 1), py = gy + gh * (1 - (v - lo) / (hi - lo)); if (i) x.lineTo(px, py); else x.moveTo(px, py); });
+        x.stroke(); x.setLineDash([]);
+        var lv = s.v[n - 1], ly = gy + gh * (1 - (lv - lo) / (hi - lo));
+        x.fillStyle = s.c; x.beginPath(); x.arc(gx + gw, ly, 10, 0, 7); x.fill();
+        x.font = '700 36px "Inter Tight", system-ui, sans-serif'; x.fillText(s.label, gx + gw + 20, ly + 12);
+      });
+      x.fillStyle = '#62646d'; x.font = '500 30px "Inter Tight", system-ui, sans-serif';
+      x.fillText(C.from, gx, gy + gh + 50); x.textAlign = 'right'; x.fillText(C.to, gx + gw, gy + gh + 50); x.textAlign = 'left';
+      x.fillStyle = '#1c1d22'; x.font = '400 44px Newsreader, Georgia, serif'; wrapText(x, C.line, 80, gy + gh + 130, W - 160, 56);
     } else {
       x.fillText(('Le bulletin économique · ' + day).toUpperCase(), 80, 175);
       x.fillStyle = '#1c1d22'; x.font = '400 58px Newsreader, Georgia, serif';
@@ -892,6 +948,25 @@ footer p { margin: 0; } footer a { color: inherit; }
     x.fillStyle = '#62646d'; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; x.fillText('Sources : Insee, Eurostat, Banque mondiale', 80, H - 48);
     return c;
   }
+  var CHARTS = {
+    taux: function () {
+      var v = MONTHLY.map(function (d) { return d[2]; }).concat(DAILY.filter(function (d) { return d[0].slice(3) === '10'; }).map(function (d) { return d[1]; }));
+      return { kicker: 'Taux d\'emprunt de l\'État à 10 ans', big: '4,93 %', delta: '▲ +1,5 point en un an', good: false, from: 'oct. 2025', to: 'aujourd\'hui', dom: [3, 5.2],
+        series: [{ v: v, c: '#2f5bd3', main: 1, label: '4,93 %' }], line: 'Sur les 340 Md€ que l\'État empruntera en 2027, cette hausse coûte ≈ 5 Md€ d\'intérêts de plus par an.' };
+    },
+    dette: function () {
+      return { kicker: 'Dette publique, en % du PIB', big: '119 %', delta: '▲ +1,5 point en un trimestre', good: false, from: '1995 : 58 %', to: 'mi-2026', dom: [45, 125],
+        series: [{ v: D.dette.fr.concat([119]), c: '#2f5bd3', main: 1, label: '119 %' }], line: 'Chaque jour, la dette prend de quoi payer 42 000 salariés au Smic pendant un an.' };
+    },
+    chomage: function () {
+      return { kicker: 'Chômage · ' + moLab(MO.uFr.length - 1), big: fmt(MO.uFr[MO.uFr.length - 1], 1) + ' %', delta: 'en France, contre ' + fmt(MO.uEa[MO.uEa.length - 1], 1) + ' % dans la zone euro', good: false, from: moLab(0), to: moLab(MO.uFr.length - 1), dom: [5.5, 9],
+        series: [{ v: MO.uEa, c: '#b0812a', dash: 1, label: 'Zone euro' }, { v: MO.uFr, c: '#2f5bd3', main: 1, label: 'France' }], line: 'Depuis deux ans, le chômage monte en France pendant qu\'il reste stable dans la zone euro.' };
+    },
+    inflation: function () {
+      return { kicker: 'Inflation sur un an · ' + moLab(MO.iFr.length - 1), big: fmt(MO.iFr[MO.iFr.length - 1], 1) + ' %', delta: 'en France, contre ' + fmt(MO.iEa[MO.iEa.length - 1], 1) + ' % dans la zone euro', good: true, from: moLab(0), to: moLab(MO.iFr.length - 1), dom: [0, 4.2],
+        series: [{ v: MO.iEa, c: '#b0812a', dash: 1, label: 'Zone euro' }, { v: MO.iFr, c: '#2f5bd3', main: 1, label: 'France' }], line: 'Les prix accélèrent depuis le printemps 2026, en France comme dans la zone euro, sous l\'effet de l\'énergie.' };
+    }
+  };
   function shareCard(kind) {
     var c = makeCard(kind), url = c.toDataURL('image/png');
     var show = function () { document.getElementById('sheet-img').src = url; document.getElementById('sheet').hidden = false; document.getElementById('sheet-close').focus(); };
@@ -907,10 +982,11 @@ footer p { margin: 0; } footer a { color: inherit; }
   document.getElementById('share-fact').addEventListener('click', function () { shareCard('fact'); });
   document.getElementById('share-fact-top').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); shareCard('fact'); });
   document.getElementById('share-rank').addEventListener('click', function () { shareCard('rank'); });
+  document.querySelectorAll('[data-share]').forEach(function (b) { b.addEventListener('click', function () { shareCard(b.dataset.share); }); });
   document.getElementById('sheet-close').addEventListener('click', function () { document.getElementById('sheet').hidden = true; });
   document.getElementById('sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') this.hidden = true; });
 
-  function drawAll() { spark(); four(); pibChart(); spreadChart(); rankChart(); }
+  function drawAll() { drawMonth(); spark(); four(); pibChart(); spreadChart(); rankChart(); }
   renderGov(); drawAll();
   window.addEventListener('acc-open', function () { setTimeout(drawAll, 30); });
   var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });
