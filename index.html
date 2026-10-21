@@ -771,5 +771,93 @@ window.addEventListener('baro:data', function () {
 });
 </script>
 </div>
+<div class="bx-sheet" id="bx-sheet" hidden>
+  <div class="bx-sheet-box" role="dialog" aria-modal="true" aria-label="Image à partager">
+    <p class="bx-note">Appui long sur l'image pour l'enregistrer ou la partager.</p>
+    <img id="bx-sheet-img" alt="Graphique à partager">
+    <button type="button" class="bx-share-close" id="bx-sheet-close">Fermer</button>
+  </div>
+</div>
+<style>
+.bx-share { font: inherit; font-size: 12.5px; font-weight: 500; justify-self: start; display: inline-flex; gap: 5px; padding: 4px 2px; border: 0; background: none; color: var(--color-fg-muted); cursor: pointer; text-decoration: underline; text-decoration-color: var(--color-border-line); text-underline-offset: 3px; }
+.bx-share::before { content: "↗"; }
+.bx-share:focus-visible, .bx-share-close:focus-visible { outline: 2px solid #2f5bd3; outline-offset: 2px; }
+.bx-sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px)); }
+.bx-sheet[hidden] { display: none; }
+.bx-sheet-box { background: var(--color-panel); border-radius: 14px; padding: 14px; display: grid; gap: 10px; max-width: 420px; width: 100%; max-height: 100%; overflow: auto; }
+.bx-sheet-box img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--color-border-line); }
+.bx-share-close { font: inherit; font-weight: 600; min-height: 44px; border-radius: 10px; border: 0; background: var(--color-fg); color: var(--color-bg); cursor: pointer; }
+</style>
+<script>
+// Partage des graphiques du Baromètre en image (carte 1080 × 1350 avec titre, graphique et source)
+(function () {
+  var PROPS = ['fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'stroke-opacity', 'fill-opacity', 'opacity', 'font-size', 'font-family', 'font-weight', 'text-anchor', 'dominant-baseline', 'visibility', 'display'];
+  function inline(orig, clone) {
+    var cs = getComputedStyle(orig);
+    PROPS.forEach(function (p) { clone.style.setProperty(p, cs.getPropertyValue(p)); });
+    for (var i = 0; i < orig.children.length; i++) if (clone.children[i]) inline(orig.children[i], clone.children[i]);
+  }
+  function svgImage(svg) {
+    return new Promise(function (ok, ko) {
+      var r = svg.getBoundingClientRect(), c = svg.cloneNode(true);
+      inline(svg, c);
+      c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      if (!c.getAttribute('viewBox')) c.setAttribute('viewBox', '0 0 ' + r.width + ' ' + r.height);
+      c.setAttribute('width', r.width); c.setAttribute('height', r.height);
+      var img = new Image();
+      img.onload = function () { ok({ img: img, w: r.width, h: r.height }); };
+      img.onerror = ko;
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(c));
+    });
+  }
+  function wrap(x, text, px, py, maxW, lh) {
+    var words = text.split(' '), line = '';
+    words.forEach(function (w) { var t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line) { x.fillText(line, px, py); py += lh; line = w; } else line = t; });
+    if (line) x.fillText(line, px, py); return py + lh;
+  }
+  function share(card) {
+    var svgs = Array.prototype.filter.call(card.querySelectorAll('svg'), function (s) { return s.getBoundingClientRect().width > 50; });
+    if (!svgs.length) return;
+    var labels = svgs.map(function (sv) { var pn = sv.closest('.bx-panel'), h = pn && pn.querySelector('h3'); return h ? h.textContent : ''; });
+    Promise.all(svgs.map(svgImage)).then(function (imgs) {
+      var bs = getComputedStyle(document.body), bg = bs.backgroundColor, fg = bs.color;
+      var W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+      var x = c.getContext('2d');
+      x.fillStyle = bg; x.fillRect(0, 0, W, H);
+      x.fillStyle = '#2f5bd3'; x.fillRect(0, 0, W, 14);
+      x.fillStyle = fg; x.globalAlpha = .65; x.font = '600 32px "Inter Tight", system-ui, sans-serif';
+      x.fillText('CONCRET · BAROMÈTRE 2027 · ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase(), 70, 100);
+      x.globalAlpha = 1; x.font = '400 62px Newsreader, Georgia, serif';
+      var y = wrap(x, card.querySelector('h2').textContent, 70, 190, W - 140, 72);
+      var note = card.querySelector('.bx-note');
+      if (note) { x.globalAlpha = .7; x.font = '400 28px "Inter Tight", system-ui, sans-serif'; y = wrap(x, note.textContent.split('. ')[0].replace(/\.$/, '') + '.', 70, y + 4, W - 140, 38); x.globalAlpha = 1; }
+      var top = y + 20, avail = H - 170 - top, cols = imgs.length > 1 ? 2 : 1, rows = Math.ceil(imgs.length / cols), gw = (W - 140 - (cols - 1) * 30) / cols, gh = (avail - (rows - 1) * 24) / rows;
+      imgs.forEach(function (im, i) {
+        var lh = labels[i] ? 40 : 0, s = Math.min(gw / im.w, (gh - lh) / im.h), dw = im.w * s, dh = im.h * s, cx = 70 + (i % cols) * (gw + 30) + (gw - dw) / 2, cy = top + Math.floor(i / cols) * (gh + 24);
+        if (lh) { x.fillStyle = fg; x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.fillText(labels[i], 70 + (i % cols) * (gw + 30), cy + 28); }
+        x.drawImage(im.img, cx, cy + lh, dw, dh);
+      });
+      x.fillStyle = '#2f5bd3'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText('concret2027.fr', 70, H - 90);
+      x.fillStyle = fg; x.globalAlpha = .6; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; x.fillText('Sources : Commission des sondages, instituts, Polymarket', 70, H - 48); x.globalAlpha = 1;
+      var show = function () { document.getElementById('bx-sheet-img').src = c.toDataURL('image/png'); document.getElementById('bx-sheet').hidden = false; document.getElementById('bx-sheet-close').focus(); };
+      try {
+        c.toBlob(function (blob) {
+          var f = blob && new File([blob], 'concret-' + card.id + '.png', { type: 'image/png' });
+          if (f && navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: 'Concret', text: 'concret2027.fr' }).catch(show);
+          else show();
+        });
+      } catch (e) { show(); }
+    }).catch(function () {});
+  }
+  ['premier-tour', 'sondages-et-paris', 'second-tour', 'polymarket'].forEach(function (id) {
+    var card = document.getElementById(id); if (!card) return;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'bx-share'; b.textContent = 'Partager ce graphique';
+    b.addEventListener('click', function () { share(card); });
+    card.appendChild(b);
+  });
+  document.getElementById('bx-sheet-close').addEventListener('click', function () { document.getElementById('bx-sheet').hidden = true; });
+  document.getElementById('bx-sheet').addEventListener('click', function (e) { if (e.target.id === 'bx-sheet') this.hidden = true; });
+})();
+</script>
 </body>
 </html>
