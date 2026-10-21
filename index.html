@@ -41,7 +41,11 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .bx-foot { max-width: 1200px; margin: 0 auto; padding-top: var(--cds-gap-lg); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border-top: 1px solid var(--color-border-line); }
 
 .bx { display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); max-width: 1200px; margin-inline: auto; }
-.site { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; font-size: 14px; border-bottom: 1px solid var(--color-border-line); padding-bottom: 10px; }
+.site { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; flex-wrap: nowrap; align-items: baseline; gap: 16px; font-size: 14px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; margin: -28px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 10px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--color-bg) 94%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--color-border-line); }
+.site::-webkit-scrollbar { display: none; }
+@media (max-width: 520px) { .site { gap: 14px; } .site .lg { display: none; } .site a.logo { font-size: 18px; margin-right: 0; } }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 21; background: var(--color-bg); }
+.bx [id] { scroll-margin-top: 56px; }
 .site a { color: var(--color-fg-muted); text-decoration: none; font-weight: 500; }
 .site a[aria-current="page"] { color: var(--color-fg); font-weight: 700; border-bottom: 2px solid #2f5bd3; }
 .site a.logo { font-family: var(--font-anthropic-serif); font-size: 20px; color: var(--color-fg); font-weight: 400; margin-right: 6px; }
@@ -157,7 +161,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 <div id="dash-root">
 
 <div class="bx">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/" aria-current="page">Baromètre 2027</a><a href="/finances/">Finances publiques</a><span class="soon">Éducation · Sécurité · Vie des Français : bientôt</span></nav>
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/" aria-current="page">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><span class="soon">Bientôt : Éducation · Sécurité · Vie des Français</span></nav>
   <header class="bx-head">
     <h1 class="bx-title">Baromètre 2027</h1>
     <div class="bx-updated" id="bx-updated">Chargement des données…</div>
