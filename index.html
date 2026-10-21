@@ -81,6 +81,12 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .bx-key .ln.dash { border-top-style: dashed; }
 .bx-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; }
 .bx-tip .d { color: var(--cds-text-secondary); }
+.bx-chart svg { touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.bx-tip .r { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+.bx-tip .r em { font-style: normal; display: inline-flex; align-items: center; gap: 5px; color: var(--color-fg-muted); }
+.bx-tip .r em i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.bx-tip .r b { font-weight: 600; }
+.bx-tip .n { white-space: normal; max-width: 220px; margin-top: 3px; }
 .bx-tablebox { max-height: 440px; overflow: auto; }
 .bx-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
 .bx-table th, .bx-table td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
@@ -426,6 +432,33 @@ dash.calc('duels_recents', {
     t.style.left = Math.min(Math.max(0, x + 12), Math.max(0, w - tw)) + 'px'; t.style.top = Math.max(0, y - 10) + 'px';
   }
   function styleAxis(g) { g.attr('font-size', null).attr('font-family', null); g.selectAll('text').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)'); g.selectAll('.domain').attr('stroke', 'var(--cds-chart-axis)'); g.selectAll('.tick line').attr('stroke', 'var(--cds-chart-grid)'); }
+  // Curseur vertical au doigt ou à la souris : date et valeurs de toutes les courbes
+  function xhair(svg, box, W, top, bottom, at) {
+    var t = ensureTip(box), g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
+    var vl = g.append('line').attr('y1', top).attr('y2', bottom).attr('stroke', 'var(--color-fg)').attr('stroke-opacity', .35);
+    var dots = g.append('g'), node = svg.node();
+    function show(ev) {
+      var r = node.getBoundingClientRect(); if (!r.width) return;
+      var p = at((ev.clientX - r.left) * W / r.width); if (!p || !p.rows.length) return;
+      var sc = r.width / W; g.style('display', null); vl.attr('x1', p.px).attr('x2', p.px);
+      dots.selectAll('*').remove();
+      p.rows.forEach(function (rw) { if (rw.py != null) dots.append('circle').attr('cx', p.px).attr('cy', rw.py).attr('r', 3.6).attr('fill', rw.c).attr('stroke', 'var(--color-panel, var(--color-bg))').attr('stroke-width', 1.5); });
+      t.textContent = ''; var h = document.createElement('div'); h.className = 'd'; h.textContent = p.head; t.appendChild(h);
+      p.rows.forEach(function (rw) {
+        var l = document.createElement('div'); l.className = 'r'; var em = document.createElement('em'); var i = document.createElement('i'); i.style.background = rw.c;
+        em.appendChild(i); em.appendChild(document.createTextNode(rw.n)); var b = document.createElement('b'); b.textContent = rw.s; l.appendChild(em); l.appendChild(b); t.appendChild(l);
+      });
+      if (p.note) { var nt = document.createElement('div'); nt.className = 'd n'; nt.textContent = p.note; t.appendChild(nt); }
+      t.hidden = false;
+      var cx = p.px * sc, tw = t.offsetWidth, bw = box.clientWidth;
+      t.style.left = Math.max(0, Math.min(bw - tw, cx + 12 + tw <= bw ? cx + 12 : cx - 12 - tw)) + 'px'; t.style.top = '0px';
+    }
+    function hide() { g.style('display', 'none'); t.hidden = true; }
+    node.addEventListener('pointerdown', show); node.addEventListener('pointermove', show);
+    node.addEventListener('pointerleave', function (ev) { if (ev.pointerType === 'mouse') hide(); });
+    document.addEventListener('pointerdown', function (ev) { if (!node.contains(ev.target)) hide(); });
+  }
+  function nearest(arr, d) { if (!arr.length) return null; var i = d3.bisector(function (q) { return q.d; }).center(arr, d); return arr[i]; }
   function tipLines(t, head, lines) { t.textContent = ''; var d = document.createElement('div'); d.className = 'd'; d.textContent = head; t.appendChild(d); lines.forEach(function (s) { var l = document.createElement('div'); l.textContent = s; t.appendChild(l); }); }
 
   function drawLegend() {
@@ -542,11 +575,12 @@ dash.calc('duels_recents', {
     drawEventMarks(svg, x, 12, events, x.domain()[0], H - 28);
     svg.append('g').selectAll('circle').data(data).join('circle').attr('cx', function (r) { return x(r.d); }).attr('cy', function (r) { return y(r.v); }).attr('r', 2.5)
       .attr('fill', function (r) { return colOf[r.k].col; }).attr('fill-opacity', .3);
-    var labs = [];
+    var labs = [], TR = [];
     CANDS.forEach(function (c) {
       var tr = trend.filter(function (t) { return t.candidat === c.key; }).map(function (t) { return { d: BX.day(t.date), v: +t.valeur, seg: t.segment }; });
       d3.groups(tr, function (t) { return t.seg; }).forEach(function (g) {
         var pts = g[1].sort(function (a, b) { return a.d - b.d; });
+        TR.push({ c: c, seg: g[0], pts: pts });
         svg.append('path').datum(pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('stroke-opacity', g[0] === 'Bardella' ? .45 : 1)
           .attr('d', d3.line().x(function (t) { return x(t.d); }).y(function (t) { return y(t.v); }));
       });
@@ -557,18 +591,18 @@ dash.calc('duels_recents', {
     for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
     svg.append('g').selectAll('text').data(labs).join('text').attr('x', W - mR + 6).attr('y', function (l) { return l.y + 4; }).attr('fill', function (l) { return l.c.col; })
       .style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text(function (l) { return l.c.label + ' ' + BX.pct(l.v); });
-    var t = ensureTip(box);
-    var pts = data.map(function (r) { return { x: x(r.d), y: y(r.v), r: r }; });
-    var del = d3.Delaunay.from(pts, function (p) { return p.x; }, function (p) { return p.y; });
-    var hl = svg.append('circle').attr('r', 5).attr('fill', 'none').attr('stroke-width', 2).style('display', 'none');
-    svg.on('pointermove', function (ev) {
-      var m = d3.pointer(ev), sc = box.clientWidth / W;
-      var p = pts[del.find(m[0], m[1])]; if (!p) return;
-      var col = colOf[p.r.k].col;
-      hl.style('display', null).attr('cx', p.x).attr('cy', p.y).attr('stroke', col);
-      t.hidden = false; tipLines(t, BX.fmtDay(p.r.d) + ' · ' + p.r.inst, [p.r.who + ' : ' + BX.pct(p.r.v)]);
-      placeTip(t, box, p.x * sc, p.y * sc);
-    }).on('pointerleave', function () { t.hidden = true; hl.style('display', 'none'); });
+    var allD = []; TR.forEach(function (s) { s.pts.forEach(function (q) { allD.push(+q.d); }); });
+    allD = Array.from(new Set(allD)).sort(function (a, b) { return a - b; }).map(function (v) { return new Date(v); });
+    xhair(svg, box, W, 34, H - 28, function (sx) {
+      if (!allD.length) return null;
+      var d = allD[d3.bisector(function (q) { return q; }).center(allD, x.invert(sx))], DAY = 86400000;
+      var rows = TR.map(function (s) {
+        var q = nearest(s.pts, d); if (!q || Math.abs(q.d - d) > 10 * DAY) return null;
+        return { c: s.c.col, n: s.seg === 'Bardella' ? 'Bardella (hypothèse RN)' : s.c.name, v: q.v, py: y(q.v), s: BX.pct(q.v) };
+      }).filter(Boolean).sort(function (a, b) { return b.v - a.v; });
+      var ev = events.filter(function (e) { return Math.abs(BX.day(e.date) - d) < 4 * DAY; })[0];
+      return { px: x(d), head: BX.fmtDay(d) + ' · moyenne des sondages', rows: rows, note: ev ? (ev.titre || ev.texte || ev.evenement || '') : '' };
+    });
   }
 
   function drawMulti(hist, trend, pmr) {
@@ -615,17 +649,14 @@ dash.calc('duels_recents', {
       });
       var last = mk[mk.length - 1];
       if (last) svg.append('text').attr('x', x(last.d) + 5).attr('y', y(last.v) + 4).attr('fill', col).style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text(BX.pct(last.v));
-      var t = ensureTip(box);
-      svg.on('pointermove', function (ev) {
-        if (!mk.length) return;
-        var mx = d3.pointer(ev)[0], sc = box.clientWidth / W;
-        var r = mk[d3.bisector(function (q) { return q.d; }).center(mk, x.invert(mx))];
-        var tr = td.filter(function (q) { return q.k === pn.p && q.d <= r.d; }).sort(function (a, b) { return a.d - b.d; });
-        var lines = ['Chances de victoire au 2nd tour : ' + BX.pct(r.v)];
-        if (tr.length) lines.push('Intentions de vote : ' + BX.pct(tr[tr.length - 1].v));
-        t.hidden = false; tipLines(t, BX.fmtDay(r.d), lines);
-        placeTip(t, box, x(r.d) * sc, y(r.v) * sc);
-      }).on('pointerleave', function () { t.hidden = true; });
+      xhair(svg, box, W, 8, H - 24, function (sx) {
+        if (!mk.length) return null;
+        var r = mk[d3.bisector(function (q) { return q.d; }).center(mk, x.invert(sx))];
+        var tr = td.filter(function (q) { return q.k === pn.p && q.d <= r.d && q.s !== 'Bardella'; }).sort(function (a, b) { return a.d - b.d; });
+        var rows = [{ c: col, n: 'Chances de victoire (2nd tour)', py: y(r.v), s: BX.pct(r.v) }];
+        if (tr.length) rows.push({ c: col, n: 'Intentions de vote (1er tour)', py: y(tr[tr.length - 1].v), s: BX.pct(tr[tr.length - 1].v) });
+        return { px: x(r.d), head: BX.fmtDay(r.d), rows: rows };
+      });
     });
   }
 
@@ -649,17 +680,25 @@ dash.calc('duels_recents', {
     var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 28) + ')').call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((W - mL - mR) / 90))).tickFormat(BX.fmtMonth).tickSizeOuter(0));
     styleAxis(gx);
     var colOf = function (r) { return dash.colors[ADV[r.adversaire]]; };
+    var SM = [];
     d3.groups(data.slice().sort(function (a, b) { return a.d - b.d; }), function (r) { return r.adversaire; }).forEach(function (g) {
+      SM.push({ n: g[0], c: colOf(g[1][0]), pts: null });
       var pts = g[1], sm = pts.map(function (r, i) { var w = pts.slice(Math.max(0, i - 2), i + 1); return { d: r.d, v: d3.mean(w, function (q) { return q.v; }) }; });
+      SM[SM.length - 1].pts = sm;
       svg.append('path').datum(sm).attr('fill', 'none').attr('stroke', colOf(pts[0])).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); }));
     });
     var dots = svg.append('g').selectAll('circle').data(data).join('circle').attr('cx', function (r) { return x(r.d); }).attr('cy', function (r) { return y(r.v); }).attr('r', 3.5).attr('fill', colOf).attr('fill-opacity', .45);
-    var t = ensureTip(box);
-    dots.on('pointerenter', function (ev, r) {
-      var sc = box.clientWidth / W; t.hidden = false;
-      tipLines(t, BX.fmtDay(r.d) + ' · ' + r.institut, ['Le Pen ' + BX.pct(r.v) + ' – ' + r.adversaire + ' ' + BX.pct(+r.score_adversaire)]);
-      placeTip(t, box, x(r.d) * sc, y(r.v) * sc);
-    }).on('pointerleave', function () { t.hidden = true; });
+    var allD = Array.from(new Set(data.map(function (r) { return +r.d; }))).sort(function (a, b) { return a - b; }).map(function (v) { return new Date(v); });
+    xhair(svg, box, W, 10, H - 28, function (sx) {
+      if (!allD.length) return null;
+      var d = allD[d3.bisector(function (q) { return q; }).center(allD, x.invert(sx))];
+      var rows = SM.map(function (s) {
+        var q = s.pts.filter(function (p) { return p.d <= d; }).pop(); if (!q) return null;
+        return { c: s.c, n: 'contre ' + s.n, v: q.v, py: y(q.v), s: BX.pct(q.v) };
+      }).filter(Boolean).sort(function (a, b) { return b.v - a.v; });
+      var inst = Array.from(new Set(data.filter(function (r) { return +r.d === +d; }).map(function (r) { return r.institut; })));
+      return { px: x(d), head: BX.fmtDay(d) + ' · score de Marine Le Pen', rows: rows, note: 'Moyenne des trois derniers sondages' + (inst.length ? ' ; sondage ' + inst.join(', ') + ' ce jour-là' : '') };
+    });
   }
 
   function drawPM(rows) {
