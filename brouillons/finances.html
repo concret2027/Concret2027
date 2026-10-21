@@ -65,6 +65,9 @@ section[id], details[id] { scroll-margin-top: 64px; }
 .pres-detail .who b { font-weight: 600; }
 .share { font: inherit; font-family: var(--sans); font-size: 13px; font-weight: 600; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
 .share::before { content: "↗"; }
+.share.primary { background: var(--fr); color: #fff; border-color: var(--fr); }
+.acc-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.acc-actions .acc-cta, .acc-actions .share { margin-top: 0; }
 .share:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
 .daily .share { display: inline-flex; }
 .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
@@ -208,7 +211,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
 
   <details class="acc" id="acc-today">
-    <summary><span class="acc-h">Ce qui a changé aujourd'hui</span><span class="acc-t" id="teaser-today">—</span><span class="acc-cta"></span></summary>
+    <summary><span class="acc-h">Ce qui a changé aujourd'hui</span><span class="acc-t" id="teaser-today">—</span><span class="acc-actions"><span class="acc-cta"></span><button class="share primary" id="share-fact-top" type="button">Partager le chiffre du jour</button></span></summary>
     <div class="acc-body">
   <section class="summary" aria-label="Aujourd'hui">
     <p class="daily"><span class="eyebrow" id="daily-lab">Le chiffre du jour</span><span id="daily-text">—</span><span class="since" id="since" hidden></span><button class="share" id="share-fact" type="button">Partager ce chiffre</button></p>
@@ -277,6 +280,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   </details>
   <section class="card" id="bulletin" aria-labelledby="gov-title">
     <h2 id="gov-title"><span class="eyebrow">Le bulletin économique</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <button class="share primary" id="share-rank" type="button" style="justify-self:start;margin:0">Partager le classement</button>
     <p class="explain"><b>La règle :</b> chaque année, sur 8 critères, on regarde si la France a fait mieux ou moins bien que la zone euro. Une année gagnée compte 1, une année perdue 0. <b>10/20 = la France a fait mieux qu'elle une année sur deux.</b> 20/20 = mieux chaque année, sur tout.</p>
     <details class="how">
       <summary>Comment la note est calculée, avec un exemple</summary>
@@ -306,7 +310,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     </details>
     <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
     <span class="eyebrow" style="margin:0">Les présidents</span>
-    <div class="bar-row"><p class="note">Touchez une barre pour voir le détail.</p><button class="share" id="share-rank" type="button">Partager le classement</button></div>
+    <p class="note">Touchez une barre pour voir le détail.</p>
     <div class="chart" id="rank-pres"></div>
     <div class="pres-detail" id="pres-detail" hidden></div>
     <p class="note" id="rank-pres-note"></p>
@@ -901,6 +905,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     } catch (e) { show(); }
   }
   document.getElementById('share-fact').addEventListener('click', function () { shareCard('fact'); });
+  document.getElementById('share-fact-top').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); shareCard('fact'); });
   document.getElementById('share-rank').addEventListener('click', function () { shareCard('rank'); });
   document.getElementById('sheet-close').addEventListener('click', function () { document.getElementById('sheet').hidden = true; });
   document.getElementById('sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') this.hidden = true; });
