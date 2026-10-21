@@ -213,6 +213,14 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
 .chart { position: relative; min-width: 0; }
 .chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.chart svg.hov { touch-action: pan-y; cursor: crosshair; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.ctip { position: absolute; top: 2px; z-index: 6; pointer-events: none; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 12px; line-height: 1.4; box-shadow: 0 4px 14px rgba(0,0,0,.14); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ctip b { display: block; margin-bottom: 2px; font-weight: 700; }
+.ctip span { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+.ctip span em { font-style: normal; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+.ctip span em i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.ctip span strong { font-weight: 600; margin-left: 10px; }
+.ctip small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; max-width: 200px; white-space: normal; }
 .chart text { fill: var(--muted); font-size: 11px; }
 .key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
 .key i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
@@ -533,6 +541,41 @@ function main(FEED) {
 
   // ===== Graphes =====
   var BANDS = GOVS.concat([{ n: 'Lecornu', y0: 2026, y1: 2026 }]);
+  // ===== Curseur au doigt ou à la souris : date et valeurs de toutes les courbes =====
+  var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Zone euro', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--it)': 'Italie' };
+  function hover(box, svg, H, m, pts) {
+    if (!pts.length) return;
+    var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+    svg.classed('hov', true);
+    var g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
+    var vl = g.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--fg)').attr('stroke-opacity', .35).attr('stroke-width', 1);
+    var dots = g.append('g');
+    svg.append('rect').attr('x', 0).attr('y', 0).attr('width', svg.attr('viewBox').split(' ')[2]).attr('height', H).attr('fill', 'transparent');
+    var tip = document.createElement('div'); tip.className = 'ctip'; tip.hidden = true; box.appendChild(tip);
+    var node = svg.node(), VW = +svg.attr('viewBox').split(' ')[2], cur = -1;
+    function show(ev) {
+      var r = node.getBoundingClientRect(); if (!r.width) return;
+      var sx = (ev.clientX - r.left) * VW / r.width, best = 0;
+      pts.forEach(function (p, i) { if (Math.abs(p.px - sx) < Math.abs(pts[best].px - sx)) best = i; });
+      var p = pts[best]; g.style('display', null); vl.attr('x1', p.px).attr('x2', p.px);
+      if (best !== cur) {
+        cur = best; dots.selectAll('*').remove();
+        p.rows.forEach(function (rw) { dots.append('circle').attr('cx', p.px).attr('cy', rw.py).attr('r', 3.6).attr('fill', rw.c).attr('stroke', 'var(--panel)').attr('stroke-width', 1.5); });
+        tip.innerHTML = '<b>' + esc(p.t) + '</b>' + p.rows.slice().sort(function (a, b) { return a.py - b.py; }).map(function (rw) {
+          return '<span><em><i style="background:' + rw.c + '"></i>' + esc(rw.n) + '</em><strong>' + esc(rw.s) + '</strong></span>';
+        }).join('') + (p.note ? '<small>' + esc(p.note) + '</small>' : '');
+      }
+      tip.hidden = false;
+      var cx = p.px * r.width / VW, tw = tip.offsetWidth, bw = box.clientWidth;
+      var left = cx + 12 + tw <= bw ? cx + 12 : cx - 12 - tw;
+      tip.style.left = Math.max(0, Math.min(bw - tw, left)) + 'px';
+    }
+    function hide() { g.style('display', 'none'); tip.hidden = true; cur = -1; }
+    node.addEventListener('pointerdown', show);
+    node.addEventListener('pointermove', show);
+    node.addEventListener('pointerleave', function (ev) { if (ev.pointerType === 'mouse') hide(); });
+    document.addEventListener('pointerdown', function (ev) { if (!node.contains(ev.target)) hide(); });
+  }
   function lineChart(id, series, o) {
     var box = document.getElementById(id); box.textContent = '';
     var W = Math.max(300, box.clientWidth), small = W < 520, H = o.h || (small ? 220 : 260), m = { t: 10, r: 46, b: 24, l: 40 };
@@ -562,16 +605,21 @@ function main(FEED) {
     ends.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
     ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+    var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); });
+    xs.sort(function (a, b) { return a - b; });
+    hover(box, svg, H, m, xs.map(function (xv) {
+      return { px: x(xv), t: String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n || SNAME[s.c] || '', py: y(d.v), s: fmt(d.v, o.dec == null ? 1 : o.dec) + (o.unit || '') } : null; }).filter(Boolean) };
+    }));
   }
   var ser = function (arr) { return arr.map(function (v, i) { return { x: Y0 + i, v: v }; }); };
   var XT = [2002, 2006, 2010, 2014, 2018, 2022, 2025];
   var PISA = { y: [2000, 2003, 2006, 2009, 2012, 2015, 2018, 2022, 2025], maths: [517, 511, 496, 497, 495, 493, 495, 474, 458], lect: [505, 496, 488, 496, 505, 499, 493, 474, 456], sci: [500, 511, 495, 498, 499, 495, 493, 487, 483] };
   function drawCharts() {
     KEYS.forEach(function (k) {
-      lineChart('ch-' + k, [{ c: 'var(--ea)', dash: 1, data: ser(S[k].eu) }, { c: 'var(--fr)', main: 1, data: ser(S[k].fr) }], { x: [2001.5, 2025.5], xt: XT, bands: 1, label: S[k].l + ', France et Union européenne, 2002-2025' });
+      lineChart('ch-' + k, [{ c: 'var(--ea)', n: 'Union européenne', dash: 1, data: ser(S[k].eu) }, { c: 'var(--fr)', n: 'France', main: 1, data: ser(S[k].fr) }], { unit: ' %', x: [2001.5, 2025.5], xt: XT, bands: 1, label: S[k].l + ', France et Union européenne, 2002-2025' });
     });
     lineChart('ch-pisa', ['maths', 'lect', 'sci'].map(function (k, i) {
-      return { c: ['var(--fr)', 'var(--it)', 'var(--ea)'][i], main: i === 0, dots: 1, data: PISA.y.map(function (y, j) { return { x: y, v: PISA[k][j] }; }) };
+      return { c: ['var(--fr)', 'var(--it)', 'var(--ea)'][i], n: ['Maths', 'Lecture', 'Sciences'][i] + ' (points)', main: i === 0, dots: 1, data: PISA.y.map(function (y, j) { return { x: y, v: PISA[k][j] }; }) };
     }), { x: [1999.5, 2025.5], xt: [2000, 2006, 2012, 2018, 2025], label: 'Scores PISA de la France, 2000-2025', dec: 0, h: 260 });
     drawMonth();
   }
@@ -611,6 +659,9 @@ function main(FEED) {
     [[fr, 'var(--fr)'], [ea, 'var(--ea)']].forEach(function (s) { var i = s[0].length - 1; svg.append('circle').attr('cx', x(i)).attr('cy', y(s[0][i])).attr('r', 3).attr('fill', s[1]); svg.append('text').attr('x', x(i) + 5).attr('y', y(s[0][i]) + 4).text(fmt(s[0][i], 1) + ' %').style('fill', s[1]).style('font-weight', 600).style('font-size', '10.5px'); });
     svg.append('text').attr('x', m.l).attr('y', H - 3).text(moLab(0)).style('font-size', '10px');
     svg.append('text').attr('x', W - m.r).attr('y', H - 3).attr('text-anchor', 'end').text(moLab(n - 1)).style('font-size', '10px');
+    hover(box, svg, H, m, d3.range(n).map(function (i) {
+      return { px: x(i), t: new Date(MO.start[0], MO.start[1] + i, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }), rows: [[fr, 'var(--fr)', 'France'], [ea, 'var(--ea)', 'Zone euro']].filter(function (s) { return s[0][i] != null; }).map(function (s) { return { c: s[1], n: s[2], py: y(s[0][i]), s: fmt(s[0][i], 1) + ' %' }; }) };
+    }));
   }
 
   // ===== Le chiffre du jour =====
