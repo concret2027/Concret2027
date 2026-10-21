@@ -753,7 +753,12 @@ window.addEventListener('baro:data', function () {
   var el = document.getElementById('bx-updated'), iso = window.BARO_UPDATED_ISO;
   var d = iso ? new Date(iso) : null;
   if (d && !isNaN(d)) {
-    el.textContent = 'Actualisé chaque jour vers midi · dernière mise à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ').replace(' à ', ' à ');
+    var tz = { timeZone: 'Europe/Paris' };
+    var dayOf = function (t) { return new Date(t).toLocaleDateString('fr-CA', tz); };
+    var now = Date.now(), hNow = +new Date(now).toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23' });
+    var todayDone = dayOf(d.getTime()) === dayOf(now) && +d.toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23' }) >= 11;
+    var nextTxt = (hNow < 13 && !todayDone) ? 'aujourd’hui vers midi' : new Date(now + 86400000).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' }) + ' vers midi';
+    el.textContent = 'Dernière mise à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ') + ' · prochaine : ' + nextTxt + ' (une par jour)';
     if (Date.now() - d.getTime() > 30 * 3600 * 1000) { var b = document.getElementById('bx-stale'); b.hidden = false; }
   } else { el.textContent = 'Mis à jour le ' + window.BARO_UPDATED; }
 });
