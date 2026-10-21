@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Éducation · Concret</title>
+<meta name="description" content="PISA, décrochage, diplômés, chômage des jeunes : l'école française comparée à ses voisins, et la note de chaque président et gouvernement, année par année.">
+<meta property="og:title" content="Éducation · Concret">
+<meta property="og:description" content="On diplôme plus que nos voisins, mais les élèves apprennent moins. Le bulletin de l'éducation, président par président.">
+<meta property="og:url" content="https://concret2027.fr/education/">
+<meta property="og:type" content="website">
+<script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }</style>
+<style>
+/* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
+:root {
+  --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
+  --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a;
+  --bad: #c43d3d; --ok: #1f8a4c; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
+  --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
+  --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
+  --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
+  --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --de: #a4a6b0; --it: #4cc27f; --ea: #d9b25a; --us: #d77fcf; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a;
+  --band: rgba(122, 156, 255, .09); --grid: #2a2c32; --axis: #44464e; --draft: #3a3016; --draft-fg: #f0d58a;
+  --hero-bg: #172242; --hero-line: #26345c; --hero-fg: #eef2ff; --hero-muted: #a8b4d6; --hero-num: #ffffff; --hero-up: #ff8f8f; --pill: #1e2b52;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .18); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --de: #a4a6b0; --it: #4cc27f; --ea: #d9b25a; --us: #d77fcf; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a;
+  --band: rgba(122, 156, 255, .09); --grid: #2a2c32; --axis: #44464e; --draft: #3a3016; --draft-fg: #f0d58a;
+  --hero-bg: #172242; --hero-line: #26345c; --hero-fg: #eef2ff; --hero-muted: #a8b4d6; --hero-num: #ffffff; --hero-up: #ff8f8f; --pill: #1e2b52;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .18); color-scheme: dark; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-text-size-adjust: 100%; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 48px; display: grid; gap: 20px; }
+.draft { background: var(--draft); color: var(--draft-fg); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; }
+.brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.brand b { font-family: var(--serif); font-weight: 500; font-size: 22px; }
+.brand span { font-size: 12.5px; color: var(--muted); }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.card h2 { font-size: 19px; font-weight: 600; line-height: 1.25; margin: 0; text-wrap: balance; }
+.eyebrow { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 4px; }
+.note { font-size: 12.5px; color: var(--muted); margin: 0; max-width: 92ch; }
+.insight { font-family: var(--serif); font-size: 19px; line-height: 1.3; margin: 0; text-wrap: balance; }
+.insight b { font-weight: 500; color: var(--fr); }
+.explain { font-size: 13.5px; margin: 0; padding: 10px 12px; border-left: 3px solid var(--fr); background: var(--band); border-radius: 0 6px 6px 0; }
+.explain b { font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 34px; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip:focus-visible, .opt:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* Sommaire collant */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.jump { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.jump::-webkit-scrollbar { display: none; }
+.jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+.jump a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+section[id], details[id] { scroll-margin-top: 64px; }
+.flash { animation: flash 1.6s ease-out; }
+@keyframes flash { 0% { background: var(--band); box-shadow: 0 0 0 3px var(--fr); border-radius: 10px; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
+.pres-detail { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
+.pres-detail .who b { font-weight: 600; }
+.share { font: inherit; font-family: var(--sans); font-size: 12.5px; font-weight: 500; margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 2px; border: 0; background: none; color: var(--muted); cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.share::before { content: "↗"; }
+.share.primary { background: var(--fr); color: #fff; border-color: var(--fr); }
+.acc-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.acc-actions .acc-cta, .acc-actions .share { margin-top: 0; }
+.share:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.daily .share { display: inline-flex; }
+.sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sheet-box { background: var(--panel); border-radius: 14px; padding: 14px; display: grid; gap: 10px; max-width: 420px; width: 100%; max-height: 100%; overflow: auto; }
+.sheet-box img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+/* Menus dépliables */
+.acc { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
+.acc > summary::-webkit-details-marker { display: none; }
+.acc-cta { justify-self: start; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--band); border: 1px solid var(--fr); border-radius: 999px; padding: 5px 12px; }
+.acc-cta::before { content: "Voir le détail ↓"; }
+.acc[open] > summary .acc-cta::before { content: "Masquer ↑"; }
+.acc > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 14px; }
+.acc-h { font-size: 17px; font-weight: 700; }
+.acc-t { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+.acc-t b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.acc-t i.r { font-style: normal; color: var(--bad); }
+.acc-t i.g { font-style: normal; color: var(--ok); }
+.acc-body { display: grid; gap: 14px; padding: 0 12px 12px; }
+.acc-body.card { border: 0; padding-top: 0; background: none; }
+.acc[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+
+/* Menu du site */
+.site { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; font-size: 14px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.site a { color: var(--muted); text-decoration: none; font-weight: 500; }
+.site a[aria-current="page"] { color: var(--fg); font-weight: 700; border-bottom: 2px solid var(--fr); }
+.site a.logo { font-family: var(--serif); font-size: 20px; color: var(--fg); font-weight: 500; margin-right: 6px; }
+.site .soon { color: var(--axis); font-size: 12.5px; }
+.site a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.stale { border: 1px solid var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.actu { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.actu li { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 10px; font-size: 14px; line-height: 1.4; }
+.actu .d { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; }
+.actu a { color: var(--muted); font-size: 12px; }
+.actu .next { font-weight: 600; }
+.upd { margin: -12px 0 0; font-size: 12.5px; color: var(--muted); }
+/* Résumé */
+.summary { display: grid; gap: 10px; }
+.bilan summary { cursor: pointer; list-style: none; display: grid; gap: 2px; }
+.bilan summary::-webkit-details-marker { display: none; }
+.bilan .bilan-h { font-family: var(--serif); font-size: 24px; line-height: 1.15; }
+.bilan .bilan-h::after { content: " ▾"; font-family: var(--sans); font-size: 14px; color: var(--muted); }
+.bilan:not([open]) .bilan-h::after { content: " ▸"; }
+.summary .sum-h { font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.15; margin: 0; }
+.summary .sum-h .eyebrow { font-family: var(--sans); }
+.summary h1 { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 0; }
+.daily { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--band); border: 1px solid var(--line); font-family: var(--serif); font-size: 19px; line-height: 1.3; }
+.daily .eyebrow { font-family: var(--sans); margin-bottom: 6px; }
+.daily b { font-weight: 500; color: var(--fr); }
+.since { display: block; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-family: var(--sans); font-size: 13.5px; color: var(--muted); }
+.since b { font-weight: 600; color: var(--fg); }
+.summary ol { margin: 0; padding: 0; list-style: none; counter-reset: k; display: grid; gap: 10px; }
+.summary li { counter-increment: k; position: relative; padding-left: 30px; font-size: 15px; line-height: 1.45; }
+.summary li::before { content: counter(k); position: absolute; left: 0; top: -2px; font-family: var(--serif); font-size: 20px; color: var(--fr); }
+.summary li b { font-weight: 600; }
+
+/* Question du jour */
+.quiz { border-color: var(--fr); }
+.quiz .q { font-family: var(--serif); font-size: 23px; line-height: 1.25; margin: 0; text-wrap: balance; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.opt { font: inherit; text-align: left; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); cursor: pointer; min-height: 48px; }
+.opt.right { border-color: var(--ok); color: var(--ok); font-weight: 600; background: var(--s-good); }
+.opt.wrong { border-color: var(--bad); color: var(--bad); text-decoration: line-through; }
+.answer { margin: 0; font-size: 14.5px; }
+
+/* Bandeau : deux chiffres du jour */
+.today { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.today-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 640px) { .today-grid { grid-template-columns: 1fr; } .metric + .metric { border-left: 0 !important; border-top: 1px solid var(--line); } }
+.metric { padding: 18px 18px 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.metric + .metric { border-left: 1px solid var(--line); }
+.metric .lab { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.metric .row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+.metric .num { font-family: var(--serif); font-size: 46px; line-height: 1; font-variant-numeric: tabular-nums; }
+.metric .num small { font-size: .42em; color: var(--muted); margin-left: .1em; }
+.delta { font-size: 12.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.delta.up { color: var(--bad); background: var(--s-bad); }
+.delta.dn { color: var(--ok); background: var(--s-good); }
+.month { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.mo .share { justify-self: start; }
+@media (max-width: 640px) { .month { grid-template-columns: 1fr; } .mo + .mo { border-left: 0 !important; border-top: 1px solid var(--line); padding-left: 0 !important; padding-top: 12px; } .mo { padding-right: 0 !important; padding-bottom: 12px; } }
+.mo { display: grid; gap: 5px; align-content: start; padding-right: 14px; }
+.mo + .mo { border-left: 1px solid var(--line); padding-left: 14px; }
+.mo-lab { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.mo-num { font-family: var(--serif); font-size: 30px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.mo-num small { font-size: .45em; color: var(--muted); }
+.mo .delta { justify-self: start; }
+.mo-t { font-size: 12.5px; color: var(--muted); }
+.metric .foot { font-size: 12.5px; color: var(--muted); }
+.metric .foot b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.spark svg { display: block; width: 100%; height: auto; }
+.spark text { fill: var(--muted); font-size: 10px; font-family: var(--sans); }
+.equiv-wrap { border-top: 1px solid var(--line); padding: 14px 18px 16px; display: grid; gap: 10px; }
+.equiv-wrap .lab { font-size: 12.5px; color: var(--muted); }
+.equiv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.eq { padding: 0 12px; display: grid; gap: 2px; }
+.eq:first-child { padding-left: 0; }
+.eq + .eq { border-left: 1px solid var(--line); }
+.eq .n { font-family: var(--serif); font-size: 26px; line-height: 1.1; color: var(--fr); font-variant-numeric: tabular-nums; }
+.eq .t { font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+/* Bulletin */
+.how { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.how summary { cursor: pointer; padding: 10px 12px; font-weight: 600; font-size: 14px; }
+.how-body { padding: 0 12px 12px; display: grid; gap: 8px; font-size: 13.5px; }
+.how-body p { margin: 0; }
+.ex { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; }
+.seuils { min-width: 0; font-size: 12.5px; }
+.seuils td { text-align: left; padding: 5px 6px 5px 0; color: var(--muted); }
+.seuils td:first-child { color: var(--fg); font-weight: 600; }
+.seuils td span { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; }
+
+.gov-list { display: grid; gap: 0; }
+.more { font: inherit; font-weight: 600; font-size: 14px; width: 100%; min-height: 46px; border-radius: 10px; border: 1px solid var(--fg); background: var(--fg); color: var(--bg); cursor: pointer; }
+.more:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.gov { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+.gov .badge { grid-row: span 2; width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; font-family: var(--serif); font-size: 22px; font-variant-numeric: tabular-nums; }
+.gov .badge small { font-family: var(--sans); font-size: 10px; display: block; margin-top: -6px; opacity: .8; }
+.badge.g { background: var(--s-good); color: var(--ok); } .badge.m { background: var(--s-mid); color: var(--mid); } .badge.b { background: var(--s-bad); color: var(--bad); }
+.badge.p { background: var(--grid); color: var(--muted); font-size: 13px; }
+.gov .who b { font-weight: 600; } .gov .who span { color: var(--muted); font-size: 12.5px; }
+.kpis { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 560px) { .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; } .kpi { font-size: 11.5px; padding: 4px 7px; display: grid; min-width: 0; } .kpi em { margin: 0; font-size: 11px; } }
+.kpi { font-size: 12px; padding: 3px 8px; border-radius: 6px; background: var(--grid); font-variant-numeric: tabular-nums; }
+.kpi.g { background: var(--s-good); } .kpi.b { background: var(--s-bad); }
+.kpi em { font-style: normal; color: var(--muted); margin-right: 4px; }
+.gov.pending .who span { font-style: italic; }
+
+/* Graphes */
+.charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
+.chart { position: relative; min-width: 0; }
+.chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.chart text { fill: var(--muted); font-size: 11px; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
+.key i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.key i.dash { background: repeating-linear-gradient(90deg, var(--ea) 0 5px, transparent 5px 8px) !important; }
+.bar-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.bars-big { font-family: var(--serif); font-size: 18px; margin: 0; }
+.events { margin: 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--muted); columns: 2 18rem; }
+.events li { break-inside: avoid; margin-bottom: 4px; }
+.events b { color: var(--fg); font-weight: 600; display: inline-block; min-width: 1.6em; }
+.agenda { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.agenda li { display: grid; grid-template-columns: 4.5rem 1fr; gap: 12px; align-items: baseline; }
+.agenda .d { font-family: var(--serif); font-size: 21px; font-variant-numeric: tabular-nums; }
+.agenda .d small { display: block; font-family: var(--sans); font-size: 11px; color: var(--muted); }
+.glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 12px 24px; margin: 0; }
+.glossary dt { font-weight: 600; font-size: 14px; }
+.glossary dd { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 8px; }
+footer p { margin: 0; } footer a { color: inherit; }
+
+.yrs { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.yrs th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: center; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+.yrs th:nth-child(-n+2), .yrs td:nth-child(-n+2) { text-align: left; }
+.yrs td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: center; }
+.yrs .pres-row td { text-align: left; font-weight: 700; font-size: 13px; background: var(--band); padding: 8px 6px; }
+.yrs td.dot { font-size: 16px; line-height: 1; }
+.yrs td.dot.g { color: var(--ok); } .yrs td.dot.b { color: var(--bad); } .yrs td.dot.off { color: var(--axis); }
+.yr-note { display: inline-block; min-width: 2.2em; padding: 2px 6px; border-radius: 6px; font-weight: 700; }
+.yr-note.g { background: var(--s-good); color: var(--ok); } .yr-note.m { background: var(--s-mid); color: var(--mid); } .yr-note.b { background: var(--s-bad); color: var(--bad); }
+.yrs small { color: var(--muted); font-size: 10.5px; }
+@media (max-width: 420px) { .yrs { font-size: 12px; } .yrs th { font-size: 10px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/">Baromètre 2027</a><a href="/finances/">Finances publiques</a><a href="/education/" aria-current="page">Éducation</a><span class="soon">Sécurité · Vie des Français : bientôt</span></nav>
+  <div class="stale" id="stale" role="status" hidden></div>
+  <div class="brand"><b>Éducation</b><span id="today"></span></div>
+  <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
+  <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Courbes</a><a href="#pisa">PISA</a></nav>
+
+  <details class="acc" id="acc-today">
+    <summary><span class="acc-h">Ce qui a changé aujourd'hui</span><span class="acc-t" id="teaser-today">Le chiffre du jour</span><span class="acc-actions"><span class="acc-cta"></span><button class="share" id="share-fact-top" type="button" aria-label="Partager le chiffre du jour">Partager</button></span></summary>
+    <div class="acc-body">
+      <section class="summary" aria-label="Le chiffre du jour">
+        <p class="daily"><span class="eyebrow" id="daily-lab">Le chiffre du jour</span><span id="daily-text">—</span><button class="share" id="share-fact" type="button">Partager ce chiffre</button></p>
+      </section>
+      <section class="today" aria-label="Les chiffres clés">
+        <div class="today-grid">
+          <div class="metric">
+            <span class="lab">Budget de l'Éducation nationale</span>
+            <div class="row"><span class="num">64,5<small>Md€</small></span><span class="delta">en 2026, hors pensions</span></div>
+            <div class="foot">Soit <b>177 M€ par jour</b>, ou <b id="edu-since">—</b> dépensés depuis minuit. La France consacre <b>5,1 % de son PIB</b> à l'éducation, contre 4,7 % dans l'Union européenne.</div>
+          </div>
+          <div class="metric">
+            <span class="lab">Lecture à 17 ans</span>
+            <div class="row"><span class="num">14<small>%</small></span><span class="delta up">des jeunes en difficulté</span></div>
+            <div class="foot">Mesuré à la Journée défense et citoyenneté 2025 : <b>6 %</b> sont en situation d'illettrisme. C'est environ un jeune sur sept qui ne lit pas couramment à la sortie du système scolaire.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </details>
+
+  <details class="acc" id="acc-month">
+    <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card">
+      <div class="month" style="grid-template-columns:minmax(0,1fr)">
+        <div class="mo">
+          <span class="mo-lab" id="u-lab">Chômage des moins de 25 ans</span>
+          <span class="mo-num" id="u-num">—</span>
+          <span class="delta" id="u-delta"></span>
+          <span class="mo-t" id="u-t"></span>
+          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Zone euro</span></div>
+          <div class="chart" id="mo-u"></div>
+          <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
+        </div>
+      </div>
+      <p class="note">Le chômage des jeunes dit si l'école mène à un emploi. En juin et juillet, les chiffres de Parcoursup prendront le relais : candidats encore sans proposition, formations demandées.</p>
+    </div>
+  </details>
+
+  <details class="acc" id="acc-actu">
+    <summary><span class="acc-h">L'actualité de l'éducation</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card"><ul class="actu" id="actu-list"></ul></div>
+  </details>
+
+  <section class="card quiz" id="quiz" aria-labelledby="quiz-q">
+    <span class="eyebrow" id="quiz-day">Question du jour</span>
+    <p class="q" id="quiz-q">—</p>
+    <div class="opts" id="quiz-opts"></div>
+    <p class="answer" id="quiz-a" hidden></p>
+  </section>
+
+  <details class="acc" id="acc-bilan">
+    <summary><span class="acc-h">Le bilan</span><span class="acc-t">On diplôme plus que nos voisins, mais les élèves apprennent moins, et les jeunes trouvent moins vite un emploi</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card summary"><ol id="sum-list"></ol></div>
+  </details>
+
+  <section class="card" id="bulletin" aria-labelledby="gov-title">
+    <h2 id="gov-title"><span class="eyebrow">Le bulletin de l'éducation</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <button class="share" id="share-rank" type="button" style="justify-self:start;margin:0">Partager le classement</button>
+    <p class="explain"><b>La règle :</b> chaque année, sur 4 critères, on regarde si la France a progressé plus ou moins vite que la moyenne de l'Union européenne. Une année gagnée compte 1, une année perdue 0. <b>10/20 = la France a fait mieux que ses voisins une année sur deux.</b></p>
+    <details class="how">
+      <summary>Comment la note est calculée, et ses limites</summary>
+      <div class="how-body">
+        <p><b>Les 4 critères, mesurés chaque année par Eurostat et la Banque mondiale :</b></p>
+        <table class="seuils"><tbody>
+          <tr><td>Décrochage<span>Les 18-24 ans sortis de l'école sans diplôme du secondaire ni formation. La France gagne l'année si leur part baisse plus (ou monte moins) que dans l'UE.</span></td></tr>
+          <tr><td>Jeunes sans emploi ni formation<span>Les 15-29 ans qui ne sont ni en emploi, ni en études, ni en formation. La France gagne si leur part baisse plus que dans l'UE.</span></td></tr>
+          <tr><td>Diplômés du supérieur<span>La part des 25-34 ans diplômés du supérieur. La France gagne si elle progresse plus vite que dans l'UE.</span></td></tr>
+          <tr><td>Chômage des jeunes<span>Le chômage des 15-24 ans. La France gagne s'il baisse plus, ou monte moins, que dans l'UE.</span></td></tr>
+        </tbody></table>
+        <div class="ex">
+          <b>Exemple : 2025</b>
+          <p><b>Décrochage :</b> 7,9 % → 7,2 % en France, 9,6 % → 9,1 % dans l'UE. La France baisse plus : <b>année gagnée</b>.</p>
+          <p><b>Chômage des jeunes :</b> 18,6 % → 18,9 % en France, stable à 16,2 % dans l'UE. <b>Année perdue</b>.</p>
+        </div>
+        <p class="note"><b>Limites.</b> L'école agit lentement : un diplômé de 2025 a été scolarisé sous plusieurs gouvernements. Les notes décrivent ce qui s'est passé pendant un mandat, pas tout ce qui en découle. Eurostat signale des ruptures de série certaines années (changement de méthode d'enquête) : ces années-là, le critère n'est pas compté, pour ne pas récompenser un simple changement de mesure. PISA, publié tous les 3 à 4 ans, est présenté à part. Les séries européennes commencent en 2002 : Jacques Chirac n'est noté que sur 2004-2006.</p>
+      </div>
+    </details>
+    <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
+    <span class="eyebrow" style="margin:0">Les présidents</span>
+    <p class="note">Touchez une barre pour voir le détail.</p>
+    <div class="chart" id="rank-pres"></div>
+    <div class="pres-detail" id="pres-detail" hidden></div>
+    <p class="note" id="rank-pres-note"></p>
+    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
+    <div class="chart" id="rank-gov"></div>
+    <p class="note" id="rank-gov-note"></p>
+  </section>
+
+  <section class="card" id="annees" aria-labelledby="yr-title">
+    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
+    <p class="note">Chaque ligne est une année : ● gagnée face à l'UE, ○ perdue, – non comptée (rupture de série). La note de l'année est la part des critères gagnés, sur 20.</p>
+    <div class="tbl-wrap"><table class="yrs"><thead><tr><th>Année</th><th>Premier ministre</th><th title="Décrochage">Décroch.</th><th title="Jeunes sans emploi ni formation">Sans empl.</th><th title="Diplômés du supérieur">Diplômés</th><th title="Chômage des jeunes">Chôm. jeunes</th><th>Note</th></tr></thead><tbody id="yr-body"></tbody></table></div>
+  </section>
+
+  <section class="card" id="courbes" aria-labelledby="fz-title">
+    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>La France face à l'Union européenne depuis 2002</h2>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span>· fonds : Premiers ministres successifs</span></div>
+  </section>
+  <div class="charts4">
+    <section class="card" aria-labelledby="c1"><h2 id="c1"><span class="eyebrow">Décrochage, % des 18-24 ans</span>Moins de décrocheurs que nos voisins</h2><div class="chart" id="ch-el"></div></section>
+    <section class="card" aria-labelledby="c2"><h2 id="c2"><span class="eyebrow">Sans emploi ni formation, % des 15-29 ans</span>Plus de jeunes à l'arrêt que nos voisins</h2><div class="chart" id="ch-ne"></div></section>
+    <section class="card" aria-labelledby="c3"><h2 id="c3"><span class="eyebrow">Diplômés du supérieur, % des 25-34 ans</span>Plus de diplômés : 11 points d'avance</h2><div class="chart" id="ch-te"></div></section>
+    <section class="card" aria-labelledby="c4"><h2 id="c4"><span class="eyebrow">Chômage des 15-24 ans, %</span>Au-dessus de l'UE depuis 2015</h2><div class="chart" id="ch-yu"></div></section>
+  </div>
+
+  <section class="card" id="pisa" aria-labelledby="pisa-title">
+    <h2 id="pisa-title"><span class="eyebrow">PISA, élèves de 15 ans</span>Vingt-cinq ans de recul, et sous la moyenne de l'OCDE</h2>
+    <p class="insight">En 2000, la France était <b>11<sup>e</sup></b> en maths. En 2025, elle est <b>30<sup>e</sup></b> sur 91 pays, avec 458 points, sous la moyenne de l'OCDE.</p>
+    <div class="key"><span><i style="background:var(--fr)"></i>Mathématiques</span><span><i style="background:var(--it)"></i>Compréhension de l'écrit</span><span><i style="background:var(--ea)"></i>Sciences</span></div>
+    <div class="chart" id="ch-pisa"></div>
+    <div class="month">
+      <div class="mo"><span class="mo-lab">Élèves en difficulté en maths</span><span class="mo-num">36 % <small>en France</small></span><span class="mo-t">Sous le niveau de base en 2025, contre 35 % en moyenne dans l'OCDE.</span></div>
+      <div class="mo"><span class="mo-lab">Poids de l'origine sociale</span><span class="mo-num">95 pts <small>d'écart</small></span><span class="mo-t">Entre élèves très favorisés et très défavorisés en maths, contre 83 points dans l'OCDE : l'école française corrige moins les inégalités.</span></div>
+      <div class="mo"><span class="mo-lab">Ce que ça coûte</span><span class="mo-num">5,1 % <small>du PIB</small></span><span class="mo-t">La France dépense plus que l'UE (4,7 %), soit ≈ 12 Md€ de plus par an, pour des résultats PISA inférieurs à la moyenne.</span></div>
+    </div>
+    <button class="share" type="button" data-share="pisa">Partager ce graphique</button>
+  </section>
+
+  <section class="card" aria-labelledby="gl">
+    <h2 id="gl">Les mots pour suivre</h2>
+    <dl class="glossary">
+      <div><dt>PISA</dt><dd>Enquête de l'OCDE qui teste tous les 3 ou 4 ans les élèves de 15 ans en maths, en lecture et en sciences, dans plus de 90 pays.</dd></div>
+      <div><dt>Décrochage</dt><dd>Les 18-24 ans qui ont quitté l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et ne sont pas en formation.</dd></div>
+      <div><dt>Jeunes sans emploi ni formation</dt><dd>Les jeunes qui ne sont ni en emploi, ni en études, ni en formation (en anglais : NEET).</dd></div>
+      <div><dt>Journée défense et citoyenneté</dt><dd>Journée obligatoire vers 17 ans, pendant laquelle les jeunes passent un test de lecture : c'est la seule mesure annuelle de la lecture sur toute une génération.</dd></div>
+      <div><dt>Parcoursup</dt><dd>La plateforme nationale d'admission dans l'enseignement supérieur après le bac.</dd></div>
+    </dl>
+  </section>
+
+  <footer>
+    <p><b>Sources.</b> PISA 2025 : <a href="https://www.education.gouv.fr/sites/default/files/document/pisa-2025-une-baisse-des-r-sultats-commune-l-ocde-un-rel-vement-poursuivre-520338.pdf">ministère de l'Éducation nationale</a>, <a href="https://www.education.gouv.fr/sites/default/files/document/depp-ni-2026-40pisa-mathspdf-520231.pdf">DEPP</a> ; scores et rangs depuis 2000 : <a href="https://www.ifrap.org/education-et-culture/les-evolutions-du-classement-francais-au-test-pisa-depuis-25-ans">iFRAP, d'après l'OCDE</a>. Lecture à 17 ans : <a href="https://www.education.gouv.fr/depp/journee-defense-et-citoyennete-2025-14-des-jeunes-rencontrent-des-difficultes-de-lecture-506086">DEPP, JDC 2025</a>. Décrochage, jeunes sans emploi ni formation, diplômés du supérieur, dépense d'éducation, chômage mensuel des moins de 25 ans : Eurostat (edat_lfse_14, edat_lfse_20, edat_lfse_03, gov_10a_exp, une_rt_m). Chômage annuel des 15-24 ans : Banque mondiale (SL.UEM.1524.ZS, estimations OIT). Budget 2026 de l'Éducation nationale : projet de loi de finances.</p>
+  </footer>
+</div>
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-box" role="dialog" aria-modal="true" aria-labelledby="sheet-t">
+    <p id="sheet-t" class="note">Appui long sur l'image pour l'enregistrer ou la partager.</p>
+    <img id="sheet-img" alt="Image à partager">
+    <button class="more" id="sheet-close" type="button">Fermer</button>
+  </div>
+</div>
+<script>
+(function () {
+function main(FEED) {
+  var fmt = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(v); };
+  var nfmt = function (n) { return fmt(Math.round(n * 2) / 2, 1).replace(',0', ''); };
+  document.getElementById('today').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  // ===== Données annuelles 2002-2025 : France et Union européenne (Eurostat ; chômage des 15-24 ans : Banque mondiale, OIT) =====
+  var Y0 = 2002;
+  var S = {
+    el: { l: 'Décrochage', fr: [13.4,12.7,12.3,12.5,12.7,12.8,11.8,12.4,12.7,12.3,11.8,9.7,8.8,9.2,8.8,8.8,8.7,8.2,8.0,7.8,7.6,7.6,7.9,7.2],
+          eu: [16.9,16.4,16.0,15.6,15.2,14.7,14.3,14.0,13.8,13.2,12.6,11.8,11.1,11.0,10.6,10.5,10.5,10.1,10.0,9.7,9.6,9.6,9.6,9.1], low: true, br: [2003,2006,2013,2014,2021,2024] },
+    ne: { l: 'Sans emploi ni formation', fr: [13.2,12.8,13.1,13.2,13.2,12.8,12.6,14.7,14.8,14.7,15.1,13.8,14.1,14.7,14.3,13.8,13.6,13.0,14.0,12.8,12.0,12.3,12.7,12.9],
+          eu: [15.9,15.9,15.6,15.3,14.1,13.2,13.0,14.8,15.4,15.4,16.0,16.1,15.7,15.2,14.5,13.7,13.1,12.5,13.8,13.1,11.7,11.3,11.2,11.0], low: true, br: [2003,2006,2013,2014,2021,2024] },
+    te: { l: 'Diplômés du supérieur', fr: [35.2,38.0,38.5,39.9,41.5,41.4,40.6,42.9,42.7,42.8,42.6,43.9,44.3,44.8,44.2,44.5,47.0,48.2,49.4,50.3,50.4,51.9,53.1,55.8],
+          eu: [23.1,24.6,26.3,27.2,28.1,28.9,29.9,31.2,32.2,33.1,34.1,35.2,35.9,36.5,36.8,37.6,38.7,39.6,40.7,41.5,42.0,43.1,43.9,44.8], low: false, br: [2003,2013,2014,2021,2024] },
+    yu: { l: 'Chômage des jeunes', fr: [18.8,17.2,19.7,21.2,22.4,19.6,19.2,24.0,23.6,23.0,24.9,24.4,24.8,25.3,24.9,22.6,21.0,19.9,20.4,19.3,17.9,17.4,18.6,18.9],
+          eu: [21.0,21.0,21.3,21.4,19.5,17.0,16.9,21.5,22.9,23.7,26.0,26.9,26.0,24.2,22.4,20.1,18.1,17.0,19.0,18.7,16.4,16.2,16.2,16.2], low: true, br: [] }
+  };
+  var KEYS = ['el', 'ne', 'te', 'yu'];
+  var at = function (arr, y) { return arr[y - Y0]; };
+  function match(k, y) {
+    var c = S[k];
+    if (y <= Y0 || c.br.indexOf(y) >= 0) return null;
+    var df = at(c.fr, y) - at(c.fr, y - 1), de = at(c.eu, y) - at(c.eu, y - 1);
+    if (Math.abs(df - de) < 1e-9) return 0.5;
+    return (c.low ? df < de : df > de) ? 1 : 0;
+  }
+
+  var GOVS = [
+    { n: 'Jean-Pierre Raffarin', p: 'Chirac', y0: 2002, y1: 2004 }, { n: 'Dominique de Villepin', p: 'Chirac', y0: 2005, y1: 2006 },
+    { n: 'François Fillon', p: 'Sarkozy', y0: 2007, y1: 2011 }, { n: 'Jean-Marc Ayrault', p: 'Hollande', y0: 2012, y1: 2013 },
+    { n: 'Manuel Valls', p: 'Hollande', y0: 2014, y1: 2016 }, { n: 'Édouard Philippe', p: 'Macron', y0: 2017, y1: 2019 },
+    { n: 'Jean Castex', p: 'Macron', y0: 2020, y1: 2021 }, { n: 'Élisabeth Borne', p: 'Macron', y0: 2022, y1: 2023 },
+    { n: 'Gabriel Attal', p: 'Macron', y0: 2024, y1: 2024 }, { n: 'François Bayrou', p: 'Macron', y0: 2025, y1: 2025 }
+  ];
+  var PRES = [
+    { n: 'Jacques Chirac', p: 'noté sur 2004-2006 seulement', y0: 2003, y1: 2006 }, { n: 'Nicolas Sarkozy', p: '', y0: 2007, y1: 2011 },
+    { n: 'François Hollande', p: '', y0: 2012, y1: 2016 }, { n: 'Emmanuel Macron', p: 'en exercice', y0: 2017, y1: 2025 }
+  ];
+  var pmOf = function (y) { return GOVS.filter(function (g) { return y >= g.y0 && y <= g.y1; })[0]; };
+  function evaluate(g) { g.w = {}; KEYS.forEach(function (k) { g.w[k] = []; for (var y = g.y0; y <= g.y1; y++) { var m = match(k, y); if (m != null) g.w[k].push(m); } }); }
+  GOVS.forEach(evaluate); PRES.forEach(evaluate);
+  var on = { el: true, ne: true, te: true, yu: true };
+  try { var sv = JSON.parse(localStorage.getItem('edu-crit') || 'null'); if (sv) on = sv; } catch (e) {}
+  var noteOf = function (g) { var r = KEYS.filter(function (k) { return on[k] && g.w[k].length; }).map(function (k) { return d3.mean(g.w[k]); }); return r.length ? 20 * d3.mean(r) : null; };
+  var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
+  var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
+
+  // ===== Critères =====
+  var critBox = document.getElementById('crit');
+  KEYS.forEach(function (k) {
+    var b = document.createElement('button'); b.className = 'chip'; b.id = 'c-' + k; b.textContent = S[k].l; b.setAttribute('aria-pressed', on[k] ? 'true' : 'false');
+    b.addEventListener('click', function () {
+      if (on[k] && KEYS.filter(function (x) { return on[x]; }).length === 1) return;
+      on[k] = !on[k]; b.setAttribute('aria-pressed', on[k] ? 'true' : 'false');
+      try { localStorage.setItem('edu-crit', JSON.stringify(on)); } catch (e) {}
+      rankChart(); renderYears();
+    });
+    critBox.appendChild(b);
+  });
+
+  // ===== Classements =====
+  function chipsFor(g) {
+    var kp = document.createElement('div'); kp.className = 'kpis';
+    KEYS.forEach(function (k) {
+      if (!on[k]) return;
+      var l = g.w[k], s = document.createElement('span'), won = d3.sum(l), n = l.length;
+      s.className = 'kpi' + (!n ? '' : won / n >= 0.5 ? ' g' : ' b');
+      s.innerHTML = '<em></em><span></span>'; s.firstChild.textContent = S[k].l; s.lastChild.textContent = !n ? 'n.c.' : fmt(won, won % 1 ? 1 : 0) + ' sur ' + n + (n > 1 ? ' ans' : ' an');
+      kp.appendChild(s);
+    });
+    return kp;
+  }
+  function openDetail(mode, g) {
+    if (mode === 'gov') { var row = document.getElementById('yr-' + g.y0); if (row) { row.scrollIntoView({ block: 'center' }); row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash'); } return; }
+    var box = document.getElementById('pres-detail'); box.textContent = ''; box.hidden = false;
+    var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span class="note"></span>';
+    who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + (g.p ? ', ' + g.p : '') + '. Années gagnées face à l\'UE :';
+    box.appendChild(who); box.appendChild(chipsFor(g));
+    box.classList.remove('flash'); void box.offsetWidth; box.classList.add('flash');
+  }
+  function rankOne(mode) {
+    var list = (mode === 'gov' ? GOVS : PRES).map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
+    var box = document.getElementById('rank-' + mode); box.textContent = '';
+    var W = Math.max(300, box.clientWidth), small = W < 520, rh = 26, lw = small ? 92 : 150, top = 22, H = top + list.length * rh + 26;
+    var x = d3.scaleLinear().domain([0, 20]).range([lw, W - 34]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Classement des notes sur 20');
+    [0, 5, 10, 15, 20].forEach(function (t) {
+      svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 4).attr('y2', H - 20).attr('stroke', t === 10 ? 'var(--fg)' : 'var(--grid)').attr('stroke-dasharray', t === 10 ? '4 3' : null);
+      svg.append('text').attr('x', x(t)).attr('y', top - 8).attr('text-anchor', 'middle').text(t).style('fill', t === 10 ? 'var(--fg)' : null).style('font-weight', t === 10 ? 700 : null);
+      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = mieux que l\'UE 1 année sur 2').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
+    });
+    list.forEach(function (r, i) {
+      var y = top + i * rh, name = small ? r.g.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin') : r.g.n;
+      svg.append('rect').attr('x', 0).attr('y', y).attr('width', W).attr('height', rh).attr('fill', 'transparent').style('cursor', 'pointer').attr('tabindex', 0).attr('role', 'button').attr('aria-label', 'Voir le détail : ' + r.g.n)
+        .on('click', function () { openDetail(mode, r.g); }).on('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openDetail(mode, r.g); } });
+      svg.append('text').attr('x', lw - 8).attr('y', y + 16).attr('text-anchor', 'end').text(name).style('fill', 'var(--fg)').style('font-size', '12px').style('text-decoration', 'underline').style('text-decoration-color', 'var(--line)').style('pointer-events', 'none');
+      svg.append('rect').attr('x', x(0)).attr('y', y + 5).attr('width', Math.max(2, x(r.n) - x(0))).attr('height', 17).attr('rx', 3).attr('fill', col(r.n)).style('pointer-events', 'none');
+      var inside = x(r.n) - x(0) > 30;
+      svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n)).style('fill', inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
+    });
+    var best = list[0], above = list.filter(function (r) { return r.n >= 10; }).length;
+    document.getElementById('rank-' + mode + '-note').textContent = (above ? above + ' sur ' + list.length + (above > 1 ? ' ont' : ' a') + ' fait mieux que l\'UE au moins une année sur deux. ' : 'Aucun n\'a fait mieux que l\'UE une année sur deux. ') + 'Meilleure note : ' + best.g.n + ' (' + nfmt(best.n) + '/20).' +
+      (mode === 'pres' ? ' Emmanuel Macron, en exercice, est noté sur 2017-2025.' : ' Les gouvernements d\'un an (Attal, Bayrou) se jouent sur peu d\'années comptées : à lire avec prudence. Touchez une barre pour voir ses années.');
+  }
+  function rankChart() { rankOne('pres'); rankOne('gov'); }
+
+  // ===== Année par année =====
+  function renderYears() {
+    var tb = document.getElementById('yr-body'); tb.textContent = '';
+    var lastPres = null;
+    for (var y = 2025; y >= 2004; y--) {
+      var pres = PRES.filter(function (p) { return y >= p.y0 && y <= p.y1; })[0];
+      if (pres && pres !== lastPres) {
+        var hr = document.createElement('tr'); hr.className = 'pres-row'; var th = document.createElement('td'); th.colSpan = 7;
+        th.textContent = pres.n + (pres.p ? ' (' + pres.p + ')' : '') + ' · ' + nfmt(noteOf(pres)) + '/20 sur le mandat'; hr.appendChild(th); tb.appendChild(hr); lastPres = pres;
+      }
+      var g = pmOf(y), tr = document.createElement('tr'); tr.id = 'yr-' + y;
+      var cells = [y, g ? g.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin') : '—'];
+      var ms = KEYS.map(function (k) { return match(k, y); });
+      var counted = KEYS.filter(function (k, i) { return on[k] && ms[i] != null; }).map(function (k) { return ms[KEYS.indexOf(k)]; });
+      cells.forEach(function (c) { var td = document.createElement('td'); td.textContent = c; tr.appendChild(td); });
+      KEYS.forEach(function (k, i) {
+        var td = document.createElement('td'), m = ms[i]; td.className = 'dot' + (!on[k] ? ' off' : m === 1 ? ' g' : m === 0 ? ' b' : '');
+        td.textContent = !on[k] ? '' : m == null ? '–' : m === 1 ? '●' : m === 0 ? '○' : '◐';
+        td.title = S[k].l + ' : ' + (m == null ? 'non compté (rupture de série)' : m === 1 ? 'mieux que l\'UE' : m === 0 ? 'moins bien que l\'UE' : 'égalité');
+        tr.appendChild(td);
+      });
+      var tdn = document.createElement('td'), n = counted.length ? 20 * d3.mean(counted) : null;
+      tdn.innerHTML = n == null ? '–' : '<span class="yr-note ' + cls(n) + '">' + nfmt(n) + '</span>' + (counted.length < 3 ? '<small> ' + counted.length + ' crit.</small>' : '');
+      tr.appendChild(tdn); tb.appendChild(tr);
+    }
+  }
+
+  // ===== Graphes =====
+  var BANDS = GOVS.concat([{ n: 'Lecornu', y0: 2026, y1: 2026 }]);
+  function lineChart(id, series, o) {
+    var box = document.getElementById(id); box.textContent = '';
+    var W = Math.max(300, box.clientWidth), small = W < 520, H = o.h || (small ? 220 : 260), m = { t: 10, r: 46, b: 24, l: 40 };
+    var all = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null) all.push(d.v); }); });
+    var lo = d3.min(all), hi = d3.max(all), pad = (hi - lo) * .1;
+    var x = d3.scaleLinear().domain(o.x).range([m.l, W - m.r]);
+    var y = d3.scaleLinear().domain([o.min != null ? o.min : lo - pad, hi + pad]).nice().range([H - m.b, m.t]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', o.label);
+    if (o.bands) BANDS.forEach(function (g, i) {
+      var x0 = x(Math.max(o.x[0], g.y0 - .5)), x1 = x(Math.min(o.x[1], g.y1 + .5));
+      if (x1 > x0) svg.append('rect').attr('x', x0).attr('y', m.t).attr('width', x1 - x0).attr('height', H - m.t - m.b).attr('fill', i % 2 ? 'var(--band)' : 'transparent');
+    });
+    y.ticks(small ? 4 : 5).forEach(function (t) {
+      svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)');
+      svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(t);
+    });
+    (small ? o.xt.filter(function (_, i) { return i % 2 === 0; }) : o.xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t); });
+    var line = d3.line().defined(function (d) { return d.v != null; }).x(function (d) { return x(d.x); }).y(function (d) { return y(d.v); });
+    var ends = [];
+    series.forEach(function (s) {
+      svg.append('path').datum(s.data).attr('d', line).attr('fill', 'none').attr('stroke', s.c).attr('stroke-width', s.main ? 2.6 : 1.8).attr('stroke-dasharray', s.dash ? '5 4' : null);
+      if (s.dots) s.data.forEach(function (d) { svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
+      var l = s.data.filter(function (d) { return d.v != null; }).pop();
+      svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
+      ends.push({ y: y(l.v), t: fmt(l.v, o.dec == null ? 1 : o.dec), c: s.c, x: x(l.x), main: s.main });
+    });
+    ends.sort(function (a, b) { return a.y - b.y; });
+    for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+  }
+  var ser = function (arr) { return arr.map(function (v, i) { return { x: Y0 + i, v: v }; }); };
+  var XT = [2002, 2006, 2010, 2014, 2018, 2022, 2025];
+  var PISA = { y: [2000, 2003, 2006, 2009, 2012, 2015, 2018, 2022, 2025], maths: [517, 511, 496, 497, 495, 493, 495, 474, 458], lect: [505, 496, 488, 496, 505, 499, 493, 474, 456], sci: [500, 511, 495, 498, 499, 495, 493, 487, 483] };
+  function drawCharts() {
+    KEYS.forEach(function (k) {
+      lineChart('ch-' + k, [{ c: 'var(--ea)', dash: 1, data: ser(S[k].eu) }, { c: 'var(--fr)', main: 1, data: ser(S[k].fr) }], { x: [2001.5, 2025.5], xt: XT, bands: 1, label: S[k].l + ', France et Union européenne, 2002-2025' });
+    });
+    lineChart('ch-pisa', ['maths', 'lect', 'sci'].map(function (k, i) {
+      return { c: ['var(--fr)', 'var(--it)', 'var(--ea)'][i], main: i === 0, dots: 1, data: PISA.y.map(function (y, j) { return { x: y, v: PISA[k][j] }; }) };
+    }), { x: [1999.5, 2025.5], xt: [2000, 2006, 2012, 2018, 2025], label: 'Scores PISA de la France, 2000-2025', dec: 0, h: 260 });
+    drawMonth();
+  }
+
+  // ===== Ce mois-ci : chômage des moins de 25 ans (Eurostat, mensuel) =====
+  var MO = { start: [2024, 8],
+    fr: [20.3,19.2,18.5,18.3,18.6,20.1,18.9,18.8,19.2,19.0,18.9,19.4,20.4,21.5,21.5,21.3,21.1,21.1,21.3,21.7,21.6,21.2,20.8,20.6],
+    ea: [14.8,14.6,14.5,14.4,14.6,14.9,14.8,14.5,14.6,14.6,14.6,14.8,15.0,15.3,15.1,15.1,15.1,15.2,15.3,15.2,15.2,15.2,15.1,15.0] };
+  (function () {
+    var fm = FEED && FEED.datasets && FEED.datasets.education_mois; if (!fm) return;
+    var key = function (i) { var d = new Date(MO.start[0], MO.start[1] + i, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+    [['chomage_jeunes_fr', 'fr'], ['chomage_jeunes_ze', 'ea']].forEach(function (p) {
+      var m = {}; MO[p[1]].forEach(function (v, i) { m[key(i)] = v; });
+      fm.filter(function (r) { return r.indicateur === p[0] && !isNaN(+r.valeur); }).forEach(function (r) { m[r.periode] = +r.valeur; });
+      var out = [], i = 0; while (m[key(i)] != null) { out.push(m[key(i)]); i++; } MO[p[1]] = out;
+    });
+  })();
+  var moLab = function (i) { return new Date(MO.start[0], MO.start[1] + i, 1).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }); };
+  (function () {
+    var n = MO.fr.length - 1, ne = MO.ea.length - 1, g = Math.round((MO.fr[n] - MO.ea[Math.min(n, ne)]) * 10) / 10;
+    var set = function (id, html, c) { var e = document.getElementById(id); e.innerHTML = html; if (c != null) e.className = 'delta ' + c; };
+    set('u-lab', 'Chômage des moins de 25 ans · ' + new Date(MO.start[0], MO.start[1] + n, 1).toLocaleDateString('fr-FR', { month: 'long' }));
+    set('u-num', fmt(MO.fr[n], 1) + ' % <small>en France</small>');
+    set('u-delta', fmt(Math.abs(g), 1) + ' pt ' + (g > 0 ? 'au-dessus' : 'en dessous') + ' de la zone euro', g > 0 ? 'up' : 'dn');
+    set('u-t', fmt(MO.fr[n - 1], 1) + ' % le mois précédent, ' + fmt(MO.fr[Math.max(0, n - 12)], 1) + ' % il y a un an. Zone euro : ' + fmt(MO.ea[ne], 1) + ' % (Eurostat, données corrigées des variations saisonnières).');
+    document.getElementById('teaser-month').innerHTML = 'Chômage des moins de 25 ans <b>' + fmt(MO.fr[n], 1) + '&nbsp;%</b>, contre <b>' + fmt(MO.ea[ne], 1) + '&nbsp;%</b> dans la zone euro';
+  })();
+  function drawMonth() {
+    var box = document.getElementById('mo-u'); box.textContent = '';
+    var W = Math.max(240, box.clientWidth), H = 140, m = { t: 10, r: 40, b: 18, l: 4 }, fr = MO.fr, ea = MO.ea, n = Math.max(fr.length, ea.length);
+    var x = d3.scaleLinear().domain([0, n - 1]).range([m.l, W - m.r]), y = d3.scaleLinear().domain([12, 24]).range([H - m.b, m.t]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Chômage des moins de 25 ans, France et zone euro');
+    y.ticks(3).forEach(function (t) { svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)'); });
+    var line = d3.line().x(function (d, i) { return x(i); }).y(function (d) { return y(d); }).curve(d3.curveMonotoneX);
+    svg.append('path').datum(ea).attr('d', line).attr('fill', 'none').attr('stroke', 'var(--ea)').attr('stroke-width', 1.6).attr('stroke-dasharray', '5 4');
+    svg.append('path').datum(fr).attr('d', line).attr('fill', 'none').attr('stroke', 'var(--fr)').attr('stroke-width', 2.2);
+    [[fr, 'var(--fr)'], [ea, 'var(--ea)']].forEach(function (s) { var i = s[0].length - 1; svg.append('circle').attr('cx', x(i)).attr('cy', y(s[0][i])).attr('r', 3).attr('fill', s[1]); svg.append('text').attr('x', x(i) + 5).attr('y', y(s[0][i]) + 4).text(fmt(s[0][i], 1) + ' %').style('fill', s[1]).style('font-weight', 600).style('font-size', '10.5px'); });
+    svg.append('text').attr('x', m.l).attr('y', H - 3).text(moLab(0)).style('font-size', '10px');
+    svg.append('text').attr('x', W - m.r).attr('y', H - 3).attr('text-anchor', 'end').text(moLab(n - 1)).style('font-size', '10px');
+  }
+
+  // ===== Le chiffre du jour =====
+  var BUDGET = 64.5e9, PERSEC = BUDGET / (365 * 86400), POP = 69e6, SMIC_AN = 1477.93 * 12;
+  function tick() { var m = new Date(); m.setHours(0, 0, 0, 0); document.getElementById('edu-since').textContent = fmt(PERSEC * (Date.now() - m.getTime()) / 1000 / 1e6, 1) + ' M€'; }
+  tick(); setInterval(tick, 1000);
+  var nU = MO.fr.length - 1;
+  var FACTS = [
+    'L\'Éducation nationale dépense <b>177 M€ par jour</b>, soit <b>' + fmt(BUDGET / POP) + ' €</b> par Français et par an.',
+    'En 2000, la France était <b>11<sup>e</sup></b> en maths à PISA. En 2025, elle est <b>30<sup>e</sup></b> sur 91 pays.',
+    'En trois ans, les élèves français de 15 ans ont perdu <b>18 points</b> en lecture et <b>16 points</b> en maths à PISA.',
+    '<b>Un élève de 15 ans sur trois</b> ne maîtrise pas les bases en compréhension de l\'écrit (PISA 2025).',
+    'À 17 ans, <b>14 % des jeunes</b> ont des difficultés de lecture, et <b>6 %</b> sont en situation d\'illettrisme.',
+    'En maths, l\'écart entre élèves favorisés et défavorisés atteint <b>95 points</b> en France, contre 83 dans l\'OCDE.',
+    'La France dépense <b>5,1 % de son PIB</b> pour l\'éducation, contre 4,7 % dans l\'UE : <b>≈ 12 Md€ de plus par an</b>.',
+    '<b>55,8 %</b> des 25-34 ans sont diplômés du supérieur en France, contre 44,8 % dans l\'UE : 11 points d\'avance.',
+    'Le décrochage scolaire est tombé à <b>7,2 %</b> en France, sous la moyenne européenne (9,1 %).',
+    'Chez les moins de 25 ans, le chômage atteint <b>' + fmt(MO.fr[nU], 1) + ' %</b> en France, contre ' + fmt(MO.ea[MO.ea.length - 1], 1) + ' % dans la zone euro.',
+    'Les 12 Md€ que la France dépense en plus de la moyenne européenne paieraient <b>' + fmt(Math.round(12e9 / SMIC_AN / 1000) * 1000) + ' salariés au Smic</b> pendant un an.',
+    '<b>12,9 %</b> des 15-29 ans ne sont ni en emploi, ni en études, ni en formation, contre 11 % dans l\'UE.'
+  ];
+  var day = new Date(); day.setHours(0, 0, 0, 0);
+  var idx = Math.floor((day - new Date(2026, 0, 1)) / 864e5);
+  document.getElementById('daily-lab').textContent = 'Le chiffre du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+  document.getElementById('daily-text').innerHTML = FACTS[((idx % FACTS.length) + FACTS.length) % FACTS.length];
+  document.getElementById('teaser-today').innerHTML = 'Budget <b>177&nbsp;M€</b> par jour · Lecture à 17 ans : <b>14&nbsp;%</b> en difficulté · Le chiffre du jour';
+
+  // ===== Question du jour =====
+  var QUIZ = [
+    { q: 'Quel était le rang de la France en maths à PISA en 2000 ?', o: ['3e', '11e', '25e', '40e'], a: 1, e: '11e. En 2025, elle est 30e sur 91 pays.' },
+    { q: 'Quelle part des jeunes de 17 ans a des difficultés de lecture ?', o: ['4 %', '9 %', '14 %', '25 %'], a: 2, e: '14 % à la Journée défense et citoyenneté 2025, dont 6 % en situation d\'illettrisme.' },
+    { q: 'La France dépense-t-elle plus ou moins que la moyenne européenne pour l\'éducation ?', o: ['Plus', 'Moins', 'Pareil'], a: 0, e: 'Plus : 5,1 % du PIB contre 4,7 % dans l\'UE, soit environ 12 Md€ par an.' },
+    { q: 'La part de jeunes diplômés du supérieur est-elle plus élevée en France ou dans l\'UE ?', o: ['En France', 'Dans l\'UE'], a: 0, e: 'En France : 55,8 % des 25-34 ans, contre 44,8 % dans l\'UE.' },
+    { q: 'De combien de points les élèves français ont-ils reculé en lecture à PISA entre 2022 et 2025 ?', o: ['2 points', '8 points', '18 points', '40 points'], a: 2, e: '18 points : de 474 à 456. En maths, le recul est de 16 points.' },
+    { q: 'Le décrochage scolaire est-il plus fréquent en France que dans l\'UE ?', o: ['Oui', 'Non'], a: 1, e: 'Non : 7,2 % des 18-24 ans en France, contre 9,1 % dans l\'UE. C\'est l\'un des points forts du système français.' },
+    { q: 'Quel est le budget 2026 de l\'Éducation nationale, hors pensions ?', o: ['24 Md€', '44 Md€', '64,5 Md€', '104 Md€'], a: 2, e: '64,5 Md€, soit 177 M€ par jour.' },
+    { q: 'Le poids de l\'origine sociale sur les résultats est-il plus fort en France que dans l\'OCDE ?', o: ['Plus fort', 'Plus faible'], a: 0, e: 'Plus fort : 95 points d\'écart en maths entre élèves favorisés et défavorisés, contre 83 dans l\'OCDE.' }
+  ];
+  var Q = QUIZ[((idx % QUIZ.length) + QUIZ.length) % QUIZ.length];
+  document.getElementById('quiz-day').textContent = 'Question du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+  document.getElementById('quiz-q').textContent = Q.q;
+  var opts = document.getElementById('quiz-opts'), ans = document.getElementById('quiz-a'), storeKey = 'edu-quiz-' + idx;
+  function reveal(pick) {
+    Array.prototype.forEach.call(opts.children, function (b, i) { b.disabled = true; if (i === Q.a) b.classList.add('right'); else if (i === pick) b.classList.add('wrong'); });
+    ans.textContent = (pick === Q.a ? 'Bonne réponse. ' : 'Raté. ') + Q.e + ' Nouvelle question demain.'; ans.hidden = false;
+    try { localStorage.setItem(storeKey, String(pick)); } catch (e) {}
+  }
+  Q.o.forEach(function (o, i) { var b = document.createElement('button'); b.className = 'opt'; b.id = 'opt-' + i; b.textContent = o; b.addEventListener('click', function () { reveal(i); }); opts.appendChild(b); });
+  try { var prev = localStorage.getItem(storeKey); if (prev != null) reveal(+prev); } catch (e) {}
+
+  // ===== Actualité =====
+  (function () {
+    var A = (FEED && FEED.datasets && FEED.datasets.actu_education && FEED.datasets.actu_education.length) ? FEED.datasets.actu_education : [
+      { date: '2026-09-08', texte: 'PISA 2025 : la France recule de 16 points en maths et de 18 points en lecture par rapport à 2022, et passe sous la moyenne de l\'OCDE dans les trois domaines.', source: 'Ministère de l\'Éducation nationale', url: 'https://www.education.gouv.fr/sites/default/files/document/pisa-2025-une-baisse-des-r-sultats-commune-l-ocde-un-rel-vement-poursuivre-520338.pdf' },
+      { date: '2026-09-01', texte: 'Le chômage des moins de 25 ans s\'établit à 20,6 % en août en France, contre 15,0 % dans la zone euro.', source: 'Eurostat', url: 'https://ec.europa.eu/eurostat/databrowser/view/une_rt_m/default/table' }
+    ];
+    A = A.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).slice(0, 6);
+    var ul = document.getElementById('actu-list');
+    A.forEach(function (a) {
+      var li = document.createElement('li'), d = document.createElement('span'), t = document.createElement('span');
+      d.className = 'd'; d.textContent = new Date(a.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      t.textContent = a.texte + ' ';
+      if (a.url) { var l = document.createElement('a'); l.href = a.url; l.target = '_blank'; l.rel = 'noopener'; l.textContent = a.source || 'Source'; t.appendChild(l); }
+      li.appendChild(d); li.appendChild(t); ul.appendChild(li);
+    });
+    document.getElementById('teaser-actu').textContent = A[0].texte;
+  })();
+
+  // ===== Bilan =====
+  (function () {
+    var noteAll = function (g) { var r = KEYS.filter(function (k) { return g.w[k].length; }).map(function (k) { return d3.mean(g.w[k]); }); return 20 * d3.mean(r); };
+    var pres = PRES.map(function (g) { return { g: g, n: noteAll(g) }; }).sort(function (a, b) { return b.n - a.n; });
+    var items = [
+      '<b>On diplôme plus que nos voisins.</b> ' + fmt(at(S.te.fr, 2025), 1) + ' % des 25-34 ans sont diplômés du supérieur, contre ' + fmt(at(S.te.eu, 2025), 1) + ' % dans l\'UE, et le décrochage est plus bas (' + fmt(at(S.el.fr, 2025), 1) + ' % contre ' + fmt(at(S.el.eu, 2025), 1) + ' %).',
+      '<b>Mais les élèves apprennent moins.</b> À PISA, la France est passée de la 11<sup>e</sup> à la 30<sup>e</sup> place en maths depuis 2000, et se situe désormais sous la moyenne de l\'OCDE dans les trois domaines. À 17 ans, 14 % des jeunes lisent mal.',
+      '<b>Et l\'école corrige peu les inégalités.</b> En maths, 95 points séparent les élèves favorisés des élèves défavorisés, contre 83 en moyenne dans l\'OCDE.',
+      '<b>Les jeunes trouvent moins vite un emploi.</b> Le chômage des moins de 25 ans est à ' + fmt(MO.fr[nU], 1) + ' %, contre ' + fmt(MO.ea[MO.ea.length - 1], 1) + ' % dans la zone euro, alors que la France dépense plus que l\'UE pour l\'éducation (5,1 % du PIB contre 4,7 %).',
+      '<b>Au bulletin, ' + pres[0].g.n + ' fait le mieux (' + nfmt(pres[0].n) + '/20)</b>, ' + pres[pres.length - 1].g.n + ' le moins bien (' + nfmt(pres[pres.length - 1].n) + '/20). La note mesure si la France progresse plus vite que ses voisins, année après année.'
+    ];
+    document.getElementById('sum-list').innerHTML = items.map(function (t) { return '<li>' + t + '</li>'; }).join('');
+  })();
+
+  // ===== Menus, mise à jour, alerte =====
+  document.querySelectorAll('.jump a').forEach(function (a) { a.addEventListener('click', function () { var t = document.querySelector(a.getAttribute('href')); if (t && t.tagName === 'DETAILS') t.open = true; }); });
+  ['acc-today', 'acc-month', 'acc-actu', 'acc-bilan'].forEach(function (id) {
+    var d = document.getElementById(id);
+    try { if (localStorage.getItem('edu-' + id) === 'open') d.open = true; } catch (e) {}
+    d.addEventListener('toggle', function () { try { localStorage.setItem('edu-' + id, d.open ? 'open' : 'closed'); } catch (e) {} if (d.open) setTimeout(drawAll, 30); });
+  });
+  (function () {
+    var el = document.getElementById('upd'), d = FEED && FEED.updated_iso ? new Date(FEED.updated_iso) : null;
+    if (!d || isNaN(d)) return;
+    var tz = { timeZone: 'Europe/Paris' }, dayOf = function (t) { return new Date(t).toLocaleDateString('fr-CA', tz); };
+    var hourOf = function (t) { return +new Date(t).toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23' }); };
+    var now = Date.now(), todayDone = dayOf(d.getTime()) === dayOf(now) && hourOf(d.getTime()) >= 11;
+    var nextTxt = (hourOf(now) < 13 && !todayDone) ? 'aujourd’hui vers midi' : new Date(now + 864e5).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' }) + ' vers midi';
+    el.textContent = 'Dernière mise à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ') + ' · prochaine : ' + nextTxt + ' (une par jour)';
+    if (now - d.getTime() > 30 * 3600e3) { var s = document.getElementById('stale'); s.textContent = 'Mise à jour en retard : les données datent du ' + FEED.updated + '.'; s.hidden = false; }
+  })();
+
+  // ===== Partage en image =====
+  function wrapText(x, text, px, py, maxW, lh) { var words = text.split(' '), line = ''; words.forEach(function (w) { var t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line) { x.fillText(line, px, py); py += lh; line = w; } else line = t; }); if (line) x.fillText(line, px, py); return py + lh; }
+  function frame(kicker) {
+    var c = document.createElement('canvas'), W = 1080, H = 1350; c.width = W; c.height = H; var x = c.getContext('2d');
+    x.fillStyle = '#f6f6f3'; x.fillRect(0, 0, W, H); x.fillStyle = '#2f5bd3'; x.fillRect(0, 0, W, 14);
+    x.fillStyle = '#62646d'; x.font = '600 34px "Inter Tight", system-ui, sans-serif'; x.fillText('CONCRET · ÉDUCATION', 80, 120); x.fillText(kicker.toUpperCase(), 80, 175);
+    return { c: c, x: x, W: W, H: H };
+  }
+  function foot(f, src) { f.x.fillStyle = '#2f5bd3'; f.x.font = '700 40px "Inter Tight", system-ui, sans-serif'; f.x.fillText('concret2027.fr', 80, f.H - 90); f.x.fillStyle = '#62646d'; f.x.font = '400 26px "Inter Tight", system-ui, sans-serif'; f.x.fillText('Sources : ' + src, 80, f.H - 48); }
+  function lines(f, sers, top, h, from, to, dom) {
+    var x = f.x, gx = 80, gw = f.W - 330, lo = dom[0], hi = dom[1];
+    x.strokeStyle = '#e2e2dc'; x.lineWidth = 2; for (var k = 0; k <= 4; k++) { var yy = top + h * k / 4; x.beginPath(); x.moveTo(gx, yy); x.lineTo(gx + gw, yy); x.stroke(); }
+    sers.forEach(function (s) {
+      var n = s.v.length; x.strokeStyle = s.c; x.lineWidth = s.main ? 8 : 5; x.setLineDash(s.dash ? [16, 12] : []); x.beginPath();
+      s.v.forEach(function (v, i) { var px = gx + gw * i / (n - 1), py = top + h * (1 - (v - lo) / (hi - lo)); if (i) x.lineTo(px, py); else x.moveTo(px, py); }); x.stroke(); x.setLineDash([]);
+      var ly = top + h * (1 - (s.v[n - 1] - lo) / (hi - lo)); x.fillStyle = s.c; x.beginPath(); x.arc(gx + gw, ly, 10, 0, 7); x.fill(); x.font = '700 34px "Inter Tight", system-ui, sans-serif'; x.fillText(s.label, gx + gw + 20, ly + 12);
+    });
+    x.fillStyle = '#62646d'; x.font = '500 30px "Inter Tight", system-ui, sans-serif'; x.fillText(from, gx, top + h + 50); x.textAlign = 'right'; x.fillText(to, gx + gw, top + h + 50); x.textAlign = 'left';
+  }
+  function makeCard(kind) {
+    var day2 = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }), f;
+    if (kind === 'fact') {
+      f = frame('Le chiffre du ' + day2); f.x.fillStyle = '#1c1d22'; f.x.font = '400 78px Newsreader, Georgia, serif';
+      wrapText(f.x, document.getElementById('daily-text').textContent.replace(/(\d) (?=(M€|Md€|€|%|points|salariés))/g, '$1 '), 80, 420, f.W - 160, 100); foot(f, 'DEPP, OCDE, Eurostat');
+    } else if (kind === 'rank') {
+      f = frame('Le bulletin de l\'éducation · ' + day2); var x = f.x;
+      x.fillStyle = '#1c1d22'; x.font = '400 58px Newsreader, Georgia, serif'; wrapText(x, 'Quel président a fait progresser l\'école plus vite que nos voisins ?', 80, 270, f.W - 160, 70);
+      var rows = PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; }).sort(function (a, b) { return b.v - a.v; }), y0 = 520, x0 = 470, bw = f.W - x0 - 110;
+      rows.forEach(function (r, i) {
+        var y = y0 + i * 120; x.fillStyle = '#1c1d22'; x.font = '600 40px "Inter Tight", system-ui, sans-serif'; x.textAlign = 'right'; x.fillText(r.n, x0 - 24, y + 50); x.textAlign = 'left';
+        x.fillStyle = '#ececE6'; x.fillRect(x0, y + 10, bw, 56); x.fillStyle = r.v >= 10 ? '#1f8a4c' : r.v >= 6 ? '#b0812a' : '#c43d3d'; x.fillRect(x0, y + 10, bw * r.v / 20, 56);
+        x.fillStyle = '#1c1d22'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText(nfmt(r.v), x0 + bw * r.v / 20 + 14, y + 52);
+      });
+      var lx = x0 + bw / 2; x.strokeStyle = '#1c1d22'; x.setLineDash([10, 8]); x.lineWidth = 3; x.beginPath(); x.moveTo(lx, y0 - 10); x.lineTo(lx, y0 + rows.length * 120); x.stroke(); x.setLineDash([]);
+      x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.textAlign = 'center'; x.fillText('10 = mieux que l\'UE 1 année sur 2', lx, y0 + rows.length * 120 + 44); x.textAlign = 'left';
+      foot(f, 'Eurostat, Banque mondiale');
+    } else if (kind === 'chomage') {
+      f = frame('Chômage des moins de 25 ans'); var n = MO.fr.length - 1;
+      f.x.fillStyle = '#1c1d22'; f.x.font = '400 150px Newsreader, Georgia, serif'; f.x.fillText(fmt(MO.fr[n], 1) + ' %', 76, 360);
+      f.x.fillStyle = '#c43d3d'; f.x.font = '600 38px "Inter Tight", system-ui, sans-serif'; f.x.fillText('en France, contre ' + fmt(MO.ea[MO.ea.length - 1], 1) + ' % dans la zone euro', 80, 430);
+      lines(f, [{ v: MO.ea, c: '#b0812a', dash: 1, label: 'Zone euro' }, { v: MO.fr, c: '#2f5bd3', main: 1, label: 'France' }], 500, 420, moLab(0), moLab(n), [12, 24]);
+      f.x.fillStyle = '#1c1d22'; f.x.font = '400 44px Newsreader, Georgia, serif'; wrapText(f.x, 'Plus d\'un jeune actif sur cinq est au chômage en France.', 80, 1050, f.W - 160, 56); foot(f, 'Eurostat');
+    } else {
+      f = frame('PISA · élèves de 15 ans');
+      f.x.fillStyle = '#1c1d22'; f.x.font = '400 120px Newsreader, Georgia, serif'; f.x.fillText('11e → 30e', 76, 340);
+      f.x.fillStyle = '#c43d3d'; f.x.font = '600 38px "Inter Tight", system-ui, sans-serif'; f.x.fillText('le rang de la France en maths, de 2000 à 2025', 80, 410);
+      lines(f, [{ v: PISA.sci, c: '#b0812a', label: 'Sciences' }, { v: PISA.lect, c: '#1f8a4c', label: 'Lecture' }, { v: PISA.maths, c: '#2f5bd3', main: 1, label: 'Maths' }], 500, 420, '2000', '2025', [440, 530]);
+      f.x.fillStyle = '#1c1d22'; f.x.font = '400 44px Newsreader, Georgia, serif'; wrapText(f.x, 'Scores de la France à PISA : sous la moyenne de l\'OCDE dans les trois domaines en 2025.', 80, 1050, f.W - 160, 56); foot(f, 'OCDE, ministère de l\'Éducation nationale');
+    }
+    return f.c;
+  }
+  function shareCard(kind) {
+    var c = makeCard(kind), show = function () { document.getElementById('sheet-img').src = c.toDataURL('image/png'); document.getElementById('sheet').hidden = false; document.getElementById('sheet-close').focus(); };
+    try { c.toBlob(function (blob) { var file = blob && new File([blob], 'concret-education-' + kind + '.png', { type: 'image/png' }); if (file && navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file], title: 'Concret', text: 'concret2027.fr' }).catch(show); else show(); }); } catch (e) { show(); }
+  }
+  document.getElementById('share-fact').addEventListener('click', function () { shareCard('fact'); });
+  document.getElementById('share-fact-top').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); shareCard('fact'); });
+  document.getElementById('share-rank').addEventListener('click', function () { shareCard('rank'); });
+  document.querySelectorAll('[data-share]').forEach(function (b) { b.addEventListener('click', function () { shareCard(b.dataset.share); }); });
+  document.getElementById('sheet-close').addEventListener('click', function () { document.getElementById('sheet').hidden = true; });
+  document.getElementById('sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') this.hidden = true; });
+
+  function drawAll() { rankChart(); drawCharts(); }
+  renderYears(); drawAll();
+  var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });
+}
+  var started = false;
+  function go(feed) { if (started) return; started = true; main(feed); }
+  try {
+    fetch('../data.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(go, function () { go(null); });
+  } catch (e) { go(null); }
+  setTimeout(function () { go(null); }, 4000);
+})();
+</script>
+</body>
+</html>
