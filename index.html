@@ -68,6 +68,12 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .bx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-md); }
 .bx-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
 .bx-card.wide { grid-column: 1 / -1; }
+.bx-ag { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); }
+.bx-ag h3 { margin: 0 0 6px; font-size: var(--cds-font-size-caption); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); }
+.bx-aglist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+.bx-aglist li { display: grid; grid-template-columns: 7.6em minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.bx-aglist .d { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--color-fg); font-size: 13px; }
+.bx-aglist a { color: var(--color-fg-muted); }
 .bx-card h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
 .bx-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; }
 .bx-chart { position: relative; min-height: 360px; }
@@ -171,7 +177,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 <div id="dash-root">
 
 <div class="bx">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/" aria-current="page">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><span class="soon">Bientôt : Éducation · Sécurité · Vie des Français</span></nav>
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/" aria-current="page">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><span class="soon">Bientôt : Éducation · Santé · Sécurité et justice · Vie des Français</span></nav>
   <header class="bx-head">
     <h1 class="bx-title">Baromètre 2027</h1>
     <div class="bx-updated" id="bx-updated">Chargement des données…</div>
@@ -179,7 +185,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
     <div class="bx-count"><b id="countdown">—</b><span>jours avant le premier tour, le 18 avril 2027</span></div>
     <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
   </header>
-  <nav class="jump" aria-label="Aller à"><a href="#mouvements">Ce qui a bougé</a><a href="#premier-tour">1er tour</a><a href="#sondages-et-paris">Sondages et paris</a><a href="#second-tour">2nd tour</a><a href="#polymarket">Parieurs</a><a href="#duels">Duels</a><a href="#tous-sondages">Tous les sondages</a><a href="#methode">Méthode</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#mouvements">Ce qui a bougé</a><a href="#agenda">Agenda</a><a href="#premier-tour">1er tour</a><a href="#sondages-et-paris">Sondages et paris</a><a href="#second-tour">2nd tour</a><a href="#polymarket">Parieurs</a><a href="#duels">Duels</a><a href="#tous-sondages">Tous les sondages</a><a href="#methode">Méthode</a></nav>
 
   <div class="bx-tiles" id="tiles" data-source="moyenne_t1 polymarket">
     <div class="bx-tile"><div class="lab">1er des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
@@ -200,6 +206,14 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
       <h2 id="last-title">Le dernier sondage</h2>
       <p class="bx-note" id="last-note">Premier tour, moyenne des hypothèses testées.</p>
       <div class="bx-last" id="last" data-source="dernier_sondage"></div>
+    </section>
+
+    <section class="bx-card wide" id="agenda">
+      <h2>Actualité et agenda</h2>
+      <div class="bx-ag">
+        <div><h3>À venir</h3><ul class="bx-aglist" id="ag-next"></ul></div>
+        <div><h3>Les derniers événements</h3><ul class="bx-aglist" id="ag-last"></ul></div>
+      </div>
     </section>
 
     <section class="bx-card wide" id="premier-tour">
@@ -908,5 +922,33 @@ window.addEventListener('baro:data', function () {
 })();
 </script>
 <script>(function () { var n = document.querySelector('.site'); if (!n) return; var f = function () { document.documentElement.style.setProperty('--navh', n.offsetHeight + 'px'); }; f(); if (window.ResizeObserver) new ResizeObserver(f).observe(n); else addEventListener('resize', f); })();</script>
+<script>
+(function () {
+  var AG0 = [
+    { date: '2027-01-26', evenement: 'Décret de convocation des électeurs attendu vers cette date (au plus tard le 7 février) : ouverture des parrainages', source: 'Maire-info', url: 'https://www.maire-info.com/election-presidentielle/presidentielle-un-choix-de-dates-qui-ne-sera-pas-sans-difficulte-pour-les-maires-art26-30951' },
+    { date: '2027-03-12', evenement: 'Date limite de dépôt des parrainages (500 signatures d\'élus)', source: 'Maire-info', url: 'https://www.maire-info.com/election-presidentielle/presidentielle-un-choix-de-dates-qui-ne-sera-pas-sans-difficulte-pour-les-maires-art26-30951' },
+    { date: '2027-04-18', evenement: 'Premier tour de l\'élection présidentielle', source: 'LCP', url: 'https://lcp.fr/actualites/presidentielle-2027-les-dates-du-premier-et-du-second-tour-fixees-438582' },
+    { date: '2027-05-02', evenement: 'Second tour de l\'élection présidentielle', source: 'LCP', url: 'https://lcp.fr/actualites/presidentielle-2027-les-dates-du-premier-et-du-second-tour-fixees-438582' }
+  ];
+  var fd = function (d, y) { return new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', y ? { day: 'numeric', month: 'short', year: 'numeric' } : { day: 'numeric', month: 'short' }); };
+  function li(d, txt, src, url) {
+    var l = document.createElement('li'), a = document.createElement('span'), t = document.createElement('span');
+    a.className = 'd'; a.textContent = d; t.textContent = txt + ' ';
+    if (url) { var k = document.createElement('a'); k.href = url; k.target = '_blank'; k.rel = 'noopener'; k.textContent = src || 'Source'; t.appendChild(k); }
+    l.appendChild(a); l.appendChild(t); return l;
+  }
+  function render(feed) {
+    var ds = feed && feed.datasets || {}, today = new Date(); today.setHours(0, 0, 0, 0);
+    var ag = (ds.agenda_barometre && ds.agenda_barometre.length ? ds.agenda_barometre : AG0).filter(function (a) { return new Date(a.date + 'T23:59:00') >= today; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }).slice(0, 5);
+    var nx = document.getElementById('ag-next'); nx.textContent = '';
+    ag.forEach(function (a) { nx.appendChild(li(fd(a.date, true), a.evenement, a.source, a.url)); });
+    var ev = (ds.evenements || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).slice(0, 5);
+    var ls = document.getElementById('ag-last'); ls.textContent = '';
+    ev.forEach(function (e) { ls.appendChild(li(fd(e.date, true), e.evenement, e.source, e.url)); });
+    ls.parentNode.hidden = !ev.length;
+  }
+  try { fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(render, function () { render(null); }); } catch (e) { render(null); }
+})();
+</script>
 </body>
 </html>
