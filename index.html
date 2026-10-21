@@ -170,7 +170,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   <div class="bx-grid">
     <section class="bx-card" id="mouvements">
       <h2>Ce qui a bougé</h2>
-      <p class="bx-note">Classés selon leur niveau dans les sondages. Sondages : évolution de la tendance sur les 14 derniers jours. Parieurs : évolution des chances de victoire sur 30 jours.</p>
+      <p class="bx-note">Classés selon leur niveau dans les sondages. Sondages : évolution de la tendance sur les 14 derniers jours. Parieurs : évolution des chances de victoire au second tour (Polymarket) sur 30 jours.</p>
       <div class="bx-movers" id="movers" data-source="mouvements"></div>
     </section>
 
@@ -203,7 +203,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
     </section>
 
     <section class="bx-card" id="polymarket">
-      <h2>Qui va gagner, selon les parieurs</h2>
+      <h2>Qui va gagner au second tour, selon les parieurs</h2>
       <p class="bx-note">Les 10 favoris : probabilité implicite de remporter l’élection au second tour, marché « Next French Presidential Election » de Polymarket.</p>
       <div class="bx-chart small" id="chart-pm" data-source="polymarket"></div>
     </section>
@@ -234,8 +234,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   <section class="bx-method" id="methode">
     <p><b>Qui est affiché, et pourquoi.</b> Une seule règle, recalculée à chaque mise à jour : les candidats sont classés selon leur moyenne dans les sondages des 30 derniers jours (Le Pen et Bardella comptent pour un seul candidat RN). Les 4 premiers ont une vignette en haut de page, les 8 premiers une courbe, les 15 premiers une colonne dans le tableau. Côté parieurs, on montre les 10 favoris de Polymarket et on suit l'historique des 6 premiers. « Ce qui a bougé » réunit les 8 premiers des sondages et les 6 favoris des parieurs. Chaque candidat garde toujours la même couleur.</p>
     <p><b>À lire avec prudence.</b> Un sondage est une photographie, pas une prévision : avec 1 000 à 2 000 personnes interrogées, un écart de 2 à 3 points entre deux candidats n'est pas significatif. Les instituts testent plusieurs hypothèses de candidatures dans une même enquête ; nous faisons la moyenne, pour chaque candidat, des hypothèses où il figure.</p>
-    <p><b>Polymarket</b> est une plateforme de paris en cryptomonnaie, non autorisée en France. Ses probabilités reflètent les mises de parieurs, majoritairement étrangers, pas les intentions de vote. Chaque candidat y est un pari distinct, si bien que les probabilités ne totalisent pas exactement 100 %.</p>
-    <p><b>Sondages et parieurs ne disent pas la même chose.</b> Un sondage mesure une intention de vote au premier tour ; une cote mesure ce que les parieurs pensent du résultat final. Les marchés réagissent vite à l'actualité : la cote de Marine Le Pen a bondi de 8,5 % à 26 % la semaine de sa décision en appel de juillet 2026, avant que les sondages ne la testent. Cela ne suffit pas à prouver qu'ils prédisent les sondages suivants : il faudra des mois de données pour le mesurer.</p>
+    <p><b>Polymarket</b> est une plateforme de paris en cryptomonnaie, non autorisée en France. Ses probabilités, qui portent sur la victoire finale au second tour, reflètent les mises de parieurs, majoritairement étrangers, pas les intentions de vote. Chaque candidat y est un pari distinct, si bien que les probabilités ne totalisent pas exactement 100 %.</p>
+    <p><b>Sondages et parieurs ne disent pas la même chose.</b> Un sondage mesure une intention de vote au premier tour ; une cote mesure ce que les parieurs pensent du résultat final, au second tour. Les marchés réagissent vite à l'actualité : la cote de Marine Le Pen a bondi de 8,5 % à 26 % la semaine de sa décision en appel de juillet 2026, avant que les sondages ne la testent. Cela ne suffit pas à prouver qu'ils prédisent les sondages suivants : il faudra des mois de données pour le mesurer.</p>
     <p><b>Sources</b> : page Wikipédia « Liste de sondages sur l'élection présidentielle française de 2027 », relevée le 21 octobre 2026, qui renvoie vers la notice de chaque sondage à la Commission des sondages ; Polymarket, historique hebdomadaire et cours du 21 octobre 2026.</p>
   </section>
 </div>
@@ -349,7 +349,7 @@ dash.calc('tableau_t1', {
 dash.calc('mouvements', {
   inputs: ['tendance_t1', 'polymarket_hist', 'moyenne_t1', 'polymarket'],
   title: 'Ce qui a bougé',
-  description: 'Les 8 premiers des sondages (moyenne sur 30 jours) et les 6 favoris de Polymarket : tendance des sondages aujourd’hui et il y a 14 jours ; chances de victoire aujourd’hui et il y a 30 jours.',
+  description: 'Les 8 premiers des sondages (moyenne sur 30 jours) et les 6 favoris de Polymarket : tendance des sondages aujourd’hui et il y a 14 jours ; chances de victoire au second tour aujourd’hui et il y a 30 jours.',
   fn: function (tendance_t1, polymarket_hist, moyenne_t1, polymarket) {
     var BX = window.BX;
     var at = function (rows, d) { var r = rows.filter(function (q) { return q.date <= d; }); return r.length ? r[r.length - 1] : null; };
@@ -445,7 +445,7 @@ dash.calc('duels_recents', {
   function drawMovers(rows) {
     var box = document.getElementById('movers'); box.textContent = '';
     var h = document.createElement('div'); h.className = 'bx-mv h';
-    ['Candidat', 'Sondages', 'Parieurs'].forEach(function (t, i) { var s = document.createElement('div'); s.textContent = t; if (i) s.style.textAlign = 'right'; h.appendChild(s); });
+    ['Candidat', 'Sondages (1er tour)', 'Parieurs (2nd tour)'].forEach(function (t, i) { var s = document.createElement('div'); s.textContent = t; if (i) s.style.textAlign = 'right'; h.appendChild(s); });
     box.appendChild(h);
     rows.slice().sort(function (a, b) { var sa = a.sondages == null ? -1 : a.sondages, sb = b.sondages == null ? -1 : b.sondages; return sb - sa || (b.paris || 0) - (a.paris || 0); }).forEach(function (r) {
       var row = document.createElement('div'); row.className = 'bx-mv';
@@ -582,7 +582,7 @@ dash.calc('duels_recents', {
       var panel = pn.panel, box = pn.box;
       var W = box.clientWidth || 260, H = 200;
       var y = d3.scaleLinear([0, yMax], [H - 24, 8]);
-      var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', pn.title + ' : chances de victoire et intentions de vote');
+      var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', pn.title + ' : chances de victoire au second tour et intentions de vote au premier tour');
       var gy = svg.append('g').call(d3.axisLeft(y).ticks(3).tickFormat(function (v) { return v + ' %'; }).tickSize(0));
       styleAxis(gy);
       var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); });
@@ -610,7 +610,7 @@ dash.calc('duels_recents', {
         var mx = d3.pointer(ev)[0], sc = box.clientWidth / W;
         var r = mk[d3.bisector(function (q) { return q.d; }).center(mk, x.invert(mx))];
         var tr = td.filter(function (q) { return q.k === pn.p && q.d <= r.d; }).sort(function (a, b) { return a.d - b.d; });
-        var lines = ['Chances de victoire : ' + BX.pct(r.v)];
+        var lines = ['Chances de victoire au 2nd tour : ' + BX.pct(r.v)];
         if (tr.length) lines.push('Intentions de vote : ' + BX.pct(tr[tr.length - 1].v));
         t.hidden = false; tipLines(t, BX.fmtDay(r.d), lines);
         placeTip(t, box, x(r.d) * sc, y(r.v) * sc);
@@ -656,7 +656,7 @@ dash.calc('duels_recents', {
     box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
     var data = rows.filter(function (r) { return r.candidat !== 'Autres candidats'; }).sort(function (a, b) { return +b.probabilite - +a.probabilite; }).slice(0, BX.TOP_PM_BARS).map(function (r) { return { n: r.candidat, v: +r.probabilite }; });
     var W = box.clientWidth || 400, row = 26, H = data.length * row + 8;
-    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Probabilités de victoire selon Polymarket');
+    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Probabilités de victoire au second tour selon Polymarket');
     var names = svg.append('g').selectAll('text').data(data).join('text').attr('x', 0).attr('y', function (d, i) { return i * row + 17; }).attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text(function (d) { return d.n; });
     var mL = 0; names.each(function () { mL = Math.max(mL, this.getComputedTextLength()); }); mL = Math.ceil(mL) + 10;
     var x = d3.scaleLinear([0, d3.max(data, function (d) { return d.v; })], [0, Math.max(40, W - mL - 52)]);
@@ -697,7 +697,7 @@ dash.calc('duels_recents', {
       add('), ' + nm(rank[2]) + ' ('); add(BX.pct(rank[2].moyenne), 1);
       add(') et ' + nm(rank[3]) + ' ('); add(BX.pct(rank[3].moyenne), 1);
       add(') se disputent la qualification. Les parieurs de Polymarket donnent à ' + pmr[0].name + ' '); add(BX.pct(pmr[0].v), 1);
-      add(' de chances de gagner' + (pmr[0].key === rank[0].key ? '.' : ' : ils ne voient pas le même favori que les sondages.'));
+      add(' de chances de gagner au second tour' + (pmr[0].key === rank[0].key ? '.' : ' : ils ne voient pas le même favori que les sondages.'));
     } else if (moy.status === 'error' || pm.status === 'error') { tk.textContent = ''; }
 
     function chart(id, ok, err, draw) {
