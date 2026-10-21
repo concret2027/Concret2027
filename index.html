@@ -154,7 +154,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   <header class="bx-head">
     <h1 class="bx-title">Baromètre 2027</h1>
     <div class="bx-updated" id="bx-updated">Chargement des données…</div>
-    <div class="bx-stale" id="bx-stale" hidden>Données en cours d’actualisation : la dernière mise à jour date de plus de 24 heures.</div>
+    <div class="bx-stale" id="bx-stale" hidden>Données en cours d’actualisation : la dernière mise à jour date de plus d’un jour.</div>
     <div class="bx-count"><b id="countdown">—</b><span>jours avant le premier tour, le 18 avril 2027</span></div>
     <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
   </header>
@@ -170,7 +170,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
   <div class="bx-grid">
     <section class="bx-card" id="mouvements">
       <h2>Ce qui a bougé</h2>
-      <p class="bx-note">Sondages : évolution de la tendance sur les 14 derniers jours. Parieurs : évolution des chances de victoire sur 30 jours.</p>
+      <p class="bx-note">Classés selon leur niveau dans les sondages. Sondages : évolution de la tendance sur les 14 derniers jours. Parieurs : évolution des chances de victoire sur 30 jours.</p>
       <div class="bx-movers" id="movers" data-source="mouvements"></div>
     </section>
 
@@ -447,7 +447,7 @@ dash.calc('duels_recents', {
     var h = document.createElement('div'); h.className = 'bx-mv h';
     ['Candidat', 'Sondages', 'Parieurs'].forEach(function (t, i) { var s = document.createElement('div'); s.textContent = t; if (i) s.style.textAlign = 'right'; h.appendChild(s); });
     box.appendChild(h);
-    rows.slice().sort(function (a, b) { return Math.abs(b.paris_variation || 0) + Math.abs(b.sondages_variation || 0) - Math.abs(a.paris_variation || 0) - Math.abs(a.sondages_variation || 0); }).forEach(function (r) {
+    rows.slice().sort(function (a, b) { var sa = a.sondages == null ? -1 : a.sondages, sb = b.sondages == null ? -1 : b.sondages; return sb - sa || (b.paris || 0) - (a.paris || 0); }).forEach(function (r) {
       var row = document.createElement('div'); row.className = 'bx-mv';
       var n = document.createElement('div'); n.className = 'n'; var i = document.createElement('i'); i.style.background = colorOf(r.court || r.candidat); n.appendChild(i); n.appendChild(document.createTextNode(r.candidat)); row.appendChild(n);
       [[r.sondages_variation, r.sondages, 'pt'], [r.paris_variation, r.paris, 'pts']].forEach(function (p) {
@@ -753,8 +753,8 @@ window.addEventListener('baro:data', function () {
   var el = document.getElementById('bx-updated'), iso = window.BARO_UPDATED_ISO;
   var d = iso ? new Date(iso) : null;
   if (d && !isNaN(d)) {
-    el.textContent = 'Mis à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ').replace(' à ', ' à ');
-    if (Date.now() - d.getTime() > 24 * 3600 * 1000) { var b = document.getElementById('bx-stale'); b.hidden = false; }
+    el.textContent = 'Actualisé chaque jour vers midi · dernière mise à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ').replace(' à ', ' à ');
+    if (Date.now() - d.getTime() > 30 * 3600 * 1000) { var b = document.getElementById('bx-stale'); b.hidden = false; }
   } else { el.textContent = 'Mis à jour le ' + window.BARO_UPDATED; }
 });
 </script>
