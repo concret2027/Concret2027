@@ -2,18 +2,770 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Baromètre 2027 — Concret</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="refresh" content="3; url=https://claude.ai/artifact/QE3F4NgDPn1Z4aPET1YY4A">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Baromètre 2027</title>
+<meta property="og:title" content="Baromètre 2027">
+<meta property="og:description" content="Sondages, parieurs et pouls du pays : la présidentielle 2027 en un coup d'œil, mis à jour en continu.">
+<meta property="og:url" content="https://concret2027.fr/">
+<meta property="og:type" content="website">
 <script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<style>html, body { margin: 0; } img { max-width: 100%; } [hidden] { display: none !important; }</style>
+<meta name="description" content="Sondages, parieurs et pouls du pays : la présidentielle 2027 en un coup d'œil, mis à jour en continu.">
+<style>
+/* Layout: one centered column of cards; tokens mirror the dashboard kit so the page reads the same, in both themes. */
+:root {
+  --color-bg: #f6f6f3; --color-panel: #ffffff; --color-fg: #1c1d22; --color-fg-muted: #62646d;
+  --color-border-line: #e2e2dc; --color-ok: #1f8a4c; --color-bad: #c43d3d;
+  --cds-chart-grid: #ececE6; --cds-chart-axis: #c9c9c2; --cds-chart-reference: #9a9ca3; --cds-chart-muted: #c9cad0;
+  --cds-surface-popover: #ffffff; --cds-border: #dcdcd5; --cds-shadow-popover: 0 4px 16px rgba(20, 22, 30, .12); --cds-text-secondary: #62646d;
+  --cds-radius: 10px; --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 14px; --cds-pad-lg: 20px;
+  --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 16px; --cds-gap-lg: 28px;
+  --cds-font-size-caption: 12.5px; --cds-font-size-body: 15px; --cds-font-size-heading: 18px; --cds-font-size-title: 34px; --cds-font-weight-medium: 600;
+  --cds-dur-slow: .4s;
+  --font-anthropic-sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-anthropic-serif: "Newsreader", Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --color-bg: #15161a; --color-panel: #1d1f24; --color-fg: #ececea; --color-fg-muted: #a4a6ad; --color-border-line: #2e3037;
+  --color-ok: #4cc27f; --color-bad: #ff7070; --cds-chart-grid: #2a2c32; --cds-chart-axis: #44464e; --cds-chart-reference: #7d7f87; --cds-chart-muted: #4a4c55;
+  --cds-surface-popover: #24262c; --cds-border: #3a3c44; --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, .5); --cds-text-secondary: #a4a6ad; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --color-bg: #15161a; --color-panel: #1d1f24; --color-fg: #ececea; --color-fg-muted: #a4a6ad; --color-border-line: #2e3037;
+  --color-ok: #4cc27f; --color-bad: #ff7070; --cds-chart-grid: #2a2c32; --cds-chart-axis: #44464e; --cds-chart-reference: #7d7f87; --cds-chart-muted: #4a4c55;
+  --cds-surface-popover: #24262c; --cds-border: #3a3c44; --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, .5); --cds-text-secondary: #a4a6ad; color-scheme: dark; }
+body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); line-height: 1.5; }
+#dash-root { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 48px; }
+.dash-skeleton { color: transparent !important; background: var(--color-border-line); border-radius: 6px; min-height: 1em; }
+.bx-stale { font-size: var(--cds-font-size-caption); color: var(--color-bad); border: 1px solid var(--color-bad); border-radius: 6px; padding: 4px 8px; justify-self: start; }
+.bx-updated { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bx-foot { max-width: 1200px; margin: 0 auto; padding-top: var(--cds-gap-lg); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border-top: 1px solid var(--color-border-line); }
+
+.bx { display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); max-width: 1200px; margin-inline: auto; }
+.bx-head { display: grid; gap: var(--cds-gap-xs); }
+.bx-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
+.bx-take { font-size: var(--cds-font-size-body); color: var(--color-fg); max-width: 76ch; margin: 0; }
+.bx-take b { font-weight: 600; }
+.bx-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: var(--cds-gap-md); }
+.bx-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: grid; gap: var(--cds-gap-xs); align-content: start; }
+.bx-tile .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; align-items: center; gap: 6px; }
+.bx-tile .sw { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.bx-tile .val { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.1; min-height: 1.1em; }
+.bx-tile .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-md); }
+.bx-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
+.bx-card.wide { grid-column: 1 / -1; }
+.bx-card h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.bx-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; }
+.bx-chart { position: relative; min-height: 360px; }
+.bx-chart.small { min-height: 260px; }
+.bx-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bx-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.bx-legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.bx-multi { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-md); }
+.bx-panel { display: grid; gap: var(--cds-gap-xs); min-width: 0; }
+.bx-panel h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.bx-panel .bx-chart { min-height: 200px; }
+.bx-key { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bx-key span { display: inline-flex; align-items: center; gap: 6px; }
+.bx-key .ln { width: 18px; height: 0; border-top: 2px solid var(--color-fg); }
+.bx-key .ln.dash { border-top-style: dashed; }
+.bx-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; }
+.bx-tip .d { color: var(--cds-text-secondary); }
+.bx-tablebox { max-height: 440px; overflow: auto; }
+.bx-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.bx-table th, .bx-table td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.bx-table th.l, .bx-table td.l { text-align: left; }
+.bx-table th { position: sticky; top: 0; background: var(--color-panel); color: var(--color-fg-muted); font-weight: 500; }
+.bx-method { display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 82ch; }
+.bx-method p { margin: 0; }
+.bx-method b { color: var(--color-fg); font-weight: 600; }
+.bx-fail { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: inherit; height: 100%; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bx-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+.bx-count { display: inline-flex; align-items: baseline; gap: 8px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bx-count b { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-heading); color: var(--color-fg); font-variant-numeric: tabular-nums; }
+.bx-movers { display: grid; gap: 0; }
+.bx-mv { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)); gap: var(--cds-gap-sm); align-items: center; padding: 8px 0; border-bottom: 1px solid var(--color-border-line); font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.bx-mv.h { color: var(--color-fg-muted); padding-top: 0; }
+.bx-mv .n { display: flex; align-items: center; gap: 6px; font-size: var(--cds-font-size-body); }
+.bx-mv .n i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.bx-mv .v { display: grid; justify-items: end; }
+.bx-mv .v small { color: var(--color-fg-muted); }
+.bx-up { color: var(--color-ok); }
+.bx-down { color: var(--color-bad); }
+.bx-flat { color: var(--color-fg-muted); }
+.bx-last { display: grid; gap: 6px; }
+.bx-lastbar { display: grid; grid-template-columns: 96px minmax(0, 1fr) 48px; gap: 8px; align-items: center; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.bx-lastbar .tr { height: 12px; background: var(--cds-chart-grid); border-radius: 6px; overflow: hidden; }
+.bx-lastbar .fl { height: 100%; border-radius: 6px; }
+.bx-lastbar .pv { text-align: right; }
+.bx-thermo { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--cds-gap-md); }
+.bx-th { display: grid; gap: 4px; align-content: start; padding: var(--cds-pad-md); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); min-width: 0; }
+.bx-th .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bx-th .val { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.1; min-height: 1.1em; }
+.bx-th .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bx-th .spark { min-height: 44px; }
+.bx-events { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bx-events li { display: flex; gap: 8px; align-items: baseline; }
+.bx-events .num { flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--color-fg); color: var(--color-bg); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script>
-  setTimeout(function () {
-    location.replace("https://claude.ai/artifact/QE3F4NgDPn1Z4aPET1YY4A");
-  }, 800);
+(function () {
+  var P = null, ds = {}, calcs = {}, cache = {}, fns = [];
+  function get(id) {
+    if (ds[id]) return ds[id];
+    if (cache[id]) return cache[id];
+    var c = calcs[id]; if (!c) return null;
+    var args = c.inputs.map(function (i) { return get(i) || []; });
+    cache[id] = c.fn.apply(null, args); return cache[id];
+  }
+  window.dash = {
+    colors: ['#3a5bd9', '#e07b26', '#d23f3f', '#c2447c', '#1f9e89', '#8a5cd1', '#5a9e2f', '#8c6d4f'],
+    calc: function (id, o) { calcs[id] = o; },
+    loader: function () {},
+    data: function (id) { var d = get(id); return d ? { status: 'ok', data: d, columns: d[0] ? Object.keys(d[0]) : [], meta: [] } : { status: 'missing', data: [] }; },
+    onData: function (fn) { fns.push(fn); },
+    params: function () { return {}; }, setParams: function () {}, resetParams: function () {}, setLink: function () {}, refresh: function () {}
+  };
+  function run() { if (!P) return; fns.forEach(function (f) { try { f(); } catch (e) { console.error(e); } }); }
+  var loaded = new Promise(function (r) { if (document.readyState === 'complete') r(); else window.addEventListener('load', r); });
+  var data = fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+  Promise.all([data, loaded]).then(function (res) {
+    P = res[0]; ds = P.datasets; cache = {};
+    window.BARO_UPDATED = P.updated; window.BARO_UPDATED_ISO = P.updated_iso;
+    run(); window.dispatchEvent(new Event('baro:data'));
+  }).catch(function () {
+    var e = document.getElementById('bx-updated'); if (e) e.textContent = 'Les données n’ont pas pu être chargées. Rechargez la page dans un instant.';
+  });
+  var w = window.innerWidth, t;
+  window.addEventListener('resize', function () { if (window.innerWidth === w) return; w = window.innerWidth; clearTimeout(t); t = setTimeout(run, 150); });
+})();
 </script>
 </head>
 <body>
-<p>Redirection vers le <a href="https://claude.ai/artifact/QE3F4NgDPn1Z4aPET1YY4A">Baromètre 2027</a>…</p>
+<div id="dash-root">
+
+<div class="bx">
+  <header class="bx-head">
+    <h1 class="bx-title">Baromètre 2027</h1>
+    <div class="bx-updated" id="bx-updated">Chargement des données…</div>
+    <div class="bx-stale" id="bx-stale" hidden>Données en cours d’actualisation : la dernière mise à jour date de plus de 24 heures.</div>
+    <div class="bx-count"><b id="countdown">—</b><span>jours avant le premier tour, le 18 avril 2027</span></div>
+    <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
+  </header>
+
+  <div class="bx-tiles">
+    <div class="bx-tile"><div class="lab"><i class="sw" data-c="0"></i>Marine Le Pen</div><div class="val dash-skeleton" data-source="moyenne_t1" data-field="moyenne" data-where="candidat=Le%20Pen">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
+    <div class="bx-tile"><div class="lab"><i class="sw" data-c="2"></i>Jean-Luc Mélenchon</div><div class="val dash-skeleton" data-source="moyenne_t1" data-field="moyenne" data-where="candidat=M%C3%A9lenchon">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
+    <div class="bx-tile"><div class="lab"><i class="sw" data-c="1"></i>Édouard Philippe</div><div class="val dash-skeleton" data-source="moyenne_t1" data-field="moyenne" data-where="candidat=Philippe">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
+    <div class="bx-tile"><div class="lab"><i class="sw" data-c="3"></i>Raphaël Glucksmann</div><div class="val dash-skeleton" data-source="moyenne_t1" data-field="moyenne" data-where="candidat=Glucksmann">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
+    <div class="bx-tile"><div class="lab">Le Pen, chances de victoire</div><div class="val dash-skeleton" data-source="polymarket" data-field="probabilite" data-where="candidat=Marine%20Le%20Pen">—</div><div class="sub">selon les parieurs de Polymarket</div></div>
+  </div>
+
+  <div class="bx-grid">
+    <section class="bx-card" id="mouvements">
+      <h2>Ce qui a bougé</h2>
+      <p class="bx-note">Sondages : évolution de la tendance sur les 14 derniers jours. Parieurs : évolution des chances de victoire sur 30 jours.</p>
+      <div class="bx-movers" id="movers" data-source="mouvements"></div>
+    </section>
+
+    <section class="bx-card" id="dernier-sondage">
+      <h2 id="last-title">Le dernier sondage</h2>
+      <p class="bx-note" id="last-note">Premier tour, moyenne des hypothèses testées.</p>
+      <div class="bx-last" id="last" data-source="dernier_sondage"></div>
+    </section>
+
+    <section class="bx-card wide" id="premier-tour">
+      <h2>Premier tour : intentions de vote</h2>
+      <p class="bx-note">Chaque point est un sondage (moyenne de ses hypothèses) ; la ligne suit la moyenne des sondages des trois semaines précédentes. En juillet 2026, Marine Le Pen remplace Jordan Bardella comme candidate du RN.</p>
+      <div class="bx-legend" id="legend-t1"></div>
+      <div class="bx-chart" id="chart-t1" data-source="sondages_t1 tendance_t1 evenements"></div>
+      <ol class="bx-events" id="events-list" data-source="evenements"></ol>
+    </section>
+
+    <section class="bx-card wide" id="thermometre">
+      <h2>Le thermomètre du pays</h2>
+      <p class="bx-note">Le climat dans lequel se joue l'élection : le moral des Français, la confiance des marchés et la tension dans la rue.</p>
+      <div class="bx-thermo">
+        <div class="bx-th">
+          <div class="lab">Moral des ménages (Insee)</div>
+          <div class="val dash-skeleton" data-source="pouls" data-field="valeur" data-where="indicateur=confiance_menages&amp;date=2026-09-30">—</div>
+          <div class="sub">septembre 2026 · moyenne de long terme : 100</div>
+          <div class="spark" id="spark-menages" data-source="pouls"></div>
+        </div>
+        <div class="bx-th">
+          <div class="lab">Taux d'emprunt de l'État à 10 ans</div>
+          <div class="val dash-skeleton" data-source="pouls" data-field="valeur" data-where="indicateur=taux_10_ans&amp;date=2026-10-09">—</div>
+          <div class="sub">9 octobre 2026 · au plus haut depuis 2002 début octobre</div>
+        </div>
+        <div class="bx-th">
+          <div class="lab">Écart de taux avec l'Allemagne</div>
+          <div class="val dash-skeleton" data-source="pouls" data-field="valeur" data-where="indicateur=ecart_allemagne&amp;date=2026-10-09">—</div>
+          <div class="sub">9 octobre 2026 · au plus haut depuis la crise de 2011-2012</div>
+        </div>
+        <div class="bx-th">
+          <div class="lab">Interpellations, mobilisation du 17 octobre</div>
+          <div class="val dash-skeleton" data-source="pouls" data-field="valeur" data-where="indicateur=interpellations_mobilisation&amp;date=2026-10-17">—</div>
+          <div class="sub">environ <span data-source="pouls" data-field="valeur" data-where="indicateur=forces_ordre_blessees&amp;date=2026-10-17">—</span> policiers et gendarmes blessés</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bx-card wide" id="sondages-et-paris">
+      <h2>Sondages et parieurs, côte à côte</h2>
+      <p class="bx-note">Pour chaque candidat : ses chances de victoire selon Polymarket (trait plein) et ses intentions de vote au premier tour (tirets). Les deux sont en %, mais ne mesurent pas la même chose.</p>
+      <div class="bx-key"><span><i class="ln"></i>Chances de victoire (Polymarket)</span><span><i class="ln dash"></i>Intentions de vote, 1er tour</span></div>
+      <div class="bx-multi" id="multi" data-source="polymarket_hist tendance_t1"></div>
+    </section>
+
+    <section class="bx-card" id="second-tour">
+      <h2>Second tour : Marine Le Pen selon son adversaire</h2>
+      <p class="bx-note">Score de Marine Le Pen, en % des voix exprimées, dans chaque duel testé en 2026. Sous 50 %, elle perd.</p>
+      <div class="bx-legend" id="legend-t2"></div>
+      <div class="bx-chart small" id="chart-t2" data-source="sondages_t2"></div>
+    </section>
+
+    <section class="bx-card" id="polymarket">
+      <h2>Qui va gagner, selon les parieurs</h2>
+      <p class="bx-note">Probabilité de victoire implicite, marché « Next French Presidential Election » de Polymarket.</p>
+      <div class="bx-chart small" id="chart-pm" data-source="polymarket"></div>
+    </section>
+
+    <section class="bx-card" id="duels">
+      <h2>Derniers duels testés</h2>
+      <p class="bx-note">Sondages de second tour des 45 derniers jours.</p>
+      <div class="bx-tablebox">
+        <table class="bx-table" data-source="duels_recents" data-row-key="duel">
+          <thead><tr><th class="l" data-field="duel">Duel · institut</th><th data-field="date">Date</th><th data-field="score_rn">Le Pen</th><th data-field="score_adversaire">Adversaire</th></tr></thead>
+          <tbody id="tbody-duels"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bx-card" id="tous-sondages">
+      <h2>Tous les sondages de premier tour</h2>
+      <p class="bx-note">Moyenne des hypothèses testées par chaque enquête, en %.</p>
+      <div class="bx-tablebox">
+        <table class="bx-table" data-source="tableau_t1" data-row-key="sondage">
+          <thead><tr id="thead-t1"><th class="l" data-field="sondage">Sondage</th></tr></thead>
+          <tbody id="tbody-t1"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="bx-method" id="methode">
+    <p><b>À lire avec prudence.</b> Un sondage est une photographie, pas une prévision : avec 1 000 à 2 000 personnes interrogées, un écart de 2 à 3 points entre deux candidats n'est pas significatif. Les instituts testent plusieurs hypothèses de candidatures dans une même enquête ; nous faisons la moyenne, pour chaque candidat, des hypothèses où il figure.</p>
+    <p><b>Polymarket</b> est une plateforme de paris en cryptomonnaie, non autorisée en France. Ses probabilités reflètent les mises de parieurs, majoritairement étrangers, pas les intentions de vote. Chaque candidat y est un pari distinct, si bien que les probabilités ne totalisent pas exactement 100 %.</p>
+    <p><b>Sondages et parieurs ne disent pas la même chose.</b> Un sondage mesure une intention de vote au premier tour ; une cote mesure ce que les parieurs pensent du résultat final. Les marchés réagissent vite à l'actualité : la cote de Marine Le Pen a bondi de 8,5 % à 26 % la semaine de sa décision en appel de juillet 2026, avant que les sondages ne la testent. Cela ne suffit pas à prouver qu'ils prédisent les sondages suivants : il faudra des mois de données pour le mesurer.</p>
+    <p><b>Thermomètre</b> : l'indicateur de confiance des ménages de l'Insee a changé de définition en juin 2026 (une partie des questions sur l'épargne en a été retirée) ; les mois d'avant et d'après ne sont donc pas strictement comparables. Les taux et l'écart avec l'Allemagne sont des relevés ponctuels publiés par la presse financière ; les chiffres de la mobilisation du 17 octobre sont ceux du ministère de l'Intérieur.</p>
+    <p><b>Sources</b> : page Wikipédia « Liste de sondages sur l'élection présidentielle française de 2027 », relevée le 21 octobre 2026, qui renvoie vers la notice de chaque sondage à la Commission des sondages ; Polymarket, historique hebdomadaire et cours du 21 octobre 2026.</p>
+  </section>
+</div>
+
+<script>
+(function () {
+  var frFmt = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
+  var frLocale = d3.timeFormatLocale({
+    dateTime: '%A %e %B %Y à %X', date: '%d/%m/%Y', time: '%H:%M:%S', periods: ['AM', 'PM'],
+    days: ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'],
+    shortDays: ['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'],
+    months: ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
+    shortMonths: ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.']
+  });
+  window.BX = {
+    pct: function (v) { return frFmt.format(v) + ' %'; },
+    fmtDay: frLocale.utcFormat('%-d %b %Y'),
+    fmtMonth: frLocale.utcFormat('%b %Y'),
+    day: function (s) { return new Date(s + 'T00:00:00Z'); }
+  };
+  window.BX_CANDS = [
+    { key: 'RN', label: 'Le Pen', name: 'RN (Bardella puis Le Pen)', c: 0 },
+    { key: 'Mélenchon', label: 'Mélenchon', name: 'Jean-Luc Mélenchon', c: 2 },
+    { key: 'Philippe', label: 'Philippe', name: 'Édouard Philippe', c: 1 },
+    { key: 'Glucksmann', label: 'Glucksmann', name: 'Raphaël Glucksmann', c: 3 },
+    { key: 'Attal', label: 'Attal', name: 'Gabriel Attal', c: 5 },
+    { key: 'Retailleau', label: 'Retailleau', name: 'Bruno Retailleau', c: 4 },
+    { key: 'Lisnard', label: 'Lisnard', name: 'David Lisnard', c: 6 },
+    { key: 'Zemmour', label: 'Zemmour', name: 'Éric Zemmour', c: 7 }
+  ];
+})();
+</script>
+
+<script>
+dash.calc('moyenne_t1', {
+  inputs: ['sondages_t1'],
+  title: 'Moyenne des 30 derniers jours',
+  description: 'Pour chaque candidat, moyenne de ses scores dans les sondages publiés dans les 30 jours précédant le plus récent.',
+  fn: function (sondages_t1) {
+    var last = sondages_t1.reduce(function (m, r) { return r.date > m ? r.date : m; }, '');
+    var from = new Date(Date.parse(last) - 30 * 86400000).toISOString().slice(0, 10);
+    var by = {};
+    sondages_t1.filter(function (r) { return r.date >= from; }).forEach(function (r) {
+      (by[r.candidat] = by[r.candidat] || []).push(Number(r.score));
+    });
+    return Object.keys(by).map(function (c) {
+      var v = by[c];
+      return { candidat: c, moyenne: Math.round(v.reduce(function (a, b) { return a + b; }, 0) / v.length * 10) / 10, sondages: v.length, depuis: from };
+    }).sort(function (a, b) { return b.moyenne - a.moyenne; });
+  }
+});
+
+dash.calc('tendance_t1', {
+  inputs: ['sondages_t1'],
+  title: 'Tendance premier tour',
+  description: 'Pour chaque candidat et chaque date de sondage, moyenne de ses scores sur les 21 jours précédents ; le RN est suivi sans mélanger Bardella et Le Pen.',
+  fn: function (sondages_t1) {
+    var rows = sondages_t1.map(function (r) { return { date: r.date, c: r.candidat === 'Le Pen' || r.candidat === 'Bardella' ? 'RN' : r.candidat, seg: r.candidat, v: Number(r.score) }; });
+    var out = [];
+    var keys = {};
+    rows.forEach(function (r) { keys[r.c + '|' + r.seg] = 1; });
+    Object.keys(keys).forEach(function (k) {
+      var parts = k.split('|');
+      var mine = rows.filter(function (r) { return r.c === parts[0] && r.seg === parts[1]; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+      var dates = mine.map(function (r) { return r.date; }).filter(function (d, i, a) { return a.indexOf(d) === i; });
+      dates.forEach(function (d) {
+        var from = new Date(Date.parse(d) - 21 * 86400000).toISOString().slice(0, 10);
+        var w = mine.filter(function (r) { return r.date <= d && r.date > from; });
+        out.push({ date: d, candidat: parts[0], segment: parts[1], valeur: Math.round(w.reduce(function (a, r) { return a + r.v; }, 0) / w.length * 10) / 10 });
+      });
+    });
+    return out;
+  }
+});
+
+dash.calc('tableau_t1', {
+  inputs: ['sondages_t1'],
+  title: 'Tableau des sondages',
+  description: 'Un sondage par ligne, le score moyen de chaque candidat principal en colonne.',
+  fn: function (sondages_t1) {
+    var by = {};
+    sondages_t1.forEach(function (r) {
+      var k = r.date + ' · ' + r.institut;
+      var o = by[k] = by[k] || { sondage: k, date: r.date };
+      var c = r.candidat === 'Bardella' ? 'Le Pen' : r.candidat;
+      o[c] = Number(r.score);
+      if (r.candidat === 'Bardella') o.rn_bardella = true;
+    });
+    return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  }
+});
+
+dash.calc('mouvements', {
+  inputs: ['tendance_t1', 'polymarket_hist'],
+  title: 'Ce qui a bougé',
+  description: 'Pour chaque candidat : tendance des sondages aujourd’hui et il y a 14 jours ; chances de victoire Polymarket aujourd’hui et il y a 30 jours.',
+  fn: function (tendance_t1, polymarket_hist) {
+    var at = function (rows, d) { var r = rows.filter(function (q) { return q.date <= d; }); return r.length ? r[r.length - 1] : null; };
+    var minus = function (d, n) { return new Date(Date.parse(d) - n * 86400000).toISOString().slice(0, 10); };
+    var cands = [['RN', 'Le Pen', 'Marine Le Pen'], ['Mélenchon', 'Mélenchon', 'Jean-Luc Mélenchon'], ['Philippe', 'Philippe', 'Édouard Philippe'], ['Glucksmann', 'Glucksmann', 'Raphaël Glucksmann'], ['Lisnard', 'Lisnard', 'David Lisnard']];
+    return cands.map(function (c) {
+      var tr = tendance_t1.filter(function (r) { return r.candidat === c[0] && r.segment !== 'Bardella'; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+      var pm = polymarket_hist.filter(function (r) { return r.candidat === c[1]; }).map(function (r) { return { date: r.date, v: Number(r.probabilite) }; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+      var tNow = tr[tr.length - 1], tThen = tNow ? at(tr, minus(tNow.date, 14)) : null;
+      var pNow = pm[pm.length - 1], pThen = pNow ? at(pm, minus(pNow.date, 30)) : null;
+      return {
+        candidat: c[2],
+        sondages: tNow ? tNow.valeur : null,
+        sondages_variation: tNow && tThen ? Math.round((tNow.valeur - tThen.valeur) * 10) / 10 : null,
+        paris: pNow ? pNow.v : null,
+        paris_variation: pNow && pThen ? Math.round((pNow.v - pThen.v) * 10) / 10 : null
+      };
+    });
+  }
+});
+
+dash.calc('dernier_sondage', {
+  inputs: ['sondages_t1'],
+  title: 'Le dernier sondage',
+  description: 'Les scores du sondage de premier tour le plus récent, du plus haut au plus bas.',
+  fn: function (sondages_t1) {
+    var last = sondages_t1.reduce(function (m, r) { return r.date > m ? r.date : m; }, '');
+    var first = sondages_t1.filter(function (r) { return r.date === last; });
+    var inst = first[0].institut;
+    return first.filter(function (r) { return r.institut === inst; })
+      .map(function (r) { return { candidat: r.candidat, score: Number(r.score), institut: r.institut, terrain: r.terrain, echantillon: Number(r.echantillon), date: r.date }; })
+      .sort(function (a, b) { return b.score - a.score; });
+  }
+});
+
+dash.calc('duels_recents', {
+  inputs: ['sondages_t2'],
+  title: 'Duels des 45 derniers jours',
+  description: 'Sondages de second tour dont la date tombe dans les 45 jours précédant le plus récent.',
+  fn: function (sondages_t2) {
+    var last = sondages_t2.reduce(function (m, r) { return r.date > m ? r.date : m; }, '');
+    var from = new Date(Date.parse(last) - 45 * 86400000).toISOString().slice(0, 10);
+    return sondages_t2.filter(function (r) { return r.date >= from; })
+      .sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; })
+      .map(function (r) { return { duel: r.candidat_rn + ' – ' + r.adversaire + ' · ' + r.institut + ' · ' + r.date, date: r.date, score_rn: Number(r.score_rn), score_adversaire: Number(r.score_adversaire) }; });
+  }
+});
+</script>
+
+<script>
+(function () {
+  var BX = window.BX, CANDS = window.BX_CANDS;
+
+  function failLine(el) { el.textContent = ''; var d = document.createElement('div'); d.className = 'bx-fail'; d.textContent = 'Échec du chargement'; el.appendChild(d); }
+  function ensureTip(box) { var t = box.querySelector('.bx-tip'); if (!t) { t = document.createElement('div'); t.className = 'bx-tip'; t.hidden = true; box.appendChild(t); } return t; }
+  function placeTip(t, box, x, y) {
+    var w = box.clientWidth, tw = t.offsetWidth;
+    t.style.left = Math.min(Math.max(0, x + 12), Math.max(0, w - tw)) + 'px'; t.style.top = Math.max(0, y - 10) + 'px';
+  }
+  function styleAxis(g) { g.attr('font-size', null).attr('font-family', null); g.selectAll('text').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)'); g.selectAll('.domain').attr('stroke', 'var(--cds-chart-axis)'); g.selectAll('.tick line').attr('stroke', 'var(--cds-chart-grid)'); }
+  function tipLines(t, head, lines) { t.textContent = ''; var d = document.createElement('div'); d.className = 'd'; d.textContent = head; t.appendChild(d); lines.forEach(function (s) { var l = document.createElement('div'); l.textContent = s; t.appendChild(l); }); }
+
+  document.querySelectorAll('.bx-tile .sw').forEach(function (s) { s.style.background = dash.colors[+s.dataset.c]; });
+  var lg = document.getElementById('legend-t1');
+  CANDS.forEach(function (c) { var s = document.createElement('span'); var i = document.createElement('i'); i.style.background = dash.colors[c.c]; s.appendChild(i); s.appendChild(document.createTextNode(c.name)); lg.appendChild(s); });
+  var lg2 = document.getElementById('legend-t2');
+  [['contre Philippe', 1], ['contre Mélenchon', 2], ['contre Glucksmann', 3], ['contre Attal', 5]].forEach(function (p) { var s = document.createElement('span'); var i = document.createElement('i'); i.style.background = dash.colors[p[1]]; s.appendChild(i); s.appendChild(document.createTextNode(p[0])); lg2.appendChild(s); });
+
+  var signed = function (v, unit) { if (v == null) return '—'; var s = (v > 0 ? '+' : v < 0 ? '−' : '±') + new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(Math.abs(v)); return s + ' ' + unit; };
+  var cls = function (v) { return v == null || Math.abs(v) < 0.5 ? 'bx-flat' : v > 0 ? 'bx-up' : 'bx-down'; };
+  var COLOR_BY = { 'Marine Le Pen': 0, 'Jean-Luc Mélenchon': 2, 'Édouard Philippe': 1, 'Raphaël Glucksmann': 3, 'David Lisnard': 6, 'Le Pen': 0, 'Bardella': 0, 'Mélenchon': 2, 'Philippe': 1, 'Glucksmann': 3, 'Attal': 5, 'Retailleau': 4, 'Lisnard': 6, 'Zemmour': 7 };
+
+  function drawMovers(rows) {
+    var box = document.getElementById('movers'); box.textContent = '';
+    var h = document.createElement('div'); h.className = 'bx-mv h';
+    ['Candidat', 'Sondages', 'Parieurs'].forEach(function (t, i) { var s = document.createElement('div'); s.textContent = t; if (i) s.style.textAlign = 'right'; h.appendChild(s); });
+    box.appendChild(h);
+    rows.slice().sort(function (a, b) { return Math.abs(b.paris_variation || 0) + Math.abs(b.sondages_variation || 0) - Math.abs(a.paris_variation || 0) - Math.abs(a.sondages_variation || 0); }).forEach(function (r) {
+      var row = document.createElement('div'); row.className = 'bx-mv';
+      var n = document.createElement('div'); n.className = 'n'; var i = document.createElement('i'); i.style.background = dash.colors[COLOR_BY[r.candidat]]; n.appendChild(i); n.appendChild(document.createTextNode(r.candidat)); row.appendChild(n);
+      [[r.sondages_variation, r.sondages, 'pt'], [r.paris_variation, r.paris, 'pts']].forEach(function (p) {
+        var v = document.createElement('div'); v.className = 'v';
+        var b = document.createElement('b'); b.className = cls(p[0]); b.textContent = signed(p[0], 'pt'); v.appendChild(b);
+        var s = document.createElement('small'); s.textContent = p[1] == null ? '' : 'à ' + BX.pct(p[1]); v.appendChild(s);
+        row.appendChild(v);
+      });
+      box.appendChild(row);
+    });
+  }
+
+  function drawLast(rows) {
+    var box = document.getElementById('last'); box.textContent = '';
+    if (!rows.length) return;
+    var r0 = rows[0];
+    document.getElementById('last-title').textContent = 'Le dernier sondage : ' + r0.institut;
+    document.getElementById('last-note').textContent = 'Terrain du ' + r0.terrain + ', ' + new Intl.NumberFormat('fr-FR').format(r0.echantillon) + ' personnes. Premier tour, moyenne des hypothèses testées.';
+    var max = rows[0].score;
+    rows.filter(function (r) { return r.score >= 1; }).forEach(function (r) {
+      var l = document.createElement('div'); l.className = 'bx-lastbar';
+      var n = document.createElement('div'); n.textContent = r.candidat; l.appendChild(n);
+      var tr = document.createElement('div'); tr.className = 'tr'; var fl = document.createElement('div'); fl.className = 'fl';
+      fl.style.width = (r.score / max * 100) + '%'; fl.style.background = COLOR_BY[r.candidat] != null ? dash.colors[COLOR_BY[r.candidat]] : 'var(--cds-chart-muted)';
+      tr.appendChild(fl); l.appendChild(tr);
+      var v = document.createElement('div'); v.className = 'pv'; v.textContent = BX.pct(r.score); l.appendChild(v);
+      box.appendChild(l);
+    });
+  }
+
+  function drawSpark(rows) {
+    var box = document.getElementById('spark-menages'); box.textContent = '';
+    var data = rows.filter(function (r) { return r.indicateur === 'confiance_menages'; }).map(function (r) { return { d: BX.day(r.date), v: +r.valeur }; }).sort(function (a, b) { return a.d - b.d; });
+    var W = box.clientWidth || 200, H = 44;
+    var x = d3.scaleUtc(d3.extent(data, function (r) { return r.d; }), [4, W - 4]);
+    var y = d3.scaleLinear([Math.min(80, d3.min(data, function (r) { return r.v; }) - 2), 100], [H - 4, 4]);
+    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Moral des ménages depuis février 2026');
+    svg.append('line').attr('x1', 4).attr('x2', W - 4).attr('y1', y(100)).attr('y2', y(100)).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '3 3');
+    svg.append('path').datum(data).attr('fill', 'none').attr('stroke', dash.colors[0]).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); }));
+    var l = data[data.length - 1]; if (l) svg.append('circle').attr('cx', x(l.d)).attr('cy', y(l.v)).attr('r', 3).attr('fill', dash.colors[0]);
+  }
+
+  function drawEventMarks(svg, x, top, events, from) {
+    events.forEach(function (e, i) {
+      var d = BX.day(e.date); if (d < from) return;
+      var cx = x(d);
+      svg.append('line').attr('x1', cx).attr('x2', cx).attr('y1', top + 9).attr('y2', top + 16).attr('stroke', 'var(--color-fg-muted)');
+      svg.append('circle').attr('cx', cx).attr('cy', top).attr('r', 8).attr('fill', 'var(--color-fg)');
+      svg.append('text').attr('x', cx).attr('y', top + 4).attr('text-anchor', 'middle').attr('fill', 'var(--color-bg)').style('font-size', '11px').style('font-weight', 600).text(e.n);
+    });
+  }
+
+  function drawT1(rows, trend, events) {
+    var box = document.getElementById('chart-t1');
+    box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
+    var W = box.clientWidth || 600, H = 360;
+    var colOf = {}; CANDS.forEach(function (c) { colOf[c.key] = c; });
+    var data = rows.map(function (r) { var k = (r.candidat === 'Le Pen' || r.candidat === 'Bardella') ? 'RN' : r.candidat; return { d: BX.day(r.date), k: k, who: r.candidat, v: +r.score, inst: r.institut }; }).filter(function (r) { return colOf[r.k]; });
+    var x = d3.scaleUtc(d3.extent(data, function (r) { return r.d; }), [0, 1]);
+    var y = d3.scaleLinear([0, Math.ceil((d3.max(data, function (r) { return r.v; }) + 2) / 5) * 5], [H - 28, 34]);
+    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Intentions de vote au premier tour, par sondage et en tendance');
+    var gy = svg.append('g').call(d3.axisLeft(y).ticks(6).tickFormat(function (v) { return v + ' %'; }).tickSize(0));
+    styleAxis(gy);
+    var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); });
+    mL = Math.ceil(mL) + 10; var mR = 112;
+    gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
+    x.range([mL, W - mR]);
+    svg.insert('g', ':first-child').selectAll('line').data(y.ticks(6)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
+    var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 28) + ')').call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((W - mL - mR) / 90))).tickFormat(BX.fmtMonth).tickSizeOuter(0));
+    styleAxis(gx);
+    var sw = new Date('2026-07-07T00:00:00Z');
+    svg.append('line').attr('x1', x(sw)).attr('x2', x(sw)).attr('y1', 26).attr('y2', H - 28).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 4');
+    drawEventMarks(svg, x, 12, events, x.domain()[0]);
+    svg.append('g').selectAll('circle').data(data).join('circle').attr('cx', function (r) { return x(r.d); }).attr('cy', function (r) { return y(r.v); }).attr('r', 2.5)
+      .attr('fill', function (r) { return dash.colors[colOf[r.k].c]; }).attr('fill-opacity', .3);
+    var labs = [];
+    CANDS.forEach(function (c) {
+      var tr = trend.filter(function (t) { return t.candidat === c.key; }).map(function (t) { return { d: BX.day(t.date), v: +t.valeur, seg: t.segment }; });
+      d3.groups(tr, function (t) { return t.seg; }).forEach(function (g) {
+        var pts = g[1].sort(function (a, b) { return a.d - b.d; });
+        svg.append('path').datum(pts).attr('fill', 'none').attr('stroke', dash.colors[c.c]).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('stroke-opacity', g[0] === 'Bardella' ? .45 : 1)
+          .attr('d', d3.line().x(function (t) { return x(t.d); }).y(function (t) { return y(t.v); }));
+      });
+      var lastAll = tr.sort(function (a, b) { return a.d - b.d; })[tr.length - 1];
+      if (lastAll && lastAll.seg !== 'Bardella') labs.push({ c: c, y: y(lastAll.v), v: lastAll.v, x: x(lastAll.d) });
+    });
+    labs.sort(function (a, b) { return a.y - b.y; });
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    svg.append('g').selectAll('text').data(labs).join('text').attr('x', W - mR + 6).attr('y', function (l) { return l.y + 4; }).attr('fill', function (l) { return dash.colors[l.c.c]; })
+      .style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text(function (l) { return l.c.label + ' ' + BX.pct(l.v); });
+    var t = ensureTip(box);
+    var pts = data.map(function (r) { return { x: x(r.d), y: y(r.v), r: r }; });
+    var del = d3.Delaunay.from(pts, function (p) { return p.x; }, function (p) { return p.y; });
+    var hl = svg.append('circle').attr('r', 5).attr('fill', 'none').attr('stroke-width', 2).style('display', 'none');
+    svg.on('pointermove', function (ev) {
+      var m = d3.pointer(ev), sc = box.clientWidth / W;
+      var p = pts[del.find(m[0], m[1])]; if (!p) return;
+      var col = dash.colors[colOf[p.r.k].c];
+      hl.style('display', null).attr('cx', p.x).attr('cy', p.y).attr('stroke', col);
+      t.hidden = false; tipLines(t, BX.fmtDay(p.r.d) + ' · ' + p.r.inst, [p.r.who + ' : ' + BX.pct(p.r.v)]);
+      placeTip(t, box, p.x * sc, p.y * sc);
+    }).on('pointerleave', function () { t.hidden = true; hl.style('display', 'none'); });
+  }
+
+  function drawMulti(hist, trend) {
+    var wrap = document.getElementById('multi');
+    wrap.textContent = '';
+    var panels = [
+      { m: 'Le Pen', p: 'RN', title: 'Marine Le Pen (RN)', c: 0 },
+      { m: 'Philippe', p: 'Philippe', title: 'Édouard Philippe', c: 1 },
+      { m: 'Mélenchon', p: 'Mélenchon', title: 'Jean-Luc Mélenchon', c: 2 },
+      { m: 'Glucksmann', p: 'Glucksmann', title: 'Raphaël Glucksmann', c: 3 },
+      { m: 'Lisnard', p: 'Lisnard', title: 'David Lisnard', c: 6 }
+    ];
+    var hd = hist.map(function (r) { return { d: BX.day(r.date), c: r.candidat, v: +r.probabilite }; });
+    var td = trend.map(function (r) { return { d: BX.day(r.date), k: r.candidat, s: r.segment, v: +r.valeur }; });
+    var dom = d3.extent(hd, function (r) { return r.d; });
+    var yMax = Math.ceil(Math.max(d3.max(hd, function (r) { return r.v; }), d3.max(td, function (r) { return r.v; })) / 10) * 10;
+    var sw = new Date('2026-07-07T00:00:00Z');
+    panels.forEach(function (pn) {
+      var panel = document.createElement('div'); panel.className = 'bx-panel';
+      var h = document.createElement('h3'); h.textContent = pn.title; panel.appendChild(h);
+      var box = document.createElement('div'); box.className = 'bx-chart'; panel.appendChild(box);
+      wrap.appendChild(panel); pn.panel = panel; pn.box = box;
+    });
+    panels.forEach(function (pn) {
+      var panel = pn.panel, box = pn.box;
+      var W = box.clientWidth || 260, H = 200;
+      var y = d3.scaleLinear([0, yMax], [H - 24, 8]);
+      var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', pn.title + ' : chances de victoire et intentions de vote');
+      var gy = svg.append('g').call(d3.axisLeft(y).ticks(3).tickFormat(function (v) { return v + ' %'; }).tickSize(0));
+      styleAxis(gy);
+      var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); });
+      mL = Math.ceil(mL) + 8; var mR = 40;
+      gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
+      var x = d3.scaleUtc(dom, [mL, W - mR]);
+      svg.insert('g', ':first-child').selectAll('line').data(y.ticks(3)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
+      var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 24) + ')').call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((W - mL - mR) / 80))).tickFormat(BX.fmtMonth).tickSizeOuter(0));
+      styleAxis(gx);
+      if (pn.p === 'RN') svg.append('line').attr('x1', x(sw)).attr('x2', x(sw)).attr('y1', 8).attr('y2', H - 24).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '3 3');
+      var col = dash.colors[pn.c];
+      var line = d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); });
+      var mk = hd.filter(function (r) { return r.c === pn.m; }).sort(function (a, b) { return a.d - b.d; });
+      svg.append('path').datum(mk).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', line);
+      d3.groups(td.filter(function (r) { return r.k === pn.p && r.d >= dom[0]; }), function (r) { return r.s; }).forEach(function (g) {
+        var pts = g[1].sort(function (a, b) { return a.d - b.d; });
+        svg.append('path').datum(pts).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2).attr('stroke-dasharray', '5 4').attr('stroke-opacity', g[0] === 'Bardella' ? .45 : 1).attr('d', line);
+        if (pts.length === 1) svg.append('circle').attr('cx', x(pts[0].d)).attr('cy', y(pts[0].v)).attr('r', 3).attr('fill', col);
+      });
+      var last = mk[mk.length - 1];
+      if (last) svg.append('text').attr('x', x(last.d) + 5).attr('y', y(last.v) + 4).attr('fill', col).style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text(BX.pct(last.v));
+      var t = ensureTip(box);
+      svg.on('pointermove', function (ev) {
+        if (!mk.length) return;
+        var mx = d3.pointer(ev)[0], sc = box.clientWidth / W;
+        var r = mk[d3.bisector(function (q) { return q.d; }).center(mk, x.invert(mx))];
+        var tr = td.filter(function (q) { return q.k === pn.p && q.d <= r.d; }).sort(function (a, b) { return a.d - b.d; });
+        var lines = ['Chances de victoire : ' + BX.pct(r.v)];
+        if (tr.length) lines.push('Intentions de vote : ' + BX.pct(tr[tr.length - 1].v));
+        t.hidden = false; tipLines(t, BX.fmtDay(r.d), lines);
+        placeTip(t, box, x(r.d) * sc, y(r.v) * sc);
+      }).on('pointerleave', function () { t.hidden = true; });
+    });
+  }
+
+  function drawT2(rows) {
+    var box = document.getElementById('chart-t2');
+    box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
+    var W = box.clientWidth || 400, H = 260;
+    var ADV = { 'Philippe': 1, 'Mélenchon': 2, 'Glucksmann': 3, 'Attal': 5 };
+    var data = rows.filter(function (r) { return r.candidat_rn === 'Le Pen' && ADV[r.adversaire] != null; }).map(function (r) { return Object.assign({}, r, { d: BX.day(r.date), v: +r.score_rn }); });
+    var x = d3.scaleUtc(d3.extent(data, function (r) { return r.d; }), [0, 1]);
+    var y = d3.scaleLinear([40, Math.ceil((d3.max(data, function (r) { return r.v; }) + 1) / 5) * 5], [H - 28, 10]);
+    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Score de Marine Le Pen au second tour selon son adversaire');
+    var gy = svg.append('g').call(d3.axisLeft(y).ticks(4).tickFormat(function (v) { return v + ' %'; }).tickSize(0));
+    styleAxis(gy);
+    var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); });
+    mL = Math.ceil(mL) + 10; var mR = 16;
+    gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
+    x.range([mL + 8, W - mR]);
+    svg.insert('g', ':first-child').selectAll('line').data(y.ticks(4)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
+    svg.append('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y(50)).attr('y2', y(50)).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 4');
+    var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 28) + ')').call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((W - mL - mR) / 90))).tickFormat(BX.fmtMonth).tickSizeOuter(0));
+    styleAxis(gx);
+    var colOf = function (r) { return dash.colors[ADV[r.adversaire]]; };
+    d3.groups(data.slice().sort(function (a, b) { return a.d - b.d; }), function (r) { return r.adversaire; }).forEach(function (g) {
+      var pts = g[1], sm = pts.map(function (r, i) { var w = pts.slice(Math.max(0, i - 2), i + 1); return { d: r.d, v: d3.mean(w, function (q) { return q.v; }) }; });
+      svg.append('path').datum(sm).attr('fill', 'none').attr('stroke', colOf(pts[0])).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); }));
+    });
+    var dots = svg.append('g').selectAll('circle').data(data).join('circle').attr('cx', function (r) { return x(r.d); }).attr('cy', function (r) { return y(r.v); }).attr('r', 3.5).attr('fill', colOf).attr('fill-opacity', .45);
+    var t = ensureTip(box);
+    dots.on('pointerenter', function (ev, r) {
+      var sc = box.clientWidth / W; t.hidden = false;
+      tipLines(t, BX.fmtDay(r.d) + ' · ' + r.institut, ['Le Pen ' + BX.pct(r.v) + ' – ' + r.adversaire + ' ' + BX.pct(+r.score_adversaire)]);
+      placeTip(t, box, x(r.d) * sc, y(r.v) * sc);
+    }).on('pointerleave', function () { t.hidden = true; });
+  }
+
+  function drawPM(rows) {
+    var box = document.getElementById('chart-pm');
+    box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
+    var data = rows.map(function (r) { return { n: r.candidat, v: +r.probabilite }; });
+    var W = box.clientWidth || 400, row = 26, H = data.length * row + 8;
+    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Probabilités de victoire selon Polymarket');
+    var names = svg.append('g').selectAll('text').data(data).join('text').attr('x', 0).attr('y', function (d, i) { return i * row + 17; }).attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text(function (d) { return d.n; });
+    var mL = 0; names.each(function () { mL = Math.max(mL, this.getComputedTextLength()); }); mL = Math.ceil(mL) + 10;
+    var x = d3.scaleLinear([0, d3.max(data, function (d) { return d.v; })], [0, Math.max(40, W - mL - 52)]);
+    svg.append('g').selectAll('rect').data(data).join('rect').attr('x', mL).attr('y', function (d, i) { return i * row + 5; }).attr('height', 16).attr('rx', 4)
+      .attr('width', function (d) { return Math.max(2, x(d.v)); })
+      .attr('fill', function (d, i) { return i === 0 && d.n !== 'Autres candidats' ? dash.colors[0] : 'var(--cds-chart-muted)'; });
+    svg.append('g').selectAll('text').data(data).join('text').attr('x', function (d) { return mL + Math.max(2, x(d.v)) + 6; }).attr('y', function (d, i) { return i * row + 17; })
+      .attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').style('font-variant-numeric', 'tabular-nums').text(function (d) { return BX.pct(d.v); });
+  }
+
+  var T1COLS = ['Le Pen', 'Mélenchon', 'Philippe', 'Glucksmann', 'Attal', 'Retailleau', 'Lisnard', 'Zemmour'];
+  var head = document.getElementById('thead-t1');
+  T1COLS.forEach(function (c) { var th = document.createElement('th'); th.setAttribute('data-field', c); th.textContent = c === 'Le Pen' ? 'RN' : c; head.appendChild(th); });
+
+  dash.onData(function () {
+    var t1 = dash.data('sondages_t1'), t2 = dash.data('sondages_t2'), pm = dash.data('polymarket'), ph = dash.data('polymarket_hist');
+    var moy = dash.data('moyenne_t1'), tr = dash.data('tendance_t1'), du = dash.data('duels_recents'), tb = dash.data('tableau_t1');
+
+    document.querySelectorAll('[data-source="moyenne_t1"]').forEach(function (el) {
+      if (el.closest('#takeaway')) return;
+      if (moy.status === 'ok') {
+        el.classList.remove('dash-skeleton');
+        var who = decodeURIComponent(el.getAttribute('data-where').split('=')[1]);
+        var r = moy.data.find(function (q) { return q.candidat === who; });
+        el.textContent = r ? BX.pct(r.moyenne) : '—';
+      } else { if (moy.status === 'error') el.classList.remove('dash-skeleton'); el.textContent = '—'; }
+    });
+    document.querySelectorAll('.bx-tile [data-source="polymarket"]').forEach(function (el) {
+      if (pm.status === 'ok') { el.classList.remove('dash-skeleton'); var r = pm.data.find(function (q) { return q.candidat === 'Marine Le Pen'; }); el.textContent = r ? BX.pct(+r.probabilite) : '—'; }
+      else { if (pm.status === 'error') el.classList.remove('dash-skeleton'); el.textContent = '—'; }
+    });
+
+    var tk = document.getElementById('takeaway');
+    if (moy.status === 'ok' && pm.status === 'ok') {
+      var lp = moy.data.find(function (r) { return r.candidat === 'Le Pen'; });
+      var others = moy.data.filter(function (r) { return r.candidat !== 'Le Pen'; });
+      var lpPm = pm.data.find(function (r) { return r.candidat === 'Marine Le Pen'; });
+      tk.textContent = '';
+      var add = function (txt, src, field, where) {
+        if (!src) { tk.appendChild(document.createTextNode(txt)); return; }
+        var b = document.createElement('b'); b.textContent = txt; b.setAttribute('data-source', src); b.setAttribute('data-field', field); b.setAttribute('data-where', where); tk.appendChild(b);
+      };
+      if (lp && others.length >= 3 && lpPm) {
+        add('Marine Le Pen est en tête du premier tour avec ');
+        add(BX.pct(lp.moyenne), 'moyenne_t1', 'moyenne', 'candidat=Le%20Pen');
+        add(' en moyenne sur les sondages des 30 derniers jours. Derrière, ' + others[0].candidat + ' (');
+        add(BX.pct(others[0].moyenne), 'moyenne_t1', 'moyenne', 'candidat=' + encodeURIComponent(others[0].candidat));
+        add('), ' + others[1].candidat + ' (');
+        add(BX.pct(others[1].moyenne), 'moyenne_t1', 'moyenne', 'candidat=' + encodeURIComponent(others[1].candidat));
+        add(') et ' + others[2].candidat + ' (');
+        add(BX.pct(others[2].moyenne), 'moyenne_t1', 'moyenne', 'candidat=' + encodeURIComponent(others[2].candidat));
+        add(') se disputent la qualification. Les parieurs de Polymarket lui donnent ');
+        add(BX.pct(+lpPm.probabilite), 'polymarket', 'probabilite', 'candidat=Marine%20Le%20Pen');
+        add(' de chances de gagner.');
+      }
+    } else if (moy.status === 'error' || pm.status === 'error') { tk.textContent = ''; }
+
+    function chart(id, ok, err, draw) {
+      var el = document.getElementById(id);
+      if (ok) { el.classList.remove('dash-skeleton'); el.querySelectorAll('.bx-fail').forEach(function (n) { n.remove(); }); draw(); }
+      else if (err) { el.classList.remove('dash-skeleton'); failLine(el); }
+      else { el.classList.add('dash-skeleton'); }
+    }
+    var ev = dash.data('evenements'), po = dash.data('pouls'), mv = dash.data('mouvements'), ls = dash.data('dernier_sondage');
+    var events = ev.status === 'ok' ? ev.data.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }).map(function (e, i) { return Object.assign({ n: i + 1 }, e); }) : [];
+    var cd = Math.ceil((Date.parse('2027-04-18T00:00:00+02:00') - Date.now()) / 86400000);
+    document.getElementById('countdown').textContent = 'J-' + Math.max(0, cd);
+    chart('chart-t1', t1.status === 'ok' && tr.status === 'ok' && ev.status !== 'loading', t1.status === 'error' || tr.status === 'error', function () { drawT1(t1.data, tr.data, events); });
+    var el = document.getElementById('events-list'); el.textContent = '';
+    events.forEach(function (e) {
+      var li = document.createElement('li'); var n = document.createElement('span'); n.className = 'num'; n.textContent = e.n; li.appendChild(n);
+      var t = document.createElement('span'); t.textContent = BX.fmtDay(BX.day(e.date)) + ' · ' + e.evenement; li.appendChild(t); el.appendChild(li);
+    });
+    chart('movers', mv.status === 'ok', mv.status === 'error', function () { drawMovers(mv.data); });
+    chart('last', ls.status === 'ok', ls.status === 'error', function () { drawLast(ls.data); });
+    document.querySelectorAll('.bx-th [data-source="pouls"][data-where]').forEach(function (n) {
+      if (po.status === 'ok') {
+        n.classList.remove('dash-skeleton');
+        var w = {}; n.getAttribute('data-where').split('&').forEach(function (p) { var kv = p.split('='); w[kv[0]] = decodeURIComponent(kv[1]); });
+        var r = po.data.find(function (q) { return q.indicateur === w.indicateur && q.date === w.date; });
+        var fmt = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 3 });
+        n.textContent = !r ? '—' : r.unite === '%' ? fmt.format(+r.valeur) + ' %' : r.unite === 'pb' ? fmt.format(+r.valeur) + ' pb' : r.unite === 'indice' ? fmt.format(+r.valeur) : new Intl.NumberFormat('fr-FR').format(+r.valeur);
+      } else { if (po.status === 'error') n.classList.remove('dash-skeleton'); n.textContent = '—'; }
+    });
+    chart('spark-menages', po.status === 'ok', po.status === 'error', function () { drawSpark(po.data); });
+    chart('multi', ph.status === 'ok' && tr.status === 'ok', ph.status === 'error' || tr.status === 'error', function () { drawMulti(ph.data, tr.data); });
+    chart('chart-t2', t2.status === 'ok', t2.status === 'error', function () { drawT2(t2.data); });
+    chart('chart-pm', pm.status === 'ok', pm.status === 'error', function () { drawPM(pm.data); });
+
+    if (du.status === 'ok') {
+      var tbd = document.getElementById('tbody-duels'); tbd.textContent = '';
+      du.data.forEach(function (r) {
+        var trEl = document.createElement('tr');
+        [[r.duel, 'l'], [BX.fmtDay(BX.day(r.date))], [BX.pct(r.score_rn)], [BX.pct(r.score_adversaire)]].forEach(function (c) { var td = document.createElement('td'); if (c[1]) td.className = c[1]; td.textContent = c[0]; trEl.appendChild(td); });
+        tbd.appendChild(trEl);
+      });
+    }
+    if (tb.status === 'ok') {
+      var tbt = document.getElementById('tbody-t1'); tbt.textContent = '';
+      tb.data.forEach(function (r) {
+        var trEl = document.createElement('tr');
+        var td0 = document.createElement('td'); td0.className = 'l'; td0.textContent = r.sondage; trEl.appendChild(td0);
+        T1COLS.forEach(function (c) {
+          var td = document.createElement('td');
+          td.textContent = r[c] == null ? '' : BX.pct(r[c]) + (c === 'Le Pen' && r.rn_bardella ? ' (Bardella)' : '');
+          trEl.appendChild(td);
+        });
+        tbt.appendChild(trEl);
+      });
+    }
+  });
+})();
+</script>
+
+<footer class="bx-foot">concret2027.fr · Données publiques : sondages déposés à la Commission des sondages (via Wikipédia), Polymarket, Insee, presse. Page indépendante de tout parti.</footer>
+<script>
+window.addEventListener('baro:data', function () {
+  var el = document.getElementById('bx-updated'), iso = window.BARO_UPDATED_ISO;
+  var d = iso ? new Date(iso) : null;
+  if (d && !isNaN(d)) {
+    el.textContent = 'Mis à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ').replace(' à ', ' à ');
+    if (Date.now() - d.getTime() > 24 * 3600 * 1000) { var b = document.getElementById('bx-stale'); b.hidden = false; }
+  } else { el.textContent = 'Mis à jour le ' + window.BARO_UPDATED; }
+});
+</script>
+</div>
 </body>
 </html>
-
