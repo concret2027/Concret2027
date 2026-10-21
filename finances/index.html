@@ -213,6 +213,14 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
 .chart { position: relative; min-width: 0; }
 .chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.chart svg.hov { touch-action: pan-y; cursor: crosshair; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.ctip { position: absolute; top: 2px; z-index: 6; pointer-events: none; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 12px; line-height: 1.4; box-shadow: 0 4px 14px rgba(0,0,0,.14); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ctip b { display: block; margin-bottom: 2px; font-weight: 700; }
+.ctip span { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+.ctip span em { font-style: normal; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+.ctip span em i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.ctip span strong { font-weight: 600; margin-left: 10px; }
+.ctip small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; max-width: 200px; white-space: normal; }
 .chart text { fill: var(--muted); font-size: 11px; }
 .key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
 .key i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
@@ -517,6 +525,41 @@ function main(FEED) {
     document.getElementById('percap').textContent = fmt(Math.round(d / POP / 100) * 100) + ' €';
   }
   tick(); setInterval(tick, 1000);
+  // ===== Curseur au doigt ou à la souris : date et valeurs de toutes les courbes =====
+  var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Zone euro', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--it)': 'Italie' };
+  function hover(box, svg, H, m, pts) {
+    if (!pts.length) return;
+    var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+    svg.classed('hov', true);
+    var g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
+    var vl = g.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--fg)').attr('stroke-opacity', .35).attr('stroke-width', 1);
+    var dots = g.append('g');
+    svg.append('rect').attr('x', 0).attr('y', 0).attr('width', svg.attr('viewBox').split(' ')[2]).attr('height', H).attr('fill', 'transparent');
+    var tip = document.createElement('div'); tip.className = 'ctip'; tip.hidden = true; box.appendChild(tip);
+    var node = svg.node(), VW = +svg.attr('viewBox').split(' ')[2], cur = -1;
+    function show(ev) {
+      var r = node.getBoundingClientRect(); if (!r.width) return;
+      var sx = (ev.clientX - r.left) * VW / r.width, best = 0;
+      pts.forEach(function (p, i) { if (Math.abs(p.px - sx) < Math.abs(pts[best].px - sx)) best = i; });
+      var p = pts[best]; g.style('display', null); vl.attr('x1', p.px).attr('x2', p.px);
+      if (best !== cur) {
+        cur = best; dots.selectAll('*').remove();
+        p.rows.forEach(function (rw) { dots.append('circle').attr('cx', p.px).attr('cy', rw.py).attr('r', 3.6).attr('fill', rw.c).attr('stroke', 'var(--panel)').attr('stroke-width', 1.5); });
+        tip.innerHTML = '<b>' + esc(p.t) + '</b>' + p.rows.slice().sort(function (a, b) { return a.py - b.py; }).map(function (rw) {
+          return '<span><em><i style="background:' + rw.c + '"></i>' + esc(rw.n) + '</em><strong>' + esc(rw.s) + '</strong></span>';
+        }).join('') + (p.note ? '<small>' + esc(p.note) + '</small>' : '');
+      }
+      tip.hidden = false;
+      var cx = p.px * r.width / VW, tw = tip.offsetWidth, bw = box.clientWidth;
+      var left = cx + 12 + tw <= bw ? cx + 12 : cx - 12 - tw;
+      tip.style.left = Math.max(0, Math.min(bw - tw, left)) + 'px';
+    }
+    function hide() { g.style('display', 'none'); tip.hidden = true; cur = -1; }
+    node.addEventListener('pointerdown', show);
+    node.addEventListener('pointermove', show);
+    node.addEventListener('pointerleave', function (ev) { if (ev.pointerType === 'mouse') hide(); });
+    document.addEventListener('pointerdown', function (ev) { if (!node.contains(ev.target)) hide(); });
+  }
   function sparkline(id, pts, o) {
     var box = document.getElementById(id); box.textContent = '';
     var W = Math.max(240, box.clientWidth), H = 92, m = { t: 18, b: 18, l: 2, r: 4 };
@@ -532,18 +575,19 @@ function main(FEED) {
       svg.append('text').attr('x', cx).attr('y', cy - 7).attr('text-anchor', anchor).text(mk.t).style('fill', 'var(--fg)').style('font-weight', mk.big ? 700 : 500).style('font-size', '10.5px');
     });
     o.axis.forEach(function (a) { svg.append('text').attr('x', x(a.x)).attr('y', H - 3).attr('text-anchor', a.anchor || 'middle').text(a.t); });
+    hover(box, svg, H, m, pts.map(function (d) { return { px: x(d.x), t: o.tlab(d.x, d), rows: [{ c: 'var(--fr)', n: 'France', py: y(d.v), s: o.vfmt(d.v) }] }; }));
   }
   function spark() {
     var firstDaily = new Date(DAILY[0][0] + 'T12:00:00'), oneYear = new Date(rd); oneYear.setFullYear(oneYear.getFullYear() - 1);
-    var rp = MONTHLY.map(function (d) { return { x: new Date(d[0], d[1], 15), v: d[2] }; }).filter(function (p) { return p.x < firstDaily && p.x >= new Date(oneYear.getFullYear(), oneYear.getMonth(), 1); })
+    var rp = MONTHLY.map(function (d) { return { x: new Date(d[0], d[1], 15), v: d[2], mo: 1 }; }).filter(function (p) { return p.x < firstDaily && p.x >= new Date(oneYear.getFullYear(), oneYear.getMonth(), 1); })
       .concat(DAILY.map(function (d) { return { x: new Date(d[0] + 'T12:00:00'), v: d[1] }; }).filter(function (p) { return p.x >= new Date(oneYear.getFullYear(), oneYear.getMonth(), 1); }));
     var vmin = d3.min(rp, function (p) { return p.v; }), vmax = d3.max(rp, function (p) { return p.v; });
-    sparkline('spark-rate', rp, { time: 1, dom: [Math.floor(vmin * 2) / 2 - 0.3, Math.ceil(vmax * 2) / 2 + 0.3], label: 'Taux à 10 ans de la France sur un an',
+    sparkline('spark-rate', rp, { time: 1, dom: [Math.floor(vmin * 2) / 2 - 0.3, Math.ceil(vmax * 2) / 2 + 0.3], label: 'Taux à 10 ans de la France sur un an', tlab: function (d, p) { return p.mo ? d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) + ' (moyenne)' : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); }, vfmt: function (v) { return fmt(v, 2) + ' %'; },
       marks: [{ x: rp[0].x, t: fmt(rp[0].v, 2) + ' %' }, { x: rp[rp.length - 1].x, t: fmt(LIVE.rate, 2) + ' %', big: 1 }],
       axis: [{ x: rp[0].x, t: rp[0].x.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }), anchor: 'start' }, { x: rp[rp.length - 1].x, t: dayName(LIVE.rateDate), anchor: 'end' }] });
     var pd = new Date(LIVE.pibDate + 'T12:00:00'), px = pd.getFullYear() + (pd.getMonth() + 1) / 12;
     var dp = D.dette.fr.map(function (v, i) { return { x: Y0 + i, v: v }; }).concat([{ x: px, v: LIVE.pib }]);
-    sparkline('spark', dp, { dom: [45, 132], label: 'Dette publique en % du PIB depuis 1995',
+    sparkline('spark', dp, { dom: [45, 132], label: 'Dette publique en % du PIB depuis 1995', tlab: function (v) { return v === px ? qName(LIVE.pibDate) : String(v); }, vfmt: function (v) { return fmt(v, 1) + ' %'; },
       marks: [{ x: 1995, t: '58 %' }, { x: 2007, t: '66 %' }, { x: 2020, t: '115 %' }, { x: px, t: fmt(Math.round(LIVE.pib)) + ' %', big: 1 }],
       axis: [{ x: 1995, t: '1995', anchor: 'start' }, { x: 2007, t: '2007' }, { x: 2020, t: '2020' }, { x: px, t: qName(LIVE.pibDate), anchor: 'end' }] });
   }
@@ -823,14 +867,20 @@ function main(FEED) {
     ends.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
     ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+    var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); });
+    xs.sort(function (a, b) { return a - b; });
+    var tf = o.tfmt || o.efmt || function (v) { return fmt(v, 1) + (o.unit || ''); };
+    hover(box, svg, H, m, xs.map(function (xv) {
+      return { px: x(xv), t: String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n || SNAME[s.c] || '', py: y(d.v), s: tf(d.v) } : null; }).filter(Boolean) };
+    }));
   }
   var ser = function (arr) { return arr.map(function (v, i) { return { x: Y0 + i, v: v }; }); };
   var XT = [1995, 2000, 2005, 2010, 2015, 2020, 2025], XD = [1994.5, 2025.5];
   function four() {
-    lineChart('ch-dette', [{ c: 'var(--us)', data: ser(D.dette.us) }, { c: 'var(--de)', data: ser(D.dette.de) }, { c: 'var(--ea)', dash: 1, data: ser(D.dette.ea) }, { c: 'var(--fr)', main: 1, data: ser(D.dette.fr) }], { x: XD, xt: XT, bands: 1, label: 'Dette publique en % du PIB, France, zone euro, Allemagne et États-Unis, 1995-2025' });
-    lineChart('ch-deficit', [{ c: 'var(--us)', data: ser(D.deficit.us) }, { c: 'var(--de)', data: ser(D.deficit.de) }, { c: 'var(--ea)', dash: 1, data: ser(D.deficit.ea) }, { c: 'var(--fr)', main: 1, data: ser(D.deficit.fr) }], { x: XD, xt: XT, bands: 1, min: -15, max: 2, label: 'Solde public en % du PIB, France, zone euro, Allemagne et États-Unis, 1995-2025' });
-    lineChart('ch-dep', [{ c: 'var(--us)', data: ser(D.dep.us) }, { c: 'var(--de)', data: ser(D.dep.de) }, { c: 'var(--ea)', dash: 1, data: ser(D.dep.ea) }, { c: 'var(--fr)', main: 1, data: ser(D.dep.fr) }], { x: XD, xt: XT, bands: 1, label: 'Dépenses publiques en % du PIB, 1995-2025' });
-    lineChart('ch-po', [{ c: 'var(--us)', data: ser(D.po.us) }, { c: 'var(--de)', data: ser(D.po.de) }, { c: 'var(--ea)', dash: 1, data: ser(D.po.ea) }, { c: 'var(--fr)', main: 1, data: ser(D.po.fr) }], { x: XD, xt: XT, bands: 1, label: 'Impôts et cotisations en % du PIB, 1995-2024' });
+    lineChart('ch-dette', [{ c: 'var(--us)', data: ser(D.dette.us) }, { c: 'var(--de)', data: ser(D.dette.de) }, { c: 'var(--ea)', dash: 1, data: ser(D.dette.ea) }, { c: 'var(--fr)', main: 1, data: ser(D.dette.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, label: 'Dette publique en % du PIB, France, zone euro, Allemagne et États-Unis, 1995-2025' });
+    lineChart('ch-deficit', [{ c: 'var(--us)', data: ser(D.deficit.us) }, { c: 'var(--de)', data: ser(D.deficit.de) }, { c: 'var(--ea)', dash: 1, data: ser(D.deficit.ea) }, { c: 'var(--fr)', main: 1, data: ser(D.deficit.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, min: -15, max: 2, label: 'Solde public en % du PIB, France, zone euro, Allemagne et États-Unis, 1995-2025' });
+    lineChart('ch-dep', [{ c: 'var(--us)', data: ser(D.dep.us) }, { c: 'var(--de)', data: ser(D.dep.de) }, { c: 'var(--ea)', dash: 1, data: ser(D.dep.ea) }, { c: 'var(--fr)', main: 1, data: ser(D.dep.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, label: 'Dépenses publiques en % du PIB, 1995-2025' });
+    lineChart('ch-po', [{ c: 'var(--us)', data: ser(D.po.us) }, { c: 'var(--de)', data: ser(D.po.de) }, { c: 'var(--ea)', dash: 1, data: ser(D.po.ea) }, { c: 'var(--fr)', main: 1, data: ser(D.po.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, label: 'Impôts et cotisations en % du PIB, 1995-2024' });
   }
   var pibMode = 'lvl';
   function pibChart() {
@@ -885,6 +935,12 @@ function main(FEED) {
       svg.append('circle').attr('cx', x(l.d)).attr('cy', y(l.v)).attr('r', 4).attr('fill', s[1]);
       svg.append('text').attr('x', x(l.d) + 6).attr('y', y(l.v) + 4).text(l.v).style('fill', s[1]).style('font-weight', 600);
     });
+    hover(box, svg, H, m, sFR.map(function (f, i) {
+      var last = i === sFR.length - 1, it = sIT[i];
+      var ev = EVENTS.filter(function (e) { return !last && e.d.getFullYear() === f.d.getFullYear() && e.d.getMonth() === f.d.getMonth(); })[0];
+      return { px: x(f.d), t: last ? f.d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : f.d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) + ' (moyenne)', note: ev ? ev.t : '',
+        rows: [{ c: 'var(--fr)', n: 'France', py: y(f.v), s: f.v + ' pb' }].concat(it ? [{ c: 'var(--it)', n: 'Italie', py: y(it.v), s: it.v + ' pb' }] : []) };
+    }));
   }
   var ev = document.getElementById('events');
   EVENTS.forEach(function (e, i) {
@@ -989,6 +1045,9 @@ function main(FEED) {
     ends.forEach(function (e) { svg.append('text').attr('x', e.x + 5).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', 600).style('font-size', '10.5px'); });
     svg.append('text').attr('x', m.l).attr('y', H - 3).text(moLab(0)).style('font-size', '10px');
     svg.append('text').attr('x', W - m.r).attr('y', H - 3).attr('text-anchor', 'end').text(moLab(n - 1)).style('font-size', '10px');
+    hover(box, svg, H, m, d3.range(n).map(function (i) {
+      return { px: x(i), t: moDate(i).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }), rows: [[fr, 'var(--fr)', 'France'], [ea, 'var(--ea)', 'Zone euro']].filter(function (s) { return s[0][i] != null; }).map(function (s) { return { c: s[1], n: s[2], py: y(s[0][i]), s: fmt(s[0][i], 1) + unit }; }) };
+    }));
   }
   function renderMonth() {
     var mName = function (i) { return moDate(i).toLocaleDateString('fr-FR', { month: 'long' }); };
