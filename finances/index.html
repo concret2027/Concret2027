@@ -114,6 +114,7 @@ section[id], details[id] { scroll-margin-top: 64px; }
 .actu .d { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; }
 .actu a { color: var(--muted); font-size: 12px; }
 .actu .next { font-weight: 600; }
+.upd { margin: -12px 0 0; font-size: 12.5px; color: var(--muted); }
 /* Résumé */
 .summary { display: grid; gap: 10px; }
 .bilan summary { cursor: pointer; list-style: none; display: grid; gap: 2px; }
@@ -235,6 +236,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/">Baromètre 2027</a><a href="/finances/" aria-current="page">Finances publiques</a><span class="soon">Éducation · Sécurité · Vie des Français : bientôt</span></nav>
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><b>Finances publiques</b><span id="today"></span></div>
+  <p class="upd" id="upd">Chargement des données…</p>
   <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#courbes">Courbes</a><a href="#richesse">Richesse</a><a href="#marches">Marchés</a></nav>
 
 
@@ -1033,6 +1035,17 @@ function main(FEED) {
       li.appendChild(d); li.appendChild(t); ul.insertBefore(li, ul.firstChild);
     }
     document.getElementById('teaser-actu').textContent = next ? 'À venir, le ' + next.d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + ' : ' + next.t.replace(/\s*\(.*\)$/, '') + '.' : A[0].texte;
+  })();
+  // ===== Heure de mise à jour et prochaine mise à jour (même logique que le Baromètre) =====
+  (function () {
+    var el = document.getElementById('upd'), d = FEED && FEED.updated_iso ? new Date(FEED.updated_iso) : null;
+    if (!d || isNaN(d)) { el.textContent = 'Mise à jour automatique chaque jour vers midi.'; return; }
+    var tz = { timeZone: 'Europe/Paris' };
+    var dayOf = function (t) { return new Date(t).toLocaleDateString('fr-CA', tz); };
+    var hourOf = function (t) { return +new Date(t).toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23' }); };
+    var now = Date.now(), todayDone = dayOf(d.getTime()) === dayOf(now) && hourOf(d.getTime()) >= 11;
+    var nextTxt = (hourOf(now) < 13 && !todayDone) ? 'aujourd\u2019hui vers midi' : new Date(now + 864e5).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' }) + ' vers midi';
+    el.textContent = 'Dernière mise à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ') + ' · prochaine : ' + nextTxt + ' (une par jour)';
   })();
   // ===== Alerte si la mise à jour automatique n'a pas tourné =====
   (function () {
