@@ -64,11 +64,11 @@ html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 /* Sommaire collant */
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
-.jump { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.jump { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 44px)); z-index: 9; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .jump::-webkit-scrollbar { display: none; }
 .jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
 .jump a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
-section[id], details[id] { scroll-margin-top: 64px; }
+section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .flash { animation: flash 1.6s ease-out; }
 @keyframes flash { 0% { background: var(--band); box-shadow: 0 0 0 3px var(--fr); border-radius: 10px; } 100% { box-shadow: 0 0 0 0 transparent; } }
 @media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
@@ -102,7 +102,9 @@ section[id], details[id] { scroll-margin-top: 64px; }
 .acc[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
 
 /* Menu du site */
-.site { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; font-size: 14px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.site { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 11; display: flex; flex-wrap: nowrap; align-items: baseline; gap: 16px; font-size: 14px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; margin: -16px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 10px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.site::-webkit-scrollbar { display: none; }
+@media (max-width: 520px) { .site { gap: 14px; } .site .lg { display: none; } .site a.logo { font-size: 18px; margin-right: 0; } }
 .site a { color: var(--muted); text-decoration: none; font-weight: 500; }
 .site a[aria-current="page"] { color: var(--fg); font-weight: 700; border-bottom: 2px solid var(--fr); }
 .site a.logo { font-family: var(--serif); font-size: 20px; color: var(--fg); font-weight: 500; margin-right: 6px; }
@@ -245,7 +247,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 </head>
 <body>
 <div class="wrap">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/">Baromètre 2027</a><a href="/finances/">Finances publiques</a><a href="/education/" aria-current="page">Éducation</a><span class="soon">Sécurité · Vie des Français : bientôt</span></nav>
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/" aria-current="page">Éducation</a><span class="soon">Bientôt : Sécurité · Vie des Français</span></nav>
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><b>Éducation</b><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
@@ -785,5 +787,6 @@ function main(FEED) {
   setTimeout(function () { go(null); }, 4000);
 })();
 </script>
+<script>(function () { var n = document.querySelector('.site'); if (!n) return; var f = function () { document.documentElement.style.setProperty('--navh', n.offsetHeight + 'px'); }; f(); if (window.ResizeObserver) new ResizeObserver(f).observe(n); else addEventListener('resize', f); })();</script>
 </body>
 </html>
