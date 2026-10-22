@@ -344,6 +344,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .fold > .charts4 { padding: 0 10px 10px; }
 .fold .card { border-color: var(--grid); }
 .lire { margin: 0; font-size: 14.5px; line-height: 1.5; } .lire b.g { color: var(--ok); } .lire b.b { color: var(--bad); }
+.t-sum { margin: 0; font-size: 14px; color: var(--muted); } .t-sum .ic { display: inline-flex; gap: 4px; margin-right: 8px; } .t-sum .ic i { font-style: normal; font-weight: 700; } .t-sum .ic i.g { color: var(--ok); } .t-sum .ic i.b { color: var(--bad); } .t-sum .ic i.m { color: var(--mid); }
+.fold-in { display: grid; gap: 12px; padding: 0 10px 10px; } .defs { font-size: 12px; }
 .acc.theme .acc-h { font-size: 18px; } .acc-t .ic { display: inline-flex; gap: 4px; margin-right: 6px; } .acc-t .ic i { font-style: normal; font-weight: 700; } .acc-t .ic i.g { color: var(--ok); } .acc-t .ic i.b { color: var(--bad); } .acc-t .ic i.m { color: var(--mid); }
 .acc.theme > .acc-body > .card { border: 0; padding: 0 4px; background: none; }
 .checks.sub { margin-top: 6px; gap: 4px; font-size: 13px; color: var(--muted); }
@@ -372,14 +374,17 @@ footer p { margin: 0; } footer a { color: inherit; }
       <section class="today" aria-label="Les chiffres clés">
         <div class="today-grid">
           <div class="metric">
-            <span class="lab">Déficit de la branche maladie</span>
+            <span class="lab">Ce qui manque chaque année à l'Assurance maladie</span>
             <div class="row"><span class="num" id="k-def">—</span><span class="delta up" id="k-def-y"></span></div>
             <div class="foot" id="k-def-t"></div>
+            <div class="chart" id="sp-def"></div>
           </div>
           <div class="metric">
             <span class="lab">Espérance de vie à la naissance</span>
             <div class="row"><span class="num" id="k-esp">—</span><span class="delta" id="k-esp-d"></span></div>
             <div class="foot" id="k-esp-t"></div>
+            <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span></div>
+            <div class="chart" id="sp-esp"></div>
           </div>
         </div>
       </section>
@@ -391,20 +396,13 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="acc-body card">
       <div class="month" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr))">
         <div class="mo">
-          <span class="mo-lab" id="p-lab">Prix de la santé sur un an</span>
+          <span class="mo-lab" id="p-lab">Prix des soins sur un an</span>
+          <span class="mo-t" id="p-ex"></span>
           <span class="mo-num" id="p-num">—</span>
           <span class="delta" id="p-delta"></span>
           <span class="mo-t" id="p-t"></span>
           <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span></div>
           <div class="chart" id="mo-p"></div>
-        </div>
-        <div class="mo">
-          <span class="mo-lab" id="d-lab">Décès en plus par rapport à 2016-2019</span>
-          <span class="mo-num" id="d-num">—</span>
-          <span class="delta" id="d-delta"></span>
-          <span class="mo-t" id="d-t"></span>
-          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span></div>
-          <div class="chart" id="mo-d"></div>
         </div>
       </div>
     </div>
@@ -535,7 +533,7 @@ function main(FEED) {
   function rowHtml(x, sub) {
     var h = sub ? ' data-sub="' + sub + '" hidden' : '';
     return '<tr class="nm' + (sub ? ' sub' : '') + '"' + h + '><td>' + esc(x.c.lc || x.c.l) + '</td><td>' + x.fr + (x.fe ? '<small>' + x.fe + '</small>' : '') + '</td><td>' + x.ref + '<small>' + x.re + '</small></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>' +
-      '<tr class="xp' + (sub ? ' sub' : '') + '"' + h + '><td colspan="4">' + esc(x.c.ex || unitOf(x.c)) + ' · ' + x.y + '</td></tr>';
+      '<tr class="xp' + (sub ? ' sub' : '') + '"' + h + '><td colspan="4">' + esc(x.c.ex || unitOf(x.c)) + ' · ' + x.y + (x.c.sc ? ' · Source : ' + lien(x.c, x.c.sc) : '') + '</td></tr>';
   }
   function tableEtat(e) {
     return '<table class="cmp"><thead><tr><th></th><th>France</th><th>Voisins</th><th></th></tr></thead><tbody>' + e.l.map(function (x) {
@@ -847,11 +845,12 @@ function main(FEED) {
 
   // ===== Les cinq questions =====
   var FOLDS = [];
-  var srcNote = function (c) { return c.source ? 'Source : ' + c.source + '.' : ''; };
+  var lien = function (c, txt) { return c.url ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">' + esc(txt) + '</a>' : esc(txt); };
+  var srcNote = function (c) { return c.source ? 'Source : ' + lien(c, c.source) + '.' : ''; };
   // Ce qu'on montre en plus, sans le noter, sous chaque question.
   var EN_PLUS = {
     vie: function (w) {
-      var a = serieCard(w, 'ch-a-hly', AFF.hly, 'affiché, non noté', { affiche: true });
+      var a = serieCard(w, 'ch-a-hly', AFF.hly, 'chiffre de contexte, sans note', { affiche: true });
       var E = SER.EQUITE.esperance, sec = document.createElement('section'); sec.className = 'card';
       sec.innerHTML = '<h2><span class="eyebrow">Espérance de vie selon le niveau de vie · affiché, non noté</span></h2><p class="insight"></p><p class="note"></p>';
       sec.querySelector('.insight').textContent = E.texte;
@@ -859,11 +858,11 @@ function main(FEED) {
       w.appendChild(sec); return [a];
     },
     cout: function (w) {
-      var a = serieCard(w, 'ch-a-dep', AFF.depense, 'affiché, non noté', { affiche: true }), b = serieCard(w, 'ch-a-med', AFF.medic, 'affiché, non noté', { affiche: true });
-      var sec = card(w, 'ch-scatter', 'Dépense de santé et espérance de vie', 'affiché, non noté');
+      var a = serieCard(w, 'ch-a-dep', AFF.depense, 'chiffre de contexte, sans note', { affiche: true }), b = (function () { var M = AFF.medic, n = M.y.length - 1; M.note = 'En ' + M.y[n] + ' : France ' + fmt(M.md.fr[n] / 1000, 1) + ' Md€, Allemagne ' + fmt(M.md.de[n] / 1000, 1) + ' Md€, Espagne ' + fmt(M.md.es[n] / 1000, 1) + ' Md€.'; return serieCard(w, 'ch-a-med', M, 'chiffre de contexte, sans note', { affiche: true }); })();
+      var sec = card(w, 'ch-scatter', 'Dépense de santé et espérance de vie', 'chiffre de contexte, sans note');
       return [a, b, function () { sec.querySelector('.note').innerHTML = scatter('ch-scatter'); }];
     },
-    prev: function (w) { return [serieCard(w, 'ch-a-tabac', AFF.tabac, 'affiché, non noté', { affiche: true })]; }
+    prev: function (w) { return [serieCard(w, 'ch-a-tabac', AFF.tabac, 'chiffre de contexte, sans note', { affiche: true })]; }
   };
   function scatter(id) {
     var K = AFF.depense, E = C.esp, W = ['fr', 'ue', 'de', 'us'], yr = null;
@@ -898,42 +897,40 @@ function main(FEED) {
     });
     return out;
   }
+  // Chaque thème : la courbe principale visible ; le tableau, les définitions et les autres courbes dans un dépliant.
+  var MAIN = [];
   function buildThemes() {
     var root = document.getElementById('questions');
     THEMES.forEach(function (t) {
       var e = themeEtat(t), cs = courbes(t), m0 = cs[0], c = m0.c;
-      var acc = document.createElement('details'); acc.className = 'acc theme'; acc.id = 'q-' + t.k;
-      acc.innerHTML = '<summary><span class="acc-h"></span><span class="acc-t"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span> la France fait mieux sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n + '</span><span class="acc-cta"></span></summary>';
-      acc.querySelector('.acc-h').textContent = t.q;
-      var body = document.createElement('div'); body.className = 'acc-body'; acc.appendChild(body);
-      var sec = document.createElement('section'); sec.className = 'card';
+      var sec = document.createElement('section'); sec.className = 'card theme'; sec.id = 'q-' + t.k;
       var pn = PRES.map(function (g) { return { g: g, n: SAN.noteTheme(g, t) }; }).reverse();
       var defs = [];
-      t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || '') + (x.source ? ' Source : ' + x.source + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + q.l + ' (' + q.unite + '). Source : ' + q.source + '.'); }); });
-      sec.innerHTML = tableEtat(e) +
-        '<span class="eyebrow" style="margin:6px 0 0">' + c.l + ', ' + c.unite + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p>' +
-        '<details class="def"><summary>Définitions et sources</summary><p class="note">' + defs.join('<br>') + '</p></details>' +
+      t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || esc(x.ex || '')) + (x.source ? ' Source : ' + lien(x, x.source) + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + esc(q.l) + ' (' + esc(q.unite) + '). Source : ' + lien(q, q.source) + '.'); }); });
+      sec.innerHTML = '<h2></h2><p class="t-sum"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>La France fait mieux que ses voisins sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n + ' (dernier chiffre connu).</p>' +
+        '<span class="eyebrow" style="margin:4px 0 0">' + esc(c.l) + ', ' + esc(c.unite) + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p>' +
         '<p class="tnotes">Note de ce thème, sur 20 (10 = la France a progressé autant que ses voisins) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>';
-      body.appendChild(sec);
+      sec.querySelector('h2').textContent = t.q;
+      root.appendChild(sec);
+      MAIN.push(function () { sec.querySelector('.note').innerHTML = [serieChart('ch-' + m0.id, c), srcNote(c)].filter(Boolean).join(' '); });
       var autres = cs.slice(1), grid = document.createElement('div'); grid.className = 'charts4';
       var more = autres.map(function (o) { return serieCard(grid, 'ch-' + o.id, o.c, o.tag, o.id === 'equ' ? { unit: ' pt' } : null); });
       if (EN_PLUS[t.k]) more = more.concat(EN_PLUS[t.k](grid));
-      root.appendChild(acc);
-      var g = { el: acc, draw: function () { sec.querySelector('.note').innerHTML = serieChart('ch-' + m0.id, c); } };
-      acc.addEventListener('toggle', function () { if (acc.open) g.draw(); });
-      FOLDS.push(g);
-      if (grid.children.length) {
-        var fold = document.createElement('details'); fold.className = 'fold';
-        fold.innerHTML = '<summary>Les autres courbes (' + grid.children.length + ')</summary>';
-        fold.appendChild(grid); body.appendChild(fold);
-        var f = { el: fold, draw: function () { more.forEach(function (d) { d(); }); } };
-        fold.addEventListener('toggle', function () { if (fold.open) f.draw(); });
-        FOLDS.push(f);
-      }
+      var fold = document.createElement('details'); fold.className = 'fold';
+      fold.innerHTML = '<summary>Le détail : tous les chiffres, les sources' + (grid.children.length ? ' et ' + grid.children.length + ' autres courbes' : '') + '</summary>';
+      var inner = document.createElement('div'); inner.className = 'fold-in';
+      inner.innerHTML = tableEtat(e) + '<p class="note defs">' + defs.join('<br>') + '</p>';
+      inner.appendChild(grid); fold.appendChild(inner); sec.appendChild(fold);
+      var f = { el: fold, draw: function () { more.forEach(function (d) { d(); }); } };
+      fold.addEventListener('toggle', function () { if (fold.open) f.draw(); });
+      FOLDS.push(f);
     });
-    // Un lien vers un thème (sommaire, partage) ouvre ce thème.
-    function ouvrir() { var el = location.hash && document.getElementById(location.hash.slice(1)); if (el && el.tagName === 'DETAILS' && !el.open) el.open = true; }
-    window.addEventListener('hashchange', ouvrir); ouvrir();
+  }
+  // Mini-courbes du haut de page : déficit de l'Assurance maladie, espérance de vie France et UE.
+  function drawToday() {
+    var s = C.secu, e = C.esp, ser = function (c, w) { return c.y.map(function (y, i) { return { x: y, v: c[w][i] }; }); };
+    lineChart('sp-def', [{ c: 'var(--fr)', main: 1, n: 'Déficit', data: ser(s, 'md') }], { x: [s.y[0] - .5, s.y[s.y.length - 1] + .5], xt: [s.y[0], 2010, 2015, 2020, s.y[s.y.length - 1]], dec: 1, unit: ' Md€', h: 140, label: 'Déficit de l\'Assurance maladie, milliards d\'euros' });
+    lineChart('sp-esp', [{ c: 'var(--ea)', dash: 1, data: ser(e, 'ue') }, { c: 'var(--fr)', main: 1, data: ser(e, 'fr') }], { x: [e.y[0] - .5, e.y[e.y.length - 1] + .5], xt: [e.y[0], 2010, 2015, 2020, e.y[e.y.length - 1]], dec: 1, unit: ' ans', h: 140, label: 'Espérance de vie à la naissance, France et Union européenne' });
   }
 
   // ===== La règle, indicateur par indicateur (tirée des données, pour rester à jour) =====
@@ -965,37 +962,38 @@ function main(FEED) {
     var s = C.secu, ks = lastOf(s, 'fr'), md = s.md[s.y.indexOf(ks.y)], e = C.esp, ef = lastOf(e, 'fr'), eu = SAN.val(e, 'ue', ef.y);
     var nd = (ks.y % 4 === 0 ? 366 : 365);
     setHtml('k-def', fmt(Math.abs(md), 1) + '<small>Md€</small>'); setHtml('k-def-y', 'en ' + ks.y);
-    setHtml('k-def-t', 'Soit <b>' + fmt(Math.abs(md) * 1000 / nd, 1) + ' M€ par jour</b>. Pour 2027, le gouvernement vise un déficit de toute la Sécurité sociale de <b>' + fmt(PV('deficit_secu_2027_vise') / 1e9, 1) + ' Md€</b>, contre ' + fmt(PV('deficit_secu_2027_spontane') / 1e9, 1) + ' Md€ sans mesures nouvelles (projet de budget, 1er octobre 2026).');
+    var i10 = s.y.indexOf(ks.y - 10), worst = s.md.reduce(function (m, v, i) { return v != null && v < m.v ? { v: v, y: s.y[i] } : m; }, { v: 0, y: null });
+    setHtml('k-def-t', 'C\'est le déficit de la branche maladie de la Sécurité sociale : ce qu\'elle rembourse en plus de ce qu\'elle encaisse. Soit <b>' + fmt(Math.abs(md) * 1000 / nd, 1) + ' M€ par jour</b> (' + (i10 >= 0 && s.md[i10] != null ? fmt(Math.abs(s.md[i10]), 1) + ' Md€ en ' + s.y[i10] + ', ' : '') + 'record : ' + fmt(Math.abs(worst.v), 1) + ' Md€ en ' + worst.y + '). ' + Object.keys(s.manque || {}).map(function (y) { return 'Pas de point en ' + y + ' : le chiffre publié est incohérent avec son propre graphique, en attente de vérification.'; }).join(' ') + ' Source : ' + lien(s, 'Direction de la Sécurité sociale') + '. Pour 2027, le gouvernement vise un déficit de toute la Sécurité sociale de <b>' + fmt(PV('deficit_secu_2027_vise') / 1e9, 1) + ' Md€</b>, contre ' + fmt(PV('deficit_secu_2027_spontane') / 1e9, 1) + ' Md€ sans mesures nouvelles (' + lien({ url: SER.P.deficit_secu_2027_vise.url }, 'projet de budget, 1er octobre 2026') + ').');
     setHtml('k-esp', fmt(ef.v, 1) + '<small>ans</small>'); setHtml('k-esp-d', (ef.v - eu >= 0 ? '+' : '−') + fmt(Math.abs(ef.v - eu), 1) + ' an face à l\'UE'); document.getElementById('k-esp-d').className = 'delta ' + (ef.v >= eu ? 'dn' : 'up');
-    setHtml('k-esp-t', 'Pour un bébé né en ' + ef.y + '. Moyenne de l\'UE : <b>' + fmt(eu, 1) + ' ans</b> ; Allemagne : ' + fmt(SAN.val(e, 'de', ef.y), 1) + ' ; Espagne : ' + fmt(SAN.val(e, 'es', ef.y), 1) + '.');
-    var pf = MO.prix, pi = lastIdx(pf.fr), dd = MO.deces, di = lastIdx(dd.fr), ra = C.rac, rf = lastOf(ra, 'fr'), rn = C.ren, nf = lastOf(rn, 'fr'), es = C.essais, ef2 = lastOf(es, 'fr'), wd = C.wd, wf = lastOf(wd, 'fr');
+    var e10 = SAN.val(e, 'fr', ef.y - 10), u10 = SAN.val(e, 'ue', ef.y - 10);
+    setHtml('k-esp-t', 'L\'âge moyen qu\'atteindra un bébé né en ' + ef.y + '. En 10 ans : <b>' + sg(ef.v - e10, 1) + ' an</b> en France, ' + sg(eu - u10, 1) + ' dans l\'UE. Moyenne de l\'UE : <b>' + fmt(eu, 1) + ' ans</b> ; Allemagne : ' + fmt(SAN.val(e, 'de', ef.y), 1) + ' ; Espagne : ' + fmt(SAN.val(e, 'es', ef.y), 1) + '. Source : ' + lien(e, 'Eurostat') + '.');
+    var pf = MO.prix, pi = lastIdx(pf.fr), ra = C.rac, rf = lastOf(ra, 'fr'), rn = C.ren, nf = lastOf(rn, 'fr'), es = C.essais, ef2 = lastOf(es, 'fr'), wd = C.wd, wf = lastOf(wd, 'fr');
     var FACTS = [
       'En ' + ks.y + ', la branche maladie de la Sécurité sociale a perdu <b>' + fmt(Math.abs(md), 1) + ' milliards d\'euros</b>, soit ' + fmt(Math.abs(md) * 1000 / nd, 1) + ' millions par jour.',
       'Un bébé né en France en ' + ef.y + ' peut espérer vivre <b>' + fmt(ef.v, 1) + ' ans</b>, contre ' + fmt(eu, 1) + ' ans en moyenne dans l\'Union européenne.',
       'Les Français paient de leur poche <b>' + fmt(rf.v, 1) + ' %</b> de leurs dépenses de santé, contre ' + fmt(SAN.val(ra, 'ue', rf.y), 1) + ' % en moyenne dans l\'UE (' + rf.y + ').',
       'En ' + nf.y + ', <b>' + fmt(nf.v, 1) + ' %</b> des adultes ont renoncé à voir un médecin (trop cher, trop loin, trop d\'attente), contre ' + fmt(SAN.val(rn, 'ue', nf.y), 1) + ' % dans l\'UE.',
-      'Prix de la santé en ' + moName(pf, pi) + ' : <b>' + sg(pf.fr[pi], 1) + ' %</b> sur un an en France, ' + sg(pf.ue[pi], 1) + ' % en moyenne dans l\'UE.',
+      'Ce que paient les patients pour se soigner, après remboursements : <b>' + sg(pf.fr[pi], 1) + ' %</b> sur un an en France en ' + moName(pf, pi) + ', ' + sg(pf.ue[pi], 1) + ' % en moyenne dans l\'UE.',
       '<b>' + fmt(es.n.fr[es.y.indexOf(ef2.y)]) + ' essais cliniques</b> ont démarré en France en ' + ef2.y + ', soit ' + fmt(ef2.v, 1) + ' par million d\'habitants, contre ' + fmt(SAN.val(es, 'de', ef2.y), 1) + ' en Allemagne.',
-      '<b>' + fmt(wf.v) + ' %</b> des nouveaux médicaments autorisés en Europe sont accessibles aux patients en France, contre ' + fmt(SAN.val(wd, 'de', wf.y)) + ' % en Allemagne (étude W.A.I.T., financée par l\'industrie).',
-      'En ' + moName(dd, di, 1) + ', la France a compté <b>' + sg(dd.fr[di], 1) + ' %</b> de décès par rapport à la moyenne de 2016-2019, contre ' + sg(dd.ue[di], 1) + ' % dans l\'UE.'
+      '<b>' + fmt(wf.v) + ' %</b> des nouveaux médicaments autorisés en Europe sont accessibles aux patients en France, contre ' + fmt(SAN.val(wd, 'de', wf.y)) + ' % en Allemagne (étude W.A.I.T., financée par l\'industrie).'
     ];
     document.getElementById('daily-lab').textContent = 'Le chiffre du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
     setHtml('daily-text', pick(FACTS));
-    setHtml('teaser-today', 'Branche maladie : <b>−' + fmt(Math.abs(md), 1) + '&nbsp;Md€</b> en ' + ks.y + ' · Espérance de vie : <b>' + fmt(ef.v, 1) + '&nbsp;ans</b> · Le chiffre du jour');
+    setHtml('teaser-today', 'Déficit de l\'Assurance maladie : <b>' + fmt(Math.abs(md), 1) + '&nbsp;Md€</b> en ' + ks.y + ' · Espérance de vie : <b>' + fmt(ef.v, 1) + '&nbsp;ans</b> · Le chiffre du jour');
   })();
 
-  // ===== Ce mois-ci : prix de la santé et décès (Eurostat, mensuel) =====
+  // ===== Ce mois-ci : prix des soins payés par les patients (Eurostat, mensuel) =====
   function moBloc(o, k) {
     var i = lastIdx(o.fr), j = lastIdx(o.ue), g = Math.round((o.fr[i] - o.ue[Math.min(i, j)]) * 10) / 10;
-    setHtml(k + '-lab', o.l + ' · ' + moName(o, i));
+    setHtml(k + '-lab', 'Prix des soins sur un an · ' + moName(o, i));
     setHtml(k + '-num', sg(o.fr[i], 1) + ' % <small>en France</small>');
     var d = document.getElementById(k + '-delta'); d.textContent = fmt(Math.abs(g), 1) + ' pt ' + (g > 0 ? 'au-dessus' : 'en dessous') + ' de la moyenne de l\'UE'; d.className = 'delta ' + (g > 0 ? 'up' : 'dn');
-    setHtml(k + '-t', sg(o.fr[i - 1], 1) + ' % le mois précédent. UE : ' + sg(o.ue[j], 1) + ' % ; Allemagne : ' + sg(o.de[lastIdx(o.de)], 1) + ' % ; Espagne : ' + sg(o.es[lastIdx(o.es)], 1) + ' %. Source : ' + o.source + '.');
+    setHtml(k + '-t', sg(o.fr[i - 1], 1) + ' % le mois précédent. UE : ' + sg(o.ue[j], 1) + ' % ; Allemagne : ' + sg(o.de[lastIdx(o.de)], 1) + ' % ; Espagne : ' + sg(o.es[lastIdx(o.es)], 1) + ' %. Source : ' + lien(o, o.source) + '.');
     return { i: i, j: j };
   }
   (function () {
-    var a = moBloc(MO.prix, 'p'), b = moBloc(MO.deces, 'd');
-    setHtml('teaser-month', 'Prix de la santé <b>' + sg(MO.prix.fr[a.i], 1) + '&nbsp;%</b> sur un an (UE ' + sg(MO.prix.ue[a.j], 1) + '&nbsp;%) · Décès <b>' + sg(MO.deces.fr[b.i], 1) + '&nbsp;%</b> par rapport à 2016-2019');
+    var a = moBloc(MO.prix, 'p'); setHtml('p-ex', esc(MO.prix.ex));
+    setHtml('teaser-month', 'Prix des soins payés par les patients : <b>' + sg(MO.prix.fr[a.i], 1) + '&nbsp;%</b> sur un an en ' + moName(MO.prix, a.i) + ', contre ' + sg(MO.prix.ue[a.j], 1) + '&nbsp;% dans l\'UE');
   })();
   function moChart(id, o) {
     var box = document.getElementById(id); box.textContent = '';
@@ -1014,7 +1012,7 @@ function main(FEED) {
       return { px: x(i), t: moName(o, i, 1), rows: [[fr, 'var(--fr)', 'France'], [ue, 'var(--ea)', 'Union européenne']].filter(function (s) { return s[0][i] != null; }).map(function (s) { return { c: s[1], n: s[2], py: y(s[0][i]), s: sg(s[0][i], 1) + ' %' }; }) };
     }));
   }
-  var drawMonth = function () { moChart('mo-p', MO.prix); moChart('mo-d', MO.deces); };
+  var drawMonth = function () { moChart('mo-p', MO.prix); };
 
   // ===== L'actualité et l'agenda =====
   (function () {
@@ -1096,7 +1094,7 @@ function main(FEED) {
   ['acc-today', 'acc-month', 'acc-actu', 'acc-bilan'].forEach(function (id) {
     var d = document.getElementById(id);
     try { if (localStorage.getItem('sante-' + id) === 'open') d.open = true; } catch (e) {}
-    d.addEventListener('toggle', function () { try { localStorage.setItem('sante-' + id, d.open ? 'open' : 'closed'); } catch (e) {} if (d.open && id === 'acc-month') setTimeout(drawMonth, 30); });
+    d.addEventListener('toggle', function () { try { localStorage.setItem('sante-' + id, d.open ? 'open' : 'closed'); } catch (e) {} if (d.open && id === 'acc-month') setTimeout(drawMonth, 30); if (d.open && id === 'acc-today') setTimeout(drawToday, 30); });
   });
   (function () {
     var el = document.getElementById('upd'), d = FEED.updated_iso ? new Date(FEED.updated_iso) : null;
@@ -1108,7 +1106,9 @@ function main(FEED) {
   buildThemes(); renderGov();
   function drawAll() {
     rankOne('pres'); rankOne('gov');
+    MAIN.forEach(function (d) { d(); });
     FOLDS.forEach(function (f) { var up = f.el.parentElement.closest('details'); if (f.el.open && (!up || up.open)) f.draw(); });
+    if (document.getElementById('acc-today').open) drawToday();
     if (document.getElementById('acc-month').open) drawMonth();
   }
   drawAll();
