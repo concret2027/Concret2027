@@ -127,8 +127,11 @@
   //  - 'long' : résultats de santé (espérance de vie, mortalité) : les effets d'une politique de santé mettent des années
   //    à se voir, l'année t vaut donc la moyenne des points d'évolution de t à t+4 (années déjà publiées seulement) ;
   //  - 'ecart' : équité, 1 point si l'écart français est plus faible que celui de la référence ou se réduit plus vite ;
-  //  - 'propre' : déficit de la Sécu, jugé sur la France seule faute de comparaison possible : 1 point si équilibre
-  //    ou excédent, ½ si le déficit se réduit d'au moins 0,1 point de PIB, 0 s'il se creuse ou reste stable.
+  //  - 'composite' : un programme entier (vaccins, dépistages) : le point de l'année est la part des éléments où la France
+  //    progresse mieux que sa référence (chaque élément a la sienne) ;
+  //  - 'niveau' : par édition d'une étude (W.A.I.T.), 1 point si la France fait mieux que la référence l'année jugée ;
+  //  - 'propre' : déficit de l'Assurance maladie, jugé sur la France seule faute de comparaison possible : 1 point si
+  //    équilibre ou excédent, ½ si le déficit se réduit d'au moins 0,1 point de PIB, 0 s'il se creuse ou reste stable.
   function sante(S) {
     var C = S.C, THEMES = S.THEMES, KEYS = Object.keys(C), WT = {}, MIN_N = 6, SEUIL_STABLE = 0.1, LONG = 5;
     KEYS.forEach(function (k) { WT[k] = C[k].poids || 1; });
@@ -145,6 +148,8 @@
       var c = C[k];
       if (c.regle === 'long') { var pts = fenetre(y).map(function (t) { return evol(c, t); }).filter(function (x) { return x != null; }); return pts.length ? mean(pts) : null; }
       if ((c.br || {})[y]) return null;
+      if (c.regle === 'composite') { var q = Object.keys(c.sous).map(function (j) { return evol(c.sous[j], y); }).filter(function (x) { return x != null; }); return q.length ? mean(q) : null; }
+      if (c.regle === 'niveau') return c.y.indexOf(y) < 0 ? null : match(val(c, 'fr', y), val(c, ref(c), y), c.low);
       if (c.regle === 'propre') { var v = val(c, 'fr', y), p = val(c, 'fr', y - 1); if (v == null) return null; if (v >= 0) return 1; if (p == null) return null; return v - p >= SEUIL_STABLE - 1e-9 ? 0.5 : 0; }
       if (c.regle === 'ecart') {
         var a = val(c, 'fr', y), e = val(c, ref(c), y), pa = val(c, 'fr', y - 1), pe = val(c, ref(c), y - 1);
@@ -177,6 +182,7 @@
     function raisonSerie(c, y) {
       var first = c.y[0], last = c.y[c.y.length - 1], r = ref(c), nomRef = r === 'de' ? 'l\'Allemagne' : 'la moyenne de l\'UE';
       if ((c.br || {})[y]) return POURQUOI.methode(y, c.br[y]);
+      if ((c.manque || {})[y]) return c.manque[y];
       if (y > last) return POURQUOI.pasPublie(y);
       if (y < first) return 'Non compté : pas de chiffre avant ' + first + '.';
       if (y === first) return POURQUOI.debut(first);
@@ -185,6 +191,8 @@
     }
     function raison(k, y) {
       var c = C[k];
+      if (c.regle === 'composite') return 'Non compté : aucun élément du critère n\'a de chiffre comparable pour ' + y + ' et l\'année précédente.';
+      if (c.regle === 'niveau') return y < c.y[0] ? 'Non compté : l\'étude ne couvre pas encore ' + y + ' (première année jugée : ' + c.y[0] + ').' : POURQUOI.pasPublie(y);
       if (c.regle === 'long') return y > c.y[c.y.length - 1] ? POURQUOI.pasPublie(y) : 'Non compté : aucune évolution comparable publiée entre ' + y + ' et ' + (y + LONG - 1) + '.';
       return raisonSerie(c, y);
     }

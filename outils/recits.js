@@ -35,12 +35,14 @@ module.exports = [
     texte: 'Un système généreux et accessible, mais qui vit à crédit et prévient mal ?',
     verifier: function (c) {
       if (!c.sante) return { ok: true, constat: 'page non publiée' };
-      // « Prévient mal » : la France fait moins bien que son voisin sur au moins la moitié des indicateurs de la question Prévention.
+      // « Prévient mal » : la France fait moins bien que son voisin sur au moins la moitié des indicateurs de la question Prévention
+      // (pour un programme comme les vaccins : sur au moins la moitié de ses éléments).
       var C = c.sante.C, last = function (k, w) { var a = C[k][w] || []; for (var i = a.length - 1; i >= 0; i--) if (a[i] != null) return a[i]; return null; };
-      var pire = function (k) { var x = C[k], r = x.ref || 'ue', i = x.y.length - 1; while (i >= 0 && (x.fr[i] == null || x[r][i] == null)) i--; return x.low ? x.fr[i] > x[r][i] : x.fr[i] < x[r][i]; };
+      var pireSerie = function (x) { var r = x.ref || 'ue', i = x.y.length - 1; while (i >= 0 && (x.fr[i] == null || !x[r] || x[r][i] == null)) i--; return i >= 0 && (x.low ? x.fr[i] > x[r][i] : x.fr[i] < x[r][i]); };
+      var pire = function (k) { var x = C[k]; if (!x.sous) return pireSerie(x); var q = Object.keys(x.sous), m = q.filter(function (j) { return pireSerie(x.sous[j]); }); return m.length * 2 >= q.length; };
       var prev = c.sante.THEMES.filter(function (t) { return t.k === 'prev'; })[0].crit, mal = prev.filter(pire);
       var genereux = last('rac', 'fr') < last('rac', 'ue'), accessible = last('ren', 'fr') <= last('ren', 'ue'), credit = last('secu', 'fr') < 0, previent = mal.length * 2 >= prev.length;
-      return { ok: genereux && accessible && credit && previent, constat: 'reste à charge ' + last('rac', 'fr') + ' % contre ' + last('rac', 'ue') + ' %, renoncement ' + last('ren', 'fr') + ' % contre ' + last('ren', 'ue') + ' %, solde de la Sécu ' + last('secu', 'fr') + ' % du PIB, prévention : moins bien que le voisin sur ' + mal.length + ' indicateurs sur ' + prev.length + (mal.length ? ' (' + mal.join(', ') + ')' : '') }; } },
+      return { ok: genereux && accessible && credit && previent, constat: 'reste à charge ' + last('rac', 'fr') + ' % contre ' + last('rac', 'ue') + ' % dans l\'UE, renoncement aux soins ' + last('ren', 'fr') + ' % contre ' + last('ren', 'ue') + ' %, solde de l\'Assurance maladie ' + last('secu', 'fr') + ' % du PIB, prévention : moins bien que le voisin sur ' + mal.length + ' indicateurs sur ' + prev.length + (mal.length ? ' (' + mal.join(', ') + ')' : '') }; } },
   // ===== Éducation =====
   { id: 'edu_bilan', page: 'education', ou: 'meta og:description et résumé « Le bilan »',
     texte: 'On diplôme plus que nos voisins, mais les élèves apprennent moins, et les jeunes trouvent moins vite un emploi',
