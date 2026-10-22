@@ -55,11 +55,18 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .site a.logo { font-family: var(--font-anthropic-serif); font-size: 20px; color: var(--color-fg); font-weight: 400; margin-right: 6px; }
 .site .soon { color: var(--cds-chart-axis); font-size: 12.5px; }
 .site a:focus-visible { outline: 2px solid #2f5bd3; outline-offset: 2px; }
-.bx-head { display: grid; gap: var(--cds-gap-xs); }
-.bx-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
-.bx-take { font-size: var(--cds-font-size-body); color: var(--color-fg); max-width: 76ch; margin: 0; }
-.bx-take b { font-weight: 600; }
+.bx-head { display: grid; gap: 6px; }
+.bx-brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.bx-hero { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 16px; padding: 18px; display: grid; gap: 16px; }
+.bx-hero .bx-tile { background: var(--color-bg); border-color: transparent; }
+details.bx-method { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 14px 16px; }
+details.bx-method summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--color-fg); }
+details.bx-method[open] summary { margin-bottom: 10px; }
+.bx-title { font-family: var(--font-anthropic-serif); font-weight: 500; font-size: 28px; margin: 0; line-height: 1.1; }
+.bx-take { font-family: var(--font-anthropic-serif); font-size: 20px; line-height: 1.35; color: var(--color-fg); max-width: 60ch; margin: 0; text-wrap: pretty; }
+.bx-take b { font-weight: 500; color: #2f5bd3; }
 .bx-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: var(--cds-gap-md); }
+@media (max-width: 560px) { .bx-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .bx-tiles .bx-tile:last-child { grid-column: 1 / -1; } .bx-tile { padding: 10px 12px; } .bx-tile .val { font-size: 26px; } .bx-hero { padding: 14px; } .bx-take { font-size: 18px; } }
 .bx-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: grid; gap: var(--cds-gap-xs); align-content: start; }
 .bx-tile .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; align-items: center; gap: 6px; }
 .bx-tile .sw { width: 10px; height: 10px; border-radius: 50%; flex: none; }
@@ -184,17 +191,17 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 <div id="dash-root">
 
 <div class="bx">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/" aria-current="page">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><span class="soon">Bientôt : Santé · Sécurité et justice · Vie des Français</span></nav>
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/" aria-current="page">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><span class="soon">Bientôt : Santé · Sécurité et justice · Défense · Vie des Français</span></nav>
   <header class="bx-head">
-    <h1 class="bx-title">Baromètre 2027</h1>
+    <div class="bx-brand"><h1 class="bx-title">Baromètre 2027</h1><div class="bx-count"><b id="countdown">—</b><span>avant le premier tour, le 18 avril</span></div></div>
     <div class="bx-updated" id="bx-updated">Chargement des données…</div>
     <p class="bx-visit" id="visit" hidden></p>
     <div class="bx-stale" id="bx-stale" hidden>Données en cours d’actualisation : la dernière mise à jour date de plus d’un jour.</div>
-    <div class="bx-count"><b id="countdown">—</b><span>jours avant le premier tour, le 18 avril 2027</span></div>
-    <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
   </header>
   <nav class="jump" aria-label="Aller à"><a href="#aujourdhui">Aujourd'hui</a><a href="#mouvements">Ce qui a bougé</a><a href="#agenda">Agenda</a><a href="#premier-tour">1er tour</a><a href="#sondages-et-paris">Sondages et paris</a><a href="#second-tour">2nd tour</a><a href="#polymarket">Parieurs</a><a href="#duels">Duels</a><a href="#tous-sondages">Tous les sondages</a><a href="#methode">Méthode</a></nav>
 
+  <section class="bx-hero" aria-label="La course en un coup d'œil">
+  <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
   <div class="bx-tiles" id="tiles" data-source="moyenne_t1 polymarket">
     <div class="bx-tile"><div class="lab">1er des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
     <div class="bx-tile"><div class="lab">2e des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
@@ -202,6 +209,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
     <div class="bx-tile"><div class="lab">4e des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
     <div class="bx-tile"><div class="lab">Favori des parieurs</div><div class="val dash-skeleton">—</div><div class="sub">chances de victoire au 2nd tour selon Polymarket</div></div>
   </div>
+  </section>
 
   <section class="bx-card bx-today" id="aujourdhui" aria-labelledby="today-h">
     <h2 id="today-h">L'essentiel du moment <span id="today-since" hidden></span></h2>
@@ -280,13 +288,14 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
     </section>
   </div>
 
-  <section class="bx-method" id="methode">
+  <details class="bx-method" id="methode">
+    <summary>Méthode et sources : qui est affiché, comment lire sondages et paris</summary>
     <p><b>Qui est affiché, et pourquoi.</b> Une seule règle, recalculée à chaque mise à jour : les candidats sont classés selon leur moyenne dans les sondages des 30 derniers jours (Le Pen et Bardella comptent pour un seul candidat RN). Les 4 premiers ont une vignette en haut de page, les 8 premiers une courbe, les 15 premiers une colonne dans le tableau. Côté parieurs, on montre les 10 favoris de Polymarket et on suit l'historique des 6 premiers. « Ce qui a bougé » réunit les 8 premiers des sondages et les 6 favoris des parieurs. Chaque candidat garde toujours la même couleur.</p>
     <p><b>À lire avec prudence.</b> Un sondage est une photographie, pas une prévision : avec 1 000 à 2 000 personnes interrogées, un écart de 2 à 3 points entre deux candidats n'est pas significatif. Les instituts testent plusieurs hypothèses de candidatures dans une même enquête ; nous faisons la moyenne, pour chaque candidat, des hypothèses où il figure.</p>
     <p><b>Polymarket</b> est une plateforme de paris en cryptomonnaie, non autorisée en France. Ses probabilités, qui portent sur la victoire finale au second tour, reflètent les mises de parieurs, majoritairement étrangers, pas les intentions de vote. Chaque candidat y est un pari distinct, si bien que les probabilités ne totalisent pas exactement 100 %.</p>
     <p><b>Sondages et parieurs ne disent pas la même chose.</b> Un sondage mesure une intention de vote au premier tour ; une cote mesure ce que les parieurs pensent du résultat final, au second tour. Les marchés réagissent vite à l'actualité : la cote de Marine Le Pen a bondi de 8,5 % à 26 % la semaine de sa décision en appel de juillet 2026, avant que les sondages ne la testent. Cela ne suffit pas à prouver qu'ils prédisent les sondages suivants : il faudra des mois de données pour le mesurer.</p>
     <p><b>Sources</b> : page Wikipédia « Liste de sondages sur l'élection présidentielle française de 2027 », relevée le 21 octobre 2026, qui renvoie vers la notice de chaque sondage à la Commission des sondages ; Polymarket, historique hebdomadaire et cours du 21 octobre 2026.</p>
-  </section>
+  </details>
 </div>
 
 <script>
