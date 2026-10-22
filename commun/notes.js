@@ -120,6 +120,52 @@
     return { KEYS: KEYS, WT: WT, MIN_N: MIN_N, Y0: Y0, evaluate: evaluate, note: note, count: count, score: score, waveRes: waveRes, waveOf: waveOf, pisaGap: pisaGap, at: at };
   }
 
+  // ===== Santé : 10 critères, France face à l'UE ; déficit de la Sécu jugé sur lui-même (poids 3) =====
+  // Chaque critère de S.C a ses propres années (y) et valeurs (fr, ue, de, us), et une règle :
+  //  - 'propre' : 1 point si équilibre ou excédent, ½ si le déficit se réduit, 0 s'il se creuse ou stagne ;
+  //  - 'niveau' : par édition (W.A.I.T.), 1 point si la France fait mieux que la moyenne UE cette année-là ;
+  //  - 'vagues' : enquête tous les 5-6 ans (tabac, EHIS), l'évolution entre deux vagues compte pour les années qui les séparent ;
+  //  - sinon : chaque année, 1 point si la France évolue mieux que l'UE (comme Éducation).
+  function sante(S) {
+    var C = S.C, KEYS = Object.keys(C), WT = {}, MIN_N = 6;
+    KEYS.forEach(function (k) { WT[k] = C[k].poids || 1; });
+    var val = function (c, w, y) { var i = c.y.indexOf(y); return i < 0 || !c[w] ? null : c[w][i]; };
+    function score(k, y) {
+      var c = C[k], i = c.y.indexOf(y);
+      if ((c.br || {})[y]) return null;
+      if (c.regle === 'propre') { var v = val(c, 'fr', y), p = val(c, 'fr', y - 1); if (v == null) return null; if (v >= 0) return 1; if (p == null) return null; return v > p ? 0.5 : 0; }
+      if (c.regle === 'niveau') return i < 0 ? null : match(val(c, 'fr', y), val(c, 'ue', y), c.low);
+      if (c.regle === 'vagues') {
+        for (var j = 1; j < c.y.length; j++) if (y > c.y[j - 1] && y <= c.y[j]) return match(c.fr[j] - c.fr[j - 1], c.ue[j] - c.ue[j - 1], c.low);
+        return null;
+      }
+      var a = val(c, 'fr', y), b = val(c, 'fr', y - 1), e = val(c, 'ue', y), f = val(c, 'ue', y - 1);
+      return a == null || b == null || e == null || f == null ? null : match(a - b, e - f, c.low);
+    }
+    function evaluate(g) {
+      g.w = {}; g.y = {};
+      KEYS.forEach(function (k) { g.w[k] = []; g.y[k] = []; for (var y = g.y0; y <= g.y1; y++) { var m = score(k, y); if (m != null) g.w[k].push(m); g.y[k].push({ y: y, pt: m }); } });
+      return g;
+    }
+    var count = function (g, on) { return sum(KEYS.filter(function (k) { return !on || on[k]; }).map(function (k) { return g.w[k].length; })); };
+    function note(g, on) {
+      var r = KEYS.filter(function (k) { return (!on || on[k]) && g.w[k].length; }).map(function (k) { return [mean(g.w[k]), WT[k]]; });
+      var sw = sum(r.map(function (p) { return p[1]; }));
+      return sw ? 20 * sum(r.map(function (p) { return p[0] * p[1]; })) / sw : null;
+    }
+    // Pourquoi une année n'est pas comptée pour un critère (phrase affichée sous le détail).
+    function raison(k, y) {
+      var c = C[k], first = c.y[0], last = c.y[c.y.length - 1];
+      if ((c.br || {})[y]) return POURQUOI.methode(y, c.br[y]);
+      if (c.regle === 'niveau') return y > last ? POURQUOI.pasPublie(y) : y < first ? 'Non compté : l\'étude n\'existait pas encore en ' + y + '.' : 'Non compté : pas d\'édition de l\'étude pour ' + y + '.';
+      if (c.regle === 'vagues') return y > last ? 'Non compté : la prochaine vague de l\'enquête, après ' + last + ', n\'est pas encore publiée.' : 'Non compté : l\'enquête a commencé en ' + first + ', il n\'y a pas de vague précédente.';
+      if (y > last) return POURQUOI.pasPublie(y);
+      if (y <= first) return POURQUOI.debut(first);
+      return POURQUOI.absent(y);
+    }
+    return { KEYS: KEYS, WT: WT, MIN_N: MIN_N, evaluate: evaluate, note: note, count: count, score: score, raison: raison, val: val };
+  }
+
   // ===== Classement général de l'accueil : moyenne des notes par mission, réglages par défaut de chaque page =====
   var MISSIONS = [
     { k: 'f', l: 'Finances', url: '/finances/#bulletin', debut: 'les séries des finances publiques commencent en 1995', calc: function (S) { return finances(S.finances); }, ser: 'finances' },
@@ -149,6 +195,6 @@
     return out;
   }
 
-  var api = { match: match, POURQUOI: POURQUOI, finances: finances, education: education, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url, debut: m.debut }; }) };
+  var api = { match: match, POURQUOI: POURQUOI, finances: finances, education: education, sante: sante, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url, debut: m.debut }; }) };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ConcretNotes = api;
 })(this);

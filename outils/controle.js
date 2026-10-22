@@ -79,6 +79,10 @@ if (S.education) {
   });
   vus.forEach(function (v) { alertes.push('jargon à remplacer par une phrase claire dans ' + v + ' (règle de CLAUDE.md)'); });
 })();
+// Valeurs d'exemple (page en brouillon) : jamais publiées.
+Object.keys(S).forEach(function (pg) { if (S[pg] && S[pg].exemple) err('series.' + pg + ' contient des valeurs d\'exemple (brouillon) : à remplacer par des données sourcées avant publication'); });
+Object.keys(d.datasets || {}).forEach(function (k) { if ((d.datasets[k] || []).some(function (r) { return r.exemple; })) err('datasets.' + k + ' contient des lignes d\'exemple (brouillon)'); });
+if (S.sante) Object.keys(S.sante.C || {}).forEach(function (k) { var c = S.sante.C[k]; ['fr', 'ue', 'de'].forEach(function (w) { if (c[w] && c[w].length !== c.y.length) err('sante.C.' + k + '.' + w + ' : longueur différente de y'); }); });
 var ids = {};
 cal.indicateurs.forEach(function (i) { if (ids[i.id]) err('calendrier : id en double ' + i.id); ids[i.id] = 1; if (!/^\d{4}-\d{2}-\d{2}$/.test(i.prochaine_verification || '')) err('calendrier : ' + i.id + ' sans prochaine_verification valide'); });
 
@@ -111,7 +115,7 @@ if (notes && avant) {
 var aValider = fs.existsSync(path.join(ROOT, 'donnees/a_valider.json')) ? rd('donnees/a_valider.json') : [];
 var recits = [];
 if (!bloquant.length) {
-  var ctx = { fin: S.finances, edu: S.education, notes: notes, pouls: d.datasets.pouls };
+  var ctx = { fin: S.finances, edu: S.education, sante: S.sante, notes: notes, pouls: d.datasets.pouls };
   RECITS.forEach(function (r) {
     var res; try { res = r.verifier(ctx); } catch (e) { res = { ok: false, constat: 'vérification impossible : ' + e.message }; }
     recits.push({ id: r.id, page: r.page, ou: r.ou, texte: r.texte, ok: res.ok, constat: res.constat });

@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Santé · Concret</title>
+<meta name="description" content="Brouillon. Déficit de la Sécurité sociale, espérance de vie en bonne santé, renoncement aux soins, accès aux médicaments innovants : la santé en France comparée à ses voisins, et la note de chaque président et gouvernement.">
+<meta property="og:title" content="Santé · Concret">
+<meta property="og:description" content="Un système généreux et accessible, mais qui vit à crédit et prévient mal ?">
+<meta property="og:url" content="https://concret2027.fr/sante/">
+<meta property="og:type" content="website">
+<script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="../commun/notes.js"></script>
+<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
+.recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
+.today-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 640px) { .today-grid.three { grid-template-columns: minmax(0, 1fr); } .today-grid.three .metric + .metric { border-left: 0; border-top: 1px solid var(--line); } }
+.month.four { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 0; }
+@media (max-width: 640px) { .month.four { grid-template-columns: minmax(0, 1fr); } .month.four .mo + .mo { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 10px; } }
+.industrie { font-size: 12px; font-weight: 600; color: var(--mid); }
+.dom { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.dom th { font-size: 11px; color: var(--muted); font-weight: 600; text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.dom td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--grid); }
+.dom th:first-child, .dom td:first-child { text-align: left; }
+.mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 14px; }
+</style>
+<style>
+/* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
+:root {
+  --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
+  --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a;
+  --bad: #c43d3d; --ok: #1f8a4c; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
+  --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
+  --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
+  --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
+  --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --de: #a4a6b0; --it: #4cc27f; --ea: #d9b25a; --us: #d77fcf; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a;
+  --band: rgba(122, 156, 255, .09); --grid: #2a2c32; --axis: #44464e; --draft: #3a3016; --draft-fg: #f0d58a;
+  --hero-bg: #172242; --hero-line: #26345c; --hero-fg: #eef2ff; --hero-muted: #a8b4d6; --hero-num: #ffffff; --hero-up: #ff8f8f; --pill: #1e2b52;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .18); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --de: #a4a6b0; --it: #4cc27f; --ea: #d9b25a; --us: #d77fcf; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a;
+  --band: rgba(122, 156, 255, .09); --grid: #2a2c32; --axis: #44464e; --draft: #3a3016; --draft-fg: #f0d58a;
+  --hero-bg: #172242; --hero-line: #26345c; --hero-fg: #eef2ff; --hero-muted: #a8b4d6; --hero-num: #ffffff; --hero-up: #ff8f8f; --pill: #1e2b52;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .18); color-scheme: dark; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-text-size-adjust: 100%; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 48px; display: grid; gap: 20px; }
+.draft { background: var(--draft); color: var(--draft-fg); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; }
+.brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.brand b { font-family: var(--serif); font-weight: 500; font-size: 22px; }
+.brand span { font-size: 12.5px; color: var(--muted); }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.card h2 { font-size: 19px; font-weight: 600; line-height: 1.25; margin: 0; text-wrap: balance; }
+.eyebrow { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 4px; }
+.note { font-size: 12.5px; color: var(--muted); margin: 0; max-width: 92ch; }
+.insight { font-family: var(--serif); font-size: 19px; line-height: 1.3; margin: 0; text-wrap: balance; }
+.insight b { font-weight: 500; color: var(--fr); }
+.explain { font-size: 13.5px; margin: 0; padding: 10px 12px; border-left: 3px solid var(--fr); background: var(--band); border-radius: 0 6px 6px 0; }
+.explain b { font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 34px; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip:focus-visible, .opt:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* Sommaire collant */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.jump { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 44px)); z-index: 9; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.jump::-webkit-scrollbar { display: none; }
+.jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+.jump a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
+.flash { animation: flash 1.6s ease-out; }
+@keyframes flash { 0% { background: var(--band); box-shadow: 0 0 0 3px var(--fr); border-radius: 10px; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
+.pres-detail { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
+.pres-detail .who b { font-weight: 600; }
+.share { font: inherit; font-family: var(--sans); font-size: 12.5px; font-weight: 500; margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 2px; border: 0; background: none; color: var(--muted); cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.share::before { content: "↗"; }
+.share.primary { background: var(--fr); color: #fff; border-color: var(--fr); }
+.acc-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.acc-actions .acc-cta, .acc-actions .share { margin-top: 0; }
+.share:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.daily .share { display: inline-flex; }
+.sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sheet-box { background: var(--panel); border-radius: 14px; padding: 14px; display: grid; gap: 10px; max-width: 420px; width: 100%; max-height: 100%; overflow: auto; }
+.sheet-box img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+/* Menus dépliables */
+.acc { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
+.acc > summary::-webkit-details-marker { display: none; }
+.acc-cta { justify-self: start; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--band); border: 1px solid var(--fr); border-radius: 999px; padding: 5px 12px; }
+.acc-cta::before { content: "Voir le détail ↓"; }
+.acc[open] > summary .acc-cta::before { content: "Masquer ↑"; }
+.acc > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 14px; }
+.acc-h { font-size: 17px; font-weight: 700; }
+.acc-t { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+.acc-t b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.acc-t i.r { font-style: normal; color: var(--bad); }
+.acc-t i.g { font-style: normal; color: var(--ok); }
+.acc-body { display: grid; gap: 14px; padding: 0 12px 12px; }
+.acc-body.card { border: 0; padding-top: 0; background: none; }
+.acc[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+
+/* Menu du site */
+.site { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 11; display: flex; flex-wrap: nowrap; align-items: baseline; gap: 16px; font-size: 14px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; margin: -16px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 10px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.site::-webkit-scrollbar { display: none; }
+@media (max-width: 520px) { .site { gap: 14px; } .site .lg { display: none; } .site a.logo { font-size: 18px; margin-right: 0; } }
+.site a { color: var(--muted); text-decoration: none; font-weight: 500; }
+.site a[aria-current="page"] { color: var(--fg); font-weight: 700; border-bottom: 2px solid var(--fr); }
+.site a.logo { font-family: var(--serif); font-size: 20px; color: var(--fg); font-weight: 500; margin-right: 6px; }
+.site .soon { color: var(--axis); font-size: 12.5px; }
+.site a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.stale { border: 1px solid var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.actu { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.actu li { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 10px; font-size: 14px; line-height: 1.4; }
+.actu .d { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; }
+.actu a { color: var(--muted); font-size: 12px; }
+.actu .next { font-weight: 600; }
+#agenda-edu li { grid-template-columns: 6.6rem minmax(0, 1fr); }
+.upd { margin: -12px 0 0; font-size: 12.5px; color: var(--muted); }
+/* Résumé */
+.summary { display: grid; gap: 10px; }
+.bilan summary { cursor: pointer; list-style: none; display: grid; gap: 2px; }
+.bilan summary::-webkit-details-marker { display: none; }
+.bilan .bilan-h { font-family: var(--serif); font-size: 24px; line-height: 1.15; }
+.bilan .bilan-h::after { content: " ▾"; font-family: var(--sans); font-size: 14px; color: var(--muted); }
+.bilan:not([open]) .bilan-h::after { content: " ▸"; }
+.summary .sum-h { font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.15; margin: 0; }
+.summary .sum-h .eyebrow { font-family: var(--sans); }
+.summary h1 { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 0; }
+.daily { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--band); border: 1px solid var(--line); font-family: var(--serif); font-size: 19px; line-height: 1.3; }
+.daily .eyebrow { font-family: var(--sans); margin-bottom: 6px; }
+.daily b { font-weight: 500; color: var(--fr); }
+.since { display: block; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-family: var(--sans); font-size: 13.5px; color: var(--muted); }
+.since b { font-weight: 600; color: var(--fg); }
+.visit { margin: 0; font-size: 14px; line-height: 1.45; padding: 8px 12px; border-left: 3px solid var(--fr); background: var(--panel); border-radius: 0 8px 8px 0; color: var(--fg); }
+.visit b { font-weight: 600; }
+.summary ol { margin: 0; padding: 0; list-style: none; counter-reset: k; display: grid; gap: 10px; }
+.summary li { counter-increment: k; position: relative; padding-left: 30px; font-size: 15px; line-height: 1.45; }
+.summary li::before { content: counter(k); position: absolute; left: 0; top: -2px; font-family: var(--serif); font-size: 20px; color: var(--fr); }
+.summary li b { font-weight: 600; }
+
+/* Question du jour */
+.quiz { border-color: var(--fr); }
+.quiz .q { font-family: var(--serif); font-size: 23px; line-height: 1.25; margin: 0; text-wrap: balance; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.opt { font: inherit; text-align: left; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); cursor: pointer; min-height: 48px; }
+.opt.right { border-color: var(--ok); color: var(--ok); font-weight: 600; background: var(--s-good); }
+.opt.wrong { border-color: var(--bad); color: var(--bad); text-decoration: line-through; }
+.answer { margin: 0; font-size: 14.5px; }
+
+/* Bandeau : deux chiffres du jour */
+.today { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.today-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 640px) { .today-grid { grid-template-columns: 1fr; } .metric + .metric { border-left: 0 !important; border-top: 1px solid var(--line); } }
+.metric { padding: 18px 18px 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.metric + .metric { border-left: 1px solid var(--line); }
+.metric .lab { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.metric .row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+.metric .num { font-family: var(--serif); font-size: 46px; line-height: 1; font-variant-numeric: tabular-nums; }
+.metric .num small { font-size: .42em; color: var(--muted); margin-left: .1em; }
+.delta { font-size: 12.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.delta.up { color: var(--bad); background: var(--s-bad); }
+.delta.dn { color: var(--ok); background: var(--s-good); }
+.month { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.mo .share { justify-self: start; }
+@media (max-width: 640px) { .month { grid-template-columns: 1fr; } .mo + .mo { border-left: 0 !important; border-top: 1px solid var(--line); padding-left: 0 !important; padding-top: 12px; } .mo { padding-right: 0 !important; padding-bottom: 12px; } }
+.mo { display: grid; gap: 5px; align-content: start; padding-right: 14px; }
+.mo + .mo { border-left: 1px solid var(--line); padding-left: 14px; }
+.mo-lab { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.mo-num { font-family: var(--serif); font-size: 30px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.mo-num small { font-size: .45em; color: var(--muted); }
+.mo .delta { justify-self: start; }
+.mo-t { font-size: 12.5px; color: var(--muted); }
+.metric .foot { font-size: 12.5px; color: var(--muted); }
+.metric .foot b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.spark svg { display: block; width: 100%; height: auto; }
+.spark text { fill: var(--muted); font-size: 10px; font-family: var(--sans); }
+.equiv-wrap { border-top: 1px solid var(--line); padding: 14px 18px 16px; display: grid; gap: 10px; }
+.equiv-wrap .lab { font-size: 12.5px; color: var(--muted); }
+.equiv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.eq { padding: 0 12px; display: grid; gap: 2px; }
+.eq:first-child { padding-left: 0; }
+.eq + .eq { border-left: 1px solid var(--line); }
+.eq .n { font-family: var(--serif); font-size: 26px; line-height: 1.1; color: var(--fr); font-variant-numeric: tabular-nums; }
+.eq .t { font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+/* Bulletin */
+.how { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.how summary { cursor: pointer; padding: 10px 12px; font-weight: 600; font-size: 14px; }
+.how-body { padding: 0 12px 12px; display: grid; gap: 8px; font-size: 13.5px; }
+.how-body p { margin: 0; }
+.ex { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; }
+.seuils { min-width: 0; font-size: 12.5px; }
+.seuils td { text-align: left; padding: 5px 6px 5px 0; color: var(--muted); }
+.seuils td:first-child { color: var(--fg); font-weight: 600; }
+.seuils td span { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; }
+
+.gov-list { display: grid; gap: 0; }
+.more { font: inherit; font-weight: 600; font-size: 14px; width: 100%; min-height: 46px; border-radius: 10px; border: 1px solid var(--fg); background: var(--fg); color: var(--bg); cursor: pointer; }
+.more:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.gov { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+.gov .badge { grid-row: span 2; width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; font-family: var(--serif); font-size: 22px; font-variant-numeric: tabular-nums; }
+.gov .badge small { font-family: var(--sans); font-size: 10px; display: block; margin-top: -6px; opacity: .8; }
+.badge.g { background: var(--s-good); color: var(--ok); } .badge.m { background: var(--s-mid); color: var(--mid); } .badge.b { background: var(--s-bad); color: var(--bad); }
+.badge.p { background: var(--grid); color: var(--muted); font-size: 13px; }
+.gov .who b { font-weight: 600; } .gov .who span { color: var(--muted); font-size: 12.5px; }
+.kpis { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 560px) { .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; } .kpi { font-size: 11.5px; padding: 4px 7px; display: grid; min-width: 0; } .kpi em { margin: 0; font-size: 11px; } }
+.kpi { font-size: 12px; padding: 3px 8px; border-radius: 6px; background: var(--grid); font-variant-numeric: tabular-nums; }
+.kpi.g { background: var(--s-good); } .kpi.b { background: var(--s-bad); }
+.kpi em { font-style: normal; color: var(--muted); margin-right: 4px; }
+button.kpi { font: inherit; font-size: 12px; color: var(--fg); border: 1px solid transparent; cursor: pointer; text-align: left; position: relative; padding-right: 20px; }
+button.kpi::after { content: "▾"; color: var(--muted); font-size: 10px; position: absolute; right: 7px; top: 50%; transform: translateY(-50%); }
+button.kpi[aria-expanded="true"] { border-color: var(--fg); }
+button.kpi[aria-expanded="true"]::after { content: "▴"; }
+button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
+.kdet { margin-top: 4px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; font-size: 12.5px; overflow-x: auto; }
+.kdet p { margin: 0; color: var(--muted); line-height: 1.4; } .kdet p b { color: var(--fg); }
+.kdet-slot { grid-column: 1 / -1; min-width: 0; } .kdet-slot:empty { display: none; }
+.kdet table { border-collapse: collapse; font-variant-numeric: tabular-nums; width: 100%; }
+.kdet th { text-align: right; font-weight: 600; color: var(--muted); font-size: 11.5px; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+.kdet td { text-align: right; padding: 3px 6px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+.kdet th:first-child, .kdet td:first-child { text-align: left; }
+.kdet .pt { display: inline-block; min-width: 22px; text-align: center; border-radius: 5px; font-weight: 700; }
+.kdet .pt.g { background: var(--s-good); color: var(--ok); } .kdet .pt.b { background: var(--s-bad); color: var(--bad); } .kdet .pt.m { background: var(--s-mid); color: var(--mid); } .kdet .pt.na { color: var(--muted); font-weight: 400; }
+.kdet .kdet-src { font-size: 11px; }
+.kdet .kdet-why { color: var(--fg); font-size: 12px; }
+.kdet td:last-child { white-space: normal; } .kdet .pt.na { font-size: 11px; line-height: 1.2; display: inline-block; text-align: right; }
+@media (max-width: 560px) { button.kpi { font-size: 11.5px; } .kdet { font-size: 12px; padding: 8px; } .kdet td, .kdet th { padding: 3px 4px; } }
+.gov.pending .who span { font-style: italic; }
+
+/* Graphes */
+.longbox { display: grid; gap: 6px; padding: 12px; border-radius: 10px; background: var(--band); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--fg); border-radius: 10px; overflow: hidden; }
+.seg button { font: inherit; font-size: 13.5px; font-weight: 600; padding: 9px 8px; border: 0; background: var(--panel); color: var(--fg); cursor: pointer; line-height: 1.25; }
+.seg button small { display: block; font-weight: 400; font-size: 11px; opacity: .75; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg button:focus-visible { outline: 2px solid var(--fr); outline-offset: -3px; }
+.charts3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
+.charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
+.chart { position: relative; min-width: 0; }
+.chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.chart svg.hov { touch-action: pan-y; cursor: crosshair; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.ctip { position: absolute; top: 2px; z-index: 6; pointer-events: none; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 12px; line-height: 1.4; box-shadow: 0 4px 14px rgba(0,0,0,.14); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ctip b { display: block; margin-bottom: 2px; font-weight: 700; }
+.ctip span { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+.ctip span em { font-style: normal; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+.ctip span em i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.ctip span strong { font-weight: 600; margin-left: 10px; }
+.ctip small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; max-width: 200px; white-space: normal; }
+.chart text { fill: var(--muted); font-size: 11px; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
+.key i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.key i.dash { background: repeating-linear-gradient(90deg, var(--ea) 0 5px, transparent 5px 8px) !important; }
+.bar-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.bars-big { font-family: var(--serif); font-size: 18px; margin: 0; }
+.events { margin: 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--muted); columns: 2 18rem; }
+.events li { break-inside: avoid; margin-bottom: 4px; }
+.events b { color: var(--fg); font-weight: 600; display: inline-block; min-width: 1.6em; }
+.agenda { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.agenda li { display: grid; grid-template-columns: 4.5rem 1fr; gap: 12px; align-items: baseline; }
+.agenda .d { font-family: var(--serif); font-size: 21px; font-variant-numeric: tabular-nums; }
+.agenda .d small { display: block; font-family: var(--sans); font-size: 11px; color: var(--muted); }
+.glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 12px 24px; margin: 0; }
+.glossary dt { font-weight: 600; font-size: 14px; }
+.glossary dd { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 8px; }
+footer p { margin: 0; } footer a { color: inherit; }
+
+.yrs { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.yrs th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: center; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+.yrs th:nth-child(-n+2), .yrs td:nth-child(-n+2) { text-align: left; }
+.yrs td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: center; }
+.yrs tr.yr-why td { text-align: left; font-size: 11.5px; color: var(--muted); padding: 2px 4px 7px; }
+.yrs .pres-row td { text-align: left; font-weight: 700; font-size: 13px; background: var(--band); padding: 8px 6px; }
+.yrs td.dot { font-size: 16px; line-height: 1; }
+.yrs td.dot.g { color: var(--ok); } .yrs td.dot.b { color: var(--bad); } .yrs td.dot.off { color: var(--axis); }
+.yr-note { display: inline-block; min-width: 2.2em; padding: 2px 6px; border-radius: 6px; font-weight: 700; }
+.yr-note.g { background: var(--s-good); color: var(--ok); } .yr-note.m { background: var(--s-mid); color: var(--mid); } .yr-note.b { background: var(--s-bad); color: var(--bad); }
+.yrs small { color: var(--muted); font-size: 10.5px; }
+@media (max-width: 420px) { .yrs { font-size: 12px; } .yrs th { font-size: 10px; } }
+.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
+.recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
+.today-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 640px) { .today-grid.three { grid-template-columns: minmax(0, 1fr); } .today-grid.three .metric + .metric { border-left: 0; border-top: 1px solid var(--line); } }
+.month.four { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 0; }
+@media (max-width: 640px) { .month.four { grid-template-columns: minmax(0, 1fr); } .month.four .mo + .mo { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 10px; } }
+.industrie { font-size: 12px; font-weight: 600; color: var(--mid); }
+.dom { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.dom th { font-size: 11px; color: var(--muted); font-weight: 600; text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.dom td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--grid); }
+.dom th:first-child, .dom td:first-child { text-align: left; }
+.mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><a href="/sante/" aria-current="page">Santé</a><span class="soon">Bientôt : Sécurité et justice · Défense · Vie des Français</span></nav>
+  <p class="demo" id="demo">Brouillon : toutes les valeurs de cette page sont fictives (« exemple »). Elles servent seulement à voir la mise en page et seront remplacées par les données sourcées avant publication.</p>
+  <div class="stale" id="stale" role="status" hidden></div>
+  <div class="brand"><b>Santé</b><span id="today"></span></div>
+  <p class="upd" id="upd">Chargement des données…</p>
+  <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#bulletin">Bulletin</a><a href="#courbes">Courbes</a><a href="#innovation">Médicaments innovants</a><a href="#recherche">Recherche</a><a href="#aussi">À regarder aussi</a><a href="#acc-actu">Actualité</a><a href="#methode">Méthode</a></nav>
+
+  <section class="card" aria-labelledby="recit">
+    <span class="eyebrow">La santé en France, face à ses voisins</span>
+    <h1 class="recit" id="recit">Un système généreux et accessible, mais qui vit à crédit et prévient mal ?</h1>
+    <p class="note">Le point d'interrogation restera tant que les données réelles ne l'auront pas confirmé.</p>
+  </section>
+  <section class="today" aria-label="Trois chiffres clés">
+    <div class="today-grid three">
+      <div class="metric"><span class="lab">Solde de la Sécurité sociale <span class="ex">exemple</span></span><div class="row"><span class="num" id="k-secu">—</span></div><div class="foot" id="k-secu-t"></div></div>
+      <div class="metric"><span class="lab">Espérance de vie en bonne santé <span class="ex">exemple</span></span><div class="row"><span class="num" id="k-hly">—</span></div><div class="foot" id="k-hly-t"></div></div>
+      <div class="metric"><span class="lab">Renoncement aux soins <span class="ex">exemple</span></span><div class="row"><span class="num" id="k-ren">—</span></div><div class="foot" id="k-ren-t"></div></div>
+    </div>
+  </section>
+
+  <details class="acc" id="acc-today">
+    <summary><span class="acc-h">Aujourd'hui et ce mois-ci</span><span class="acc-t" id="teaser-today">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card">
+      <div class="month four">
+        <div class="mo"><span class="mo-lab">Déficit de la Sécu depuis le 1er janvier <span class="ex">exemple</span></span><span class="mo-num" id="m-compteur">—</span><span class="mo-t" id="m-compteur-t"></span></div>
+        <div class="mo"><span class="mo-lab">Épidémies cette semaine <span class="ex">exemple</span></span><span class="mo-t" id="m-epid"></span></div>
+        <div class="mo"><span class="mo-lab">Assurance maladie et Ondam <span class="ex">exemple</span></span><span class="mo-num" id="m-am">—</span><span class="mo-t" id="m-am-t"></span></div>
+        <div class="mo"><span class="mo-lab">Médicaments et innovation, ce mois-ci <span class="ex">exemple</span></span><span class="mo-t" id="m-med"></span></div>
+      </div>
+    </div>
+  </details>
+
+  <section class="card" id="bulletin" aria-labelledby="gov-title">
+    <h2 id="gov-title"><span class="eyebrow">Le bulletin de la santé</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <details class="how">
+      <summary>La règle : comment la note est calculée</summary>
+      <div class="how-body">
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque critère, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>0 point</b> sinon, ½ en cas d'égalité. La note sur 20 est la part des points marqués. <b>10/20 = le niveau de nos voisins.</b> Deux exceptions : le déficit de la Sécurité sociale (compte triple) est jugé sur la France seule, et l'accès aux médicaments innovants est jugé sur le niveau de chaque édition de l'étude.</p>
+        <table class="seuils"><tbody>
+          <tr><td>Déficit de la Sécu (compte triple)<span>Solde des administrations de sécurité sociale, en % du PIB, jugé par rapport à l'année précédente : 1 point si équilibre ou excédent, ½ si le déficit se réduit, 0 s'il se creuse ou ne bouge pas.</span></td></tr>
+          <tr><td>Espérance de vie en bonne santé<span>Années de vie sans incapacité, à la naissance. Point si elle progresse plus que dans l'UE.</span></td></tr>
+          <tr><td>Mortalité traitable<span>Décès qui auraient pu être évités par des soins, pour 100 000 habitants. Point si elle baisse plus que dans l'UE.</span></td></tr>
+          <tr><td>Mortalité évitable par la prévention<span>Décès qui auraient pu être évités par la prévention (tabac, alcool, accidents…), pour 100 000. Point si elle baisse plus que dans l'UE.</span></td></tr>
+          <tr><td>Renoncement aux soins<span>Part des 16 ans et plus qui disent avoir renoncé à un examen médical pour des raisons de coût, de distance ou d'attente. Point si elle baisse plus que dans l'UE.</span></td></tr>
+          <tr><td>Reste à charge<span>Part de la dépense de santé payée directement par les ménages. Point si elle baisse plus que dans l'UE.</span></td></tr>
+          <tr><td>Vaccination contre la grippe<span>Part des 65 ans et plus vaccinés. Point si elle progresse plus que dans l'UE.</span></td></tr>
+          <tr><td>Tabac<span>Part de fumeurs quotidiens. L'enquête européenne n'a lieu que tous les 5 à 6 ans : l'évolution entre deux vagues compte pour chacune des années qui les séparent.</span></td></tr>
+          <tr><td>Médicaments innovants : disponibilité et délai<span>Par édition de l'étude W.A.I.T. : 1 point si la France rend disponibles plus de nouveaux médicaments que la moyenne UE, 1 point si elle les rend disponibles plus vite.</span></td></tr>
+        </tbody></table>
+      </div>
+    </details>
+    <span class="eyebrow" style="margin:0">Les présidents <span class="ex">exemple</span></span>
+    <p class="note">Touchez une barre pour voir le détail.</p>
+    <div class="chart" id="rank-pres"></div>
+    <div class="pres-detail" id="pres-detail" hidden></div>
+    <p class="note" id="rank-pres-note"></p>
+    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements <span class="ex">exemple</span></span>
+    <div class="chart" id="rank-gov"></div>
+    <p class="note" id="rank-gov-note"></p>
+    <span class="eyebrow" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
+    <p class="note">Pour chaque critère : points marqués. <b>Touchez un critère</b> pour voir les chiffres, année par année, et pourquoi une année n'est pas comptée.</p>
+    <div class="gov-list" id="gov-list"></div>
+    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+  </section>
+
+  <section class="card" id="courbes" aria-labelledby="fz-title">
+    <h2 id="fz-title"><span class="eyebrow">Les courbes <span class="ex">exemple</span></span>La France face à l'Union européenne, l'Allemagne et les États-Unis</h2>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
+  </section>
+  <div class="charts4" id="curves"></div>
+
+  <section class="card" id="innovation" aria-labelledby="inno-title">
+    <h2 id="inno-title"><span class="eyebrow">Accès aux médicaments innovants <span class="ex">exemple</span></span>Combien de nouveaux médicaments arrivent aux patients, et en combien de temps</h2>
+    <p class="industrie">Étude financée par l'industrie pharmaceutique (EFPIA, réalisée par IQVIA). Recoupée avec la HAS dès que possible.</p>
+    <div class="mini"><div><span class="eyebrow">Disponibles pour les patients, %</span><div class="chart" id="ch-wd"></div></div><div><span class="eyebrow">Délai après l'autorisation européenne, jours</span><div class="chart" id="ch-wt"></div></div></div>
+    <span class="eyebrow">Par domaine, dernière édition</span>
+    <table class="dom" id="wait-dom"></table>
+    <p class="note">Les États-Unis ne sont pas couverts par l'étude : ils n'apparaissent pas ici.</p>
+    <span class="eyebrow">France : accès précoce (HAS)</span>
+    <p class="note" id="ap-note"></p>
+  </section>
+
+  <section class="card" id="recherche" aria-labelledby="rch-title">
+    <h2 id="rch-title"><span class="eyebrow">Innovation et recherche <span class="ex">exemple</span> · affiché, non noté</span>Les essais cliniques lancés en France</h2>
+    <div class="chart" id="ch-essais"></div>
+    <p class="note" id="essais-note"></p>
+  </section>
+
+  <section class="card" id="aussi" aria-labelledby="aussi-title">
+    <h2 id="aussi-title"><span class="eyebrow">À regarder aussi <span class="ex">exemple</span> · affiché, non noté</span>Médecins, déserts médicaux, dépense et Ondam</h2>
+    <div class="mini">
+      <div><span class="eyebrow">Médecins pour 100 000 habitants</span><div class="chart" id="ch-med"></div><p class="note">Pas de moyenne européenne publiée par Eurostat pour cet indicateur : seuls la France, l'Allemagne et les États-Unis sont affichés.</p></div>
+      <div><span class="eyebrow">Dépense de santé, % du PIB</span><div class="chart" id="ch-dep"></div></div>
+      <div><span class="eyebrow">Ondam : voté et réalisé, Md€</span><div class="chart" id="ch-ondam"></div><p class="note" id="ondam-note"></p></div>
+      <div><span class="eyebrow">Déserts médicaux</span><p class="insight" id="apl"></p><p class="note">Part de la population vivant dans une zone sous-dotée en médecins généralistes (indicateur APL de la DREES). Il n'existe pas d'équivalent comparable dans les autres pays.</p></div>
+    </div>
+  </section>
+
+  <details class="acc" id="acc-actu">
+    <summary><span class="acc-h">Actualité et agenda</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-list"></ul></div>
+  </details>
+
+  <details class="acc" id="methode">
+    <summary><span class="acc-h">Méthode et sources</span><span class="acc-t">D'où viennent les chiffres, et ce qui n'est pas comparable</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card">
+      <p class="note"><b>Sources prévues.</b> Solde de la Sécurité sociale : Eurostat (gov_10a_main, secteur S1314), Insee (trimestriel), Commission des comptes de la Sécurité sociale (prévisions). Espérance de vie en bonne santé : Eurostat (hlth_hlye) ; États-Unis : OMS (HALE), définition différente. Mortalité traitable et évitable : Eurostat (hlth_cd_apr) ; États-Unis : OCDE. Renoncement aux soins : Eurostat (hlth_silc_08), pas d'équivalent américain. Reste à charge et dépense de santé : Eurostat (hlth_sha11_hf) ; États-Unis : OCDE. Vaccination contre la grippe : Eurostat (hlth_ps_immu) ; États-Unis : OCDE. Tabac : Eurostat (enquête EHIS, 2014, 2019, 2025 à paraître) ; États-Unis : OCDE. Médicaments innovants : EFPIA Patients W.A.I.T. Indicator (IQVIA), étude financée par l'industrie. Accès précoce : HAS. Essais cliniques : CTIS, ClinicalTrials.gov, enquête du Leem (source industrielle). Médecins : Eurostat (hlth_rs_prs2), OCDE. Déserts médicaux : DREES (APL). Ondam : lois de financement de la Sécurité sociale. Épidémies : Santé publique France. Ruptures de médicaments : ANSM. Dépenses de l'Assurance maladie : statistique mensuelle de l'Assurance maladie.</p>
+      <p class="note"><b>Limites.</b> Plusieurs indicateurs n'existent pas pour les États-Unis sous la même définition : quand une courbe américaine manque, la raison est écrite sous le graphique. La mortalité est publiée avec environ trois ans de retard : les gouvernements récents sont jugés sur moins d'années.</p>
+    </div>
+  </details>
+
+  <footer><p><a href="/mentions-legales/">Mentions légales</a></p></footer>
+</div>
+<script>
+(function () {
+function main(FEED) {
+  // Toutes les données chiffrées viennent de data.json ; les règles de notation de commun/notes.js.
+  var SER = FEED.series.sante, C = SER.C, POURQUOI = ConcretNotes.POURQUOI, SAN = ConcretNotes.sante(SER);
+  var fmt = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(v); };
+  var nfmt = function (n) { return fmt(Math.round(n * 10) / 10, 1); };
+  var sg = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d == null ? 1 : d); };
+  var setHtml = function (id, h) { var el = document.getElementById(id); if (el) el.innerHTML = h; };
+  var DS = FEED.datasets || {};
+  var dfr = function (iso, long) { return new Date(iso + 'T12:00:00').toLocaleDateString('fr-FR', long ? { day: 'numeric', month: 'long', year: 'numeric' } : { day: 'numeric', month: 'short' }); };
+  var mfr = function (p) { return new Date(p + '-15T12:00:00').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); };
+  document.getElementById('today').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  document.getElementById('upd').textContent = SER.exemple ? 'Brouillon : valeurs d\'exemple, aucune donnée réelle.' : 'Dernière mise à jour des données : ' + FEED.updated + '.';
+  var lastOf = function (c, w) { var a = c[w] || []; for (var i = a.length - 1; i >= 0; i--) if (a[i] != null) return { v: a[i], y: c.y[i] }; return null; };
+
+  // ===== Trois chiffres clés =====
+  (function () {
+    var s = lastOf(C.secu, 'fr'), su = lastOf(C.secu, 'ue'), h = lastOf(C.hly, 'fr'), hu = lastOf(C.hly, 'ue'), r = lastOf(C.ren, 'fr'), ru = lastOf(C.ren, 'ue');
+    setHtml('k-secu', sg(s.v, 1) + '<small>% du PIB</small>'); setHtml('k-secu-t', 'En ' + s.y + ' (' + (s.v < 0 ? 'déficit' : 'excédent') + '). Moyenne de l\'UE : ' + sg(su.v, 1) + ' %.');
+    setHtml('k-hly', fmt(h.v, 1) + '<small>ans</small>'); setHtml('k-hly-t', 'À la naissance, en ' + h.y + '. Moyenne de l\'UE : ' + fmt(hu.v, 1) + ' ans.');
+    setHtml('k-ren', fmt(r.v, 1) + '<small>%</small>'); setHtml('k-ren-t', 'Des 16 ans et plus ont renoncé à un examen médical (coût, distance, attente), en ' + r.y + '. UE : ' + fmt(ru.v, 1) + ' %.');
+  })();
+
+  // ===== Aujourd'hui et ce mois-ci =====
+  (function () {
+    var p = SER.P.deficit_secu_prevu, y0 = new Date(new Date().getFullYear(), 0, 1), perSec = p.v / (365 * 86400);
+    function tick() { setHtml('m-compteur', fmt(perSec * (Date.now() - y0.getTime()) / 1000 / 1e9, 2) + '<small> Md€</small>'); }
+    tick(); setInterval(tick, 1000);
+    setHtml('m-compteur-t', 'Estimation : le déficit prévu pour l\'année (' + fmt(p.v / 1e9, 1) + ' Md€, ' + p.source + ') réparti jour par jour, soit ' + fmt(p.v / 365 / 1e6) + ' M€ par jour. Recalé à chaque publication officielle.');
+    var hb = (DS.sante_hebdo || []).slice(-1)[0];
+    setHtml('m-epid', hb ? 'Semaine ' + hb.semaine.split('-S')[1] + ' : grippe, ' + hb.grippe + ' ; bronchiolite, ' + hb.bronchiolite + ' ; Covid, ' + hb.covid + ' (' + hb.source + ').' : 'Pas encore de bulletin relevé.');
+    var M = DS.sante_mois || [], get = function (k) { return M.filter(function (r) { return r.indicateur === k; }).sort(function (a, b) { return a.periode < b.periode ? -1 : 1; }).pop(); };
+    var am = get('depenses_am'), on = get('ondam_prorata'), ru = get('ruptures_ansm'), ap = get('acces_precoces_has');
+    if (am && on) { var e = +am.valeur - +on.valeur; setHtml('m-am', fmt(+am.valeur, 1) + '<small> Md€</small>'); setHtml('m-am-t', 'Dépensés depuis janvier (fin ' + mfr(am.periode) + '), contre ' + fmt(+on.valeur, 1) + ' Md€ si l\'Ondam était dépensé au même rythme : ' + (e >= 0 ? 'dépassement' : 'économie') + ' de ' + fmt(Math.abs(e), 1) + ' Md€.'); }
+    setHtml('m-med', (ru ? '<b>' + ru.valeur + '</b> médicaments en rupture ou en tension (ANSM, ' + mfr(ru.periode) + ').' : '') + (ap ? ' <b>' + ap.valeur + '</b> décisions d\'accès précoce de la HAS en ' + mfr(ap.periode) + '.' : ''));
+    setHtml('teaser-today', 'Déficit de la Sécu depuis janvier, épidémies, dépenses face à l\'Ondam, ruptures de médicaments');
+  })();
+
+  // ===== Bulletin =====
+  var KEYS = SAN.KEYS, WT = SAN.WT, MIN_N = SAN.MIN_N, GOVS = SER.GOVS, PRES = SER.PRES, BANDS = GOVS;
+  var on = {}; KEYS.forEach(function (k) { on[k] = true; });
+  var evaluate = SAN.evaluate, noteOf = function (g) { return SAN.note(g, on); }, countOf = function (g) { return SAN.count(g, on); };
+  GOVS.forEach(evaluate); PRES.forEach(evaluate);
+  var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
+  var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
+  var ptHtml = function (v) { return v == null ? '<span class="pt na">non compté</span>' : v === 1 ? '<span class="pt g">1</span>' : v === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">' + (v === 0.5 ? '½' : fmt(v, 2)) + '</span>'; };
+  var u = function (c) { return c.unite; };
+  function detailTable(g, k) {
+    var c = C[k], wrap = document.createElement('div'), why = [], h;
+    wrap.className = 'kdet';
+    h = '<p><b>' + c.l + (WT[k] > 1 ? ' (compte triple)' : '') + '.</b> Unité : ' + u(c) + '.' + (SER.exemple ? ' <span class="ex">exemple</span>' : '') + '</p>';
+    var v = function (w, y) { return SAN.val(c, w, y); };
+    if (c.regle === 'propre') {
+      h += '<table><thead><tr><th>Année</th><th>Solde France</th><th>Évolution</th><th>Point</th></tr></thead><tbody>';
+      g.y[k].forEach(function (d) {
+        var a = v('fr', d.y), b = v('fr', d.y - 1);
+        h += '<tr><td>' + d.y + '</td><td>' + (a == null ? '—' : sg(a, 1)) + '</td><td>' + (a == null || b == null ? '' : sg(a - b, 1)) + '</td><td>' + ptHtml(d.pt) + '</td></tr>';
+        if (d.pt === 0.5) why.push('Demi-point en ' + d.y + ' : le déficit s\'est réduit, sans revenir à l\'équilibre.');
+        else if (d.pt == null) why.push(SAN.raison(k, d.y));
+      });
+      h += '</tbody></table>';
+    } else if (c.regle === 'vagues') {
+      var rows = '';
+      for (var j = 1; j < c.y.length; j++) {
+        var df = c.fr[j] - c.fr[j - 1], de = c.ue[j] - c.ue[j - 1], inMandate = g.y0 <= c.y[j] && g.y1 > c.y[j - 1];
+        if (inMandate) rows += '<tr><td>' + c.y[j - 1] + '→' + c.y[j] + '</td><td>' + sg(df, 1) + ' (' + fmt(c.fr[j], 1) + ')</td><td>' + sg(de, 1) + ' (' + fmt(c.ue[j], 1) + ')</td><td>' + sg(df - de, 1) + '</td><td>' + ptHtml(ConcretNotes.match(df, de, c.low)) + '</td></tr>';
+      }
+      if (rows) h += '<table><thead><tr><th>Vagues</th><th>France</th><th>UE</th><th>Écart</th><th>Point</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      h += '<p>Points retenus, année par année : ' + g.y[k].map(function (d) { return d.y + ' : ' + (d.pt == null ? 'non compté' : d.pt === 0.5 ? '½' : d.pt); }).join(' · ') + '.</p>';
+      var seen = {}; g.y[k].forEach(function (d) { if (d.pt == null) { var r = SAN.raison(k, d.y); if (!seen[r]) { seen[r] = 1; why.push(r); } } });
+    } else {
+      var niv = c.regle === 'niveau';
+      h += '<table><thead><tr><th>' + (niv ? 'Édition' : 'Année') + '</th><th>France</th><th>UE</th><th>Écart</th><th>Point</th></tr></thead><tbody>';
+      g.y[k].forEach(function (d) {
+        var a = v('fr', d.y), b = v('fr', d.y - 1), e = v('ue', d.y), f = v('ue', d.y - 1), dec = c.unite === 'jours' || /100 000/.test(c.unite) ? 0 : 1;
+        if (niv && a == null && e == null && d.pt == null) { why.push(SAN.raison(k, d.y)); return; }
+        var cell = function (x, p) { return x == null ? '—' : niv || p == null ? fmt(x, dec) : sg(x - p, dec) + ' (' + fmt(x, dec) + ')'; };
+        var gap = a == null || e == null ? '' : niv ? sg(a - e, dec) : b == null || f == null ? '' : sg((a - b) - (e - f), dec);
+        h += '<tr><td>' + d.y + '</td><td>' + cell(a, b) + '</td><td>' + cell(e, f) + '</td><td>' + gap + '</td><td>' + ptHtml(d.pt) + '</td></tr>';
+        if (d.pt === 0.5) why.push(niv ? 'Demi-point en ' + d.y + ' : la France et la moyenne de l\'UE sont exactement au même niveau.' : POURQUOI.egalite(d.y, 'l\'Union européenne'));
+        else if (d.pt == null) why.push(SAN.raison(k, d.y));
+      });
+      h += '</tbody></table>';
+    }
+    if (why.length) h += '<p class="kdet-why">' + why.join('<br>') + '</p>';
+    h += '<p>' + (c.regle === 'propre' ? 'Évolution = variation du solde par rapport à l\'année précédente, en points de PIB.' : c.regle === 'niveau' ? 'Écart = France moins moyenne de l\'UE. ' + (c.low ? 'Ici, moins c\'est mieux.' : 'Ici, plus c\'est mieux.') : 'Écart = évolution de la France moins celle de l\'UE. ' + (c.low ? 'Ici, une baisse est un progrès.' : 'Ici, une hausse est un progrès.')) + '</p>';
+    wrap.innerHTML = h; return wrap;
+  }
+  function chipsFor(g) {
+    var box = document.createDocumentFragment(), kp = document.createElement('div'), det = document.createElement('div'), open = null;
+    kp.className = 'kpis'; det.className = 'kdet-slot'; box.appendChild(kp); box.appendChild(det);
+    KEYS.forEach(function (k) {
+      var l = g.w[k], s = document.createElement('button'), won = d3.sum(l), n = l.length;
+      s.type = 'button'; s.className = 'kpi' + (!n ? '' : won / n >= 0.5 ? ' g' : ' b'); s.setAttribute('aria-expanded', 'false'); s.title = 'Voir le détail des chiffres';
+      s.innerHTML = '<em></em><span></span>'; s.firstChild.textContent = C[k].l + (WT[k] > 1 ? ' ×' + WT[k] : ''); s.lastChild.textContent = !n ? 'non compté' : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n;
+      s.addEventListener('click', function () {
+        Array.prototype.forEach.call(kp.children, function (b) { b.setAttribute('aria-expanded', 'false'); });
+        det.textContent = '';
+        if (open === k) { open = null; return; }
+        open = k; s.setAttribute('aria-expanded', 'true'); det.appendChild(detailTable(g, k));
+      });
+      kp.appendChild(s);
+    });
+    return box;
+  }
+  var showAll = false;
+  function openDetail(mode, g) {
+    if (mode === 'gov') {
+      if (!showAll) { showAll = true; var b = document.getElementById('gov-more'); b.setAttribute('aria-expanded', 'true'); b.textContent = 'Masquer le détail des autres gouvernements'; renderGov(); }
+      var row = document.getElementById('gov-' + g.y0); if (row) { row.scrollIntoView({ block: 'center' }); row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash'); } return;
+    }
+    var box = document.getElementById('pres-detail'); box.textContent = ''; box.hidden = false;
+    var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span class="note"></span>';
+    who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + '. ' + countOf(g) + ' comparaisons ; points marqués (touchez un critère pour le détail) :';
+    box.appendChild(who); box.appendChild(chipsFor(g));
+  }
+  function rankOne(mode) {
+    var list = (mode === 'gov' ? GOVS : PRES).map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
+    var box = document.getElementById('rank-' + mode); box.textContent = '';
+    var W = Math.max(300, box.clientWidth), small = W < 520, rh = 26, lw = small ? 92 : 150, top = 22, H = top + list.length * rh + 26;
+    var x = d3.scaleLinear().domain([0, 20]).range([lw, W - 34]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Classement des notes sur 20');
+    [0, 5, 10, 15, 20].forEach(function (t) {
+      svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 4).attr('y2', H - 20).attr('stroke', t === 10 ? 'var(--fg)' : 'var(--grid)').attr('stroke-dasharray', t === 10 ? '4 3' : null);
+      svg.append('text').attr('x', x(t)).attr('y', top - 8).attr('text-anchor', 'middle').text(t).style('fill', t === 10 ? 'var(--fg)' : null);
+      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = niveau de nos voisins').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
+    });
+    list.forEach(function (r, i) {
+      var y = top + i * rh, name = small ? r.g.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin') : r.g.n, few = countOf(r.g) < MIN_N, inside = !few && x(r.n) - x(0) > 30;
+      svg.append('rect').attr('x', 0).attr('y', y).attr('width', W).attr('height', rh).attr('fill', 'transparent').style('cursor', 'pointer').on('click', function () { openDetail(mode, r.g); });
+      svg.append('text').attr('x', lw - 8).attr('y', y + 16).attr('text-anchor', 'end').text(name).style('fill', 'var(--fg)').style('font-size', '12px').style('pointer-events', 'none');
+      svg.append('rect').attr('x', x(0)).attr('y', y + 5).attr('width', Math.max(2, x(r.n) - x(0))).attr('height', 17).attr('rx', 3).attr('fill', few ? 'var(--axis)' : col(r.n)).style('pointer-events', 'none');
+      svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' (note fragile)' : '')).style('fill', few ? 'var(--fg)' : inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
+    });
+    setHtml('rank-' + mode + '-note', 'En gris, « note fragile » : note calculée sur moins de ' + MIN_N + ' comparaisons (mandat ancien ou court, données de santé européennes souvent disponibles seulement depuis 2004 ou 2011), donc peu fiable. Touchez une barre pour voir le détail.');
+  }
+  document.getElementById('gov-more').addEventListener('click', function () {
+    showAll = !showAll; this.setAttribute('aria-expanded', showAll); this.textContent = showAll ? 'Masquer le détail des autres gouvernements' : 'Voir le détail des autres gouvernements'; renderGov();
+  });
+  function renderGov() {
+    var box = document.getElementById('gov-list'); box.textContent = '';
+    var pend = document.createElement('div'); pend.className = 'gov pending';
+    pend.innerHTML = '<div class="badge p">à venir</div><div class="who"><b>Sébastien Lecornu</b> <span>· depuis sept. 2025 · Macron</span></div><div class="note">Pas encore noté : les chiffres de santé de 2026 ne sont pas encore publiés.</div>';
+    box.appendChild(pend);
+    GOVS.slice().reverse().forEach(function (g, i) {
+      var note = noteOf(g), n = countOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i >= 2;
+      var badge = document.createElement('div'); badge.className = 'badge ' + (n < MIN_N ? 'p' : cls(note)); badge.innerHTML = '<span></span>';
+      badge.firstChild.textContent = note == null ? '—' : nfmt(note); var sm = document.createElement('small'); sm.textContent = '/20'; badge.appendChild(sm);
+      var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span></span>';
+      who.firstChild.textContent = g.n; who.lastChild.textContent = '· ' + (g.y0 === g.y1 ? g.y0 : g.y0 + '-' + g.y1) + ' · ' + g.p + ' · ' + n + ' comparaison' + (n > 1 ? 's' : '') + (n < MIN_N ? ' : trop peu pour une note fiable (il en faut ' + MIN_N + '), d\'où le gris' : '');
+      row.appendChild(badge); row.appendChild(who); row.appendChild(chipsFor(g)); box.appendChild(row);
+    });
+  }
+
+  // ===== Courbes =====
+  var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Union européenne', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis' };
+  function hover(box, svg, H, m, pts) {
+    if (!pts.length) return;
+    var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+    svg.classed('hov', true);
+    var g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
+    var vl = g.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--fg)').attr('stroke-opacity', .35).attr('stroke-width', 1);
+    var dots = g.append('g');
+    svg.append('rect').attr('x', 0).attr('y', 0).attr('width', svg.attr('viewBox').split(' ')[2]).attr('height', H).attr('fill', 'transparent');
+    var tip = document.createElement('div'); tip.className = 'ctip'; tip.hidden = true; box.appendChild(tip);
+    var node = svg.node(), VW = +svg.attr('viewBox').split(' ')[2], cur = -1;
+    function show(ev) {
+      var r = node.getBoundingClientRect(); if (!r.width) return;
+      var sx = (ev.clientX - r.left) * VW / r.width, best = 0;
+      pts.forEach(function (p, i) { if (Math.abs(p.px - sx) < Math.abs(pts[best].px - sx)) best = i; });
+      var p = pts[best]; g.style('display', null); vl.attr('x1', p.px).attr('x2', p.px);
+      if (best !== cur) {
+        cur = best; dots.selectAll('*').remove();
+        p.rows.forEach(function (rw) { dots.append('circle').attr('cx', p.px).attr('cy', rw.py).attr('r', 3.6).attr('fill', rw.c).attr('stroke', 'var(--panel)').attr('stroke-width', 1.5); });
+        tip.innerHTML = '<b>' + esc(p.t) + '</b>' + p.rows.slice().sort(function (a, b) { return a.py - b.py; }).map(function (rw) {
+          return '<span><em><i style="background:' + rw.c + '"></i>' + esc(rw.n) + '</em><strong>' + esc(rw.s) + '</strong></span>';
+        }).join('') + (p.note ? '<small>' + esc(p.note) + '</small>' : '');
+      }
+      tip.hidden = false;
+      var cx = p.px * r.width / VW, tw = tip.offsetWidth, bw = box.clientWidth;
+      var left = cx + 12 + tw <= bw ? cx + 12 : cx - 12 - tw;
+      tip.style.left = Math.max(0, Math.min(bw - tw, left)) + 'px';
+    }
+    function hide() { g.style('display', 'none'); tip.hidden = true; cur = -1; }
+    node.addEventListener('pointerdown', show);
+    node.addEventListener('pointermove', show);
+    node.addEventListener('pointerleave', function (ev) { if (ev.pointerType === 'mouse') hide(); });
+    document.addEventListener('pointerdown', function (ev) { if (!node.contains(ev.target)) hide(); });
+  }
+  function lineChart(id, series, o) {
+    var box = document.getElementById(id); box.textContent = '';
+    var W = Math.max(300, box.clientWidth), small = W < 520, H = o.h || (small ? 220 : 260), m = { t: 10, r: 46, b: 24, l: 40 };
+    var all = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null) all.push(d.v); }); });
+    var lo = d3.min(all), hi = d3.max(all), pad = (hi - lo) * .1;
+    var x = d3.scaleLinear().domain(o.x).range([m.l, W - m.r]);
+    var y = d3.scaleLinear().domain([o.min != null ? o.min : lo - pad, hi + pad]).nice().range([H - m.b, m.t]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', o.label);
+    if (o.bands) BANDS.forEach(function (g, i) {
+      var x0 = x(Math.max(o.x[0], g.y0 - .5)), x1 = x(Math.min(o.x[1], g.y1 + .5));
+      if (x1 > x0) svg.append('rect').attr('x', x0).attr('y', m.t).attr('width', x1 - x0).attr('height', H - m.t - m.b).attr('fill', i % 2 ? 'var(--band)' : 'transparent');
+    });
+    y.ticks(small ? 4 : 5).forEach(function (t) {
+      svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)');
+      svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(t);
+    });
+    (small ? o.xt.filter(function (_, i) { return i % 2 === 0; }) : o.xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t); });
+    var line = d3.line().defined(function (d) { return d.v != null; }).x(function (d) { return x(d.x); }).y(function (d) { return y(d.v); });
+    var ends = [];
+    series.forEach(function (s) {
+      svg.append('path').datum(s.data).attr('d', line).attr('fill', 'none').attr('stroke', s.c).attr('stroke-width', s.main ? 2.6 : 1.8).attr('stroke-dasharray', s.dash ? '5 4' : null);
+      if (s.dots) s.data.forEach(function (d) { if (d.v == null) return; svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
+      var l = s.data.filter(function (d) { return d.v != null; }).pop();
+      svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
+      ends.push({ y: y(l.v), t: fmt(l.v, o.dec == null ? 1 : o.dec), c: s.c, x: x(l.x), main: s.main });
+    });
+    ends.sort(function (a, b) { return a.y - b.y; });
+    for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+    var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); });
+    xs.sort(function (a, b) { return a - b; });
+    hover(box, svg, H, m, xs.map(function (xv) {
+      return { px: x(xv), t: String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n || SNAME[s.c] || '', py: y(d.v), s: fmt(d.v, o.dec == null ? 1 : o.dec) + (o.unit || '') } : null; }).filter(Boolean) };
+    }));
+  }
+  var serOf = function (c, w) { return c.y.map(function (y, i) { return { x: y, v: (c[w] || [])[i] }; }); };
+  var ticks = function (a, b) { var s = Math.max(1, Math.ceil((b - a) / 6)), t = []; for (var y = a; y <= b; y += s) t.push(y); return t; };
+  function curves() {
+    var wrap = document.getElementById('curves'); wrap.textContent = '';
+    KEYS.filter(function (k) { return C[k].regle !== 'niveau'; }).forEach(function (k) {
+      var c = C[k], sec = document.createElement('section'); sec.className = 'card';
+      var hasUs = c.us && c.us.some(function (v) { return v != null; });
+      sec.innerHTML = '<h2><span class="eyebrow">' + c.l + ', ' + c.unite + ' <span class="ex">exemple</span></span></h2><div class="chart" id="ch-' + k + '"></div><p class="note"></p>';
+      wrap.appendChild(sec);
+      var S = [];
+      if (k === 'tab' && c.us_annuel) S.push({ c: 'var(--us)', data: c.us_annuel.y.map(function (y, i) { return { x: y, v: c.us_annuel.v[i] }; }) });
+      else if (hasUs) S.push({ c: 'var(--us)', data: serOf(c, 'us') });
+      S.push({ c: 'var(--de)', data: serOf(c, 'de'), dots: c.regle === 'vagues' }, { c: 'var(--ea)', dash: 1, data: serOf(c, 'ue'), dots: c.regle === 'vagues' }, { c: 'var(--fr)', main: 1, data: serOf(c, 'fr'), dots: c.regle === 'vagues' });
+      var x0 = Math.min(c.y[0], k === 'tab' && c.us_annuel ? c.us_annuel.y[0] : c.y[0]), x1 = c.y[c.y.length - 1];
+      lineChart('ch-' + k, S, { x: [x0 - .5, x1 + .5], xt: ticks(x0, x1), unit: c.unite.charAt(0) === '%' ? ' %' : '', dec: /100 000/.test(c.unite) ? 0 : 1, label: c.l });
+      var notes = [];
+      if (c.us_note) notes.push(c.us_note);
+      if (k === 'tab') notes.push('France, UE et Allemagne : enquête européenne EHIS, une vague tous les 5 à 6 ans (la prochaine, 2025, n\'est pas encore publiée). États-Unis : OCDE, chaque année.');
+      else if (!hasUs) notes.push(k === 'secu' ? 'Pas de courbe pour les États-Unis : leur sécurité sociale n\'est pas un secteur comparable dans les comptes publics.' : 'Pas de courbe pour les États-Unis : pas de mesure comparable.');
+      var ue0 = c.ue && c.ue.findIndex(function (v) { return v != null; });
+      if (ue0 > 0) notes.push('La moyenne de l\'UE ne commence qu\'en ' + c.y[ue0] + ' : avant, Eurostat ne la publie pas.');
+      sec.querySelector('.note').textContent = notes.join(' ');
+    });
+  }
+  function innovation() {
+    ['wd', 'wt'].forEach(function (k) { var c = C[k]; lineChart('ch-' + k, [{ c: 'var(--de)', data: serOf(c, 'de'), dots: 1 }, { c: 'var(--ea)', dash: 1, data: serOf(c, 'ue'), dots: 1 }, { c: 'var(--fr)', main: 1, data: serOf(c, 'fr'), dots: 1 }], { x: [c.y[0] - .5, c.y[c.y.length - 1] + .5], xt: ticks(c.y[0], c.y[c.y.length - 1]), unit: k === 'wd' ? ' %' : ' j', dec: 0, label: c.l }); });
+    var D = SER.INNOV.wait_domaines;
+    document.getElementById('wait-dom').innerHTML = '<thead><tr><th>Domaine</th><th>France</th><th>UE</th><th>Allemagne</th></tr></thead><tbody>' + D.map(function (r) { return '<tr><td>' + r.d + '</td><td>' + r.fr + ' %</td><td>' + r.ue + ' %</td><td>' + r.de + ' %</td></tr>'; }).join('') + '</tbody>';
+    var A = SER.INNOV.acces_precoce, n = A.y.length - 1;
+    setHtml('ap-note', 'En ' + A.y[n] + ', <b>' + A.n[n] + '</b> autorisations d\'accès précoce délivrées, délai médian d\'instruction de ' + A.delai[n] + ' jours (délai légal : 90 jours). Ensuite viennent l\'avis de la HAS sur le remboursement, le prix négocié par le CEPS et la publication au Journal officiel. <span class="ex">exemple</span>');
+  }
+  function recherche() {
+    var E = SER.INNOV.essais, n = E.y.length - 1;
+    lineChart('ch-essais', [{ c: 'var(--fr)', main: 1, dots: 1, data: E.y.map(function (y, i) { return { x: y, v: E.fr[i] }; }) }], { x: [E.y[0] - .5, E.y[n] + .5], xt: E.y, dec: 0, label: 'Essais cliniques lancés en France' });
+    setHtml('essais-note', 'Essais cliniques lancés en France chaque année (registres CTIS et ClinicalTrials.gov). Rang européen en ' + E.y[n] + ' : ' + E.rang[n] + '<sup>e</sup> (enquête du Leem, source industrielle). Délai d\'autorisation d\'un essai en France : ' + SER.INNOV.delai_essais.v + ' jours en ' + SER.INNOV.delai_essais.annee + '. <span class="ex">exemple</span>');
+  }
+  function aussi() {
+    var K = SER.CLES, s = function (o, w) { return o.y.map(function (y, i) { return { x: y, v: o[w][i] }; }); };
+    lineChart('ch-med', [{ c: 'var(--us)', data: s(K.medecins, 'us') }, { c: 'var(--de)', data: s(K.medecins, 'de') }, { c: 'var(--fr)', main: 1, data: s(K.medecins, 'fr') }], { x: [K.medecins.y[0] - .5, K.medecins.y[K.medecins.y.length - 1] + .5], xt: ticks(K.medecins.y[0], K.medecins.y[K.medecins.y.length - 1]), dec: 0, label: 'Médecins pour 100 000 habitants' });
+    lineChart('ch-dep', [{ c: 'var(--us)', data: s(K.depense, 'us') }, { c: 'var(--de)', data: s(K.depense, 'de') }, { c: 'var(--ea)', dash: 1, data: s(K.depense, 'ue') }, { c: 'var(--fr)', main: 1, data: s(K.depense, 'fr') }], { x: [K.depense.y[0] - .5, K.depense.y[K.depense.y.length - 1] + .5], xt: ticks(K.depense.y[0], K.depense.y[K.depense.y.length - 1]), unit: ' %', label: 'Dépense de santé en % du PIB' });
+    lineChart('ch-ondam', [{ c: 'var(--ea)', n: 'Ondam voté', dash: 1, data: s(K.ondam, 'vote') }, { c: 'var(--fr)', n: 'Dépenses réalisées', main: 1, data: s(K.ondam, 'realise') }], { x: [K.ondam.y[0] - .5, K.ondam.y[K.ondam.y.length - 1] + .5], xt: ticks(K.ondam.y[0], K.ondam.y[K.ondam.y.length - 1]), dec: 0, label: 'Ondam voté et réalisé' });
+    var lr = K.ondam.realise.length - 1; while (lr > 0 && K.ondam.realise[lr] == null) lr--;
+    setHtml('ondam-note', 'Pointillés : objectif voté ; trait plein : dépenses réalisées. Dernière année réalisée connue : ' + K.ondam.y[lr] + ' ; ' + K.ondam.y[K.ondam.y.length - 1] + ' n\'est pas encore clos.');
+    setHtml('apl', '<b>' + fmt(K.apl_sous_dote.v, 1) + ' %</b> des Français vivent dans une zone sous-dotée en médecins généralistes (' + K.apl_sous_dote.annee + '). <span class="ex">exemple</span>');
+  }
+  // ===== Actualité et agenda =====
+  (function () {
+    var A = (DS.actu_sante || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }), G = (DS.agenda_sante || []).slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    var li = function (d, t, src, url) { return '<li><span class="d">' + dfr(d) + '</span><span>' + t + (url ? ' <a href="' + url + '">' + src + '</a>' : src ? ' <a>' + src + '</a>' : '') + '</span></li>'; };
+    setHtml('actu-list', A.map(function (a) { return li(a.date, a.texte, a.source, a.url); }).join('') || '<li><span class="d"></span><span>Pas encore d\'actualité relevée.</span></li>');
+    setHtml('agenda-list', G.map(function (a) { return li(a.date, a.evenement, a.source, a.url); }).join('') || '<li><span class="d"></span><span>Pas de rendez-vous confirmé.</span></li>');
+    setHtml('teaser-actu', G[0] ? 'Prochain rendez-vous : ' + dfr(G[0].date, true) : 'Actualité de la santé');
+  })();
+
+  function drawAll() { rankOne('pres'); rankOne('gov'); curves(); innovation(); recherche(); aussi(); }
+  renderGov(); drawAll();
+  var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });
+}
+(function () {
+  var started = false;
+  function go(feed) {
+    if (started) return; started = true;
+    if (!feed || !feed.series || !feed.series.sante) { var u = document.getElementById('upd'); if (u) u.textContent = 'Les données n\'ont pas pu être chargées. Rechargez la page.'; return; }
+    main(feed);
+  }
+  try { fetch('../data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(go, function () { go(null); }); } catch (e) { go(null); }
+})();
+})();
+</script>
+</body>
+</html>

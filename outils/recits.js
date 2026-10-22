@@ -30,6 +30,14 @@ module.exports = [
     verifier: function (c) { var P = c.fin.PIB, cross = null; for (var i = 1; i < P.fr.length; i++) if (P.fr[i] < P.ea[i] && P.fr[i - 1] >= P.ea[i - 1]) cross = 1990 + i; var k = lastBoth(P.fr, P.ea); return { ok: cross === 2016 && P.fr[k] < P.ea[k], constat: 'passage sous la moyenne : ' + cross + ', dernière année ' + (P.fr[k] < P.ea[k] ? 'en dessous' : 'au-dessus') }; } },
   { id: 'fin_spread', page: 'finances', ou: 'titre « Politique et marchés »', texte: 'La France emprunte plus cher que l\'Italie',
     verifier: function (c) { var sp = c.pouls.filter(function (r) { return r.indicateur === 'ecart_allemagne'; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }).pop(), it = c.fin.P.spread_italie; return { ok: +sp.valeur > it.v, constat: 'écart France ' + fr(+sp.valeur) + ' pb (' + sp.date + '), Italie ' + fr(it.v) + ' pb (' + it.date + ')' }; } },
+  // ===== Santé (brouillon : le récit reste une question tant que les données réelles ne le confirment pas) =====
+  { id: 'sante_recit', page: 'sante', ou: 'titre de la page et meta og:description',
+    texte: 'Un système généreux et accessible, mais qui vit à crédit et prévient mal ?',
+    verifier: function (c) {
+      if (!c.sante) return { ok: true, constat: 'page non publiée' };
+      var C = c.sante.C, last = function (k, w) { var a = C[k][w] || []; for (var i = a.length - 1; i >= 0; i--) if (a[i] != null) return a[i]; return null; };
+      var genereux = last('rac', 'fr') < last('rac', 'ue'), accessible = last('ren', 'fr') <= last('ren', 'ue'), credit = last('secu', 'fr') < 0, previent = last('prv', 'fr') >= last('prv', 'ue') || last('tab', 'fr') > last('tab', 'ue');
+      return { ok: genereux && accessible && credit && previent, constat: 'reste à charge ' + last('rac', 'fr') + ' % contre ' + last('rac', 'ue') + ' %, renoncement ' + last('ren', 'fr') + ' % contre ' + last('ren', 'ue') + ' %, solde de la Sécu ' + last('secu', 'fr') + ' % du PIB, mortalité évitable par la prévention ' + last('prv', 'fr') + ' contre ' + last('prv', 'ue') + ', fumeurs ' + last('tab', 'fr') + ' % contre ' + last('tab', 'ue') + ' %' }; } },
   // ===== Éducation =====
   { id: 'edu_bilan', page: 'education', ou: 'meta og:description et résumé « Le bilan »',
     texte: 'On diplôme plus que nos voisins, mais les élèves apprennent moins, et les jeunes trouvent moins vite un emploi',
