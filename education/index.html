@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="../commun/notes.js"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }</style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -489,39 +490,20 @@ function main(FEED) {
   var SP = SER.SP;
   // Classement de Shanghai (ARWU) : nombre d'universités dans le top 100, 2003-2025, et rang de la meilleure université française
   var ARWU = SER.ARWU;
-  var KEYS = ['el', 'ne', 'te', 'yu', 'pi', 'eq'], CURVES = ['el', 'ne', 'te', 'yu'];
+  var KEYS = ConcretNotes.education(SER).KEYS, CURVES = ['el', 'ne', 'te', 'yu'];
   var at = function (arr, y) { return arr[y - Y0]; };
-  function pisaGap(w0, w1) {
-    var d = [];
-    ['m', 'r', 's'].forEach(function (k) { var c = PI[k], i0 = c.y.indexOf(w0), i1 = c.y.indexOf(w1); if (i0 >= 0 && i1 >= 0) d.push((c.fr[i1] - c.fr[i0]) - (c.oe[i1] - c.oe[i0])); });
-    return d.length ? d3.mean(d) : null;
-  }
-  function waveOf(ws, y) { for (var i = 1; i < ws.length; i++) if (y > ws[i - 1] && y <= ws[i]) return [ws[i - 1], ws[i]]; return null; }
+  // Règles de notation : commun/notes.js (la même méthode pour la page, l'accueil et la mise à jour automatique).
   var LONG = true; try { LONG = localStorage.getItem('edu-long2') !== '0'; } catch (e) {}
-  function waveRes(k, W) {
-    if (k === 'pi') { var i = WAVES.indexOf(W); if (i < 1) return null; var g = pisaGap(WAVES[i - 1], W); return g == null ? null : Math.abs(g) < 0.5 ? 0.5 : g > 0 ? 1 : 0; }
-    var j = EQ.y.indexOf(W); if (j < 1) return null; var e = (EQ.fr[j] - EQ.fr[j - 1]) - (EQ.oe[j] - EQ.oe[j - 1]); return e === 0 ? 0.5 : e < 0 ? 1 : 0;
-  }
-  function match(k, y) {
-    if (y <= Y0) return null;
-    if (LONG && (k === 'pi' || k === 'eq')) {
-      // Temps long : chaque vague est répartie sur les dix années de scolarité des élèves testés (de 6 à 15 ans)
-      var r = (k === 'pi' ? WAVES : EQ.y).filter(function (W) { return y >= W - 9 && y <= W; }).map(function (W) { return waveRes(k, W); }).filter(function (v) { return v != null; });
-      return r.length ? d3.mean(r) : null;
-    }
-    if (k === 'pi') { var w = waveOf(WAVES, y); if (!w) return null; var g = pisaGap(w[0], w[1]); return g == null ? null : Math.abs(g) < 0.5 ? 0.5 : g > 0 ? 1 : 0; }
-    if (k === 'eq') { var v = waveOf(EQ.y, y); if (!v) return null; var i1 = EQ.y.indexOf(v[1]), e = (EQ.fr[i1] - EQ.fr[i1 - 1]) - (EQ.oe[i1] - EQ.oe[i1 - 1]); return e === 0 ? 0.5 : e < 0 ? 1 : 0; }
-    var c = S[k];
-    if (c.br.indexOf(y) >= 0) return null;
-    var df = at(c.fr, y) - at(c.fr, y - 1), de = at(c.eu, y) - at(c.eu, y - 1);
-    if (Math.abs(df - de) < 1e-9) return 0.5;
-    return (c.low ? df < de : df > de) ? 1 : 0;
-  }
+  var EDU = function () { return ConcretNotes.education(SER, { long: LONG }); };
+  var pisaGap = function (w0, w1) { return EDU().pisaGap(w0, w1); };
+  var waveOf = function (ws, y) { return EDU().waveOf(ws, y); };
+  var waveRes = function (k, W) { return EDU().waveRes(k, W); };
+  var match = function (k, y) { return EDU().score(k, y); };
 
   var GOVS = SER.GOVS;
   var PRES = SER.PRES;
   var pmOf = function (y) { return GOVS.filter(function (g) { return y >= g.y0 && y <= g.y1; })[0]; };
-  function evaluate(g) { g.w = {}; g.y = {}; KEYS.forEach(function (k) { g.w[k] = []; g.y[k] = []; for (var y = g.y0; y <= g.y1; y++) { var m = match(k, y); if (m != null) g.w[k].push(m); g.y[k].push({ y: y, pt: m }); } }); }
+  var evaluate = function (g) { return EDU().evaluate(g); };
   // ===== Détail d'un critère, pour vérifier chaque point =====
   var sg = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d == null ? 1 : d); };
   var ptHtml = function (v) { return v == null ? '<span class="pt na">n.c.</span>' : v === 1 ? '<span class="pt g">1</span>' : v === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">' + (v === 0.5 ? '½' : fmt(v, 2)) + '</span>'; };
@@ -572,11 +554,10 @@ function main(FEED) {
   GOVS.forEach(evaluate); PRES.forEach(evaluate);
   var on = { el: true, ne: true, te: true, yu: true, pi: true, eq: true };
   try { var sv = JSON.parse(localStorage.getItem('edu-crit2') || 'null'); if (sv) KEYS.forEach(function (k) { if (typeof sv[k] === 'boolean') on[k] = sv[k]; }); } catch (e) {}
-  var WT = { el: 1, ne: 1, te: 1, yu: 1, pi: 3, eq: 1 };
+  var WT = EDU().WT, MIN_N = EDU().MIN_N;
   var wmean = function (pairs) { var sw = d3.sum(pairs, function (p) { return p[1]; }); return sw ? d3.sum(pairs, function (p) { return p[0] * p[1]; }) / sw : null; };
-  var countOf = function (g) { return d3.sum(KEYS.filter(function (k) { return on[k]; }), function (k) { return g.w[k].length; }); };
-  var MIN_N = 6;
-  var noteOf = function (g) { var r = KEYS.filter(function (k) { return on[k] && g.w[k].length; }).map(function (k) { return [d3.mean(g.w[k]), WT[k]]; }); return r.length ? 20 * wmean(r) : null; };
+  var countOf = function (g) { return EDU().count(g, on); };
+  var noteOf = function (g) { return EDU().note(g, on); };
   var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
 

@@ -315,41 +315,37 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p><a href="/mentions-legales/">Mentions légales</a></p>
   </footer>
 </div>
+<script src="/commun/notes.js"></script>
 <script>
 (function () {
-  // Notes sur 20 relevées sur les pages Finances publiques et Éducation (bulletins au 22 octobre 2026)
-  var P = [
-    { n: 'Emmanuel Macron', d: '2017-2025, en exercice', f: 9.2, e: 8.5 },
-    { n: 'Nicolas Sarkozy', d: '2007-2011', f: 8.8, e: 11.8 },
-    { n: 'François Hollande', d: '2012-2016', f: 4.8, e: 9.3 },
-    { n: 'Jacques Chirac', d: '1995-2006', f: 5.2, e: 7.8 }
-  ];
-  var G = [
-    { n: 'Jean Castex', d: '2020-2021', f: 13.1, e: 12.5 }, { n: 'Jean-Marc Ayrault', d: '2012-2013', f: 8.8, e: 12.5 },
-    { n: 'François Fillon', d: '2007-2011', f: 8.8, e: 11.8 }, { n: 'Édouard Philippe', d: '2017-2019', f: 7.9, e: 8.8 },
-    { n: 'François Bayrou', d: '2025', f: 8.6, e: 7.5 }, { n: 'Gabriel Attal', d: '2024', f: 10, e: 4 },
-    { n: 'Élisabeth Borne', d: '2022-2023', f: 6.9, e: 6.9 }, { n: 'Manuel Valls', d: '2014-2016', f: 2.1, e: 7.3 },
-    { n: 'Lionel Jospin', d: '1997-2001', f: 6.8, e: null }, { n: 'Jean-Pierre Raffarin', d: '2002-2004', f: 5, e: 6.9 },
-    { n: 'Dominique de Villepin', d: '2005-2006', f: 3.1, e: 7.8 }, { n: 'Alain Juppé', d: '1995-1996', f: 2.5, e: null }
-  ];
+  // Classement général : recalculé à chaque visite à partir de data.json, avec les règles de commun/notes.js
+  // (les mêmes que sur les pages Finances et Éducation, réglages par défaut). Aucune note n'est saisie à la main.
   var fmt = function (v) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v); };
   var cls = function (v) { return v >= 10 ? 'g' : v >= 6 ? 'm' : 'b'; };
-  var MISS = [['f', 'Finances', '/finances/#bulletin'], ['e', 'Éducation', '/education/#bulletin']];
-  function table(id, rows) {
-    rows.forEach(function (r) { var v = MISS.map(function (m) { return r[m[0]]; }).filter(function (x) { return x != null; }); r.m = Math.round(v.reduce(function (a, b) { return a + b; }, 0) / v.length * 10) / 10; r.k = v.length; });
-    rows.sort(function (a, b) { return b.m - a.m; });
+  var MISS = ConcretNotes.MISSIONS;
+  function period(r, series) {
+    var y = r.y0 === r.y1 ? String(r.y0) : r.y0 + '-' + r.y1, cur = (series.finances.PRES.concat(series.finances.GOVS)).filter(function (g) { return g.n === r.n && /en cours/.test(g.p || ''); })[0];
+    return y + (cur ? ', en exercice' : '');
+  }
+  function table(id, rows, series) {
     var box = document.getElementById(id); box.textContent = '';
-    rows.forEach(function (r, i) {
+    rows.forEach(function (r) {
+      if (r.m == null) return;
       var b = document.createElement('button'); b.className = 'br'; b.type = 'button'; b.setAttribute('aria-expanded', 'false');
       var w = r.m / 20 * 100, inside = w > 22;
-      b.innerHTML = '<span class="nm">' + r.n + '<small>' + r.d + '</small></span><span class="tr"><span class="ten"></span><span class="fl ' + cls(r.m) + '" style="width:' + w + '%"></span><span class="v" style="' + (inside ? 'left:calc(' + w + '% - 2.8em);color:#fff' : 'left:calc(' + w + '% + 6px)') + '">' + fmt(r.m) + '</span></span>';
+      b.innerHTML = '<span class="nm">' + r.n + '<small>' + period(r, series) + '</small></span><span class="tr"><span class="ten"></span><span class="fl ' + cls(r.m) + '" style="width:' + w + '%"></span><span class="v" style="' + (inside ? 'left:calc(' + w + '% - 2.8em);color:#fff' : 'left:calc(' + w + '% + 6px)') + '">' + fmt(r.m) + '</span></span>';
       var d = document.createElement('div'); d.className = 'bd'; d.hidden = true;
-      d.innerHTML = MISS.map(function (m) { var v = r[m[0]]; return '<a class="' + (v == null ? 'na' : cls(v)) + '" href="' + m[2] + '">' + m[1] + ' <b>' + (v == null ? 'non noté' : fmt(v) + '/20') + '</b></a>'; }).join('') + (r.k < MISS.length ? '<span class="note" style="align-self:center">Moyenne sur ' + r.k + ' mission' + (r.k > 1 ? 's' : '') + '.</span>' : '');
+      d.innerHTML = MISS.map(function (m) { var v = r[m.k]; return '<a class="' + (v == null ? 'na' : cls(v)) + '" href="' + m.url + '">' + m.l + ' <b>' + (v == null ? 'non noté' : fmt(v) + '/20') + '</b></a>'; }).join('') + (r.k < MISS.length ? '<span class="note" style="align-self:center">Moyenne sur ' + r.k + ' mission' + (r.k > 1 ? 's' : '') + '.</span>' : '');
       b.addEventListener('click', function () { var o = d.hidden; d.hidden = !o; b.setAttribute('aria-expanded', o ? 'true' : 'false'); });
       box.appendChild(b); box.appendChild(d);
     });
   }
-  table('t-pres', P); table('t-gov', G);
+  function fail() { ['t-pres', 't-gov'].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = 'Le classement n\'a pas pu être chargé. Rechargez la page.'; }); }
+  fetch('/data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+    if (!d.series) return fail();
+    var c = ConcretNotes.classement(d.series);
+    table('t-pres', c.pres, d.series); table('t-gov', c.gov, d.series);
+  }).catch(fail);
 })();
 </script>
 <script>(function () { var n = document.querySelector('.site'); if (!n) return; var f = function () { document.documentElement.style.setProperty('--navh', n.offsetHeight + 'px'); }; f(); if (window.ResizeObserver) new ResizeObserver(f).observe(n); else addEventListener('resize', f); })();</script>
