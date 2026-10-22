@@ -89,11 +89,11 @@ if (S.sante) ['C', 'AFF'].forEach(function (bloc) { Object.keys(S.sante[bloc] ||
 // Chaque critère noté de la Santé appartient à une et une seule des questions (au plus 5 indicateurs par question).
 if (S.sante && S.sante.THEMES) {
   var vusT = {}; S.sante.THEMES.forEach(function (t) {
-    if (t.crit.length > 5) err('sante : la question « ' + t.q + ' » a plus de 5 indicateurs notés');
-    t.crit.forEach(function (k) { if (!S.sante.C[k]) err('sante : critère inconnu ' + k + ' dans « ' + t.q + ' »'); if (vusT[k]) err('sante : critère ' + k + ' dans deux questions'); vusT[k] = 1; });
+    if (t.crit.length > 5) err('sante : le thème « ' + t.q + ' » a plus de 5 indicateurs notés');
+    t.crit.forEach(function (k) { if (!S.sante.C[k]) err('sante : critère inconnu ' + k + ' dans « ' + t.q + ' »'); if (vusT[k]) err('sante : critère ' + k + ' dans deux thèmes'); vusT[k] = 1; });
   });
-  Object.keys(S.sante.C).forEach(function (k) { if (!vusT[k]) err('sante : critère ' + k + ' rattaché à aucune question'); });
-  if (S.sante.THEMES.length > 5) err('sante : plus de 5 questions notées');
+  Object.keys(S.sante.C).forEach(function (k) { if (!vusT[k]) err('sante : critère ' + k + ' rattaché à aucun thème'); });
+  if (S.sante.THEMES.length > 5) err('sante : plus de 5 thèmes notés');
 }
 var ids = {};
 cal.indicateurs.forEach(function (i) { if (ids[i.id]) err('calendrier : id en double ' + i.id); ids[i.id] = 1; if (!/^\d{4}-\d{2}-\d{2}$/.test(i.prochaine_verification || '')) err('calendrier : ' + i.id + ' sans prochaine_verification valide'); });
@@ -108,16 +108,17 @@ if (!bloquant.length) {
     notes = {
       finances: { pres: lst(fin, S.finances.PRES), gov: lst(fin, S.finances.GOVS) },
       education: { pres: lst(edu, S.education.PRES), gov: lst(edu, S.education.GOVS) },
+      sante: S.sante ? { pres: lst(NOTES.sante(S.sante), S.sante.PRES), gov: lst(NOTES.sante(S.sante), S.sante.GOVS) } : { pres: [], gov: [] },
       accueil: { pres: cl.pres.map(function (r) { return { n: r.n, v: r.m }; }), gov: cl.gov.map(function (r) { return { n: r.n, v: r.m }; }) }
     };
-    ['finances', 'education', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) { notes[m][k].forEach(function (r) { if (r.v != null && (r.v < 0 || r.v > 20 || isNaN(r.v))) err('note hors échelle : ' + m + ' ' + r.n + ' ' + r.v); }); }); });
+    ['finances', 'education', 'sante', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) { notes[m][k].forEach(function (r) { if (r.v != null && (r.v < 0 || r.v > 20 || isNaN(r.v))) err('note hors échelle : ' + m + ' ' + r.n + ' ' + r.v); }); }); });
   } catch (e) { err('calcul des notes impossible : ' + e.message); }
 }
 var avant = fs.existsSync(path.join(ROOT, 'donnees/notes.json')) ? rd('donnees/notes.json') : null;
 var chgNotes = [];
 if (notes && avant) {
-  var LAB = { finances: 'Finances', education: 'Éducation', accueil: 'Classement général' };
-  ['finances', 'education', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) {
+  var LAB = { finances: 'Finances', education: 'Éducation', sante: 'Santé', accueil: 'Classement général' };
+  ['finances', 'education', 'sante', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) {
     var old = {}; ((avant[m] || {})[k] || []).forEach(function (r) { old[r.n] = r.v; });
     notes[m][k].forEach(function (r) { var a = old[r.n] == null ? null : Math.round(old[r.n] * 10) / 10, b = r.v == null ? null : Math.round(r.v * 10) / 10; if (a !== b) chgNotes.push(LAB[m] + ' · ' + r.n + ' ' + nf(a) + ' → ' + nf(b)); });
   }); });

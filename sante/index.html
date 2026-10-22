@@ -315,7 +315,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 .sc i.g, .cmp .i.g { color: var(--ok); } .sc i.b, .cmp .i.b { color: var(--bad); } .sc i.m, .cmp .i.m { color: var(--mid); }
 .cmp { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
 .cmp th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
-.cmp td { padding: 7px 6px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; vertical-align: top; }
+.cmp td { padding: 8px 6px 2px; text-align: right; white-space: nowrap; vertical-align: top; }
+.cmp tr.xp td { text-align: left; white-space: normal; font-weight: 400; font-size: 12px; color: var(--muted); padding: 0 6px 8px; border-bottom: 1px solid var(--grid); }
+.cmp tr.grp.nm td { padding-top: 10px; } .cmp tr.xp.grp td { border-bottom: 0; } .cmp tr.xp.sub td { padding-left: 18px; }
 .cmp td:first-child { text-align: left; white-space: normal; font-weight: 600; }
 .cmp td small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); }
 .cmp td:nth-child(3) small { display: inline; }
@@ -324,8 +326,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .cmp tr.grp td { border-bottom: 0; padding-bottom: 2px; }
 .def > summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--muted); }
 .def[open] > summary { margin-bottom: 6px; }
-.themes { display: grid; gap: 20px; }
-.theme { display: grid; gap: 10px; }
+.themes { display: grid; gap: 12px; }
 .verdict { font-family: var(--serif); font-size: 19px; line-height: 1.3; margin: 0; }
 .verdict b { font-weight: 500; color: var(--fr); }
 .checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; font-size: 14px; line-height: 1.4; }
@@ -339,6 +340,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 .fold > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 12px; }
 .fold > .charts4 { padding: 0 10px 10px; }
 .fold .card { border-color: var(--grid); }
+.lire { margin: 0; font-size: 14.5px; line-height: 1.5; } .lire b.g { color: var(--ok); } .lire b.b { color: var(--bad); }
+.acc.theme .acc-h { font-size: 18px; } .acc-t .ic { display: inline-flex; gap: 4px; margin-right: 6px; } .acc-t .ic i { font-style: normal; font-weight: 700; } .acc-t .ic i.g { color: var(--ok); } .acc-t .ic i.b { color: var(--bad); } .acc-t .ic i.m { color: var(--mid); }
+.acc.theme > .acc-body > .card { border: 0; padding: 0 4px; background: none; }
 .checks.sub { margin-top: 6px; gap: 4px; font-size: 13px; color: var(--muted); }
 .qlist { margin: 4px 0 0; padding: 0; list-style: none; counter-reset: q; display: grid; gap: 8px; }
 .qlist li { counter-increment: q; position: relative; padding-left: 28px; display: grid; gap: 1px; font-size: 14px; line-height: 1.35; }
@@ -358,8 +362,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card" id="resume" aria-labelledby="recit">
     <h1 class="recit" id="recit">La France face à l'Union européenne, l'Allemagne et les États-Unis</h1>
-    <div class="score" id="score"></div>
-    <p class="note">Dernier chiffre connu. ✓ : la France fait mieux que la moyenne de l'UE ou que l'Allemagne ; ✗ : moins bien.</p>
+    <p class="lire"><b>Comment lire cette page.</b> Cinq thèmes, à ouvrir un par un. Pour chacun : le dernier chiffre connu de la France, celui de ses voisins (la moyenne de l'Union européenne, ou l'Allemagne quand l'Europe ne publie pas de moyenne), et <b class="g">✓</b> quand la France fait mieux, <b class="b">✗</b> quand elle fait moins bien.</p>
+    <p class="lire"><b>La note sur 20</b> dit autre chose : pendant chaque mandat, la France a-t-elle progressé plus vite que ses voisins ? 10 sur 20, c'est autant qu'eux ; au-dessus, mieux ; en dessous, moins bien.</p>
     <p class="pres-line" id="pres-line"></p>
   </section>
 
@@ -386,13 +390,17 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="chart" id="rank-pres"></div>
     <div class="pres-detail" id="pres-detail" hidden></div>
     <p class="note" id="rank-pres-note"></p>
-    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
-    <div class="chart" id="rank-gov"></div>
+    <details class="acc" id="bul-gov">
+      <summary><span class="acc-h">Les gouvernements</span><span class="acc-t">Le classement des Premiers ministres, et le détail de chaque note, année par année</span><span class="acc-cta"></span></summary>
+      <div class="acc-body">
+        <div class="chart" id="rank-gov"></div>
     <p class="note" id="rank-gov-note"></p>
     <span class="eyebrow" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
     <p class="note">Une note par thème. <b>Touchez un thème</b> pour voir ses indicateurs, puis un indicateur pour voir les chiffres année par année, et pourquoi une année n'est pas comptée.</p>
     <div class="gov-list" id="gov-list"></div>
     <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+      </div>
+    </details>
   </section>
 
 
@@ -438,13 +446,13 @@ function main(FEED) {
     while (i >= 0 && (c.fr[i] == null || !c[r] || c[r][i] == null)) i--;
     if (i < 0) return null;
     var a = c.fr[i], e = c[r][i], cl = Math.abs(a - e) < 1e-9 ? 'm' : (c.low ? a < e : a > e) ? 'g' : 'b';
-    return { cl: cl, c: c, y: c.y[i], fr: val1(c, a, dec), ref: val1(c, e, dec) + ' <small>' + (refDe(c) ? 'All.' : 'UE') + '</small>' };
+    return { cl: cl, c: c, y: c.y[i], fr: val1(c, a, dec), ref: val1(c, e, dec) + ' <small>' + (refDe(c) ? 'Allemagne' : 'moyenne UE') + '</small>' };
   }
   function etat(k) {
     var c = C[k];
     if (c.regle === 'propre') {
       var s = lastOf(c, 'fr'), md = c.md[c.y.indexOf(s.y)];
-      return { cl: s.v >= 0 ? 'g' : 'b', c: c, y: s.y, fr: sg(md, 1), ref: '<small>France seule</small>' };
+      return { cl: s.v >= 0 ? 'g' : 'b', c: c, y: s.y, fr: sg(md, 1) + ' Md€', ref: '<small>France seule</small>' };
     }
     if (c.regle === 'composite') {
       var l = Object.keys(c.sous).map(function (j) { return ligne(c.sous[j]); }).filter(Boolean), ok = l.filter(function (x) { return x.cl === 'g'; }).length;
@@ -455,12 +463,13 @@ function main(FEED) {
   var themeEtat = function (t) { var l = t.crit.map(etat); return { l: l, ok: l.filter(function (x) { return x.cl === 'g'; }).length, n: l.length }; };
   var unitOf = function (c) { return c.uu || c.unite; };
   function rowHtml(x, sub) {
-    return '<tr' + (sub ? ' class="sub"' : '') + '><td>' + esc(x.c.lc || x.c.l) + '<small>' + esc(unitOf(x.c)) + ' · ' + x.y + '</small></td><td>' + x.fr + '</td><td>' + x.ref + '</td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>';
+    return '<tr class="nm' + (sub ? ' sub' : '') + '"><td>' + esc(x.c.lc || x.c.l) + '</td><td>' + x.fr + '</td><td>' + x.ref + '</td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>' +
+      '<tr class="xp' + (sub ? ' sub' : '') + '"><td colspan="4">' + esc(x.c.ex || unitOf(x.c)) + ' · ' + x.y + '</td></tr>';
   }
   function tableEtat(e) {
-    return '<table class="cmp"><thead><tr><th></th><th>France</th><th>Voisin</th><th></th></tr></thead><tbody>' + e.l.map(function (x) {
+    return '<table class="cmp"><thead><tr><th></th><th>France</th><th>Voisins</th><th></th></tr></thead><tbody>' + e.l.map(function (x) {
       if (!x.sous) return rowHtml(x);
-      return '<tr class="grp"><td>' + esc(x.c.lc || x.c.l) + '<small>mieux sur ' + x.ok + ' sur ' + x.sous.length + '</small></td><td></td><td></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>' + x.sous.map(function (s) { return rowHtml(s, 1); }).join('');
+      return '<tr class="grp nm"><td colspan="3">' + esc(x.c.lc || x.c.l) + '</td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr><tr class="xp grp"><td colspan="4">' + esc(x.c.ex || '') + ' : la France fait mieux sur ' + x.ok + ' sur ' + x.sous.length + '</td></tr>' + x.sous.map(function (s) { return rowHtml(s, 1); }).join('');
     }).join('') + '</tbody></table>';
   }
 
@@ -472,14 +481,10 @@ function main(FEED) {
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
   var nomCourt = function (n) { return n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin'); };
 
-  // ===== Résumé : un symbole par indicateur =====
+  // ===== Résumé : la note des présidents =====
   (function () {
-    setHtml('score', THEMES.map(function (t) {
-      var e = themeEtat(t);
-      return '<a class="sc" href="#q-' + t.k + '"><span>' + esc(t.q) + '</span><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span></a>';
-    }).join(''));
     var pr = PRES.filter(function (g) { return noteOf(g) != null; }).slice().reverse();
-    setHtml('pres-line', 'Notes sur 20 : ' + pr.map(function (g) { return '<b>' + esc(nomCourt(g.n)) + '</b> ' + nfmt(noteOf(g)); }).join(' · ') + ' · <a href="#bulletin">bulletin</a>');
+    setHtml('pres-line', 'Note santé sur 20 : ' + pr.map(function (g) { return '<b>' + esc(nomCourt(g.n)) + '</b> ' + nfmt(noteOf(g)); }).join(' · ') + ' · <a href="#bulletin">voir le bulletin</a>');
   })();
 
   // ===== Bulletin : détail année par année =====
@@ -598,6 +603,7 @@ function main(FEED) {
   function openDetail(mode, g) {
     if (mode === 'gov') {
       if (!showAll) { showAll = true; var b = document.getElementById('gov-more'); b.setAttribute('aria-expanded', 'true'); b.textContent = 'Masquer le détail des autres gouvernements'; renderGov(); }
+      document.getElementById('bul-gov').open = true;
       var row = document.getElementById('gov-' + g.y0); if (row) { row.scrollIntoView({ block: 'center' }); row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash'); } return;
     }
     var box = document.getElementById('pres-detail'); box.textContent = ''; box.hidden = false;
@@ -769,7 +775,7 @@ function main(FEED) {
   }
 
   // ===== Les cinq questions =====
-  var DRAW = [], FOLDS = [];
+  var FOLDS = [];
   var srcNote = function (c) { return c.source ? 'Source : ' + c.source + '.' : ''; };
   // Ce qu'on montre en plus, sans le noter, sous chaque question.
   var EN_PLUS = {
@@ -823,38 +829,47 @@ function main(FEED) {
   }
   function buildThemes() {
     var root = document.getElementById('questions');
-    THEMES.forEach(function (t, i) {
-      var e = themeEtat(t), cs = courbes(t), m0 = cs[0], c = m0.c, div = document.createElement('div'); div.className = 'theme'; div.id = 'q-' + t.k;
+    THEMES.forEach(function (t) {
+      var e = themeEtat(t), cs = courbes(t), m0 = cs[0], c = m0.c;
+      var acc = document.createElement('details'); acc.className = 'acc theme'; acc.id = 'q-' + t.k;
+      acc.innerHTML = '<summary><span class="acc-h"></span><span class="acc-t"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span> la France fait mieux sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n + '</span><span class="acc-cta"></span></summary>';
+      acc.querySelector('.acc-h').textContent = t.q;
+      var body = document.createElement('div'); body.className = 'acc-body'; acc.appendChild(body);
       var sec = document.createElement('section'); sec.className = 'card';
       var pn = PRES.map(function (g) { return { g: g, n: SAN.noteTheme(g, t) }; }).reverse();
       var defs = [];
       t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || '') + (x.source ? ' Source : ' + x.source + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + q.l + ' (' + q.unite + '). Source : ' + q.source + '.'); }); });
-      sec.innerHTML = '<h2></h2>' + tableEtat(e) +
+      sec.innerHTML = tableEtat(e) +
         '<span class="eyebrow" style="margin:6px 0 0">' + c.l + ', ' + c.unite + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p>' +
         '<details class="def"><summary>Définitions et sources</summary><p class="note">' + defs.join('<br>') + '</p></details>' +
-        '<p class="tnotes">Notes sur 20 : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>';
-      sec.querySelector('h2').textContent = t.q;
-      div.appendChild(sec);
-      DRAW.push(function () { sec.querySelector('.note').innerHTML = serieChart('ch-' + m0.id, c); });
-      var fold = document.createElement('details'); fold.className = 'fold';
-      var autres = cs.slice(1), body = document.createElement('div'); body.className = 'charts4';
-      var draws = autres.map(function (o) { return serieCard(body, 'ch-' + o.id, o.c, o.tag, o.id === 'equ' ? { unit: ' pt' } : null); });
-      if (EN_PLUS[t.k]) draws = draws.concat(EN_PLUS[t.k](body));
-      var nb = body.children.length;
-      if (!nb) return root.appendChild(div);
-      fold.innerHTML = '<summary>Les autres courbes (' + nb + ')</summary>';
-      fold.appendChild(body); div.appendChild(fold); root.appendChild(div);
-      var f = { el: fold, draw: function () { draws.forEach(function (d) { d(); }); } };
-      fold.addEventListener('toggle', function () { if (fold.open) f.draw(); });
-      FOLDS.push(f);
+        '<p class="tnotes">Note de ce thème, sur 20 (10 = la France a progressé autant que ses voisins) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>';
+      body.appendChild(sec);
+      var autres = cs.slice(1), grid = document.createElement('div'); grid.className = 'charts4';
+      var more = autres.map(function (o) { return serieCard(grid, 'ch-' + o.id, o.c, o.tag, o.id === 'equ' ? { unit: ' pt' } : null); });
+      if (EN_PLUS[t.k]) more = more.concat(EN_PLUS[t.k](grid));
+      root.appendChild(acc);
+      var g = { el: acc, draw: function () { sec.querySelector('.note').innerHTML = serieChart('ch-' + m0.id, c); } };
+      acc.addEventListener('toggle', function () { if (acc.open) g.draw(); });
+      FOLDS.push(g);
+      if (grid.children.length) {
+        var fold = document.createElement('details'); fold.className = 'fold';
+        fold.innerHTML = '<summary>Les autres courbes (' + grid.children.length + ')</summary>';
+        fold.appendChild(grid); body.appendChild(fold);
+        var f = { el: fold, draw: function () { more.forEach(function (d) { d(); }); } };
+        fold.addEventListener('toggle', function () { if (fold.open) f.draw(); });
+        FOLDS.push(f);
+      }
     });
+    // Un lien vers un thème (sommaire, partage) ouvre ce thème.
+    function ouvrir() { var el = location.hash && document.getElementById(location.hash.slice(1)); if (el && el.tagName === 'DETAILS' && !el.open) el.open = true; }
+    window.addEventListener('hashchange', ouvrir); ouvrir();
   }
 
   buildThemes(); renderGov();
+  document.getElementById('bul-gov').addEventListener('toggle', function () { if (this.open) rankOne('gov'); });
   function drawAll() {
     rankOne('pres'); rankOne('gov');
-    DRAW.forEach(function (d) { d(); });
-    FOLDS.forEach(function (f) { if (f.el.open) f.draw(); });
+    FOLDS.forEach(function (f) { var up = f.el.parentElement.closest('details'); if (f.el.open && (!up || up.open)) f.draw(); });
   }
   drawAll();
   var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });

@@ -249,6 +249,14 @@ footer p { margin: 0; } footer a { color: inherit; }
 .hero h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(30px, 6vw, 44px); line-height: 1.1; margin: 0; text-wrap: balance; }
 .hero p { font-size: 16.5px; line-height: 1.55; margin: 0; color: var(--fg); max-width: 46rem; }
 .hero p.lead { font-family: var(--serif); font-size: 21px; line-height: 1.35; }
+.radar svg { display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto; font-family: var(--sans); }
+.radar .ra { fill: var(--fg); font-size: 13px; font-weight: 600; } .radar .rl { fill: var(--muted); font-size: 10px; }
+.radar-who .chip i, .rtab i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.radar-who .chip[aria-pressed="false"] { opacity: .55; }
+.pick > summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--fr); } .pick[open] > summary { margin-bottom: 8px; }
+.rtab { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.rtab th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.rtab td { text-align: right; padding: 6px; border-bottom: 1px solid var(--grid); white-space: nowrap; } .rtab th:first-child, .rtab td:first-child { text-align: left; }
 .pages { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 12px; }
 .pg { display: grid; gap: 6px; padding: 16px; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-decoration: none; }
 .pg b { font-size: 17px; } .pg span { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
@@ -281,7 +289,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 </head>
 <body>
 <div class="wrap">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/" aria-current="page">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><span class="soon">Bientôt : Santé · Sécurité et justice · Défense · Vie des Français</span></nav>
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/" aria-current="page">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><a href="/sante/">Santé</a><span class="soon">Bientôt : Sécurité et justice · Défense · Vie des Français</span></nav>
 
   <a class="pg feat" href="/barometre/"><span class="eyebrow" style="margin:0">Présidentielle 2027 · suivi quotidien</span><b>Baromètre 2027 →</b><span>Qui mène dans les sondages, qui est favori des parieurs, ce qui a bougé depuis hier, et l'agenda jusqu'au premier tour du 18 avril.</span></a>
 
@@ -289,13 +297,14 @@ footer p { margin: 0; } footer a { color: inherit; }
     <span class="eyebrow" style="margin:0">L'ambition de Concret</span>
     <h1>Rendre transparente l'action de ceux qui nous gouvernent.</h1>
     <p class="lead">Chacun devrait pouvoir juger, chiffres à l'appui, ce que les présidents et les gouvernements ont réellement fait, au-delà des promesses et des petites phrases.</p>
-    <p>Concret suit les grandes missions de l'État, une par une : finances publiques, éducation, puis santé, sécurité et justice, défense et vie des Français. Pour chacune, on compare chaque année la France à ses voisins européens, avec des chiffres publics et sourcés (Eurostat, Insee, OCDE…), et on en tire une note pour chaque président et chaque gouvernement depuis 1995. Pas d'opinion, pas de parti pris : la même règle pour tous, et chaque chiffre est vérifiable. Les pages sont mises à jour chaque jour.</p>
+    <p>Concret suit les grandes missions de l'État, une par une : finances publiques, éducation, santé, puis sécurité et justice, défense et vie des Français. Pour chacune, on compare chaque année la France à ses voisins européens, avec des chiffres publics et sourcés (Eurostat, Insee, OCDE…), et on en tire une note pour chaque président et chaque gouvernement depuis 1995. Pas d'opinion, pas de parti pris : la même règle pour tous, et chaque chiffre est vérifiable. Les pages sont mises à jour chaque jour.</p>
   </section>
 
   <section class="pages" aria-label="Les grandes missions de l'État">
     <a class="pg" href="/finances/"><b>Finances publiques</b><span>Dette, déficit, impôts, dépenses, croissance, chômage : la France face à la zone euro depuis 1995.</span></a>
     <a class="pg" href="/education/"><b>Éducation</b><span>PISA, décrochage, diplômés, chômage des jeunes, universités : la France face à l'Europe depuis 2002.</span></a>
-    <div class="pg soon"><b>Bientôt</b><span>Santé · Sécurité et justice · Défense · Vie des Français.</span></div>
+    <a class="pg" href="/sante/"><b>Santé</b><span>Espérance de vie, accès aux soins, coût, prévention, nouveaux médicaments : la France face à l'Europe.</span></a>
+    <div class="pg soon"><b>Bientôt</b><span>Sécurité et justice · Défense · Vie des Français.</span></div>
   </section>
 
   <section class="card" id="classement" aria-labelledby="cl-t">
@@ -307,7 +316,17 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card" aria-labelledby="cl-g">
     <h2 id="cl-g"><span class="eyebrow">Le classement général</span>Les gouvernements</h2>
     <div class="bars" id="t-gov"></div>
-    <p class="note">Sébastien Lecornu (depuis septembre 2025) sera noté quand les chiffres de 2026 seront publiés. Les séries de l'éducation commencent en 2002 : Alain Juppé et Lionel Jospin ne sont notés que sur les finances, Jacques Chirac sur 2003-2006 seulement en éducation. Éducation : résultats PISA répartis sur les dix années de scolarité des élèves (choix modifiable sur la page Éducation). Classement établi le 22 octobre 2026.</p>
+    <p class="note">Sébastien Lecornu (depuis septembre 2025) sera noté quand les chiffres de 2026 seront publiés. Quand une mission n'a pas encore de chiffres pour un mandat (les séries de l'éducation commencent en 2002, la plupart de celles de la santé entre 2000 et 2011), elle n'entre pas dans la moyenne : touchez une ligne pour voir pourquoi. Éducation : résultats PISA répartis sur les dix années de scolarité des élèves (choix modifiable sur la page Éducation). Classement établi le 22 octobre 2026.</p>
+  </section>
+
+  <section class="card" id="profil" aria-labelledby="pr-t">
+    <h2 id="pr-t"><span class="eyebrow">Le profil de chacun</span>Finances, éducation, santé : la note de chaque mission</h2>
+    <p class="note"><b>Comment lire :</b> chaque pointe est une mission, notée sur 20. Plus un point est loin du centre, plus la France a fait mieux que ses voisins sous ce président ou ce gouvernement. <b>Le triangle pointillé, 10, est le niveau de nos voisins.</b></p>
+    <div class="chips" role="group" aria-label="Qui afficher"><button class="chip" id="radar-pres" aria-pressed="true">Présidents</button><button class="chip" id="radar-gov" aria-pressed="false">Gouvernements</button></div>
+    <details class="pick"><summary>Choisir qui comparer</summary><div class="chips radar-who" id="radar-who" role="group" aria-label="Choisir qui comparer"></div></details>
+    <div class="radar" id="radar"></div>
+    <table class="rtab" id="radar-table"></table>
+    <p class="note" id="radar-why"></p>
   </section>
 
   <footer>
@@ -316,6 +335,75 @@ footer p { margin: 0; } footer a { color: inherit; }
   </footer>
 </div>
 <script src="/commun/notes.js"></script>
+<script>
+(function () {
+  // Toile d'araignée : la note de chaque mission (sur 20) pour les présidents ou gouvernements choisis.
+  // Mêmes notes que le classement général (commun/notes.js), aucune saisie à la main.
+  var COL = ['#2f5bd3', '#c43d3d', '#1f8a4c', '#b0812a', '#a2459a', '#d0632a'];
+  var fmt = function (v) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v); };
+  var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+  var MISS = ConcretNotes.MISSIONS, data = null, kind = 'pres', chosen = {};
+  var colOf = function (r) { return COL[data[kind].indexOf(r) % COL.length]; };
+  function draw() {
+    var rows = data[kind].filter(function (r) { return chosen[r.n]; });
+    var box = document.getElementById('radar'); box.textContent = '';
+    var W = Math.min(520, Math.max(300, box.clientWidth)), R = Math.min(W / 2 - 34, 190), H = R * 1.5 + 84, cx = W / 2, cy = R + 34, n = MISS.length;
+    var ang = function (i) { return -Math.PI / 2 + i * 2 * Math.PI / n; }, pt = function (i, v) { return [cx + Math.cos(ang(i)) * R * v / 20, cy + Math.sin(ang(i)) * R * v / 20]; };
+    var h = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Notes sur 20 par mission">';
+    [5, 10, 15, 20].forEach(function (v) {
+      var p = MISS.map(function (_, i) { return pt(i, v).join(','); }).join(' ');
+      h += '<polygon points="' + p + '" fill="none" stroke="' + (v === 10 ? 'var(--fg)' : 'var(--grid)') + '"' + (v === 10 ? ' stroke-dasharray="4 3"' : '') + '/>';
+      var q = pt(0, v); h += '<text x="' + (q[0] + 4) + '" y="' + (q[1] + 4) + '" class="rl">' + v + '</text>';
+    });
+    MISS.forEach(function (m, i) {
+      var e = pt(i, 20), haut = e[1] < cy; h += '<line x1="' + cx + '" y1="' + cy + '" x2="' + e[0] + '" y2="' + e[1] + '" stroke="var(--grid)"/>';
+      // Nom de la mission au-dessus de la pointe du haut, sous les pointes du bas : la toile peut occuper toute la largeur.
+      h += '<text x="' + Math.max(40, Math.min(W - 40, e[0])) + '" y="' + (haut ? e[1] - 10 : e[1] + 22) + '" text-anchor="middle" class="ra">' + m.l + '</text>';
+    });
+    rows.forEach(function (r) {
+      var c = colOf(r), pts = MISS.map(function (m, i) { return r[m.k] == null ? null : pt(i, r[m.k]); });
+      var ok = pts.filter(Boolean);
+      if (ok.length > 1) h += '<polygon points="' + ok.map(function (p) { return p.join(','); }).join(' ') + '" fill="' + c + '" fill-opacity=".12" stroke="' + c + '" stroke-width="2.2"/>';
+      ok.forEach(function (p) { h += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4" fill="' + c + '"/>'; });
+    });
+    box.innerHTML = h + '</svg>';
+    // Les mêmes chiffres en tableau, et la raison quand une mission n'est pas notée.
+    var why = [];
+    document.getElementById('radar-table').innerHTML = rows.length ? '<thead><tr><th></th>' + MISS.map(function (m) { return '<th>' + m.l + '</th>'; }).join('') + '<th>Moyenne</th></tr></thead><tbody>' + rows.map(function (r) {
+      var c = colOf(r);
+      MISS.forEach(function (m) { if (r[m.k] == null) why.push(r.n + ', ' + m.l.toLowerCase() + ' non notée : ' + m.debut + '.'); });
+      return '<tr><td><i style="background:' + c + '"></i>' + esc(r.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin')) + '</td>' + MISS.map(function (m) { return '<td>' + (r[m.k] == null ? '—' : fmt(r[m.k])) + '</td>'; }).join('') + '<td><b>' + fmt(r.m) + '</b></td></tr>';
+    }).join('') + '</tbody>' : '';
+    document.getElementById('radar-why').textContent = why.join(' ');
+  }
+  function chips() {
+    var box = document.getElementById('radar-who'); box.textContent = '';
+    data[kind].forEach(function (r) {
+      if (r.m == null) return;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.setAttribute('aria-pressed', chosen[r.n] ? 'true' : 'false');
+      b.innerHTML = '<i style="background:' + colOf(r) + '"></i>'; b.appendChild(document.createTextNode(r.n));
+      b.addEventListener('click', function () { chosen[r.n] = !chosen[r.n]; b.setAttribute('aria-pressed', chosen[r.n] ? 'true' : 'false'); draw(); });
+      box.appendChild(b);
+    });
+  }
+  function setKind(k) {
+    kind = k; chosen = {};
+    // Par défaut : les présidents, tous ; les gouvernements, les trois derniers notés.
+    var list = data[k].filter(function (r) { return r.m != null; });
+    (k === 'pres' ? list : list.slice().sort(function (a, b) { return b.y0 - a.y0; }).slice(0, 3)).forEach(function (r) { chosen[r.n] = true; });
+    ['pres', 'gov'].forEach(function (x) { document.getElementById('radar-' + x).setAttribute('aria-pressed', x === k ? 'true' : 'false'); });
+    chips(); draw();
+  }
+  fetch('/data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+    data = ConcretNotes.classement(d.series);
+    ['pres', 'gov'].forEach(function (k) { data[k] = data[k].slice().sort(function (a, b) { return a.y0 - b.y0; }); });
+    document.getElementById('radar-pres').addEventListener('click', function () { setKind('pres'); });
+    document.getElementById('radar-gov').addEventListener('click', function () { setKind('gov'); });
+    setKind('pres');
+    var lw = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth !== lw) { lw = window.innerWidth; draw(); } });
+  }).catch(function () { var b = document.getElementById('radar'); if (b) b.textContent = 'Le graphique n\'a pas pu être chargé. Rechargez la page.'; });
+})();
+</script>
 <script>
 (function () {
   // Classement général : recalculé à chaque visite à partir de data.json, avec les règles de commun/notes.js
@@ -376,5 +464,6 @@ footer p { margin: 0; } footer a { color: inherit; }
   } catch (e) {}
 })();
 </script>
+<script src="/commun/partage.js"></script>
 </body>
 </html>
