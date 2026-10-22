@@ -3,1035 +3,328 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Baromètre 2027</title>
-<meta property="og:title" content="Baromètre 2027">
-<meta property="og:description" content="Sondages, parieurs et pouls du pays : la présidentielle 2027 en un coup d'œil, mis à jour en continu.">
+<title>Concret</title>
+<meta name="description" content="Concret note chaque président et chaque gouvernement depuis 1995 sur les grandes missions de l'État, en comparant la France à ses voisins. Chiffres publics, sourcés, mis à jour chaque jour.">
+<meta property="og:title" content="Concret : ce que font ceux qui nous gouvernent">
+<meta property="og:description" content="Finances publiques, éducation, présidentielle 2027 : la note de chaque président et gouvernement, comparée à nos voisins.">
 <meta property="og:url" content="https://concret2027.fr/">
 <meta property="og:type" content="website">
 <script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-<style>html, body { margin: 0; } img { max-width: 100%; } [hidden] { display: none !important; }</style>
-<meta name="description" content="Sondages, parieurs et pouls du pays : la présidentielle 2027 en un coup d'œil, mis à jour en continu.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }</style>
 <style>
-/* Layout: one centered column of cards; tokens mirror the dashboard kit so the page reads the same, in both themes. */
+/* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
 :root {
-  --color-bg: #f6f6f3; --color-panel: #ffffff; --color-fg: #1c1d22; --color-fg-muted: #62646d;
-  --color-border-line: #e2e2dc; --color-ok: #1f8a4c; --color-bad: #c43d3d;
-  --cds-chart-grid: #ececE6; --cds-chart-axis: #c9c9c2; --cds-chart-reference: #9a9ca3; --cds-chart-muted: #c9cad0;
-  --cds-surface-popover: #ffffff; --cds-border: #dcdcd5; --cds-shadow-popover: 0 4px 16px rgba(20, 22, 30, .12); --cds-text-secondary: #62646d;
-  --cds-radius: 10px; --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 14px; --cds-pad-lg: 20px;
-  --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 16px; --cds-gap-lg: 28px;
-  --cds-font-size-caption: 12.5px; --cds-font-size-body: 15px; --cds-font-size-heading: 18px; --cds-font-size-title: 34px; --cds-font-weight-medium: 600;
-  --cds-dur-slow: .4s;
-  --font-anthropic-sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-anthropic-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
+  --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a;
+  --bad: #c43d3d; --ok: #1f8a4c; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
+  --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
+  --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
+  --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
+  --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --r: 12px;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --color-bg: #15161a; --color-panel: #1d1f24; --color-fg: #ececea; --color-fg-muted: #a4a6ad; --color-border-line: #2e3037;
-  --color-ok: #4cc27f; --color-bad: #ff7070; --cds-chart-grid: #2a2c32; --cds-chart-axis: #44464e; --cds-chart-reference: #7d7f87; --cds-chart-muted: #4a4c55;
-  --cds-surface-popover: #24262c; --cds-border: #3a3c44; --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, .5); --cds-text-secondary: #a4a6ad; color-scheme: dark; } }
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --de: #a4a6b0; --it: #4cc27f; --ea: #d9b25a; --us: #d77fcf; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a;
+  --band: rgba(122, 156, 255, .09); --grid: #2a2c32; --axis: #44464e; --draft: #3a3016; --draft-fg: #f0d58a;
+  --hero-bg: #172242; --hero-line: #26345c; --hero-fg: #eef2ff; --hero-muted: #a8b4d6; --hero-num: #ffffff; --hero-up: #ff8f8f; --pill: #1e2b52;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .18); color-scheme: dark; } }
 :root[data-theme="dark"] {
-  --color-bg: #15161a; --color-panel: #1d1f24; --color-fg: #ececea; --color-fg-muted: #a4a6ad; --color-border-line: #2e3037;
-  --color-ok: #4cc27f; --color-bad: #ff7070; --cds-chart-grid: #2a2c32; --cds-chart-axis: #44464e; --cds-chart-reference: #7d7f87; --cds-chart-muted: #4a4c55;
-  --cds-surface-popover: #24262c; --cds-border: #3a3c44; --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, .5); --cds-text-secondary: #a4a6ad; color-scheme: dark; }
-body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); line-height: 1.5; }
-#dash-root { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 48px; }
-.dash-skeleton { color: transparent !important; background: var(--color-border-line); border-radius: 6px; min-height: 1em; }
-.bx-stale { font-size: var(--cds-font-size-caption); color: var(--color-bad); border: 1px solid var(--color-bad); border-radius: 6px; padding: 4px 8px; justify-self: start; }
-.bx-updated { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-.bx-foot { max-width: 1200px; margin: 0 auto; padding-top: var(--cds-gap-lg); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border-top: 1px solid var(--color-border-line); }
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --de: #a4a6b0; --it: #4cc27f; --ea: #d9b25a; --us: #d77fcf; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a;
+  --band: rgba(122, 156, 255, .09); --grid: #2a2c32; --axis: #44464e; --draft: #3a3016; --draft-fg: #f0d58a;
+  --hero-bg: #172242; --hero-line: #26345c; --hero-fg: #eef2ff; --hero-muted: #a8b4d6; --hero-num: #ffffff; --hero-up: #ff8f8f; --pill: #1e2b52;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .18); color-scheme: dark; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-text-size-adjust: 100%; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 48px; display: grid; gap: 20px; }
+.draft { background: var(--draft); color: var(--draft-fg); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; }
+.brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.brand b { font-family: var(--serif); font-weight: 500; font-size: 22px; }
+.brand span { font-size: 12.5px; color: var(--muted); }
 
-.bx { display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); max-width: 1200px; margin-inline: auto; }
-.site { position: -webkit-sticky; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; flex-wrap: nowrap; align-items: baseline; gap: 16px; font-size: 14px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; margin: -28px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 10px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--color-bg) 94%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--color-border-line); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.card h2 { font-size: 19px; font-weight: 600; line-height: 1.25; margin: 0; text-wrap: balance; }
+.eyebrow { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 4px; }
+.note { font-size: 12.5px; color: var(--muted); margin: 0; max-width: 92ch; }
+.insight { font-family: var(--serif); font-size: 19px; line-height: 1.3; margin: 0; text-wrap: balance; }
+.insight b { font-weight: 500; color: var(--fr); }
+.explain { font-size: 13.5px; margin: 0; padding: 10px 12px; border-left: 3px solid var(--fr); background: var(--band); border-radius: 0 6px 6px 0; }
+.explain b { font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 34px; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip:focus-visible, .opt:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* Sommaire collant */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.jump { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 44px)); z-index: 9; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.jump::-webkit-scrollbar { display: none; }
+.jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+.jump a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+section[id], details[id], .growth[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
+.flash { animation: flash 1.6s ease-out; }
+@keyframes flash { 0% { background: var(--band); box-shadow: 0 0 0 3px var(--fr); border-radius: 10px; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
+.pres-detail { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
+.pres-detail .who b { font-weight: 600; }
+.share { font: inherit; font-family: var(--sans); font-size: 12.5px; font-weight: 500; margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 2px; border: 0; background: none; color: var(--muted); cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.share::before { content: "↗"; }
+.share.primary { background: var(--fr); color: #fff; border-color: var(--fr); }
+.acc-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.acc-actions .acc-cta, .acc-actions .share { margin-top: 0; }
+.share:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.daily .share { display: inline-flex; }
+.sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sheet-box { background: var(--panel); border-radius: 14px; padding: 14px; display: grid; gap: 10px; max-width: 420px; width: 100%; max-height: 100%; overflow: auto; }
+.sheet-box img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+/* Menus dépliables */
+.acc { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
+.acc > summary::-webkit-details-marker { display: none; }
+.acc-cta { justify-self: start; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--band); border: 1px solid var(--fr); border-radius: 999px; padding: 5px 12px; }
+.acc-cta::before { content: "Voir le détail ↓"; }
+.acc[open] > summary .acc-cta::before { content: "Masquer ↑"; }
+.acc > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 14px; }
+.acc-h { font-size: 17px; font-weight: 700; }
+.acc-t { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+.acc-t b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.acc-t i.r { font-style: normal; color: var(--bad); }
+.acc-t i.g { font-style: normal; color: var(--ok); }
+.acc-body { display: grid; gap: 14px; padding: 0 12px 12px; }
+.acc-body.card { border: 0; padding-top: 0; background: none; }
+.acc[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+
+/* Menu du site */
+.site { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 11; display: flex; flex-wrap: nowrap; align-items: baseline; gap: 16px; font-size: 14px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; margin: -16px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 10px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .site::-webkit-scrollbar { display: none; }
 @media (max-width: 520px) { .site { gap: 14px; } .site .lg { display: none; } .site a.logo { font-size: 18px; margin-right: 0; } }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 21; background: var(--color-bg); }
-.bx [id] { scroll-margin-top: calc(var(--navh, 44px) + 60px); }
-.jump { position: -webkit-sticky; position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 44px)); z-index: 19; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: calc(-1 * var(--cds-gap-lg) + 4px) calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--color-bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--color-border-line); }
-.jump::-webkit-scrollbar { display: none; }
-.jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--color-fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); }
-.jump a:focus-visible { outline: 2px solid #2f5bd3; outline-offset: 2px; }
-.site a { color: var(--color-fg-muted); text-decoration: none; font-weight: 500; }
-.site a[aria-current="page"] { color: var(--color-fg); font-weight: 700; border-bottom: 2px solid #2f5bd3; }
-.site a.logo { font-family: var(--font-anthropic-serif); font-size: 20px; color: var(--color-fg); font-weight: 400; margin-right: 6px; }
-.site .soon { color: var(--cds-chart-axis); font-size: 12.5px; }
-.site a:focus-visible { outline: 2px solid #2f5bd3; outline-offset: 2px; }
-.bx-head { display: grid; gap: var(--cds-gap-xs); }
-.bx-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
-.bx-take { font-size: var(--cds-font-size-body); color: var(--color-fg); max-width: 76ch; margin: 0; }
-.bx-take b { font-weight: 600; }
-.bx-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: var(--cds-gap-md); }
-.bx-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: grid; gap: var(--cds-gap-xs); align-content: start; }
-.bx-tile .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; align-items: center; gap: 6px; }
-.bx-tile .sw { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-.bx-tile .val { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.1; min-height: 1.1em; }
-.bx-tile .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-.bx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-md); }
-.bx-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
-.bx-card.wide { grid-column: 1 / -1; }
-.bx-today { border-left: 4px solid #2f5bd3; }
-.bx-visit { margin: 0; font-size: 14px; line-height: 1.45; padding: 8px 12px; border-left: 3px solid #2f5bd3; background: var(--color-panel); border-radius: 0 8px 8px 0; }
-.bx-visit b { font-weight: 600; }
-.bx-todaylist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14.5px; line-height: 1.45; }
-.bx-todaylist li { padding-left: 16px; position: relative; }
-.bx-todaylist li::before { content: ""; position: absolute; left: 0; top: .6em; width: 7px; height: 7px; border-radius: 50%; background: var(--color-fg-muted); }
-.bx-todaylist a { color: var(--color-fg-muted); font-size: 12.5px; }
-.bx-ag { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); }
-.bx-ag h3 { margin: 0 0 6px; font-size: var(--cds-font-size-caption); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); }
-.bx-aglist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
-.bx-aglist li { display: grid; grid-template-columns: 7.6em minmax(0, 1fr); gap: 10px; align-items: baseline; }
-.bx-aglist .d { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--color-fg); font-size: 13px; }
-.bx-aglist a { color: var(--color-fg-muted); }
-.bx-card h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
-.bx-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; }
-.bx-chart { position: relative; min-height: 360px; }
-.bx-chart.small { min-height: 260px; }
-.bx-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-.bx-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.bx-legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.bx-multi { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-md); }
-.bx-panel { display: grid; gap: var(--cds-gap-xs); min-width: 0; }
-.bx-panel h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
-.bx-panel .bx-chart { min-height: 200px; }
-.bx-key { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-.bx-key span { display: inline-flex; align-items: center; gap: 6px; }
-.bx-key .ln { width: 18px; height: 0; border-top: 2px solid var(--color-fg); }
-.bx-key .ln.dash { border-top-style: dashed; }
-.bx-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; }
-.bx-tip .d { color: var(--cds-text-secondary); }
-.bx-chart svg { touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-.bx-tip .r { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
-.bx-tip .r em { font-style: normal; display: inline-flex; align-items: center; gap: 5px; color: var(--color-fg-muted); }
-.bx-tip .r em i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
-.bx-tip .r b { font-weight: 600; }
-.bx-tip .n { white-space: normal; max-width: 220px; margin-top: 3px; }
-.bx-tablebox { max-height: 440px; overflow: auto; }
-.bx-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
-.bx-table th, .bx-table td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
-.bx-table th.l, .bx-table td.l { text-align: left; }
-.bx-table th { position: sticky; top: 0; background: var(--color-panel); color: var(--color-fg-muted); font-weight: 500; }
-.bx-method { display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 82ch; }
-.bx-method p { margin: 0; }
-.bx-method b { color: var(--color-fg); font-weight: 600; }
-.bx-fail { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: inherit; height: 100%; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-.bx-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
-.bx-count { display: inline-flex; align-items: baseline; gap: 8px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-.bx-count b { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-heading); color: var(--color-fg); font-variant-numeric: tabular-nums; }
-.bx-movers { display: grid; gap: 0; }
-.bx-mv { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)); gap: var(--cds-gap-sm); align-items: center; padding: 8px 0; border-bottom: 1px solid var(--color-border-line); font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
-.bx-mv.h { color: var(--color-fg-muted); padding-top: 0; }
-.bx-mv .n { display: flex; align-items: center; gap: 6px; font-size: var(--cds-font-size-body); }
-.bx-mv .n i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-.bx-mv .v { display: grid; justify-items: end; }
-.bx-mv .v small { color: var(--color-fg-muted); }
-.bx-up { color: var(--color-ok); }
-.bx-down { color: var(--color-bad); }
-.bx-flat { color: var(--color-fg-muted); }
-.bx-last { display: grid; gap: 6px; }
-.bx-lastbar { display: grid; grid-template-columns: 96px minmax(0, 1fr) 48px; gap: 8px; align-items: center; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
-.bx-lastbar .tr { height: 12px; background: var(--cds-chart-grid); border-radius: 6px; overflow: hidden; }
-.bx-lastbar .fl { height: 100%; border-radius: 6px; }
-.bx-lastbar .pv { text-align: right; }
-.bx-thermo { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--cds-gap-md); }
-.bx-th { display: grid; gap: 4px; align-content: start; padding: var(--cds-pad-md); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); min-width: 0; }
-.bx-th .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-.bx-th .val { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.1; min-height: 1.1em; }
-.bx-th .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-.bx-th .spark { min-height: 44px; }
-.bx-events { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-.bx-events li { display: flex; gap: 8px; align-items: baseline; }
-.bx-events .num { flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--color-fg); color: var(--color-bg); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
-[data-dash-source-state=empty] { color: transparent; }
-[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.site a { color: var(--muted); text-decoration: none; font-weight: 500; }
+.site a[aria-current="page"] { color: var(--fg); font-weight: 700; border-bottom: 2px solid var(--fr); }
+.site a.logo { font-family: var(--serif); font-size: 20px; color: var(--fg); font-weight: 500; margin-right: 6px; }
+.site .soon { color: var(--axis); font-size: 12.5px; }
+.site a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.stale { border: 1px solid var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.actu { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.actu li { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 10px; font-size: 14px; line-height: 1.4; }
+.actu .d { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; }
+.actu a { color: var(--muted); font-size: 12px; }
+.actu .next { font-weight: 600; }
+.upd { margin: -12px 0 0; font-size: 12.5px; color: var(--muted); }
+/* Résumé */
+.summary { display: grid; gap: 10px; }
+.bilan summary { cursor: pointer; list-style: none; display: grid; gap: 2px; }
+.bilan summary::-webkit-details-marker { display: none; }
+.bilan .bilan-h { font-family: var(--serif); font-size: 24px; line-height: 1.15; }
+.bilan .bilan-h::after { content: " ▾"; font-family: var(--sans); font-size: 14px; color: var(--muted); }
+.bilan:not([open]) .bilan-h::after { content: " ▸"; }
+.summary .sum-h { font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.15; margin: 0; }
+.summary .sum-h .eyebrow { font-family: var(--sans); }
+.summary h1 { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 0; }
+.daily { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--band); border: 1px solid var(--line); font-family: var(--serif); font-size: 19px; line-height: 1.3; }
+.daily .eyebrow { font-family: var(--sans); margin-bottom: 6px; }
+.daily b { font-weight: 500; color: var(--fr); }
+.since { display: block; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-family: var(--sans); font-size: 13.5px; color: var(--muted); }
+.since b { font-weight: 600; color: var(--fg); }
+.visit { margin: 0; font-size: 14px; line-height: 1.45; padding: 8px 12px; border-left: 3px solid var(--fr); background: var(--panel); border-radius: 0 8px 8px 0; color: var(--fg); }
+.visit b { font-weight: 600; }
+.summary ol { margin: 0; padding: 0; list-style: none; counter-reset: k; display: grid; gap: 10px; }
+.summary li { counter-increment: k; position: relative; padding-left: 30px; font-size: 15px; line-height: 1.45; }
+.summary li::before { content: counter(k); position: absolute; left: 0; top: -2px; font-family: var(--serif); font-size: 20px; color: var(--fr); }
+.summary li b { font-weight: 600; }
 
+/* Question du jour */
+.quiz { border-color: var(--fr); }
+.quiz .q { font-family: var(--serif); font-size: 23px; line-height: 1.25; margin: 0; text-wrap: balance; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.opt { font: inherit; text-align: left; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); cursor: pointer; min-height: 48px; }
+.opt.right { border-color: var(--ok); color: var(--ok); font-weight: 600; background: var(--s-good); }
+.opt.wrong { border-color: var(--bad); color: var(--bad); text-decoration: line-through; }
+.answer { margin: 0; font-size: 14.5px; }
+
+/* Bandeau : deux chiffres du jour */
+.today { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.today-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 640px) { .today-grid { grid-template-columns: 1fr; } .metric + .metric { border-left: 0 !important; border-top: 1px solid var(--line); } }
+.metric { padding: 18px 18px 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.metric + .metric { border-left: 1px solid var(--line); }
+.metric .lab { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.metric .row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+.metric .num { font-family: var(--serif); font-size: 46px; line-height: 1; font-variant-numeric: tabular-nums; }
+.metric .num small { font-size: .42em; color: var(--muted); margin-left: .1em; }
+.delta { font-size: 12.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.delta.up { color: var(--bad); background: var(--s-bad); }
+.delta.dn { color: var(--ok); background: var(--s-good); }
+.month { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.mo .share { justify-self: start; }
+@media (max-width: 640px) { .month { grid-template-columns: 1fr; } .mo + .mo { border-left: 0 !important; border-top: 1px solid var(--line); padding-left: 0 !important; padding-top: 12px; } .mo { padding-right: 0 !important; padding-bottom: 12px; } }
+.mo { display: grid; gap: 5px; align-content: start; padding-right: 14px; }
+.mo + .mo { border-left: 1px solid var(--line); padding-left: 14px; }
+.mo-lab { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.mo-num { font-family: var(--serif); font-size: 30px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.mo-num small { font-size: .45em; color: var(--muted); }
+.mo .delta { justify-self: start; }
+.mo-t { font-size: 12.5px; color: var(--muted); }
+.growth { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 6px 24px; border-top: 1px solid var(--line); margin-top: 14px; padding-top: 14px; }
+.growth .mo { padding: 0 !important; border: 0 !important; }
+@media (max-width: 640px) { .growth { grid-template-columns: 1fr; } }
+.metric .foot { font-size: 12.5px; color: var(--muted); }
+.metric .foot b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.spark { position: relative; }
+.spark svg { display: block; width: 100%; height: auto; }
+.spark text { fill: var(--muted); font-size: 10px; font-family: var(--sans); }
+.equiv-wrap { border-top: 1px solid var(--line); padding: 14px 18px 16px; display: grid; gap: 10px; }
+.equiv-wrap .lab { font-size: 12.5px; color: var(--muted); }
+.equiv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.eq { padding: 0 12px; display: grid; gap: 2px; }
+.eq:first-child { padding-left: 0; }
+.eq + .eq { border-left: 1px solid var(--line); }
+.eq .n { font-family: var(--serif); font-size: 26px; line-height: 1.1; color: var(--fr); font-variant-numeric: tabular-nums; }
+.eq .t { font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+/* Bulletin */
+.how { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.how summary { cursor: pointer; padding: 10px 12px; font-weight: 600; font-size: 14px; }
+.how-body { padding: 0 12px 12px; display: grid; gap: 8px; font-size: 13.5px; }
+.how-body p { margin: 0; }
+.ex { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; }
+.seuils { min-width: 0; font-size: 12.5px; }
+.seuils td { text-align: left; padding: 5px 6px 5px 0; color: var(--muted); }
+.seuils td:first-child { color: var(--fg); font-weight: 600; }
+.seuils td span { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; }
+
+.gov-list { display: grid; gap: 0; }
+.more { font: inherit; font-weight: 600; font-size: 14px; width: 100%; min-height: 46px; border-radius: 10px; border: 1px solid var(--fg); background: var(--fg); color: var(--bg); cursor: pointer; }
+.more:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.gov { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+.gov .badge { grid-row: span 2; width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; font-family: var(--serif); font-size: 22px; font-variant-numeric: tabular-nums; }
+.gov .badge small { font-family: var(--sans); font-size: 10px; display: block; margin-top: -6px; opacity: .8; }
+.badge.g { background: var(--s-good); color: var(--ok); } .badge.m { background: var(--s-mid); color: var(--mid); } .badge.b { background: var(--s-bad); color: var(--bad); }
+.badge.p { background: var(--grid); color: var(--muted); font-size: 13px; }
+.gov .who b { font-weight: 600; } .gov .who span { color: var(--muted); font-size: 12.5px; }
+.kpis { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 560px) { .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; } .kpi { font-size: 11.5px; padding: 4px 7px; display: grid; min-width: 0; } .kpi em { margin: 0; font-size: 11px; } }
+.kpi { font-size: 12px; padding: 3px 8px; border-radius: 6px; background: var(--grid); font-variant-numeric: tabular-nums; }
+.kpi.g { background: var(--s-good); } .kpi.b { background: var(--s-bad); }
+.kpi em { font-style: normal; color: var(--muted); margin-right: 4px; }
+.gov.pending .who span { font-style: italic; }
+
+/* Graphes */
+.charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
+.chart { position: relative; min-width: 0; }
+.chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.chart svg.hov { touch-action: pan-y; cursor: crosshair; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.ctip { position: absolute; top: 2px; z-index: 6; pointer-events: none; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 12px; line-height: 1.4; box-shadow: 0 4px 14px rgba(0,0,0,.14); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ctip b { display: block; margin-bottom: 2px; font-weight: 700; }
+.ctip span { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+.ctip span em { font-style: normal; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+.ctip span em i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.ctip span strong { font-weight: 600; margin-left: 10px; }
+.ctip small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; max-width: 200px; white-space: normal; }
+.chart text { fill: var(--muted); font-size: 11px; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
+.key i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.key i.dash { background: repeating-linear-gradient(90deg, var(--ea) 0 5px, transparent 5px 8px) !important; }
+.bar-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.bars-big { font-family: var(--serif); font-size: 18px; margin: 0; }
+.events { margin: 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--muted); columns: 2 18rem; }
+.events li { break-inside: avoid; margin-bottom: 4px; }
+.events b { color: var(--fg); font-weight: 600; display: inline-block; min-width: 1.6em; }
+.agenda { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.agenda li { display: grid; grid-template-columns: 4.5rem 1fr; gap: 12px; align-items: baseline; }
+.agenda .d { font-family: var(--serif); font-size: 21px; font-variant-numeric: tabular-nums; }
+.agenda .d small { display: block; font-family: var(--sans); font-size: 11px; color: var(--muted); }
+.glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 12px 24px; margin: 0; }
+.glossary dt { font-weight: 600; font-size: 14px; }
+.glossary dd { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 8px; }
+footer p { margin: 0; } footer a { color: inherit; }
 </style>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&display=swap">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-<script>
-(function () {
-  var P = null, ds = {}, calcs = {}, cache = {}, fns = [];
-  function get(id) {
-    if (ds[id]) return ds[id];
-    if (cache[id]) return cache[id];
-    var c = calcs[id]; if (!c) return null;
-    var args = c.inputs.map(function (i) { return get(i) || []; });
-    cache[id] = c.fn.apply(null, args); return cache[id];
-  }
-  window.dash = {
-    colors: ['#3a5bd9', '#e07b26', '#d23f3f', '#c2447c', '#1f9e89', '#8a5cd1', '#5a9e2f', '#8c6d4f'],
-    calc: function (id, o) { calcs[id] = o; },
-    loader: function () {},
-    data: function (id) { var d = get(id); return d ? { status: 'ok', data: d, columns: d[0] ? Object.keys(d[0]) : [], meta: [] } : { status: 'missing', data: [] }; },
-    onData: function (fn) { fns.push(fn); },
-    params: function () { return {}; }, setParams: function () {}, resetParams: function () {}, setLink: function () {}, refresh: function () {}
-  };
-  function run() { if (!P) return; fns.forEach(function (f) { try { f(); } catch (e) { console.error(e); } }); }
-  var loaded = new Promise(function (r) { if (document.readyState === 'complete') r(); else window.addEventListener('load', r); });
-  var data = fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
-  Promise.all([data, loaded]).then(function (res) {
-    P = res[0]; ds = P.datasets; cache = {};
-    window.BARO_UPDATED = P.updated; window.BARO_UPDATED_ISO = P.updated_iso;
-    run(); window.dispatchEvent(new Event('baro:data'));
-  }).catch(function () {
-    var e = document.getElementById('bx-updated'); if (e) e.textContent = 'Les données n’ont pas pu être chargées. Rechargez la page dans un instant.';
-  });
-  var w = window.innerWidth, t;
-  window.addEventListener('resize', function () { if (window.innerWidth === w) return; w = window.innerWidth; clearTimeout(t); t = setTimeout(run, 150); });
-})();
-</script>
+<style>
+.hero h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(30px, 6vw, 44px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.hero p { font-size: 16.5px; line-height: 1.55; margin: 0; color: var(--fg); max-width: 46rem; }
+.hero p.lead { font-family: var(--serif); font-size: 21px; line-height: 1.35; }
+.pages { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 12px; }
+.pg { display: grid; gap: 6px; padding: 16px; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-decoration: none; }
+.pg b { font-size: 17px; } .pg span { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+.pg:hover, .pg:focus-visible { border-color: var(--fr); }
+.pg.soon { background: transparent; border-style: dashed; } .pg.soon b { color: var(--muted); }
+.rank { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.rank th { font-size: 11.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); text-align: right; padding: 6px 6px; border-bottom: 1px solid var(--line); }
+.rank th:first-child, .rank td:first-child { text-align: left; }
+.rank td { padding: 9px 6px; border-bottom: 1px solid var(--line); text-align: right; }
+.rank td small { display: block; color: var(--muted); font-size: 11.5px; }
+.rank .n { display: inline-block; min-width: 2.6em; padding: 2px 6px; border-radius: 6px; font-weight: 600; text-align: center; }
+.rank .g { background: var(--s-good); color: var(--ok); } .rank .m { background: var(--s-mid); color: var(--mid); } .rank .b { background: var(--s-bad); color: var(--bad); }
+.rank .avg .n { font-weight: 700; } .rank .na { color: var(--axis); }
+</style>
 </head>
 <body>
-<div id="dash-root">
+<div class="wrap">
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/" aria-current="page">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><span class="soon">Bientôt : Santé · Sécurité et justice · Vie des Français</span></nav>
 
-<div class="bx">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/" aria-current="page">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><span class="soon">Bientôt : Santé · Sécurité et justice · Vie des Français</span></nav>
-  <header class="bx-head">
-    <h1 class="bx-title">Baromètre 2027</h1>
-    <div class="bx-updated" id="bx-updated">Chargement des données…</div>
-    <p class="bx-visit" id="visit" hidden></p>
-    <div class="bx-stale" id="bx-stale" hidden>Données en cours d’actualisation : la dernière mise à jour date de plus d’un jour.</div>
-    <div class="bx-count"><b id="countdown">—</b><span>jours avant le premier tour, le 18 avril 2027</span></div>
-    <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
-  </header>
-  <nav class="jump" aria-label="Aller à"><a href="#aujourdhui">Aujourd'hui</a><a href="#mouvements">Ce qui a bougé</a><a href="#agenda">Agenda</a><a href="#premier-tour">1er tour</a><a href="#sondages-et-paris">Sondages et paris</a><a href="#second-tour">2nd tour</a><a href="#polymarket">Parieurs</a><a href="#duels">Duels</a><a href="#tous-sondages">Tous les sondages</a><a href="#methode">Méthode</a></nav>
-
-  <div class="bx-tiles" id="tiles" data-source="moyenne_t1 polymarket">
-    <div class="bx-tile"><div class="lab">1er des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
-    <div class="bx-tile"><div class="lab">2e des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
-    <div class="bx-tile"><div class="lab">3e des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
-    <div class="bx-tile"><div class="lab">4e des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
-    <div class="bx-tile"><div class="lab">Favori des parieurs</div><div class="val dash-skeleton">—</div><div class="sub">chances de victoire au 2nd tour selon Polymarket</div></div>
-  </div>
-
-  <section class="bx-card bx-today" id="aujourdhui" aria-labelledby="today-h">
-    <h2 id="today-h">Ce qui a changé <span id="today-since"></span></h2>
-    <ul class="bx-todaylist" id="today-list"><li>Chargement…</li></ul>
+  <section class="hero" style="display:grid;gap:14px;margin-top:6px">
+    <h1>Ce que font ceux qui nous gouvernent, en chiffres.</h1>
+    <p class="lead">Concret donne à chacun une vision transparente de l'action des présidents et des gouvernements sur les grandes missions de l'État.</p>
+    <p>Pour chaque mission, on compare chaque année la France à ses voisins européens, avec des chiffres publics et sourcés (Eurostat, Insee, OCDE…), puis on en tire une note pour chaque président et chaque gouvernement depuis 1995. Pas d'opinion, pas de parti pris : la même règle pour tous. Les pages sont mises à jour chaque jour. Pour suivre la campagne de 2027, le Baromètre réunit sondages et pronostics.</p>
   </section>
 
-  <div class="bx-grid">
-    <section class="bx-card" id="mouvements">
-      <h2>Ce qui a bougé</h2>
-      <p class="bx-note">Classés selon leur niveau dans les sondages. Sondages : évolution de la tendance sur les 14 derniers jours. Parieurs : évolution des chances de victoire au second tour (Polymarket) sur 30 jours.</p>
-      <div class="bx-movers" id="movers" data-source="mouvements"></div>
-    </section>
-
-    <section class="bx-card" id="dernier-sondage">
-      <h2 id="last-title">Le dernier sondage</h2>
-      <p class="bx-note" id="last-note">Premier tour, moyenne des hypothèses testées.</p>
-      <div class="bx-last" id="last" data-source="dernier_sondage"></div>
-    </section>
-
-    <section class="bx-card wide" id="agenda">
-      <h2>Actualité et agenda</h2>
-      <div class="bx-ag">
-        <div><h3>À venir</h3><ul class="bx-aglist" id="ag-next"></ul></div>
-        <div><h3>Les derniers événements</h3><ul class="bx-aglist" id="ag-last"></ul></div>
-      </div>
-    </section>
-
-    <section class="bx-card wide" id="premier-tour">
-      <h2>Premier tour : intentions de vote</h2>
-      <p class="bx-note">Chaque point est un sondage (moyenne de ses hypothèses) ; la ligne suit la moyenne des sondages des trois semaines précédentes. Courbes des 8 premiers candidats des sondages. En juillet 2026, Marine Le Pen remplace Jordan Bardella comme candidate du RN.</p>
-      <div class="bx-legend" id="legend-t1"></div>
-      <div class="bx-chart" id="chart-t1" data-source="sondages_t1 tendance_t1 evenements"></div>
-      <ol class="bx-events" id="events-list" data-source="evenements"></ol>
-    </section>
-
-    <section class="bx-card wide" id="sondages-et-paris">
-      <h2>Sondages et parieurs, côte à côte</h2>
-      <p class="bx-note">Les 6 favoris de Polymarket : pour chacun, ses chances de victoire au second tour selon Polymarket (trait plein) et ses intentions de vote au premier tour (tirets). Les deux sont en %, mais ne mesurent pas la même chose.</p>
-      <div class="bx-key"><span><i class="ln"></i>Chances de victoire au 2nd tour (Polymarket)</span><span><i class="ln dash"></i>Intentions de vote, 1er tour</span></div>
-      <div class="bx-multi" id="multi" data-source="polymarket_hist tendance_t1"></div>
-    </section>
-
-    <section class="bx-card" id="second-tour">
-      <h2>Second tour : Marine Le Pen selon son adversaire</h2>
-      <p class="bx-note">Score de Marine Le Pen, en % des voix exprimées, dans chaque duel testé en 2026. Sous 50 %, elle perd.</p>
-      <div class="bx-legend" id="legend-t2"></div>
-      <div class="bx-chart small" id="chart-t2" data-source="sondages_t2"></div>
-    </section>
-
-    <section class="bx-card" id="polymarket">
-      <h2>Qui va gagner au second tour, selon les parieurs</h2>
-      <p class="bx-note">Les 10 favoris : probabilité implicite de remporter l’élection au second tour, marché « Next French Presidential Election » de Polymarket.</p>
-      <div class="bx-chart small" id="chart-pm" data-source="polymarket"></div>
-    </section>
-
-    <section class="bx-card" id="duels">
-      <h2>Derniers duels testés</h2>
-      <p class="bx-note">Sondages de second tour des 45 derniers jours.</p>
-      <div class="bx-tablebox">
-        <table class="bx-table" data-source="duels_recents" data-row-key="duel">
-          <thead><tr><th class="l" data-field="duel">Duel · institut</th><th data-field="date">Date</th><th data-field="score_rn">Le Pen</th><th data-field="score_adversaire">Adversaire</th></tr></thead>
-          <tbody id="tbody-duels"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="bx-card" id="tous-sondages">
-      <h2>Tous les sondages de premier tour</h2>
-      <p class="bx-note">Moyenne des hypothèses testées par chaque enquête, en %, pour les 15 premiers candidats des sondages.</p>
-      <div class="bx-tablebox">
-        <table class="bx-table" data-source="tableau_t1" data-row-key="sondage">
-          <thead><tr id="thead-t1"><th class="l" data-field="sondage">Sondage</th></tr></thead>
-          <tbody id="tbody-t1"></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-
-  <section class="bx-method" id="methode">
-    <p><b>Qui est affiché, et pourquoi.</b> Une seule règle, recalculée à chaque mise à jour : les candidats sont classés selon leur moyenne dans les sondages des 30 derniers jours (Le Pen et Bardella comptent pour un seul candidat RN). Les 4 premiers ont une vignette en haut de page, les 8 premiers une courbe, les 15 premiers une colonne dans le tableau. Côté parieurs, on montre les 10 favoris de Polymarket et on suit l'historique des 6 premiers. « Ce qui a bougé » réunit les 8 premiers des sondages et les 6 favoris des parieurs. Chaque candidat garde toujours la même couleur.</p>
-    <p><b>À lire avec prudence.</b> Un sondage est une photographie, pas une prévision : avec 1 000 à 2 000 personnes interrogées, un écart de 2 à 3 points entre deux candidats n'est pas significatif. Les instituts testent plusieurs hypothèses de candidatures dans une même enquête ; nous faisons la moyenne, pour chaque candidat, des hypothèses où il figure.</p>
-    <p><b>Polymarket</b> est une plateforme de paris en cryptomonnaie, non autorisée en France. Ses probabilités, qui portent sur la victoire finale au second tour, reflètent les mises de parieurs, majoritairement étrangers, pas les intentions de vote. Chaque candidat y est un pari distinct, si bien que les probabilités ne totalisent pas exactement 100 %.</p>
-    <p><b>Sondages et parieurs ne disent pas la même chose.</b> Un sondage mesure une intention de vote au premier tour ; une cote mesure ce que les parieurs pensent du résultat final, au second tour. Les marchés réagissent vite à l'actualité : la cote de Marine Le Pen a bondi de 8,5 % à 26 % la semaine de sa décision en appel de juillet 2026, avant que les sondages ne la testent. Cela ne suffit pas à prouver qu'ils prédisent les sondages suivants : il faudra des mois de données pour le mesurer.</p>
-    <p><b>Sources</b> : page Wikipédia « Liste de sondages sur l'élection présidentielle française de 2027 », relevée le 21 octobre 2026, qui renvoie vers la notice de chaque sondage à la Commission des sondages ; Polymarket, historique hebdomadaire et cours du 21 octobre 2026.</p>
+  <section class="pages" aria-label="Les pages">
+    <a class="pg" href="/finances/"><b>Finances publiques</b><span>Dette, déficit, impôts, dépenses, croissance, chômage : la France face à la zone euro depuis 1995.</span></a>
+    <a class="pg" href="/education/"><b>Éducation</b><span>PISA, décrochage, diplômés, chômage des jeunes, universités : la France face à l'Europe depuis 2002.</span></a>
+    <a class="pg" href="/barometre/"><b>Baromètre 2027</b><span>Sondages, chances de victoire selon les parieurs, événements et agenda de la présidentielle.</span></a>
+    <div class="pg soon"><b>Bientôt</b><span>Santé · Sécurité et justice · Vie des Français.</span></div>
   </section>
-</div>
 
+  <section class="card" id="classement" aria-labelledby="cl-t">
+    <h2 id="cl-t"><span class="eyebrow">Le classement général</span>Les présidents, toutes missions confondues</h2>
+    <p class="note">Note sur 20 par mission, et moyenne des missions disponibles. <b>10 = le niveau de nos voisins</b> ; en dessous, la France a fait moins bien que la moyenne européenne. Le détail et la méthode sont sur chaque page.</p>
+    <table class="rank" id="t-pres"></table>
+  </section>
+  <section class="card" aria-labelledby="cl-g">
+    <h2 id="cl-g"><span class="eyebrow">Le classement général</span>Les gouvernements</h2>
+    <table class="rank" id="t-gov"></table>
+    <p class="note">Sébastien Lecornu (depuis septembre 2025) sera noté quand les chiffres de 2026 seront publiés. Les séries de l'éducation commencent en 2002 : Alain Juppé et Lionel Jospin ne sont notés que sur les finances, Jacques Chirac sur 2003-2006 seulement en éducation. Classement établi le 22 octobre 2026.</p>
+  </section>
+
+  <footer>
+    <p>Concret est un projet indépendant, sans affiliation politique. Toutes les sources sont citées en bas de chaque page.</p>
+  </footer>
+</div>
 <script>
 (function () {
-  var frFmt = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
-  var frLocale = d3.timeFormatLocale({
-    dateTime: '%A %e %B %Y à %X', date: '%d/%m/%Y', time: '%H:%M:%S', periods: ['AM', 'PM'],
-    days: ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'],
-    shortDays: ['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'],
-    months: ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
-    shortMonths: ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.']
-  });
-  window.BX = {
-    pct: function (v) { return frFmt.format(v) + ' %'; },
-    fmtDay: frLocale.utcFormat('%-d %b %Y'),
-    fmtMonth: frLocale.utcFormat('%b %Y'),
-    day: function (s) { return new Date(s + 'T00:00:00Z'); }
-  };
-  // Noms complets et couleurs fixes : un candidat garde toujours la même couleur.
-  BX.NAMES = { 'Le Pen': 'Marine Le Pen', 'Bardella': 'Jordan Bardella', 'Mélenchon': 'Jean-Luc Mélenchon', 'Philippe': 'Édouard Philippe', 'Glucksmann': 'Raphaël Glucksmann', 'Attal': 'Gabriel Attal', 'Retailleau': 'Bruno Retailleau', 'Lisnard': 'David Lisnard', 'Zemmour': 'Éric Zemmour', 'Knafo': 'Sarah Knafo', 'Hollande': 'François Hollande', 'Ruffin': 'François Ruffin', 'Roussel': 'Fabien Roussel', 'Tondelier': 'Marine Tondelier', 'Darmanin': 'Gérald Darmanin', 'Villepin': 'Dominique de Villepin', 'Lecornu': 'Sébastien Lecornu', 'Le Maire': 'Bruno Le Maire', 'Dupont-Aignan': 'Nicolas Dupont-Aignan', 'Arthaud': 'Nathalie Arthaud', 'Faure': 'Olivier Faure', 'Royal': 'Ségolène Royal', 'Guedj': 'Jérôme Guedj', 'Maurel': 'Emmanuel Maurel' };
-  BX.short = function (full) { for (var k in BX.NAMES) if (BX.NAMES[k] === full) return k; var p = String(full).split(' '); return p[p.length - 1]; };
-  BX.full = function (s) { return BX.NAMES[s] || s; };
-  var FIXED = { 'Le Pen': 0, 'Bardella': 0, 'Philippe': 1, 'Mélenchon': 2, 'Glucksmann': 3, 'Retailleau': 4, 'Attal': 5, 'Lisnard': 6, 'Zemmour': 7 };
-  var EXTRA = ['#0f766e', '#b45309', '#64748b', '#be185d', '#4d7c0f', '#0369a1'], extraOf = {}, nExtra = 0;
-  BX.col = function (s) {
-    if (FIXED[s] != null) return window.dash ? dash.colors[FIXED[s]] : null;
-    if (extraOf[s] == null) extraOf[s] = EXTRA[nExtra++ % EXTRA.length];
-    return extraOf[s];
-  };
-  BX.key = function (s) { return s === 'Le Pen' || s === 'Bardella' ? 'RN' : s; };
-  // La règle : classement par moyenne des sondages des 30 derniers jours (Le Pen et Bardella comptent comme un seul candidat RN).
-  BX.rank = function (moy) {
-    var seen = {}, out = [];
-    moy.slice().sort(function (a, b) { return b.moyenne - a.moyenne; }).forEach(function (r) {
-      var k = BX.key(r.candidat); if (seen[k]) return; seen[k] = 1;
-      var s = k === 'RN' ? 'Le Pen' : r.candidat;
-      out.push({ key: k, label: s, short: s, name: k === 'RN' ? 'Marine Le Pen (RN)' : BX.full(s), moyenne: r.moyenne, colKey: r.candidat });
-    });
-    return out;
-  };
-  // Classement Polymarket, sans la ligne « Autres candidats ».
-  BX.pmRank = function (pm) {
-    return pm.filter(function (r) { return r.candidat !== 'Autres candidats'; }).slice().sort(function (a, b) { return +b.probabilite - +a.probabilite; })
-      .map(function (r) { var s = BX.short(r.candidat); return { short: s, key: BX.key(s), name: r.candidat, v: +r.probabilite }; });
-  };
-  BX.TOP_TILES = 4; BX.TOP_CURVES = 8; BX.TOP_TABLE = 15; BX.TOP_PM = 6; BX.TOP_MV = 8; BX.TOP_MV_PM = 6; BX.TOP_PM_BARS = 10;
-})();
-</script>
-
-<script>
-dash.calc('moyenne_t1', {
-  inputs: ['sondages_t1'],
-  title: 'Moyenne des 30 derniers jours',
-  description: 'Pour chaque candidat, moyenne de ses scores dans les sondages publiés dans les 30 jours précédant le plus récent.',
-  fn: function (sondages_t1) {
-    var last = sondages_t1.reduce(function (m, r) { return r.date > m ? r.date : m; }, '');
-    var from = new Date(Date.parse(last) - 30 * 86400000).toISOString().slice(0, 10);
-    var by = {};
-    sondages_t1.filter(function (r) { return r.date >= from; }).forEach(function (r) {
-      (by[r.candidat] = by[r.candidat] || []).push(Number(r.score));
-    });
-    return Object.keys(by).map(function (c) {
-      var v = by[c];
-      return { candidat: c, moyenne: Math.round(v.reduce(function (a, b) { return a + b; }, 0) / v.length * 10) / 10, sondages: v.length, depuis: from };
-    }).sort(function (a, b) { return b.moyenne - a.moyenne; });
+  // Notes sur 20 relevées sur les pages Finances publiques et Éducation (bulletins au 22 octobre 2026)
+  var P = [
+    { n: 'Emmanuel Macron', d: '2017-2025, en exercice', f: 9.2, e: 9.6 },
+    { n: 'Nicolas Sarkozy', d: '2007-2011', f: 8.8, e: 11.8 },
+    { n: 'François Hollande', d: '2012-2016', f: 4.8, e: 11.8 },
+    { n: 'Jacques Chirac', d: '1995-2006', f: 5.2, e: 2.9 }
+  ];
+  var G = [
+    { n: 'Jean Castex', d: '2020-2021', f: 13.1, e: 12.5 }, { n: 'Jean-Marc Ayrault', d: '2012-2013', f: 8.8, e: 13.8 },
+    { n: 'François Fillon', d: '2007-2011', f: 8.8, e: 11.8 }, { n: 'Édouard Philippe', d: '2017-2019', f: 7.9, e: 12.1 },
+    { n: 'François Bayrou', d: '2025', f: 8.6, e: 7.5 }, { n: 'Gabriel Attal', d: '2024', f: 10, e: 4 },
+    { n: 'Élisabeth Borne', d: '2022-2023', f: 6.9, e: 6.9 }, { n: 'Manuel Valls', d: '2014-2016', f: 2.1, e: 10.6 },
+    { n: 'Lionel Jospin', d: '1997-2001', f: 6.8, e: null }, { n: 'Jean-Pierre Raffarin', d: '2002-2004', f: 5, e: 2.5 },
+    { n: 'Dominique de Villepin', d: '2005-2006', f: 3.1, e: 2.5 }, { n: 'Alain Juppé', d: '1995-1996', f: 2.5, e: null }
+  ];
+  var fmt = function (v) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v); };
+  var cls = function (v) { return v >= 10 ? 'g' : v >= 6 ? 'm' : 'b'; };
+  var cell = function (v, avg) { return v == null ? '<td class="na">–</td>' : '<td' + (avg ? ' class="avg"' : '') + '><span class="n ' + cls(v) + '">' + fmt(v) + '</span></td>'; };
+  function table(id, rows) {
+    rows.forEach(function (r) { var v = [r.f, r.e].filter(function (x) { return x != null; }); r.m = Math.round(v.reduce(function (a, b) { return a + b; }, 0) / v.length * 10) / 10; });
+    rows.sort(function (a, b) { return b.m - a.m; });
+    document.getElementById(id).innerHTML = '<thead><tr><th>' + (id === 't-pres' ? 'Président' : 'Premier ministre') + '</th><th><a href="/finances/#bulletin">Finances</a></th><th><a href="/education/#bulletin">Éducation</a></th><th>Moyenne</th></tr></thead><tbody>' +
+      rows.map(function (r) { return '<tr><td><b>' + r.n + '</b><small>' + r.d + '</small></td>' + cell(r.f) + cell(r.e) + cell(r.m, 1) + '</tr>'; }).join('') + '</tbody>';
   }
-});
-
-dash.calc('tendance_t1', {
-  inputs: ['sondages_t1'],
-  title: 'Tendance premier tour',
-  description: 'Pour chaque candidat et chaque date de sondage, moyenne de ses scores sur les 21 jours précédents ; le RN est suivi sans mélanger Bardella et Le Pen.',
-  fn: function (sondages_t1) {
-    var rows = sondages_t1.map(function (r) { return { date: r.date, c: r.candidat === 'Le Pen' || r.candidat === 'Bardella' ? 'RN' : r.candidat, seg: r.candidat, v: Number(r.score) }; });
-    var out = [];
-    var keys = {};
-    rows.forEach(function (r) { keys[r.c + '|' + r.seg] = 1; });
-    Object.keys(keys).forEach(function (k) {
-      var parts = k.split('|');
-      var mine = rows.filter(function (r) { return r.c === parts[0] && r.seg === parts[1]; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
-      var dates = mine.map(function (r) { return r.date; }).filter(function (d, i, a) { return a.indexOf(d) === i; });
-      dates.forEach(function (d) {
-        var from = new Date(Date.parse(d) - 21 * 86400000).toISOString().slice(0, 10);
-        var w = mine.filter(function (r) { return r.date <= d && r.date > from; });
-        out.push({ date: d, candidat: parts[0], segment: parts[1], valeur: Math.round(w.reduce(function (a, r) { return a + r.v; }, 0) / w.length * 10) / 10 });
-      });
-    });
-    return out;
-  }
-});
-
-dash.calc('tableau_t1', {
-  inputs: ['sondages_t1'],
-  title: 'Tableau des sondages',
-  description: 'Un sondage par ligne, le score moyen de chaque candidat principal en colonne.',
-  fn: function (sondages_t1) {
-    var by = {};
-    sondages_t1.forEach(function (r) {
-      var k = r.date + ' · ' + r.institut;
-      var o = by[k] = by[k] || { sondage: k, date: r.date };
-      var c = r.candidat === 'Bardella' ? 'Le Pen' : r.candidat;
-      o[c] = Number(r.score);
-      if (r.candidat === 'Bardella') o.rn_bardella = true;
-    });
-    return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
-  }
-});
-
-dash.calc('mouvements', {
-  inputs: ['tendance_t1', 'polymarket_hist', 'moyenne_t1', 'polymarket'],
-  title: 'Ce qui a bougé',
-  description: 'Les 8 premiers des sondages (moyenne sur 30 jours) et les 6 favoris de Polymarket : tendance des sondages aujourd’hui et il y a 14 jours ; chances de victoire au second tour aujourd’hui et il y a 30 jours.',
-  fn: function (tendance_t1, polymarket_hist, moyenne_t1, polymarket) {
-    var BX = window.BX;
-    var at = function (rows, d) { var r = rows.filter(function (q) { return q.date <= d; }); return r.length ? r[r.length - 1] : null; };
-    var minus = function (d, n) { return new Date(Date.parse(d) - n * 86400000).toISOString().slice(0, 10); };
-    var list = [], seen = {};
-    BX.rank(moyenne_t1).slice(0, BX.TOP_MV).forEach(function (c) { if (!seen[c.key]) { seen[c.key] = 1; list.push(c.short); } });
-    BX.pmRank(polymarket).slice(0, BX.TOP_MV_PM).forEach(function (c) { if (!seen[c.key]) { seen[c.key] = 1; list.push(c.short); } });
-    return list.map(function (s) {
-      var k = BX.key(s);
-      var tr = tendance_t1.filter(function (r) { return r.candidat === k && r.segment !== 'Bardella'; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; });
-      var pm = polymarket_hist.filter(function (r) { return r.candidat === s; }).map(function (r) { return { date: r.date, v: Number(r.probabilite) }; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; });
-      var cur = polymarket.find(function (r) { return BX.short(r.candidat) === s; });
-      var tNow = tr[tr.length - 1], tThen = tNow ? at(tr, minus(tNow.date, 14)) : null;
-      var pNow = pm[pm.length - 1], pThen = pNow ? at(pm, minus(pNow.date, 30)) : null;
-      return {
-        candidat: BX.full(s),
-        court: s,
-        sondages: tNow ? tNow.valeur : null,
-        sondages_variation: tNow && tThen ? Math.round((tNow.valeur - tThen.valeur) * 10) / 10 : null,
-        paris: cur ? Number(cur.probabilite) : pNow ? pNow.v : null,
-        paris_variation: pNow && pThen ? Math.round(((cur ? Number(cur.probabilite) : pNow.v) - pThen.v) * 10) / 10 : null
-      };
-    });
-  }
-});
-
-dash.calc('dernier_sondage', {
-  inputs: ['sondages_t1'],
-  title: 'Le dernier sondage',
-  description: 'Les scores du sondage de premier tour le plus récent, du plus haut au plus bas.',
-  fn: function (sondages_t1) {
-    var last = sondages_t1.reduce(function (m, r) { return r.date > m ? r.date : m; }, '');
-    var first = sondages_t1.filter(function (r) { return r.date === last; });
-    var inst = first[0].institut;
-    return first.filter(function (r) { return r.institut === inst; })
-      .map(function (r) { return { candidat: r.candidat, score: Number(r.score), institut: r.institut, terrain: r.terrain, echantillon: Number(r.echantillon), date: r.date }; })
-      .sort(function (a, b) { return b.score - a.score; });
-  }
-});
-
-dash.calc('duels_recents', {
-  inputs: ['sondages_t2'],
-  title: 'Duels des 45 derniers jours',
-  description: 'Sondages de second tour dont la date tombe dans les 45 jours précédant le plus récent.',
-  fn: function (sondages_t2) {
-    var last = sondages_t2.reduce(function (m, r) { return r.date > m ? r.date : m; }, '');
-    var from = new Date(Date.parse(last) - 45 * 86400000).toISOString().slice(0, 10);
-    return sondages_t2.filter(function (r) { return r.date >= from; })
-      .sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; })
-      .map(function (r) { return { duel: r.candidat_rn + ' – ' + r.adversaire + ' · ' + r.institut + ' · ' + r.date, date: r.date, score_rn: Number(r.score_rn), score_adversaire: Number(r.score_adversaire) }; });
-  }
-});
-</script>
-
-<script>
-(function () {
-  var BX = window.BX, CANDS = [];
-
-  function failLine(el) { el.textContent = ''; var d = document.createElement('div'); d.className = 'bx-fail'; d.textContent = 'Échec du chargement'; el.appendChild(d); }
-  function ensureTip(box) { var t = box.querySelector('.bx-tip'); if (!t) { t = document.createElement('div'); t.className = 'bx-tip'; t.hidden = true; box.appendChild(t); } return t; }
-  function placeTip(t, box, x, y) {
-    var w = box.clientWidth, tw = t.offsetWidth;
-    t.style.left = Math.min(Math.max(0, x + 12), Math.max(0, w - tw)) + 'px'; t.style.top = Math.max(0, y - 10) + 'px';
-  }
-  function styleAxis(g) { g.attr('font-size', null).attr('font-family', null); g.selectAll('text').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)'); g.selectAll('.domain').attr('stroke', 'var(--cds-chart-axis)'); g.selectAll('.tick line').attr('stroke', 'var(--cds-chart-grid)'); }
-  // Curseur vertical au doigt ou à la souris : date et valeurs de toutes les courbes
-  function xhair(svg, box, W, top, bottom, at) {
-    var t = ensureTip(box), g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
-    var vl = g.append('line').attr('y1', top).attr('y2', bottom).attr('stroke', 'var(--color-fg)').attr('stroke-opacity', .35);
-    var dots = g.append('g'), node = svg.node();
-    function show(ev) {
-      var r = node.getBoundingClientRect(); if (!r.width) return;
-      var p = at((ev.clientX - r.left) * W / r.width); if (!p || !p.rows.length) return;
-      var sc = r.width / W; g.style('display', null); vl.attr('x1', p.px).attr('x2', p.px);
-      dots.selectAll('*').remove();
-      p.rows.forEach(function (rw) { if (rw.py != null) dots.append('circle').attr('cx', p.px).attr('cy', rw.py).attr('r', 3.6).attr('fill', rw.c).attr('stroke', 'var(--color-panel, var(--color-bg))').attr('stroke-width', 1.5); });
-      t.textContent = ''; var h = document.createElement('div'); h.className = 'd'; h.textContent = p.head; t.appendChild(h);
-      p.rows.forEach(function (rw) {
-        var l = document.createElement('div'); l.className = 'r'; var em = document.createElement('em'); var i = document.createElement('i'); i.style.background = rw.c;
-        em.appendChild(i); em.appendChild(document.createTextNode(rw.n)); var b = document.createElement('b'); b.textContent = rw.s; l.appendChild(em); l.appendChild(b); t.appendChild(l);
-      });
-      if (p.note) { var nt = document.createElement('div'); nt.className = 'd n'; nt.textContent = p.note; t.appendChild(nt); }
-      t.hidden = false;
-      var cx = p.px * sc, tw = t.offsetWidth, bw = box.clientWidth;
-      t.style.left = Math.max(0, Math.min(bw - tw, cx + 12 + tw <= bw ? cx + 12 : cx - 12 - tw)) + 'px'; t.style.top = '0px';
-    }
-    function hide() { g.style('display', 'none'); t.hidden = true; }
-    node.addEventListener('pointerdown', show); node.addEventListener('pointermove', show);
-    node.addEventListener('pointerleave', function (ev) { if (ev.pointerType === 'mouse') hide(); });
-    document.addEventListener('pointerdown', function (ev) { if (!node.contains(ev.target)) hide(); });
-  }
-  function nearest(arr, d) { if (!arr.length) return null; var i = d3.bisector(function (q) { return q.d; }).center(arr, d); return arr[i]; }
-  function tipLines(t, head, lines) { t.textContent = ''; var d = document.createElement('div'); d.className = 'd'; d.textContent = head; t.appendChild(d); lines.forEach(function (s) { var l = document.createElement('div'); l.textContent = s; t.appendChild(l); }); }
-
-  function drawLegend() {
-    var lg = document.getElementById('legend-t1'); lg.textContent = '';
-    CANDS.forEach(function (c) { var s = document.createElement('span'); var i = document.createElement('i'); i.style.background = c.col; s.appendChild(i); s.appendChild(document.createTextNode(c.name)); lg.appendChild(s); });
-  }
-  function drawTiles(rank, pmr) {
-    var box = document.getElementById('tiles'); box.textContent = '';
-    var mk = function (lab, col, val, sub) {
-      var t = document.createElement('div'); t.className = 'bx-tile';
-      var l = document.createElement('div'); l.className = 'lab';
-      if (col) { var i = document.createElement('i'); i.className = 'sw'; i.style.background = col; l.appendChild(i); }
-      l.appendChild(document.createTextNode(lab)); t.appendChild(l);
-      var v = document.createElement('div'); v.className = 'val'; v.textContent = val; t.appendChild(v);
-      var s = document.createElement('div'); s.className = 'sub'; s.textContent = sub; t.appendChild(s);
-      box.appendChild(t);
-    };
-    rank.slice(0, BX.TOP_TILES).forEach(function (c, i) { mk(c.name.replace(' (RN)', ''), BX.col(c.colKey), BX.pct(c.moyenne), (i + 1) + (i ? 'e' : 'er') + ' des sondages · moyenne sur 30 jours'); });
-    if (pmr[0]) mk(pmr[0].name + ', favori des parieurs', null, BX.pct(pmr[0].v), 'chances de victoire au 2nd tour selon Polymarket');
-  }
-  var lg2 = document.getElementById('legend-t2');
-  [['contre Philippe', 1], ['contre Mélenchon', 2], ['contre Glucksmann', 3], ['contre Attal', 5]].forEach(function (p) { var s = document.createElement('span'); var i = document.createElement('i'); i.style.background = dash.colors[p[1]]; s.appendChild(i); s.appendChild(document.createTextNode(p[0])); lg2.appendChild(s); });
-
-  var signed = function (v, unit) { if (v == null) return '—'; var s = (v > 0 ? '+' : v < 0 ? '−' : '±') + new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(Math.abs(v)); return s + ' ' + unit; };
-  var cls = function (v) { return v == null || Math.abs(v) < 0.5 ? 'bx-flat' : v > 0 ? 'bx-up' : 'bx-down'; };
-  var colorOf = function (n) { return BX.col(BX.NAMES[n] ? n : BX.short(n)); };
-
-  function drawMovers(rows) {
-    var box = document.getElementById('movers'); box.textContent = '';
-    var h = document.createElement('div'); h.className = 'bx-mv h';
-    ['Candidat', 'Sondages (1er tour)', 'Parieurs (2nd tour)'].forEach(function (t, i) { var s = document.createElement('div'); s.textContent = t; if (i) s.style.textAlign = 'right'; h.appendChild(s); });
-    box.appendChild(h);
-    rows.slice().sort(function (a, b) { var sa = a.sondages == null ? -1 : a.sondages, sb = b.sondages == null ? -1 : b.sondages; return sb - sa || (b.paris || 0) - (a.paris || 0); }).forEach(function (r) {
-      var row = document.createElement('div'); row.className = 'bx-mv';
-      var n = document.createElement('div'); n.className = 'n'; var i = document.createElement('i'); i.style.background = colorOf(r.court || r.candidat); n.appendChild(i); n.appendChild(document.createTextNode(r.candidat)); row.appendChild(n);
-      [[r.sondages_variation, r.sondages, 'pt'], [r.paris_variation, r.paris, 'pts']].forEach(function (p) {
-        var v = document.createElement('div'); v.className = 'v';
-        var b = document.createElement('b'); b.className = cls(p[0]); b.textContent = signed(p[0], 'pt'); v.appendChild(b);
-        var s = document.createElement('small'); s.textContent = p[1] == null ? '' : 'à ' + BX.pct(p[1]); v.appendChild(s);
-        row.appendChild(v);
-      });
-      box.appendChild(row);
-    });
-  }
-
-  function drawLast(rows) {
-    var box = document.getElementById('last'); box.textContent = '';
-    if (!rows.length) return;
-    var r0 = rows[0];
-    document.getElementById('last-title').textContent = 'Le dernier sondage : ' + r0.institut;
-    document.getElementById('last-note').textContent = 'Terrain du ' + r0.terrain + ', ' + new Intl.NumberFormat('fr-FR').format(r0.echantillon) + ' personnes. Premier tour, moyenne des hypothèses testées.';
-    var max = rows[0].score;
-    rows.filter(function (r) { return r.score >= 1; }).forEach(function (r) {
-      var l = document.createElement('div'); l.className = 'bx-lastbar';
-      var n = document.createElement('div'); n.textContent = r.candidat; l.appendChild(n);
-      var tr = document.createElement('div'); tr.className = 'tr'; var fl = document.createElement('div'); fl.className = 'fl';
-      fl.style.width = (r.score / max * 100) + '%'; fl.style.background = colorOf(r.candidat);
-      tr.appendChild(fl); l.appendChild(tr);
-      var v = document.createElement('div'); v.className = 'pv'; v.textContent = BX.pct(r.score); l.appendChild(v);
-      box.appendChild(l);
-    });
-  }
-
-  function drawSpark(boxId, rows, indic, ref, col) {
-    var box = document.getElementById(boxId); box.textContent = '';
-    var data = rows.filter(function (r) { return r.indicateur === indic; }).map(function (r) { return { d: BX.day(r.date), v: +r.valeur }; }).sort(function (a, b) { return a.d - b.d; });
-    if (data.length < 2) return;
-    var W = box.clientWidth || 200, H = 44;
-    var lo = d3.min(data, function (r) { return r.v; }), hi = d3.max(data, function (r) { return r.v; });
-    if (ref != null) { lo = Math.min(lo, ref); hi = Math.max(hi, ref); }
-    var pad = (hi - lo) * 0.1 || 1;
-    var x = d3.scaleUtc(d3.extent(data, function (r) { return r.d; }), [4, W - 4]);
-    var y = d3.scaleLinear([lo - pad, hi + pad], [H - 4, 4]);
-    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Évolution');
-    if (ref != null) svg.append('line').attr('x1', 4).attr('x2', W - 4).attr('y1', y(ref)).attr('y2', y(ref)).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '3 3');
-    svg.append('path').datum(data).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); }));
-    var l = data[data.length - 1]; svg.append('circle').attr('cx', x(l.d)).attr('cy', y(l.v)).attr('r', 3).attr('fill', col);
-  }
-
-  function lastOf(rows, indic) {
-    var r = rows.filter(function (q) { return q.indicateur === indic; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; });
-    return { last: r[r.length - 1], first: r[0], all: r };
-  }
-
-  function drawEventMarks(svg, x, top, events, from, bottom) {
-    events.forEach(function (e, i) {
-      var d = BX.day(e.date); if (d < from) return;
-      var cx = x(d);
-      svg.insert('line', ':first-child').attr('x1', cx).attr('x2', cx).attr('y1', top + 9).attr('y2', bottom).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-width', 1).attr('stroke-dasharray', '2 3');
-      svg.append('circle').attr('cx', cx).attr('cy', top).attr('r', 8).attr('fill', 'var(--color-fg)');
-      svg.append('text').attr('x', cx).attr('y', top + 4).attr('text-anchor', 'middle').attr('fill', 'var(--color-bg)').style('font-size', '11px').style('font-weight', 600).text(e.n);
-    });
-  }
-
-  function drawT1(rows, trend, events) {
-    var box = document.getElementById('chart-t1');
-    box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
-    var W = box.clientWidth || 600, H = 360;
-    var colOf = {}; CANDS.forEach(function (c) { colOf[c.key] = c; });
-    var data = rows.map(function (r) { var k = (r.candidat === 'Le Pen' || r.candidat === 'Bardella') ? 'RN' : r.candidat; return { d: BX.day(r.date), k: k, who: r.candidat, v: +r.score, inst: r.institut }; }).filter(function (r) { return colOf[r.k]; });
-    var x = d3.scaleUtc(d3.extent(data, function (r) { return r.d; }), [0, 1]);
-    var y = d3.scaleLinear([0, Math.ceil((d3.max(data, function (r) { return r.v; }) + 2) / 5) * 5], [H - 28, 34]);
-    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Intentions de vote au premier tour, par sondage et en tendance');
-    var gy = svg.append('g').call(d3.axisLeft(y).ticks(6).tickFormat(function (v) { return v + ' %'; }).tickSize(0));
-    styleAxis(gy);
-    var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); });
-    mL = Math.ceil(mL) + 10; var mR = 112;
-    gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
-    x.range([mL, W - mR]);
-    svg.insert('g', ':first-child').selectAll('line').data(y.ticks(6)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
-    var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 28) + ')').call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((W - mL - mR) / 90))).tickFormat(BX.fmtMonth).tickSizeOuter(0));
-    styleAxis(gx);
-    var sw = new Date('2026-07-07T00:00:00Z');
-    drawEventMarks(svg, x, 12, events, x.domain()[0], H - 28);
-    svg.append('g').selectAll('circle').data(data).join('circle').attr('cx', function (r) { return x(r.d); }).attr('cy', function (r) { return y(r.v); }).attr('r', 2.5)
-      .attr('fill', function (r) { return colOf[r.k].col; }).attr('fill-opacity', .3);
-    var labs = [], TR = [];
-    CANDS.forEach(function (c) {
-      var tr = trend.filter(function (t) { return t.candidat === c.key; }).map(function (t) { return { d: BX.day(t.date), v: +t.valeur, seg: t.segment }; });
-      d3.groups(tr, function (t) { return t.seg; }).forEach(function (g) {
-        var pts = g[1].sort(function (a, b) { return a.d - b.d; });
-        TR.push({ c: c, seg: g[0], pts: pts });
-        svg.append('path').datum(pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('stroke-opacity', g[0] === 'Bardella' ? .45 : 1)
-          .attr('d', d3.line().x(function (t) { return x(t.d); }).y(function (t) { return y(t.v); }));
-      });
-      var lastAll = tr.sort(function (a, b) { return a.d - b.d; })[tr.length - 1];
-      if (lastAll && lastAll.seg !== 'Bardella') labs.push({ c: c, y: y(lastAll.v), v: lastAll.v, x: x(lastAll.d) });
-    });
-    labs.sort(function (a, b) { return a.y - b.y; });
-    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
-    svg.append('g').selectAll('text').data(labs).join('text').attr('x', W - mR + 6).attr('y', function (l) { return l.y + 4; }).attr('fill', function (l) { return l.c.col; })
-      .style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text(function (l) { return l.c.label + ' ' + BX.pct(l.v); });
-    var allD = []; TR.forEach(function (s) { s.pts.forEach(function (q) { allD.push(+q.d); }); });
-    allD = Array.from(new Set(allD)).sort(function (a, b) { return a - b; }).map(function (v) { return new Date(v); });
-    xhair(svg, box, W, 34, H - 28, function (sx) {
-      if (!allD.length) return null;
-      var d = allD[d3.bisector(function (q) { return q; }).center(allD, x.invert(sx))], DAY = 86400000;
-      var rows = TR.map(function (s) {
-        var q = nearest(s.pts, d); if (!q || Math.abs(q.d - d) > 10 * DAY) return null;
-        return { c: s.c.col, n: s.seg === 'Bardella' ? 'Bardella (hypothèse RN)' : s.c.name, v: q.v, py: y(q.v), s: BX.pct(q.v) };
-      }).filter(Boolean).sort(function (a, b) { return b.v - a.v; });
-      var ev = events.filter(function (e) { return Math.abs(BX.day(e.date) - d) < 4 * DAY; })[0];
-      return { px: x(d), head: BX.fmtDay(d) + ' · moyenne des sondages', rows: rows, note: ev ? (ev.titre || ev.texte || ev.evenement || '') : '' };
-    });
-  }
-
-  function drawMulti(hist, trend, pmr) {
-    var wrap = document.getElementById('multi');
-    wrap.textContent = '';
-    var withHist = {}; hist.forEach(function (r) { withHist[r.candidat] = 1; });
-    var panels = pmr.filter(function (c) { return withHist[c.short]; }).slice(0, BX.TOP_PM).map(function (c) {
-      return { m: c.short, p: c.key, title: c.key === 'RN' ? 'Marine Le Pen (RN)' : c.name, col: BX.col(c.short) };
-    });
-    var hd = hist.map(function (r) { return { d: BX.day(r.date), c: r.candidat, v: +r.probabilite }; });
-    var td = trend.map(function (r) { return { d: BX.day(r.date), k: r.candidat, s: r.segment, v: +r.valeur }; });
-    var dom = d3.extent(hd, function (r) { return r.d; });
-    var yMax = Math.ceil(Math.max(d3.max(hd, function (r) { return r.v; }), d3.max(td, function (r) { return r.v; })) / 10) * 10;
-    var sw = new Date('2026-07-07T00:00:00Z');
-    panels.forEach(function (pn) {
-      var panel = document.createElement('div'); panel.className = 'bx-panel';
-      var h = document.createElement('h3'); h.textContent = pn.title; panel.appendChild(h);
-      var box = document.createElement('div'); box.className = 'bx-chart'; panel.appendChild(box);
-      wrap.appendChild(panel); pn.panel = panel; pn.box = box;
-    });
-    panels.forEach(function (pn) {
-      var panel = pn.panel, box = pn.box;
-      var W = box.clientWidth || 260, H = 200;
-      var y = d3.scaleLinear([0, yMax], [H - 24, 8]);
-      var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', pn.title + ' : chances de victoire au second tour et intentions de vote au premier tour');
-      var gy = svg.append('g').call(d3.axisLeft(y).ticks(3).tickFormat(function (v) { return v + ' %'; }).tickSize(0));
-      styleAxis(gy);
-      var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); });
-      mL = Math.ceil(mL) + 8; var mR = 40;
-      gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
-      var x = d3.scaleUtc(dom, [mL, W - mR]);
-      svg.insert('g', ':first-child').selectAll('line').data(y.ticks(3)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
-      var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 24) + ')').call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((W - mL - mR) / 80))).tickFormat(BX.fmtMonth).tickSizeOuter(0));
-      styleAxis(gx);
-      if (pn.p === 'RN') svg.append('line').attr('x1', x(sw)).attr('x2', x(sw)).attr('y1', 8).attr('y2', H - 24).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '3 3');
-      var col = pn.col;
-      var line = d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); });
-      var mk = hd.filter(function (r) { return r.c === pn.m; }).sort(function (a, b) { return a.d - b.d; });
-      svg.append('path').datum(mk).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', line);
-      d3.groups(td.filter(function (r) { return r.k === pn.p && r.d >= dom[0]; }), function (r) { return r.s; }).forEach(function (g) {
-        var pts = g[1].sort(function (a, b) { return a.d - b.d; });
-        svg.append('path').datum(pts).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2).attr('stroke-dasharray', '5 4').attr('stroke-opacity', g[0] === 'Bardella' ? .45 : 1).attr('d', line);
-        if (pts.length === 1) svg.append('circle').attr('cx', x(pts[0].d)).attr('cy', y(pts[0].v)).attr('r', 3).attr('fill', col);
-      });
-      var last = mk[mk.length - 1];
-      if (last) svg.append('text').attr('x', x(last.d) + 5).attr('y', y(last.v) + 4).attr('fill', col).style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text(BX.pct(last.v));
-      xhair(svg, box, W, 8, H - 24, function (sx) {
-        if (!mk.length) return null;
-        var r = mk[d3.bisector(function (q) { return q.d; }).center(mk, x.invert(sx))];
-        var tr = td.filter(function (q) { return q.k === pn.p && q.d <= r.d && q.s !== 'Bardella'; }).sort(function (a, b) { return a.d - b.d; });
-        var rows = [{ c: col, n: 'Chances de victoire (2nd tour)', py: y(r.v), s: BX.pct(r.v) }];
-        if (tr.length) rows.push({ c: col, n: 'Intentions de vote (1er tour)', py: y(tr[tr.length - 1].v), s: BX.pct(tr[tr.length - 1].v) });
-        return { px: x(r.d), head: BX.fmtDay(r.d), rows: rows };
-      });
-    });
-  }
-
-  function drawT2(rows) {
-    var box = document.getElementById('chart-t2');
-    box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
-    var W = box.clientWidth || 400, H = 260;
-    var ADV = { 'Philippe': 1, 'Mélenchon': 2, 'Glucksmann': 3, 'Attal': 5 };
-    var data = rows.filter(function (r) { return r.candidat_rn === 'Le Pen' && ADV[r.adversaire] != null; }).map(function (r) { return Object.assign({}, r, { d: BX.day(r.date), v: +r.score_rn }); });
-    var x = d3.scaleUtc(d3.extent(data, function (r) { return r.d; }), [0, 1]);
-    var y = d3.scaleLinear([40, Math.ceil((d3.max(data, function (r) { return r.v; }) + 1) / 5) * 5], [H - 28, 10]);
-    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Score de Marine Le Pen au second tour selon son adversaire');
-    var gy = svg.append('g').call(d3.axisLeft(y).ticks(4).tickFormat(function (v) { return v + ' %'; }).tickSize(0));
-    styleAxis(gy);
-    var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); });
-    mL = Math.ceil(mL) + 10; var mR = 16;
-    gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
-    x.range([mL + 8, W - mR]);
-    svg.insert('g', ':first-child').selectAll('line').data(y.ticks(4)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
-    svg.append('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y(50)).attr('y2', y(50)).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 4');
-    var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 28) + ')').call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((W - mL - mR) / 90))).tickFormat(BX.fmtMonth).tickSizeOuter(0));
-    styleAxis(gx);
-    var colOf = function (r) { return dash.colors[ADV[r.adversaire]]; };
-    var SM = [];
-    d3.groups(data.slice().sort(function (a, b) { return a.d - b.d; }), function (r) { return r.adversaire; }).forEach(function (g) {
-      SM.push({ n: g[0], c: colOf(g[1][0]), pts: null });
-      var pts = g[1], sm = pts.map(function (r, i) { var w = pts.slice(Math.max(0, i - 2), i + 1); return { d: r.d, v: d3.mean(w, function (q) { return q.v; }) }; });
-      SM[SM.length - 1].pts = sm;
-      svg.append('path').datum(sm).attr('fill', 'none').attr('stroke', colOf(pts[0])).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); }));
-    });
-    var dots = svg.append('g').selectAll('circle').data(data).join('circle').attr('cx', function (r) { return x(r.d); }).attr('cy', function (r) { return y(r.v); }).attr('r', 3.5).attr('fill', colOf).attr('fill-opacity', .45);
-    var allD = Array.from(new Set(data.map(function (r) { return +r.d; }))).sort(function (a, b) { return a - b; }).map(function (v) { return new Date(v); });
-    xhair(svg, box, W, 10, H - 28, function (sx) {
-      if (!allD.length) return null;
-      var d = allD[d3.bisector(function (q) { return q; }).center(allD, x.invert(sx))];
-      var rows = SM.map(function (s) {
-        var q = s.pts.filter(function (p) { return p.d <= d; }).pop(); if (!q) return null;
-        return { c: s.c, n: 'contre ' + s.n, v: q.v, py: y(q.v), s: BX.pct(q.v) };
-      }).filter(Boolean).sort(function (a, b) { return b.v - a.v; });
-      var inst = Array.from(new Set(data.filter(function (r) { return +r.d === +d; }).map(function (r) { return r.institut; })));
-      return { px: x(d), head: BX.fmtDay(d) + ' · score de Marine Le Pen', rows: rows, note: 'Moyenne des trois derniers sondages' + (inst.length ? ' ; sondage ' + inst.join(', ') + ' ce jour-là' : '') };
-    });
-  }
-
-  function drawPM(rows) {
-    var box = document.getElementById('chart-pm');
-    box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
-    var data = rows.filter(function (r) { return r.candidat !== 'Autres candidats'; }).sort(function (a, b) { return +b.probabilite - +a.probabilite; }).slice(0, BX.TOP_PM_BARS).map(function (r) { return { n: r.candidat, v: +r.probabilite }; });
-    var W = box.clientWidth || 400, row = 26, H = data.length * row + 8;
-    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Probabilités de victoire au second tour selon Polymarket');
-    var names = svg.append('g').selectAll('text').data(data).join('text').attr('x', 0).attr('y', function (d, i) { return i * row + 17; }).attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text(function (d) { return d.n; });
-    var mL = 0; names.each(function () { mL = Math.max(mL, this.getComputedTextLength()); }); mL = Math.ceil(mL) + 10;
-    var x = d3.scaleLinear([0, d3.max(data, function (d) { return d.v; })], [0, Math.max(40, W - mL - 52)]);
-    svg.append('g').selectAll('rect').data(data).join('rect').attr('x', mL).attr('y', function (d, i) { return i * row + 5; }).attr('height', 16).attr('rx', 4)
-      .attr('width', function (d) { return Math.max(2, x(d.v)); })
-      .attr('fill', function (d, i) { return i === 0 && d.n !== 'Autres candidats' ? dash.colors[0] : 'var(--cds-chart-muted)'; });
-    svg.append('g').selectAll('text').data(data).join('text').attr('x', function (d) { return mL + Math.max(2, x(d.v)) + 6; }).attr('y', function (d, i) { return i * row + 17; })
-      .attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').style('font-variant-numeric', 'tabular-nums').text(function (d) { return BX.pct(d.v); });
-  }
-
-  var T1COLS = [];
-  function drawHead() {
-    var head = document.getElementById('thead-t1');
-    head.querySelectorAll('th:not(.l)').forEach(function (n) { n.remove(); });
-    T1COLS.forEach(function (c) { var th = document.createElement('th'); th.setAttribute('data-field', c); th.textContent = c === 'Le Pen' ? 'RN' : c; head.appendChild(th); });
-  }
-
-  dash.onData(function () {
-    var t1 = dash.data('sondages_t1'), t2 = dash.data('sondages_t2'), pm = dash.data('polymarket'), ph = dash.data('polymarket_hist');
-    var moy = dash.data('moyenne_t1'), tr = dash.data('tendance_t1'), du = dash.data('duels_recents'), tb = dash.data('tableau_t1');
-
-    var rank = moy.status === 'ok' ? BX.rank(moy.data) : [];
-    var pmr = pm.status === 'ok' ? BX.pmRank(pm.data) : [];
-    CANDS = rank.slice(0, BX.TOP_CURVES).map(function (c) { return { key: c.key, label: c.label, name: c.name, col: BX.col(c.colKey) }; });
-    T1COLS = rank.slice(0, BX.TOP_TABLE).map(function (c) { return c.short; });
-    if (moy.status === 'ok' && pm.status === 'ok') { drawTiles(rank, pmr); drawLegend(); drawHead(); }
-
-    var tk = document.getElementById('takeaway');
-    if (rank.length >= 4 && pmr.length) {
-      tk.textContent = '';
-      var add = function (txt, bold) {
-        if (!bold) { tk.appendChild(document.createTextNode(txt)); return; }
-        var b = document.createElement('b'); b.textContent = txt; tk.appendChild(b);
-      };
-      var nm = function (c) { return c.name.replace(' (RN)', ''); };
-      add(nm(rank[0]) + ' est en tête du premier tour avec '); add(BX.pct(rank[0].moyenne), 1);
-      add(' en moyenne sur les sondages des 30 derniers jours. Derrière, ' + nm(rank[1]) + ' ('); add(BX.pct(rank[1].moyenne), 1);
-      add('), ' + nm(rank[2]) + ' ('); add(BX.pct(rank[2].moyenne), 1);
-      add(') et ' + nm(rank[3]) + ' ('); add(BX.pct(rank[3].moyenne), 1);
-      add(') se disputent la qualification. Les parieurs de Polymarket donnent à ' + pmr[0].name + ' '); add(BX.pct(pmr[0].v), 1);
-      add(' de chances de gagner au second tour' + (pmr[0].key === rank[0].key ? '.' : ' : ils ne voient pas le même favori que les sondages.'));
-    } else if (moy.status === 'error' || pm.status === 'error') { tk.textContent = ''; }
-
-    function chart(id, ok, err, draw) {
-      var el = document.getElementById(id);
-      if (ok) { el.classList.remove('dash-skeleton'); el.querySelectorAll('.bx-fail').forEach(function (n) { n.remove(); }); draw(); }
-      else if (err) { el.classList.remove('dash-skeleton'); failLine(el); }
-      else { el.classList.add('dash-skeleton'); }
-    }
-    var ev = dash.data('evenements'), po = dash.data('pouls'), mv = dash.data('mouvements'), ls = dash.data('dernier_sondage');
-    var events = ev.status === 'ok' ? ev.data.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }).map(function (e, i) { return Object.assign({ n: i + 1 }, e); }) : [];
-    var cd = Math.ceil((Date.parse('2027-04-18T00:00:00+02:00') - Date.now()) / 86400000);
-    document.getElementById('countdown').textContent = 'J-' + Math.max(0, cd);
-    chart('chart-t1', t1.status === 'ok' && tr.status === 'ok' && moy.status === 'ok' && ev.status !== 'loading', t1.status === 'error' || tr.status === 'error', function () { drawT1(t1.data, tr.data, events); });
-    var el = document.getElementById('events-list'); el.textContent = '';
-    events.forEach(function (e) {
-      var li = document.createElement('li'); var n = document.createElement('span'); n.className = 'num'; n.textContent = e.n; li.appendChild(n);
-      var t = document.createElement('span'); t.textContent = BX.fmtDay(BX.day(e.date)) + ' · ' + e.evenement; li.appendChild(t); el.appendChild(li);
-    });
-    chart('movers', mv.status === 'ok', mv.status === 'error', function () { drawMovers(mv.data); });
-    chart('last', ls.status === 'ok', ls.status === 'error', function () { drawLast(ls.data); });
-    chart('multi', ph.status === 'ok' && tr.status === 'ok' && pm.status === 'ok', ph.status === 'error' || tr.status === 'error', function () { drawMulti(ph.data, tr.data, pmr); });
-    chart('chart-t2', t2.status === 'ok', t2.status === 'error', function () { drawT2(t2.data); });
-    chart('chart-pm', pm.status === 'ok', pm.status === 'error', function () { drawPM(pm.data); });
-
-    if (du.status === 'ok') {
-      var tbd = document.getElementById('tbody-duels'); tbd.textContent = '';
-      du.data.forEach(function (r) {
-        var trEl = document.createElement('tr');
-        [[r.duel, 'l'], [BX.fmtDay(BX.day(r.date))], [BX.pct(r.score_rn)], [BX.pct(r.score_adversaire)]].forEach(function (c) { var td = document.createElement('td'); if (c[1]) td.className = c[1]; td.textContent = c[0]; trEl.appendChild(td); });
-        tbd.appendChild(trEl);
-      });
-    }
-    if (tb.status === 'ok') {
-      var tbt = document.getElementById('tbody-t1'); tbt.textContent = '';
-      tb.data.forEach(function (r) {
-        var trEl = document.createElement('tr');
-        var td0 = document.createElement('td'); td0.className = 'l'; td0.textContent = r.sondage; trEl.appendChild(td0);
-        T1COLS.forEach(function (c) {
-          var td = document.createElement('td');
-          td.textContent = r[c] == null ? '' : BX.pct(r[c]) + (c === 'Le Pen' && r.rn_bardella ? ' (Bardella)' : '');
-          trEl.appendChild(td);
-        });
-        tbt.appendChild(trEl);
-      });
-    }
-  });
-})();
-</script>
-
-<footer class="bx-foot">concret2027.fr · Données publiques : sondages déposés à la Commission des sondages (via Wikipédia), Polymarket, Insee, presse. Page indépendante de tout parti.</footer>
-<script>
-window.addEventListener('baro:data', function () {
-  var el = document.getElementById('bx-updated'), iso = window.BARO_UPDATED_ISO;
-  var d = iso ? new Date(iso) : null;
-  if (d && !isNaN(d)) {
-    var tz = { timeZone: 'Europe/Paris' };
-    var dayOf = function (t) { return new Date(t).toLocaleDateString('fr-CA', tz); };
-    var now = Date.now(), hNow = +new Date(now).toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23' });
-    var todayDone = dayOf(d.getTime()) === dayOf(now) && +d.toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23' }) >= 11;
-    var nextTxt = (hNow < 13 && !todayDone) ? 'aujourd’hui vers midi' : new Date(now + 86400000).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' }) + ' vers midi';
-    el.textContent = 'Dernière mise à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ') + ' · prochaine : ' + nextTxt + ' (une par jour)';
-    if (Date.now() - d.getTime() > 30 * 3600 * 1000) { var b = document.getElementById('bx-stale'); b.hidden = false; }
-  } else { el.textContent = 'Mis à jour le ' + window.BARO_UPDATED; }
-});
-</script>
-</div>
-<div class="bx-sheet" id="bx-sheet" hidden>
-  <div class="bx-sheet-box" role="dialog" aria-modal="true" aria-label="Image à partager">
-    <p class="bx-note">Appui long sur l'image pour l'enregistrer ou la partager.</p>
-    <img id="bx-sheet-img" alt="Graphique à partager">
-    <button type="button" class="bx-share-close" id="bx-sheet-close">Fermer</button>
-  </div>
-</div>
-<style>
-.bx-share { font: inherit; font-size: 12.5px; font-weight: 500; justify-self: start; display: inline-flex; gap: 5px; padding: 4px 2px; border: 0; background: none; color: var(--color-fg-muted); cursor: pointer; text-decoration: underline; text-decoration-color: var(--color-border-line); text-underline-offset: 3px; }
-.bx-share::before { content: "↗"; }
-.bx-share:focus-visible, .bx-share-close:focus-visible { outline: 2px solid #2f5bd3; outline-offset: 2px; }
-.bx-sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px)); }
-.bx-sheet[hidden] { display: none; }
-.bx-sheet-box { background: var(--color-panel); border-radius: 14px; padding: 14px; display: grid; gap: 10px; max-width: 420px; width: 100%; max-height: 100%; overflow: auto; }
-.bx-sheet-box img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--color-border-line); }
-.bx-share-close { font: inherit; font-weight: 600; min-height: 44px; border-radius: 10px; border: 0; background: var(--color-fg); color: var(--color-bg); cursor: pointer; }
-</style>
-<script>
-// Partage des graphiques du Baromètre en image (carte 1080 × 1350 avec titre, graphique et source)
-(function () {
-  var PROPS = ['fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'stroke-opacity', 'fill-opacity', 'opacity', 'font-size', 'font-family', 'font-weight', 'text-anchor', 'dominant-baseline', 'visibility', 'display'];
-  function inline(orig, clone) {
-    var cs = getComputedStyle(orig);
-    PROPS.forEach(function (p) { clone.style.setProperty(p, cs.getPropertyValue(p)); });
-    for (var i = 0; i < orig.children.length; i++) if (clone.children[i]) inline(orig.children[i], clone.children[i]);
-  }
-  function svgImage(svg) {
-    return new Promise(function (ok, ko) {
-      var r = svg.getBoundingClientRect(), c = svg.cloneNode(true);
-      inline(svg, c);
-      c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-      if (!c.getAttribute('viewBox')) c.setAttribute('viewBox', '0 0 ' + r.width + ' ' + r.height);
-      c.setAttribute('width', r.width); c.setAttribute('height', r.height);
-      var img = new Image();
-      img.onload = function () { ok({ img: img, w: r.width, h: r.height }); };
-      img.onerror = ko;
-      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(c));
-    });
-  }
-  function wrap(x, text, px, py, maxW, lh) {
-    var words = text.split(' '), line = '';
-    words.forEach(function (w) { var t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line) { x.fillText(line, px, py); py += lh; line = w; } else line = t; });
-    if (line) x.fillText(line, px, py); return py + lh;
-  }
-  function share(card) {
-    var svgs = Array.prototype.filter.call(card.querySelectorAll('svg'), function (s) { return s.getBoundingClientRect().width > 50; });
-    if (!svgs.length) return;
-    var labels = svgs.map(function (sv) { var pn = sv.closest('.bx-panel'), h = pn && pn.querySelector('h3'); return h ? h.textContent : ''; });
-    Promise.all(svgs.map(svgImage)).then(function (imgs) {
-      var bs = getComputedStyle(document.body), bg = bs.backgroundColor, fg = bs.color;
-      var W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
-      var x = c.getContext('2d');
-      x.fillStyle = bg; x.fillRect(0, 0, W, H);
-      x.fillStyle = '#2f5bd3'; x.fillRect(0, 0, W, 14);
-      x.fillStyle = fg; x.globalAlpha = .65; x.font = '600 32px "Inter Tight", system-ui, sans-serif';
-      x.fillText('CONCRET · BAROMÈTRE 2027 · ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase(), 70, 100);
-      x.globalAlpha = 1; x.font = '400 62px Newsreader, Georgia, serif';
-      var y = wrap(x, card.querySelector('h2').textContent, 70, 190, W - 140, 72);
-      var note = card.querySelector('.bx-note');
-      if (note) { x.globalAlpha = .7; x.font = '400 28px "Inter Tight", system-ui, sans-serif'; y = wrap(x, note.textContent.split('. ')[0].replace(/\.$/, '') + '.', 70, y + 4, W - 140, 38); x.globalAlpha = 1; }
-      var top = y + 20, avail = H - 170 - top, cols = imgs.length > 1 ? 2 : 1, rows = Math.ceil(imgs.length / cols), gw = (W - 140 - (cols - 1) * 30) / cols, gh = (avail - (rows - 1) * 24) / rows;
-      imgs.forEach(function (im, i) {
-        var lh = labels[i] ? 40 : 0, s = Math.min(gw / im.w, (gh - lh) / im.h), dw = im.w * s, dh = im.h * s, cx = 70 + (i % cols) * (gw + 30) + (gw - dw) / 2, cy = top + Math.floor(i / cols) * (gh + 24);
-        if (lh) { x.fillStyle = fg; x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.fillText(labels[i], 70 + (i % cols) * (gw + 30), cy + 28); }
-        x.drawImage(im.img, cx, cy + lh, dw, dh);
-      });
-      x.fillStyle = '#2f5bd3'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText('concret2027.fr', 70, H - 90);
-      x.fillStyle = fg; x.globalAlpha = .6; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; x.fillText('Sources : Commission des sondages, instituts, Polymarket', 70, H - 48); x.globalAlpha = 1;
-      var show = function () { document.getElementById('bx-sheet-img').src = c.toDataURL('image/png'); document.getElementById('bx-sheet').hidden = false; document.getElementById('bx-sheet-close').focus(); };
-      try {
-        c.toBlob(function (blob) {
-          var f = blob && new File([blob], 'concret-' + card.id + '.png', { type: 'image/png' });
-          if (f && navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: 'Concret', text: 'concret2027.fr' }).catch(show);
-          else show();
-        });
-      } catch (e) { show(); }
-    }).catch(function () {});
-  }
-  ['premier-tour', 'sondages-et-paris', 'second-tour', 'polymarket'].forEach(function (id) {
-    var card = document.getElementById(id); if (!card) return;
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'bx-share'; b.textContent = 'Partager ce graphique';
-    b.addEventListener('click', function () { share(card); });
-    card.appendChild(b);
-  });
-  document.getElementById('bx-sheet-close').addEventListener('click', function () { document.getElementById('bx-sheet').hidden = true; });
-  document.getElementById('bx-sheet').addEventListener('click', function (e) { if (e.target.id === 'bx-sheet') this.hidden = true; });
+  table('t-pres', P); table('t-gov', G);
 })();
 </script>
 <script>(function () { var n = document.querySelector('.site'); if (!n) return; var f = function () { document.documentElement.style.setProperty('--navh', n.offsetHeight + 'px'); }; f(); if (window.ResizeObserver) new ResizeObserver(f).observe(n); else addEventListener('resize', f); })();</script>
-<script>
-(function () {
-  var AG0 = [
-    { date: '2027-01-26', evenement: 'Décret de convocation des électeurs attendu vers cette date (au plus tard le 7 février) : ouverture des parrainages', source: 'Maire-info', url: 'https://www.maire-info.com/election-presidentielle/presidentielle-un-choix-de-dates-qui-ne-sera-pas-sans-difficulte-pour-les-maires-art26-30951' },
-    { date: '2027-03-12', evenement: 'Date limite de dépôt des parrainages (500 signatures d\'élus)', source: 'Maire-info', url: 'https://www.maire-info.com/election-presidentielle/presidentielle-un-choix-de-dates-qui-ne-sera-pas-sans-difficulte-pour-les-maires-art26-30951' },
-    { date: '2027-04-18', evenement: 'Premier tour de l\'élection présidentielle', source: 'LCP', url: 'https://lcp.fr/actualites/presidentielle-2027-les-dates-du-premier-et-du-second-tour-fixees-438582' },
-    { date: '2027-05-02', evenement: 'Second tour de l\'élection présidentielle', source: 'LCP', url: 'https://lcp.fr/actualites/presidentielle-2027-les-dates-du-premier-et-du-second-tour-fixees-438582' }
-  ];
-  var fd = function (d, y) { return new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', y ? { day: 'numeric', month: 'short', year: 'numeric' } : { day: 'numeric', month: 'short' }); };
-  function li(d, txt, src, url) {
-    var l = document.createElement('li'), a = document.createElement('span'), t = document.createElement('span');
-    a.className = 'd'; a.textContent = d; t.textContent = txt + ' ';
-    if (url) { var k = document.createElement('a'); k.href = url; k.target = '_blank'; k.rel = 'noopener'; k.textContent = src || 'Source'; t.appendChild(k); }
-    l.appendChild(a); l.appendChild(t); return l;
-  }
-  function render(feed) {
-    var ds = feed && feed.datasets || {}, today = new Date(); today.setHours(0, 0, 0, 0);
-    var ag = (ds.agenda_barometre && ds.agenda_barometre.length ? ds.agenda_barometre : AG0).filter(function (a) { return new Date(a.date + 'T23:59:00') >= today; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }).slice(0, 5);
-    var nx = document.getElementById('ag-next'); nx.textContent = '';
-    ag.forEach(function (a) { nx.appendChild(li(fd(a.date, true), a.evenement, a.source, a.url)); });
-    var ev = (ds.evenements || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).slice(0, 5);
-    var ls = document.getElementById('ag-last'); ls.textContent = '';
-    ev.forEach(function (e) { ls.appendChild(li(fd(e.date, true), e.evenement, e.source, e.url)); });
-    ls.parentNode.hidden = !ev.length;
-  }
-  try { fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(render, function () { render(null); }); } catch (e) { render(null); }
-})();
-</script>
-<script>
-(function () {
-  var nf = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }).format(v); };
-  var fd = function (d) { return new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
-  var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
-  function render(feed) {
-    var ul = document.getElementById('today-list'), ds = feed && feed.datasets;
-    if (!ds) { document.getElementById('aujourdhui').hidden = true; return; }
-    var items = [], today = new Date(); today.setHours(0, 0, 0, 0);
-    var ago = function (d) { return Math.round((today - new Date(d + 'T00:00:00')) / 864e5); };
-    // Polymarket : écart entre les deux derniers relevés
-    var ph = ds.polymarket_hist || [], dates = Array.from(new Set(ph.map(function (r) { return r.date; }))).sort();
-    if (dates.length >= 2) {
-      var d1 = dates[dates.length - 1], d0 = dates[dates.length - 2], at = function (c, d) { var r = ph.filter(function (q) { return q.candidat === c && q.date === d; })[0]; return r ? +r.probabilite : null; };
-      var mv = ph.filter(function (r) { return r.date === d1; }).map(function (r) { var a = at(r.candidat, d0); return a == null ? null : { c: r.candidat, v: +r.probabilite, d: +r.probabilite - a }; }).filter(Boolean)
-        .sort(function (a, b) { return Math.abs(b.d) - Math.abs(a.d); }).slice(0, 3);
-      if (mv.length) {
-        var lead = ph.filter(function (r) { return r.date === d1; }).sort(function (a, b) { return b.probabilite - a.probabilite; })[0];
-        items.push('<b>Parieurs (Polymarket), depuis le ' + fd(d0) + ' :</b> ' + mv.map(function (m) {
-          var s = Math.abs(m.d) < 0.05 ? 'stable' : (m.d > 0 ? '▲ +' : '▼ −') + nf(Math.abs(m.d), 1) + ' pt';
-          return esc(m.c) + ' <b>' + s + '</b> (' + nf(m.v, 1) + ' %)';
-        }).join(', ') + '. Favori des parieurs pour le second tour : ' + esc(lead.candidat) + ' (' + nf(+lead.probabilite, 1) + ' %).');
-      }
-    }
-    // Sondages : dernier sondage publié
-    var st = ds.sondages_t1 || [];
-    if (st.length) {
-      var last = st.map(function (r) { return r.date; }).sort().pop(), rows = st.filter(function (r) { return r.date === last; });
-      var inst = Array.from(new Set(rows.map(function (r) { return r.institut; }))), n = ago(last);
-      var top = rows.filter(function (r) { return r.institut === inst[0]; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
-      items.push((n <= 4 ? '<b>Nouveau sondage ' : '<b>Pas de nouveau sondage depuis ' + n + ' jours.</b> Dernier en date : ') + esc(inst.join(', ')) + (n <= 4 ? '</b>' : '') + ' (terrain du ' + esc(rows[0].terrain || fd(last)) + ') : ' +
-        top.map(function (r) { return esc(r.candidat) + ' ' + nf(+r.score, 1) + ' %'; }).join(', ') + '.');
-    }
-    // Événement récent
-    var ev = (ds.evenements || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0];
-    if (ev && ago(ev.date) <= 7) items.push('<b>' + (ago(ev.date) <= 0 ? 'Aujourd\'hui' : 'Le ' + fd(ev.date)) + ' :</b> ' + esc(ev.evenement) + (ev.url ? ' <a href="' + esc(ev.url) + '" target="_blank" rel="noopener">' + esc(ev.source || 'Source') + '</a>' : ''));
-    // Prochain rendez-vous
-    var ag = (ds.agenda_barometre || []).filter(function (a) { return ago(a.date) <= 0; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
-    if (ag) items.push('<b>Prochain rendez-vous, le ' + fd(ag.date) + ' :</b> ' + esc(ag.evenement) + '. Premier tour dans ' + Math.max(0, Math.ceil((new Date('2027-04-18T00:00:00') - today) / 864e5)) + ' jours.');
-    if (feed.updated_iso) { var u = new Date(feed.updated_iso); document.getElementById('today-since').textContent = '· mis à jour le ' + u.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: 'Europe/Paris' }); }
-    ul.innerHTML = items.map(function (t) { return '<li>' + t + '</li>'; }).join('');
-    // Depuis votre dernière visite (gardé dans le navigateur du visiteur uniquement).
-    // « cur » = début de la visite en cours ; « base » = visite précédente. Une nouvelle visite commence après 1 h d'absence.
-    try {
-      var now = Date.now(), vis = document.getElementById('visit');
-      var pmNow = {}; (ds.polymarket || []).forEach(function (r) { if (r.candidat !== 'Autres candidats') pmNow[r.candidat] = +r.probabilite; });
-      var lastPoll = (ds.sondages_t1 || []).map(function (r) { return r.date; }).sort().pop() || '';
-      var snap = { t: now, poll: lastPoll, pm: pmNow }, stv = JSON.parse(localStorage.getItem('baro-visites') || 'null');
-      if (!stv) { var old = JSON.parse(localStorage.getItem('baro-visite') || 'null'); stv = old ? { base: null, cur: old, seen: old.t } : { base: null, cur: snap, seen: now }; }
-      else if (now - stv.seen > 3600e3) { stv.base = stv.cur; stv.cur = snap; }
-      stv.seen = now; localStorage.setItem('baro-visites', JSON.stringify(stv));
-      var lv = stv.base;
-      if (lv) {
-        var days = Math.round((now - lv.t) / 864e5), when = days >= 1 ? 'il y a ' + days + ' jour' + (days > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h';
-        var polls = {}; (ds.sondages_t1 || []).forEach(function (r) { if (r.date > (lv.poll || '')) polls[r.date + r.institut] = r.institut; });
-        var np = Object.keys(polls).length, parts = [];
-        parts.push(np ? '<b>' + np + ' nouveau' + (np > 1 ? 'x' : '') + ' sondage' + (np > 1 ? 's' : '') + '</b> (' + esc(Array.from(new Set(Object.keys(polls).map(function (k) { return polls[k]; }))).join(', ')) + ')' : 'aucun nouveau sondage');
-        var mv = Object.keys(pmNow).filter(function (c) { return lv.pm && lv.pm[c] != null; }).map(function (c) { return { c: c, d: pmNow[c] - lv.pm[c] }; }).filter(function (m) { return Math.abs(m.d) >= 0.5; }).sort(function (a, b) { return Math.abs(b.d) - Math.abs(a.d); }).slice(0, 3);
-        parts.push(mv.length ? 'chez les parieurs, ' + mv.map(function (m) { return esc(m.c) + ' <b>' + (m.d > 0 ? '▲ +' : '▼ −') + nf(Math.abs(m.d), 1) + ' pt</b>'; }).join(', ') : 'peu de mouvement chez les parieurs');
-        var ne = (ds.evenements || []).filter(function (e) { return e.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
-        if (ne) parts.push('<b>' + ne + ' événement' + (ne > 1 ? 's' : '') + '</b> de campagne');
-        vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + parts.join(' ; ') + '.';
-      } else vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.';
-      vis.hidden = false;
-    } catch (e) {}
-    if (!items.length) document.getElementById('aujourdhui').hidden = true;
-  }
-  try { fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(render, function () { render(null); }); } catch (e) { render(null); }
-})();
-</script>
 </body>
 </html>
