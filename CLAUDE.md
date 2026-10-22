@@ -13,6 +13,8 @@ Tout chiffre publié a une source, et il a été lu à cette source. Rien d'inve
 
 ## Où sont les données
 
+**`data.json` contient `updated`, `updated_iso`, `datasets`, `series` et `textes`. Toute écriture doit relire le fichier entier, modifier ce qu'il faut et réécrire l'objet complet : ne jamais supprimer `series` ni `textes` (sans eux, les pages Finances, Éducation et l'accueil n'affichent plus rien).**
+
 Les pages HTML ne contiennent pas de chiffres : seulement de la mise en forme et des calculs.
 
 - `data.json`
@@ -27,7 +29,7 @@ Les pages HTML ne contiennent pas de chiffres : seulement de la mise en forme et
 
 ## Mise à jour quotidienne
 
-La tâche planifiée « Concret — mise à jour quotidienne (midi) » ne touche jamais au HTML. Elle lit `a-faire`, ne traite que les indicateurs dus, met à jour `data.json` et `donnees/calendrier.json` selon les règles du calendrier, lance `verifier`, publie seulement si le contrôle passe, et envoie la notification qu'il produit (une ligne si tout va bien, une ligne par problème, une ligne par texte à valider).
+La tâche planifiée « Concret — mise à jour quotidienne » (son texte de référence est dans `outils/prompt_tache.md`) ne touche jamais au HTML. Elle lit `a-faire`, ne traite que les indicateurs dus, met à jour `data.json` et `donnees/calendrier.json` selon les règles du calendrier, lance `verifier`, publie seulement si le contrôle passe, et envoie la notification qu'il produit (une ligne si tout va bien, une ligne par problème, une ligne par texte à valider).
 
 - Textes factuels (`textes`, `FACTS`, `QUIZ`, `EVENTS`) : mis à jour automatiquement quand un indicateur lié change, en une phrase factuelle (ce qui a changé, de combien, selon quelle source), sans adjectif ni jugement.
 - Récits (titres, conclusions, `og:description`) : jamais modifiés par la tâche. Quand `verifier` en signale un, il attend la validation dans `donnees/a_valider.json`.
