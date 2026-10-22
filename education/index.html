@@ -471,49 +471,24 @@ footer p { margin: 0; } footer a { color: inherit; }
 <script>
 (function () {
 function main(FEED) {
+  // Toutes les données chiffrées viennent de data.json (séries, paramètres sourcés, textes).
+  var SER = FEED.series.education, P = function (k) { return SER.P[k].v; };
   var fmt = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(v); };
   var nfmt = function (n) { return fmt(Math.round(n * 10) / 10, 1); };
   document.getElementById('today').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
   // ===== Données annuelles 2002-2025 : France et Union européenne (Eurostat ; chômage des 15-24 ans : Banque mondiale, OIT) =====
   var Y0 = 2002;
-  var S = {
-    el: { l: 'Décrochage', fr: [13.4,12.7,12.3,12.5,12.7,12.8,11.8,12.4,12.7,12.3,11.8,9.7,8.8,9.2,8.8,8.8,8.7,8.2,8.0,7.8,7.6,7.6,7.9,7.2],
-          eu: [16.9,16.4,16.0,15.6,15.2,14.7,14.3,14.0,13.8,13.2,12.6,11.8,11.1,11.0,10.6,10.5,10.5,10.1,10.0,9.7,9.6,9.6,9.6,9.1],
-          de: [12.5,12.8,12.1,13.5,13.7,12.5,11.8,11.1,11.8,11.6,10.5,9.8,9.5,10.1,10.3,10.1,10.3,10.3,10.1,12.3,12.5,13.0,13.5,13.1], low: true, br: [2003,2006,2013,2014,2021,2024] },
-    ne: { l: 'Ni emploi ni études', fr: [13.2,12.8,13.1,13.2,13.2,12.8,12.6,14.7,14.8,14.7,15.1,13.8,14.1,14.7,14.3,13.8,13.6,13.0,14.0,12.8,12.0,12.3,12.7,12.9],
-          eu: [15.9,15.9,15.6,15.3,14.1,13.2,13.0,14.8,15.4,15.4,16.0,16.1,15.7,15.2,14.5,13.7,13.1,12.5,13.8,13.1,11.7,11.3,11.2,11.0],
-          de: [10.9,12.6,12.9,13.8,12.7,11.6,11.0,11.4,10.8,9.7,9.3,8.7,8.7,8.5,8.9,8.5,7.9,7.6,9.1,9.3,8.6,8.8,8.9,9.5], low: true, br: [2003,2006,2013,2014,2021,2024] },
-    te: { l: 'Diplômés du supérieur', fr: [35.2,38.0,38.5,39.9,41.5,41.4,40.6,42.9,42.7,42.8,42.6,43.9,44.3,44.8,44.2,44.5,47.0,48.2,49.4,50.3,50.4,51.9,53.1,55.8],
-          eu: [23.1,24.6,26.3,27.2,28.1,28.9,29.9,31.2,32.2,33.1,34.1,35.2,35.9,36.5,36.8,37.6,38.7,39.6,40.7,41.5,42.0,43.1,43.9,44.8],
-          de: [21.0,21.8,22.9,22.5,22.0,22.6,23.9,25.7,26.0,27.6,28.9,29.9,28.4,29.6,30.5,31.3,32.3,33.3,35.3,36.9,36.8,37.9,39.1,40.9], low: false, br: [2003,2013,2014,2021,2024] },
-    yu: { l: 'Chômage des jeunes', fr: [18.8,17.2,19.7,21.2,22.4,19.6,19.2,24.0,23.6,23.0,24.9,24.4,24.8,25.3,24.9,22.6,21.0,19.9,20.4,19.3,17.9,17.4,18.6,18.9],
-          eu: [21.0,21.0,21.3,21.4,19.5,17.0,16.9,21.5,22.9,23.7,26.0,26.9,26.0,24.2,22.4,20.1,18.1,17.0,19.0,18.7,16.4,16.2,16.2,16.2],
-          de: [9.3,11.0,13.0,15.5,13.4,11.8,10.9,11.3,10.4,8.9,8.1,7.8,7.6,7.3,7.1,6.8,6.2,5.9,7.9,6.7,6.0,6.0,6.6,6.9],
-          us: [11.9,12.4,11.8,11.2,10.4,10.5,12.8,17.5,18.4,17.3,16.2,15.6,13.4,11.6,10.4,9.2,8.6,8.4,14.9,9.7,8.1,8.0,8.9,9.3], low: true, br: [] },
-    pi: { l: 'PISA' },
-    eq: { l: 'Origine sociale' }
-  };
+  var S = SER.S;
   // PISA : scores moyens par domaine, seulement pour les vagues comparables selon l'OCDE (lecture depuis 2000, maths depuis 2003, sciences depuis 2006)
-  var PI = {
-    m: { l: 'Mathématiques', y: [2003,2006,2009,2012,2015,2018,2022,2025], fr: [511,496,497,495,493,495,474,458], oe: [500,498,496,494,490,489,472,463], de: [503,504,513,514,506,500,475,464], us: [483,474,487,481,470,478,465,463] },
-    r: { l: 'Compréhension de l\'écrit', y: [2000,2003,2006,2009,2012,2015,2018,2022,2025], fr: [505,496,488,496,505,499,493,474,456], oe: [500,494,492,493,496,493,487,476,461], de: [484,491,495,497,508,509,498,480,465], us: [504,495,null,500,498,497,505,504,490] },
-    s: { l: 'Sciences', y: [2006,2009,2012,2015,2018,2022,2025], fr: [495,498,499,495,493,487,483], oe: [500,501,501,493,489,485,482], de: [516,520,524,509,503,492,486], us: [489,502,497,496,502,499,502] }
-  };
-  var WAVES = [2000,2003,2006,2009,2012,2015,2018,2022,2025];
+  var PI = SER.PI;
+  var WAVES = SER.WAVES;
   // Poids de l'origine sociale : écart de score en maths entre le quart d'élèves le plus favorisé et le quart le plus défavorisé
-  var EQ = { y: [2003, 2012, 2022, 2025], fr: [104, 119, 113, 95], oe: [98, 90, 94, 83] };
+  var EQ = SER.EQ;
   // Dépense publique d'éducation, % du PIB (Eurostat, COFOG ; États-Unis : Unesco, définition un peu différente)
-  var SP = { fr: [5.7,5.7,5.5,5.5,5.4,5.2,5.3,5.6,5.5,5.3,5.3,5.3,5.3,5.3,5.2,5.2,5.1,5.0,5.2,5.1,5.0,5.0,5.1,null],
-    eu: [null,null,null,null,null,null,null,null,5.0,4.9,4.8,4.8,4.8,4.7,4.7,4.6,4.6,4.6,4.9,4.7,4.6,4.7,4.7,null],
-    de: [4.1,4.1,4.1,4.1,4.0,3.9,3.9,4.3,4.3,4.2,4.2,4.2,4.2,4.2,4.1,4.1,4.2,4.3,4.6,4.4,4.4,4.5,4.5,null],
-    us: [null,null,null,null,null,null,null,null,null,null,null,null,null,4.9,4.8,5.1,4.9,5.0,5.4,5.4,null,null,null,null] };
+  var SP = SER.SP;
   // Classement de Shanghai (ARWU) : nombre d'universités dans le top 100, 2003-2025, et rang de la meilleure université française
-  var ARWU = { y: [2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
-    fr: [2,4,4,4,4,3,3,3,3,3,4,4,4,3,3,3,3,5,4,4,4,4,4,4],
-    de: [5,7,5,5,6,6,5,5,6,4,4,4,4,3,4,4,4,4,4,4,4,4,4,4],
-    us: [58,51,53,54,54,54,55,54,53,53,52,52,51,50,48,null,45,41,40,39,38,38,37,37],
-    best: [65,41,46,45,39,42,40,39,40,37,37,35,36,39,40,36,37,14,13,16,15,12,13,13] };
+  var ARWU = SER.ARWU;
   var KEYS = ['el', 'ne', 'te', 'yu', 'pi', 'eq'], CURVES = ['el', 'ne', 'te', 'yu'];
   var at = function (arr, y) { return arr[y - Y0]; };
   function pisaGap(w0, w1) {
@@ -543,17 +518,8 @@ function main(FEED) {
     return (c.low ? df < de : df > de) ? 1 : 0;
   }
 
-  var GOVS = [
-    { n: 'Jean-Pierre Raffarin', p: 'Chirac', y0: 2002, y1: 2004 }, { n: 'Dominique de Villepin', p: 'Chirac', y0: 2005, y1: 2006 },
-    { n: 'François Fillon', p: 'Sarkozy', y0: 2007, y1: 2011 }, { n: 'Jean-Marc Ayrault', p: 'Hollande', y0: 2012, y1: 2013 },
-    { n: 'Manuel Valls', p: 'Hollande', y0: 2014, y1: 2016 }, { n: 'Édouard Philippe', p: 'Macron', y0: 2017, y1: 2019 },
-    { n: 'Jean Castex', p: 'Macron', y0: 2020, y1: 2021 }, { n: 'Élisabeth Borne', p: 'Macron', y0: 2022, y1: 2023 },
-    { n: 'Gabriel Attal', p: 'Macron', y0: 2024, y1: 2024 }, { n: 'François Bayrou', p: 'Macron', y0: 2025, y1: 2025 }
-  ];
-  var PRES = [
-    { n: 'Jacques Chirac', p: 'noté sur 2003-2006 seulement', y0: 2003, y1: 2006 }, { n: 'Nicolas Sarkozy', p: '', y0: 2007, y1: 2011 },
-    { n: 'François Hollande', p: '', y0: 2012, y1: 2016 }, { n: 'Emmanuel Macron', p: 'en exercice', y0: 2017, y1: 2025 }
-  ];
+  var GOVS = SER.GOVS;
+  var PRES = SER.PRES;
   var pmOf = function (y) { return GOVS.filter(function (g) { return y >= g.y0 && y <= g.y1; })[0]; };
   function evaluate(g) { g.w = {}; g.y = {}; KEYS.forEach(function (k) { g.w[k] = []; g.y[k] = []; for (var y = g.y0; y <= g.y1; y++) { var m = match(k, y); if (m != null) g.w[k].push(m); g.y[k].push({ y: y, pt: m }); } }); }
   // ===== Détail d'un critère, pour vérifier chaque point =====
@@ -849,9 +815,7 @@ function main(FEED) {
   }
 
   // ===== Ce mois-ci : chômage des moins de 25 ans (Eurostat, mensuel) =====
-  var MO = { start: [2024, 8],
-    fr: [20.3,19.2,18.5,18.3,18.6,20.1,18.9,18.8,19.2,19.0,18.9,19.4,20.4,21.5,21.5,21.3,21.1,21.1,21.3,21.7,21.6,21.2,20.8,20.6],
-    ea: [14.8,14.6,14.5,14.4,14.6,14.9,14.8,14.5,14.6,14.6,14.6,14.8,15.0,15.3,15.1,15.1,15.1,15.2,15.3,15.2,15.2,15.2,15.1,15.0] };
+  var MO = SER.MO;
   (function () {
     var fm = FEED && FEED.datasets && FEED.datasets.education_mois; if (!fm) return;
     var key = function (i) { var d = new Date(MO.start[0], MO.start[1] + i, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
@@ -889,71 +853,18 @@ function main(FEED) {
   }
 
   // ===== Le chiffre du jour =====
-  var BUDGET = 64.5e9, PERSEC = BUDGET / (365 * 86400), POP = 69e6, SMIC_AN = 1477.93 * 12;
+  var BUDGET = P('budget_education'), PERSEC = BUDGET / (365 * 86400), POP = P('population'), SMIC_AN = P('smic_net_mensuel') * 12;
   function tick() { var m = new Date(); m.setHours(0, 0, 0, 0); document.getElementById('edu-since').textContent = fmt(PERSEC * (Date.now() - m.getTime()) / 1000 / 1e6, 1) + ' M€'; }
   tick(); setInterval(tick, 1000);
   var nU = MO.fr.length - 1;
   var lastEq = EQ.fr.length - 1;
-  var FACTS = [
-    'L\'Éducation nationale dépense <b>177 M€ par jour</b>, soit <b>' + fmt(BUDGET / POP) + ' €</b> par Français et par an.',
-    'En 2000, la France était <b>11<sup>e</sup></b> en maths à PISA. En 2025, elle est <b>30<sup>e</sup></b> sur 91 pays.',
-    'En trois ans, les élèves français de 15 ans ont perdu <b>18 points</b> en lecture et <b>16 points</b> en maths à PISA.',
-    '<b>Un élève de 15 ans sur trois</b> ne maîtrise pas les bases en compréhension de l\'écrit (PISA 2025). En 2000, c\'était 15 %.',
-    'À 17 ans, <b>14 % des jeunes</b> ont des difficultés de lecture, et <b>6 %</b> sont en situation d\'illettrisme.',
-    'En maths, l\'écart entre élèves favorisés et défavorisés atteint <b>95 points</b> en France, contre 83 dans l\'OCDE.',
-    'La France dépense <b>5,1 % de son PIB</b> pour l\'éducation, contre 4,7 % dans l\'UE : <b>≈ 12 Md€ de plus par an</b>.',
-    '<b>55,8 %</b> des 25-34 ans sont diplômés du supérieur en France, contre 44,8 % dans l\'UE et 40,9 % en Allemagne.',
-    'Le décrochage scolaire est tombé à <b>7,2 %</b> en France, sous la moyenne européenne (9,1 %) et loin de l\'Allemagne (13,1 %).',
+  var FACTS = SER.FACTS.concat([
+    'L\'Éducation nationale dépense <b>' + fmt(BUDGET / 365 / 1e6) + ' M€ par jour</b>, soit <b>' + fmt(BUDGET / POP) + ' €</b> par Français et par an.',
     'Chez les moins de 25 ans, le chômage atteint <b>' + fmt(MO.fr[nU], 1) + ' %</b> en France, contre ' + fmt(MO.ea[MO.ea.length - 1], 1) + ' % dans la zone euro.',
     'Les 12 Md€ que la France dépense en plus de la moyenne européenne paieraient <b>' + fmt(Math.round(12e9 / SMIC_AN / 1000) * 1000) + ' salariés au Smic</b> pendant un an.',
-    '<b>12,9 %</b> des 15-29 ans ne travaillent pas et n\'étudient pas en France, contre 11 % dans l\'UE et 9,5 % en Allemagne.',
-    'Maths, PISA 2025 : France <b>458</b>, Allemagne 464, États-Unis 463, moyenne de l\'OCDE 463.',
-    'En 2003, la France faisait <b>11 points de mieux</b> que la moyenne de l\'OCDE en maths. En 2025, <b>5 points de moins</b>.',
-    'Élèves en difficulté en maths : <b>36 %</b> en 2025, contre 29 % en 2022. Plus d\'un élève sur trois.',
-    'En sciences, la France obtient <b>483 points</b> à PISA 2025, au niveau de la moyenne de l\'OCDE (482).',
-    'En lecture, les élèves américains obtiennent <b>490 points</b> à PISA 2025, soit 34 de plus que les élèves français (456).',
-    'En 2012, l\'Allemagne devançait la France de <b>19 points</b> en maths. En 2025, de 6 points : les deux ont reculé.',
-    'Le décrochage scolaire a presque été divisé par deux en France : <b>13,4 %</b> en 2002, <b>7,2 %</b> en 2025.',
-    'En 2002, 35 % des 25-34 ans étaient diplômés du supérieur en France. En 2025, <b>55,8 %</b>.',
-    'Chômage des 15-24 ans en 2025 : <b>18,9 %</b> en France, 9,3 % aux États-Unis, 6,9 % en Allemagne.',
-    'Depuis 2015, le chômage des jeunes est plus élevé en France que dans l\'Union européenne, chaque année.',
     'L\'écart social en maths était de <b>' + EQ.fr[0] + ' points</b> en 2003, ' + EQ.fr[1] + ' en 2012 et ' + EQ.fr[lastEq] + ' en 2025. Il baisse surtout parce que les meilleurs élèves reculent.',
-    'En 2002, la France consacrait <b>5,7 %</b> de son PIB à l\'éducation. En 2024, <b>5,1 %</b>. L\'Allemagne est passée de 4,1 % à 4,5 %.',
-    'L\'Allemagne dépense <b>4,5 % de son PIB</b> pour l\'éducation, la France 5,1 %. En maths à PISA, l\'Allemagne fait 6 points de mieux.',
-    'Seuls <b>4 %</b> des élèves français font partie des très bons lecteurs à PISA 2025.',
-    'Près de <b>3 élèves sur 4</b> atteignent le niveau de base en sciences à PISA 2025.',
-    'Entre 2018 et 2022, la France a perdu <b>21 points</b> en maths à PISA : la plus forte baisse de son histoire.',
-    'En lecture, la France faisait 9 points de mieux que l\'OCDE en 2012 (505 contre 496). En 2025, 5 points de moins.',
-    'Le budget de l\'Éducation nationale représente environ <b>2 000 €</b> dépensés chaque seconde.',
-    'Environ <b>11,8 millions d\'élèves</b> à la rentrée 2025 : le budget de l\'enseignement scolaire représente près de 5 500 € par élève et par an, hors pensions.',
-    'Lors de la crise de 2009, la part des 15-29 ans sans emploi ni études est passée de <b>12,6 %</b> à <b>14,7 %</b> en un an.',
-    'Le chômage des 15-24 ans a culminé à <b>25,3 %</b> en 2015 en France.',
-    'En 2020, année du Covid, 14 % des 15-29 ans ne travaillaient pas et n\'étudiaient pas en France.',
-    'L\'Union européenne a réduit sa part de jeunes sans emploi ni études de 15,9 % à <b>11 %</b> depuis 2002. La France, de 13,2 % à 12,9 %.',
-    'L\'Allemagne a divisé par deux le chômage de ses jeunes depuis 2005 : de <b>15,5 %</b> à 6,9 %.',
-    'En 2010, le chômage des jeunes atteignait 18,4 % aux États-Unis et 23,6 % en France.',
-    'PISA teste les élèves de <b>15 ans</b> : ceux de 2025 sont nés en 2010 et sont entrés au CP en 2016.',
-    'La prochaine enquête PISA aura lieu en <b>2029</b>. Le gouvernement vise 20 points de plus.',
-    'Aux États-Unis, la lecture a reculé de <b>14 points</b> entre 2022 et 2025, autant que la moyenne de l\'OCDE.',
-    'En 2003, l\'écart social en maths était déjà plus fort en France (104 points) que dans l\'OCDE (98).',
-    'Dans l\'OCDE, l\'écart en maths entre élèves favorisés et défavorisés est passé de 98 points en 2003 à <b>83</b> en 2025.',
-    'Le décrochage concerne les jeunes sortis sans diplôme. Les jeunes « ni emploi ni études » incluent aussi les diplômés : <b>12,9 %</b> des 15-29 ans.',
-    'L\'avance de la France en diplômés du supérieur sur l\'UE : 12 points en 2002, <b>11 points</b> en 2025.',
-    'Depuis 2002, la France a toujours eu moins de décrocheurs que la moyenne de l\'Union européenne.',
-    'En sciences, l\'Allemagne a perdu <b>38 points</b> à PISA depuis 2012 (524 à 486), la France 16 (499 à 483).',
-    'En maths, les États-Unis sont stables à PISA depuis 2022 (465 puis 463), la France perd 16 points.',
-    'En maths, la moyenne de l\'OCDE est passée de 500 points en 2003 à <b>463</b> en 2025. La France, de 511 à <b>458</b>.',
-    'Chômage des moins de 25 ans il y a un an : <b>' + fmt(MO.fr[Math.max(0, nU - 12)], 1) + ' %</b>. Aujourd\'hui : ' + fmt(MO.fr[nU], 1) + ' %.',
-    'Un point de PIB consacré à l\'éducation, c\'est environ <b>29 Md€</b> par an en France.',
-    'À PISA 2025, la France est 30<sup>e</sup> en maths sur 91 pays et économies participants.',
-    'En lecture, la France est sous la moyenne de l\'OCDE depuis 2022 (474 contre 476, puis 456 contre 461).',
-    'En maths, la France repasse sous la moyenne de l\'OCDE en 2025 (458 contre 463), une première depuis 2006.',
-    'En 2025, 13,1 % des jeunes Allemands de 18-24 ans ont quitté l\'école sans diplôme du secondaire, contre 7,2 % des jeunes Français.',
-    'La France compte plus de jeunes diplômés du supérieur que l\'Allemagne : <b>55,8 %</b> des 25-34 ans contre 40,9 %.',
-    'Les jeunes Français trouvent moins vite un emploi : 12,9 % des 15-29 ans ne travaillent pas et n\'étudient pas, 3,4 points de plus qu\'en Allemagne.',
-    'En 2009, en pleine crise, la dépense d\'éducation est montée à <b>5,6 %</b> du PIB, avant de redescendre à 5,0 % en 2019.',
-    'En maths, la moyenne de l\'OCDE a baissé de 9 points entre 2022 et 2025. La France, de 16.'
-  ];
+    'Chômage des moins de 25 ans il y a un an : <b>' + fmt(MO.fr[Math.max(0, nU - 12)], 1) + ' %</b>. Aujourd\'hui : ' + fmt(MO.fr[nU], 1) + ' %.'
+  ]);
   var day = new Date(); day.setHours(0, 0, 0, 0);
   var idx = Math.floor((day - new Date(2026, 0, 1)) / 864e5);
   document.getElementById('daily-lab').textContent = 'Le chiffre du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
@@ -977,16 +888,7 @@ function main(FEED) {
   document.getElementById('teaser-today').innerHTML = 'Budget <b>177&nbsp;M€</b> par jour · Lecture à 17 ans : <b>14&nbsp;%</b> en difficulté · Le chiffre du jour';
 
   // ===== Question du jour =====
-  var QUIZ = [
-    { q: 'Quel était le rang de la France en maths à PISA en 2000 ?', o: ['3e', '11e', '25e', '40e'], a: 1, e: '11e. En 2025, elle est 30e sur 91 pays.' },
-    { q: 'Quelle part des jeunes de 17 ans a des difficultés de lecture ?', o: ['4 %', '9 %', '14 %', '25 %'], a: 2, e: '14 % à la Journée défense et citoyenneté 2025, dont 6 % en situation d\'illettrisme.' },
-    { q: 'La France dépense-t-elle plus ou moins que la moyenne européenne pour l\'éducation ?', o: ['Plus', 'Moins', 'Pareil'], a: 0, e: 'Plus : 5,1 % du PIB contre 4,7 % dans l\'UE, soit environ 12 Md€ par an.' },
-    { q: 'La part de jeunes diplômés du supérieur est-elle plus élevée en France ou dans l\'UE ?', o: ['En France', 'Dans l\'UE'], a: 0, e: 'En France : 55,8 % des 25-34 ans, contre 44,8 % dans l\'UE.' },
-    { q: 'De combien de points les élèves français ont-ils reculé en lecture à PISA entre 2022 et 2025 ?', o: ['2 points', '8 points', '18 points', '40 points'], a: 2, e: '18 points : de 474 à 456. En maths, le recul est de 16 points.' },
-    { q: 'Le décrochage scolaire est-il plus fréquent en France que dans l\'UE ?', o: ['Oui', 'Non'], a: 1, e: 'Non : 7,2 % des 18-24 ans en France, contre 9,1 % dans l\'UE. C\'est l\'un des points forts du système français.' },
-    { q: 'Quel est le budget 2026 de l\'Éducation nationale, hors pensions ?', o: ['24 Md€', '44 Md€', '64,5 Md€', '104 Md€'], a: 2, e: '64,5 Md€, soit 177 M€ par jour.' },
-    { q: 'Le poids de l\'origine sociale sur les résultats est-il plus fort en France que dans l\'OCDE ?', o: ['Plus fort', 'Plus faible'], a: 0, e: 'Plus fort : 95 points d\'écart en maths entre élèves favorisés et défavorisés, contre 83 dans l\'OCDE.' }
-  ];
+  var QUIZ = SER.QUIZ;
   var Q = QUIZ[((idx % QUIZ.length) + QUIZ.length) % QUIZ.length];
   document.getElementById('quiz-day').textContent = 'Question du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
   document.getElementById('quiz-q').textContent = Q.q;
@@ -1001,16 +903,8 @@ function main(FEED) {
 
   // ===== Actualité =====
   (function () {
-    var A = (FEED && FEED.datasets && FEED.datasets.actu_education && FEED.datasets.actu_education.length) ? FEED.datasets.actu_education : [
-      { date: '2026-09-08', texte: 'PISA 2025 : la France recule de 16 points en maths et de 18 points en lecture par rapport à 2022, et passe sous la moyenne de l\'OCDE dans les trois domaines.', source: 'Ministère de l\'Éducation nationale', url: 'https://www.education.gouv.fr/sites/default/files/document/pisa-2025-une-baisse-des-r-sultats-commune-l-ocde-un-rel-vement-poursuivre-520338.pdf' },
-      { date: '2026-08-15', texte: 'Classement de Shanghai 2026 : quatre universités françaises dans le top 100 mondial, Paris-Saclay reste 13e.', source: 'L\'Étudiant', url: 'https://www.letudiant.fr/etudes/fac/classement-de-shanghai-2026-paris-saclay-psl-et-sorbonne-universite-restent-le-top-3-francais.html' }
-    ];
-    var AGE = (FEED && FEED.datasets && FEED.datasets.agenda_education && FEED.datasets.agenda_education.length) ? FEED.datasets.agenda_education : [
-      { quand: 'Début novembre', evenement: 'Chômage des moins de 25 ans de septembre (Eurostat)' },
-      { quand: '4e trimestre', evenement: 'L\'état de l\'École 2026 : le bilan annuel des indicateurs de l\'Éducation nationale (DEPP)', url: 'https://www.education.gouv.fr/depp/calendrier-des-publications-statistiques-469412', source: 'Calendrier DEPP' },
-      { quand: '4e trimestre', evenement: 'Nombre d\'élèves à la rentrée 2026, écoles, collèges et lycées (DEPP)', url: 'https://www.education.gouv.fr/depp/calendrier-des-publications-statistiques-469412', source: 'Calendrier DEPP' },
-      { quand: 'Mi-août 2027', evenement: 'Classement de Shanghai 2027' }
-    ];
+    var A = (FEED && FEED.datasets && FEED.datasets.actu_education && FEED.datasets.actu_education.length) ? FEED.datasets.actu_education : [];
+    var AGE = (FEED && FEED.datasets && FEED.datasets.agenda_education && FEED.datasets.agenda_education.length) ? FEED.datasets.agenda_education : [];
     var ag = document.getElementById('agenda-edu');
     AGE.forEach(function (a) {
       var li = document.createElement('li'), d = document.createElement('span'), t = document.createElement('span');
@@ -1130,13 +1024,17 @@ function main(FEED) {
   var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });
 }
   var started = false;
-  function go(feed) { if (started) return; started = true; main(feed); }
+  function go(feed) {
+    if (started) return; started = true;
+    // Sans data.json, aucun chiffre n'est affiché plutôt qu'un chiffre périmé.
+    if (!feed || !feed.series) { var u = document.getElementById('upd'); if (u) u.textContent = 'Les données n\'ont pas pu être chargées. Rechargez la page.'; return; }
+    main(feed);
+  }
   try {
     fetch('../data.json?t=' + Date.now(), { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(go, function () { go(null); });
   } catch (e) { go(null); }
-  setTimeout(function () { go(null); }, 4000);
 })();
 </script>
 <script>(function () { var n = document.querySelector('.site'); if (!n) return; var f = function () { document.documentElement.style.setProperty('--navh', n.offsetHeight + 'px'); }; f(); if (window.ResizeObserver) new ResizeObserver(f).observe(n); else addEventListener('resize', f); })();</script>
