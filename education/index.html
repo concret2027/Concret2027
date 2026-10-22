@@ -213,7 +213,12 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .gov.pending .who span { font-style: italic; }
 
 /* Graphes */
-.longbox { display: grid; gap: 4px; }
+.longbox { display: grid; gap: 6px; padding: 12px; border-radius: 10px; background: var(--band); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--fg); border-radius: 10px; overflow: hidden; }
+.seg button { font: inherit; font-size: 13.5px; font-weight: 600; padding: 9px 8px; border: 0; background: var(--panel); color: var(--fg); cursor: pointer; line-height: 1.25; }
+.seg button small { display: block; font-weight: 400; font-size: 11px; opacity: .75; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg button:focus-visible { outline: 2px solid var(--fr); outline-offset: -3px; }
 .charts3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
 .charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
 .chart { position: relative; min-width: 0; }
@@ -338,7 +343,7 @@ footer p { margin: 0; } footer a { color: inherit; }
           <tr><td>Ni emploi ni études<span>Mesure les jeunes à l'arrêt, diplômés ou non. Tous les 15-29 ans qui ne travaillent pas, n'étudient pas et ne suivent aucune formation (les « NEET »). Un jeune diplômé qui cherche un emploi y figure, pas dans le décrochage. La France marque le point si leur part baisse plus que dans l'UE.</span></td></tr>
           <tr><td>Diplômés du supérieur<span>La part des 25-34 ans diplômés du supérieur. La France marque le point si elle progresse plus vite que dans l'UE.</span></td></tr>
           <tr><td>Chômage des jeunes<span>Le chômage des 15-24 ans. La France marque le point s'il baisse plus, ou monte moins, que dans l'UE.</span></td></tr>
-          <tr><td>PISA (compte triple)<span>Le niveau des élèves de 15 ans en maths, en lecture et en sciences. À chaque vague, la France marque le point si son score évolue mieux que la moyenne de l'OCDE (moyenne des domaines comparables). Le résultat compte pour chacune des années écoulées depuis la vague précédente : PISA mesure plusieurs années d'école, pas la seule année du test.</span></td></tr>
+          <tr><td>PISA (compte triple)<span>Par défaut, chaque résultat est réparti sur les dix années de scolarité des élèves testés (voir le choix sous la règle). Le niveau des élèves de 15 ans en maths, en lecture et en sciences. À chaque vague, la France marque le point si son score évolue mieux que la moyenne de l'OCDE (moyenne des domaines comparables). Le résultat compte pour chacune des années écoulées depuis la vague précédente : PISA mesure plusieurs années d'école, pas la seule année du test.</span></td></tr>
           <tr><td>Origine sociale<span>L'écart en maths entre le quart des élèves le plus favorisé et le quart le plus défavorisé. La France marque le point si cet écart se réduit plus (ou augmente moins) que dans l'OCDE. Mesuré en 2003, 2012, 2022 et 2025 ; même règle de répartition que PISA.</span></td></tr>
         </tbody></table>
         <div class="ex">
@@ -350,8 +355,11 @@ footer p { margin: 0; } footer a { color: inherit; }
       </div>
     </details>
     <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
-    <div class="longbox"><button class="chip" type="button" id="long-toggle" aria-pressed="false">Tenir compte du temps long de l'école</button>
-    <p class="note" id="long-note">Activé, chaque résultat PISA est réparti sur les dix années de scolarité des élèves testés : un élève de 15 ans testé en 2022 est à l'école depuis 2013. Chaque gouvernement de la période en reçoit sa part, au lieu que tout soit attribué à celui en place l'année du test. Même règle pour l'origine sociale.</p></div>
+    <div class="longbox">
+      <span class="eyebrow" style="margin:0">À qui attribuer les résultats PISA ?</span>
+      <div class="seg" role="group" aria-label="Mode de calcul PISA"><button type="button" id="mode-long" aria-pressed="true">Aux dix années d'école <small>par défaut</small></button><button type="button" id="mode-test" aria-pressed="false">À l'année du test</button></div>
+      <p class="note" id="long-note"></p>
+    </div>
     <span class="eyebrow" style="margin:0">Les présidents</span>
     <p class="note">Touchez une barre pour voir le détail.</p>
     <div class="chart" id="rank-pres"></div>
@@ -497,7 +505,7 @@ function main(FEED) {
     return d.length ? d3.mean(d) : null;
   }
   function waveOf(ws, y) { for (var i = 1; i < ws.length; i++) if (y > ws[i - 1] && y <= ws[i]) return [ws[i - 1], ws[i]]; return null; }
-  var LONG = false; try { LONG = localStorage.getItem('edu-long') === '1'; } catch (e) {}
+  var LONG = true; try { LONG = localStorage.getItem('edu-long2') !== '0'; } catch (e) {}
   function waveRes(k, W) {
     if (k === 'pi') { var i = WAVES.indexOf(W); if (i < 1) return null; var g = pisaGap(WAVES[i - 1], W); return g == null ? null : Math.abs(g) < 0.5 ? 0.5 : g > 0 ? 1 : 0; }
     var j = EQ.y.indexOf(W); if (j < 1) return null; var e = (EQ.fr[j] - EQ.fr[j - 1]) - (EQ.oe[j] - EQ.oe[j - 1]); return e === 0 ? 0.5 : e < 0 ? 1 : 0;
@@ -556,13 +564,16 @@ function main(FEED) {
   });
 
   (function () {
-    var b = document.getElementById('long-toggle');
-    b.setAttribute('aria-pressed', LONG ? 'true' : 'false');
-    b.addEventListener('click', function () {
-      LONG = !LONG; b.setAttribute('aria-pressed', LONG ? 'true' : 'false');
-      try { localStorage.setItem('edu-long', LONG ? '1' : '0'); } catch (e) {}
-      GOVS.forEach(evaluate); PRES.forEach(evaluate); rankChart(); renderYears(); renderGov();
-    });
+    var bl = document.getElementById('mode-long'), bt = document.getElementById('mode-test'), note = document.getElementById('long-note');
+    function show() {
+      bl.setAttribute('aria-pressed', LONG ? 'true' : 'false'); bt.setAttribute('aria-pressed', LONG ? 'false' : 'true');
+      note.innerHTML = LONG ? 'Un élève testé à 15 ans en 2022 est à l\'école depuis 2013 : son score juge <b>dix ans d\'école</b>. Chaque résultat PISA est donc partagé entre tous les gouvernements de ces dix années, au prorata de leur durée. Même règle pour l\'origine sociale. Limite : les mandats récents sont jugés avec moins de recul, la prochaine vague (2029) pourra encore faire bouger leur note.'
+        : 'Chaque résultat PISA est attribué aux gouvernements en place <b>depuis la vague précédente</b> (trois ou quatre ans). Plus simple, mais un gouvernement porte alors seul des résultats qui se construisent sur toute la scolarité des élèves.';
+    }
+    function set(v) { LONG = v; try { localStorage.setItem('edu-long2', v ? '1' : '0'); } catch (e) {} show(); GOVS.forEach(evaluate); PRES.forEach(evaluate); rankChart(); renderYears(); renderGov(); }
+    show();
+    bl.addEventListener('click', function () { if (!LONG) set(true); });
+    bt.addEventListener('click', function () { if (LONG) set(false); });
   })();
   // ===== Classements =====
   function chipsFor(g) {
