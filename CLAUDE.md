@@ -6,6 +6,10 @@ Site non partisan qui note les présidents et les gouvernements, mission par mis
 
 Tout chiffre publié a une source, et il a été lu à cette source. Rien d'inventé, rien d'estimé sans le dire. En cas de doute, on garde l'ancienne valeur et on le signale.
 
+## Aucun jugement
+
+Concret est fact-based et non partisan : aucun titre, aucune phrase ne porte de jugement ni d'adjectif évaluatif (« généreux », « mal », « vit à crédit »…). Les titres disent ce qui est mesuré (« Espérance de vie », « Coût »), les chiffres et la règle de notation parlent seuls.
+
 ## Anonymat
 
 - Commits : `git config user.name "Concret"` et `git config user.email "noreply@concret2027.fr"`. Aucune ligne `Co-Authored-By`, aucun nom ni e-mail personnel, nulle part (code, commits, journal).
@@ -56,7 +60,8 @@ Santé, Sécurité et justice, Défense, Vie des Français, ou tout indicateur a
 6. Même exigence partout : chaque chiffre sourcé et vérifié, rien d'inventé.
 7. Lisible par tous, sans se noyer dans les chiffres :
    - le premier écran donne la réponse : où en est la France face à ses voisins, et la note des présidents ;
-   - au plus 5 questions notées par page, chacune avec au plus 5 indicateurs, mesurés chaque année de la même façon en France et chez ses voisins ; chaque question a sa note, la note de la page est leur moyenne ;
+   - au plus 5 thèmes notés par page, chacun avec au plus 5 indicateurs, mesurés chaque année de la même façon en France et chez ses voisins ; chaque thème a sa note, la note de la page est leur moyenne ;
+   - peu de texte : un intitulé neutre par thème, un tableau France / voisin / ✓ ✗, une courbe ; définitions et sources repliées ;
    - ce qui est seulement affiché (pas de comparaison annuelle possible, source industrielle, indicateur secondaire) est replié, avec la raison écrite dessous ;
    - les leviers (dépense, accès, prévention) sont jugés année par année, les résultats (espérance de vie, mortalité) sur le temps long (l'année et les quatre suivantes), comme PISA en Éducation ;
    - juger la France seule est réservé aux cas sans comparaison possible, et c'est écrit en clair là où on le voit.

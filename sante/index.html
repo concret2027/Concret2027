@@ -5,9 +5,9 @@
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Santé · Concret</title>
-<meta name="description" content="Brouillon. La santé en France comparée à ses voisins, en cinq questions : vit-on longtemps, peut-on se soigner, combien ça coûte, prévient-on bien, a-t-on accès à l'innovation ? Et la note de chaque président et gouvernement.">
+<meta name="description" content="La santé en France comparée à l'Union européenne, à l'Allemagne et aux États-Unis : espérance de vie, accès aux soins, coût, prévention, innovation. Et la note de chaque président et gouvernement.">
 <meta property="og:title" content="Santé · Concret">
-<meta property="og:description" content="Un système généreux et accessible, mais qui vit à crédit et prévient mal ?">
+<meta property="og:description" content="La santé en France comparée à l'Union européenne, à l'Allemagne et aux États-Unis, et la note de chaque président et gouvernement.">
 <meta property="og:url" content="https://concret2027.fr/sante/">
 <meta property="og:type" content="website">
 <script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
@@ -308,7 +308,22 @@ footer p { margin: 0; } footer a { color: inherit; }
 .dom td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--grid); }
 .dom th:first-child, .dom td:first-child { text-align: left; }
 .mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 14px; }
-/* Les cinq questions */
+/* Les cinq thèmes */
+.score { display: grid; gap: 0; }
+.sc { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); color: var(--fg); text-decoration: none; font-weight: 600; font-size: 15px; }
+.sc .ic { display: flex; gap: 6px; } .sc i { font-style: normal; font-weight: 700; width: 1.3em; text-align: center; }
+.sc i.g, .cmp .i.g { color: var(--ok); } .sc i.b, .cmp .i.b { color: var(--bad); } .sc i.m, .cmp .i.m { color: var(--mid); }
+.cmp { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.cmp th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.cmp td { padding: 7px 6px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; vertical-align: top; }
+.cmp td:first-child { text-align: left; white-space: normal; font-weight: 600; }
+.cmp td small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); }
+.cmp td:nth-child(3) small { display: inline; }
+.cmp .i { font-weight: 700; text-align: center; width: 1.4em; }
+.cmp tr.sub td:first-child { padding-left: 18px; font-weight: 500; }
+.cmp tr.grp td { border-bottom: 0; padding-bottom: 2px; }
+.def > summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.def[open] > summary { margin-bottom: 6px; }
 .themes { display: grid; gap: 20px; }
 .theme { display: grid; gap: 10px; }
 .verdict { font-family: var(--serif); font-size: 19px; line-height: 1.3; margin: 0; }
@@ -339,31 +354,30 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><b>Santé</b><span id="today"></span></div>
   <p class="upd" id="upd">Chargement des données…</p>
-  <nav class="jump" aria-label="Aller à"><a href="#questions">Les 5 questions</a><a href="#bulletin">Bulletin</a><a href="#methode">Méthode</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#questions">Les chiffres</a><a href="#bulletin">Bulletin</a><a href="#methode">Méthode</a></nav>
 
   <section class="card" id="resume" aria-labelledby="recit">
-    <span class="eyebrow">La santé en France, face à ses voisins</span>
-    <h1 class="recit" id="recit">Un système généreux et accessible, mais qui vit à crédit et prévient mal ?</h1>
-        <ol class="qlist" id="qlist"></ol>
-    <p class="note" id="resume-note"></p>
+    <h1 class="recit" id="recit">La France face à l'Union européenne, l'Allemagne et les États-Unis</h1>
+    <div class="score" id="score"></div>
+    <p class="note">Dernier chiffre connu. ✓ : la France fait mieux que la moyenne de l'UE ou que l'Allemagne ; ✗ : moins bien.</p>
     <p class="pres-line" id="pres-line"></p>
   </section>
 
   <div class="themes" id="questions"></div>
 
   <section class="card" id="bulletin" aria-labelledby="gov-title">
-    <h2 id="gov-title"><span class="eyebrow">Le bulletin de la santé</span>Présidents et gouvernements : qui a fait progresser la France plus vite que ses voisins ?</h2>
+    <h2 id="gov-title"><span class="eyebrow">Le bulletin de la santé</span>Les notes des présidents et des gouvernements</h2>
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> pour chaque indicateur et chaque année, la France <b>marque 1 point</b> si elle progresse mieux que son voisin de comparaison, <b>0 point</b> sinon, ½ en cas d'égalité. Le voisin de comparaison est la moyenne de l'Union européenne, ou l'Allemagne quand l'UE ne publie pas de moyenne. Chaque question reçoit une note sur 20 (la part des points marqués) ; <b>la note santé est la moyenne des cinq questions. 10/20 = le niveau de nos voisins.</b></p>
-        <p>Les cartes du haut montrent <b>où en est la France</b> la dernière année connue. La note, elle, mesure <b>qui l'a fait progresser plus vite que ses voisins</b> : un pays déjà en tête peut avoir une note faible s'il avance moins vite que les autres.</p>
+        <p class="explain"><b>La règle :</b> pour chaque indicateur et chaque année, la France <b>marque 1 point</b> si elle progresse mieux que son voisin de comparaison, <b>0 point</b> sinon, ½ en cas d'égalité. Le voisin de comparaison est la moyenne de l'Union européenne, ou l'Allemagne quand l'UE ne publie pas de moyenne. Chaque thème reçoit une note sur 20 (la part des points marqués) ; <b>la note santé est la moyenne des cinq thèmes. 10/20 = le niveau de nos voisins.</b></p>
+        <p>Les tableaux du haut montrent <b>où en est la France</b> la dernière année connue. La note, elle, mesure <b>qui l'a fait progresser plus vite que ses voisins</b> : un pays déjà en tête peut avoir une note faible s'il avance moins vite que les autres.</p>
         <table class="seuils"><tbody>
-          <tr><td>1. Vit-on longtemps et en bonne santé ?<span><b>Espérance de vie</b> à la naissance (comparée à l'UE), <b>mortalité évitable</b> (décès avant 75 ans qui auraient pu être évités par la prévention ou les soins, comparée à l'UE), <b>mortalité infantile</b> (comparée à l'UE). Ce sont des résultats, qui mettent des années à bouger : chaque année d'un mandat compte pour la moyenne des points des cinq années qui suivent (l'année elle-même et les quatre suivantes, quand elles sont publiées).</span></td></tr>
-          <tr><td>2. Peut-on se soigner quand on en a besoin ?<span><b>Renoncement aux soins</b> (part des 16 ans et plus qui renoncent à un examen médical pour des raisons de coût, de distance ou d'attente, comparée à l'UE) et <b>équité</b> (écart de renoncement entre les 20 % les plus modestes et les 20 % les plus aisés : 1 point si l'écart français est plus faible que celui de l'UE, ou s'il se réduit plus vite).</span></td></tr>
-          <tr><td>3. Combien ça coûte, et qui paie ?<span><b>Déficit de la Sécurité sociale</b> (compte triple) : aucun autre pays n'a un secteur comparable, c'est donc <b>le seul indicateur jugé sur la France seule</b> : 1 point si les comptes sont à l'équilibre ou en excédent, ½ si le déficit se réduit d'au moins 0,1 point de PIB, 0 s'il se creuse ou reste stable. <b>Reste à charge</b> : part de la dépense de santé payée directement par les ménages (comparée à l'UE).</span></td></tr>
-          <tr><td>4. Prévient-on bien les maladies ?<span>Cinq indicateurs, chacun noté à part : <b>vaccination contre la grippe</b> des 65 ans et plus (comparée à l'UE), <b>rougeole</b> 2 doses, <b>dépistage du cancer du sein</b> et <b>du côlon</b>, <b>consommation d'alcool</b> (comparés à l'Allemagne, faute de moyenne de l'UE publiée par l'OMS et l'OCDE).</span></td></tr>
-          <tr><td>5. A-t-on accès à l'innovation ?<span><b>Essais cliniques</b> lancés par million d'habitants (registre public ClinicalTrials.gov, comparé à l'Allemagne). Un essai donne aux patients un accès précoce aux nouveaux traitements.</span></td></tr>
+          <tr><td>Espérance de vie<span><b>Espérance de vie</b> à la naissance (comparée à l'UE), <b>mortalité évitable</b> (décès avant 75 ans qui auraient pu être évités par la prévention ou les soins, comparée à l'UE), <b>mortalité infantile</b> (comparée à l'UE). Ce sont des résultats, qui mettent des années à bouger : chaque année d'un mandat compte pour la moyenne des points des cinq années qui suivent (l'année elle-même et les quatre suivantes, quand elles sont publiées).</span></td></tr>
+          <tr><td>Accès aux soins<span><b>Renoncement aux soins</b> (part des 16 ans et plus qui renoncent à un examen médical pour des raisons de coût, de distance ou d'attente, comparée à l'UE) et <b>équité</b> (écart de renoncement entre les 20 % les plus modestes et les 20 % les plus aisés : 1 point si l'écart français est plus faible que celui de l'UE, ou s'il se réduit plus vite).</span></td></tr>
+          <tr><td>Coût<span><b>Déficit de la Sécurité sociale</b> (compte triple) : aucun autre pays n'a un secteur comparable, c'est donc <b>le seul indicateur jugé sur la France seule</b> : 1 point si les comptes sont à l'équilibre ou en excédent, ½ si le déficit se réduit d'au moins 0,1 point de PIB, 0 s'il se creuse ou reste stable. <b>Reste à charge</b> : part de la dépense de santé payée directement par les ménages (comparée à l'UE).</span></td></tr>
+          <tr><td>Prévention<span>Cinq indicateurs, chacun noté à part : <b>vaccination contre la grippe</b> des 65 ans et plus (comparée à l'UE), <b>rougeole</b> 2 doses, <b>dépistage du cancer du sein</b> et <b>du côlon</b>, <b>consommation d'alcool</b> (comparés à l'Allemagne, faute de moyenne de l'UE publiée par l'OMS et l'OCDE).</span></td></tr>
+          <tr><td>Innovation<span><b>Essais cliniques</b> lancés par million d'habitants (registre public ClinicalTrials.gov, comparé à l'Allemagne). Un essai donne aux patients un accès précoce aux nouveaux traitements.</span></td></tr>
         </tbody></table>
       </div>
     </details>
@@ -376,7 +390,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="chart" id="rank-gov"></div>
     <p class="note" id="rank-gov-note"></p>
     <span class="eyebrow" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
-    <p class="note">Une note par question. <b>Touchez une question</b> pour voir ses indicateurs, puis un indicateur pour voir les chiffres année par année, et pourquoi une année n'est pas comptée.</p>
+    <p class="note">Une note par thème. <b>Touchez un thème</b> pour voir ses indicateurs, puis un indicateur pour voir les chiffres année par année, et pourquoi une année n'est pas comptée.</p>
     <div class="gov-list" id="gov-list"></div>
     <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
   </section>
@@ -387,7 +401,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <details class="acc" id="methode">
     <summary><span class="acc-h">Méthode et sources</span><span class="acc-t">D'où viennent les chiffres, et ce qui n'est pas comparable</span><span class="acc-cta"></span></summary>
     <div class="acc-body card">
-      <p class="note"><b>Les cinq questions.</b> Elles couvrent ce qu'on attend d'un système de santé : vivre longtemps en bonne santé, pouvoir se soigner, à un coût soutenable, en prévenant les maladies, avec accès aux nouveaux traitements. Chaque question a au plus cinq indicateurs, choisis parce qu'ils sont mesurés chaque année, de la même façon en France et chez ses voisins.</p>
+      <p class="note"><b>Les cinq thèmes.</b> Espérance de vie, accès aux soins, coût, prévention, innovation. Chaque thème a au plus cinq indicateurs, choisis parce qu'ils sont mesurés chaque année, de la même façon en France et chez ses voisins.</p>
       <p class="note"><b>Sources.</b> Espérance de vie : Eurostat (demo_mlexpec) ; États-Unis : OCDE. Mortalité évitable : Eurostat (hlth_cd_apr). Mortalité infantile : Eurostat (demo_minfind) ; États-Unis : OCDE. Espérance de vie en bonne santé : Eurostat (hlth_hlye). Écart d'espérance de vie selon le niveau de vie : Insee Première n° 2085 (décembre 2025). Renoncement aux soins et écart entre modestes et aisés : Eurostat (hlth_silc_08), pas d'équivalent américain. Déficit de l'Assurance maladie : Direction de la Sécurité sociale, « Les chiffres clés de la Sécurité sociale 2024 » (édition 2025), rapporté au PIB d'Eurostat. Reste à charge et dépense de santé : Eurostat (hlth_sha11_hf) ; États-Unis : OCDE. Dépense de médicaments : OCDE (comptes de la santé). Grippe : Eurostat (hlth_ps_immu). Rougeole, diphtérie-tétanos-coqueluche, papillomavirus : OMS et Unicef (estimations WUENIC). Dépistages : OCDE (données des programmes). Alcool et tabac : OCDE. Essais cliniques : ClinicalTrials.gov (essais interventionnels par pays et année de début, relevés le 22 octobre 2026), rapportés à la population (Banque mondiale). Nouveaux médicaments : EFPIA Patients W.A.I.T. Indicator, éditions 2020 à 2025, réalisées par IQVIA et financées par l'industrie pharmaceutique ; il n'existe pas d'étude publique comparable entre pays européens.</p>
       <p class="note"><b>Limites.</b> La mortalité est publiée avec environ trois ans de retard : les gouvernements récents sont jugés sur moins d'années. Avant 2004, la plupart des séries européennes n'existent pas : les premiers mandats sont notés sur peu d'années. Les essais européens sont aussi déclarés dans le registre européen (CTIS) : ClinicalTrials.gov n'en contient qu'une partie ; la France, l'Allemagne, l'Espagne et les États-Unis y sont comptés de la même façon, dans le même registre public. Quand une courbe manque pour un pays, la raison est écrite sous le graphique.</p>
     </div>
@@ -416,29 +430,39 @@ function main(FEED) {
   var refDe = function (c) { return SAN.ref(c) === 'de'; };
   var nomRef = function (c) { return refDe(c) ? 'Allemagne' : 'UE'; };
 
-  // ===== Où en est la France, la dernière année connue (niveau, pas la note) =====
+  // ===== Dernier chiffre connu : la France face à son voisin de comparaison (niveau, pas la note) =====
+  var ICON = { g: '✓', b: '✗', m: '=' };
+  var val1 = function (c, v, dec) { return fmt(v, dec) + (c.uc === ' %' ? ' %' : ''); };
   function ligne(c) {
-    var dec = decOf(c), u = c.uc || '', r = SAN.ref(c), i = c.y.length - 1;
+    var dec = decOf(c), r = SAN.ref(c), i = c.y.length - 1;
     while (i >= 0 && (c.fr[i] == null || !c[r] || c[r][i] == null)) i--;
     if (i < 0) return null;
-    var a = c.fr[i], e = c[r][i], tie = Math.abs(a - e) < 1e-9, ok = c.low ? a < e : a > e;
-    return { cl: tie ? 'm' : ok ? 'g' : 'b', y: c.y[i], t: '<b>' + c.l + '</b> : ' + fmt(a, dec) + u + ', contre ' + fmt(e, dec) + (refDe(c) ? ' en Allemagne' : ' dans l\'UE') + ' (' + c.y[i] + (c.edition ? ', étude publiée en ' + c.edition[i] : '') + ')' + (c.low ? ' ; ici, moins c\'est mieux.' : '.') };
+    var a = c.fr[i], e = c[r][i], cl = Math.abs(a - e) < 1e-9 ? 'm' : (c.low ? a < e : a > e) ? 'g' : 'b';
+    return { cl: cl, c: c, y: c.y[i], fr: val1(c, a, dec), ref: val1(c, e, dec) + ' <small>' + (refDe(c) ? 'All.' : 'UE') + '</small>' };
   }
   function etat(k) {
     var c = C[k];
     if (c.regle === 'propre') {
       var s = lastOf(c, 'fr'), md = c.md[c.y.indexOf(s.y)];
-      return { cl: s.v >= 0 ? 'g' : 'b', y: s.y, t: '<b>' + c.l + '</b> : ' + (md < 0 ? 'déficit de ' : 'excédent de ') + fmt(Math.abs(md), 1) + ' milliards d\'euros en ' + s.y + ' (' + fmt(Math.abs(s.v), 2) + ' % du PIB). Seul indicateur jugé sur la France seule : l\'objectif est l\'équilibre, aucun voisin n\'a de comptes comparables.' };
+      return { cl: s.v >= 0 ? 'g' : 'b', c: c, y: s.y, fr: sg(md, 1), ref: '<small>France seule</small>' };
     }
     if (c.regle === 'composite') {
       var l = Object.keys(c.sous).map(function (j) { return ligne(c.sous[j]); }).filter(Boolean), ok = l.filter(function (x) { return x.cl === 'g'; }).length;
-      return { cl: ok * 2 > l.length ? 'g' : ok * 2 === l.length ? 'm' : 'b', t: '<b>' + c.l + '</b> : la France fait mieux sur ' + ok + ' sur ' + l.length + '.<ul class="checks sub">' + l.map(function (x) { return '<li class="' + x.cl + '"><span class="i" aria-hidden="true">' + ICON[x.cl] + '</span><span>' + x.t.replace(/<\/?b>/g, '') + '</span></li>'; }).join('') + '</ul>' };
+      return { cl: ok * 2 > l.length ? 'g' : ok * 2 === l.length ? 'm' : 'b', c: c, sous: l, ok: ok };
     }
     return ligne(c);
   }
-  var ICON = { g: '✓', b: '✗', m: '=' };
   var themeEtat = function (t) { var l = t.crit.map(etat); return { l: l, ok: l.filter(function (x) { return x.cl === 'g'; }).length, n: l.length }; };
-  var mieux = function (e) { return 'la France fait mieux sur <b>' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n + '</b>'; };
+  var unitOf = function (c) { return c.uu || c.unite; };
+  function rowHtml(x, sub) {
+    return '<tr' + (sub ? ' class="sub"' : '') + '><td>' + esc(x.c.lc || x.c.l) + '<small>' + esc(unitOf(x.c)) + ' · ' + x.y + '</small></td><td>' + x.fr + '</td><td>' + x.ref + '</td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>';
+  }
+  function tableEtat(e) {
+    return '<table class="cmp"><thead><tr><th></th><th>France</th><th>Voisin</th><th></th></tr></thead><tbody>' + e.l.map(function (x) {
+      if (!x.sous) return rowHtml(x);
+      return '<tr class="grp"><td>' + esc(x.c.lc || x.c.l) + '<small>mieux sur ' + x.ok + ' sur ' + x.sous.length + '</small></td><td></td><td></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>' + x.sous.map(function (s) { return rowHtml(s, 1); }).join('');
+    }).join('') + '</tbody></table>';
+  }
 
   // ===== Bulletin : notes =====
   var KEYS = SAN.KEYS, WT = SAN.WT, MIN_N = SAN.MIN_N, GOVS = SER.GOVS, PRES = SER.PRES, BANDS = GOVS;
@@ -448,13 +472,14 @@ function main(FEED) {
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
   var nomCourt = function (n) { return n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin'); };
 
-  // ===== Résumé : les cinq questions en une ligne chacune =====
+  // ===== Résumé : un symbole par indicateur =====
   (function () {
-    var tot = 0, n = 0;
-    setHtml('qlist', THEMES.map(function (t, i) { var e = themeEtat(t); tot += e.ok; n += e.n; return '<li><a href="#q-' + t.k + '">' + esc(t.q) + '</a><span>' + mieux(e).replace('la France', 'La France') + '</span></li>'; }).join(''));
-    setHtml('resume-note', 'Dernière année connue, face à la moyenne de l\'UE ou à l\'Allemagne : la France fait mieux sur ' + tot + ' indicateurs notés sur ' + n + '.' + EX);
+    setHtml('score', THEMES.map(function (t) {
+      var e = themeEtat(t);
+      return '<a class="sc" href="#q-' + t.k + '"><span>' + esc(t.q) + '</span><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span></a>';
+    }).join(''));
     var pr = PRES.filter(function (g) { return noteOf(g) != null; }).slice().reverse();
-    setHtml('pres-line', 'Note santé des présidents, sur 20 (10 = le niveau de nos voisins) : ' + pr.map(function (g) { return '<b>' + esc(nomCourt(g.n)) + ' ' + nfmt(noteOf(g)) + '</b>'; }).join(' · ') + '. <a href="#bulletin">Voir le bulletin</a>' + EX);
+    setHtml('pres-line', 'Notes sur 20 : ' + pr.map(function (g) { return '<b>' + esc(nomCourt(g.n)) + '</b> ' + nfmt(noteOf(g)); }).join(' · ') + ' · <a href="#bulletin">bulletin</a>');
   })();
 
   // ===== Bulletin : détail année par année =====
@@ -561,10 +586,10 @@ function main(FEED) {
   function themeChips(g) {
     return rangee(THEMES.map(function (t) {
       var n = SAN.noteTheme(g, t);
-      return { l: t.court, v: n == null ? 'non noté' : nfmt(n) + '/20', cl: n == null ? '' : n >= 10 ? 'g' : 'b', title: 'Voir les indicateurs de cette question', open: function () {
+      return { l: t.court, v: n == null ? 'non noté' : nfmt(n) + '/20', cl: n == null ? '' : n >= 10 ? 'g' : 'b', title: 'Voir les indicateurs de ce thème', open: function () {
         var w = document.createElement('div'); w.className = 'kdet';
         var p = document.createElement('p'); p.innerHTML = '<b></b> <span></span>'; p.firstChild.textContent = t.q;
-        p.lastChild.textContent = n == null ? 'Non noté : aucun indicateur de cette question n\'a de chiffre comparable pendant ce mandat (les séries commencent plus tard).' : 'Note : ' + nfmt(n) + '/20, sur ' + SAN.count(g, t) + ' comparaison' + (SAN.count(g, t) > 1 ? 's' : '') + '. Touchez un indicateur :';
+        p.lastChild.textContent = n == null ? 'Non noté : aucun indicateur de ce thème n\'a de chiffre comparable pendant ce mandat (les séries commencent plus tard).' : 'Note : ' + nfmt(n) + '/20, sur ' + SAN.count(g, t) + ' comparaison' + (SAN.count(g, t) > 1 ? 's' : '') + '. Touchez un indicateur :';
         w.appendChild(p); w.appendChild(critChips(g, t)); return w;
       } };
     }));
@@ -577,7 +602,7 @@ function main(FEED) {
     }
     var box = document.getElementById('pres-detail'); box.textContent = ''; box.hidden = false;
     var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span class="note"></span>';
-    who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + '. ' + countOf(g) + ' comparaisons. Note de chaque question (touchez-en une pour le détail) :';
+    who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + '. ' + countOf(g) + ' comparaisons. Note de chaque thème (touchez-en un pour le détail) :';
     box.appendChild(who); box.appendChild(themeChips(g));
   }
   function rankOne(mode) {
@@ -598,7 +623,7 @@ function main(FEED) {
       svg.append('rect').attr('x', x(0)).attr('y', y + 5).attr('width', Math.max(2, x(r.n) - x(0))).attr('height', 17).attr('rx', 3).attr('fill', few ? 'var(--axis)' : col(r.n)).style('pointer-events', 'none');
       svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' (note fragile)' : '')).style('fill', few ? 'var(--fg)' : inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
     });
-    setHtml('rank-' + mode + '-note', 'En gris, « note fragile » : note calculée sur moins de ' + MIN_N + ' comparaisons (mandat court, ou données européennes qui commencent après), donc peu fiable. Une note ne couvre que les questions qui ont des chiffres pendant le mandat. Touchez une barre pour voir le détail.');
+    setHtml('rank-' + mode + '-note', 'En gris, « note fragile » : note calculée sur moins de ' + MIN_N + ' comparaisons (mandat court, ou données européennes qui commencent après), donc peu fiable. Une note ne couvre que les thèmes qui ont des chiffres pendant le mandat. Touchez une barre pour voir le détail.');
   }
   document.getElementById('gov-more').addEventListener('click', function () {
     showAll = !showAll; this.setAttribute('aria-expanded', showAll); this.textContent = showAll ? 'Masquer le détail des autres gouvernements' : 'Voir le détail des autres gouvernements'; renderGov();
@@ -615,7 +640,7 @@ function main(FEED) {
       badge.firstChild.textContent = note == null ? '—' : nfmt(note); var sm = document.createElement('small'); sm.textContent = '/20'; badge.appendChild(sm);
       var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span></span>';
       who.firstChild.textContent = g.n;
-      who.lastChild.textContent = '· ' + (g.y0 === g.y1 ? g.y0 : g.y0 + '-' + g.y1) + ' · ' + g.p + ' · ' + n + ' comparaison' + (n > 1 ? 's' : '') + (nt < THEMES.length ? ', ' + nt + ' question' + (nt > 1 ? 's' : '') + ' notée' + (nt > 1 ? 's' : '') + ' sur ' + THEMES.length : '') + (n < MIN_N ? ' : trop peu pour une note fiable (il en faut ' + MIN_N + '), d\'où le gris' : '');
+      who.lastChild.textContent = '· ' + (g.y0 === g.y1 ? g.y0 : g.y0 + '-' + g.y1) + ' · ' + g.p + ' · ' + n + ' comparaison' + (n > 1 ? 's' : '') + (nt < THEMES.length ? ', ' + nt + ' thème' + (nt > 1 ? 's' : '') + ' noté' + (nt > 1 ? 's' : '') + ' sur ' + THEMES.length : '') + (n < MIN_N ? ' : trop peu pour une note fiable (il en faut ' + MIN_N + '), d\'où le gris' : '');
       row.appendChild(badge); row.appendChild(who); row.appendChild(themeChips(g)); box.appendChild(row);
     });
   }
@@ -740,7 +765,7 @@ function main(FEED) {
   function serieCard(wrap, id, c, tag, extra) {
     var sec = card(wrap, id, c.l + ', ' + c.unite, tag);
     sec.querySelector('.key').innerHTML = keyHtml(c);
-    return function () { sec.querySelector('.note').innerHTML = [serieChart(id, c, extra), c.note, c.pourquoi, srcNote(c)].filter(Boolean).join(' '); };
+    return function () { sec.querySelector('.note').innerHTML = [serieChart(id, c, extra), c.pourquoi, srcNote(c)].filter(Boolean).join(' '); };
   }
 
   // ===== Les cinq questions =====
@@ -802,21 +827,22 @@ function main(FEED) {
       var e = themeEtat(t), cs = courbes(t), m0 = cs[0], c = m0.c, div = document.createElement('div'); div.className = 'theme'; div.id = 'q-' + t.k;
       var sec = document.createElement('section'); sec.className = 'card';
       var pn = PRES.map(function (g) { return { g: g, n: SAN.noteTheme(g, t) }; }).reverse();
-      sec.innerHTML = '<h2><span class="eyebrow">Question ' + (i + 1) + ' sur ' + THEMES.length + '</span></h2>' +
-        '<p class="verdict">Dernière année connue : ' + mieux(e) + '.</p>' +
-        '<ul class="checks">' + e.l.map(function (x) { return '<li class="' + x.cl + '"><span class="i" aria-hidden="true">' + ICON[x.cl] + '</span><span>' + x.t + '</span></li>'; }).join('') + '</ul>' +
+      var defs = [];
+      t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || '') + (x.source ? ' Source : ' + x.source + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + q.l + ' (' + q.unite + '). Source : ' + q.source + '.'); }); });
+      sec.innerHTML = '<h2></h2>' + tableEtat(e) +
         '<span class="eyebrow" style="margin:6px 0 0">' + c.l + ', ' + c.unite + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p>' +
-        '<p class="tnotes">Note de cette question, par président (progrès face aux voisins, sur 20) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '. <a href="#bulletin">Le bulletin</a></p>';
-      sec.querySelector('h2').appendChild(document.createTextNode(t.q));
+        '<details class="def"><summary>Définitions et sources</summary><p class="note">' + defs.join('<br>') + '</p></details>' +
+        '<p class="tnotes">Notes sur 20 : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>';
+      sec.querySelector('h2').textContent = t.q;
       div.appendChild(sec);
-      DRAW.push(function () { sec.querySelector('.note').innerHTML = [serieChart('ch-' + m0.id, c), c.note, srcNote(c)].filter(Boolean).join(' '); });
+      DRAW.push(function () { sec.querySelector('.note').innerHTML = serieChart('ch-' + m0.id, c); });
       var fold = document.createElement('details'); fold.className = 'fold';
       var autres = cs.slice(1), body = document.createElement('div'); body.className = 'charts4';
       var draws = autres.map(function (o) { return serieCard(body, 'ch-' + o.id, o.c, o.tag, o.id === 'equ' ? { unit: ' pt' } : null); });
       if (EN_PLUS[t.k]) draws = draws.concat(EN_PLUS[t.k](body));
       var nb = body.children.length;
       if (!nb) return root.appendChild(div);
-      fold.innerHTML = '<summary>' + (autres.length ? 'Les autres courbes de cette question' : 'À regarder aussi') + ' (' + nb + ')</summary>';
+      fold.innerHTML = '<summary>Les autres courbes (' + nb + ')</summary>';
       fold.appendChild(body); div.appendChild(fold); root.appendChild(div);
       var f = { el: fold, draw: function () { draws.forEach(function (d) { d(); }); } };
       fold.addEventListener('toggle', function () { if (fold.open) f.draw(); });

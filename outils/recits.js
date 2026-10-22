@@ -30,19 +30,6 @@ module.exports = [
     verifier: function (c) { var P = c.fin.PIB, cross = null; for (var i = 1; i < P.fr.length; i++) if (P.fr[i] < P.ea[i] && P.fr[i - 1] >= P.ea[i - 1]) cross = 1990 + i; var k = lastBoth(P.fr, P.ea); return { ok: cross === 2016 && P.fr[k] < P.ea[k], constat: 'passage sous la moyenne : ' + cross + ', dernière année ' + (P.fr[k] < P.ea[k] ? 'en dessous' : 'au-dessus') }; } },
   { id: 'fin_spread', page: 'finances', ou: 'titre « Politique et marchés »', texte: 'La France emprunte plus cher que l\'Italie',
     verifier: function (c) { var sp = c.pouls.filter(function (r) { return r.indicateur === 'ecart_allemagne'; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }).pop(), it = c.fin.P.spread_italie; return { ok: +sp.valeur > it.v, constat: 'écart France ' + fr(+sp.valeur) + ' pb (' + sp.date + '), Italie ' + fr(it.v) + ' pb (' + it.date + ')' }; } },
-  // ===== Santé (brouillon : le récit reste une question tant que les données réelles ne le confirment pas) =====
-  { id: 'sante_recit', page: 'sante', ou: 'titre de la page et meta og:description',
-    texte: 'Un système généreux et accessible, mais qui vit à crédit et prévient mal ?',
-    verifier: function (c) {
-      if (!c.sante) return { ok: true, constat: 'page non publiée' };
-      // « Prévient mal » : la France fait moins bien que son voisin sur au moins la moitié des indicateurs de la question Prévention
-      // (pour un programme comme les vaccins : sur au moins la moitié de ses éléments).
-      var C = c.sante.C, last = function (k, w) { var a = C[k][w] || []; for (var i = a.length - 1; i >= 0; i--) if (a[i] != null) return a[i]; return null; };
-      var pireSerie = function (x) { var r = x.ref || 'ue', i = x.y.length - 1; while (i >= 0 && (x.fr[i] == null || !x[r] || x[r][i] == null)) i--; return i >= 0 && (x.low ? x.fr[i] > x[r][i] : x.fr[i] < x[r][i]); };
-      var pire = function (k) { var x = C[k]; if (!x.sous) return pireSerie(x); var q = Object.keys(x.sous), m = q.filter(function (j) { return pireSerie(x.sous[j]); }); return m.length * 2 >= q.length; };
-      var prev = c.sante.THEMES.filter(function (t) { return t.k === 'prev'; })[0].crit, mal = prev.filter(pire);
-      var genereux = last('rac', 'fr') < last('rac', 'ue'), accessible = last('ren', 'fr') <= last('ren', 'ue'), credit = last('secu', 'fr') < 0, previent = mal.length * 2 >= prev.length;
-      return { ok: genereux && accessible && credit && previent, constat: 'reste à charge ' + last('rac', 'fr') + ' % contre ' + last('rac', 'ue') + ' % dans l\'UE, renoncement aux soins ' + last('ren', 'fr') + ' % contre ' + last('ren', 'ue') + ' %, solde de l\'Assurance maladie ' + last('secu', 'fr') + ' % du PIB, prévention : moins bien que le voisin sur ' + mal.length + ' indicateurs sur ' + prev.length + (mal.length ? ' (' + mal.join(', ') + ')' : '') }; } },
   // ===== Éducation =====
   { id: 'edu_bilan', page: 'education', ou: 'meta og:description et résumé « Le bilan »',
     texte: 'On diplôme plus que nos voisins, mais les élèves apprennent moins, et les jeunes trouvent moins vite un emploi',
