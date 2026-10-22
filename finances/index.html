@@ -229,6 +229,8 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .kdet .pt { display: inline-block; min-width: 22px; text-align: center; border-radius: 5px; font-weight: 700; }
 .kdet .pt.g { background: var(--s-good); color: var(--ok); } .kdet .pt.b { background: var(--s-bad); color: var(--bad); } .kdet .pt.m { background: var(--s-mid); color: var(--mid); } .kdet .pt.na { color: var(--muted); font-weight: 400; }
 .kdet .kdet-src { font-size: 11px; }
+.kdet .kdet-why { color: var(--fg); font-size: 12px; }
+.kdet td:last-child { white-space: normal; } .kdet .pt.na { font-size: 11px; line-height: 1.2; display: inline-block; text-align: right; }
 @media (max-width: 560px) { button.kpi { font-size: 11.5px; } .kdet { font-size: 12px; padding: 8px; } .kdet td, .kdet th { padding: 3px 4px; } }
 .gov.pending .who span { font-style: italic; }
 
@@ -743,16 +745,22 @@ function main(FEED) {
   };
   var evaluate = NOTES.evaluate;
   // Tableau du détail d'un critère : une ligne par année du mandat.
+  // Dernière année publiée d'un critère tiré des séries Eurostat (les autres vont jusqu'à la dernière année des séries).
+  var lastYear = function (k) { if (!D[k]) return Y0 + D.dette.fr.length - 1; var i = Math.min(D[k].fr.length, D[k].ea.length) - 1; while (i > 0 && (D[k].fr[i] == null || D[k].ea[i] == null)) i--; return Y0 + i + 1; };
   function detailTable(g, k) {
     var c = CRIT.filter(function (x) { return x.k === k; })[0], o = DET[k], wrap = document.createElement('div'); wrap.className = 'kdet';
-    var val = function (v, l) { if (v == null || isNaN(v)) return 'n.d.'; return (o.pct ? sg((v - 1) * 100, 1) + ' %' : sg(v, 1)) + (l != null ? ' (' + fmt(l, 1) + ')' : ''); };
-    var gap = function (d) { if (d.f == null || d.e == null || isNaN(d.f) || isNaN(d.e)) return ''; var v = o.pct ? (d.f - d.e) * 100 : d.f - d.e; return v === 0 ? '0' : sg(v, Math.abs(v) < 0.05 ? 2 : 1) + (o.pct ? ' pt' : ''); };
+    var why = [], POURQUOI = ConcretNotes.POURQUOI, sc = k === 'com' ? 100 : 1; // commerce : ratio exportations ÷ importations affiché en points de %
+    var val = function (v, l) { if (v == null || isNaN(v)) return l != null ? '— (' + fmt(l, 1) + ')' : '—'; return (o.pct ? sg((v - 1) * 100, 1) + ' %' : sg(v * sc, 1)) + (l != null ? ' (' + fmt(l, 1) + ')' : ''); };
+    var gap = function (d) { if (d.f == null || d.e == null || isNaN(d.f) || isNaN(d.e)) return ''; var v = o.pct ? (d.f - d.e) * 100 : (d.f - d.e) * sc; return v === 0 ? '0' : sg(v, Math.abs(v) < 0.05 ? 2 : 1) + (o.pct ? ' pt' : ''); };
     var h = '<p class="kdet-q"><b>' + c.l.replace(/\.$/, '') + '.</b> ' + o.q + '</p><table><thead><tr><th>Année</th><th>France</th><th>Zone euro</th><th>Écart</th><th>Point</th></tr></thead><tbody>';
     g.y[k].forEach(function (d) {
-      var pt = d.pt == null ? '<span class="pt na">n.d.</span>' : d.pt === 1 ? '<span class="pt g">1</span>' : d.pt === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">½</span>';
+      var pt = d.pt == null ? '<span class="pt na">non compté</span>' : d.pt === 1 ? '<span class="pt g">1</span>' : d.pt === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">½</span>';
       h += '<tr><td>' + d.y + '</td><td>' + val(d.f, d.lf) + '</td><td>' + val(d.e, d.le) + '</td><td>' + gap(d) + '</td><td>' + pt + '</td></tr>';
+      // Pourquoi une année n'est pas comptée, ou ne vaut qu'un demi-point : dit en clair sous le tableau.
+      if (d.pt === 0.5) why.push(POURQUOI.egalite(d.y, 'la zone euro'));
+      else if (d.pt == null) why.push(d.y === Y0 ? POURQUOI.debut(Y0, 'Eurostat') : d.y >= lastYear(k) ? POURQUOI.pasPublie(d.y, 'Eurostat') : POURQUOI.absent(d.y));
     });
-    wrap.innerHTML = h + '</tbody></table><p class="kdet-src">Sources : Eurostat (dette, solde, dépenses, prélèvements, intérêts), Banque mondiale (PIB par habitant, chômage, échanges). Écart = France moins zone euro ; une égalité exacte vaut ½ point.</p>';
+    wrap.innerHTML = h + '</tbody></table>' + (why.length ? '<p class="kdet-why">' + why.join('<br>') + '</p>' : '') + '<p class="kdet-src">Sources : Eurostat (dette, solde, dépenses, prélèvements, intérêts), Banque mondiale (PIB par habitant, chômage, échanges). Écart = France moins zone euro.</p>';
     return wrap;
   }
   GOVS.forEach(evaluate); PRES.forEach(evaluate);
@@ -834,7 +842,7 @@ function main(FEED) {
       var l = g.w[c.k], k = document.createElement('button'), won = d3.sum(l), n = l.length;
       k.type = 'button'; k.className = 'kpi' + (!n ? '' : won / n >= 0.5 ? ' g' : ' b'); k.setAttribute('aria-expanded', 'false');
       k.title = 'Voir le détail, année par année';
-      k.innerHTML = '<em></em><span></span>'; k.firstChild.textContent = c.l; k.lastChild.textContent = !n ? 'n.d.' : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n;
+      k.innerHTML = '<em></em><span></span>'; k.firstChild.textContent = c.l; k.lastChild.textContent = !n ? 'non compté' : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n;
       k.addEventListener('click', function () {
         Array.prototype.forEach.call(kp.children, function (b) { b.setAttribute('aria-expanded', 'false'); });
         det.textContent = '';
@@ -919,6 +927,16 @@ function main(FEED) {
     lineChart('ch-deficit', [{ c: 'var(--us)', data: ser(D.deficit.us) }, { c: 'var(--de)', data: ser(D.deficit.de) }, { c: 'var(--ea)', dash: 1, data: ser(D.deficit.ea) }, { c: 'var(--fr)', main: 1, data: ser(D.deficit.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, min: -15, max: 2, label: 'Solde public en % du PIB, France, zone euro, Allemagne et États-Unis, 1995-2025' });
     lineChart('ch-dep', [{ c: 'var(--us)', data: ser(D.dep.us) }, { c: 'var(--de)', data: ser(D.dep.de) }, { c: 'var(--ea)', dash: 1, data: ser(D.dep.ea) }, { c: 'var(--fr)', main: 1, data: ser(D.dep.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, label: 'Dépenses publiques en % du PIB, 1995-2025' });
     lineChart('ch-po', [{ c: 'var(--us)', data: ser(D.po.us) }, { c: 'var(--de)', data: ser(D.po.de) }, { c: 'var(--ea)', dash: 1, data: ser(D.po.ea) }, { c: 'var(--fr)', main: 1, data: ser(D.po.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, label: 'Impôts et cotisations en % du PIB, 1995-2024' });
+  }
+  // Courbe française plus courte que les autres : on dit pourquoi, sous le graphique.
+  function manque() {
+    var lastY = function (arr) { var i = arr.length - 1; while (i > 0 && arr[i] == null) i--; return Y0 + i; }, ref = lastY(D.dette.fr);
+    [['dette', 'ch-dette'], ['deficit', 'ch-deficit'], ['dep', 'ch-dep'], ['po', 'ch-po']].forEach(function (p) {
+      var box = document.getElementById(p[1]), id = 'manque-' + p[0], el = document.getElementById(id), ly = lastY(D[p[0]].fr);
+      if (ly >= ref) { if (el) el.remove(); return; }
+      if (!el) { el = document.createElement('p'); el.className = 'note'; el.id = id; box.parentNode.insertBefore(el, box.nextSibling); }
+      el.textContent = 'La courbe française s\'arrête en ' + ly + ' : le chiffre ' + (ly + 1) + ' n\'est pas encore publié par Eurostat.';
+    });
   }
   var pibMode = 'lvl';
   function pibChart() {
@@ -1271,7 +1289,7 @@ function main(FEED) {
   document.getElementById('sheet-close').addEventListener('click', function () { document.getElementById('sheet').hidden = true; });
   document.getElementById('sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') this.hidden = true; });
 
-  function drawAll() { drawMonth(); spark(); four(); pibChart(); retraitesChart(); spreadChart(); rankChart(); }
+  function drawAll() { drawMonth(); spark(); four(); manque(); pibChart(); retraitesChart(); spreadChart(); rankChart(); }
   renderGov(); drawAll();
   window.addEventListener('acc-open', function () { setTimeout(drawAll, 30); });
   var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });

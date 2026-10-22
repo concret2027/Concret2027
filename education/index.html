@@ -226,6 +226,8 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .kdet .pt { display: inline-block; min-width: 22px; text-align: center; border-radius: 5px; font-weight: 700; }
 .kdet .pt.g { background: var(--s-good); color: var(--ok); } .kdet .pt.b { background: var(--s-bad); color: var(--bad); } .kdet .pt.m { background: var(--s-mid); color: var(--mid); } .kdet .pt.na { color: var(--muted); font-weight: 400; }
 .kdet .kdet-src { font-size: 11px; }
+.kdet .kdet-why { color: var(--fg); font-size: 12px; }
+.kdet td:last-child { white-space: normal; } .kdet .pt.na { font-size: 11px; line-height: 1.2; display: inline-block; text-align: right; }
 @media (max-width: 560px) { button.kpi { font-size: 11.5px; } .kdet { font-size: 12px; padding: 8px; } .kdet td, .kdet th { padding: 3px 4px; } }
 .gov.pending .who span { font-style: italic; }
 
@@ -271,6 +273,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .yrs th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: center; padding: 6px 4px; border-bottom: 1px solid var(--line); }
 .yrs th:nth-child(-n+2), .yrs td:nth-child(-n+2) { text-align: left; }
 .yrs td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: center; }
+.yrs tr.yr-why td { text-align: left; font-size: 11.5px; color: var(--muted); padding: 2px 4px 7px; }
 .yrs .pres-row td { text-align: left; font-weight: 700; font-size: 13px; background: var(--band); padding: 8px 6px; }
 .yrs td.dot { font-size: 16px; line-height: 1; }
 .yrs td.dot.g { color: var(--ok); } .yrs td.dot.b { color: var(--bad); } .yrs td.dot.off { color: var(--axis); }
@@ -368,7 +371,7 @@ footer p { margin: 0; } footer a { color: inherit; }
           <p><b>Décrochage :</b> 7,9 % → 7,2 % en France, 9,6 % → 9,1 % dans l'UE. La France baisse plus : <b>1 point</b>.</p>
           <p><b>Chômage des jeunes :</b> 18,6 % → 18,9 % en France, stable à 16,2 % dans l'UE : <b>0 point</b>.</p>
         </div>
-        <p class="note"><b>Limites.</b> L'école agit lentement : un diplômé de 2025 a été scolarisé sous plusieurs gouvernements. Les notes décrivent ce qui s'est passé pendant un mandat, pas tout ce qui en découle. Eurostat signale des ruptures de série certaines années (changement de méthode d'enquête) : ces années-là, le critère n'est pas compté, pour ne pas récompenser un simple changement de mesure. Les vagues PISA couvrent plusieurs gouvernements : la chute de 2018 à 2022 compte pour Philippe, Castex et Borne. En 2025, l'écart social se réduit surtout parce que les meilleurs élèves reculent : la règle lui donne pourtant le point, c'est une de ses limites. Les séries européennes commencent en 2002 : Jacques Chirac n'est noté que sur 2003-2006.</p>
+        <p class="note"><b>Limites.</b> L'école agit lentement : un diplômé de 2025 a été scolarisé sous plusieurs gouvernements. Les notes décrivent ce qui s'est passé pendant un mandat, pas tout ce qui en découle. Certaines années, la façon de mesurer un chiffre change (Eurostat le signale) : ces années-là, le critère n'est pas compté, pour ne pas récompenser un simple changement de mesure. Les vagues PISA couvrent plusieurs gouvernements : la chute de 2018 à 2022 compte pour Philippe, Castex et Borne. En 2025, l'écart social se réduit surtout parce que les meilleurs élèves reculent : la règle lui donne pourtant le point, c'est une de ses limites. Les séries européennes commencent en 2002 : Jacques Chirac n'est noté que sur 2003-2006.</p>
       </div>
     </details>
     <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
@@ -386,7 +389,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="chart" id="rank-gov"></div>
     <p class="note" id="rank-gov-note"></p>
     <span class="eyebrow" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
-    <p class="note" data-t="ruptures">« Non comparable » : cette année-là, Eurostat signale un changement de méthode dans l'enquête française (rupture de série, en 2003, 2013, 2014, 2021 et 2024). Comparer l'évolution reviendrait à comparer deux mesures différentes, donc l'année ne rapporte ni ne coûte de point. C'est pour cela que Gabriel Attal (2024) n'est jugé que sur trois critères.</p>
+    <p class="note" data-t="ruptures">« Non compté » : certaines années, la France ou la moyenne européenne a changé sa façon de mesurer le décrochage, les jeunes sans emploi ni études ou les diplômés (Eurostat le signale en 2003, 2006, 2013, 2014, 2021 et 2024). Le chiffre n'est alors pas comparable à l'année d'avant : l'année ne rapporte ni ne coûte de point, et la raison est écrite sous chaque tableau. C'est pour cela que Gabriel Attal (2024) n'est jugé que sur trois critères.</p>
     <p class="note">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que ses voisins. <b>Touchez un critère</b> pour voir les chiffres. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
     <div class="gov-list" id="gov-list"></div>
     <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
@@ -394,7 +397,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card" id="annees" aria-labelledby="yr-title">
     <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
-    <p class="note">Chaque ligne est une année : ● point marqué (mieux que nos voisins), ○ pas de point, ◐ demi-point (égalité), – non comparable (changement de méthode de l'enquête). PISA et origine sociale : le résultat d'une vague compte pour chacune des années écoulées depuis la précédente (ou, avec « temps long », pour les dix années de scolarité des élèves testés). La note de l'année est la part des points marqués, sur 20, PISA comptant triple.</p>
+    <p class="note">Chaque ligne est une année : ● point marqué (mieux que nos voisins), ○ pas de point, ◐ demi-point (égalité), – non compté (la raison est écrite sous la ligne). PISA et origine sociale : le résultat d'une vague compte pour chacune des années écoulées depuis la précédente (ou, avec « temps long », pour les dix années de scolarité des élèves testés). La note de l'année est la part des points marqués, sur 20, PISA comptant triple.</p>
     <div class="tbl-wrap"><table class="yrs"><thead><tr><th>Année</th><th>Premier ministre</th><th title="Décrochage">Décr.</th><th title="Ni emploi ni études">Ni-ni</th><th title="Diplômés du supérieur">Dipl.</th><th title="Chômage des jeunes">Chôm.</th><th title="PISA">PISA</th><th title="Origine sociale">Orig.</th><th>Note</th></tr></thead><tbody id="yr-body"></tbody></table></div>
     <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 2003</button>
   </section>
@@ -426,7 +429,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   </section>
   <div class="charts3">
     <section class="card" aria-labelledby="p1"><h2 id="p1"><span class="eyebrow">Mathématiques, points</span>−53 points depuis 2003</h2><div class="chart" id="ch-pisa-m"></div><p class="note" data-t="pisa_maths_note"><b>Élèves en difficulté : 36 %</b> en 2025 (29 % en 2022), contre 35 % dans l'OCDE.</p></section>
-    <section class="card" aria-labelledby="p2"><h2 id="p2"><span class="eyebrow">Compréhension de l'écrit, points</span>Le plus fort recul : −49 points depuis 2012</h2><div class="chart" id="ch-pisa-r"></div><p class="note" data-t="pisa_lecture_note"><b>Élèves en difficulté : 33 %</b> en 2025, contre 15 % en 2000 ; 30 % dans l'OCDE.</p></section>
+    <section class="card" aria-labelledby="p2"><h2 id="p2"><span class="eyebrow">Compréhension de l'écrit, points</span>Le plus fort recul : −49 points depuis 2012</h2><div class="chart" id="ch-pisa-r"></div><p class="note" data-t="pisa_lecture_note"><b>Élèves en difficulté : 33 %</b> en 2025, contre 15 % en 2000 ; 30 % dans l'OCDE. États-Unis 2006 : pas de résultat en lecture, invalidé à cause d'une erreur d'impression des cahiers de test (<a href="https://nces.ed.gov/surveys/international/tables/B_1_06.asp">NCES</a>).</p></section>
     <section class="card" aria-labelledby="p3"><h2 id="p3"><span class="eyebrow">Sciences, points</span>Le domaine qui résiste le mieux</h2><div class="chart" id="ch-pisa-s"></div><p class="note" data-t="pisa_sciences_note">Près de <b>3 élèves sur 4</b> atteignent le niveau de base en 2025. Score au niveau de la moyenne de l'OCDE.</p></section>
   </div>
   <section class="card" id="origine" aria-labelledby="eq-title">
@@ -505,6 +508,7 @@ function main(FEED) {
   var KEYS = ConcretNotes.education(SER).KEYS, CURVES = ['el', 'ne', 'te', 'yu'];
   var at = function (arr, y) { return arr[y - Y0]; };
   // Règles de notation : commun/notes.js (la même méthode pour la page, l'accueil et la mise à jour automatique).
+  var POURQUOI = ConcretNotes.POURQUOI;
   var LONG = true; try { LONG = localStorage.getItem('edu-long2') !== '0'; } catch (e) {}
   var EDU = function () { return ConcretNotes.education(SER, { long: LONG }); };
   var pisaGap = function (w0, w1) { return EDU().pisaGap(w0, w1); };
@@ -518,7 +522,7 @@ function main(FEED) {
   var evaluate = function (g) { return EDU().evaluate(g); };
   // ===== Détail d'un critère, pour vérifier chaque point =====
   var sg = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d == null ? 1 : d); };
-  var ptHtml = function (v) { return v == null ? '<span class="pt na">n.c.</span>' : v === 1 ? '<span class="pt g">1</span>' : v === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">' + (v === 0.5 ? '½' : fmt(v, 2)) + '</span>'; };
+  var ptHtml = function (v) { return v == null ? '<span class="pt na">non compté</span>' : v === 1 ? '<span class="pt g">1</span>' : v === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">' + (v === 0.5 ? '½' : fmt(v, 2)) + '</span>'; };
   var DET = {
     el: 'Évolution sur l\'année de la part des 18-24 ans sortis de l\'école sans diplôme du secondaire, en points (entre parenthèses : niveau, en %). Point si la France baisse plus, ou monte moins, que l\'UE. Source : Eurostat.',
     ne: 'Évolution sur l\'année de la part des 15-29 ans ni en emploi, ni en études, ni en formation, en points (entre parenthèses : niveau, en %). Point si la France baisse plus, ou monte moins, que l\'UE. Source : Eurostat.',
@@ -550,17 +554,26 @@ function main(FEED) {
         var lv = function (v, l) { return sg(v, 1) + (l != null ? ' (' + l + ')' : ''); };
         h += '<tr><td>' + r.w0 + '→' + r.w + '</td><td>' + lv(r.f, r.lf) + '</td><td>' + lv(r.o, r.lo) + '</td><td>' + sg(r.f - r.o, 1) + '</td><td>' + ptHtml(r.pt) + '</td></tr>';
       });
-      h += '</tbody></table><p>Points retenus, année par année : ' + g.y[k].map(function (d) { return d.y + ' : ' + (d.pt == null ? 'aucun' : d.pt === 0.5 ? '½' : fmt(d.pt, d.pt % 1 ? 2 : 0)); }).join(' · ') + '.</p>';
+      h += '</tbody></table>';
+      var why = [];
+      ws.forEach(function (r) { if (r.pt === 0.5) why.push(k === 'pi' ? 'Demi-point pour ' + r.w0 + '→' + r.w + ' : la France et l\'OCDE ont évolué presque autant (moins d\'un demi-point d\'écart), compté comme une égalité.' : POURQUOI.egalite(r.w, 'l\'OCDE')); });
+      g.y[k].forEach(function (d) { if (d.pt == null) why.push('Non compté en ' + d.y + ' : aucune vague ' + (k === 'pi' ? 'PISA' : 'de mesure') + ' ne couvre cette année.'); });
+      h += '<p>Points retenus, année par année : ' + g.y[k].map(function (d) { return d.y + ' : ' + (d.pt == null ? 'non compté' : d.pt === 0.5 ? '½' : fmt(d.pt, d.pt % 1 ? 2 : 0)); }).join(' · ') + '.</p>';
+      if (why.length) h += '<p class="kdet-why">' + why.join('<br>') + '</p>';
       h += '<p>' + (LONG ? 'Mode « temps long » : chaque vague compte pour les dix années de scolarité des élèves testés ; une année couverte par plusieurs vagues reçoit leur moyenne.' : 'Mode « depuis la vague précédente » : chaque vague compte pour les années écoulées depuis la vague d\'avant.') + '</p>';
       wrap.innerHTML = h; return wrap;
     }
-    var c = S[k], lv = function (arr, y) { var a = at(arr, y), b = at(arr, y - 1); return a == null || b == null ? 'n.d.' : sg(a - b, 1) + ' (' + fmt(a, 1) + ')'; };
+    var c = S[k], why = [], lastY = Y0 + Math.min(c.fr.length, c.eu.length) - 1;
+    var lv = function (arr, y) { var a = at(arr, y), b = at(arr, y - 1); return a == null ? '—' : b == null ? '— (' + fmt(a, 1) + ')' : sg(a - b, 1) + ' (' + fmt(a, 1) + ')'; };
     h += '<table><thead><tr><th>Année</th><th>France</th><th>UE</th><th>Écart</th><th>Point</th></tr></thead><tbody>';
     g.y[k].forEach(function (d) {
-      var y = d.y, br = c.br.indexOf(y) >= 0, df = at(c.fr, y) - at(c.fr, y - 1), de = at(c.eu, y) - at(c.eu, y - 1), e = df - de;
-      h += '<tr><td>' + y + '</td><td>' + lv(c.fr, y) + '</td><td>' + lv(c.eu, y) + '</td><td>' + (br || isNaN(e) ? '' : e === 0 ? '0' : sg(e, Math.abs(e) < 0.05 ? 2 : 1)) + '</td><td>' + (br ? '<span class="pt na">rupture</span>' : ptHtml(d.pt)) + '</td></tr>';
+      var y = d.y, df = at(c.fr, y) - at(c.fr, y - 1), de = at(c.eu, y) - at(c.eu, y - 1), e = df - de;
+      h += '<tr><td>' + y + '</td><td>' + lv(c.fr, y) + '</td><td>' + lv(c.eu, y) + '</td><td>' + (e == null || isNaN(e) ? '' : e === 0 ? '0' : sg(e, Math.abs(e) < 0.05 ? 2 : 1)) + '</td><td>' + ptHtml(d.pt) + '</td></tr>';
+      // Pourquoi une année n'est pas comptée, ou ne vaut qu'un demi-point : dit en clair sous le tableau.
+      if (d.pt === 0.5) why.push(POURQUOI.egalite(y, 'l\'Union européenne'));
+      else if (d.pt == null) why.push(y <= Y0 ? POURQUOI.debut(Y0) : c.br.indexOf(y) >= 0 ? POURQUOI.methode(y, (c.br_motif || {})[y] || 'fr') : y > lastY || at(c.fr, y) == null ? POURQUOI.pasPublie(y, 'Eurostat') : POURQUOI.absent(y));
     });
-    wrap.innerHTML = h + '</tbody></table><p>Écart = évolution de la France moins celle de l\'UE. « Rupture » : Eurostat signale un changement de méthode cette année-là, l\'année ne compte pas.</p>';
+    wrap.innerHTML = h + '</tbody></table>' + (why.length ? '<p class="kdet-why">' + why.join('<br>') + '</p>' : '') + '<p>Écart = évolution de la France moins celle de l\'UE, en points.</p>';
     return wrap;
   }
   GOVS.forEach(evaluate); PRES.forEach(evaluate);
@@ -606,7 +619,7 @@ function main(FEED) {
       if (!on[k]) return;
       var l = g.w[k], s = document.createElement('button'), won = d3.sum(l), n = l.length;
       s.type = 'button'; s.className = 'kpi' + (!n ? '' : won / n >= 0.5 ? ' g' : ' b'); s.setAttribute('aria-expanded', 'false'); s.title = 'Voir le détail des chiffres';
-      s.innerHTML = '<em></em><span></span>'; s.firstChild.textContent = S[k].l; s.lastChild.textContent = !n ? (k === 'pi' || k === 'eq' ? 'pas de mesure' : 'non comparable') : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n;
+      s.innerHTML = '<em></em><span></span>'; s.firstChild.textContent = S[k].l; s.lastChild.textContent = !n ? 'non compté' : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n;
       s.addEventListener('click', function () {
         Array.prototype.forEach.call(kp.children, function (b) { b.setAttribute('aria-expanded', 'false'); });
         det.textContent = '';
@@ -646,11 +659,11 @@ function main(FEED) {
       svg.append('text').attr('x', lw - 8).attr('y', y + 16).attr('text-anchor', 'end').text(name).style('fill', 'var(--fg)').style('font-size', '12px').style('text-decoration', 'underline').style('text-decoration-color', 'var(--line)').style('pointer-events', 'none');
       svg.append('rect').attr('x', x(0)).attr('y', y + 5).attr('width', Math.max(2, x(r.n) - x(0))).attr('height', 17).attr('rx', 3).attr('fill', countOf(r.g) < MIN_N ? 'var(--axis)' : col(r.n)).style('pointer-events', 'none');
       var inside = x(r.n) - x(0) > 30, few = countOf(r.g) < MIN_N;
-      svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' · peu de données' : '')).attr('text-anchor', few ? 'start' : (inside ? 'end' : 'start')).attr('x', few ? x(r.n) + 6 : (inside ? x(r.n) - 6 : x(r.n) + 6)).style('fill', few ? 'var(--muted)' : (inside ? 'var(--panel)' : 'var(--fg)')).style('font-weight', 700).style('font-size', '12px');
+      svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' · seulement ' + countOf(r.g) + ' comparaisons' : '')).attr('text-anchor', few ? 'start' : (inside ? 'end' : 'start')).attr('x', few ? x(r.n) + 6 : (inside ? x(r.n) - 6 : x(r.n) + 6)).style('fill', few ? 'var(--muted)' : (inside ? 'var(--panel)' : 'var(--fg)')).style('font-weight', 700).style('font-size', '12px');
     });
     var best = list[0], above = list.filter(function (r) { return r.n >= 10; }).length;
     document.getElementById('rank-' + mode + '-note').textContent = (above ? above + ' sur ' + list.length + (above > 1 ? ' atteignent' : ' atteint') + ' le niveau de nos voisins ; les autres sont en dessous de la moyenne. ' : 'Tous sont en dessous de la moyenne de nos voisins. ') + 'Meilleure note : ' + best.g.n + ' (' + nfmt(best.n) + '/20).' +
-      (mode === 'pres' ? ' Emmanuel Macron, en exercice, est noté sur 2017-2025.' : ' En gris : moins de ' + MIN_N + ' comparaisons, note peu fiable. Touchez une barre pour voir le détail.');
+      (mode === 'pres' ? ' Emmanuel Macron, en exercice, est noté sur 2017-2025.' : ' En gris : note calculée sur moins de ' + MIN_N + ' comparaisons (mandat court, ou années non comptées), donc peu fiable. Touchez une barre pour voir le détail.');
   }
   function rankChart() { rankOne('pres'); rankOne('gov'); }
   var showAll = false;
@@ -668,7 +681,7 @@ function main(FEED) {
       var badge = document.createElement('div'); badge.className = 'badge ' + (n < MIN_N ? 'p' : cls(note)); badge.innerHTML = '<span></span>';
       badge.firstChild.textContent = nfmt(note); var sm = document.createElement('small'); sm.textContent = '/20'; badge.appendChild(sm);
       var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span></span>';
-      who.firstChild.textContent = g.n; who.lastChild.textContent = '· ' + (g.y0 === g.y1 ? g.y0 : g.y0 + '-' + g.y1) + ' · ' + g.p + ' · ' + n + ' comparaisons' + (n < MIN_N ? ' (peu de données)' : '');
+      who.firstChild.textContent = g.n; who.lastChild.textContent = '· ' + (g.y0 === g.y1 ? g.y0 : g.y0 + '-' + g.y1) + ' · ' + g.p + ' · ' + n + ' comparaison' + (n > 1 ? 's' : '') + (n < MIN_N ? ' : trop peu pour une note fiable (il en faut ' + MIN_N + '), d\'où le gris' : '');
       row.appendChild(badge); row.appendChild(who); row.appendChild(chipsFor(g)); box.appendChild(row);
     });
   }
@@ -697,12 +710,25 @@ function main(FEED) {
       KEYS.forEach(function (k, i) {
         var td = document.createElement('td'), m = ms[i]; td.className = 'dot' + (!on[k] ? ' off' : m === 1 ? ' g' : m === 0 ? ' b' : '');
         td.textContent = !on[k] ? '' : m == null ? '–' : m === 1 ? '●' : m === 0 ? '○' : '◐';
-        td.title = S[k].l + ' : ' + (m == null ? (k === 'pi' || k === 'eq' ? 'pas de mesure' : 'non comparable (changement de méthode de l\'enquête)') : m === 1 ? 'mieux que nos voisins' : m === 0 ? 'moins bien que nos voisins' : 'égalité');
+        td.title = S[k].l + ' : ' + (m == null ? 'non compté (raison sous la ligne)' : m === 1 ? 'mieux que nos voisins' : m === 0 ? 'moins bien que nos voisins' : 'égalité');
         tr.appendChild(td);
       });
       var tdn = document.createElement('td'), n = counted.length ? 20 * wmean(counted) : null;
-      tdn.innerHTML = n == null ? '–' : '<span class="yr-note ' + cls(n) + '">' + nfmt(n) + '</span>' + (counted.length < 4 ? '<small> ' + counted.length + ' crit.</small>' : '');
+      tdn.innerHTML = n == null ? '–' : '<span class="yr-note ' + cls(n) + '">' + nfmt(n) + '</span>' + (counted.length < 4 ? '<small> sur ' + counted.length + ' critère' + (counted.length > 1 ? 's' : '') + '</small>' : '');
       tr.hidden = hide; tr.appendChild(tdn); tb.appendChild(tr);
+      // Les critères non comptés cette année-là, et pourquoi, juste sous la ligne.
+      var nc = KEYS.filter(function (k, i) { return on[k] && ms[i] == null; });
+      var meth = function (qui) { return (qui === 'fr' ? 'la France a' : qui === 'fr_ue' ? 'la France et la moyenne européenne ont' : 'la moyenne européenne a') + ' changé ' + (qui === 'fr_ue' ? 'leur' : 'sa') + ' façon de mesurer, pas comparable à ' + (y - 1); };
+      if (nc.length) {
+        var byWhy = {};
+        nc.forEach(function (k) {
+          var c = S[k], w = (k === 'pi' || k === 'eq') ? 'aucune vague de mesure ne couvre cette année' : c.br.indexOf(y) >= 0 ? meth((c.br_motif || {})[y] || 'fr') : 'chiffre pas encore publié';
+          (byWhy[w] = byWhy[w] || []).push(S[k].l.toLowerCase());
+        });
+        var wr = document.createElement('tr'); wr.className = 'yr-why'; var wd = document.createElement('td'); wd.colSpan = 9;
+        wd.textContent = 'Non compté en ' + y + ' : ' + Object.keys(byWhy).map(function (w) { return byWhy[w].join(', ') + ' (' + w + ')'; }).join(' ; ') + '.';
+        wr.appendChild(wd); wr.hidden = hide; tb.appendChild(wr);
+      }
     }
   }
 

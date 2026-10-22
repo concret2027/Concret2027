@@ -7,6 +7,20 @@
   var mean = function (a) { return a.length ? a.reduce(function (s, v) { return s + v; }, 0) / a.length : null; };
   var sum = function (a) { return a.reduce(function (s, v) { return s + v; }, 0); };
 
+  // Phrases d'explication, à afficher là où le lecteur voit la donnée non comptée ou absente (règle de CLAUDE.md) :
+  // ce qui se passe et pourquoi ça ne compte pas, en une phrase courte, sans jargon.
+  var POURQUOI = {
+    // qui : 'fr' (la France), 'ue' (la moyenne européenne), 'fr_ue' (les deux)
+    methode: function (y, qui) {
+      var sujet = qui === 'fr' ? 'la France a changé sa façon de mesurer ce chiffre' : qui === 'fr_ue' ? 'la France et la moyenne européenne ont changé leur façon de mesurer ce chiffre' : 'la moyenne européenne a changé sa façon de mesurer ce chiffre';
+      return 'Non compté : en ' + y + ', ' + sujet + ', il n\'est pas comparable à ' + (y - 1) + '.';
+    },
+    pasPublie: function (y, source) { return 'Non compté : le chiffre ' + y + ' n\'est pas encore publié' + (source ? ' par ' + source : '') + '.'; },
+    debut: function (y, source) { return 'Non compté : les séries ' + (source ? source + ' ' : '') + 'commencent en ' + y + ', il n\'y a pas d\'année précédente pour mesurer l\'évolution.'; },
+    absent: function (y) { return 'Non compté : pas de chiffre disponible pour ' + y + '.'; },
+    egalite: function (y, voisin) { return 'Demi-point : en ' + y + ', la France et ' + voisin + ' ont évolué exactement autant.'; }
+  };
+
   // Chaque année : 1 si la France fait mieux que ses voisins, 0 sinon, 0,5 en cas d'égalité.
   function match(fr, ref, lowerIsBetter) {
     if (fr == null || ref == null || isNaN(fr) || isNaN(ref)) return null;
@@ -45,7 +59,8 @@
         CRIT.forEach(function (c) {
           var d = CMP[c.k](y), m = d ? match(d.f, d.e, d.low) : null;
           if (m != null) g.w[c.k].push(m);
-          if (d) { d.y = y; d.pt = m; g.y[c.k].push(d); }
+          if (!d) d = { f: null, e: null };
+          d.y = y; d.pt = m; g.y[c.k].push(d);
         });
       }
       CRIT.forEach(function (c) { g.r[c.k] = mean(g.w[c.k]); });
@@ -107,8 +122,8 @@
 
   // ===== Classement général de l'accueil : moyenne des notes par mission, réglages par défaut de chaque page =====
   var MISSIONS = [
-    { k: 'f', l: 'Finances', url: '/finances/#bulletin', calc: function (S) { return finances(S.finances); }, ser: 'finances' },
-    { k: 'e', l: 'Éducation', url: '/education/#bulletin', calc: function (S) { return education(S.education, { long: true }); }, ser: 'education' }
+    { k: 'f', l: 'Finances', url: '/finances/#bulletin', debut: 'les séries des finances publiques commencent en 1995', calc: function (S) { return finances(S.finances); }, ser: 'finances' },
+    { k: 'e', l: 'Éducation', url: '/education/#bulletin', debut: 'les chiffres de l\'éducation commencent en 2002, la première évolution mesurable est celle de 2003', calc: function (S) { return education(S.education, { long: true }); }, ser: 'education' }
   ];
   var r1 = function (v) { return v == null ? null : Math.round(v * 10) / 10; };
   function classement(series) {
@@ -122,6 +137,8 @@
           if (!rows[g0.n]) { rows[g0.n] = { n: g0.n, y0: g0.y0, y1: g0.y1 }; order.push(g0.n); }
           var r = rows[g0.n]; r.y0 = Math.min(r.y0, g0.y0); r.y1 = Math.max(r.y1, g0.y1);
           r[m.k] = r1(calc.note(g));
+          var ys = []; Object.keys(g.y).forEach(function (k) { g.y[k].forEach(function (d) { if (d.pt != null) ys.push(d.y); }); });
+          r[m.k + '_ans'] = ys.length ? [Math.min.apply(null, ys), Math.max.apply(null, ys)] : null;
         });
       });
       out[kind] = order.map(function (n) {
@@ -132,6 +149,6 @@
     return out;
   }
 
-  var api = { match: match, finances: finances, education: education, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url }; }) };
+  var api = { match: match, POURQUOI: POURQUOI, finances: finances, education: education, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url, debut: m.debut }; }) };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ConcretNotes = api;
 })(this);

@@ -71,6 +71,14 @@ if (S.education) {
   var T = (d.textes || {})[pg] || {};
   Object.keys(T).forEach(function (k) { if (!T[k].html || typeof T[k].html !== 'string') err('textes.' + pg + '.' + k + ' vide'); });
 });
+// Règle de CLAUDE.md : une donnée non comptée s'explique en clair, sans jargon.
+(function () { var JARGON = /\b(n\.d\.|n\.c\.)|rupture de série|\brupture\b|non comparable/i, vus = [];
+  ['finances', 'education'].forEach(function (pg) {
+    Object.keys((d.textes || {})[pg] || {}).forEach(function (k) { if (JARGON.test(d.textes[pg][k].html)) vus.push('textes.' + pg + '.' + k); });
+    ['FACTS', 'QUIZ'].forEach(function (k) { if (JARGON.test(JSON.stringify((S[pg] || {})[k] || []))) vus.push(pg + '.' + k); });
+  });
+  vus.forEach(function (v) { alertes.push('jargon à remplacer par une phrase claire dans ' + v + ' (règle de CLAUDE.md)'); });
+})();
 var ids = {};
 cal.indicateurs.forEach(function (i) { if (ids[i.id]) err('calendrier : id en double ' + i.id); ids[i.id] = 1; if (!/^\d{4}-\d{2}-\d{2}$/.test(i.prochaine_verification || '')) err('calendrier : ' + i.id + ' sans prochaine_verification valide'); });
 
@@ -169,7 +177,7 @@ if (bloquant.length) {
 } else {
   var principaux = chgNotes.slice(0, 3).concat(changements.filter(function (c) { return !/^texte /.test(c); }).slice(0, chgNotes.length ? 2 : 4));
   out.push('Concret ✓ ' + dateFr(today) + ' : ' + fait.length + ' indicateur(s) vérifié(s)' + (principaux.length ? ' · ' + principaux.join(' · ') : ' · aucun chiffre nouveau') + '.');
-  problemes.forEach(function (p) { out.push('⚠ ' + p); });
+  problemes.concat(alertes).forEach(function (p) { out.push('⚠ ' + p); });
 }
 aValider.forEach(function (a) { out.push('À valider : « ' + a.texte_actuel + ' » (' + a.page + ') ne tient plus : ' + a.constat + '.'); });
 console.log(out.join('\n'));

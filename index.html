@@ -336,6 +336,14 @@ footer p { margin: 0; } footer a { color: inherit; }
       b.innerHTML = '<span class="nm">' + r.n + '<small>' + period(r, series) + '</small></span><span class="tr"><span class="ten"></span><span class="fl ' + cls(r.m) + '" style="width:' + w + '%"></span><span class="v" style="' + (inside ? 'left:calc(' + w + '% - 2.8em);color:#fff' : 'left:calc(' + w + '% + 6px)') + '">' + fmt(r.m) + '</span></span>';
       var d = document.createElement('div'); d.className = 'bd'; d.hidden = true;
       d.innerHTML = MISS.map(function (m) { var v = r[m.k]; return '<a class="' + (v == null ? 'na' : cls(v)) + '" href="' + m.url + '">' + m.l + ' <b>' + (v == null ? 'non noté' : fmt(v) + '/20') + '</b></a>'; }).join('') + (r.k < MISS.length ? '<span class="note" style="align-self:center">Moyenne sur ' + r.k + ' mission' + (r.k > 1 ? 's' : '') + '.</span>' : '');
+      // Mission non notée ou notée sur une partie du mandat : la raison, en une phrase, là où on la voit.
+      var why = MISS.map(function (m) {
+        var a = r[m.k + '_ans'];
+        if (r[m.k] == null) return m.l + ' non noté : ' + m.debut + '.';
+        if (a && (a[0] > r.y0 || a[1] < r.y1)) return m.l + ' noté sur ' + (a[0] === a[1] ? a[0] : a[0] + '-' + a[1]) + ' seulement : ' + (a[0] > r.y0 ? m.debut : 'les chiffres des années suivantes ne sont pas encore publiés') + '.';
+        return null;
+      }).filter(Boolean);
+      if (why.length) d.innerHTML += '<span class="note" style="flex-basis:100%">' + why.join(' ') + '</span>';
       b.addEventListener('click', function () { var o = d.hidden; d.hidden = !o; b.setAttribute('aria-expanded', o ? 'true' : 'false'); });
       box.appendChild(b); box.appendChild(d);
     });

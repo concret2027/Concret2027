@@ -11,6 +11,16 @@ Tout chiffre publié a une source, et il a été lu à cette source. Rien d'inve
 - Commits : `git config user.name "Concret"` et `git config user.email "noreply@concret2027.fr"`. Aucune ligne `Co-Authored-By`, aucun nom ni e-mail personnel, nulle part (code, commits, journal).
 - Ne jamais modifier le domaine dans Settings → Pages : GitHub y crée un commit au nom du compte personnel.
 
+## Toute donnée non comptée, absente ou exceptionnelle s'explique là où on la voit
+
+Chaque fois qu'une donnée n'est pas comptée, manque ou fait exception (changement de méthode de mesure, chiffre pas encore publié, début des séries, égalité à ½ point, candidat non testé, mandat trop court pour une note fiable, etc.), on l'explique en clair, à l'endroit même où le lecteur la voit, en une phrase courte : ce qui se passe, et pourquoi ça ne compte pas.
+
+- Dans les tableaux : on affiche quand même les chiffres et l'écart s'ils existent, on écrit « non compté » dans la colonne du point, et la phrase d'explication juste en dessous.
+- Pas de jargon (« rupture », « n.d. », « n.c. », « non comparable ») et pas de long paragraphe.
+- Les phrases toutes faites sont dans `commun/notes.js` (`POURQUOI` : changement de méthode, pas encore publié, début des séries, absent, égalité) : les réutiliser sur toute page, y compris Santé, Sécurité et justice, Défense, Vie des Français.
+- Un changement de méthode n'est retenu que s'il est signalé à la source (pour Eurostat, le code « b » dans les données), en précisant qui a changé (la France, la moyenne européenne, ou les deux : `br_motif` dans `data.json`).
+- `outils/controle.js verifier` signale le jargon s'il réapparaît dans `data.json`.
+
 ## Où sont les données
 
 **`data.json` contient `updated`, `updated_iso`, `datasets`, `series` et `textes`. Toute écriture doit relire le fichier entier, modifier ce qu'il faut et réécrire l'objet complet : ne jamais supprimer `series` ni `textes` (sans eux, les pages Finances, Éducation et l'accueil n'affichent plus rien).**

@@ -285,7 +285,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 
     <section class="bx-card" id="tous-sondages">
       <h2>Tous les sondages de premier tour</h2>
-      <p class="bx-note">Moyenne des hypothèses testées par chaque enquête, en %, pour les 15 premiers candidats des sondages.</p>
+      <p class="bx-note">Moyenne des hypothèses testées par chaque enquête, en %, pour les 15 premiers candidats des sondages. Case vide : le candidat ne figurait dans aucune hypothèse testée par ce sondage.</p>
       <div class="bx-tablebox">
         <table class="bx-table" data-source="tableau_t1" data-row-key="sondage">
           <thead><tr id="thead-t1"><th class="l" data-field="sondage">Sondage</th></tr></thead>
@@ -420,6 +420,7 @@ dash.calc('mouvements', {
     var BX = window.BX;
     var at = function (rows, d) { var r = rows.filter(function (q) { return q.date <= d; }); return r.length ? r[r.length - 1] : null; };
     var minus = function (d, n) { return new Date(Date.parse(d) - n * 86400000).toISOString().slice(0, 10); };
+    var dfr = function (d) { return new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
     var list = [], seen = {};
     BX.rank(moyenne_t1).slice(0, BX.TOP_MV).forEach(function (c) { if (!seen[c.key]) { seen[c.key] = 1; list.push(c.short); } });
     BX.pmRank(polymarket).slice(0, BX.TOP_MV_PM).forEach(function (c) { if (!seen[c.key]) { seen[c.key] = 1; list.push(c.short); } });
@@ -436,7 +437,10 @@ dash.calc('mouvements', {
         sondages: tNow ? tNow.valeur : null,
         sondages_variation: tNow && tThen ? Math.round((tNow.valeur - tThen.valeur) * 10) / 10 : null,
         paris: cur ? Number(cur.probabilite) : pNow ? pNow.v : null,
-        paris_variation: pNow && pThen ? Math.round(((cur ? Number(cur.probabilite) : pNow.v) - pThen.v) * 10) / 10 : null
+        paris_variation: pNow && pThen ? Math.round(((cur ? Number(cur.probabilite) : pNow.v) - pThen.v) * 10) / 10 : null,
+        // Pourquoi une variation manque : affiché en clair sous le tableau.
+        sondages_raison: tNow && tThen ? '' : !tNow ? 'pas encore assez testé dans les sondages' : 'testé dans les sondages seulement depuis le ' + dfr(tr[0].date) + ', pas de point de comparaison il y a 14 jours',
+        paris_raison: pNow && pThen ? '' : !pNow ? 'pas de variation chez les parieurs, Concret ne relève chaque jour la cote que des 6 favoris' : 'cote relevée seulement depuis le ' + dfr(pm[0].date) + ', pas de point de comparaison il y a 30 jours'
       };
     });
   }
@@ -551,6 +555,11 @@ dash.calc('duels_recents', {
       });
       box.appendChild(row);
     });
+    // Les « — » expliqués en une phrase, regroupés par raison.
+    var why = {};
+    rows.forEach(function (r) { [r.sondages_raison, r.paris_raison].forEach(function (w) { if (w) (why[w] = why[w] || []).push(r.court || r.candidat); }); });
+    var ks = Object.keys(why);
+    if (ks.length) { var p = document.createElement('p'); p.className = 'bx-note bx-why'; p.textContent = '— ' + ks.map(function (w) { return why[w].join(', ') + ' : ' + w + '.'; }).join(' '); box.appendChild(p); }
   }
 
   function drawLast(rows) {
