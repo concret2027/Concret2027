@@ -176,6 +176,7 @@ section[id], details[id], .growth[id] { scroll-margin-top: calc(var(--navh, 44px
 @media (max-width: 640px) { .growth { grid-template-columns: 1fr; } }
 .metric .foot { font-size: 12.5px; color: var(--muted); }
 .metric .foot b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.spark { position: relative; }
 .spark svg { display: block; width: 100%; height: auto; }
 .spark text { fill: var(--muted); font-size: 10px; font-family: var(--sans); }
 .equiv-wrap { border-top: 1px solid var(--line); padding: 14px 18px 16px; display: grid; gap: 10px; }
@@ -265,14 +266,14 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="today" aria-label="Les chiffres du jour">
     <div class="today-grid">
       <div class="metric">
-        <span class="lab">Taux d'emprunt de l'État à 10 ans</span>
+        <span class="lab" id="rate-lab">Taux d'emprunt de l'État à 10 ans</span>
         <div class="row"><span class="num" id="rate-num">4,93<small>%</small></span><span class="delta up" id="rate-d1">▲ +0,08 pt sur la dernière séance</span><span class="delta up" id="rate-y1">▲ +1,5 pt en un an</span></div>
         <div class="spark" id="spark-rate"></div>
         <div class="foot" id="rate-foot">—</div>
         <button class="share" type="button" data-share="taux">Partager ce graphique</button>
       </div>
       <div class="metric">
-        <span class="lab">Dette publique</span>
+        <span class="lab" id="debt-lab">Dette publique</span>
         <div class="row"><span class="num" id="debt-num">119<small>% du PIB</small></span><span class="delta up" id="debt-dq">▲ +1,5 pt en un trimestre</span></div>
         <div class="spark" id="spark"></div>
         <div class="foot"><b id="debt">—</b> au total (estimation), dont <b id="today-debt">—</b> ajoutés depuis minuit · <b id="percap">—</b> par habitant. Chaque jour, la dette prend de quoi payer <b id="smic-day">42 000 salariés au Smic</b> pendant un an.</div>
@@ -352,7 +353,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card" id="bulletin" aria-labelledby="gov-title">
     <h2 id="gov-title"><span class="eyebrow">Le bulletin économique</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
     <button class="share" id="share-rank" type="button" style="justify-self:start;margin:0" aria-label="Partager le classement">Partager le classement</button>
-    <p class="explain"><b>La règle :</b> chaque année et pour chacun des 8 critères, la France <b>marque 1 point</b> si elle fait mieux que la moyenne de la zone euro, <b>0 point</b> si elle fait moins bien. La note sur 20 est la part des points marqués. <b>10/20 = la France a fait mieux que la zone euro une fois sur deux.</b> 20/20 = mieux à chaque fois.</p>
+    <p class="explain"><b>La règle :</b> chaque année et pour chacun des 8 critères, la France <b>marque 1 point</b> si elle fait mieux que la moyenne de la zone euro, <b>0 point</b> si elle fait moins bien. La note sur 20 est la part des points marqués. <b>10/20 = le niveau de la zone euro. En dessous de 10, la France fait moins bien que la moyenne européenne.</b></p>
     <details class="how">
       <summary>Comment la note est calculée, avec un exemple</summary>
       <div class="how-body">
@@ -399,7 +400,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Zone euro</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--us)"></i>États-Unis</span><span>· fonds : Premiers ministres successifs</span></div>
   </section>
   <div class="charts4">
-    <section class="card" aria-labelledby="c1"><h2 id="c1"><span class="eyebrow">Dette, % du PIB</span>De 14 points sous la zone euro à 28 points au-dessus</h2><div class="chart" id="ch-dette"></div><p class="note">États-Unis : dette brute des administrations publiques (FMI), jusqu'en 2024.</p></section>
+    <section class="card" aria-labelledby="c1"><h2 id="c1"><span class="eyebrow">Dette, % du PIB</span>De 14 points sous la zone euro à 28 points au-dessus</h2><div class="chart" id="ch-dette"></div><p class="note">Chiffres de fin d'année : 115,6 % fin 2025. Depuis, la dette a continué de monter : <span id="debt-last">119 % fin juin 2026</span> selon le dernier chiffre trimestriel de l'Insee, celui affiché en haut de page. États-Unis : dette brute des administrations publiques (FMI), jusqu'en 2024.</p></section>
     <section class="card" aria-labelledby="c2"><h2 id="c2"><span class="eyebrow">Déficit, % du PIB</span>Pire que la zone euro chaque année depuis 2002</h2><div class="chart" id="ch-deficit"></div><p class="note">États-Unis : solde des administrations publiques (FMI), 2001-2024.</p></section>
     <section class="card" aria-labelledby="c3"><h2 id="c3"><span class="eyebrow">Dépenses, % du PIB</span>L'écart est passé de 3 à 7 points</h2><div class="chart" id="ch-dep"></div><p class="note">États-Unis : dépenses des administrations publiques (FMI, via Our World in Data), jusqu'en 2024.</p><p class="bars-big">Dépenser comme l'Allemagne, ce serait <b>≈ 200 Md€</b> de moins par an.</p></section>
     <section class="card" aria-labelledby="c4"><h2 id="c4"><span class="eyebrow">Prélèvements, % du PIB</span>Entre 3,7 et 7,1 points au-dessus depuis 1995</h2><div class="chart" id="ch-po"></div><p class="note">Impôts et cotisations (Eurostat). En 2024, la France est 2e de l'UE, derrière le Danemark. États-Unis : base UNU-WIDER via Our World in Data, jusqu'en 2023 ; sur cette base, la France ressort environ 2 points plus bas qu'avec Eurostat, l'écart réel est donc un peu plus faible que sur le graphique.</p></section>
@@ -447,7 +448,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <footer>
     <p><b>Sources.</b> Dette fin T2 2026 : <a href="https://www.insee.fr/fr/statistiques/9053525">Insee, 29 sept. 2026</a>. Comptes 2025 et intérêts : <a href="https://www.insee.fr/fr/statistiques/fichier/version-html/8997691/ip2106.pdf">Insee Première, mai 2026</a>. Budgets 2026 : Défense hors pensions (<a href="https://www.senat.fr/rap/l25-139-38/l25-139-38_mono.html">Sénat, PLF 2026</a>), Éducation nationale hors pensions (PLF 2026), Ondam 2026 (<a href="https://www.banquedesterritoires.fr/loi-de-financement-de-la-securite-sociale-pour-2026-quels-credits-quelles-nouveautes">LFSS 2026</a>). Séries 1995-2025 : Eurostat (gov_10a_main, gov_10dd_edpt1, gov_10a_taxag) ; croissance trimestrielle : Eurostat (namq_10_gdp) ; États-Unis : FMI (dette, solde, dépenses, via Our World in Data et FRED) et UNU-WIDER via Our World in Data (prélèvements) ; taux à 10 ans mensuels et annuels : Eurostat (irt_lt_mcby_m, irt_lt_mcby_a) ; taux quotidiens : Idéal Investisseur ; 340 Md€ d'emprunts prévus en 2027 : Agence France Trésor, citée par Boursorama ; PIB par habitant, chômage et balance commerciale : Banque mondiale (NY.GDP.PCAP.PP.KD, SL.UEM.TOTL.ZS, NE.RSB.GNFS.ZS). Taux du 20 oct. 2026 : Idéal Investisseur et ANSA. Publications du mois : déficit de l'État fin août (ministère de l'Action et des Comptes publics, via Boursorama), chômage d'août (Eurostat), inflation de septembre (Eurostat, Insee).</p>
-    <p><b>Méthode.</b> Le taux d'emprunt et la dette sont mis à jour automatiquement chaque jour à midi à partir des dernières publications (Idéal Investisseur pour les taux, Insee pour la dette). Le compteur part du dernier chiffre trimestriel de l'Insee et prolonge le rythme des six mois précédents : c'est une estimation, recalée à chaque publication. Population : 69 millions. Les comparaisons rapportent les intérêts 2025 aux budgets 2026. Smic net : 1 477,93 € par mois depuis le 1er juin 2026. <span id="updated-note"></span></p>
+    <p><b>Méthode.</b> Le taux d'emprunt et la dette sont mis à jour automatiquement chaque jour à midi à partir des dernières publications (Idéal Investisseur pour les taux, Insee pour la dette). Le compteur de la dette (le montant en euros qui augmente chaque seconde, en haut de page) part du dernier chiffre trimestriel de l'Insee et prolonge le rythme d'endettement des six mois précédents : c'est une estimation, recalée à chaque publication. Dette en % du PIB : en haut de page, le dernier chiffre trimestriel de l'Insee ; dans les courbes, le chiffre de fin d'année (Eurostat), pour comparer les pays. Population : 69 millions. Les comparaisons rapportent les intérêts 2025 aux budgets 2026. Smic net : 1 477,93 € par mois depuis le 1er juin 2026. <span id="updated-note"></span></p>
   </footer>
 </div>
 <div class="sheet" id="sheet" hidden>
@@ -532,7 +533,10 @@ function main(FEED) {
   var e2 = document.getElementById('rate-y1'); e2.textContent = arrow(dYear) + fmt(Math.abs(dYear), 1) + ' pt en un an'; e2.className = 'delta ' + (dYear > 0 ? 'up' : dYear < 0 ? 'dn' : '');
   document.getElementById('rate-foot').innerHTML = 'Taux de clôture du ' + dayName(LIVE.rateDate) + '. En un an, il est passé de <b>' + fmt(yearAgo[2], 2) + ' %</b> à <b>' + fmt(LIVE.rate, 2) + ' %</b>. ' +
     (dRate ? 'La variation de la dernière séance (' + (dRate > 0 ? '+' : '−') + fmt(Math.abs(dRate), 2) + ' pt), si elle tenait, ' + (dRate > 0 ? 'coûterait' : 'économiserait') + ' <b>≈ ' + fmt(Math.abs(dRate) * 340e9 / 100 / 1e6) + ' M€ d\'intérêts par an</b> sur les 340 Md€ que l\'État empruntera en 2027.' : '');
-  document.getElementById('debt-num').innerHTML = fmt(Math.round(LIVE.pib)) + '<small>% du PIB</small>';
+  document.getElementById('debt-num').innerHTML = fmt(LIVE.pib, 1) + '<small>% du PIB</small>';
+  document.getElementById('debt-last').textContent = fmt(LIVE.pib, 1) + ' % ' + qName(LIVE.pibDate);
+  document.getElementById('debt-lab').textContent = 'Dette publique · ' + qName(LIVE.pibDate) + ' (Insee)';
+  document.getElementById('rate-lab').textContent = 'Taux d\'emprunt de l\'État à 10 ans · ' + dayName(LIVE.rateDate);
   var dq = Math.round((LIVE.pib - LIVE.pibPrev) * 10) / 10, e3 = document.getElementById('debt-dq');
   e3.textContent = arrow(dq) + fmt(Math.abs(dq), 1) + ' pt en un trimestre'; e3.className = 'delta ' + (dq > 0 ? 'up' : dq < 0 ? 'dn' : '');
   document.getElementById('smic-day').textContent = fmt(smicDay) + ' salariés au Smic';
@@ -608,7 +612,7 @@ function main(FEED) {
     var dp = D.dette.fr.map(function (v, i) { return { x: Y0 + i, v: v }; }).concat([{ x: px, v: LIVE.pib }]);
     sparkline('spark', dp, { dom: [45, 132], label: 'Dette publique en % du PIB depuis 1995', tlab: function (v) { return v === px ? qName(LIVE.pibDate) : String(v); }, vfmt: function (v) { return fmt(v, 1) + ' %'; },
       marks: [{ x: 1995, t: '58 %' }, { x: 2007, t: '66 %' }, { x: 2020, t: '115 %' }, { x: px, t: fmt(Math.round(LIVE.pib)) + ' %', big: 1 }],
-      axis: [{ x: 1995, t: '1995', anchor: 'start' }, { x: 2007, t: '2007' }, { x: 2020, t: '2020' }, { x: px, t: qName(LIVE.pibDate), anchor: 'end' }] });
+      axis: [{ x: 1995, t: '1995', anchor: 'start' }, { x: 2007, t: '2007' }, { x: px, t: qName(LIVE.pibDate), anchor: 'end' }] });
   }
 
   document.querySelectorAll('.jump a').forEach(function (a) {
@@ -665,21 +669,24 @@ function main(FEED) {
     var FACTS = [];
     E.forEach(function (e) { Q.forEach(function (q) { var t = e(q.v); if (t) FACTS.push(q.lead + ', ' + t + '.'); }); });
     FACTS.push('Les intérêts de la dette coûtent <b>2 052 € chaque seconde</b>. Le temps de lire cette phrase, c\'est environ 10 000 €.');
-    // Depuis votre dernière visite (gardé dans le navigateur du visiteur uniquement)
+    // Depuis votre dernière visite (gardé dans le navigateur du visiteur uniquement).
+    // « cur » = début de la visite en cours ; « base » = visite précédente. Une nouvelle visite commence après 1 h d'absence.
     try {
-      var lastV = JSON.parse(localStorage.getItem('derniere-visite') || 'null'), RATE_NOW = LIVE.rate, vis = document.getElementById('visit');
-      if (lastV && now - lastV.t > 3600e3) {
+      var vis = document.getElementById('visit'), st = JSON.parse(localStorage.getItem('fin-visites') || 'null'), snap = { t: now, r: LIVE.rate };
+      if (!st) { var old = JSON.parse(localStorage.getItem('derniere-visite') || 'null'); st = old ? { base: null, cur: old, seen: old.t } : null; }
+      if (!st) st = { base: null, cur: snap, seen: now };
+      else if (now - st.seen > 3600e3) { st.base = st.cur; st.cur = snap; }
+      st.seen = now; localStorage.setItem('fin-visites', JSON.stringify(st));
+      var lastV = st.base;
+      if (lastV) {
         var dd = RATE * (now - lastV.t) / 1000, days = Math.round((now - lastV.t) / 864e5);
-        var when = days >= 1 ? 'il y a ' + days + ' jour' + (days > 1 ? 's' : '') : 'il y a ' + Math.round((now - lastV.t) / 3600e3) + ' h';
-        var dr = Math.round((RATE_NOW - lastV.r) * 100) / 100;
+        var when = days >= 1 ? 'il y a ' + days + ' jour' + (days > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lastV.t) / 3600e3)) + ' h';
+        var dr = Math.round((LIVE.rate - lastV.r) * 100) / 100;
         var lastDay = new Date(lastV.t).toISOString().slice(0, 10);
         var na = ((FEED && FEED.datasets && FEED.datasets.actu_finances) || []).filter(function (a) { return a.date > lastDay; }).length;
         vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : la dette a pris <b>' + big(dd) + '</b>' + (dr ? ', le taux d\'emprunt à 10 ans a ' + (dr > 0 ? 'pris' : 'perdu') + ' <b>' + fmt(Math.abs(dr), 2) + ' point</b>' : ', le taux d\'emprunt n\'a pas bougé') + (na ? ', <b>' + na + ' nouvelle' + (na > 1 ? 's' : '') + ' actualité' + (na > 1 ? 's' : '') + '</b>' : '') + '.';
-        vis.hidden = false;
-      } else if (!lastV) {
-        vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.'; vis.hidden = false;
-      }
-      if (!lastV || now - lastV.t > 3600e3) localStorage.setItem('derniere-visite', JSON.stringify({ t: now, r: RATE_NOW }));
+      } else vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.';
+      vis.hidden = false;
     } catch (e) {}
     document.getElementById('daily-lab').textContent = 'Le chiffre du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
     document.getElementById('daily-text').innerHTML = FACTS[((idx % FACTS.length) + FACTS.length) % FACTS.length];
@@ -777,7 +784,7 @@ function main(FEED) {
     [0, 5, 10, 15, 20].forEach(function (t) {
       svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 4).attr('y2', H - 20).attr('stroke', t === 10 ? 'var(--fg)' : 'var(--grid)').attr('stroke-dasharray', t === 10 ? '4 3' : null);
       svg.append('text').attr('x', x(t)).attr('y', top - 8).attr('text-anchor', 'middle').text(t).style('fill', t === 10 ? 'var(--fg)' : null).style('font-weight', t === 10 ? 700 : null);
-      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = mieux que la zone euro 1 fois sur 2').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
+      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = niveau de la zone euro').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
     });
     list.forEach(function (r, i) {
       var y = top + i * rh, name = small ? r.g.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin') : r.g.n;
@@ -791,7 +798,7 @@ function main(FEED) {
       svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n)).style('fill', inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
     });
     var best = list[0], above = list.filter(function (r) { return r.n >= 10; }).length;
-    document.getElementById('rank-' + rankMode + '-note').textContent = (above ? above + ' sur ' + list.length + ' ont fait mieux que la zone euro au moins une fois sur deux. ' : 'Avec ces critères, aucun n\'a fait mieux que la zone euro une fois sur deux. ') +
+    document.getElementById('rank-' + rankMode + '-note').textContent = (above ? above + ' sur ' + list.length + ' atteignent le niveau de la zone euro ; les autres sont en dessous de la moyenne européenne. ' : 'Tous sont en dessous de la moyenne européenne. ') +
       'Meilleure note : ' + best.g.n + ' (' + nfmt(best.n) + '/20).' + (rankMode === 'pres' ? ' Chirac inclut les cinq ans de cohabitation avec Lionel Jospin ; Macron est noté sur 2017-2025.' : ' Lecornu sera noté au printemps 2027 ; Barnier (sept.-déc. 2024) n\'a pas d\'année complète.');
   }
   var showAll = false;
@@ -1238,7 +1245,7 @@ function main(FEED) {
         x.fillStyle = '#1c1d22'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText(nfmt(r.v), x0 + bw * r.v / 20 + 14, y + 52);
       });
       var lx = x0 + bw / 2; x.strokeStyle = '#1c1d22'; x.setLineDash([10, 8]); x.lineWidth = 3; x.beginPath(); x.moveTo(lx, y0 - 10); x.lineTo(lx, y0 + rows.length * 120); x.stroke(); x.setLineDash([]);
-      x.fillStyle = '#1c1d22'; x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.textAlign = 'center'; x.fillText('10 = mieux que la zone euro 1 fois sur 2', lx, y0 + rows.length * 120 + 44); x.textAlign = 'left';
+      x.fillStyle = '#1c1d22'; x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.textAlign = 'center'; x.fillText('10 = niveau de la zone euro', lx, y0 + rows.length * 120 + 44); x.textAlign = 'left';
     }
     x.fillStyle = '#2f5bd3'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText('concret2027.fr', 80, H - 90);
     x.fillStyle = '#62646d'; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; x.fillText('Sources : Insee, Eurostat, Banque mondiale', 80, H - 48);

@@ -327,7 +327,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card" id="bulletin" aria-labelledby="gov-title">
     <h2 id="gov-title"><span class="eyebrow">Le bulletin de l'éducation</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
     <button class="share" id="share-rank" type="button" style="justify-self:start;margin:0">Partager le classement</button>
-    <p class="explain"><b>La règle :</b> chaque année et pour chacun des 6 critères, la France <b>marque 1 point</b> si elle progresse mieux que ses voisins (Union européenne, ou moyenne de l'OCDE pour PISA), <b>0 point</b> sinon. La note sur 20 est la part des points marqués, <b>PISA comptant triple</b> : c'est le résultat qui compte le plus, ce que les élèves savent vraiment. <b>10/20 = la France a fait mieux que ses voisins une fois sur deux.</b> Une note établie sur moins de 6 comparaisons est grisée : elle est peu fiable.</p>
+    <p class="explain"><b>La règle :</b> chaque année et pour chacun des 6 critères, la France <b>marque 1 point</b> si elle progresse mieux que ses voisins (Union européenne, ou moyenne de l'OCDE pour PISA), <b>0 point</b> sinon. La note sur 20 est la part des points marqués, <b>PISA comptant triple</b> : c'est le résultat qui compte le plus, ce que les élèves savent vraiment. <b>10/20 = le niveau de nos voisins. En dessous de 10, la France fait moins bien que la moyenne européenne (ou de l'OCDE pour PISA).</b> Une note établie sur moins de 6 comparaisons est grisée : elle est peu fiable.</p>
     <details class="how">
       <summary>Comment la note est calculée, et ses limites</summary>
       <div class="how-body">
@@ -574,7 +574,7 @@ function main(FEED) {
     [0, 5, 10, 15, 20].forEach(function (t) {
       svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 4).attr('y2', H - 20).attr('stroke', t === 10 ? 'var(--fg)' : 'var(--grid)').attr('stroke-dasharray', t === 10 ? '4 3' : null);
       svg.append('text').attr('x', x(t)).attr('y', top - 8).attr('text-anchor', 'middle').text(t).style('fill', t === 10 ? 'var(--fg)' : null).style('font-weight', t === 10 ? 700 : null);
-      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = mieux que nos voisins 1 fois sur 2').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
+      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = niveau de nos voisins').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
     });
     list.forEach(function (r, i) {
       var y = top + i * rh, name = small ? r.g.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin') : r.g.n;
@@ -586,7 +586,7 @@ function main(FEED) {
       svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' · peu de données' : '')).attr('text-anchor', few ? 'start' : (inside ? 'end' : 'start')).attr('x', few ? x(r.n) + 6 : (inside ? x(r.n) - 6 : x(r.n) + 6)).style('fill', few ? 'var(--muted)' : (inside ? 'var(--panel)' : 'var(--fg)')).style('font-weight', 700).style('font-size', '12px');
     });
     var best = list[0], above = list.filter(function (r) { return r.n >= 10; }).length;
-    document.getElementById('rank-' + mode + '-note').textContent = (above ? above + ' sur ' + list.length + (above > 1 ? ' ont' : ' a') + ' fait mieux que nos voisins au moins une fois sur deux. ' : 'Aucun n\'a fait mieux que nos voisins une fois sur deux. ') + 'Meilleure note : ' + best.g.n + ' (' + nfmt(best.n) + '/20).' +
+    document.getElementById('rank-' + mode + '-note').textContent = (above ? above + ' sur ' + list.length + (above > 1 ? ' atteignent' : ' atteint') + ' le niveau de nos voisins ; les autres sont en dessous de la moyenne. ' : 'Tous sont en dessous de la moyenne de nos voisins. ') + 'Meilleure note : ' + best.g.n + ' (' + nfmt(best.n) + '/20).' +
       (mode === 'pres' ? ' Emmanuel Macron, en exercice, est noté sur 2017-2025.' : ' En gris : moins de ' + MIN_N + ' comparaisons, note peu fiable. Touchez une barre pour voir le détail.');
   }
   function rankChart() { rankOne('pres'); rankOne('gov'); }
@@ -855,16 +855,20 @@ function main(FEED) {
   document.getElementById('daily-lab').textContent = 'Le chiffre du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
   document.getElementById('daily-text').innerHTML = FACTS[((idx % FACTS.length) + FACTS.length) % FACTS.length];
   try {
-    var nowV = Date.now(), vis = document.getElementById('visit'), lv = JSON.parse(localStorage.getItem('edu-visite') || 'null');
-    if (lv && nowV - lv.t > 3600e3) {
-      var dv = Math.round((nowV - lv.t) / 864e5), whenV = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.round((nowV - lv.t) / 3600e3) + ' h', pv = [];
+    var nowV = Date.now(), vis = document.getElementById('visit'), snapV = { t: nowV, u: MO.fr[nU], n: MO.fr.length }, stv = JSON.parse(localStorage.getItem('edu-visites') || 'null');
+    if (!stv) { var oldV = JSON.parse(localStorage.getItem('edu-visite') || 'null'); stv = oldV ? { base: null, cur: oldV, seen: oldV.t } : { base: null, cur: snapV, seen: nowV }; }
+    else if (nowV - stv.seen > 3600e3) { stv.base = stv.cur; stv.cur = snapV; }
+    stv.seen = nowV; localStorage.setItem('edu-visites', JSON.stringify(stv));
+    var lv = stv.base;
+    if (lv) {
+      var dv = Math.round((nowV - lv.t) / 864e5), whenV = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((nowV - lv.t) / 3600e3)) + ' h', pv = [];
       pv.push(MO.fr.length > lv.n ? 'nouveau chiffre du chômage des moins de 25 ans : <b>' + fmt(MO.fr[nU], 1) + ' %</b> (contre ' + fmt(lv.u, 1) + ' %)' : 'pas de nouveau chiffre du chômage des jeunes');
       var nav = ((FEED && FEED.datasets && FEED.datasets.actu_education) || []).filter(function (a) { return a.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
       if (nav) pv.push('<b>' + nav + ' nouvelle' + (nav > 1 ? 's' : '') + ' actualité' + (nav > 1 ? 's' : '') + '</b>');
       if (dv >= 1) pv.push('un nouveau chiffre du jour et une nouvelle question');
-      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + whenV + ') : ' + pv.join(' ; ') + '.'; vis.hidden = false;
-    } else if (!lv) { vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.'; vis.hidden = false; }
-    if (!lv || nowV - lv.t > 3600e3) localStorage.setItem('edu-visite', JSON.stringify({ t: nowV, u: MO.fr[nU], n: MO.fr.length }));
+      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + whenV + ') : ' + pv.join(' ; ') + '.';
+    } else vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.';
+    vis.hidden = false;
   } catch (e) {}
   document.getElementById('teaser-today').innerHTML = 'Budget <b>177&nbsp;M€</b> par jour · Lecture à 17 ans : <b>14&nbsp;%</b> en difficulté · Le chiffre du jour';
 
@@ -989,7 +993,7 @@ function main(FEED) {
         x.fillStyle = '#1c1d22'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText(nfmt(r.v), x0 + bw * r.v / 20 + 14, y + 52);
       });
       var lx = x0 + bw / 2; x.strokeStyle = '#1c1d22'; x.setLineDash([10, 8]); x.lineWidth = 3; x.beginPath(); x.moveTo(lx, y0 - 10); x.lineTo(lx, y0 + rows.length * 120); x.stroke(); x.setLineDash([]);
-      x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.textAlign = 'center'; x.fillText('10 = mieux que nos voisins 1 fois sur 2', lx, y0 + rows.length * 120 + 44); x.textAlign = 'left';
+      x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.textAlign = 'center'; x.fillText('10 = niveau de nos voisins', lx, y0 + rows.length * 120 + 44); x.textAlign = 'left';
       foot(f, 'Eurostat, Banque mondiale, OCDE');
     } else if (kind === 'chomage') {
       f = frame('Chômage des moins de 25 ans'); var n = MO.fr.length - 1;

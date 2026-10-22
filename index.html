@@ -1004,13 +1004,19 @@ window.addEventListener('baro:data', function () {
     if (ag) items.push('<b>Prochain rendez-vous, le ' + fd(ag.date) + ' :</b> ' + esc(ag.evenement) + '. Premier tour dans ' + Math.max(0, Math.ceil((new Date('2027-04-18T00:00:00') - today) / 864e5)) + ' jours.');
     if (feed.updated_iso) { var u = new Date(feed.updated_iso); document.getElementById('today-since').textContent = '· mis à jour le ' + u.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: 'Europe/Paris' }); }
     ul.innerHTML = items.map(function (t) { return '<li>' + t + '</li>'; }).join('');
-    // Depuis votre dernière visite (gardé dans le navigateur du visiteur uniquement)
+    // Depuis votre dernière visite (gardé dans le navigateur du visiteur uniquement).
+    // « cur » = début de la visite en cours ; « base » = visite précédente. Une nouvelle visite commence après 1 h d'absence.
     try {
-      var now = Date.now(), vis = document.getElementById('visit'), lv = JSON.parse(localStorage.getItem('baro-visite') || 'null');
+      var now = Date.now(), vis = document.getElementById('visit');
       var pmNow = {}; (ds.polymarket || []).forEach(function (r) { if (r.candidat !== 'Autres candidats') pmNow[r.candidat] = +r.probabilite; });
       var lastPoll = (ds.sondages_t1 || []).map(function (r) { return r.date; }).sort().pop() || '';
-      if (lv && now - lv.t > 3600e3) {
-        var days = Math.round((now - lv.t) / 864e5), when = days >= 1 ? 'il y a ' + days + ' jour' + (days > 1 ? 's' : '') : 'il y a ' + Math.round((now - lv.t) / 3600e3) + ' h';
+      var snap = { t: now, poll: lastPoll, pm: pmNow }, stv = JSON.parse(localStorage.getItem('baro-visites') || 'null');
+      if (!stv) { var old = JSON.parse(localStorage.getItem('baro-visite') || 'null'); stv = old ? { base: null, cur: old, seen: old.t } : { base: null, cur: snap, seen: now }; }
+      else if (now - stv.seen > 3600e3) { stv.base = stv.cur; stv.cur = snap; }
+      stv.seen = now; localStorage.setItem('baro-visites', JSON.stringify(stv));
+      var lv = stv.base;
+      if (lv) {
+        var days = Math.round((now - lv.t) / 864e5), when = days >= 1 ? 'il y a ' + days + ' jour' + (days > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h';
         var polls = {}; (ds.sondages_t1 || []).forEach(function (r) { if (r.date > (lv.poll || '')) polls[r.date + r.institut] = r.institut; });
         var np = Object.keys(polls).length, parts = [];
         parts.push(np ? '<b>' + np + ' nouveau' + (np > 1 ? 'x' : '') + ' sondage' + (np > 1 ? 's' : '') + '</b> (' + esc(Array.from(new Set(Object.keys(polls).map(function (k) { return polls[k]; }))).join(', ')) + ')' : 'aucun nouveau sondage');
@@ -1018,9 +1024,9 @@ window.addEventListener('baro:data', function () {
         parts.push(mv.length ? 'chez les parieurs, ' + mv.map(function (m) { return esc(m.c) + ' <b>' + (m.d > 0 ? '▲ +' : '▼ −') + nf(Math.abs(m.d), 1) + ' pt</b>'; }).join(', ') : 'peu de mouvement chez les parieurs');
         var ne = (ds.evenements || []).filter(function (e) { return e.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
         if (ne) parts.push('<b>' + ne + ' événement' + (ne > 1 ? 's' : '') + '</b> de campagne');
-        vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + parts.join(' ; ') + '.'; vis.hidden = false;
-      } else if (!lv) { vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.'; vis.hidden = false; }
-      if (!lv || now - lv.t > 3600e3) localStorage.setItem('baro-visite', JSON.stringify({ t: now, poll: lastPoll, pm: pmNow }));
+        vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + parts.join(' ; ') + '.';
+      } else vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.';
+      vis.hidden = false;
     } catch (e) {}
     if (!items.length) document.getElementById('aujourdhui').hidden = true;
   }
