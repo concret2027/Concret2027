@@ -35,9 +35,12 @@ module.exports = [
     texte: 'Un système généreux et accessible, mais qui vit à crédit et prévient mal ?',
     verifier: function (c) {
       if (!c.sante) return { ok: true, constat: 'page non publiée' };
+      // « Prévient mal » : la France fait moins bien que son voisin sur au moins la moitié des indicateurs de la question Prévention.
       var C = c.sante.C, last = function (k, w) { var a = C[k][w] || []; for (var i = a.length - 1; i >= 0; i--) if (a[i] != null) return a[i]; return null; };
-      var genereux = last('rac', 'fr') < last('rac', 'ue'), accessible = last('ren', 'fr') <= last('ren', 'ue'), credit = last('secu', 'fr') < 0, previent = last('prv', 'fr') >= last('prv', 'ue') || last('alc', 'fr') > last('alc', 'de');
-      return { ok: genereux && accessible && credit && previent, constat: 'reste à charge ' + last('rac', 'fr') + ' % contre ' + last('rac', 'ue') + ' %, renoncement ' + last('ren', 'fr') + ' % contre ' + last('ren', 'ue') + ' %, solde de la Sécu ' + last('secu', 'fr') + ' % du PIB, mortalité évitable par la prévention ' + last('prv', 'fr') + ' contre ' + last('prv', 'ue') + ', alcool ' + last('alc', 'fr') + ' litres contre ' + last('alc', 'de') + ' en Allemagne' }; } },
+      var pire = function (k) { var x = C[k], r = x.ref || 'ue', i = x.y.length - 1; while (i >= 0 && (x.fr[i] == null || x[r][i] == null)) i--; return x.low ? x.fr[i] > x[r][i] : x.fr[i] < x[r][i]; };
+      var prev = c.sante.THEMES.filter(function (t) { return t.k === 'prev'; })[0].crit, mal = prev.filter(pire);
+      var genereux = last('rac', 'fr') < last('rac', 'ue'), accessible = last('ren', 'fr') <= last('ren', 'ue'), credit = last('secu', 'fr') < 0, previent = mal.length * 2 >= prev.length;
+      return { ok: genereux && accessible && credit && previent, constat: 'reste à charge ' + last('rac', 'fr') + ' % contre ' + last('rac', 'ue') + ' %, renoncement ' + last('ren', 'fr') + ' % contre ' + last('ren', 'ue') + ' %, solde de la Sécu ' + last('secu', 'fr') + ' % du PIB, prévention : moins bien que le voisin sur ' + mal.length + ' indicateurs sur ' + prev.length + (mal.length ? ' (' + mal.join(', ') + ')' : '') }; } },
   // ===== Éducation =====
   { id: 'edu_bilan', page: 'education', ou: 'meta og:description et résumé « Le bilan »',
     texte: 'On diplôme plus que nos voisins, mais les élèves apprennent moins, et les jeunes trouvent moins vite un emploi',

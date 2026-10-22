@@ -120,16 +120,17 @@
     return { KEYS: KEYS, WT: WT, MIN_N: MIN_N, Y0: Y0, evaluate: evaluate, note: note, count: count, score: score, waveRes: waveRes, waveOf: waveOf, pisaGap: pisaGap, at: at };
   }
 
-  // ===== Santé : la France comparée à l'UE, ou à l'Allemagne quand l'UE n'a pas de moyenne publiée (champ ref) =====
-  // Règles par critère (S.C[k].regle) :
-  //  - 'propre' : déficit de la Sécu, jugé sur la France seule faute de comparaison possible : 1 point si équilibre
-  //    ou excédent, ½ si le déficit se réduit d'au moins 0,1 point de PIB, 0 s'il se creuse ou reste stable ;
-  //  - 'niveau' : par édition de l'étude W.A.I.T., 1 point si la France fait mieux que la référence (y = année jugée) ;
+  // ===== Santé : cinq questions, une note par question ; la note de la page est la moyenne des cinq =====
+  // S.THEMES : [{ k, q (la question), court, crit: [clés de S.C] }]. Chaque critère compare la France à l'UE,
+  // ou à l'Allemagne quand l'UE n'a pas de moyenne publiée (champ ref). Règles par critère (S.C[k].regle) :
+  //  - sinon : chaque année, 1 point si la France évolue mieux que la référence, 0 sinon, ½ en cas d'égalité ;
+  //  - 'long' : résultats de santé (espérance de vie, mortalité) : les effets d'une politique de santé mettent des années
+  //    à se voir, l'année t vaut donc la moyenne des points d'évolution de t à t+4 (années déjà publiées seulement) ;
   //  - 'ecart' : équité, 1 point si l'écart français est plus faible que celui de la référence ou se réduit plus vite ;
-  //  - 'composite' : plusieurs indicateurs (vaccins, dépistages) ; le point de l'année est la moyenne de leurs points ;
-  //  - sinon : chaque année, 1 point si la France évolue mieux que la référence.
+  //  - 'propre' : déficit de la Sécu, jugé sur la France seule faute de comparaison possible : 1 point si équilibre
+  //    ou excédent, ½ si le déficit se réduit d'au moins 0,1 point de PIB, 0 s'il se creuse ou reste stable.
   function sante(S) {
-    var C = S.C, KEYS = Object.keys(C), WT = {}, MIN_N = 6, SEUIL_STABLE = 0.1;
+    var C = S.C, THEMES = S.THEMES, KEYS = Object.keys(C), WT = {}, MIN_N = 6, SEUIL_STABLE = 0.1, LONG = 5;
     KEYS.forEach(function (k) { WT[k] = C[k].poids || 1; });
     var val = function (c, w, y) { var i = c.y.indexOf(y); return i < 0 || !c[w] ? null : c[w][i]; };
     var ref = function (c) { return c.ref || 'ue'; };
@@ -138,21 +139,19 @@
       if ((c.br || {})[y]) return null;
       return a == null || b == null || e == null || f == null ? null : match(a - b, e - f, c.low);
     }
+    // Années d'évolution prises en compte pour l'année y (règle 'long').
+    var fenetre = function (y) { var a = []; for (var t = y; t < y + LONG; t++) a.push(t); return a; };
     function score(k, y) {
-      var c = C[k], i = c.y ? c.y.indexOf(y) : -1, r = ref(c);
+      var c = C[k];
+      if (c.regle === 'long') { var pts = fenetre(y).map(function (t) { return evol(c, t); }).filter(function (x) { return x != null; }); return pts.length ? mean(pts) : null; }
       if ((c.br || {})[y]) return null;
       if (c.regle === 'propre') { var v = val(c, 'fr', y), p = val(c, 'fr', y - 1); if (v == null) return null; if (v >= 0) return 1; if (p == null) return null; return v - p >= SEUIL_STABLE - 1e-9 ? 0.5 : 0; }
-      if (c.regle === 'niveau') return i < 0 ? null : match(val(c, 'fr', y), val(c, r, y), c.low);
       if (c.regle === 'ecart') {
-        var a = val(c, 'fr', y), e = val(c, r, y), pa = val(c, 'fr', y - 1), pe = val(c, r, y - 1);
+        var a = val(c, 'fr', y), e = val(c, ref(c), y), pa = val(c, 'fr', y - 1), pe = val(c, ref(c), y - 1);
         if (a == null || e == null) return null;
         if (a < e - 1e-9) return 1;
         if (pa != null && pe != null && (a - pa) < (e - pe) - 1e-9) return 1;
         return Math.abs(a - e) < 1e-9 ? 0.5 : 0;
-      }
-      if (c.regle === 'composite') {
-        var pts = Object.keys(c.sous).map(function (q) { return evol(c.sous[q], y); }).filter(function (x) { return x != null; });
-        return pts.length ? mean(pts) : null;
       }
       return evol(c, y);
     }
@@ -161,11 +160,18 @@
       KEYS.forEach(function (k) { g.w[k] = []; g.y[k] = []; for (var y = g.y0; y <= g.y1; y++) { var m = score(k, y); if (m != null) g.w[k].push(m); g.y[k].push({ y: y, pt: m }); } });
       return g;
     }
-    var count = function (g, on) { return sum(KEYS.filter(function (k) { return !on || on[k]; }).map(function (k) { return g.w[k].length; })); };
-    function note(g, on) {
-      var r = KEYS.filter(function (k) { return (!on || on[k]) && g.w[k].length; }).map(function (k) { return [mean(g.w[k]), WT[k]]; });
+    var themeOf = function (t) { return typeof t === 'string' ? THEMES.filter(function (x) { return x.k === t; })[0] : t; };
+    var count = function (g, t) { var ks = t ? themeOf(t).crit : KEYS; return sum(ks.map(function (k) { return g.w[k].length; })); };
+    // Note d'une question : part des points marqués, critères pondérés (le déficit de la Sécu compte triple).
+    function noteTheme(g, t) {
+      var r = themeOf(t).crit.filter(function (k) { return g.w[k].length; }).map(function (k) { return [mean(g.w[k]), WT[k]]; });
       var sw = sum(r.map(function (p) { return p[1]; }));
       return sw ? 20 * sum(r.map(function (p) { return p[0] * p[1]; })) / sw : null;
+    }
+    // Note de la page : moyenne des questions notées pour ce mandat.
+    function note(g) {
+      var n = THEMES.map(function (t) { return noteTheme(g, t); }).filter(function (v) { return v != null; });
+      return n.length ? mean(n) : null;
     }
     // Pourquoi une année n'est pas comptée pour un critère (phrase affichée sous le détail).
     function raisonSerie(c, y) {
@@ -173,17 +179,16 @@
       if ((c.br || {})[y]) return POURQUOI.methode(y, c.br[y]);
       if (y > last) return POURQUOI.pasPublie(y);
       if (y < first) return 'Non compté : pas de chiffre avant ' + first + '.';
-      if (y === first && c.regle !== 'niveau') return POURQUOI.debut(first);
+      if (y === first) return POURQUOI.debut(first);
       if (val(c, r, y) == null || val(c, r, y - 1) == null) return 'Non compté : pas de chiffre pour ' + nomRef + ' en ' + (val(c, r, y) == null ? y : y - 1) + '.';
       return POURQUOI.absent(y);
     }
     function raison(k, y) {
       var c = C[k];
-      if (c.regle === 'composite') return 'Non compté : aucun des indicateurs du critère n\'a de chiffre comparable pour ' + y + ' et l\'année précédente.';
-      if (c.regle === 'niveau' && y >= c.y[0] && y <= c.y[c.y.length - 1]) return 'Non compté : pas d\'édition de l\'étude qui juge ' + y + '.';
+      if (c.regle === 'long') return y > c.y[c.y.length - 1] ? POURQUOI.pasPublie(y) : 'Non compté : aucune évolution comparable publiée entre ' + y + ' et ' + (y + LONG - 1) + '.';
       return raisonSerie(c, y);
     }
-    return { KEYS: KEYS, WT: WT, MIN_N: MIN_N, SEUIL_STABLE: SEUIL_STABLE, evaluate: evaluate, note: note, count: count, score: score, evol: evol, raison: raison, raisonSerie: raisonSerie, val: val, ref: ref };
+    return { KEYS: KEYS, THEMES: THEMES, WT: WT, MIN_N: MIN_N, SEUIL_STABLE: SEUIL_STABLE, LONG: LONG, evaluate: evaluate, note: note, noteTheme: noteTheme, count: count, score: score, evol: evol, fenetre: fenetre, raison: raison, raisonSerie: raisonSerie, val: val, ref: ref };
   }
 
   // ===== Classement général de l'accueil : moyenne des notes par mission, réglages par défaut de chaque page =====

@@ -54,6 +54,12 @@ Santé, Sécurité et justice, Défense, Vie des Français, ou tout indicateur a
 4. Chaque titre ou conclusion chiffré est inscrit dans `outils/recits.js` avec sa vérification.
 5. `outils/controle.js verifier` est étendu si besoin (plages plausibles des nouvelles séries) et doit passer avant publication.
 6. Même exigence partout : chaque chiffre sourcé et vérifié, rien d'inventé.
+7. Lisible par tous, sans se noyer dans les chiffres :
+   - le premier écran donne la réponse : où en est la France face à ses voisins, et la note des présidents ;
+   - au plus 5 questions notées par page, chacune avec au plus 5 indicateurs, mesurés chaque année de la même façon en France et chez ses voisins ; chaque question a sa note, la note de la page est leur moyenne ;
+   - ce qui est seulement affiché (pas de comparaison annuelle possible, source industrielle, indicateur secondaire) est replié, avec la raison écrite dessous ;
+   - les leviers (dépense, accès, prévention) sont jugés année par année, les résultats (espérance de vie, mortalité) sur le temps long (l'année et les quatre suivantes), comme PISA en Éducation ;
+   - juger la France seule est réservé aux cas sans comparaison possible, et c'est écrit en clair là où on le voit.
 
 ## Avant de publier une modification du site
 
