@@ -213,6 +213,7 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .gov.pending .who span { font-style: italic; }
 
 /* Graphes */
+.longbox { display: grid; gap: 4px; }
 .charts3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
 .charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
 .chart { position: relative; min-width: 0; }
@@ -349,6 +350,8 @@ footer p { margin: 0; } footer a { color: inherit; }
       </div>
     </details>
     <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
+    <div class="longbox"><button class="chip" type="button" id="long-toggle" aria-pressed="false">Tenir compte du temps long de l'école</button>
+    <p class="note" id="long-note">Activé, chaque résultat PISA est réparti sur les dix années de scolarité des élèves testés : un élève de 15 ans testé en 2022 est à l'école depuis 2013. Chaque gouvernement de la période en reçoit sa part, au lieu que tout soit attribué à celui en place l'année du test. Même règle pour l'origine sociale.</p></div>
     <span class="eyebrow" style="margin:0">Les présidents</span>
     <p class="note">Touchez une barre pour voir le détail.</p>
     <div class="chart" id="rank-pres"></div>
@@ -366,7 +369,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card" id="annees" aria-labelledby="yr-title">
     <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
-    <p class="note">Chaque ligne est une année : ● point marqué (mieux que nos voisins), ○ pas de point, ◐ demi-point (égalité), – non comparable (changement de méthode de l'enquête). PISA et origine sociale : le résultat d'une vague compte pour chacune des années écoulées depuis la précédente. La note de l'année est la part des points marqués, sur 20, PISA comptant triple.</p>
+    <p class="note">Chaque ligne est une année : ● point marqué (mieux que nos voisins), ○ pas de point, ◐ demi-point (égalité), – non comparable (changement de méthode de l'enquête). PISA et origine sociale : le résultat d'une vague compte pour chacune des années écoulées depuis la précédente (ou, avec « temps long », pour les dix années de scolarité des élèves testés). La note de l'année est la part des points marqués, sur 20, PISA comptant triple.</p>
     <div class="tbl-wrap"><table class="yrs"><thead><tr><th>Année</th><th>Premier ministre</th><th title="Décrochage">Décr.</th><th title="Ni emploi ni études">Ni-ni</th><th title="Diplômés du supérieur">Dipl.</th><th title="Chômage des jeunes">Chôm.</th><th title="PISA">PISA</th><th title="Origine sociale">Orig.</th><th>Note</th></tr></thead><tbody id="yr-body"></tbody></table></div>
     <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 2003</button>
   </section>
@@ -494,8 +497,18 @@ function main(FEED) {
     return d.length ? d3.mean(d) : null;
   }
   function waveOf(ws, y) { for (var i = 1; i < ws.length; i++) if (y > ws[i - 1] && y <= ws[i]) return [ws[i - 1], ws[i]]; return null; }
+  var LONG = false; try { LONG = localStorage.getItem('edu-long') === '1'; } catch (e) {}
+  function waveRes(k, W) {
+    if (k === 'pi') { var i = WAVES.indexOf(W); if (i < 1) return null; var g = pisaGap(WAVES[i - 1], W); return g == null ? null : Math.abs(g) < 0.5 ? 0.5 : g > 0 ? 1 : 0; }
+    var j = EQ.y.indexOf(W); if (j < 1) return null; var e = (EQ.fr[j] - EQ.fr[j - 1]) - (EQ.oe[j] - EQ.oe[j - 1]); return e === 0 ? 0.5 : e < 0 ? 1 : 0;
+  }
   function match(k, y) {
     if (y <= Y0) return null;
+    if (LONG && (k === 'pi' || k === 'eq')) {
+      // Temps long : chaque vague est répartie sur les dix années de scolarité des élèves testés (de 6 à 15 ans)
+      var r = (k === 'pi' ? WAVES : EQ.y).filter(function (W) { return y >= W - 9 && y <= W; }).map(function (W) { return waveRes(k, W); }).filter(function (v) { return v != null; });
+      return r.length ? d3.mean(r) : null;
+    }
     if (k === 'pi') { var w = waveOf(WAVES, y); if (!w) return null; var g = pisaGap(w[0], w[1]); return g == null ? null : Math.abs(g) < 0.5 ? 0.5 : g > 0 ? 1 : 0; }
     if (k === 'eq') { var v = waveOf(EQ.y, y); if (!v) return null; var i1 = EQ.y.indexOf(v[1]), e = (EQ.fr[i1] - EQ.fr[i1 - 1]) - (EQ.oe[i1] - EQ.oe[i1 - 1]); return e === 0 ? 0.5 : e < 0 ? 1 : 0; }
     var c = S[k];
@@ -542,6 +555,15 @@ function main(FEED) {
     critBox.appendChild(b);
   });
 
+  (function () {
+    var b = document.getElementById('long-toggle');
+    b.setAttribute('aria-pressed', LONG ? 'true' : 'false');
+    b.addEventListener('click', function () {
+      LONG = !LONG; b.setAttribute('aria-pressed', LONG ? 'true' : 'false');
+      try { localStorage.setItem('edu-long', LONG ? '1' : '0'); } catch (e) {}
+      GOVS.forEach(evaluate); PRES.forEach(evaluate); rankChart(); renderYears(); renderGov();
+    });
+  })();
   // ===== Classements =====
   function chipsFor(g) {
     var kp = document.createElement('div'); kp.className = 'kpis';
