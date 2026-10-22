@@ -120,27 +120,41 @@
     return { KEYS: KEYS, WT: WT, MIN_N: MIN_N, Y0: Y0, evaluate: evaluate, note: note, count: count, score: score, waveRes: waveRes, waveOf: waveOf, pisaGap: pisaGap, at: at };
   }
 
-  // ===== Santé : 10 critères, France face à l'UE ; déficit de la Sécu jugé sur lui-même (poids 3) =====
-  // Chaque critère de S.C a ses propres années (y) et valeurs (fr, ue, de, us), et une règle :
-  //  - 'propre' : 1 point si équilibre ou excédent, ½ si le déficit se réduit, 0 s'il se creuse ou stagne ;
-  //  - 'niveau' : par édition (W.A.I.T.), 1 point si la France fait mieux que la moyenne UE cette année-là ;
-  //  - 'vagues' : enquête tous les 5-6 ans (tabac, EHIS), l'évolution entre deux vagues compte pour les années qui les séparent ;
-  //  - sinon : chaque année, 1 point si la France évolue mieux que l'UE (comme Éducation).
+  // ===== Santé : la France comparée à l'UE, ou à l'Allemagne quand l'UE n'a pas de moyenne publiée (champ ref) =====
+  // Règles par critère (S.C[k].regle) :
+  //  - 'propre' : déficit de la Sécu, jugé sur la France seule faute de comparaison possible : 1 point si équilibre
+  //    ou excédent, ½ si le déficit se réduit d'au moins 0,1 point de PIB, 0 s'il se creuse ou reste stable ;
+  //  - 'niveau' : par édition de l'étude W.A.I.T., 1 point si la France fait mieux que la référence (y = année jugée) ;
+  //  - 'ecart' : équité, 1 point si l'écart français est plus faible que celui de la référence ou se réduit plus vite ;
+  //  - 'composite' : plusieurs indicateurs (vaccins, dépistages) ; le point de l'année est la moyenne de leurs points ;
+  //  - sinon : chaque année, 1 point si la France évolue mieux que la référence.
   function sante(S) {
-    var C = S.C, KEYS = Object.keys(C), WT = {}, MIN_N = 6;
+    var C = S.C, KEYS = Object.keys(C), WT = {}, MIN_N = 6, SEUIL_STABLE = 0.1;
     KEYS.forEach(function (k) { WT[k] = C[k].poids || 1; });
     var val = function (c, w, y) { var i = c.y.indexOf(y); return i < 0 || !c[w] ? null : c[w][i]; };
-    function score(k, y) {
-      var c = C[k], i = c.y.indexOf(y);
+    var ref = function (c) { return c.ref || 'ue'; };
+    function evol(c, y) {
+      var r = ref(c), a = val(c, 'fr', y), b = val(c, 'fr', y - 1), e = val(c, r, y), f = val(c, r, y - 1);
       if ((c.br || {})[y]) return null;
-      if (c.regle === 'propre') { var v = val(c, 'fr', y), p = val(c, 'fr', y - 1); if (v == null) return null; if (v >= 0) return 1; if (p == null) return null; return v > p ? 0.5 : 0; }
-      if (c.regle === 'niveau') return i < 0 ? null : match(val(c, 'fr', y), val(c, 'ue', y), c.low);
-      if (c.regle === 'vagues') {
-        for (var j = 1; j < c.y.length; j++) if (y > c.y[j - 1] && y <= c.y[j]) return match(c.fr[j] - c.fr[j - 1], c.ue[j] - c.ue[j - 1], c.low);
-        return null;
-      }
-      var a = val(c, 'fr', y), b = val(c, 'fr', y - 1), e = val(c, 'ue', y), f = val(c, 'ue', y - 1);
       return a == null || b == null || e == null || f == null ? null : match(a - b, e - f, c.low);
+    }
+    function score(k, y) {
+      var c = C[k], i = c.y ? c.y.indexOf(y) : -1, r = ref(c);
+      if ((c.br || {})[y]) return null;
+      if (c.regle === 'propre') { var v = val(c, 'fr', y), p = val(c, 'fr', y - 1); if (v == null) return null; if (v >= 0) return 1; if (p == null) return null; return v - p >= SEUIL_STABLE - 1e-9 ? 0.5 : 0; }
+      if (c.regle === 'niveau') return i < 0 ? null : match(val(c, 'fr', y), val(c, r, y), c.low);
+      if (c.regle === 'ecart') {
+        var a = val(c, 'fr', y), e = val(c, r, y), pa = val(c, 'fr', y - 1), pe = val(c, r, y - 1);
+        if (a == null || e == null) return null;
+        if (a < e - 1e-9) return 1;
+        if (pa != null && pe != null && (a - pa) < (e - pe) - 1e-9) return 1;
+        return Math.abs(a - e) < 1e-9 ? 0.5 : 0;
+      }
+      if (c.regle === 'composite') {
+        var pts = Object.keys(c.sous).map(function (q) { return evol(c.sous[q], y); }).filter(function (x) { return x != null; });
+        return pts.length ? mean(pts) : null;
+      }
+      return evol(c, y);
     }
     function evaluate(g) {
       g.w = {}; g.y = {};
@@ -154,16 +168,22 @@
       return sw ? 20 * sum(r.map(function (p) { return p[0] * p[1]; })) / sw : null;
     }
     // Pourquoi une année n'est pas comptée pour un critère (phrase affichée sous le détail).
-    function raison(k, y) {
-      var c = C[k], first = c.y[0], last = c.y[c.y.length - 1];
+    function raisonSerie(c, y) {
+      var first = c.y[0], last = c.y[c.y.length - 1], r = ref(c), nomRef = r === 'de' ? 'l\'Allemagne' : 'la moyenne de l\'UE';
       if ((c.br || {})[y]) return POURQUOI.methode(y, c.br[y]);
-      if (c.regle === 'niveau') return y > last ? POURQUOI.pasPublie(y) : y < first ? 'Non compté : l\'étude n\'existait pas encore en ' + y + '.' : 'Non compté : pas d\'édition de l\'étude pour ' + y + '.';
-      if (c.regle === 'vagues') return y > last ? 'Non compté : la prochaine vague de l\'enquête, après ' + last + ', n\'est pas encore publiée.' : 'Non compté : l\'enquête a commencé en ' + first + ', il n\'y a pas de vague précédente.';
       if (y > last) return POURQUOI.pasPublie(y);
-      if (y <= first) return POURQUOI.debut(first);
+      if (y < first) return 'Non compté : pas de chiffre avant ' + first + '.';
+      if (y === first && c.regle !== 'niveau') return POURQUOI.debut(first);
+      if (val(c, r, y) == null || val(c, r, y - 1) == null) return 'Non compté : pas de chiffre pour ' + nomRef + ' en ' + (val(c, r, y) == null ? y : y - 1) + '.';
       return POURQUOI.absent(y);
     }
-    return { KEYS: KEYS, WT: WT, MIN_N: MIN_N, evaluate: evaluate, note: note, count: count, score: score, raison: raison, val: val };
+    function raison(k, y) {
+      var c = C[k];
+      if (c.regle === 'composite') return 'Non compté : aucun des indicateurs du critère n\'a de chiffre comparable pour ' + y + ' et l\'année précédente.';
+      if (c.regle === 'niveau' && y >= c.y[0] && y <= c.y[c.y.length - 1]) return 'Non compté : pas d\'édition de l\'étude qui juge ' + y + '.';
+      return raisonSerie(c, y);
+    }
+    return { KEYS: KEYS, WT: WT, MIN_N: MIN_N, SEUIL_STABLE: SEUIL_STABLE, evaluate: evaluate, note: note, count: count, score: score, evol: evol, raison: raison, raisonSerie: raisonSerie, val: val, ref: ref };
   }
 
   // ===== Classement général de l'accueil : moyenne des notes par mission, réglages par défaut de chaque page =====

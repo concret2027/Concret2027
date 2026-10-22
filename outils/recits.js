@@ -36,8 +36,8 @@ module.exports = [
     verifier: function (c) {
       if (!c.sante) return { ok: true, constat: 'page non publiée' };
       var C = c.sante.C, last = function (k, w) { var a = C[k][w] || []; for (var i = a.length - 1; i >= 0; i--) if (a[i] != null) return a[i]; return null; };
-      var genereux = last('rac', 'fr') < last('rac', 'ue'), accessible = last('ren', 'fr') <= last('ren', 'ue'), credit = last('secu', 'fr') < 0, previent = last('prv', 'fr') >= last('prv', 'ue') || last('tab', 'fr') > last('tab', 'ue');
-      return { ok: genereux && accessible && credit && previent, constat: 'reste à charge ' + last('rac', 'fr') + ' % contre ' + last('rac', 'ue') + ' %, renoncement ' + last('ren', 'fr') + ' % contre ' + last('ren', 'ue') + ' %, solde de la Sécu ' + last('secu', 'fr') + ' % du PIB, mortalité évitable par la prévention ' + last('prv', 'fr') + ' contre ' + last('prv', 'ue') + ', fumeurs ' + last('tab', 'fr') + ' % contre ' + last('tab', 'ue') + ' %' }; } },
+      var genereux = last('rac', 'fr') < last('rac', 'ue'), accessible = last('ren', 'fr') <= last('ren', 'ue'), credit = last('secu', 'fr') < 0, previent = last('prv', 'fr') >= last('prv', 'ue') || last('alc', 'fr') > last('alc', 'de');
+      return { ok: genereux && accessible && credit && previent, constat: 'reste à charge ' + last('rac', 'fr') + ' % contre ' + last('rac', 'ue') + ' %, renoncement ' + last('ren', 'fr') + ' % contre ' + last('ren', 'ue') + ' %, solde de la Sécu ' + last('secu', 'fr') + ' % du PIB, mortalité évitable par la prévention ' + last('prv', 'fr') + ' contre ' + last('prv', 'ue') + ', alcool ' + last('alc', 'fr') + ' litres contre ' + last('alc', 'de') + ' en Allemagne' }; } },
   // ===== Éducation =====
   { id: 'edu_bilan', page: 'education', ou: 'meta og:description et résumé « Le bilan »',
     texte: 'On diplôme plus que nos voisins, mais les élèves apprennent moins, et les jeunes trouvent moins vite un emploi',

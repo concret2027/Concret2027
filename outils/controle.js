@@ -82,7 +82,10 @@ if (S.education) {
 // Valeurs d'exemple (page en brouillon) : jamais publiées.
 Object.keys(S).forEach(function (pg) { if (S[pg] && S[pg].exemple) err('series.' + pg + ' contient des valeurs d\'exemple (brouillon) : à remplacer par des données sourcées avant publication'); });
 Object.keys(d.datasets || {}).forEach(function (k) { if ((d.datasets[k] || []).some(function (r) { return r.exemple; })) err('datasets.' + k + ' contient des lignes d\'exemple (brouillon)'); });
-if (S.sante) Object.keys(S.sante.C || {}).forEach(function (k) { var c = S.sante.C[k]; ['fr', 'ue', 'de'].forEach(function (w) { if (c[w] && c[w].length !== c.y.length) err('sante.C.' + k + '.' + w + ' : longueur différente de y'); }); });
+if (S.sante) Object.keys(S.sante.C || {}).forEach(function (k) {
+  var c = S.sante.C[k], series = c.sous ? Object.keys(c.sous).map(function (q) { return [k + '.' + q, c.sous[q]]; }) : [[k, c]];
+  series.forEach(function (p) { ['fr', 'ue', 'de', 'us', 'ue_calc'].forEach(function (w) { if (p[1][w] && p[1][w].length !== p[1].y.length) err('sante.C.' + p[0] + '.' + w + ' : longueur différente de y'); }); });
+});
 var ids = {};
 cal.indicateurs.forEach(function (i) { if (ids[i.id]) err('calendrier : id en double ' + i.id); ids[i.id] = 1; if (!/^\d{4}-\d{2}-\d{2}$/.test(i.prochaine_verification || '')) err('calendrier : ' + i.id + ' sans prochaine_verification valide'); });
 
