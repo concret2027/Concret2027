@@ -1069,5 +1069,24 @@ function main(FEED) {
 })();
 </script>
 <script>(function () { var n = document.querySelector('.site'); if (!n) return; var f = function () { document.documentElement.style.setProperty('--navh', n.offsetHeight + 'px'); }; f(); if (window.ResizeObserver) new ResizeObserver(f).observe(n); else addEventListener('resize', f); })();</script>
+<script>
+/* Mesure anonyme des visites de retour : rien ne quitte le navigateur sauf un compteur sans identifiant envoyé à GoatCounter. */
+(function () {
+  try {
+    var k = 'concret-site', now = Date.now(), st = JSON.parse(localStorage.getItem(k) || 'null'), ev = null;
+    if (!st) ev = ['visiteur-nouveau', 'Nouveau visiteur'];
+    else if (now - st.last > 3600e3) {
+      var d = (now - st.last) / 864e5;
+      ev = d < 1 ? ['visiteur-retour-meme-jour', 'Retour le même jour'] : d < 2 ? ['visiteur-retour-1-jour', 'Retour après 1 jour'] : d < 8 ? ['visiteur-retour-2-7-jours', 'Retour après 2 à 7 jours'] : d < 31 ? ['visiteur-retour-8-30-jours', 'Retour après 8 à 30 jours'] : ['visiteur-retour-plus-30-jours', 'Retour après plus de 30 jours'];
+    }
+    localStorage.setItem(k, JSON.stringify({ first: st ? st.first : now, last: now }));
+    if (!ev) return;
+    var n = 0, t = setInterval(function () {
+      if (window.goatcounter && window.goatcounter.count) { clearInterval(t); window.goatcounter.count({ path: ev[0], title: ev[1], event: true }); }
+      else if (++n > 20) clearInterval(t);
+    }, 500);
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
