@@ -213,6 +213,22 @@ section[id], details[id], .growth[id] { scroll-margin-top: calc(var(--navh, 44px
 .kpi { font-size: 12px; padding: 3px 8px; border-radius: 6px; background: var(--grid); font-variant-numeric: tabular-nums; }
 .kpi.g { background: var(--s-good); } .kpi.b { background: var(--s-bad); }
 .kpi em { font-style: normal; color: var(--muted); margin-right: 4px; }
+button.kpi { font: inherit; font-size: 12px; color: var(--fg); border: 1px solid transparent; cursor: pointer; text-align: left; position: relative; padding-right: 20px; }
+button.kpi::after { content: "▾"; color: var(--muted); font-size: 10px; position: absolute; right: 7px; top: 50%; transform: translateY(-50%); }
+button.kpi[aria-expanded="true"] { border-color: var(--fg); }
+button.kpi[aria-expanded="true"]::after { content: "▴"; }
+button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
+.kdet { margin-top: 4px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; font-size: 12.5px; overflow-x: auto; }
+.kdet p { margin: 0; color: var(--muted); line-height: 1.4; } .kdet p b { color: var(--fg); }
+.kdet-slot { grid-column: 1 / -1; min-width: 0; } .kdet-slot:empty { display: none; }
+.kdet table { border-collapse: collapse; font-variant-numeric: tabular-nums; width: 100%; }
+.kdet th { text-align: right; font-weight: 600; color: var(--muted); font-size: 11.5px; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+.kdet td { text-align: right; padding: 3px 6px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+.kdet th:first-child, .kdet td:first-child { text-align: left; }
+.kdet .pt { display: inline-block; min-width: 22px; text-align: center; border-radius: 5px; font-weight: 700; }
+.kdet .pt.g { background: var(--s-good); color: var(--ok); } .kdet .pt.b { background: var(--s-bad); color: var(--bad); } .kdet .pt.m { background: var(--s-mid); color: var(--mid); } .kdet .pt.na { color: var(--muted); font-weight: 400; }
+.kdet .kdet-src { font-size: 11px; }
+@media (max-width: 560px) { button.kpi { font-size: 11.5px; } .kdet { font-size: 12px; padding: 8px; } .kdet td, .kdet th { padding: 3px 4px; } }
 .gov.pending .who span { font-style: italic; }
 
 /* Graphes */
@@ -390,7 +406,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="chart" id="rank-gov"></div>
     <p class="note" id="rank-gov-note"></p>
     <span class="eyebrow" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
-    <p class="note">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que la zone euro. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
+    <p class="note">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que la zone euro. <b>Touchez un critère</b> pour voir les chiffres, année par année. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
     <div class="gov-list" id="gov-list"></div>
     <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
   </section>
@@ -736,24 +752,54 @@ function main(FEED) {
   }
   var chg = function (k, w, y) { var a = at(D[k][w], y), b = y > Y0 ? at(D[k][w], y - 1) : null; return a == null || b == null ? null : a - b; };
   var cov = function (w, y) { return X95['x' + w][y - 1995] / X95['m' + w][y - 1995]; };
+  // Ce que l'on compare, année par année : f / e = évolution France / zone euro, lf / le = niveau de l'année (pour le détail affiché).
+  var lvl = function (k, w, y) { return at(D[k][w], y); };
+  var CMP = {
+    dette: function (y) { return { f: chg('dette', 'fr', y), e: chg('dette', 'ea', y), low: true, lf: lvl('dette', 'fr', y), le: lvl('dette', 'ea', y) }; },
+    deficit: function (y) { return { f: chg('deficit', 'fr', y), e: chg('deficit', 'ea', y), low: false, lf: lvl('deficit', 'fr', y), le: lvl('deficit', 'ea', y) }; },
+    dep: function (y) { return { f: chg('dep', 'fr', y), e: chg('dep', 'ea', y), low: true, lf: lvl('dep', 'fr', y), le: lvl('dep', 'ea', y) }; },
+    po: function (y) { return { f: chg('po', 'fr', y), e: chg('po', 'ea', y), low: true, lf: lvl('po', 'fr', y), le: lvl('po', 'ea', y) }; },
+    pib: function (y) { return { f: pibAt('fr', y) / pibAt('fr', y - 1), e: pibAt('ea', y) / pibAt('ea', y - 1), low: false }; },
+    emploi: function (y) { return { f: x94('uFr', y) - x94('uFr', y - 1), e: x94('uEa', y) - x94('uEa', y - 1), low: true, lf: x94('uFr', y), le: x94('uEa', y) }; },
+    com: function (y) { return y > 1995 ? { f: cov('Fr', y) - cov('Fr', y - 1), e: cov('Ea', y) - cov('Ea', y - 1), low: false, lf: 100 * cov('Fr', y), le: 100 * cov('Ea', y) } : null; },
+    int: function (y) { return y > 1995 ? { f: X95.iFr[y - 1995] - X95.iFr[y - 1996], e: X95.iEa[y - 1995] - X95.iEa[y - 1996], low: true, lf: X95.iFr[y - 1995], le: X95.iEa[y - 1995] } : null; }
+  };
+  // Comment lire le détail de chaque critère : ce qui est comparé, et comment afficher les valeurs.
+  var DET = {
+    dette: { q: 'Évolution de la dette publique sur l\'année, en points de PIB (entre parenthèses : niveau, % du PIB). Point si la France augmente moins que la zone euro.' },
+    deficit: { q: 'Évolution du solde public sur l\'année, en points de PIB (entre parenthèses : solde, % du PIB). Point si le solde de la France s\'améliore plus que celui de la zone euro.' },
+    dep: { q: 'Évolution des dépenses publiques sur l\'année, en points de PIB (entre parenthèses : niveau, % du PIB). Point si la France augmente moins que la zone euro.' },
+    po: { q: 'Évolution des impôts et cotisations sur l\'année, en points de PIB (entre parenthèses : niveau, % du PIB). Point si la France augmente moins que la zone euro.' },
+    pib: { q: 'Croissance du PIB par habitant sur l\'année (en parité de pouvoir d\'achat, à prix constants). Point si la France fait mieux que la zone euro.', pct: true },
+    emploi: { q: 'Évolution du taux de chômage sur l\'année, en points (entre parenthèses : taux de chômage). Point si le chômage de la France baisse plus, ou monte moins.' },
+    com: { q: 'Évolution du taux de couverture (exportations ÷ importations), en points (entre parenthèses : taux de couverture, en %). Point si la France s\'améliore plus.' },
+    int: { q: 'Évolution des intérêts de la dette sur l\'année, en points de PIB (entre parenthèses : intérêts, % du PIB). Point si la France augmente moins.' }
+  };
   function evaluate(g) {
-    g.w = {};
-    CRIT.forEach(function (c) { g.w[c.k] = []; });
+    g.w = {}; g.y = {};
+    CRIT.forEach(function (c) { g.w[c.k] = []; g.y[c.k] = []; });
     d3.range(g.y0, g.y1 + 1).forEach(function (y) {
-      var push = function (k, v) { if (v != null) g.w[k].push(v); };
-      push('dette', match(chg('dette', 'fr', y), chg('dette', 'ea', y), true));
-      push('deficit', match(chg('deficit', 'fr', y), chg('deficit', 'ea', y), false));
-      push('dep', match(chg('dep', 'fr', y), chg('dep', 'ea', y), true));
-      push('po', match(chg('po', 'fr', y), chg('po', 'ea', y), true));
-      push('pib', match(pibAt('fr', y) / pibAt('fr', y - 1), pibAt('ea', y) / pibAt('ea', y - 1), false));
-      push('emploi', match(x94('uFr', y) - x94('uFr', y - 1), x94('uEa', y) - x94('uEa', y - 1), true));
-      if (y > 1995) {
-        push('com', match(cov('Fr', y) - cov('Fr', y - 1), cov('Ea', y) - cov('Ea', y - 1), false));
-        push('int', match(X95.iFr[y - 1995] - X95.iFr[y - 1996], X95.iEa[y - 1995] - X95.iEa[y - 1996], true));
-      }
+      CRIT.forEach(function (c) {
+        var d = CMP[c.k](y), m = d ? match(d.f, d.e, d.low) : null;
+        if (m != null) g.w[c.k].push(m);
+        if (d) { d.y = y; d.pt = m; g.y[c.k].push(d); }
+      });
     });
     g.r = {};
     CRIT.forEach(function (c) { var l = g.w[c.k]; g.r[c.k] = l.length ? d3.mean(l) : null; });
+  }
+  // Tableau du détail d'un critère : une ligne par année du mandat.
+  function detailTable(g, k) {
+    var c = CRIT.filter(function (x) { return x.k === k; })[0], o = DET[k], wrap = document.createElement('div'); wrap.className = 'kdet';
+    var val = function (v, l) { if (v == null || isNaN(v)) return 'n.d.'; return (o.pct ? sg((v - 1) * 100, 1) + ' %' : sg(v, 1)) + (l != null ? ' (' + fmt(l, 1) + ')' : ''); };
+    var gap = function (d) { if (d.f == null || d.e == null || isNaN(d.f) || isNaN(d.e)) return ''; var v = o.pct ? (d.f - d.e) * 100 : d.f - d.e; return v === 0 ? '0' : sg(v, Math.abs(v) < 0.05 ? 2 : 1) + (o.pct ? ' pt' : ''); };
+    var h = '<p class="kdet-q"><b>' + c.l.replace(/\.$/, '') + '.</b> ' + o.q + '</p><table><thead><tr><th>Année</th><th>France</th><th>Zone euro</th><th>Écart</th><th>Point</th></tr></thead><tbody>';
+    g.y[k].forEach(function (d) {
+      var pt = d.pt == null ? '<span class="pt na">n.d.</span>' : d.pt === 1 ? '<span class="pt g">1</span>' : d.pt === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">½</span>';
+      h += '<tr><td>' + d.y + '</td><td>' + val(d.f, d.lf) + '</td><td>' + val(d.e, d.le) + '</td><td>' + gap(d) + '</td><td>' + pt + '</td></tr>';
+    });
+    wrap.innerHTML = h + '</tbody></table><p class="kdet-src">Sources : Eurostat (dette, solde, dépenses, prélèvements, intérêts), Banque mondiale (PIB par habitant, chômage, échanges). Écart = France moins zone euro ; une égalité exacte vaut ½ point.</p>';
+    return wrap;
   }
   GOVS.forEach(evaluate); PRES.forEach(evaluate);
   var allOn = {}; CRIT.forEach(function (c) { allOn[c.k] = true; });
@@ -827,21 +873,29 @@ function main(FEED) {
     var ol = document.getElementById('sum-list'); ol.innerHTML = items.map(function (t) { return '<li>' + t + '</li>'; }).join('');
   }
   function chipsFor(g) {
-    var kp = document.createElement('div'); kp.className = 'kpis';
+    var box = document.createDocumentFragment(), kp = document.createElement('div'), det = document.createElement('div'), open = null;
+    kp.className = 'kpis'; det.className = 'kdet-slot'; box.appendChild(kp); box.appendChild(det);
     CRIT.forEach(function (c) {
       if (!on[c.k]) return;
-      var l = g.w[c.k], k = document.createElement('span'), won = d3.sum(l), n = l.length;
-      k.className = 'kpi' + (!n ? '' : won / n >= 0.5 ? ' g' : ' b');
+      var l = g.w[c.k], k = document.createElement('button'), won = d3.sum(l), n = l.length;
+      k.type = 'button'; k.className = 'kpi' + (!n ? '' : won / n >= 0.5 ? ' g' : ' b'); k.setAttribute('aria-expanded', 'false');
+      k.title = 'Voir le détail, année par année';
       k.innerHTML = '<em></em><span></span>'; k.firstChild.textContent = c.l; k.lastChild.textContent = !n ? 'n.d.' : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n;
+      k.addEventListener('click', function () {
+        Array.prototype.forEach.call(kp.children, function (b) { b.setAttribute('aria-expanded', 'false'); });
+        det.textContent = '';
+        if (open === c.k) { open = null; return; }
+        open = c.k; k.setAttribute('aria-expanded', 'true'); det.appendChild(detailTable(g, c.k));
+      });
       kp.appendChild(k);
     });
-    return kp;
+    return box;
   }
   function openDetail(mode, g) {
     if (mode === 'pres') {
       var box = document.getElementById('pres-detail'); box.textContent = ''; box.hidden = false;
       var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span class="note"></span>';
-      who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + (g.p ? ', ' + g.p : '') + '. Points marqués face à la zone euro :';
+      who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + (g.p ? ', ' + g.p : '') + '. Points marqués face à la zone euro (touchez un critère pour le détail) :';
       box.appendChild(who); box.appendChild(chipsFor(g));
       box.classList.remove('flash'); void box.offsetWidth; box.classList.add('flash');
       box.scrollIntoView({ block: 'nearest' });

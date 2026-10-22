@@ -210,6 +210,22 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .kpi { font-size: 12px; padding: 3px 8px; border-radius: 6px; background: var(--grid); font-variant-numeric: tabular-nums; }
 .kpi.g { background: var(--s-good); } .kpi.b { background: var(--s-bad); }
 .kpi em { font-style: normal; color: var(--muted); margin-right: 4px; }
+button.kpi { font: inherit; font-size: 12px; color: var(--fg); border: 1px solid transparent; cursor: pointer; text-align: left; position: relative; padding-right: 20px; }
+button.kpi::after { content: "▾"; color: var(--muted); font-size: 10px; position: absolute; right: 7px; top: 50%; transform: translateY(-50%); }
+button.kpi[aria-expanded="true"] { border-color: var(--fg); }
+button.kpi[aria-expanded="true"]::after { content: "▴"; }
+button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
+.kdet { margin-top: 4px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; font-size: 12.5px; overflow-x: auto; }
+.kdet p { margin: 0; color: var(--muted); line-height: 1.4; } .kdet p b { color: var(--fg); }
+.kdet-slot { grid-column: 1 / -1; min-width: 0; } .kdet-slot:empty { display: none; }
+.kdet table { border-collapse: collapse; font-variant-numeric: tabular-nums; width: 100%; }
+.kdet th { text-align: right; font-weight: 600; color: var(--muted); font-size: 11.5px; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+.kdet td { text-align: right; padding: 3px 6px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+.kdet th:first-child, .kdet td:first-child { text-align: left; }
+.kdet .pt { display: inline-block; min-width: 22px; text-align: center; border-radius: 5px; font-weight: 700; }
+.kdet .pt.g { background: var(--s-good); color: var(--ok); } .kdet .pt.b { background: var(--s-bad); color: var(--bad); } .kdet .pt.m { background: var(--s-mid); color: var(--mid); } .kdet .pt.na { color: var(--muted); font-weight: 400; }
+.kdet .kdet-src { font-size: 11px; }
+@media (max-width: 560px) { button.kpi { font-size: 11.5px; } .kdet { font-size: 12px; padding: 8px; } .kdet td, .kdet th { padding: 3px 4px; } }
 .gov.pending .who span { font-style: italic; }
 
 /* Graphes */
@@ -370,7 +386,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="note" id="rank-gov-note"></p>
     <span class="eyebrow" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
     <p class="note">« Non comparable » : cette année-là, Eurostat signale un changement de méthode dans l'enquête française (rupture de série, en 2003, 2013, 2014, 2021 et 2024). Comparer l'évolution reviendrait à comparer deux mesures différentes, donc l'année ne rapporte ni ne coûte de point. C'est pour cela que Gabriel Attal (2024) n'est jugé que sur trois critères.</p>
-    <p class="note">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que ses voisins. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
+    <p class="note">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que ses voisins. <b>Touchez un critère</b> pour voir les chiffres. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
     <div class="gov-list" id="gov-list"></div>
     <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
   </section>
@@ -539,7 +555,54 @@ function main(FEED) {
     { n: 'François Hollande', p: '', y0: 2012, y1: 2016 }, { n: 'Emmanuel Macron', p: 'en exercice', y0: 2017, y1: 2025 }
   ];
   var pmOf = function (y) { return GOVS.filter(function (g) { return y >= g.y0 && y <= g.y1; })[0]; };
-  function evaluate(g) { g.w = {}; KEYS.forEach(function (k) { g.w[k] = []; for (var y = g.y0; y <= g.y1; y++) { var m = match(k, y); if (m != null) g.w[k].push(m); } }); }
+  function evaluate(g) { g.w = {}; g.y = {}; KEYS.forEach(function (k) { g.w[k] = []; g.y[k] = []; for (var y = g.y0; y <= g.y1; y++) { var m = match(k, y); if (m != null) g.w[k].push(m); g.y[k].push({ y: y, pt: m }); } }); }
+  // ===== Détail d'un critère, pour vérifier chaque point =====
+  var sg = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d == null ? 1 : d); };
+  var ptHtml = function (v) { return v == null ? '<span class="pt na">n.c.</span>' : v === 1 ? '<span class="pt g">1</span>' : v === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">' + (v === 0.5 ? '½' : fmt(v, 2)) + '</span>'; };
+  var DET = {
+    el: 'Évolution sur l\'année de la part des 18-24 ans sortis de l\'école sans diplôme du secondaire, en points (entre parenthèses : niveau, en %). Point si la France baisse plus, ou monte moins, que l\'UE. Source : Eurostat.',
+    ne: 'Évolution sur l\'année de la part des 15-29 ans ni en emploi, ni en études, ni en formation, en points (entre parenthèses : niveau, en %). Point si la France baisse plus, ou monte moins, que l\'UE. Source : Eurostat.',
+    te: 'Évolution sur l\'année de la part des 25-34 ans diplômés du supérieur, en points (entre parenthèses : niveau, en %). Point si la France progresse plus que l\'UE. Source : Eurostat.',
+    yu: 'Évolution sur l\'année du chômage des 15-24 ans, en points (entre parenthèses : taux, en %). Point si la France baisse plus, ou monte moins, que l\'UE. Source : Banque mondiale (OIT).',
+    pi: 'Évolution du score PISA entre deux vagues, moyenne des domaines comparables (maths, lecture, sciences), en points. Point si la France évolue mieux que la moyenne de l\'OCDE (½ point si l\'écart est inférieur à 0,5). Source : OCDE, PISA.',
+    eq: 'Évolution, entre deux mesures, de l\'écart de score en maths entre le quart des élèves le plus favorisé et le plus défavorisé, en points. Point si l\'écart se réduit plus en France que dans l\'OCDE. Sources : OCDE, PISA ; Insee.'
+  };
+  function waveRow(k, W) {
+    if (k === 'pi') {
+      var i = WAVES.indexOf(W); if (i < 1) return null; var w0 = WAVES[i - 1], f = [], o = [];
+      ['m', 'r', 's'].forEach(function (d) { var c = PI[d], a = c.y.indexOf(w0), b = c.y.indexOf(W); if (a >= 0 && b >= 0) { f.push(c.fr[b] - c.fr[a]); o.push(c.oe[b] - c.oe[a]); } });
+      return f.length ? { w0: w0, w: W, f: d3.mean(f), o: d3.mean(o), pt: waveRes(k, W) } : null;
+    }
+    var j = EQ.y.indexOf(W); if (j < 1) return null;
+    return { w0: EQ.y[j - 1], w: W, f: EQ.fr[j] - EQ.fr[j - 1], o: EQ.oe[j] - EQ.oe[j - 1], pt: waveRes(k, W), lf: EQ.fr[j], lo: EQ.oe[j] };
+  }
+  function detailTable(g, k) {
+    var wrap = document.createElement('div'); wrap.className = 'kdet';
+    var h = '<p><b>' + S[k].l + (WT[k] > 1 ? ' (compte triple)' : '') + '.</b> ' + DET[k] + '</p>';
+    if (k === 'pi' || k === 'eq') {
+      var ws = (k === 'pi' ? WAVES : EQ.y).filter(function (W) {
+        for (var y = g.y0; y <= g.y1; y++) { if (LONG ? (y >= W - 9 && y <= W) : (function (v) { return v && v[1] === W; })(waveOf(k === 'pi' ? WAVES : EQ.y, y))) return true; }
+        return false;
+      }).map(function (W) { return waveRow(k, W); }).filter(Boolean);
+      if (!ws.length) { wrap.innerHTML = h + '<p>Aucune mesure ne concerne ce mandat.</p>'; return wrap; }
+      h += '<table><thead><tr><th>Vagues</th><th>France</th><th>OCDE</th><th>Écart</th><th>Point</th></tr></thead><tbody>';
+      ws.forEach(function (r) {
+        var lv = function (v, l) { return sg(v, 1) + (l != null ? ' (' + l + ')' : ''); };
+        h += '<tr><td>' + r.w0 + '→' + r.w + '</td><td>' + lv(r.f, r.lf) + '</td><td>' + lv(r.o, r.lo) + '</td><td>' + sg(r.f - r.o, 1) + '</td><td>' + ptHtml(r.pt) + '</td></tr>';
+      });
+      h += '</tbody></table><p>Points retenus, année par année : ' + g.y[k].map(function (d) { return d.y + ' : ' + (d.pt == null ? 'aucun' : d.pt === 0.5 ? '½' : fmt(d.pt, d.pt % 1 ? 2 : 0)); }).join(' · ') + '.</p>';
+      h += '<p>' + (LONG ? 'Mode « temps long » : chaque vague compte pour les dix années de scolarité des élèves testés ; une année couverte par plusieurs vagues reçoit leur moyenne.' : 'Mode « depuis la vague précédente » : chaque vague compte pour les années écoulées depuis la vague d\'avant.') + '</p>';
+      wrap.innerHTML = h; return wrap;
+    }
+    var c = S[k], lv = function (arr, y) { var a = at(arr, y), b = at(arr, y - 1); return a == null || b == null ? 'n.d.' : sg(a - b, 1) + ' (' + fmt(a, 1) + ')'; };
+    h += '<table><thead><tr><th>Année</th><th>France</th><th>UE</th><th>Écart</th><th>Point</th></tr></thead><tbody>';
+    g.y[k].forEach(function (d) {
+      var y = d.y, br = c.br.indexOf(y) >= 0, df = at(c.fr, y) - at(c.fr, y - 1), de = at(c.eu, y) - at(c.eu, y - 1), e = df - de;
+      h += '<tr><td>' + y + '</td><td>' + lv(c.fr, y) + '</td><td>' + lv(c.eu, y) + '</td><td>' + (br || isNaN(e) ? '' : e === 0 ? '0' : sg(e, Math.abs(e) < 0.05 ? 2 : 1)) + '</td><td>' + (br ? '<span class="pt na">rupture</span>' : ptHtml(d.pt)) + '</td></tr>';
+    });
+    wrap.innerHTML = h + '</tbody></table><p>Écart = évolution de la France moins celle de l\'UE. « Rupture » : Eurostat signale un changement de méthode cette année-là, l\'année ne compte pas.</p>';
+    return wrap;
+  }
   GOVS.forEach(evaluate); PRES.forEach(evaluate);
   var on = { el: true, ne: true, te: true, yu: true, pi: true, eq: true };
   try { var sv = JSON.parse(localStorage.getItem('edu-crit2') || 'null'); if (sv) KEYS.forEach(function (k) { if (typeof sv[k] === 'boolean') on[k] = sv[k]; }); } catch (e) {}
@@ -578,15 +641,22 @@ function main(FEED) {
   })();
   // ===== Classements =====
   function chipsFor(g) {
-    var kp = document.createElement('div'); kp.className = 'kpis';
+    var box = document.createDocumentFragment(), kp = document.createElement('div'), det = document.createElement('div'), open = null;
+    kp.className = 'kpis'; det.className = 'kdet-slot'; box.appendChild(kp); box.appendChild(det);
     KEYS.forEach(function (k) {
       if (!on[k]) return;
-      var l = g.w[k], s = document.createElement('span'), won = d3.sum(l), n = l.length;
-      s.className = 'kpi' + (!n ? '' : won / n >= 0.5 ? ' g' : ' b');
+      var l = g.w[k], s = document.createElement('button'), won = d3.sum(l), n = l.length;
+      s.type = 'button'; s.className = 'kpi' + (!n ? '' : won / n >= 0.5 ? ' g' : ' b'); s.setAttribute('aria-expanded', 'false'); s.title = 'Voir le détail des chiffres';
       s.innerHTML = '<em></em><span></span>'; s.firstChild.textContent = S[k].l; s.lastChild.textContent = !n ? (k === 'pi' || k === 'eq' ? 'pas de mesure' : 'non comparable') : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n;
+      s.addEventListener('click', function () {
+        Array.prototype.forEach.call(kp.children, function (b) { b.setAttribute('aria-expanded', 'false'); });
+        det.textContent = '';
+        if (open === k) { open = null; return; }
+        open = k; s.setAttribute('aria-expanded', 'true'); det.appendChild(detailTable(g, k));
+      });
       kp.appendChild(s);
     });
-    return kp;
+    return box;
   }
   function openDetail(mode, g) {
     if (mode === 'gov') {
@@ -595,7 +665,7 @@ function main(FEED) {
     }
     var box = document.getElementById('pres-detail'); box.textContent = ''; box.hidden = false;
     var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span class="note"></span>';
-    who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + (g.p ? ', ' + g.p : '') + '. ' + countOf(g) + ' comparaisons avec nos voisins ; points marqués :';
+    who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + (g.p ? ', ' + g.p : '') + '. ' + countOf(g) + ' comparaisons avec nos voisins ; points marqués (touchez un critère pour le détail) :';
     box.appendChild(who); box.appendChild(chipsFor(g));
     box.classList.remove('flash'); void box.offsetWidth; box.classList.add('flash');
   }
