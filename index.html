@@ -255,6 +255,20 @@ footer p { margin: 0; } footer a { color: inherit; }
 .pg:hover, .pg:focus-visible { border-color: var(--fr); }
 .pg.feat { border: 2px solid var(--fr); padding: 18px; } .pg.feat b { font-size: 21px; color: var(--fr); }
 .pg.soon { background: transparent; border-style: dashed; } .pg.soon b { color: var(--muted); }
+.bars { display: grid; gap: 2px; }
+.br { display: grid; grid-template-columns: minmax(7.5rem, 11rem) minmax(0, 1fr); gap: 10px; align-items: center; width: 100%; background: none; border: 0; padding: 6px 0; font: inherit; color: var(--fg); text-align: left; cursor: pointer; border-top: 1px solid var(--line); }
+.br:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.br .nm { font-size: 14px; font-weight: 600; line-height: 1.2; } .br .nm small { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; }
+.br .tr { position: relative; height: 22px; background: var(--grid); border-radius: 5px; }
+.br .fl { position: absolute; inset: 0 auto 0 0; border-radius: 5px; }
+.br .fl.g { background: var(--ok); } .br .fl.m { background: var(--mid); } .br .fl.b { background: var(--bad); }
+.br .v { position: absolute; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.br .ten { position: absolute; left: 50%; top: -3px; bottom: -3px; border-left: 2px dashed var(--fg); opacity: .5; }
+.br[aria-expanded="true"] .nm::after { content: " ▴"; color: var(--muted); }
+.bd { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0 10px; }
+.bd a { font-size: 13px; padding: 4px 9px; border-radius: 6px; text-decoration: none; color: var(--fg); }
+.bd a.g { background: var(--s-good); } .bd a.m { background: var(--s-mid); } .bd a.b { background: var(--s-bad); } .bd a.na { background: var(--grid); color: var(--muted); }
+.bd a b { font-variant-numeric: tabular-nums; }
 .rank { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
 .rank th { font-size: 11.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); text-align: right; padding: 6px 6px; border-bottom: 1px solid var(--line); }
 .rank th:first-child, .rank td:first-child { text-align: left; }
@@ -286,12 +300,13 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card" id="classement" aria-labelledby="cl-t">
     <h2 id="cl-t"><span class="eyebrow">Le classement général</span>Les présidents, toutes missions confondues</h2>
-    <p class="note">Note sur 20 par mission, et moyenne des missions disponibles. <b>10 = le niveau de nos voisins</b> ; en dessous, la France a fait moins bien que la moyenne européenne. Le détail et la méthode sont sur chaque page.</p>
-    <table class="rank" id="t-pres"></table>
+    <p class="note">Moyenne des notes sur 20 de chaque mission. <b>Le trait pointillé, 10, est le niveau de nos voisins</b> ; en dessous, la France a fait moins bien que la moyenne européenne. Le détail et la méthode sont sur chaque page.</p>
+    <div class="bars" id="t-pres"></div>
+    <p class="note">Touchez une ligne pour voir la note par mission.</p>
   </section>
   <section class="card" aria-labelledby="cl-g">
     <h2 id="cl-g"><span class="eyebrow">Le classement général</span>Les gouvernements</h2>
-    <table class="rank" id="t-gov"></table>
+    <div class="bars" id="t-gov"></div>
     <p class="note">Sébastien Lecornu (depuis septembre 2025) sera noté quand les chiffres de 2026 seront publiés. Les séries de l'éducation commencent en 2002 : Alain Juppé et Lionel Jospin ne sont notés que sur les finances, Jacques Chirac sur 2003-2006 seulement en éducation. Classement établi le 22 octobre 2026.</p>
   </section>
 
@@ -318,12 +333,20 @@ footer p { margin: 0; } footer a { color: inherit; }
   ];
   var fmt = function (v) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v); };
   var cls = function (v) { return v >= 10 ? 'g' : v >= 6 ? 'm' : 'b'; };
-  var cell = function (v, avg) { return v == null ? '<td class="na">–</td>' : '<td' + (avg ? ' class="avg"' : '') + '><span class="n ' + cls(v) + '">' + fmt(v) + '</span></td>'; };
+  var MISS = [['f', 'Finances', '/finances/#bulletin'], ['e', 'Éducation', '/education/#bulletin']];
   function table(id, rows) {
-    rows.forEach(function (r) { var v = [r.f, r.e].filter(function (x) { return x != null; }); r.m = Math.round(v.reduce(function (a, b) { return a + b; }, 0) / v.length * 10) / 10; });
+    rows.forEach(function (r) { var v = MISS.map(function (m) { return r[m[0]]; }).filter(function (x) { return x != null; }); r.m = Math.round(v.reduce(function (a, b) { return a + b; }, 0) / v.length * 10) / 10; r.k = v.length; });
     rows.sort(function (a, b) { return b.m - a.m; });
-    document.getElementById(id).innerHTML = '<thead><tr><th>' + (id === 't-pres' ? 'Président' : 'Premier ministre') + '</th><th><a href="/finances/#bulletin">Finances</a></th><th><a href="/education/#bulletin">Éducation</a></th><th>Moyenne</th></tr></thead><tbody>' +
-      rows.map(function (r) { return '<tr><td><b>' + r.n + '</b><small>' + r.d + '</small></td>' + cell(r.f) + cell(r.e) + cell(r.m, 1) + '</tr>'; }).join('') + '</tbody>';
+    var box = document.getElementById(id); box.textContent = '';
+    rows.forEach(function (r, i) {
+      var b = document.createElement('button'); b.className = 'br'; b.type = 'button'; b.setAttribute('aria-expanded', 'false');
+      var w = r.m / 20 * 100, inside = w > 22;
+      b.innerHTML = '<span class="nm">' + r.n + '<small>' + r.d + '</small></span><span class="tr"><span class="ten"></span><span class="fl ' + cls(r.m) + '" style="width:' + w + '%"></span><span class="v" style="' + (inside ? 'left:calc(' + w + '% - 2.8em);color:#fff' : 'left:calc(' + w + '% + 6px)') + '">' + fmt(r.m) + '</span></span>';
+      var d = document.createElement('div'); d.className = 'bd'; d.hidden = true;
+      d.innerHTML = MISS.map(function (m) { var v = r[m[0]]; return '<a class="' + (v == null ? 'na' : cls(v)) + '" href="' + m[2] + '">' + m[1] + ' <b>' + (v == null ? 'non noté' : fmt(v) + '/20') + '</b></a>'; }).join('') + (r.k < MISS.length ? '<span class="note" style="align-self:center">Moyenne sur ' + r.k + ' mission' + (r.k > 1 ? 's' : '') + '.</span>' : '');
+      b.addEventListener('click', function () { var o = d.hidden; d.hidden = !o; b.setAttribute('aria-expanded', o ? 'true' : 'false'); });
+      box.appendChild(b); box.appendChild(d);
+    });
   }
   table('t-pres', P); table('t-gov', G);
 })();
