@@ -133,7 +133,8 @@
   //  - 'propre' : déficit de l'Assurance maladie, jugé sur la France seule faute de comparaison possible : 1 point si
   //    équilibre ou excédent, ½ si le déficit se réduit d'au moins 0,1 point de PIB, 0 s'il se creuse ou reste stable.
   function sante(S) {
-    var C = S.C, THEMES = S.THEMES, KEYS = Object.keys(C), WT = {}, MIN_N = 6, SEUIL_STABLE = 0.1, LONG = 5;
+    // Note fragile en dessous d'une année complète de comparaisons (un point par indicateur), comme en Éducation.
+    var C = S.C, THEMES = S.THEMES, KEYS = Object.keys(C), WT = {}, MIN_N = KEYS.length, SEUIL_STABLE = 0.1, LONG = 5;
     KEYS.forEach(function (k) { WT[k] = C[k].poids || 1; });
     var val = function (c, w, y) { var i = c.y.indexOf(y); return i < 0 || !c[w] ? null : c[w][i]; };
     var ref = function (c) { return c.ref || 'ue'; };
