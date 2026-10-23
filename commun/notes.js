@@ -12,6 +12,7 @@
   var POURQUOI = {
     // qui : 'fr' (la France), 'ue' (la moyenne européenne), 'fr_ue' (les deux)
     methode: function (y, qui) {
+      if (qui === 'serie') return 'Non compté : en ' + y + ', Eurostat passe d\'une table à une autre (chiffres jusqu\'en ' + (y - 1) + ', puis depuis ' + y + '), qu\'il ne raccorde pas : l\'évolution entre les deux n\'est pas comptée.';
       var sujet = qui === 'fr' ? 'la France a changé sa façon de mesurer ce chiffre' : qui === 'fr_ue' ? 'la France et la moyenne européenne ont changé leur façon de mesurer ce chiffre' : 'la moyenne européenne a changé sa façon de mesurer ce chiffre';
       return 'Non compté : en ' + y + ', ' + sujet + ', il n\'est pas comparable à ' + (y - 1) + '.';
     },

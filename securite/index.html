@@ -454,7 +454,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
     <p class="note">● la France a fait mieux que ses voisins sur ce thème cette année-là, ○ moins bien, ◐ autant, – pas de chiffre comparable (la raison est sous la ligne).</p>
     <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
-    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 2009</button>
+    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 1995</button>
   </section>
 
   <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
@@ -478,8 +478,8 @@ footer p { margin: 0; } footer a { color: inherit; }
   <details class="acc" id="methode">
     <summary><span class="acc-h">Méthode et sources</span><span class="acc-t">D'où viennent les chiffres, et leurs limites</span><span class="acc-cta"></span></summary>
     <div class="acc-body card" id="methode-body">
-      <p class="note"><b>Sources.</b> Homicides, vols avec violence, cambriolages, violences sexuelles : Eurostat (crim_off_cat), faits enregistrés par la police et la gendarmerie. Délinquance dans le quartier : Eurostat (ilc_mddw03), enquête européenne auprès des ménages EU-SILC. Prisons : Eurostat (crim_pris_cap), taux d'occupation calculé par Concret (détenus ÷ places). Juges et policiers : Eurostat (crim_just_job). Obligations de quitter le territoire et départs : Eurostat (migr_eiord, migr_eirtn), rapport calculé par Concret. Dépense pour l'ordre et la sécurité : Eurostat (gov_10a_exp). Chiffres du mois : SSMSI, service statistique du ministère de l'Intérieur (base des séries chronologiques, data.gouv.fr).</p>
-      <p class="note"><b>Limites.</b> Les faits enregistrés dépendent des plaintes et des définitions de chaque pays : la note porte sur leur évolution, pas sur leur niveau. Eurostat ne publie pas de moyenne européenne pour ces séries : la France est comparée à l'Allemagne. L'Allemagne ne publie son nombre de juges qu'une année sur deux : la France est comparée à l'Espagne pour ce chiffre. Les séries commencent en 2008 : la première évolution mesurable est celle de 2009. Le rapport entre départs et obligations de quitter le territoire n'est pas un taux d'exécution exact. Brouillon : délais de jugement et confiance dans la justice (Conseil de l'Europe, Eurobaromètre) restent à ajouter après vérification à la source.</p>
+      <p class="note"><b>Sources.</b> Homicides, vols avec violence, cambriolages de logement : Eurostat (crim_gen de 1993 à 2007, rapporté à la population au 1er janvier par Concret ; crim_off_cat depuis 2008), faits enregistrés par la police et la gendarmerie. Violences sexuelles : Eurostat (crim_off_cat). Délinquance dans le quartier : Eurostat (ilc_mddw03), enquête européenne auprès des ménages EU-SILC. Prisons : Eurostat (crim_pris_cap), taux d'occupation calculé par Concret (détenus ÷ places). Juges et policiers : Eurostat (crim_just_job). Obligations de quitter le territoire et départs : Eurostat (migr_eiord, migr_eirtn), rapport calculé par Concret. Dépense pour l'ordre et la sécurité : Eurostat (gov_10a_exp). Chiffres du mois : SSMSI, service statistique du ministère de l'Intérieur (base des séries chronologiques, data.gouv.fr).</p>
+      <p class="note"><b>Limites.</b> Les faits enregistrés dépendent des plaintes et des définitions de chaque pays : la note porte sur leur évolution, pas sur leur niveau. Eurostat ne publie pas de moyenne européenne pour ces séries : la France est comparée à l'Allemagne. L'Allemagne ne publie son nombre de juges qu'une année sur deux : la France est comparée à l'Espagne pour ce chiffre. Homicides, vols avec violence et cambriolages de logement : deux tables Eurostat, de 1993 à 2007 puis depuis 2008 ; l'évolution entre 2007 et 2008 n'est pas comptée. Les autres séries commencent en 2008 ou plus tard. Le rapport entre départs et obligations de quitter le territoire n'est pas un taux d'exécution exact. Brouillon : délais de jugement et confiance dans la justice (Conseil de l'Europe, Eurobaromètre) restent à ajouter après vérification à la source.</p>
     </div>
   </details>
 
@@ -1047,14 +1047,14 @@ function main(FEED) {
   // ===== Année par année =====
   var showYears = false;
   document.getElementById('yr-more').addEventListener('click', function () {
-    showYears = !showYears; this.setAttribute('aria-expanded', showYears); this.textContent = showYears ? 'Masquer les années précédentes' : 'Voir toutes les années, depuis 2009';
+    showYears = !showYears; this.setAttribute('aria-expanded', showYears); this.textContent = showYears ? 'Masquer les années précédentes' : 'Voir toutes les années, depuis 1995';
     renderYears();
   });
   setHtml('yr-head', '<tr><th>Année</th><th>Premier ministre</th>' + THEMES.map(function (t) { return '<th title="' + esc(t.q) + '">' + esc(t.abr || t.q) + '</th>'; }).join('') + '<th>Note</th></tr>');
   function renderYears() {
     var tb = document.getElementById('yr-body'); tb.textContent = '';
     var lastPres = null, Y1 = Math.max.apply(null, GOVS.map(function (g) { return g.y1; })), ncol = THEMES.length + 3;
-    for (var y = Y1; y >= 2009; y--) {
+    for (var y = Y1; y >= 1995; y--) {
       var hide = !showYears && y < Y1 - 1;
       var pres = PRES.filter(function (p) { return y >= p.y0 && y <= p.y1; })[0];
       if (pres && pres !== lastPres) {
