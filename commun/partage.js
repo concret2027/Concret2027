@@ -74,7 +74,31 @@
     var label = btn.textContent; btn.textContent = 'Préparation…'; btn.disabled = true;
     var wasClosed = card.tagName === 'DETAILS' && !card.open; if (wasClosed) card.open = true;
     lib().then(function (h2c) {
-      return h2c(card, { backgroundColor: getComputedStyle(document.body).backgroundColor, scale: 2, useCORS: true, logging: false, ignoreElements: function (el) { return el.classList && (el.classList.contains('share') || el.classList.contains('pt-share')); } });
+      // Le titre est déjà écrit en haut de l'image : on le retire de la capture pour ne pas le répéter.
+      var h = card.querySelector('h1, h2, .acc-h, .lab, .eyebrow'); if (h) h.setAttribute('data-pt-titre', ''); card.setAttribute('data-pt-bloc', '');
+      return h2c(card, { backgroundColor: getComputedStyle(document.body).backgroundColor, scale: 2, useCORS: true, logging: false,
+        ignoreElements: function (el) { return el.classList && (el.classList.contains('share') || el.classList.contains('pt-share')); },
+        // La capture ne sait pas ce qu'est un bloc replié : elle dessinerait son contenu par-dessus le reste.
+        // Dans la copie capturée, on ne garde que ce qui est visible à l'écran.
+        onclone: function (doc) {
+          Array.prototype.forEach.call(doc.querySelectorAll('details'), function (d) {
+            if (!d.open) Array.prototype.forEach.call(d.children, function (c) { if (c.tagName !== 'SUMMARY') c.remove(); });
+          });
+          Array.prototype.forEach.call(doc.querySelectorAll('summary'), function (s) { s.style.listStyle = 'none'; s.style.display = 'block'; });
+          Array.prototype.forEach.call(doc.querySelectorAll('[hidden], .pt-overlay'), function (e) { e.remove(); });
+          // Dans l'image, seulement ce qui se lit : pas de bouton, pas de liste de détail à toucher, pas de bloc replié.
+          var bl = doc.querySelector('[data-pt-bloc]');
+          if (bl) {
+            Array.prototype.forEach.call(bl.querySelectorAll('details:not([open]), button.more, .gov-list, .pt-hors'), function (e) { e.remove(); });
+            Array.prototype.forEach.call(bl.querySelectorAll('.note'), function (n) {
+              var w = doc.createTreeWalker(n, 4), x; while ((x = w.nextNode())) x.nodeValue = x.nodeValue.replace(/\s*Touchez[^.]*\./g, '');
+            });
+          }
+          var t = doc.querySelector('[data-pt-titre]'), bloc = doc.querySelector('[data-pt-bloc]');
+          if (bloc && bloc.tagName === 'DETAILS') { var sm = bloc.querySelector(':scope > summary'); if (sm) sm.remove(); }
+          else if (t) t.remove();
+        } }).then(function (shot) { fin(); return shot; }, function (e) { fin(); throw e; });
+      function fin() { if (h) h.removeAttribute('data-pt-titre'); card.removeAttribute('data-pt-bloc'); }
     }).then(function (shot) {
       var c = compose(shot, card);
       return new Promise(function (ok) { c.toBlob(function (b) { ok({ blob: b, url: c.toDataURL('image/png') }); }, 'image/png'); });
@@ -88,7 +112,7 @@
   }
   function equiper(root) {
     Array.prototype.forEach.call((root || document).querySelectorAll(SEL), function (card) {
-      if (card.dataset.partage || card.querySelector('.share, .pt-share')) return;
+      if (card.dataset.partage || card.querySelector('.share, .pt-share')) return; // data-partage="non" : bloc d'en-tête, rien à partager
       if (card.parentElement && card.parentElement.closest(SEL) && !card.matches('.today .metric')) return;
       card.dataset.partage = '1';
       var b = document.createElement('button'); b.type = 'button'; b.className = 'share pt-share'; b.textContent = 'Partager';
