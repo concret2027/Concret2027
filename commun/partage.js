@@ -53,13 +53,20 @@
     x.fillStyle = '#2f5bd3'; x.font = '700 34px "Inter Tight", system-ui, sans-serif'; x.fillText(adresse, pad, c.height - pad + 6);
     return c;
   }
-  function montrer(url) {
+  // L'image prend quelques secondes à préparer : passé ce délai, l'iPhone refuse d'ouvrir le menu de partage.
+  // On montre alors l'image avec un bouton « Partager » qui, touché, ouvre le menu tout de suite.
+  function montrer(url, file, titreTxt) {
     var o = document.createElement('div'); o.className = 'pt-overlay';
     o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
     o.style.cssText = 'position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px';
-    o.innerHTML = '<div style="background:#fff;color:#111;border-radius:14px;padding:14px;max-width:min(92vw,520px);max-height:92vh;overflow:auto;display:grid;gap:10px;font:14px system-ui,sans-serif"><img alt="Image à partager" style="width:100%;border-radius:8px"><a download="concret.png" style="font-weight:600">Enregistrer l\'image</a><span>Ou appui long sur l\'image pour la partager.</span><button type="button" style="font:inherit;font-weight:600;padding:10px;border-radius:10px;border:0;background:#111;color:#fff">Fermer</button></div>';
+    o.innerHTML = '<div style="background:#fff;color:#111;border-radius:14px;padding:14px;max-width:min(92vw,520px);max-height:92vh;overflow:auto;display:grid;gap:10px;font:14px system-ui,sans-serif"><img alt="Image à partager" style="width:100%;border-radius:8px"><button type="button" class="pt-go" hidden style="font:inherit;font-weight:600;padding:12px;border-radius:10px;border:0;background:#2f5bd3;color:#fff">Partager l\'image</button><a download="concret.png" style="font-weight:600">Enregistrer l\'image</a><span>Ou appui long sur l\'image pour la partager.</span><button type="button" class="pt-close" style="font:inherit;font-weight:600;padding:10px;border-radius:10px;border:0;background:#111;color:#fff">Fermer</button></div>';
     o.querySelector('img').src = url; o.querySelector('a').href = url;
-    o.querySelector('button').onclick = function () { o.remove(); };
+    var go = o.querySelector('.pt-go');
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      go.hidden = false;
+      go.onclick = function () { navigator.share({ files: [file], title: titreTxt, text: titreTxt + ' · ' + adresse }).then(function () { o.remove(); }, function () {}); };
+    }
+    o.querySelector('.pt-close').onclick = function () { o.remove(); };
     o.addEventListener('click', function (e) { if (e.target === o) o.remove(); });
     document.body.appendChild(o);
   }
@@ -73,8 +80,9 @@
       return new Promise(function (ok) { c.toBlob(function (b) { ok({ blob: b, url: c.toDataURL('image/png') }); }, 'image/png'); });
     }).then(function (r) {
       var file = new File([r.blob], 'concret.png', { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: titre(card), text: titre(card) + ' · ' + adresse }).catch(function () {});
-      montrer(r.url);
+      var t = titre(card);
+      if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: t, text: t + ' · ' + adresse }).catch(function (e) { if (!e || e.name !== 'AbortError') montrer(r.url, file, t); });
+      montrer(r.url, file, t);
     }).catch(function () { alert('Le partage n\'a pas pu être préparé.'); })
       .then(function () { if (wasClosed) card.open = false; btn.textContent = label; btn.disabled = false; });
   }
@@ -95,6 +103,8 @@
     st.textContent = '.pt-share{justify-self:start;align-self:start;margin-top:4px;font:inherit;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid var(--line,#ddd);background:var(--panel,#fff);color:var(--fg,#111);cursor:pointer}.pt-share:disabled{opacity:.6}';
     document.head.appendChild(st);
     equiper();
+    var pre = function () { lib().catch(function () { loading = null; }); };
+    if (window.requestIdleCallback) requestIdleCallback(pre, { timeout: 4000 }); else setTimeout(pre, 2000);
     var t; new MutationObserver(function () { clearTimeout(t); t = setTimeout(equiper, 200); }).observe(document.body, { childList: true, subtree: true });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
