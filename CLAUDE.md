@@ -38,6 +38,7 @@ Les pages HTML ne contiennent pas de chiffres : seulement de la mise en forme et
 - `commun/notes.js` : les règles de notation, la méthode affichée sur le site, en code. Utilisées par les pages, par l'accueil (classement général, recalculé à chaque visite) et par le contrôle. Une note n'est jamais saisie à la main.
 - `donnees/calendrier.json` : chaque indicateur, sa fréquence, sa source exacte, sa cible dans `data.json`, sa dernière donnée et sa prochaine vérification.
 - `outils/recits.js` : les titres et conclusions chiffrés de chaque page, avec leur vérification. Ils ne changent jamais sans validation.
+- `outils/secu.py` : déficit de la Sécurité sociale (Assurance maladie et ensemble), lu par l'outil dans le dernier rapport de la Commission des comptes de la Sécurité sociale ; `python3 outils/secu.py` compare, `--ecrire` ajoute les années closes. Jamais de saisie à la main.
 - `outils/controle.js` : `node outils/controle.js a-faire` (indicateurs dus aujourd'hui) et `node outils/controle.js verifier` (validation, notes, récits, journal, notification). Ne jamais publier si `verifier` sort en erreur.
 - `donnees/notes.json` (notes de la dernière publication), `donnees/a_valider.json` (récits à valider), `journal/AAAA-MM.md` (détail de chaque mise à jour).
 

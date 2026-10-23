@@ -7,6 +7,7 @@ Tu fais la mise à jour quotidienne du site Concret (https://concret2027.fr, dé
 
 ## 2. Mettre à jour les indicateurs dus
 Pour chaque indicateur listé, va à la source indiquée (URL de départ dans donnees/calendrier.json), récupère la donnée avec WebFetch ou l'outil adapté, puis applique les règles de donnees/calendrier.json (clé « regles ») :
+- Si la source d'un indicateur dit « LANCER : … » (par exemple le déficit de la Sécurité sociale, `python3 outils/secu.py`), utilise cet outil : il lit lui-même la source officielle et écrit data.json et le calendrier ; ne saisis pas ces chiffres à la main. S'il sort en erreur, garde les valeurs et signale-le.
 - nouvelle donnée vérifiée : écris-la dans sa cible de data.json, puis dans le calendrier : derniere_donnee, derniere_verification = aujourd'hui, tentatives = 0, statut = a_jour, prochaine_verification = prochaine publication lue dans le calendrier de diffusion de la source (publication_attendue seulement si la date est lue dans un calendrier officiel), sinon la date habituelle selon la fréquence ;
 - rien de nouveau et rien d'attendu avant une date connue : derniere_verification = aujourd'hui, prochaine_verification = cette date ;
 - publication attendue mais introuvable : tentatives + 1, statut = en_retard, prochaine_verification = demain ;
