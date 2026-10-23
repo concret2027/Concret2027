@@ -181,7 +181,7 @@
     }
     // Pourquoi une année n'est pas comptée pour un critère (phrase affichée sous le détail).
     function raisonSerie(c, y) {
-      var first = c.y[0], last = c.y[c.y.length - 1], r = ref(c), nomRef = r === 'de' ? 'l\'Allemagne' : 'la moyenne de l\'UE';
+      var first = c.y[0], last = c.y[c.y.length - 1], r = ref(c), nomRef = r === 'de' ? 'l\'Allemagne' : r === 'es' ? 'l\'Espagne' : 'la moyenne de l\'UE';
       if ((c.br || {})[y]) return POURQUOI.methode(y, c.br[y]);
       if ((c.manque || {})[y]) return c.manque[y];
       if (y > last) return POURQUOI.pasPublie(y);
@@ -234,6 +234,8 @@
     return out;
   }
 
-  var api = { match: match, POURQUOI: POURQUOI, finances: finances, education: education, sante: sante, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url, debut: m.debut }; }) };
+  // Sécurité et justice : même méthode que la Santé (thèmes, évolution comparée au voisin, résultats jugés sur le long terme).
+  var securite = function (S) { return sante(S); };
+  var api = { match: match, POURQUOI: POURQUOI, finances: finances, education: education, sante: sante, securite: securite, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url, debut: m.debut }; }) };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ConcretNotes = api;
 })(this);
