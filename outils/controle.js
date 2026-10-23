@@ -144,6 +144,8 @@ var problemes = [];
 cal.indicateurs.forEach(function (i) {
   if (i.statut === 'en_retard') problemes.push(i.libelle + ' : publication attendue' + (i.publication_attendue ? ' le ' + i.publication_attendue : '') + ' introuvable (tentative ' + i.tentatives + ')');
   else if (i.prochaine_verification <= today && i.derniere_verification !== today) problemes.push(i.libelle + ' : vérification prévue le ' + i.prochaine_verification + ' non faite');
+  // Valeur publiée mais pas encore confirmée à une source officielle : signalée chaque jour tant qu'elle l'est.
+  if (i.statut === 'a_verifier' || i.statut === 'a_recuperer') problemes.push(i.libelle + ' : ' + (i.statut === 'a_recuperer' ? 'série jamais récupérée' : 'valeur à confirmer à une source officielle') + ' (statut ' + i.statut + ')');
 });
 var fait = cal.indicateurs.filter(function (i) { return i.derniere_verification === today; });
 
