@@ -316,7 +316,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card" aria-labelledby="cl-g">
     <h2 id="cl-g"><span class="eyebrow">Le classement général</span>Les gouvernements</h2>
     <div class="bars" id="t-gov"></div>
-    <p class="note">Sébastien Lecornu (depuis septembre 2025) sera noté quand les chiffres de 2026 seront publiés. Quand une mission n'a pas encore de chiffres pour un mandat (les séries de l'éducation commencent en 2002, la plupart de celles de la santé entre 2000 et 2011), elle n'entre pas dans la moyenne : touchez une ligne pour voir pourquoi. Éducation : résultats PISA répartis sur les dix années de scolarité des élèves (choix modifiable sur la page Éducation). Classement établi le 22 octobre 2026.</p>
+    <p class="note">Sébastien Lecornu (depuis septembre 2025) sera noté quand les chiffres de 2026 seront publiés. Michel Barnier (septembre à décembre 2024) n'est pas noté à part : chaque année est comptée pour un seul gouvernement, et 2024 l'est pour Gabriel Attal, Premier ministre de janvier à septembre. Une note « provisoire » repose sur moins d'une année complète de chiffres et changera à leur publication ; une note « fragile » aussi, parce que les séries commencent pendant le mandat. Quand une mission n'a pas encore de chiffres pour un mandat (les séries de l'éducation commencent en 2002, la plupart de celles de la santé entre 2000 et 2011), elle n'entre pas dans la moyenne : touchez une ligne pour voir pourquoi. Éducation : résultats PISA répartis sur les dix années de scolarité des élèves (choix modifiable sur la page Éducation). Classement établi le 22 octobre 2026.</p>
   </section>
 
   <section class="card" id="profil" aria-labelledby="pr-t">
@@ -371,8 +371,8 @@ footer p { margin: 0; } footer a { color: inherit; }
     var why = [];
     document.getElementById('radar-table').innerHTML = rows.length ? '<thead><tr><th></th>' + MISS.map(function (m) { return '<th>' + m.l + '</th>'; }).join('') + '<th>Moyenne</th></tr></thead><tbody>' + rows.map(function (r) {
       var c = colOf(r);
-      MISS.forEach(function (m) { if (r[m.k] == null) why.push(r.n + ', ' + m.l.toLowerCase() + ' non notée : ' + m.debut + '.'); });
-      return '<tr><td><i style="background:' + c + '"></i>' + esc(r.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin')) + '</td>' + MISS.map(function (m) { return '<td>' + (r[m.k] == null ? '—' : fmt(r[m.k])) + '</td>'; }).join('') + '<td><b>' + fmt(r.m) + '</b></td></tr>';
+      MISS.forEach(function (m) { if (r[m.k] == null) why.push(r.n + ', ' + m.l.toLowerCase() + ' non notée : ' + m.debut + '.'); else if (r[m.k + '_prov']) why.push(r.n + ', ' + m.l.toLowerCase() + ' * : note ' + (r.y1 >= new Date().getFullYear() - 3 ? 'provisoire, chiffres des dernières années pas encore publiés' : 'fragile, ' + m.debut) + ' (' + r[m.k + '_n'] + ' comparaison' + (r[m.k + '_n'] > 1 ? 's' : '') + ').'); });
+      return '<tr><td><i style="background:' + c + '"></i>' + esc(r.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin')) + '</td>' + MISS.map(function (m) { return '<td>' + (r[m.k] == null ? '—' : fmt(r[m.k]) + (r[m.k + '_prov'] ? ' *' : '')) + '</td>'; }).join('') + '<td><b>' + fmt(r.m) + '</b></td></tr>';
     }).join('') + '</tbody>' : '';
     document.getElementById('radar-why').textContent = why.join(' ');
   }
@@ -411,6 +411,9 @@ footer p { margin: 0; } footer a { color: inherit; }
   var fmt = function (v) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v); };
   var cls = function (v) { return v >= 10 ? 'g' : v >= 6 ? 'm' : 'b'; };
   var MISS = ConcretNotes.MISSIONS;
+  // Peu de comparaisons : « provisoire » si le mandat est récent (chiffres pas encore publiés), « fragile » sinon (les séries commencent pendant ou après le mandat).
+  var recent = function (r) { return r.y1 >= new Date().getFullYear() - 3; };
+  var mot = function (r) { return recent(r) ? 'provisoire' : 'fragile'; };
   function period(r, series) {
     var y = r.y0 === r.y1 ? String(r.y0) : r.y0 + '-' + r.y1, cur = (series.finances.PRES.concat(series.finances.GOVS)).filter(function (g) { return g.n === r.n && /en cours/.test(g.p || ''); })[0];
     return y + (cur ? ', en exercice' : '');
@@ -421,13 +424,14 @@ footer p { margin: 0; } footer a { color: inherit; }
       if (r.m == null) return;
       var b = document.createElement('button'); b.className = 'br'; b.type = 'button'; b.setAttribute('aria-expanded', 'false');
       var w = r.m / 20 * 100, inside = w > 22;
-      b.innerHTML = '<span class="nm">' + r.n + '<small>' + period(r, series) + '</small></span><span class="tr"><span class="ten"></span><span class="fl ' + cls(r.m) + '" style="width:' + w + '%"></span><span class="v" style="' + (inside ? 'left:calc(' + w + '% - 2.8em);color:#fff' : 'left:calc(' + w + '% + 6px)') + '">' + fmt(r.m) + '</span></span>';
+      b.innerHTML = '<span class="nm">' + r.n + '<small>' + period(r, series) + (MISS.some(function (m) { return r[m.k + '_prov']; }) ? ', note ' + mot(r) : '') + '</small></span><span class="tr"><span class="ten"></span><span class="fl ' + cls(r.m) + '" style="width:' + w + '%"></span><span class="v" style="' + (inside ? 'left:calc(' + w + '% - 2.8em);color:#fff' : 'left:calc(' + w + '% + 6px)') + '">' + fmt(r.m) + '</span></span>';
       var d = document.createElement('div'); d.className = 'bd'; d.hidden = true;
-      d.innerHTML = MISS.map(function (m) { var v = r[m.k]; return '<a class="' + (v == null ? 'na' : cls(v)) + '" href="' + m.url + '">' + m.l + ' <b>' + (v == null ? 'non noté' : fmt(v) + '/20') + '</b></a>'; }).join('') + (r.k < MISS.length ? '<span class="note" style="align-self:center">Moyenne sur ' + r.k + ' mission' + (r.k > 1 ? 's' : '') + '.</span>' : '');
+      d.innerHTML = MISS.map(function (m) { var v = r[m.k]; return '<a class="' + (v == null ? 'na' : cls(v)) + '" href="' + m.url + '">' + m.l + ' <b>' + (v == null ? 'non noté' : fmt(v) + '/20') + '</b>' + (r[m.k + '_prov'] ? ' <small>' + mot(r) + '</small>' : '') + '</a>'; }).join('') + (r.k < MISS.length ? '<span class="note" style="align-self:center">Moyenne sur ' + r.k + ' mission' + (r.k > 1 ? 's' : '') + '.</span>' : '');
       // Mission non notée ou notée sur une partie du mandat : la raison, en une phrase, là où on la voit.
       var why = MISS.map(function (m) {
         var a = r[m.k + '_ans'];
         if (r[m.k] == null) return m.l + ' non noté : ' + m.debut + '.';
+        if (r[m.k + '_prov']) return m.l + ' : note ' + mot(r) + ', ' + r[m.k + '_n'] + ' comparaison' + (r[m.k + '_n'] > 1 ? 's' : '') + ' seulement, moins d\'une année complète de chiffres' + (recent(r) ? ' ; elle changera quand les chiffres des dernières années seront publiés.' : ' : ' + m.debut + '.');
         if (a && (a[0] > r.y0 || a[1] < r.y1)) return m.l + ' noté sur ' + (a[0] === a[1] ? a[0] : a[0] + '-' + a[1]) + ' seulement : ' + (a[0] > r.y0 ? m.debut : 'les chiffres des années suivantes ne sont pas encore publiés') + '.';
         return null;
       }).filter(Boolean);

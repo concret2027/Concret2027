@@ -290,13 +290,13 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><b>Éducation</b><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Courbes</a><a href="#depense">Dépense</a><a href="#pisa">PISA</a><a href="#origine">Origine sociale</a><a href="#universites">Universités</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Courbes</a><a href="#depense">Dépense</a><a href="#pisa">PISA</a><a href="#origine">Origine sociale</a><a href="#universites">Universités</a></nav>
 
   <details class="acc" id="acc-today">
-    <summary><span class="acc-h">Ce qui a changé aujourd'hui</span><span class="acc-t" id="teaser-today">Le chiffre du jour</span><span class="acc-actions"><span class="acc-cta"></span><button class="share" id="share-fact-top" type="button" aria-label="Partager le chiffre du jour">Partager</button></span></summary>
+    <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-actions"><span class="acc-cta"></span><button class="share" id="share-fact-top" type="button" aria-label="Partager le chiffre du jour">Partager</button></span></summary>
     <div class="acc-body">
-      <section class="summary" aria-label="Le chiffre du jour">
-        <p class="daily"><span class="eyebrow" id="daily-lab">Le chiffre du jour</span><span id="daily-text">—</span><button class="share" id="share-fact" type="button">Partager ce chiffre</button></p>
+      <section class="summary" aria-label="Un chiffre à retenir">
+        <p class="daily"><span class="eyebrow" id="daily-lab">Un chiffre à retenir</span><span id="daily-text">—</span><button class="share" id="share-fact" type="button">Partager ce chiffre</button></p>
       </section>
       <section class="today" aria-label="Les chiffres clés">
         <div class="today-grid">
@@ -873,7 +873,7 @@ function main(FEED) {
     }));
   }
 
-  // ===== Le chiffre du jour =====
+  // ===== Un chiffre à retenir, qui change chaque jour (chiffres annuels : rien ne dit qu'ils ont changé aujourd'hui) =====
   var BUDGET = P('budget_education'), PERSEC = BUDGET / (365 * 86400), POP = P('population'), SMIC_AN = P('smic_net_mensuel') * 12;
   function tick() { var m = new Date(); m.setHours(0, 0, 0, 0); document.getElementById('edu-since').textContent = fmt(PERSEC * (Date.now() - m.getTime()) / 1000 / 1e6, 1) + ' M€'; }
   tick(); setInterval(tick, 1000);
@@ -888,7 +888,6 @@ function main(FEED) {
   ]);
   var day = new Date(); day.setHours(0, 0, 0, 0);
   var idx = Math.floor((day - new Date(2026, 0, 1)) / 864e5);
-  document.getElementById('daily-lab').textContent = 'Le chiffre du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
   document.getElementById('daily-text').innerHTML = FACTS[((idx % FACTS.length) + FACTS.length) % FACTS.length];
   try {
     var nowV = Date.now(), vis = document.getElementById('visit'), snapV = { t: nowV, u: MO.fr[nU], n: MO.fr.length }, stv = JSON.parse(localStorage.getItem('edu-visites') || 'null');
@@ -901,12 +900,12 @@ function main(FEED) {
       pv.push(MO.fr.length > lv.n ? 'nouveau chiffre du chômage des moins de 25 ans : <b>' + fmt(MO.fr[nU], 1) + ' %</b> (contre ' + fmt(lv.u, 1) + ' %)' : 'pas de nouveau chiffre du chômage des jeunes');
       var nav = ((FEED && FEED.datasets && FEED.datasets.actu_education) || []).filter(function (a) { return a.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
       if (nav) pv.push('<b>' + nav + ' nouvelle' + (nav > 1 ? 's' : '') + ' actualité' + (nav > 1 ? 's' : '') + '</b>');
-      if (dv >= 1) pv.push('un nouveau chiffre du jour et une nouvelle question');
+      if (dv >= 1) pv.push('un nouveau chiffre à retenir et une nouvelle question');
       vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + whenV + ') : ' + pv.join(' ; ') + '.';
     } else vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.';
     vis.hidden = false;
   } catch (e) {}
-  document.getElementById('teaser-today').innerHTML = 'Budget <b>177&nbsp;M€</b> par jour · Lecture à 17 ans : <b>14&nbsp;%</b> en difficulté · Le chiffre du jour';
+  document.getElementById('teaser-today').innerHTML = 'Budget <b>177&nbsp;M€</b> par jour · Lecture à 17 ans : <b>14&nbsp;%</b> en difficulté · Un chiffre à retenir';
 
   // ===== Question du jour =====
   var QUIZ = SER.QUIZ;
@@ -1000,7 +999,7 @@ function main(FEED) {
   function makeCard(kind) {
     var day2 = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }), f;
     if (kind === 'fact') {
-      f = frame('Le chiffre du ' + day2); f.x.fillStyle = '#1c1d22'; f.x.font = '400 78px Newsreader, Georgia, serif';
+      f = frame('Un chiffre à retenir'); f.x.fillStyle = '#1c1d22'; f.x.font = '400 78px Newsreader, Georgia, serif';
       wrapText(f.x, document.getElementById('daily-text').textContent.replace(/(\d) (?=(M€|Md€|€|%|points|salariés))/g, '$1 '), 80, 420, f.W - 160, 100); foot(f, 'DEPP, OCDE, Eurostat');
     } else if (kind === 'rank') {
       f = frame('Le bulletin de l\'éducation · ' + day2); var x = f.x;

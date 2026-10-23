@@ -363,13 +363,14 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><b>Santé</b><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
-  <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#acc-month">Ce mois-ci</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les cinq thèmes</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
+  <p class="visit" id="visit" hidden></p>
+  <nav class="jump" aria-label="Aller à"><a href="#acc-today">Chiffres clés</a><a href="#acc-month">Ce mois-ci</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les cinq thèmes</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
 
   <details class="acc" id="acc-today">
-    <summary><span class="acc-h">Ce qui a changé aujourd'hui</span><span class="acc-t" id="teaser-today">Le chiffre du jour</span><span class="acc-cta"></span></summary>
+    <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-cta"></span></summary>
     <div class="acc-body">
-      <section class="summary" aria-label="Le chiffre du jour">
-        <p class="daily"><span class="eyebrow" id="daily-lab">Le chiffre du jour</span><span id="daily-text">—</span></p>
+      <section class="summary" aria-label="Un chiffre à retenir">
+        <p class="daily"><span class="eyebrow" id="daily-lab">Un chiffre à retenir</span><span id="daily-text">—</span></p>
       </section>
       <section class="today" aria-label="Les chiffres clés">
         <div class="today-grid">
@@ -480,7 +481,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <summary><span class="acc-h">Méthode et sources</span><span class="acc-t">D'où viennent les chiffres, et leurs limites</span><span class="acc-cta"></span></summary>
     <div class="acc-body card" id="methode-body">
       <p class="note"><b>Sources.</b> Espérance de vie : Eurostat (demo_mlexpec) ; États-Unis : OCDE. Mortalité évitable : Eurostat (hlth_cd_apr). Mortalité infantile : Eurostat (demo_minfind) ; États-Unis : OCDE. Espérance de vie en bonne santé : Eurostat (hlth_hlye). Écart d'espérance de vie selon le niveau de vie : Insee Première n° 2085 (décembre 2025). Renoncement aux soins et écart entre modestes et aisés : Eurostat (hlth_silc_08), pas d'équivalent américain. Déficit de l'Assurance maladie et de toute la Sécurité sociale : rapports de la Commission des comptes de la Sécurité sociale (chaque année lue dans le rapport de l'automne suivant), rapporté au PIB d'Eurostat. Reste à charge et dépense de santé : Eurostat (hlth_sha11_hf) ; États-Unis : OCDE. Dépense de médicaments (pharmacie et hôpital) : EFPIA, « The Pharmaceutical Industry in Figures ». Grippe : Eurostat (hlth_ps_immu). Rougeole, diphtérie-tétanos-coqueluche, papillomavirus : OMS et Unicef (estimations WUENIC). Dépistages : OCDE (données des programmes). Alcool et tabac : OCDE. Essais cliniques : ClinicalTrials.gov (essais interventionnels par pays et année de début, relevés le 22 octobre 2026), rapportés à la population (Banque mondiale). Nouveaux médicaments : EFPIA Patients W.A.I.T. Indicator, éditions 2020 à 2025, réalisées par IQVIA et financées par l'industrie pharmaceutique ; il n'existe pas d'étude publique comparable entre pays européens.</p>
-      <p class="note"><b>Ce mois-ci et aujourd'hui.</b> Prix de la santé : Eurostat, indice des prix à la consommation harmonisé, poste santé (prc_hicp_minr). Décès par rapport à 2016-2019 : Eurostat, surmortalité mensuelle (demo_mexrt). Budget 2027 de la Sécurité sociale : dossier de presse du projet de loi de financement (1er octobre 2026). Actualité et agenda : sites officiels cités à chaque ligne.</p>
+      <p class="note"><b>Chiffres clés et ce mois-ci.</b> Prix des soins : Eurostat, indice des prix à la consommation harmonisé, poste santé (prc_hicp_minr). Budget 2027 de la Sécurité sociale : dossier de presse du projet de loi de financement (1er octobre 2026). Actualité et agenda : sites officiels cités à chaque ligne.</p>
       <p class="note"><b>Limites.</b> La mortalité est publiée avec environ trois ans de retard : les gouvernements récents sont jugés sur moins d'années. Avant 2004, la plupart des séries européennes n'existent pas : les premiers mandats sont notés sur peu d'années. Les essais européens sont aussi déclarés dans le registre européen (CTIS) : ClinicalTrials.gov n'en contient qu'une partie ; la France, l'Allemagne, l'Espagne et les États-Unis y sont comptés de la même façon, dans le même registre public. Quand une courbe manque pour un pays, la raison est écrite sous le graphique.</p>
     </div>
   </details>
@@ -954,7 +955,7 @@ function main(FEED) {
     }).join(''));
   })();
 
-  // ===== Aujourd'hui : le chiffre du jour et deux chiffres clés =====
+  // ===== Les chiffres clés, et un chiffre à retenir qui change chaque jour (ce sont des chiffres annuels : rien ne dit qu'ils ont changé aujourd'hui) =====
   var PV = function (k) { return SER.P[k].v; }, day = new Date(); day.setHours(0, 0, 0, 0);
   var idx = Math.floor((day - new Date(2026, 0, 1)) / 864e5), pick = function (a) { return a[((idx % a.length) + a.length) % a.length]; };
   var MO = SER.MO, lastIdx = function (a) { var i = a.length - 1; while (i >= 0 && a[i] == null) i--; return i; };
@@ -980,9 +981,8 @@ function main(FEED) {
       '<b>' + fmt(es.n.fr[es.y.indexOf(ef2.y)]) + ' essais cliniques</b> ont démarré en France en ' + ef2.y + ', soit ' + fmt(ef2.v, 1) + ' par million d\'habitants, contre ' + fmt(SAN.val(es, 'de', ef2.y), 1) + ' en Allemagne.',
       '<b>' + fmt(wf.v) + ' %</b> des nouveaux médicaments autorisés en Europe sont accessibles aux patients en France, contre ' + fmt(SAN.val(wd, 'de', wf.y)) + ' % en Allemagne (étude W.A.I.T., financée par l\'industrie).'
     ];
-    document.getElementById('daily-lab').textContent = 'Le chiffre du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
     setHtml('daily-text', pick(FACTS));
-    setHtml('teaser-today', 'Déficit de la Sécurité sociale : <b>' + fmt(Math.abs(tt), 1) + '&nbsp;Md€</b> en ' + ks.y + ' · Espérance de vie : <b>' + fmt(ef.v, 1) + '&nbsp;ans</b> · Le chiffre du jour');
+    setHtml('teaser-today', 'Déficit de la Sécurité sociale : <b>' + fmt(Math.abs(tt), 1) + '&nbsp;Md€</b> en ' + ks.y + ' · Espérance de vie : <b>' + fmt(ef.v, 1) + '&nbsp;ans</b> en ' + ef.y + ' · Un chiffre à retenir');
   })();
 
   // ===== Ce mois-ci : prix des soins payés par les patients (Eurostat, mensuel) =====
@@ -1016,6 +1016,28 @@ function main(FEED) {
     }));
   }
   var drawMonth = function () { moChart('mo-p', MO.prix); };
+
+  // ===== Depuis votre dernière visite : seulement ce qui a vraiment changé (nouveau mois de prix, nouvelle année de déficit, actualités) =====
+  try {
+    (function () {
+      var now = Date.now(), vis = document.getElementById('visit'), P = MO.prix, pi = lastIdx(P.fr), s = C.secu, sy = s.y[s.y.length - 1];
+      var snap = { t: now, pn: pi, p: P.fr[pi], dy: sy }, st = JSON.parse(localStorage.getItem('sante-visites') || 'null');
+      if (!st) st = { base: null, cur: snap, seen: now };
+      else if (now - st.seen > 3600e3) { st.base = st.cur; st.cur = snap; }
+      st.seen = now; localStorage.setItem('sante-visites', JSON.stringify(st));
+      var lv = st.base;
+      if (!lv) { vis.textContent = 'Revenez plus tard : cette ligne vous dira ce qui a changé depuis votre visite.'; vis.hidden = false; return; }
+      var dv = Math.round((now - lv.t) / 864e5), when = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h', pv = [];
+      if (pi > lv.pn) pv.push('prix des soins en ' + moName(P, pi) + ' : <b>' + sg(P.fr[pi], 1) + ' %</b> sur un an (contre ' + sg(lv.p, 1) + ' % au chiffre précédent)');
+      if (sy > lv.dy) pv.push('déficit de la Sécurité sociale en ' + sy + ' : <b>' + fmt(Math.abs(s.tot[s.y.length - 1]), 1) + ' Md€</b>, dont ' + fmt(Math.abs(s.md[s.md.length - 1]), 1) + ' pour l\'Assurance maladie');
+      var na = (DS.actu_sante || []).filter(function (a) { return a.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
+      if (na) pv.push('<b>' + na + ' nouvelle' + (na > 1 ? 's' : '') + ' actualité' + (na > 1 ? 's' : '') + '</b>');
+      if (!pv.length) pv.push('pas de nouveau chiffre de santé (les prochains : les prix des soins chaque mois, le déficit de la Sécurité sociale au printemps)');
+      if (dv >= 1) pv.push('un nouveau chiffre à retenir et une nouvelle question');
+      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + pv.join(' ; ') + '.';
+      vis.hidden = false;
+    })();
+  } catch (e) {}
 
   // ===== L'actualité et l'agenda =====
   (function () {

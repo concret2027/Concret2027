@@ -219,6 +219,9 @@
           if (!rows[g0.n]) { rows[g0.n] = { n: g0.n, y0: g0.y0, y1: g0.y1 }; order.push(g0.n); }
           var r = rows[g0.n]; r.y0 = Math.min(r.y0, g0.y0); r.y1 = Math.max(r.y1, g0.y1);
           r[m.k] = r1(calc.note(g));
+          // Note provisoire : moins d'une année complète de comparaisons (mandat court, ou chiffres pas encore publiés).
+          var nb = calc.count ? calc.count(g) : null;
+          r[m.k + '_n'] = nb; r[m.k + '_prov'] = r[m.k] != null && nb != null && calc.MIN_N != null && nb < calc.MIN_N;
           var ys = []; Object.keys(g.y).forEach(function (k) { g.y[k].forEach(function (d) { if (d.pt != null) ys.push(d.y); }); });
           r[m.k + '_ans'] = ys.length ? [Math.min.apply(null, ys), Math.max.apply(null, ys)] : null;
         });
