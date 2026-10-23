@@ -35,6 +35,11 @@ Phrases d'actualité, d'agenda et d'événements : une phrase neutre et factuell
 5. Secours Claude : lis l'artifact https://claude.ai/artifact/QE3F4NgDPn1Z4aPET1YY4A avec l'outil Artifact (action « read »), remplace uniquement le contenu de la balise `<script id="baro-data" type="application/json">…</script>` par {"updated", "datasets"} de data.json (json.dumps(..., ensure_ascii=False), chaque « </ » remplacé par « <\/ »), vérifie qu'il reste une seule balise baro-data, et republie (action « publish », même url, sans icon).
 
 ## 5. Notification
-Ta réponse finale est exactement la sortie de `controle.js verifier` (une ligne si tout va bien ; une ligne par problème ; une ligne par texte à valider), précédée d'une seule ligne « ÉCHEC GitHub : <erreur exacte> » si le push a échoué. Rien d'autre : le détail est dans le journal du dépôt.
+1. E-mail quotidien, même si tout va bien et même si une étape a échoué : charge l'outil Gmail avec ToolSearch (« select:mcp__Gmail__send_message ») et envoie un message à l'adresse du propriétaire (écrite seulement dans la tâche planifiée, jamais dans le dépôt).
+   - Objet : « Concret, <date> : tout est à jour » si verifier n'affiche aucun ⚠ ni « À valider », sinon « Concret, <date> : N point(s) à regarder ». En cas d'échec (verifier en erreur, push refusé, dépôt inaccessible) : « Concret, <date> : ÉCHEC, rien publié ».
+   - Corps en texte simple (pas de Markdown) : la sortie complète de verifier ; puis, en une ligne par indicateur, ce qui a été vérifié aujourd'hui (source lue, ancienne → nouvelle valeur, ou « inchangé ») ; puis le lien vers le journal du mois (https://github.com/concret2027/Concret2027/blob/main/journal/AAAA-MM.md) et vers https://concret2027.fr.
+   - Un chiffre que tu n'as pas pu lire à sa source n'est jamais présenté comme vérifié : écris-le comme non vérifié, avec la raison.
+   - Si l'envoi échoue, ajoute la ligne « ÉCHEC e-mail : <erreur exacte> » à ta réponse finale.
+2. Ta réponse finale est exactement la sortie de `controle.js verifier` (une ligne si tout va bien ; une ligne par problème ; une ligne par texte à valider), précédée d'une seule ligne « ÉCHEC GitHub : <erreur exacte> » si le push a échoué. Rien d'autre : le détail est dans le journal du dépôt.
 
 Sois économe : un appel par source, pas de recherche hors des indicateurs dus.
