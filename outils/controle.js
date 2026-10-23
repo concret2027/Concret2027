@@ -67,7 +67,7 @@ if (S.education) {
 }
 ['finances', 'education'].forEach(function (pg) {
   var P = (S[pg] || {}).P || {};
-  Object.keys(P).forEach(function (k) { var p = P[k]; if (typeof p.v !== 'number' || !isFinite(p.v)) err(pg + '.P.' + k + ' : valeur invalide'); if (!p.source) err(pg + '.P.' + k + ' : source manquante'); });
+  Object.keys(P).forEach(function (k) { var p = P[k]; if (typeof p.v !== 'number' || !isFinite(p.v)) err(pg + '.P.' + k + ' : valeur invalide'); if (!p.source) err(pg + '.P.' + k + ' : source manquante'); if (!p.url) err(pg + '.P.' + k + ' : lien vers la source manquant (un chiffre non vérifiable ne se publie pas)'); if (/à confirmer|sans source/i.test(p.source + ' ' + (p.note || ''))) err(pg + '.P.' + k + ' : valeur non confirmée, elle ne se publie pas'); });
   var T = (d.textes || {})[pg] || {};
   Object.keys(T).forEach(function (k) { if (!T[k].html || typeof T[k].html !== 'string') err('textes.' + pg + '.' + k + ' vide'); });
 });
@@ -128,7 +128,7 @@ cal.indicateurs.forEach(function (i) {
   if (i.statut === 'en_retard') problemes.push(i.libelle + ' : publication attendue' + (i.publication_attendue ? ' le ' + i.publication_attendue : '') + ' introuvable (tentative ' + i.tentatives + ')');
   else if (i.prochaine_verification <= today && i.derniere_verification !== today) problemes.push(i.libelle + ' : vérification prévue le ' + i.prochaine_verification + ' non faite');
   // Valeur publiée mais pas encore confirmée à une source officielle : signalée chaque jour tant qu'elle l'est.
-  if (i.statut === 'a_verifier' || i.statut === 'a_recuperer') problemes.push(i.libelle + ' : ' + (i.statut === 'a_recuperer' ? 'série jamais récupérée' : 'valeur à confirmer à une source officielle') + ' (statut ' + i.statut + ')');
+  if (i.statut === 'a_verifier' || i.statut === 'a_recuperer') problemes.push(i.libelle + ' : ' + (i.statut === 'a_recuperer' ? 'série pas encore récupérée, rien n\'est affiché' : 'nouvelle valeur pas encore confirmée à la source, le site garde la dernière valeur vérifiée') + '.');
 });
 var fait = cal.indicateurs.filter(function (i) { return i.derniere_verification === today; });
 
