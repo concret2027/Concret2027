@@ -12,13 +12,19 @@ La moyenne de l'UE de chaque indicateur est calculée par outils/ue_calc.py (à 
   python3 outils/defense.py --ecrire   écrit les séries (y, fr, de, es, us, est) dans data.json
 
 Code de sortie 1 si une source est injoignable (rien n'est écrit)."""
-import json, os, sys
+import json, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ue_calc as U
 
 ROOT = U.ROOT
 PAYS = ['FR', 'DE', 'ES']
 EST = "Non compté : pour %d, l'OTAN ne publie qu'une estimation, révisée l'année suivante."
+# Où va chaque série, et sa source (l'édition du classeur de l'OTAN change chaque année).
+CIBLE = {'dep': 'C', 'inv': 'C', 'otan': 'C', 'equip': 'C', 'pers': 'AFF'}
+SRC = {'otan': "OTAN, chiffres de défense des pays de l'OTAN, édition %d (classeur Excel), tableau 3",
+       'equip': "OTAN, chiffres de défense des pays de l'OTAN, édition %d (classeur Excel), tableau 8a",
+       'pers': "OTAN, chiffres de défense des pays de l'OTAN, édition %d (classeur Excel), tableau 7 ; population : Eurostat (demo_gind), calcul Concret",
+       'pers_n': "OTAN, chiffres de défense des pays de l'OTAN, édition %d (classeur Excel), tableau 7"}
 
 
 def eurostat3(table, filtres):
@@ -54,7 +60,8 @@ def series():
     out['equip'] = {g: t8[g] for g in pays}
     pop = eurostat3('demo_gind', 'indic_de=JAN&sinceTimePeriod=2010')
     pop['US'] = pop_us()
-    out['pers'] = {g: {y: round(1e6 * v / pop[g][y], 2) for y, v in t7[g].items() if pop[g].get(y)} for g in pays}
+    # 4 décimales : à 2, deux évolutions minuscules s'afficheraient « 0,00 » sans qu'on voie laquelle est la plus grande.
+    out['pers'] = {g: {y: round(1e6 * v / pop[g][y], 4) for y, v in t7[g].items() if pop[g].get(y)} for g in pays}
     out['pers_n'] = {g: t7[g] for g in pays}
     # Années estimées : celles dont l'en-tête finit par « e » dans le classeur.
     wb, url = U.otan_xlsx()
@@ -62,6 +69,11 @@ def series():
     tete = next(r for r in rows if r[1] == 2014)
     out['est'] = [int(str(v)[:-1]) for v in tete[1:] if isinstance(v, str) and v.endswith('e')]
     out['url'] = url
+    out['edition'] = int(re.search(r'def-exp-(\d{4})', url).group(1))
+    # Repère affiché sous les effectifs : la Pologne, dont l'armée pèse le plus dans l'évolution de la moyenne de l'UE.
+    pl = U.otan_tab('Table 7')['PL']
+    reel = [y for y in sorted(pl) if y not in out['est']]
+    out['pologne'] = {'y0': reel[0], 'v0': pl[reel[0]], 'y1': reel[-1], 'v1': pl[reel[-1]]}
     return out
 
 
@@ -77,7 +89,7 @@ def main():
     if D is None:
         print('series.defense absent de data.json : rien à mettre à jour.'); sys.exit(1)
     for k in ('dep', 'inv', 'otan', 'equip', 'pers'):
-        c, s = D['C'][k], S[k]
+        c, s = D[CIBLE[k]][k], S[k]
         y0 = min(min(v) for v in s.values() if v)
         y1 = max(max(v) for v in s.values() if v)
         ys = list(range(y0, y1 + 1))
@@ -101,7 +113,9 @@ def main():
             if k in ('otan', 'equip', 'pers'):
                 c['est'] = {str(y): EST % y for y in S['est'] if y in ys}
                 c['url'] = S['url']
+                c['source'] = SRC[k] % S['edition']
     if ecrire:
+        D['AFF']['pers']['pologne'] = S['pologne']
         n = D['AFF']['pers_n']
         n['y'] = list(range(2014, max(S['pers_n']['FR']) + 1))
         # Sans les États-Unis : avec plus d'un million de militaires, ils écraseraient l'échelle de la courbe.
@@ -109,8 +123,9 @@ def main():
             n[w] = [S['pers_n'][g].get(y) for y in n['y']]
         n.pop('us', None)
         n['est'] = {str(y): EST % y for y in S['est']}
+        n['url'], n['source'] = S['url'], SRC['pers_n'] % S['edition']
         open(os.path.join(ROOT, 'data.json'), 'w', encoding='utf-8').write(json.dumps(o, indent=0, ensure_ascii=False))
-        print('Écrit dans data.json ; relancer python3 outils/ue_calc.py --ecrire --seul defense.dep,defense.inv,defense.otan,defense.equip,defense.pers')
+        print('Écrit dans data.json ; relancer python3 outils/ue_calc.py --ecrire --seul defense.dep,defense.inv,defense.otan,defense.equip,defense.AFF.pers')
 
 
 if __name__ == '__main__':

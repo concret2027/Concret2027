@@ -1215,7 +1215,7 @@
    "page": "defense",
    "libelle": "Dépense publique de défense et investissement public de défense, % du PIB (France, Allemagne, Espagne)",
    "frequence": "annuel (Eurostat, dépenses par fonction, vers fin février ; révisées ensuite)",
-   "source": "Eurostat gov_10a_exp (GF02, TE et P51G, MIO_EUR) et nama_10_gdp (B1GQ, CP_MEUR), rapport calculé par Concret. LANCER : python3 outils/defense.py (lecture et comparaison), puis python3 outils/defense.py --ecrire, puis python3 outils/ue_calc.py --ecrire --seul defense.dep,defense.inv,defense.otan,defense.equip,defense.pers. Ne pas saisir à la main.",
+   "source": "Eurostat gov_10a_exp (GF02, TE et P51G, MIO_EUR) et nama_10_gdp (B1GQ, CP_MEUR), rapport calculé par Concret. LANCER : python3 outils/defense.py (lecture et comparaison), puis python3 outils/defense.py --ecrire, puis python3 outils/ue_calc.py --ecrire --seul defense.dep,defense.inv,defense.otan,defense.equip,defense.AFF.pers. Ne pas saisir à la main.",
    "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10a_exp?format=JSON&geo=FR&geo=DE&geo=ES&unit=MIO_EUR&sector=S13&na_item=TE&na_item=P51G&cofog99=GF02",
    "cible": "series.defense.C.dep, C.inv (3 décimales)",
    "derniere_donnee": "2024",
@@ -1234,9 +1234,9 @@
    "page": "defense",
    "libelle": "Dépense de défense au sens de l'OTAN (% du PIB), part de l'équipement, militaires (France, Allemagne, Espagne, États-Unis, et les 23 pays de l'UE membres de l'OTAN)",
    "frequence": "annuel (OTAN, avant le sommet de l'été ; 2026 : 7 juillet)",
-   "source": "OTAN, Defence Investment of NATO Countries (classeur Excel def-exp-AAAA-en.xlsx, tableaux 2, 3, 5, 7 et 8a) ; population : Eurostat demo_gind, États-Unis : Banque mondiale. LANCER : python3 outils/defense.py, puis --ecrire, puis python3 outils/ue_calc.py --ecrire --seul defense.otan,defense.equip,defense.pers. Ne pas saisir à la main.",
+   "source": "OTAN, Defence Investment of NATO Countries (classeur Excel def-exp-AAAA-en.xlsx, tableaux 2, 3, 5, 7 et 8a) ; population : Eurostat demo_gind, États-Unis : Banque mondiale. LANCER : python3 outils/defense.py, puis --ecrire, puis python3 outils/ue_calc.py --ecrire --seul defense.otan,defense.equip,defense.AFF.pers. Ne pas saisir à la main.",
    "url": "https://www.nato.int/content/dam/nato/webready/documents/finance/def-exp-2026-en.xlsx",
-   "cible": "series.defense.C.otan, C.equip, C.pers, AFF.pers_n ; est (années estimées par l'OTAN, affichées, pas comptées)",
+   "cible": "series.defense.C.otan, C.equip (notés), AFF.pers, AFF.pers_n (affichés) ; est (années estimées par l'OTAN, affichées, pas comptées) ; source (édition du classeur) ; AFF.pers.pologne (repère)",
    "derniere_donnee": "2026 (estimation) ; 2024 (dernière année non estimée)",
    "derniere_verification": "2026-10-25",
    "prochaine_verification": "2027-06-15",
@@ -1247,7 +1247,7 @@
     "series.defense.QUIZ (OTAN 2024, militaires 2024, équipement 2024)",
     "datasets.actu_defense (publication de l'OTAN)"
    ],
-   "note": "L'outil cherche le classeur de l'année, sinon celui de l'année précédente. Les années dont l'en-tête finit par « e » sont des estimations : champ est, affichées sans être comptées. Le PDF de 2026 est une image : se fier au classeur Excel (vérifié identique au PDF le 25 octobre 2026)."
+   "note": "L'outil cherche le classeur de l'année, sinon celui de l'année précédente. Les années dont l'en-tête finit par « e » sont des estimations : champ est, affichées sans être comptées. Le PDF de 2026 est une image : se fier au classeur Excel (vérifié identique au PDF le 25 octobre 2026). Les moyennes de l'UE se calculent sur l'édition enregistrée dans C.otan.url (celle de la France) : lancer defense.py --ecrire avant ue_calc.py."
   },
   {
    "id": "def_budget",
@@ -1256,7 +1256,7 @@
    "frequence": "annuel (projet de loi de finances début octobre, loi de finances votée fin décembre)",
    "source": "Ministère des Armées (page du projet de loi de finances de l'année), loi de finances publiée au Journal officiel",
    "url": "https://www.defense.gouv.fr/ministere/politique-defense/loi-programmation-militaire-2024-2030/projet-loi-finances-armees-2027-lpm-annee-4",
-   "cible": "series.defense.P.plf_2027, plf_2027_hausse, lpm_2023, lpm_plus",
+   "cible": "series.defense.P.budget (v = Md€, hausse = Md€ par rapport à l'année précédente, annee, statut = projet ou vote, date, source, url), P.lpm_2023, P.lpm_plus",
    "derniere_donnee": "PLF 2027 (8 octobre 2026)",
    "derniere_verification": "2026-10-25",
    "prochaine_verification": "2027-01-05",
@@ -1267,7 +1267,7 @@
     "series.defense.QUIZ (budget 2027)",
     "datasets.actu_defense"
    ],
-   "note": "Après le vote de la loi de finances pour 2027, remplacer le montant du projet par celui voté (mission Défense, hors pensions), avec sa source, et adapter le libellé affiché (« projet » → « voté »)."
+   "note": "Après le vote de la loi de finances pour 2027 : remplacer v et hausse par les montants votés (mission Défense, hors pensions), statut = vote, date et source de la loi ; la page adapte ses libellés. Au projet de loi de finances suivant (début octobre) : annee + 1, statut = projet."
   },
   {
    "id": "def_actu",

@@ -15,7 +15,8 @@ n'est pas comptée (la page dit pourquoi). On ne relie pas deux tables différen
   python3 outils/ue_calc.py --ecrire     écrit ue_calc (moyenne), ue_calc_ev (évolution), ue_calc_info et ue_calc_note
   python3 outils/ue_calc.py --seul securite.rob,sante.alc   seulement ces indicateurs
 
-Code de sortie 1 si une source est injoignable (rien n'est écrit)."""
+Code de sortie 1 si une source est injoignable : les indicateurs de cette source gardent leurs valeurs (rien n'est écrit
+pour eux), les autres sont écrits, et la prochaine vérification n'avance pas."""
 import csv, io, json, os, subprocess, sys, time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
@@ -150,13 +151,15 @@ def prisons(ind):
     return f
 
 _otan = {}
+OTAN_URL = None  # édition lue par outils/defense.py (C.otan.url) : la moyenne de l'UE se calcule sur la même édition que la France
 def otan_xlsx():
     """Classeur Excel de l'OTAN qui accompagne « Defence Expenditure of NATO Countries » (devenu « Defence Investment of
-    NATO Countries » en 2026) : celui de l'année, sinon celui de l'année précédente. Renvoie (classeur, adresse)."""
+    NATO Countries » en 2026) : celui de OTAN_URL s'il est connu, sinon celui de l'année, sinon celui de l'année
+    précédente. Renvoie (classeur, adresse)."""
     if not _otan:
         import openpyxl, tempfile
-        for a in (date.today().year, date.today().year - 1):
-            u = 'https://www.nato.int/content/dam/nato/webready/documents/finance/def-exp-%d-en.xlsx' % a
+        ed = 'https://www.nato.int/content/dam/nato/webready/documents/finance/def-exp-%d-en.xlsx'
+        for u in ([OTAN_URL] if OTAN_URL else []) + [ed % a for a in (date.today().year, date.today().year - 1)]:
             try:
                 b = get(u, essais=2)
             except IOError:
@@ -167,7 +170,7 @@ def otan_xlsx():
             _otan['wb'], _otan['url'] = openpyxl.load_workbook(t.name, data_only=True), u
             break
         else:
-            raise IOError('classeur de l\'OTAN introuvable (def-exp-%d-en.xlsx)' % date.today().year)
+            raise IOError('classeur de l\'OTAN introuvable (%s)' % (OTAN_URL or 'def-exp-%d-en.xlsx' % date.today().year))
     return _otan['wb'], _otan['url']
 
 
@@ -260,11 +263,11 @@ INDICATEURS = [
          pourquoi="Eurostat ne publie la sienne que depuis 2010, et ce calcul la redonne exactement",
          methode="investissement public de défense des pays de l'UE divisé par leur PIB", source="Eurostat, gov_10a_exp (GF02, formation brute de capital) et nama_10_gdp"),
     dict(cle='defense.otan', periodes=[(2014, None)], num=otan('Table 2', 'Constant'), den=otan('Table 5', 'Constant'), facteur=100,
-         methode="dépense de défense des pays de l'UE membres de l'OTAN divisée par leur PIB, à prix constants", source="OTAN, Defence Investment of NATO Countries, tableaux 2 et 5"),
+         methode="dépense de défense des pays de l'UE membres de l'OTAN divisée par leur PIB, à prix constants", source="OTAN, classeur des chiffres de défense des pays de l'OTAN, tableaux 2 et 5"),
     dict(cle='defense.equip', periodes=[(2014, None)], num=otan_part('Table 8a'), den=otan('Table 2', 'Constant'), facteur=100,
-         methode="dépense d'équipement des pays de l'UE membres de l'OTAN divisée par leur dépense de défense, à prix constants", source="OTAN, Defence Investment of NATO Countries, tableaux 2 et 8a"),
-    dict(cle='defense.pers', periodes=[(2014, None)], num=otan('Table 7'), den=population, facteur=1e6,
-         methode="militaires des pays de l'UE membres de l'OTAN rapportés à leur population au 1er janvier", source="OTAN, Defence Investment of NATO Countries, tableau 7 ; population : Eurostat, demo_gind"),
+         methode="dépense d'équipement des pays de l'UE membres de l'OTAN divisée par leur dépense de défense, à prix constants", source="OTAN, classeur des chiffres de défense des pays de l'OTAN, tableaux 2 et 8a"),
+    dict(cle='defense.AFF.pers', periodes=[(2014, None)], num=otan('Table 7'), den=population, facteur=1e6,
+         methode="militaires des pays de l'UE membres de l'OTAN rapportés à leur population au 1er janvier", source="OTAN, classeur des chiffres de défense des pays de l'OTAN, tableau 7 ; population : Eurostat, demo_gind"),
 ]
 
 
@@ -356,17 +359,22 @@ def main():
     ecrire = '--ecrire' in a
     seul = a[a.index('--seul') + 1].split(',') if '--seul' in a else None
     o = json.load(open(os.path.join(ROOT, 'data.json'), encoding='utf-8'))
-    try:
-        calc = []
-        for ind in INDICATEURS:
-            if (seul and ind['cle'] not in seul) or ind['cle'].split('.')[0] not in o['series']:
-                continue
+    global OTAN_URL
+    OTAN_URL = o['series'].get('defense', {}).get('C', {}).get('otan', {}).get('url')
+    # Chaque indicateur à part : une source injoignable (l'OTAN, par exemple) ne bloque pas les autres pages ;
+    # ses moyennes gardent leur valeur et l'erreur est signalée (code de sortie 1).
+    calc, echecs = [], []
+    for ind in INDICATEURS:
+        if (seul and ind['cle'] not in seul) or ind['cle'].split('.')[0] not in o['series']:
+            continue
+        try:
             c = critere(o, ind['cle'])
             dec = max([len(repr(float(v)).split('.')[1].rstrip('0')) for v in c['fr'] if v is not None] + [1])
             calc.append((ind, c, calcule(ind, c['y'], min(dec, 2))))
-    except Exception as e:
-        print('Moyenne UE ✗ calcul impossible (%s : %s). Rien écrit.' % (type(e).__name__, e))
-        sys.exit(1)
+        except Exception as e:
+            echecs.append('%s (%s : %s)' % (ind['cle'], type(e).__name__, e))
+    for e in echecs:
+        print('Moyenne UE ✗ calcul impossible pour %s : valeurs gardées, rien écrit pour cet indicateur.' % e)
     for ind, c, (niv, ev, info) in calc:
         nv, ne = [niv.get(y) for y in c['y']], [ev.get(y) for y in c['y']]
         print('%s : %s' % (ind['cle'], ' ; '.join('%d-%d %s-%s pays, couverture min %s %%%s' % (i['de'], i['a'], i['pays_min'], i['pays_max'], i['couv_min'], (', sous le seuil : ' + ','.join(map(str, i['sous_seuil']))) if i['sous_seuil'] else '') for i in info)))
@@ -378,7 +386,7 @@ def main():
             c['ue_calc'], c['ue_calc_ev'], c['ue_calc_info'], c['ue_calc_note'], c['ref'] = nv, ne, info, note(ind, info), 'ue_calc'
     if ecrire:
         open(os.path.join(ROOT, 'data.json'), 'w', encoding='utf-8').write(json.dumps(o, indent=0, ensure_ascii=False))
-        if not seul:
+        if not seul and not echecs:
             # Les sources se mettent à jour à des dates différentes : on recalcule tout chaque mois.
             cal = json.load(open(os.path.join(ROOT, 'donnees/calendrier.json'), encoding='utf-8'))
             e = next((x for x in cal['indicateurs'] if x['id'] == 'ue_moyennes'), None)
@@ -387,7 +395,9 @@ def main():
                 e['derniere_verification'] = auj.isoformat()
                 e['prochaine_verification'] = date.fromordinal(auj.toordinal() + 30).isoformat()
                 open(os.path.join(ROOT, 'donnees/calendrier.json'), 'w', encoding='utf-8').write(json.dumps(cal, indent=1, ensure_ascii=False) + '\n')
-        print('Écrit dans data.json' + ('' if seul else ' ; prochaine vérification dans 30 jours') + '.')
+        print('Écrit dans data.json' + ('' if seul or echecs else ' ; prochaine vérification dans 30 jours') + '.')
+    if echecs:
+        sys.exit(1)
 
 
 if __name__ == '__main__':
