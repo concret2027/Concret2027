@@ -221,7 +221,8 @@
   var MISSIONS = [
     { k: 'f', l: 'Finances', url: '/finances/#bulletin', debut: 'les séries des finances publiques commencent en 1995', calc: function (S) { return finances(S.finances); }, ser: 'finances' },
     { k: 'e', l: 'Éducation', url: '/education/#bulletin', debut: 'les chiffres de l\'éducation commencent en 2002, la première évolution mesurable est celle de 2003', calc: function (S) { return education(S.education, { long: true }); }, ser: 'education' },
-    { k: 's', l: 'Santé', url: '/sante/#bulletin', debut: 'la plupart des chiffres européens de la santé commencent entre 2000 et 2011', calc: function (S) { return sante(S.sante); }, ser: 'sante' }
+    { k: 's', l: 'Santé', url: '/sante/#bulletin', debut: 'la plupart des chiffres européens de la santé commencent entre 2000 et 2011', calc: function (S) { return sante(S.sante); }, ser: 'sante' },
+    { k: 'j', l: 'Sécurité et justice', url: '/securite/#bulletin', debut: 'les chiffres européens de la délinquance commencent en 1995', calc: function (S) { return securite(S.securite); }, ser: 'securite' }
   ];
   var r1 = function (v) { return v == null ? null : Math.round(v * 10) / 10; };
   function classement(series) {
