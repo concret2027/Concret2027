@@ -431,7 +431,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que son voisin de comparaison (la moyenne de l'Union européenne, ou l'Allemagne quand l'Europe ne publie pas de moyenne), <b>0 point</b> sinon, ½ en cas d'égalité. Chaque thème a une note sur 20 ; <b>la note santé est la moyenne des cinq thèmes. 10/20 = le niveau de nos voisins.</b></p>
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne (quand la source n'en publie pas, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul), <b>0 point</b> sinon, ½ en cas d'égalité. Chaque thème a une note sur 20 ; <b>la note santé est la moyenne des cinq thèmes. 10/20 = le niveau de nos voisins.</b></p>
         <table class="seuils"><tbody id="regles"></tbody></table>
       </div>
     </details>
@@ -479,7 +479,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <details class="acc" id="methode">
     <summary><span class="acc-h">Méthode et sources</span><span class="acc-t">D'où viennent les chiffres, et leurs limites</span><span class="acc-cta"></span></summary>
     <div class="acc-body card" id="methode-body">
-      <p class="note"><b>Sources.</b> Espérance de vie : Eurostat (demo_mlexpec) ; États-Unis : OCDE. Mortalité évitable : Eurostat (hlth_cd_apr). Mortalité infantile : Eurostat (demo_minfind) ; États-Unis : OCDE. Espérance de vie en bonne santé : Eurostat (hlth_hlye). Écart d'espérance de vie selon le niveau de vie : Insee Première n° 2085 (décembre 2025). Renoncement aux soins et écart entre modestes et aisés : Eurostat (hlth_silc_08), pas d'équivalent américain. Déficit de l'Assurance maladie et de toute la Sécurité sociale : rapports de la Commission des comptes de la Sécurité sociale (chaque année lue dans le rapport de l'automne suivant), rapporté au PIB d'Eurostat. Reste à charge et dépense de santé : Eurostat (hlth_sha11_hf) ; États-Unis : OCDE. Dépense de médicaments (pharmacie et hôpital) : EFPIA, « The Pharmaceutical Industry in Figures ». Grippe : Eurostat (hlth_ps_immu). Rougeole, diphtérie-tétanos-coqueluche, papillomavirus : OMS et Unicef (estimations WUENIC). Dépistages : OCDE (données des programmes). Alcool et tabac : OCDE. Essais cliniques : ClinicalTrials.gov (essais interventionnels par pays et année de début, relevés le 22 octobre 2026), rapportés à la population (Banque mondiale). Nouveaux médicaments : EFPIA Patients W.A.I.T. Indicator, éditions 2020 à 2025, réalisées par IQVIA et financées par l'industrie pharmaceutique ; il n'existe pas d'étude publique comparable entre pays européens.</p>
+      <p class="note"><b>Sources.</b> Espérance de vie : Eurostat (demo_mlexpec) ; États-Unis : OCDE. Mortalité évitable : Eurostat (hlth_cd_apr). Mortalité infantile : Eurostat (demo_minfind) ; États-Unis : OCDE. Espérance de vie en bonne santé : Eurostat (hlth_hlye). Écart d'espérance de vie selon le niveau de vie : Insee Première n° 2085 (décembre 2025). Renoncement aux soins et écart entre modestes et aisés : Eurostat (hlth_silc_08), pas d'équivalent américain. Déficit de l'Assurance maladie et de toute la Sécurité sociale : rapports de la Commission des comptes de la Sécurité sociale (chaque année lue dans le rapport de l'automne suivant), rapporté au PIB d'Eurostat. Reste à charge et dépense de santé : Eurostat (hlth_sha11_hf) ; États-Unis : OCDE. Dépense de médicaments (pharmacie et hôpital) : EFPIA, « The Pharmaceutical Industry in Figures ». Grippe : Eurostat (hlth_ps_immu). Rougeole, diphtérie-tétanos-coqueluche, papillomavirus : OMS et Unicef (estimations WUENIC). Dépistages : OCDE (données des programmes). Alcool et tabac : OCDE. Essais cliniques : ClinicalTrials.gov (essais interventionnels par pays et année de début, relevés le 22 octobre 2026), rapportés à la population (Banque mondiale). Moyenne de l'UE, quand la source n'en publie pas (alcool, essais cliniques, rougeole, diphtérie-tétanos-coqueluche, papillomavirus, dépistages) : calcul Concret sur les pays de l'UE qui publient le chiffre (outils/ue_calc.py), seulement s'ils font au moins 70 % de la population de l'UE. Nouveaux médicaments : EFPIA Patients W.A.I.T. Indicator, éditions 2020 à 2025, réalisées par IQVIA et financées par l'industrie pharmaceutique ; il n'existe pas d'étude publique comparable entre pays européens.</p>
       <p class="note"><b>Chiffres clés et ce mois-ci.</b> Prix des soins : Eurostat, indice des prix à la consommation harmonisé, poste santé (prc_hicp_minr). Budget 2027 de la Sécurité sociale : dossier de presse du projet de loi de financement (1er octobre 2026). Actualité et agenda : sites officiels cités à chaque ligne.</p>
       <p class="note"><b>Limites.</b> La mortalité est publiée avec environ trois ans de retard : les gouvernements récents sont jugés sur moins d'années. Avant 2004, la plupart des séries européennes n'existent pas : les premiers mandats sont notés sur peu d'années. Les essais européens sont aussi déclarés dans le registre européen (CTIS) : ClinicalTrials.gov n'en contient qu'une partie ; la France, l'Allemagne, l'Espagne et les États-Unis y sont comptés de la même façon, dans le même registre public. Quand une courbe manque pour un pays, la raison est écrite sous le graphique.</p>
     </div>
@@ -504,8 +504,6 @@ function main(FEED) {
   document.getElementById('today').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   var lastOf = function (c, w) { var a = c[w] || []; for (var i = a.length - 1; i >= 0; i--) if (a[i] != null) return { v: a[i], y: c.y[i] }; return null; };
   var decOf = function (c) { return c.dec != null ? c.dec : c.unite === 'jours' || /100 000/.test(c.unite) ? 0 : 1; };
-  var refDe = function (c) { return SAN.ref(c) === 'de'; };
-  var nomRef = function (c) { return refDe(c) ? 'Allemagne' : 'UE'; };
 
   // ===== Dernier chiffre connu : la France face à son voisin de comparaison (niveau, pas la note) =====
   var ICON = { g: '✓', b: '✗', m: '=' };
@@ -516,7 +514,7 @@ function main(FEED) {
     if (i < 0) return null;
     var a = c.fr[i], e = c[r][i], cl = Math.abs(a - e) < 1e-9 ? 'm' : (c.low ? a < e : a > e) ? 'g' : 'b';
     var j = c.y.indexOf(c.y[i] - 5), ok5 = j >= 0 && c.fr[j] != null && c[r][j] != null, ev = function (x, x0) { return sg(x - x0, dec) + (c.uc === ' %' ? ' pt' : ''); };
-    return { cl: cl, c: c, y: c.y[i], fr: val1(c, a, dec), fe: ok5 ? ev(a, c.fr[j]) + ' en 5 ans' : '', ref: val1(c, e, dec), re: (refDe(c) ? 'Allemagne' : 'moyenne UE') + (ok5 ? ', ' + ev(e, c[r][j]) : '') };
+    return { cl: cl, c: c, y: c.y[i], fr: val1(c, a, dec), fe: ok5 ? ev(a, c.fr[j]) + ' en 5 ans' : '', ref: val1(c, e, dec), re: 'moyenne UE' + (ok5 ? ', ' + ev(e, c[r][j]) : '') };
   }
   function etat(k) {
     var c = C[k];
@@ -561,18 +559,19 @@ function main(FEED) {
 
   // ===== Bulletin : détail année par année =====
   var ptHtml = function (v) { return v == null ? '<span class="pt na">non compté</span>' : v === 1 ? '<span class="pt g">1</span>' : v === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">' + (v === 0.5 ? '½' : fmt(v, 2)) + '</span>'; };
-  // Tableau d'évolution année par année d'une série comparée à sa référence (UE ou Allemagne).
+  // Tableau d'évolution année par année d'une série comparée à la moyenne de l'UE (publiée ou calculée par Concret).
   function evolTable(c, y0, y1, why) {
     var r = SAN.ref(c), dec = decOf(c), v = function (w, y) { return SAN.val(c, w, y); }, rows = '';
     for (var y = y0; y <= y1; y++) {
-      var pt = SAN.evol(c, y), a = v('fr', y), b = v('fr', y - 1), e = v(r, y), f = v(r, y - 1);
-      var cell = function (x, p) { return x == null ? '—' : p == null ? '— (' + fmt(x, dec) + ')' : sg(x - p, dec) + ' (' + fmt(x, dec) + ')'; };
-      var gap = a == null || b == null || e == null || f == null ? '' : sg((a - b) - (e - f), dec);
-      rows += '<tr><td>' + y + '</td><td>' + cell(a, b) + '</td><td>' + cell(e, f) + '</td><td>' + gap + '</td><td>' + ptHtml(pt) + '</td></tr>';
-      if (pt === 0.5) why.push(POURQUOI.egalite(y, refDe(c) ? 'l\'Allemagne' : 'l\'Union européenne'));
+      // d : évolution de la moyenne de l'UE (pour la moyenne calculée, sur les pays qui publient les deux années).
+      var pt = SAN.evol(c, y), a = v('fr', y), b = v('fr', y - 1), e = v(r, y), d = SAN.refEv(c, y);
+      var cell = function (x, dx) { return x == null ? '—' : dx == null ? '— (' + fmt(x, dec) + ')' : sg(dx, dec) + ' (' + fmt(x, dec) + ')'; };
+      var gap = a == null || b == null || d == null ? '' : sg((a - b) - d, dec);
+      rows += '<tr><td>' + y + '</td><td>' + cell(a, b == null ? null : a - b) + '</td><td>' + cell(e, d) + '</td><td>' + gap + '</td><td>' + ptHtml(pt) + '</td></tr>';
+      if (pt === 0.5) why.push(POURQUOI.egalite(y, 'la moyenne de l\'UE'));
       else if (pt == null) why.push(SAN.raisonSerie(c, y));
     }
-    return '<table><thead><tr><th>Année</th><th>France</th><th>' + nomRef(c) + '</th><th>Écart</th><th>Point</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    return '<table><thead><tr><th>Année</th><th>France</th><th>UE</th><th>Écart</th><th>Point</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
   function detailTable(g, k) {
     var c = C[k], wrap = document.createElement('div'), why = [], h, foot = '';
@@ -593,7 +592,7 @@ function main(FEED) {
     } else if (c.regle === 'composite') {
       Object.keys(c.sous).forEach(function (j) {
         var q = c.sous[j], w = [];
-        h += '<p><b>' + q.l + '</b> (comparé ' + (refDe(q) ? 'à l\'Allemagne' : 'à la moyenne de l\'UE') + ')</p>' + evolTable(q, g.y0, g.y1, w);
+        h += '<p><b>' + q.l + '</b> (comparé à la moyenne de l\'UE' + (SAN.ref(q) === 'ue_calc' ? ' calculée par Concret' : '') + ')</p>' + evolTable(q, g.y0, g.y1, w);
         w.forEach(function (t) { why.push(q.l + ' : ' + t); });
       });
       h += '<p>Point de l\'année pour le critère (part des éléments où la France fait mieux) : ' + g.y[k].map(function (d) { return d.y + ' : ' + (d.pt == null ? 'non compté' : fmt(d.pt, d.pt % 1 ? 2 : 0)); }).join(' · ') + '.</p>';
@@ -630,7 +629,7 @@ function main(FEED) {
       foot = 'Écart = part des 20 % les plus modestes qui renoncent à un examen médical, moins celle des 20 % les plus aisés, en points. Plus il est faible, plus l\'accès est égal.';
     } else {
       h += evolTable(c, g.y0, g.y1, why);
-      foot = 'Écart = évolution de la France moins celle ' + (refDe(c) ? 'de l\'Allemagne' : 'de l\'UE') + '. ' + (c.low ? 'Ici, une baisse est un progrès.' : 'Ici, une hausse est un progrès.');
+      foot = 'Écart = évolution de la France moins celle de la moyenne de l\'UE. ' + (c.low ? 'Ici, une baisse est un progrès.' : 'Ici, une hausse est un progrès.');
     }
     why = why.filter(function (t, i) { return why.indexOf(t) === i; });
     if (why.length) h += '<p class="kdet-why">' + why.join('<br>') + '</p>';
@@ -823,12 +822,12 @@ function main(FEED) {
     if (!has(c, 'de') && !has(c, 'ue') && !has(c, 'us')) n.push('France seule : aucun autre pays n\'a, dans ses comptes publics, de branche maladie comparable.');
     else if (!has(c, 'us')) n.push(c.us_note || 'Pas de courbe pour les États-Unis : pas de mesure comparable.');
     var lastDe = c.de ? c.de.reduce(function (m, v, i) { return v != null ? i : m; }, -1) : -1, firstDe = c.de ? c.de.findIndex(function (v) { return v != null; }) : -1;
-    var compte = !aff && refDe(c);
+    var compte = false;
     if (has(c, 'de') && lastDe < c.y.length - 1) n.push(compte ? 'L\'Allemagne ne publie plus ce chiffre après ' + c.y[lastDe] + ' : ces années ne sont pas comptées.' : 'Pas de chiffre allemand après ' + c.y[lastDe] + '.');
     if (has(c, 'de') && firstDe > 0) n.push('Pas de chiffre allemand avant ' + c.y[firstDe] + (compte ? ' : ces années ne sont pas comptées.' : '.'));
     var ue0 = c.ue ? c.ue.findIndex(function (v) { return v != null; }) : -1;
-    if (ue0 > 0) n.push('La moyenne de l\'UE ne commence qu\'en ' + c.y[ue0] + ' : avant, elle n\'est pas publiée' + (!aff && !refDe(c) ? ', ces années ne sont pas comptées.' : '.'));
-    if (has(c, 'ue_calc')) n.push('Pointillés : moyenne des pays de l\'UE calculée par Concret à partir des données de l\'OMS (l\'OMS ne publie pas de moyenne de l\'UE).');
+    if (ue0 > 0) n.push('La moyenne de l\'UE ne commence qu\'en ' + c.y[ue0] + ' : avant, elle n\'est pas publiée' + (!aff ? ', ces années ne sont pas comptées.' : '.'));
+    if (has(c, 'ue_calc')) n.push(c.ue_calc_note || 'Pointillés : moyenne de l\'UE calculée par Concret.');
     Object.keys(c.manque || {}).forEach(function (y) { n.push('Pas de point en ' + y + ' : ' + c.manque[y].replace(/^Non compté : /, '').replace(/^pour \d{4}, /, '')); });
     if (c.objectif) n.push(c.objectif.texte + '.'); else if (c.objectif_note) n.push(c.objectif_note);
     return n.join(' ');
@@ -940,10 +939,10 @@ function main(FEED) {
     var regle = function (c) {
       if (c.regle === 'propre') return 'jugé sur la France seule (aucun voisin n\'a de comptes comparables) : 1 point si l\'équilibre est atteint, ½ si le déficit se réduit d\'au moins 0,1 point de PIB, 0 sinon ; compte triple';
       if (c.regle === 'long') return 'comparés à la moyenne de l\'UE ; ces résultats mettent des années à bouger, chaque année d\'un mandat compte donc pour la moyenne des points de l\'année et des quatre suivantes';
-      if (c.regle === 'composite') return 'le point de l\'année est la part des éléments où la France progresse mieux que son voisin';
+      if (c.regle === 'composite') return 'le point de l\'année est la part des éléments où la France progresse mieux que la moyenne de l\'UE';
       if (c.regle === 'niveau') return 'comparé chaque année à la moyenne de l\'UE (point si la France fait mieux)';
       if (c.regle === 'ecart') return 'point si l\'écart français est plus faible que celui de l\'UE, ou s\'il se réduit plus vite';
-      return 'point si la France progresse mieux que ' + (refDe(c) ? 'l\'Allemagne' : 'la moyenne de l\'UE');
+      return 'point si la France progresse mieux que la moyenne de l\'UE' + (SAN.ref(c) === 'ue_calc' ? ' (calculée par Concret)' : '');
     };
     // Les indicateurs d'un thème qui suivent la même règle sont regroupés en une phrase.
     var liste = function (a) { return a.length > 1 ? a.slice(0, -1).join(', ') + ' et ' + a[a.length - 1] : a[0]; };
@@ -977,8 +976,8 @@ function main(FEED) {
       'Les Français paient de leur poche <b>' + fmt(rf.v, 1) + ' %</b> de leurs dépenses de santé, contre ' + fmt(SAN.val(ra, 'ue', rf.y), 1) + ' % en moyenne dans l\'UE (' + rf.y + ').',
       'En ' + nf.y + ', <b>' + fmt(nf.v, 1) + ' %</b> des adultes ont renoncé à voir un médecin (trop cher, trop loin, trop d\'attente), contre ' + fmt(SAN.val(rn, 'ue', nf.y), 1) + ' % dans l\'UE.',
       'Ce que paient les patients pour se soigner, après remboursements : <b>' + sg(pf.fr[pi], 1) + ' %</b> sur un an en France en ' + moName(pf, pi) + ', ' + sg(pf.ue[pi], 1) + ' % en moyenne dans l\'UE.',
-      '<b>' + fmt(es.n.fr[es.y.indexOf(ef2.y)]) + ' essais cliniques</b> ont démarré en France en ' + ef2.y + ', soit ' + fmt(ef2.v, 1) + ' par million d\'habitants, contre ' + fmt(SAN.val(es, 'de', ef2.y), 1) + ' en Allemagne.',
-      '<b>' + fmt(wf.v) + ' %</b> des nouveaux médicaments autorisés en Europe sont accessibles aux patients en France, contre ' + fmt(SAN.val(wd, 'de', wf.y)) + ' % en Allemagne (étude W.A.I.T., financée par l\'industrie).'
+      '<b>' + fmt(es.n.fr[es.y.indexOf(ef2.y)]) + ' essais cliniques</b> ont démarré en France en ' + ef2.y + ', soit ' + fmt(ef2.v, 1) + ' par million d\'habitants, contre ' + fmt(SAN.val(es, 'ue_calc', ef2.y), 1) + ' en moyenne dans l\'UE.',
+      '<b>' + fmt(wf.v) + ' %</b> des nouveaux médicaments autorisés en Europe sont accessibles aux patients en France, contre ' + fmt(SAN.val(wd, 'ue', wf.y)) + ' % en moyenne dans l\'UE (étude W.A.I.T., financée par l\'industrie).'
     ];
     setHtml('daily-text', pick(FACTS));
     setHtml('teaser-today', 'Déficit de la Sécurité sociale : <b>' + fmt(Math.abs(tt), 1) + '&nbsp;Md€</b> en ' + ks.y + ' · Espérance de vie : <b>' + fmt(ef.v, 1) + '&nbsp;ans</b> en ' + ef.y + ' · Un chiffre à retenir');
@@ -1065,7 +1064,7 @@ function main(FEED) {
   (function () {
     var items = THEMES.map(function (t) {
       var e = themeEtat(t), parts = e.l.map(function (x) {
-        if (x.sous) return esc(x.c.lc) + ' : la France fait mieux que ' + (refDe(x.c.sous[Object.keys(x.c.sous)[1]]) ? 'l\'Allemagne' : 'ses voisins') + ' sur ' + x.ok + ' sur ' + x.sous.length;
+        if (x.sous) return esc(x.c.lc) + ' : la France fait mieux que la moyenne de l\'UE sur ' + x.ok + ' sur ' + x.sous.length;
         var u = x.c.uc && x.c.uc !== ' %' && x.c.regle !== 'propre' ? x.c.uc : '';
         return esc(x.c.lc || x.c.l) + ' : ' + x.fr + u + (x.ref === '—' ? '' : ', contre ' + x.ref + ' (' + x.re.split(',')[0] + ')');
       });
