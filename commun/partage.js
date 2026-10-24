@@ -109,7 +109,7 @@
             if (lk && ch) { var cp = lk.cloneNode(true); cp.removeAttribute('data-pt-legende'); cp.style.margin = '4px 0 8px'; ch.parentNode.insertBefore(cp, ch); }
             // Trait pointillé de la légende (moyenne de l'UE) : la capture ne sait pas dessiner un dégradé répété, on le refait en bordure.
             Array.prototype.forEach.call(bl.querySelectorAll('.key i.dash'), function (i) {
-              i.style.setProperty('background', 'none', 'important'); i.style.height = '0'; i.style.borderRadius = '0'; i.style.borderTop = '3px dashed var(--ea)';
+              var c = i.getAttribute('data-c') || 'var(--ea)', h = i.closest('.mini') ? 2 : 3; i.style.setProperty('background', 'none', 'important'); i.style.display = 'inline-flex'; i.style.gap = '2px'; i.style.alignItems = 'center'; i.innerHTML = [0, 1, 2].map(function () { return '<b style="display:block;flex:1;height:' + h + 'px;background:' + c + '"></b>'; }).join('');
             });
           }
           var t = doc.querySelector('[data-pt-titre]'), bloc = doc.querySelector('[data-pt-bloc]');
