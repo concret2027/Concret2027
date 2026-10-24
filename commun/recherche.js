@@ -19,7 +19,8 @@
   }
   // Tous les mots tapés doivent être présents ; un mot trouvé dans le titre compte plus, la page en cours aussi un peu.
   function chercher(d, q) {
-    var mots = norm(q).split(' ').filter(function (m) { return m.length > 1; }); if (!mots.length) return [];
+    // Pluriel ou singulier : « expulsions » trouve « expulsion », « prisons » trouve « prison ».
+    var mots = norm(q).split(' ').filter(function (m) { return m.length > 1; }).map(function (m) { return m.length > 4 ? m.replace(/(s|x)$/, '') : m; }); if (!mots.length) return [];
     var ici = location.pathname;
     return d.map(function (x) {
       var s = 0;
