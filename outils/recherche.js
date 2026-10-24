@@ -5,13 +5,15 @@
      node outils/recherche.js            (lance un petit serveur local sur le dossier du site) */
 var fs = require('fs'), path = require('path'), http = require('http');
 var ROOT = path.join(__dirname, '..');
-var PAGES = [['/', 'Accueil'], ['/finances/', 'Finances'], ['/education/', 'Éducation'], ['/sante/', 'Santé'], ['/securite/', 'Sécurité et justice'], ['/barometre/', 'Baromètre 2027']];
+var PAGES = [['/', 'Accueil'], ['/finances/', 'Finances'], ['/education/', 'Éducation'], ['/sante/', 'Santé'], ['/securite/', 'Sécurité et justice'], ['/defense/', 'Défense'], ['/barometre/', 'Baromètre 2027']];
 // Mots que les lecteurs cherchent et qui ne sont pas écrits tels quels sur la page.
 var SYN = { inflation: 'prix ipch hausse des prix', chomage: 'emploi travail', dette: 'endettement dette publique', deficit: 'solde budget', homicide: 'meurtre crime',
   prison: 'détenus incarcération surpopulation', detenu: 'prison', oqtf: 'expulsion éloignement immigration obligation de quitter le territoire',
   'de quitter le territoire': 'oqtf expulsion éloignement immigration', eloignement: 'oqtf expulsion immigration', pisa: 'école élèves niveau',
   vaccination: 'vaccin', papillomavirus: 'hpv', 'securite sociale': 'secu', 'assurance maladie': 'secu cpam', prelevements: 'impôts taxes cotisations',
-  'pib par habitant': 'richesse niveau de vie', croissance: 'pib', 'esperance de vie': 'longévité', cambriolage: 'vol logement', sondage: 'présidentielle élection candidats' };
+  'pib par habitant': 'richesse niveau de vie', croissance: 'pib', 'esperance de vie': 'longévité', cambriolage: 'vol logement', sondage: 'présidentielle élection candidats',
+  otan: 'nato alliance atlantique armée', militaires: 'soldats armée effectifs', equipement: 'matériel armement armes', 'programmation militaire': 'lpm budget armées',
+  'mission « defense »': 'budget des armées lpm', defense: 'armée armées militaire' };
 var MIME = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript', '.json': 'application/json', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png' };
 
 function serveur() {

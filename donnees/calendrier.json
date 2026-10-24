@@ -1177,7 +1177,7 @@
   {
    "id": "ue_moyennes",
    "page": "sante",
-   "libelle": "Moyennes de l'UE calculées par Concret, pour les indicateurs notés dont la source n'en publie pas (Santé : alcool, essais cliniques, rougeole, diphtérie-tétanos-coqueluche, papillomavirus, dépistages ; Éducation : PISA (maths, lecture, sciences) ; Sécurité et justice : homicides, vols avec violence, cambriolages, occupation et places de prison)",
+   "libelle": "Moyennes de l'UE calculées par Concret, pour les indicateurs notés dont la source n'en publie pas (Santé : alcool, essais cliniques, rougeole, diphtérie-tétanos-coqueluche, papillomavirus, dépistages ; Éducation : PISA (maths, lecture, sciences) ; Sécurité et justice : homicides, vols avec violence, cambriolages, occupation et places de prison ; Défense : dépense et investissement publics de défense avant 2010, dépense au sens de l'OTAN, part de l'équipement, militaires)",
    "frequence": "mensuel (les sources des 27 pays se mettent à jour à des dates différentes)",
    "source": "Les sources de chaque indicateur (OCDE, OMS et Unicef, ClinicalTrials.gov, Eurostat), pour les 27 pays de l'UE ; population : Eurostat demo_gind (Banque mondiale pour les essais cliniques, comme la série France). LANCER : python3 outils/ue_calc.py (calcul et comparaison), puis python3 outils/ue_calc.py --ecrire (écrit ue_calc, ue_calc_ev, ue_calc_info, ue_calc_note et la date de prochaine vérification). Ne pas saisir à la main.",
    "url": "https://github.com/concret2027/Concret2027/blob/main/outils/ue_calc.py",
@@ -1209,6 +1209,82 @@
    "tentatives": 0,
    "textes_lies": [],
    "note": "Une phrase factuelle par actualité, avec le lien de la source officielle ; retirer de l'agenda les dates passées. Le site du ministère de l'Intérieur (Interstats) bloque les accès automatiques : passer par data.gouv.fr pour les chiffres du SSMSI."
+  },
+  {
+   "id": "def_eurostat",
+   "page": "defense",
+   "libelle": "Dépense publique de défense et investissement public de défense, % du PIB (France, Allemagne, Espagne)",
+   "frequence": "annuel (Eurostat, dépenses par fonction, vers fin février ; révisées ensuite)",
+   "source": "Eurostat gov_10a_exp (GF02, TE et P51G, MIO_EUR) et nama_10_gdp (B1GQ, CP_MEUR), rapport calculé par Concret. LANCER : python3 outils/defense.py (lecture et comparaison), puis python3 outils/defense.py --ecrire, puis python3 outils/ue_calc.py --ecrire --seul defense.dep,defense.inv,defense.otan,defense.equip,defense.pers. Ne pas saisir à la main.",
+   "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10a_exp?format=JSON&geo=FR&geo=DE&geo=ES&unit=MIO_EUR&sector=S13&na_item=TE&na_item=P51G&cofog99=GF02",
+   "cible": "series.defense.C.dep, C.inv (3 décimales)",
+   "derniere_donnee": "2024",
+   "derniere_verification": "2026-10-25",
+   "prochaine_verification": "2027-03-15",
+   "publication_attendue": "",
+   "statut": "a_jour",
+   "tentatives": 0,
+   "textes_lies": [
+    "series.defense.QUIZ (dépense publique de défense 1995 et 2024)"
+   ],
+   "note": "Recalculer toute la série à chaque mise à jour (le PIB est révisé) : l'outil le fait. Moyenne de l'UE calculée par outils/ue_calc.py depuis 1995 (Eurostat ne la publie que depuis 2010 ; le calcul redonne exactement la sienne)."
+  },
+  {
+   "id": "def_otan",
+   "page": "defense",
+   "libelle": "Dépense de défense au sens de l'OTAN (% du PIB), part de l'équipement, militaires (France, Allemagne, Espagne, États-Unis, et les 23 pays de l'UE membres de l'OTAN)",
+   "frequence": "annuel (OTAN, avant le sommet de l'été ; 2026 : 7 juillet)",
+   "source": "OTAN, Defence Investment of NATO Countries (classeur Excel def-exp-AAAA-en.xlsx, tableaux 2, 3, 5, 7 et 8a) ; population : Eurostat demo_gind, États-Unis : Banque mondiale. LANCER : python3 outils/defense.py, puis --ecrire, puis python3 outils/ue_calc.py --ecrire --seul defense.otan,defense.equip,defense.pers. Ne pas saisir à la main.",
+   "url": "https://www.nato.int/content/dam/nato/webready/documents/finance/def-exp-2026-en.xlsx",
+   "cible": "series.defense.C.otan, C.equip, C.pers, AFF.pers_n ; est (années estimées par l'OTAN, affichées, pas comptées)",
+   "derniere_donnee": "2026 (estimation) ; 2024 (dernière année non estimée)",
+   "derniere_verification": "2026-10-25",
+   "prochaine_verification": "2027-06-15",
+   "publication_attendue": "",
+   "statut": "a_jour",
+   "tentatives": 0,
+   "textes_lies": [
+    "series.defense.QUIZ (OTAN 2024, militaires 2024, équipement 2024)",
+    "datasets.actu_defense (publication de l'OTAN)"
+   ],
+   "note": "L'outil cherche le classeur de l'année, sinon celui de l'année précédente. Les années dont l'en-tête finit par « e » sont des estimations : champ est, affichées sans être comptées. Le PDF de 2026 est une image : se fier au classeur Excel (vérifié identique au PDF le 25 octobre 2026)."
+  },
+  {
+   "id": "def_budget",
+   "page": "defense",
+   "libelle": "Budget des armées (mission Défense, hors pensions) et loi de programmation militaire",
+   "frequence": "annuel (projet de loi de finances début octobre, loi de finances votée fin décembre)",
+   "source": "Ministère des Armées (page du projet de loi de finances de l'année), loi de finances publiée au Journal officiel",
+   "url": "https://www.defense.gouv.fr/ministere/politique-defense/loi-programmation-militaire-2024-2030/projet-loi-finances-armees-2027-lpm-annee-4",
+   "cible": "series.defense.P.plf_2027, plf_2027_hausse, lpm_2023, lpm_plus",
+   "derniere_donnee": "PLF 2027 (8 octobre 2026)",
+   "derniere_verification": "2026-10-25",
+   "prochaine_verification": "2027-01-05",
+   "publication_attendue": "",
+   "statut": "a_jour",
+   "tentatives": 0,
+   "textes_lies": [
+    "series.defense.QUIZ (budget 2027)",
+    "datasets.actu_defense"
+   ],
+   "note": "Après le vote de la loi de finances pour 2027, remplacer le montant du projet par celui voté (mission Défense, hors pensions), avec sa source, et adapter le libellé affiché (« projet » → « voté »)."
+  },
+  {
+   "id": "def_actu",
+   "page": "defense",
+   "libelle": "Actualité et agenda de la défense",
+   "frequence": "quotidien",
+   "source": "Sites officiels : ministère des Armées (defense.gouv.fr), OTAN (nato.int), Assemblée nationale, Sénat, Cour des comptes, Eurostat",
+   "url": "https://www.defense.gouv.fr/actualites",
+   "cible": "datasets.actu_defense (date, texte, source, url), datasets.agenda_defense (date, quand, evenement, source, url)",
+   "derniere_donnee": "2026-10-08",
+   "derniere_verification": "2026-10-25",
+   "prochaine_verification": "2026-10-26",
+   "publication_attendue": "",
+   "statut": "a_jour",
+   "tentatives": 0,
+   "textes_lies": [],
+   "note": "Une phrase factuelle par actualité, avec le lien de la source officielle ; retirer de l'agenda les dates passées."
   }
  ]
 }

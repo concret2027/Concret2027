@@ -149,6 +149,72 @@ def prisons(ind):
         return _prisons[ind]
     return f
 
+_otan = {}
+def otan_xlsx():
+    """Classeur Excel de l'OTAN qui accompagne « Defence Expenditure of NATO Countries » (devenu « Defence Investment of
+    NATO Countries » en 2026) : celui de l'année, sinon celui de l'année précédente. Renvoie (classeur, adresse)."""
+    if not _otan:
+        import openpyxl, tempfile
+        for a in (date.today().year, date.today().year - 1):
+            u = 'https://www.nato.int/content/dam/nato/webready/documents/finance/def-exp-%d-en.xlsx' % a
+            try:
+                b = get(u, essais=2)
+            except IOError:
+                continue
+            if b[:2] != b'PK':
+                continue
+            t = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False); t.write(b); t.close()
+            _otan['wb'], _otan['url'] = openpyxl.load_workbook(t.name, data_only=True), u
+            break
+        else:
+            raise IOError('classeur de l\'OTAN introuvable (def-exp-%d-en.xlsx)' % date.today().year)
+    return _otan['wb'], _otan['url']
+
+
+def otan_tab(feuille, bloc=None, tous=False):
+    """{pays: {année: valeur}} d'un tableau du classeur de l'OTAN ; bloc : début du sous-titre du bloc voulu
+    (« Constant » pour les prix constants), sinon le premier bloc. Les années estimées (« 2025e ») sont gardées :
+    la page les affiche sans les compter (champ est). tous : garder aussi les pays hors UE (États-Unis)."""
+    wb, _ = otan_xlsx()
+    rows = list(wb[feuille].iter_rows(values_only=True))
+    i = 0
+    if bloc:
+        i = next(j for j, r in enumerate(rows) if isinstance(r[0], str) and r[0].startswith(bloc))
+    i = next(j for j in range(i, len(rows)) if rows[j][1] == 2014)
+    ans = [int(str(v).rstrip('e')) if v is not None else None for v in rows[i][1:]]
+    noms = {v: k for k, v in NOM_EN.items()}
+    noms.update({'Slovak Republic': 'SK', 'Czech Republic': 'CZ', 'United States': 'US'})
+    out = {}
+    for r in rows[i + 1:]:
+        if r[0] is None or not isinstance(r[0], str):
+            break
+        n = r[0].split(' (')[0].rstrip('*').strip()
+        g = noms.get(n)
+        if g and (g in UE or tous):
+            out[g] = {y: float(v) for y, v in zip(ans, r[1:]) if y and isinstance(v, (int, float))}
+    return out
+
+
+def otan(feuille, bloc=None):
+    return lambda: otan_tab(feuille, bloc)
+
+
+def otan_part(feuille):
+    """Montant d'une catégorie (équipement…) en dollars constants : part publiée × dépense de défense à prix constants."""
+    def f():
+        p, d = otan_tab(feuille), otan_tab('Table 2', 'Constant')
+        return {g: {y: v * d[g][y] / 100 for y, v in p[g].items() if y in d.get(g, {})} for g in p}
+    return f
+
+
+def cofog(fonction, operation='TE'):
+    return lambda: eurostat('gov_10a_exp', 'unit=MIO_EUR&sector=S13&na_item=%s&cofog99=%s' % (operation, fonction))
+
+
+def pib_euros():
+    return eurostat('nama_10_gdp', 'unit=CP_MEUR&na_item=B1GQ')
+
+
 INDICATEURS = [
     dict(cle='securite.hom', periodes=[(1995, 2007), (2008, None)], num=crim('ICCS0101'), den=population, facteur=1e5,
          methode="homicides des pays de l'UE rapportés à leur population au 1er janvier", source="Eurostat, crim_gen jusqu'en 2007 et crim_off_cat depuis 2008 ; population : demo_gind"),
@@ -184,6 +250,21 @@ INDICATEURS = [
          methode="scores des pays de l'UE pondérés par leur population", source="OCDE, PISA 2025, tableau I.B1.2a.37 ; population : Eurostat, demo_gind"),
     dict(cle='education.PI.s', periodes=[(2006, None)], taux=pisa('s'), pas='vagues',
          methode="scores des pays de l'UE pondérés par leur population", source="OCDE, PISA 2025, tableau I.B1.2a.36 ; population : Eurostat, demo_gind"),
+    # Défense. Dépense publique (Eurostat) : Eurostat ne publie la moyenne de l'UE que depuis 2010 ; avant, Concret la
+    # calcule sur les mêmes tables (depuis 2010, le calcul redonne celle d'Eurostat). OTAN : les 23 pays de l'UE membres
+    # de l'OTAN (Autriche, Irlande, Chypre et Malte n'en sont pas membres et ne publient pas ces chiffres).
+    dict(cle='defense.dep', periodes=[(1995, None)], num=cofog('GF02'), den=pib_euros, facteur=100,
+         pourquoi="Eurostat ne publie la sienne que depuis 2010, et ce calcul la redonne exactement",
+         methode="dépense publique de défense des pays de l'UE divisée par leur PIB", source="Eurostat, gov_10a_exp (GF02) et nama_10_gdp"),
+    dict(cle='defense.inv', periodes=[(1995, None)], num=cofog('GF02', 'P51G'), den=pib_euros, facteur=100,
+         pourquoi="Eurostat ne publie la sienne que depuis 2010, et ce calcul la redonne exactement",
+         methode="investissement public de défense des pays de l'UE divisé par leur PIB", source="Eurostat, gov_10a_exp (GF02, formation brute de capital) et nama_10_gdp"),
+    dict(cle='defense.otan', periodes=[(2014, None)], num=otan('Table 2', 'Constant'), den=otan('Table 5', 'Constant'), facteur=100,
+         methode="dépense de défense des pays de l'UE membres de l'OTAN divisée par leur PIB, à prix constants", source="OTAN, Defence Investment of NATO Countries, tableaux 2 et 5"),
+    dict(cle='defense.equip', periodes=[(2014, None)], num=otan_part('Table 8a'), den=otan('Table 2', 'Constant'), facteur=100,
+         methode="dépense d'équipement des pays de l'UE membres de l'OTAN divisée par leur dépense de défense, à prix constants", source="OTAN, Defence Investment of NATO Countries, tableaux 2 et 8a"),
+    dict(cle='defense.pers', periodes=[(2014, None)], num=otan('Table 7'), den=population, facteur=1e6,
+         methode="militaires des pays de l'UE membres de l'OTAN rapportés à leur population au 1er janvier", source="OTAN, Defence Investment of NATO Countries, tableau 7 ; population : Eurostat, demo_gind"),
 ]
 
 
@@ -248,7 +329,8 @@ def calcule(ind, ans, dec):
 
 def note(ind, info):
     ok = [i for i in info if i['couv_min'] is not None]
-    tete = "Pointillés : moyenne de l'UE calculée par Concret, la source n'en publiant pas (%s ; %s). " % (ind['methode'], ind['source'])
+    tete = ("Pointillés : moyenne de l'UE calculée par Concret (%s ; %s) ; %s. " % (ind['methode'], ind['source'], ind['pourquoi'])) if ind.get('pourquoi') else \
+        "Pointillés : moyenne de l'UE calculée par Concret, la source n'en publiant pas (%s ; %s). " % (ind['methode'], ind['source'])
     if not ok:
         return tete + "Les pays qui publient ce chiffre deux années de suite font moins de 70 % de la population de l'UE : son évolution ne peut pas être calculée, rien n'est donc noté."
     nb = lambda i: ('%d pays' % i['pays_min']) if i['pays_min'] == i['pays_max'] else ('%d à %d pays' % (i['pays_min'], i['pays_max']))

@@ -1,0 +1,1155 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Défense · Concret</title>
+<meta name="description" content="La défense de la France comparée à la moyenne de l'Union européenne, avec l'Allemagne, l'Espagne et les États-Unis en repères : budget, objectif de l'OTAN, équipement, effectifs. La note de chaque président et gouvernement depuis 1995.">
+<meta property="og:title" content="Défense · Concret">
+<meta property="og:description" content="La défense de la France comparée à ses voisins, et la note de chaque président et gouvernement.">
+<meta property="og:url" content="https://concret2027.fr/defense/">
+<meta property="og:type" content="website">
+<script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="../commun/notes.js?v=20261025c"></script>
+<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
+.recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
+.today-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 640px) { .today-grid.three { grid-template-columns: minmax(0, 1fr); } .today-grid.three .metric + .metric { border-left: 0; border-top: 1px solid var(--line); } }
+.month.four { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 0; }
+@media (max-width: 640px) { .month.four { grid-template-columns: minmax(0, 1fr); } .month.four .mo + .mo { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 10px; } }
+.industrie { font-size: 12px; font-weight: 600; color: var(--mid); }
+.dom { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.dom th { font-size: 11px; color: var(--muted); font-weight: 600; text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.dom td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--grid); }
+.dom th:first-child, .dom td:first-child { text-align: left; }
+.mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 14px; }
+</style>
+<style>
+/* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
+:root {
+  --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
+  --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a; --es: #d0632a;
+  --bad: #c43d3d; --ok: #1f8a4c; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
+  --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
+  --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
+  --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
+  --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --de: #a4a6b0; --it: #4cc27f; --ea: #d9b25a; --us: #d77fcf; --es: #f0905e; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a;
+  --band: rgba(122, 156, 255, .09); --grid: #2a2c32; --axis: #44464e; --draft: #3a3016; --draft-fg: #f0d58a;
+  --hero-bg: #172242; --hero-line: #26345c; --hero-fg: #eef2ff; --hero-muted: #a8b4d6; --hero-num: #ffffff; --hero-up: #ff8f8f; --pill: #1e2b52;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .18); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --de: #a4a6b0; --it: #4cc27f; --ea: #d9b25a; --us: #d77fcf; --es: #f0905e; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a;
+  --band: rgba(122, 156, 255, .09); --grid: #2a2c32; --axis: #44464e; --draft: #3a3016; --draft-fg: #f0d58a;
+  --hero-bg: #172242; --hero-line: #26345c; --hero-fg: #eef2ff; --hero-muted: #a8b4d6; --hero-num: #ffffff; --hero-up: #ff8f8f; --pill: #1e2b52;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .18); color-scheme: dark; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-text-size-adjust: 100%; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.draft { background: var(--draft); color: var(--draft-fg); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; }
+.brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.brand b { font-family: var(--serif); font-weight: 500; font-size: 22px; }
+.brand span { font-size: 12.5px; color: var(--muted); }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.card h2 { font-size: 19px; font-weight: 600; line-height: 1.25; margin: 0; text-wrap: balance; }
+.eyebrow { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 4px; }
+.note { font-size: 12.5px; color: var(--muted); margin: 0; max-width: 92ch; }
+.insight { font-family: var(--serif); font-size: 19px; line-height: 1.3; margin: 0; text-wrap: balance; }
+.insight b { font-weight: 500; color: var(--fr); }
+.explain { font-size: 13.5px; margin: 0; padding: 10px 12px; border-left: 3px solid var(--fr); background: var(--band); border-radius: 0 6px 6px 0; }
+.explain b { font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 34px; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip:focus-visible, .opt:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* Sommaire collant */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.jump { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 44px)); z-index: 9; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.jump::-webkit-scrollbar { display: none; }
+.jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+.jump a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
+.flash { animation: flash 1.6s ease-out; }
+@keyframes flash { 0% { background: var(--band); box-shadow: 0 0 0 3px var(--fr); border-radius: 10px; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
+.pres-detail { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
+.pres-detail .who b { font-weight: 600; }
+.share { font: inherit; font-family: var(--sans); font-size: 12.5px; font-weight: 500; margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 2px; border: 0; background: none; color: var(--muted); cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.share::before { content: "↗"; }
+.share.primary { background: var(--fr); color: #fff; border-color: var(--fr); }
+.acc-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.acc-actions .acc-cta, .acc-actions .share { margin-top: 0; }
+.share:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.daily .share { display: inline-flex; }
+.sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sheet-box { background: var(--panel); border-radius: 14px; padding: 14px; display: grid; gap: 10px; max-width: 420px; width: 100%; max-height: 100%; overflow: auto; }
+.sheet-box img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+/* Menus dépliables */
+.acc { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
+.acc > summary::-webkit-details-marker { display: none; }
+.acc-cta { justify-self: start; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--band); border: 1px solid var(--fr); border-radius: 999px; padding: 5px 12px; }
+.acc-cta::before { content: "Voir le détail ↓"; }
+.acc[open] > summary .acc-cta::before { content: "Masquer ↑"; }
+.acc > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 14px; }
+.acc-h { font-size: 17px; font-weight: 700; }
+.acc-t { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+.acc-t b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.acc-t i.r { font-style: normal; color: var(--bad); }
+.acc-t i.g { font-style: normal; color: var(--ok); }
+.acc-body { display: grid; gap: 14px; padding: 0 12px 12px; }
+.acc-body.card { border: 0; padding-top: 0; background: none; }
+.acc[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+
+/* Menu du site */
+.site { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 11; display: flex; flex-wrap: nowrap; align-items: baseline; gap: 16px; font-size: 14px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; margin: -16px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 10px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.site::-webkit-scrollbar { display: none; }
+@media (max-width: 520px) { .site { gap: 14px; } .site .lg { display: none; } .site a.logo { font-size: 18px; margin-right: 0; } }
+.site a { color: var(--muted); text-decoration: none; font-weight: 500; }
+.site a[aria-current="page"] { color: var(--fg); font-weight: 700; border-bottom: 2px solid var(--fr); }
+.site a.logo { font-family: var(--serif); font-size: 20px; color: var(--fg); font-weight: 500; margin-right: 6px; }
+.site .soon { color: var(--axis); font-size: 12.5px; }
+.site a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.stale { border: 1px solid var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.actu { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.actu li { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 10px; font-size: 14px; line-height: 1.4; }
+.actu .d { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; }
+.actu a { color: var(--muted); font-size: 12px; }
+.actu .next { font-weight: 600; }
+#agenda-edu li { grid-template-columns: 6.6rem minmax(0, 1fr); }
+.upd { margin: -12px 0 0; font-size: 12.5px; color: var(--muted); }
+/* Résumé */
+.summary { display: grid; gap: 10px; }
+.bilan summary { cursor: pointer; list-style: none; display: grid; gap: 2px; }
+.bilan summary::-webkit-details-marker { display: none; }
+.bilan .bilan-h { font-family: var(--serif); font-size: 24px; line-height: 1.15; }
+.bilan .bilan-h::after { content: " ▾"; font-family: var(--sans); font-size: 14px; color: var(--muted); }
+.bilan:not([open]) .bilan-h::after { content: " ▸"; }
+.summary .sum-h { font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.15; margin: 0; }
+.summary .sum-h .eyebrow { font-family: var(--sans); }
+.summary h1 { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 0; }
+.daily { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--band); border: 1px solid var(--line); font-family: var(--serif); font-size: 19px; line-height: 1.3; }
+.daily .eyebrow { font-family: var(--sans); margin-bottom: 6px; }
+.daily b { font-weight: 500; color: var(--fr); }
+.since { display: block; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-family: var(--sans); font-size: 13.5px; color: var(--muted); }
+.since b { font-weight: 600; color: var(--fg); }
+.visit { margin: 0; font-size: 14px; line-height: 1.45; padding: 8px 12px; border-left: 3px solid var(--fr); background: var(--panel); border-radius: 0 8px 8px 0; color: var(--fg); }
+.visit b { font-weight: 600; }
+.summary ol { margin: 0; padding: 0; list-style: none; counter-reset: k; display: grid; gap: 10px; }
+.summary li { counter-increment: k; position: relative; padding-left: 30px; font-size: 15px; line-height: 1.45; }
+.summary li::before { content: counter(k); position: absolute; left: 0; top: -2px; font-family: var(--serif); font-size: 20px; color: var(--fr); }
+.summary li b { font-weight: 600; }
+
+/* Question du jour */
+.quiz { border-color: var(--fr); }
+.quiz .q { font-family: var(--serif); font-size: 23px; line-height: 1.25; margin: 0; text-wrap: balance; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.opt { font: inherit; text-align: left; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); cursor: pointer; min-height: 48px; }
+.opt.right { border-color: var(--ok); color: var(--ok); font-weight: 600; background: var(--s-good); }
+.opt.wrong { border-color: var(--bad); color: var(--bad); text-decoration: line-through; }
+.answer { margin: 0; font-size: 14.5px; }
+
+/* Bandeau : deux chiffres du jour */
+.today { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.today-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 640px) { .today-grid { grid-template-columns: 1fr; } .metric + .metric { border-left: 0 !important; border-top: 1px solid var(--line); } }
+.metric { padding: 18px 18px 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.metric + .metric { border-left: 1px solid var(--line); }
+.metric .lab { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.metric .row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+.metric .num { font-family: var(--serif); font-size: 46px; line-height: 1; font-variant-numeric: tabular-nums; }
+.metric .num small { font-size: .42em; color: var(--muted); margin-left: .1em; }
+.delta { font-size: 12.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.delta.up { color: var(--bad); background: var(--s-bad); }
+.delta.dn { color: var(--ok); background: var(--s-good); }
+.month { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.mo .share { justify-self: start; }
+@media (max-width: 640px) { .month { grid-template-columns: 1fr; } .mo + .mo { border-left: 0 !important; border-top: 1px solid var(--line); padding-left: 0 !important; padding-top: 12px; } .mo { padding-right: 0 !important; padding-bottom: 12px; } }
+.mo { display: grid; gap: 5px; align-content: start; padding-right: 14px; }
+.mo + .mo { border-left: 1px solid var(--line); padding-left: 14px; }
+.mo-lab { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.mo-num { font-family: var(--serif); font-size: 30px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.mo-num small { font-size: .45em; color: var(--muted); }
+.mo .delta { justify-self: start; }
+.mo-t { font-size: 12.5px; color: var(--muted); }
+.metric .foot { font-size: 12.5px; color: var(--muted); }
+.metric .foot b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.spark svg { display: block; width: 100%; height: auto; }
+.spark text { fill: var(--muted); font-size: 10px; font-family: var(--sans); }
+.equiv-wrap { border-top: 1px solid var(--line); padding: 14px 18px 16px; display: grid; gap: 10px; }
+.equiv-wrap .lab { font-size: 12.5px; color: var(--muted); }
+.equiv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.eq { padding: 0 12px; display: grid; gap: 2px; }
+.eq:first-child { padding-left: 0; }
+.eq + .eq { border-left: 1px solid var(--line); }
+.eq .n { font-family: var(--serif); font-size: 26px; line-height: 1.1; color: var(--fr); font-variant-numeric: tabular-nums; }
+.eq .t { font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+/* Bulletin */
+.how { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.how summary { cursor: pointer; padding: 10px 12px; font-weight: 600; font-size: 14px; }
+.how-body { padding: 0 12px 12px; display: grid; gap: 8px; font-size: 13.5px; }
+.how-body p { margin: 0; }
+.ex { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; }
+.seuils { min-width: 0; font-size: 12.5px; }
+.seuils td { text-align: left; padding: 5px 6px 5px 0; color: var(--muted); }
+.seuils td:first-child { color: var(--fg); font-weight: 600; }
+.seuils td span { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; }
+
+.gov-list { display: grid; gap: 0; }
+.more { font: inherit; font-weight: 600; font-size: 14px; width: 100%; min-height: 46px; border-radius: 10px; border: 1px solid var(--fg); background: var(--fg); color: var(--bg); cursor: pointer; }
+.more:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.gov { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+.gov .badge { grid-row: span 2; width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; font-family: var(--serif); font-size: 22px; font-variant-numeric: tabular-nums; }
+.gov .badge small { font-family: var(--sans); font-size: 10px; display: block; margin-top: -6px; opacity: .8; }
+.badge.g { background: var(--s-good); color: var(--ok); } .badge.m { background: var(--s-mid); color: var(--mid); } .badge.b { background: var(--s-bad); color: var(--bad); }
+.badge.p { background: var(--grid); color: var(--muted); font-size: 13px; }
+.gov .who b { font-weight: 600; } .gov .who span { color: var(--muted); font-size: 12.5px; }
+.kpis { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 560px) { .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; } .kpi { font-size: 11.5px; padding: 4px 7px; display: grid; min-width: 0; } .kpi em { margin: 0; font-size: 11px; } }
+.kpi { font-size: 12px; padding: 3px 8px; border-radius: 6px; background: var(--grid); font-variant-numeric: tabular-nums; }
+.kpi.g { background: var(--s-good); } .kpi.b { background: var(--s-bad); }
+.kpi em { font-style: normal; color: var(--muted); margin-right: 4px; }
+button.kpi { font: inherit; font-size: 12px; color: var(--fg); border: 1px solid transparent; cursor: pointer; text-align: left; position: relative; padding-right: 20px; }
+button.kpi::after { content: "▾"; color: var(--muted); font-size: 10px; position: absolute; right: 7px; top: 50%; transform: translateY(-50%); }
+button.kpi[aria-expanded="true"] { border-color: var(--fg); }
+button.kpi[aria-expanded="true"]::after { content: "▴"; }
+button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
+.kdet { margin-top: 4px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; font-size: 12.5px; overflow-x: auto; }
+.kdet p { margin: 0; color: var(--muted); line-height: 1.4; } .kdet p b { color: var(--fg); }
+.kdet-slot { grid-column: 1 / -1; min-width: 0; } .kdet-slot:empty { display: none; }
+.kdet table { border-collapse: collapse; font-variant-numeric: tabular-nums; width: 100%; }
+.kdet th { text-align: right; font-weight: 600; color: var(--muted); font-size: 11.5px; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+.kdet td { text-align: right; padding: 3px 6px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+.kdet th:first-child, .kdet td:first-child { text-align: left; }
+.kdet .pt { display: inline-block; min-width: 22px; text-align: center; border-radius: 5px; font-weight: 700; }
+.kdet .pt.g { background: var(--s-good); color: var(--ok); } .kdet .pt.b { background: var(--s-bad); color: var(--bad); } .kdet .pt.m { background: var(--s-mid); color: var(--mid); } .kdet .pt.na { color: var(--muted); font-weight: 400; }
+.kdet .kdet-src { font-size: 11px; }
+.kdet .kdet-why { color: var(--fg); font-size: 12px; }
+.kdet td:last-child { white-space: normal; } .kdet .pt.na { font-size: 11px; line-height: 1.2; display: inline-block; text-align: right; }
+@media (max-width: 560px) { button.kpi { font-size: 11.5px; } .kdet { font-size: 12px; padding: 8px; } .kdet td, .kdet th { padding: 3px 4px; } }
+.gov.pending .who span { font-style: italic; }
+
+/* Graphes */
+.longbox { display: grid; gap: 6px; padding: 12px; border-radius: 10px; background: var(--band); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--fg); border-radius: 10px; overflow: hidden; }
+.seg button { font: inherit; font-size: 13.5px; font-weight: 600; padding: 9px 8px; border: 0; background: var(--panel); color: var(--fg); cursor: pointer; line-height: 1.25; }
+.seg button small { display: block; font-weight: 400; font-size: 11px; opacity: .75; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg button:focus-visible { outline: 2px solid var(--fr); outline-offset: -3px; }
+.charts3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
+.charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
+.chart { position: relative; min-width: 0; }
+.chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.chart svg.hov { touch-action: pan-y; cursor: crosshair; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.ctip { position: absolute; top: 2px; z-index: 6; pointer-events: none; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 12px; line-height: 1.4; box-shadow: 0 4px 14px rgba(0,0,0,.14); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ctip b { display: block; margin-bottom: 2px; font-weight: 700; }
+.ctip span { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+.ctip span em { font-style: normal; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+.ctip span em i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.ctip span strong { font-weight: 600; margin-left: 10px; }
+.ctip small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; max-width: 200px; white-space: normal; }
+.chart text { fill: var(--muted); font-size: 11px; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
+.key i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.key i.dash { background: repeating-linear-gradient(90deg, var(--ea) 0 5px, transparent 5px 8px) !important; }
+.key.mini { font-size: 11px; gap: 2px 10px; margin: 0 0 2px; } .key.mini i { width: 12px; height: 2px; margin-right: 4px; }
+.bar-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.bars-big { font-family: var(--serif); font-size: 18px; margin: 0; }
+.events { margin: 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--muted); columns: 2 18rem; }
+.events li { break-inside: avoid; margin-bottom: 4px; }
+.events b { color: var(--fg); font-weight: 600; display: inline-block; min-width: 1.6em; }
+.agenda { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.agenda li { display: grid; grid-template-columns: 4.5rem 1fr; gap: 12px; align-items: baseline; }
+.agenda .d { font-family: var(--serif); font-size: 21px; font-variant-numeric: tabular-nums; }
+.agenda .d small { display: block; font-family: var(--sans); font-size: 11px; color: var(--muted); }
+.glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 12px 24px; margin: 0; }
+.glossary dt { font-weight: 600; font-size: 14px; }
+.glossary dd { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 8px; }
+footer p { margin: 0; } footer a { color: inherit; }
+
+.yrs { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.yrs th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: center; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+.yrs th:nth-child(-n+2), .yrs td:nth-child(-n+2) { text-align: left; }
+.yrs td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: center; }
+.yrs tr.yr-why td { text-align: left; font-size: 11.5px; color: var(--muted); padding: 2px 4px 7px; }
+.yrs .pres-row td { text-align: left; font-weight: 700; font-size: 13px; background: var(--band); padding: 8px 6px; }
+.yrs td.dot { font-size: 16px; line-height: 1; }
+.yrs td.dot.g { color: var(--ok); } .yrs td.dot.b { color: var(--bad); } .yrs td.dot.off { color: var(--axis); }
+.yr-note { display: inline-block; min-width: 2.2em; padding: 2px 6px; border-radius: 6px; font-weight: 700; }
+.yr-note.g { background: var(--s-good); color: var(--ok); } .yr-note.m { background: var(--s-mid); color: var(--mid); } .yr-note.b { background: var(--s-bad); color: var(--bad); }
+.yrs small { color: var(--muted); font-size: 10.5px; }
+@media (max-width: 420px) { .yrs { font-size: 12px; } .yrs th { font-size: 10px; } }
+.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
+.recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
+.today-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 640px) { .today-grid.three { grid-template-columns: minmax(0, 1fr); } .today-grid.three .metric + .metric { border-left: 0; border-top: 1px solid var(--line); } }
+.month.four { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 0; }
+@media (max-width: 640px) { .month.four { grid-template-columns: minmax(0, 1fr); } .month.four .mo + .mo { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 10px; } }
+.industrie { font-size: 12px; font-weight: 600; color: var(--mid); }
+.dom { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.dom th { font-size: 11px; color: var(--muted); font-weight: 600; text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.dom td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--grid); }
+.dom th:first-child, .dom td:first-child { text-align: left; }
+.mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 14px; }
+/* Les cinq thèmes */
+.score { display: grid; gap: 0; }
+.sc { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); color: var(--fg); text-decoration: none; font-weight: 600; font-size: 15px; }
+.sc .ic { display: flex; gap: 6px; } .sc i { font-style: normal; font-weight: 700; width: 1.3em; text-align: center; }
+.sc i.g, .cmp .i.g { color: var(--ok); } .sc i.b, .cmp .i.b { color: var(--bad); } .sc i.m, .cmp .i.m { color: var(--mid); }
+.cmp { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.cmp th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.cmp td { padding: 8px 6px 2px; text-align: right; white-space: nowrap; vertical-align: top; }
+.cmp tr.xp td { text-align: left; white-space: normal; font-weight: 400; font-size: 12px; color: var(--muted); padding: 0 6px 8px; border-bottom: 1px solid var(--grid); }
+.cmp tr.grp.nm td { padding-top: 10px; } .cmp tr.xp.grp td { border-bottom: 0; } .cmp tr.xp.sub td { padding-left: 18px; }
+.cmp td:first-child { text-align: left; white-space: normal; font-weight: 600; }
+.cmp td small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); white-space: normal; }
+.cmp th:nth-child(1) { width: 36%; } .cmp th:nth-child(2) { width: 27%; } .cmp th:nth-child(3) { width: 29%; } .cmp th:nth-child(4) { width: 8%; }
+.cmp td { overflow-wrap: anywhere; } .cmp td:first-child { overflow-wrap: normal; hyphens: auto; }
+.grp-b { font: inherit; font-weight: 600; color: var(--fg); background: none; border: 0; padding: 0; cursor: pointer; text-align: left; } .grp-b::after { content: " ▾"; color: var(--fr); } .grp-b[aria-expanded="true"]::after { content: " ▴"; }
+.grp-b:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.cmp .i { font-weight: 700; text-align: center; width: 1.4em; }
+.cmp tr.sub td:first-child { padding-left: 18px; font-weight: 500; }
+.cmp tr.grp td { border-bottom: 0; padding-bottom: 2px; }
+.def > summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.def[open] > summary { margin-bottom: 6px; }
+.themes { display: grid; gap: 12px; }
+.verdict { font-family: var(--serif); font-size: 19px; line-height: 1.3; margin: 0; }
+.verdict b { font-weight: 500; color: var(--fr); }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; font-size: 14px; line-height: 1.4; }
+.checks li { display: grid; grid-template-columns: 1.3em minmax(0, 1fr); gap: 6px; }
+.checks .i { font-weight: 700; } .checks li.g .i { color: var(--ok); } .checks li.b .i { color: var(--bad); } .checks li.m .i { color: var(--mid); }
+.checks b { font-weight: 600; }
+.tnotes { margin: 0; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+.tnotes b { color: var(--fg); font-weight: 600; } .tnotes a, .pres-line a { color: var(--fr); }
+.fold { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.fold > summary { cursor: pointer; padding: 12px 14px; font-weight: 600; font-size: 14px; color: var(--fr); background: rgba(47, 91, 211, .08); border-radius: 12px; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary::after { content: '▾'; font-size: 16px; line-height: 1; transition: transform .2s; }
+.fold[open] > summary::after { transform: rotate(180deg); }
+.fold[open] > summary .ouvrir, .fold:not([open]) > summary .fermer { display: none; }
+.fold > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 12px; }
+.fold > .charts4 { padding: 0 10px 10px; }
+.fold .card { border-color: var(--grid); }
+.lire { margin: 0; font-size: 14.5px; line-height: 1.5; } .lire b.g { color: var(--ok); } .lire b.b { color: var(--bad); }
+.t-sum { margin: 0; font-size: 14px; color: var(--muted); } .t-sum .ic { display: inline-flex; gap: 4px; margin-right: 8px; } .t-sum .ic i { font-style: normal; font-weight: 700; } .t-sum .ic i.g { color: var(--ok); } .t-sum .ic i.b { color: var(--bad); } .t-sum .ic i.m { color: var(--mid); }
+.fold-in { display: grid; gap: 12px; padding: 0 10px 10px; } .defs { font-size: 12px; }
+.acc.theme .acc-h { font-size: 18px; } .acc-t .ic { display: inline-flex; gap: 4px; margin-right: 6px; } .acc-t .ic i { font-style: normal; font-weight: 700; } .acc-t .ic i.g { color: var(--ok); } .acc-t .ic i.b { color: var(--bad); } .acc-t .ic i.m { color: var(--mid); }
+.acc.theme > .acc-body > .card { border: 0; padding: 0 4px; background: none; }
+.checks.sub { margin-top: 6px; gap: 4px; font-size: 13px; color: var(--muted); }
+.qlist { margin: 4px 0 0; padding: 0; list-style: none; counter-reset: q; display: grid; gap: 8px; }
+.qlist li { counter-increment: q; position: relative; padding-left: 28px; display: grid; gap: 1px; font-size: 14px; line-height: 1.35; }
+.qlist li::before { content: counter(q); position: absolute; left: 0; top: -2px; font-family: var(--serif); font-size: 20px; color: var(--fr); }
+.qlist a { color: var(--fg); font-weight: 600; text-decoration: none; } .qlist span { color: var(--muted); font-size: 13px; } .qlist span b { color: var(--fg); font-weight: 600; }
+.pres-line { margin: 0; font-size: 13.5px; } .pres-line b { font-weight: 600; font-variant-numeric: tabular-nums; }
+#plus-loin > .acc-body { padding-top: 0; }
+.mo { min-width: 0; } .mo-tab { width: 100%; table-layout: fixed; } .mo-tab th:first-child { width: 44%; } .mo-tab td small { display: block; } .mo-row { cursor: pointer; } .mo-row[aria-selected="true"] td { background: var(--band); } .mo-row[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--fr); }
+</style>
+</head>
+<body data-sources="Sources : Eurostat, OTAN, ministère des Armées (détail en bas de page).">
+<div class="wrap">
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><a href="/sante/">Santé</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/" aria-current="page">Défense</a><span class="soon">Bientôt : Vie des Français</span></nav>
+  <div class="stale" id="stale" role="status" hidden></div>
+  <div class="brand"><b>Défense</b><span id="today"></span></div>
+  <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
+  <p class="visit" id="visit" hidden></p>
+  <nav class="jump" aria-label="Aller à"><a href="#acc-month">Budget</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les trois thèmes</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
+
+  <details class="acc" id="acc-month">
+    <summary><span class="acc-h">Le budget et l'objectif de l'OTAN</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card">
+      <div class="month" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr))">
+        <div class="mo">
+          <span class="mo-lab" id="p-lab">Budget des armées</span>
+          <span class="mo-num" id="p-num">—</span>
+          <span class="delta" id="p-delta"></span>
+          <span class="mo-t" id="p-t"></span>
+        </div>
+        <div class="mo">
+          <span class="mo-lab" id="q-lab">Dépense de défense, estimation de l'OTAN</span>
+          <span class="mo-num" id="q-num">—</span>
+          <span class="delta" id="q-delta"></span>
+          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE (calcul Concret)</span><span><i style="background:var(--bad)"></i>Objectif de l'OTAN</span></div>
+          <div class="chart" id="mo-q"></div>
+          <span class="mo-t" id="q-t"></span>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc" id="acc-today">
+    <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-cta"></span></summary>
+    <div class="acc-body">
+      <section class="summary" aria-label="Un chiffre à retenir">
+        <p class="daily"><span class="eyebrow" id="daily-lab">Un chiffre à retenir</span><span id="daily-text">—</span></p>
+      </section>
+      <section class="today" aria-label="Les chiffres clés">
+        <div class="today-grid">
+          <div class="metric">
+            <span class="lab">Dépense de défense au sens de l'OTAN</span>
+            <div class="row"><span class="num" id="k-otan">—</span><span class="delta" id="k-otan-d"></span></div>
+            <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>UE (calcul Concret)</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
+            <div class="chart" id="sp-otan"></div>
+            <div class="foot" id="k-otan-t"></div>
+          </div>
+          <div class="metric">
+            <span class="lab">Militaires</span>
+            <div class="row"><span class="num" id="k-pers">—</span><span class="delta" id="k-pers-d"></span></div>
+            <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>UE (calcul Concret)</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span></div>
+            <div class="chart" id="sp-pers"></div>
+            <div class="foot" id="k-pers-t"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </details>
+
+  <details class="acc" id="acc-actu">
+    <summary><span class="acc-h">L'actualité de la défense</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-list"></ul></div>
+  </details>
+
+  <section class="card quiz" id="quiz" aria-labelledby="quiz-q">
+    <span class="eyebrow" id="quiz-day">Question du jour</span>
+    <p class="q" id="quiz-q">—</p>
+    <div class="opts" id="quiz-opts"></div>
+    <p class="answer" id="quiz-a" hidden></p>
+  </section>
+
+  <details class="acc" id="acc-bilan">
+    <summary><span class="acc-h">Le bilan</span><span class="acc-t">Ce qui a changé en dix ans, en France et chez ses voisins, thème par thème</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card summary"><ol id="sum-list"></ol></div>
+  </details>
+
+  <section class="card" id="bulletin" aria-labelledby="gov-title">
+    <h2 id="gov-title"><span class="eyebrow">Le bulletin de la défense</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <details class="how">
+      <summary>La règle : comment la note est calculée</summary>
+      <div class="how-body">
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne (quand la source n'en publie pas, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul), <b>0 point</b> sinon, ½ en cas d'égalité. Chaque thème a une note sur 20 ; <b>la note défense est la moyenne des trois thèmes. 10/20 = le niveau de nos voisins.</b> Les trois thèmes mesurent des moyens (budget, équipement, effectifs) : une hausse compte comme un progrès, comme pour la dépense de police ou les places de prison sur la page Sécurité et justice. Les estimations de l'OTAN pour les années pas encore closes sont affichées, pas comptées.</p>
+        <table class="seuils"><tbody id="regles"></tbody></table>
+      </div>
+    </details>
+    <span class="eyebrow" style="margin:0">Les présidents</span>
+    <div class="chart" id="rank-pres"></div>
+    <div class="pres-detail" id="pres-detail" hidden></div>
+    <p class="note" id="rank-pres-note"></p>
+    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
+    <div class="chart" id="rank-gov"></div>
+    <p class="note" id="rank-gov-note"></p>
+    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
+    <p class="note pt-hors">Une note par thème. <b>Touchez un thème</b>, puis un indicateur, pour voir les chiffres année par année.</p>
+    <div class="gov-list" id="gov-list"></div>
+    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+  </section>
+
+  <section class="card" id="annees" aria-labelledby="yr-title">
+    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
+    <p class="note">● la France a fait mieux que ses voisins sur ce thème cette année-là, ○ moins bien, ◐ autant, – pas de chiffre comparable (la raison est sous la ligne).</p>
+    <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
+    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 1995</button>
+  </section>
+
+  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
+    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>Les trois thèmes, la France face à ses voisins</h2>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
+  </section>
+  <div class="themes" id="questions"></div>
+
+  <section class="card" id="mots" aria-labelledby="gl">
+    <h2 id="gl">Les mots pour suivre</h2>
+    <dl class="glossary">
+      <div><dt>OTAN</dt><dd>L'Organisation du traité de l'Atlantique Nord, l'alliance militaire dont font partie 23 des 27 pays de l'UE (pas l'Autriche, l'Irlande, Chypre ni Malte), avec notamment les États-Unis, le Canada et le Royaume-Uni.</dd></div>
+      <div><dt>Dépense de défense au sens de l'OTAN</dt><dd>La dépense que chaque pays déclare à l'OTAN selon une définition commune : forces armées, pensions des militaires et des civils de la défense, recherche-développement, opérations, aide militaire aux alliés. C'est elle que visent les objectifs de 2 % puis 3,5 % du PIB.</dd></div>
+      <div><dt>Objectif de 2 %, puis de 3,5 %</dt><dd>En 2014 (sommet du pays de Galles), les pays de l'OTAN se sont fixé de consacrer au moins 2 % de leur PIB à leur défense dans les dix ans, dont au moins 20 % pour les grands équipements. En 2025 (sommet de La Haye), ils se sont engagés à atteindre 3,5 % du PIB d'ici 2035, plus jusqu'à 1,5 % pour des dépenses liées à la sécurité.</dd></div>
+      <div><dt>Équipement</dt><dd>Selon l'OTAN, les dépenses pour les grands équipements militaires et la recherche-développement qui leur est consacrée.</dd></div>
+      <div><dt>Militaires en temps de paix</dt><dd>L'effectif des forces armées déclaré à l'OTAN, sans les réservistes.</dd></div>
+      <div><dt>Estimation</dt><dd>Chiffre de l'OTAN pour une année pas encore close ou pas encore arrêtée, révisé l'année suivante. Il est affiché, mais pas compté dans la note.</dd></div>
+      <div><dt>Loi de programmation militaire</dt><dd>La loi qui fixe pour plusieurs années les moyens des armées. Celle du 1er août 2023 couvre 2024 à 2030 ; elle a été actualisée par la loi du 16 août 2026.</dd></div>
+      <div><dt>Prix constants</dt><dd>Chiffres corrigés de la hausse des prix, pour comparer les années entre elles (l'OTAN utilise les prix de 2021).</dd></div>
+    </dl>
+  </section>
+
+  <details class="acc" id="methode">
+    <summary><span class="acc-h">Méthode et sources</span><span class="acc-t">D'où viennent les chiffres, et leurs limites</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card" id="methode-body">
+      <p class="note"><b>Sources.</b> Dépense de défense au sens de l'OTAN, part de l'équipement, militaires : OTAN, « Defence Investment of NATO Countries (2014-2026) », classeur publié le 7 juillet 2026 (tableaux 2, 3, 5, 7 et 8a) ; militaires rapportés à la population au 1er janvier (Eurostat, demo_gind ; États-Unis : Banque mondiale) par Concret. Dépense publique et investissement public de défense : Eurostat (gov_10a_exp, fonction GF02, total et formation brute de capital), rapportés au PIB (nama_10_gdp) par Concret. Budget des armées : ministère des Armées (projet de loi de finances pour 2027) ; loi de programmation militaire : ministère des Armées et Sénat. Objectifs de l'OTAN : déclarations des sommets du pays de Galles (2014) et de La Haye (2025).</p>
+      <p class="note"><b>Limites.</b> L'OTAN ne publie ses chiffres que depuis 2014 dans cette série, et seulement pour ses membres : la moyenne de l'UE calculée par Concret porte sur les 23 pays de l'UE membres de l'OTAN (au moins 96 % de la population de l'UE). Pour les deux dernières années, l'OTAN ne donne que des estimations : affichées, pas comptées. Eurostat ne publie la moyenne de l'UE de la dépense de défense que depuis 2010 : avant, Concret la calcule sur les mêmes données (26 pays sur 27, la Slovaquie manquant avant 2010). La dépense d'Eurostat (comptes publics) et celle de l'OTAN (déclarée par chaque ministère de la Défense) n'ont pas la même définition : ce sont deux mesures distinctes, notées chacune. Ce que cette page ne mesure pas : la disponibilité et l'âge des matériels, les stocks de munitions, la cyberdéfense, la dissuasion nucléaire ; Concret n'a pas trouvé de chiffre publié chaque année de la même façon pour la France et les autres pays de l'UE.</p>
+    </div>
+  </details>
+
+  <footer><p><a href="/mentions-legales/">Mentions légales</a></p></footer>
+</div>
+<script>
+(function () {
+function main(FEED) {
+  // Toutes les données chiffrées viennent de data.json ; les règles de notation de commun/notes.js.
+  var SER = FEED.series.defense, C = SER.C, AFF = SER.AFF, POURQUOI = ConcretNotes.POURQUOI, SAN = ConcretNotes.defense(SER), THEMES = SAN.THEMES;
+  var fmt = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(v); };
+  var nfmt = function (n) { return fmt(Math.round(n * 10) / 10, 1); };
+  var sg = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d == null ? 1 : d); };
+  var setHtml = function (id, h) { var el = document.getElementById(id); if (el) el.innerHTML = h; };
+  var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+  var DS = FEED.datasets || {};
+  var EX = SER.exemple ? ' <span class="ex">exemple</span>' : '';
+  var dfr = function (iso, long) { return new Date(iso + 'T12:00:00').toLocaleDateString('fr-FR', long ? { day: 'numeric', month: 'long', year: 'numeric' } : { day: 'numeric', month: 'short' }); };
+  var mfr = function (p) { return new Date(p + '-15T12:00:00').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); };
+  document.getElementById('today').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  var lastOf = function (c, w) { var a = c[w] || []; for (var i = a.length - 1; i >= 0; i--) if (a[i] != null) return { v: a[i], y: c.y[i] }; return null; };
+  var decOf = function (c) { return c.dec != null ? c.dec : c.unite === 'jours' || /100 000/.test(c.unite) ? 0 : 1; };
+  // Référence de comparaison : toujours la moyenne de l'UE, publiée par la source ou calculée par Concret (outils/ue_calc.py).
+  var REFN = { ue: ['UE', 'moyenne UE', 'la moyenne de l\'UE', 'de l\'UE'], ue_calc: ['UE (calcul)', 'moyenne UE (calcul Concret)', 'la moyenne de l\'UE calculée par Concret', 'de la moyenne de l\'UE'] };
+  var refN = function (c, f) { return REFN[SAN.ref(c)][f || 0]; };
+  var nomRef = function (c) { return refN(c); };
+
+  // ===== Dernier chiffre connu : la France face à son voisin de comparaison (niveau, pas la note) =====
+  var ICON = { g: '✓', b: '✗', m: '=' };
+  var val1 = function (c, v, dec) { return fmt(v, dec) + (c.uc === ' %' ? ' %' : ''); };
+  function ligne(c) {
+    var dec = decOf(c), r = SAN.ref(c), i = c.y.length - 1;
+    while (i >= 0 && (c.fr[i] == null || !c[r] || c[r][i] == null || (c.est || {})[c.y[i]])) i--;
+    if (i < 0) return null;
+    var a = c.fr[i], e = c[r][i], cl = Math.abs(a - e) < 1e-9 ? 'm' : (c.low ? a < e : a > e) ? 'g' : 'b';
+    var j = c.y.indexOf(c.y[i] - 5), ok5 = j >= 0 && c.fr[j] != null && c[r][j] != null, ev = function (x, x0) { return sg(x - x0, dec) + (c.uc === ' %' ? ' pt' : ''); };
+    return { cl: cl, c: c, y: c.y[i], fr: val1(c, a, dec), fe: ok5 ? ev(a, c.fr[j]) + ' en 5 ans' : '', ref: val1(c, e, dec), re: refN(c, 1) + (ok5 ? ', ' + ev(e, c[r][j]) : '') };
+  }
+  function etat(k) {
+    var c = C[k];
+    if (c.regle === 'propre') {
+      var s = lastOf(c, 'fr'), k5 = c.y.indexOf(s.y), md = c.md[k5], md5 = c.md[k5 - 5];
+      return { cl: s.v >= 0 ? 'g' : 'b', c: c, y: s.y, fr: sg(md, 1) + ' Md€', fe: md5 != null ? sg(md - md5, 1) + ' en 5 ans' : '', ref: '—', re: 'France seule' };
+    }
+    if (c.regle === 'composite') {
+      var l = Object.keys(c.sous).map(function (j) { return ligne(c.sous[j]); }).filter(Boolean), ok = l.filter(function (x) { return x.cl === 'g'; }).length;
+      return { cl: ok * 2 > l.length ? 'g' : ok * 2 === l.length ? 'm' : 'b', c: c, sous: l, ok: ok };
+    }
+    return ligne(c);
+  }
+  var themeEtat = function (t) { var l = t.crit.map(etat); return { l: l, ok: l.filter(function (x) { return x.cl === 'g'; }).length, n: l.length }; };
+  var unitOf = function (c) { return c.uu || c.unite; };
+  function rowHtml(x, sub) {
+    var h = sub ? ' data-sub="' + sub + '" hidden' : '';
+    return '<tr class="nm' + (sub ? ' sub' : '') + '"' + h + '><td>' + esc(x.c.lc || x.c.l) + '</td><td>' + x.fr + (x.fe ? '<small>' + x.fe + '</small>' : '') + '</td><td>' + x.ref + '<small>' + x.re + '</small></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>' +
+      '<tr class="xp' + (sub ? ' sub' : '') + '"' + h + '><td colspan="4">' + esc(x.c.ex || unitOf(x.c)) + ' · ' + x.y + (x.c.sc ? ' · Source : ' + lien(x.c, x.c.sc) : '') + '</td></tr>';
+  }
+  function tableEtat(e) {
+    return '<table class="cmp"><thead><tr><th></th><th>France</th><th>Voisins</th><th></th></tr></thead><tbody>' + e.l.map(function (x) {
+      if (!x.sous) return rowHtml(x);
+      // Un programme (vaccins, dépistages) : une ligne, dépliable pour voir chaque élément.
+      var id = x.c.lc.replace(/\W/g, '');
+      return '<tr class="grp nm"><td colspan="3"><button type="button" class="grp-b" data-grp="' + id + '" aria-expanded="false">' + esc(x.c.lc) + '</button></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr><tr class="xp grp"><td colspan="4">' + esc(x.c.ex || '') + ' : la France fait mieux sur ' + x.ok + ' sur ' + x.sous.length + ' (touchez pour le détail)</td></tr>' + x.sous.map(function (s) { return rowHtml(s, id); }).join('');
+    }).join('') + '</tbody></table>';
+  }
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest && ev.target.closest('.grp-b'); if (!b) return;
+    var o = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', o ? 'true' : 'false');
+    Array.prototype.forEach.call(b.closest('tbody').querySelectorAll('[data-sub="' + b.dataset.grp + '"]'), function (r) { r.hidden = !o; });
+  });
+
+  // ===== Bulletin : notes =====
+  var KEYS = SAN.KEYS, WT = SAN.WT, MIN_N = SAN.MIN_N, GOVS = SER.GOVS, PRES = SER.PRES, BANDS = GOVS;
+  var evaluate = SAN.evaluate, noteOf = function (g) { return SAN.note(g); }, countOf = function (g) { return SAN.count(g); };
+  GOVS.forEach(evaluate); PRES.forEach(evaluate);
+  var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
+  var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
+  var nomCourt = function (n) { return n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin'); };
+
+  // ===== Bulletin : détail année par année =====
+  var ptHtml = function (v) { return v == null ? '<span class="pt na">non compté</span>' : v === 1 ? '<span class="pt g">1</span>' : v === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">' + (v === 0.5 ? '½' : fmt(v, 2)) + '</span>'; };
+  // Tableau d'évolution année par année d'une série comparée à la moyenne de l'UE (publiée ou calculée par Concret).
+  function evolTable(c, y0, y1, why) {
+    var r = SAN.ref(c), dec = decOf(c), v = function (w, y) { return SAN.val(c, w, y); }, rows = '';
+    for (var y = y0; y <= y1; y++) {
+      // d : évolution de la moyenne de l'UE (pour la moyenne calculée, sur les pays qui publient les deux années).
+      var pt = SAN.evol(c, y), a = v('fr', y), b = v('fr', y - 1), e = v(r, y), d = SAN.refEv(c, y);
+      var cell = function (x, dx) { return x == null ? '—' : dx == null ? '— (' + fmt(x, dec) + ')' : sg(dx, dec) + ' (' + fmt(x, dec) + ')'; };
+      var gap = a == null || b == null || d == null ? '' : sg((a - b) - d, dec);
+      rows += '<tr><td>' + y + '</td><td>' + cell(a, b == null ? null : a - b) + '</td><td>' + cell(e, d) + '</td><td>' + gap + '</td><td>' + ptHtml(pt) + '</td></tr>';
+      if (pt === 0.5) why.push(POURQUOI.egalite(y, refN(c, 2)));
+      else if (pt == null) why.push(SAN.raisonSerie(c, y));
+    }
+    return '<table><thead><tr><th>Année</th><th>France</th><th>' + nomRef(c) + '</th><th>Écart</th><th>Point</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+  function detailTable(g, k) {
+    var c = C[k], wrap = document.createElement('div'), why = [], h, foot = '';
+    var v = function (w, y) { return SAN.val(c, w, y); };
+    wrap.className = 'kdet';
+    h = '<p><b>' + c.l + (WT[k] > 1 ? ' (compte triple)' : '') + '.</b> Unité : ' + c.unite + '.' + (c.note ? ' ' + c.note : '') + EX + '</p>';
+    if (c.regle === 'propre') {
+      h += '<table><thead><tr><th>Année</th><th>Md€</th><th>% du PIB</th><th>Évolution</th><th>Point</th><th>Lu dans</th></tr></thead><tbody>';
+      g.y[k].forEach(function (d) {
+        var a = v('fr', d.y), b = v('fr', d.y - 1), md = v('md', d.y);
+        h += '<tr><td>' + d.y + '</td><td>' + (md == null ? '—' : sg(md, 1)) + '</td><td>' + (a == null ? '—' : sg(a, 2)) + '</td><td>' + (a == null || b == null ? '' : sg(a - b, 2)) + '</td><td>' + ptHtml(d.pt) + '</td><td>' + (c.rap && c.rap[d.y] ? lien({ url: c.rap[d.y][1] }, 'CCSS ' + c.rap[d.y][0]) : '') + '</td></tr>';
+        if (d.pt === 0.5) why.push('Demi-point en ' + d.y + ' : le déficit s\'est réduit, sans revenir à l\'équilibre.');
+        else if (d.pt === 0 && a != null && b != null && Math.abs(a - b) < SAN.SEUIL_STABLE) why.push('0 point en ' + d.y + ' : le solde n\'a bougé que de ' + fmt(Math.abs(a - b), 2) + ' point, moins de 0,1 : il est considéré comme stable.');
+        else if (d.pt == null) why.push(SAN.raison(k, d.y));
+      });
+      h += '</tbody></table>';
+      foot = 'Jugé sur la France seule : aucun autre pays n\'a de branche maladie comparable dans ses comptes publics. Évolution = variation du solde par rapport à l\'année précédente, en points de PIB. CCSS = rapport de la Commission des comptes de la Sécurité sociale. ' + (c.note_tot ? 'Toute la Sécurité sociale : ' + c.note_tot.charAt(0).toLowerCase() + c.note_tot.slice(1) + ' ' : '') + srcNote(c);
+    } else if (c.regle === 'composite') {
+      Object.keys(c.sous).forEach(function (j) {
+        var q = c.sous[j], w = [];
+        h += '<p><b>' + q.l + '</b> (comparé à ' + refN(q, 2) + ')</p>' + evolTable(q, g.y0, g.y1, w);
+        w.forEach(function (t) { why.push(q.l + ' : ' + t); });
+      });
+      h += '<p>Point de l\'année pour le critère (part des éléments où la France fait mieux) : ' + g.y[k].map(function (d) { return d.y + ' : ' + (d.pt == null ? 'non compté' : fmt(d.pt, d.pt % 1 ? 2 : 0)); }).join(' · ') + '.</p>';
+      foot = 'Écart = évolution de la France moins celle de la moyenne de l\'UE. Ici, une hausse est un progrès. Sources : ' + Object.keys(c.sous).map(function (j) { return c.sous[j].source; }).filter(function (x, i, a) { return a.indexOf(x) === i; }).join(' ; ') + '.';
+    } else if (c.regle === 'niveau') {
+      h += '<table><thead><tr><th>Année jugée</th><th>France</th><th>UE</th><th>Écart</th><th>Point</th></tr></thead><tbody>';
+      g.y[k].forEach(function (d) {
+        var a = v('fr', d.y), e = v('ue', d.y), i = c.y.indexOf(d.y);
+        if (a == null || e == null) { if (d.pt == null) why.push(SAN.raison(k, d.y)); return; }
+        h += '<tr><td>' + d.y + ' <small>(étude ' + c.edition[i] + ')</small></td><td>' + fmt(a) + '</td><td>' + fmt(e) + '</td><td>' + sg(a - e, 0) + '</td><td>' + ptHtml(d.pt) + '</td></tr>';
+        if (d.pt === 0.5) why.push('Demi-point en ' + d.y + ' : la France et la moyenne de l\'UE sont exactement au même niveau.');
+      });
+      h += '</tbody></table>';
+      foot = 'Écart = France moins moyenne de l\'UE. ' + (c.low ? 'Ici, moins c\'est mieux.' : 'Ici, plus c\'est mieux.') + ' ' + srcNote(c);
+    } else if (c.regle === 'long') {
+      var last = c.y[c.y.length - 1];
+      h += evolTable(c, g.y0, Math.max(g.y0, Math.min(g.y1 + SAN.LONG - 1, last)), why);
+      h += '<p>Point de chaque année du mandat (moyenne des points de l\'année et des quatre suivantes) : ' + g.y[k].map(function (d) {
+        var f = SAN.fenetre(d.y).filter(function (t) { return t <= last; });
+        return d.y + ' : ' + (d.pt == null ? 'non compté' : '<b>' + fmt(d.pt, d.pt % 1 ? 2 : 0) + '</b> <small>(' + f[0] + (f.length > 1 ? '-' + f[f.length - 1] : '') + ')</small>');
+      }).join(' · ') + '.</p>';
+      g.y[k].forEach(function (d) { if (d.pt == null) why.push(SAN.raison(k, d.y)); });
+      foot = 'Ce sont des résultats, qui mettent des années à bouger : chaque année du mandat compte pour la moyenne des points de l\'année et des quatre suivantes, quand elles sont publiées. Écart = évolution de la France moins celle ' + refN(c, 3) + '. ' + (c.low ? 'Ici, une baisse est un progrès.' : 'Ici, une hausse est un progrès.');
+    } else if (c.regle === 'ecart') {
+      h += '<table><thead><tr><th>Année</th><th>Écart France</th><th>Écart UE</th><th>Point</th></tr></thead><tbody>';
+      g.y[k].forEach(function (d) {
+        var a = v('fr', d.y), e = v('ue', d.y);
+        h += '<tr><td>' + d.y + '</td><td>' + (a == null ? '—' : fmt(a, 1)) + '</td><td>' + (e == null ? '—' : fmt(e, 1)) + '</td><td>' + ptHtml(d.pt) + '</td></tr>';
+        if (d.pt === 1 && a >= e) why.push('1 point en ' + d.y + ' : l\'écart français reste plus grand que celui de l\'UE, mais il s\'est réduit plus vite.');
+        else if (d.pt === 0.5) why.push('Demi-point en ' + d.y + ' : l\'écart est exactement le même qu\'en moyenne dans l\'UE.');
+        else if (d.pt == null) why.push(SAN.raison(k, d.y));
+      });
+      h += '</tbody></table>';
+      foot = 'Écart = part des 20 % les plus modestes qui renoncent à un examen médical, moins celle des 20 % les plus aisés, en points. Plus il est faible, plus l\'accès est égal.';
+    } else {
+      h += evolTable(c, g.y0, g.y1, why);
+      foot = 'Écart = évolution de la France moins celle ' + refN(c, 3) + '. ' + (c.low ? 'Ici, une baisse est un progrès.' : 'Ici, une hausse est un progrès.');
+    }
+    why = why.filter(function (t, i) { return why.indexOf(t) === i; });
+    if (why.length) h += '<p class="kdet-why">' + why.join('<br>') + '</p>';
+    wrap.innerHTML = h + '<p>' + foot + (/Sources? :/.test(foot) ? '' : ' ' + srcNote(c)) + '</p>'; return wrap;
+  }
+  // Une rangée de boutons ; un seul détail ouvert à la fois, sous la rangée.
+  function rangee(items) {
+    var box = document.createDocumentFragment(), kp = document.createElement('div'), det = document.createElement('div'), open = null;
+    kp.className = 'kpis'; det.className = 'kdet-slot'; box.appendChild(kp); box.appendChild(det);
+    items.forEach(function (it, i) {
+      var s = document.createElement('button');
+      s.type = 'button'; s.className = 'kpi' + (it.cl ? ' ' + it.cl : ''); s.setAttribute('aria-expanded', 'false'); s.title = it.title;
+      s.innerHTML = '<em></em><span></span>'; s.firstChild.textContent = it.l; s.lastChild.textContent = it.v;
+      s.addEventListener('click', function () {
+        Array.prototype.forEach.call(kp.children, function (b) { b.setAttribute('aria-expanded', 'false'); });
+        det.textContent = '';
+        if (open === i) { open = null; return; }
+        open = i; s.setAttribute('aria-expanded', 'true'); det.appendChild(it.open());
+      });
+      kp.appendChild(s);
+    });
+    return box;
+  }
+  function critChips(g, t) {
+    return rangee(t.crit.map(function (k) {
+      var l = g.w[k], won = d3.sum(l), n = l.length;
+      return { l: C[k].l + (WT[k] > 1 ? ' ×' + WT[k] : ''), v: !n ? 'non compté' : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n, cl: !n ? '' : won / n >= 0.5 ? 'g' : 'b', title: 'Voir les chiffres année par année', open: function () { return detailTable(g, k); } };
+    }));
+  }
+  function themeChips(g) {
+    return rangee(THEMES.map(function (t) {
+      var n = SAN.noteTheme(g, t);
+      return { l: t.court, v: n == null ? 'non noté' : nfmt(n) + '/20', cl: n == null ? '' : n >= 10 ? 'g' : 'b', title: 'Voir les indicateurs de ce thème', open: function () {
+        var w = document.createElement('div'); w.className = 'kdet';
+        var p = document.createElement('p'); p.innerHTML = '<b></b> <span></span>'; p.firstChild.textContent = t.q;
+        p.lastChild.textContent = n == null ? 'Non noté : aucun indicateur de ce thème n\'a de chiffre comparable pendant ce mandat (les séries commencent plus tard).' : 'Note : ' + nfmt(n) + '/20, sur ' + SAN.count(g, t) + ' comparaison' + (SAN.count(g, t) > 1 ? 's' : '') + '. Touchez un indicateur :';
+        w.appendChild(p); w.appendChild(critChips(g, t)); return w;
+      } };
+    }));
+  }
+  var showAll = false;
+  function openDetail(mode, g) {
+    if (mode === 'gov') {
+      if (!showAll) { showAll = true; var b = document.getElementById('gov-more'); b.setAttribute('aria-expanded', 'true'); b.textContent = 'Masquer le détail des autres gouvernements'; renderGov(); }
+      var row = document.getElementById('gov-' + g.y0); if (row) { row.scrollIntoView({ block: 'center' }); row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash'); } return;
+    }
+    var box = document.getElementById('pres-detail'); box.textContent = ''; box.hidden = false;
+    var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span class="note"></span>';
+    who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + '. ' + countOf(g) + ' comparaisons. Note de chaque thème (touchez-en un pour le détail) :';
+    box.appendChild(who); box.appendChild(themeChips(g));
+  }
+  function rankOne(mode) {
+    var list = (mode === 'gov' ? GOVS : PRES).map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
+    var box = document.getElementById('rank-' + mode); box.textContent = '';
+    var W = Math.max(300, box.clientWidth), small = W < 520, rh = 26, lw = small ? 92 : 150, top = 22, H = top + list.length * rh + 26;
+    var x = d3.scaleLinear().domain([0, 20]).range([lw, W - 34]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Classement des notes sur 20');
+    [0, 5, 10, 15, 20].forEach(function (t) {
+      svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 4).attr('y2', H - 20).attr('stroke', t === 10 ? 'var(--fg)' : 'var(--grid)').attr('stroke-dasharray', t === 10 ? '4 3' : null);
+      svg.append('text').attr('x', x(t)).attr('y', top - 8).attr('text-anchor', 'middle').text(t).style('fill', t === 10 ? 'var(--fg)' : null);
+      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = niveau de nos voisins').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
+    });
+    list.forEach(function (r, i) {
+      var y = top + i * rh, name = small ? nomCourt(r.g.n) : r.g.n, few = countOf(r.g) < MIN_N, inside = x(r.n) - x(0) > 30 && (!few || x(r.n) > W - 140);
+      svg.append('rect').attr('x', 0).attr('y', y).attr('width', W).attr('height', rh).attr('fill', 'transparent').style('cursor', 'pointer').on('click', function () { openDetail(mode, r.g); });
+      svg.append('text').attr('x', lw - 8).attr('y', y + 16).attr('text-anchor', 'end').text(name).style('fill', 'var(--fg)').style('font-size', '12px').style('pointer-events', 'none');
+      svg.append('rect').attr('x', x(0)).attr('y', y + 5).attr('width', Math.max(2, x(r.n) - x(0))).attr('height', 17).attr('rx', 3).attr('fill', few ? 'var(--axis)' : col(r.n)).style('pointer-events', 'none');
+      svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' (note fragile)' : '')).style('fill', few ? 'var(--fg)' : inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
+    });
+    setHtml('rank-' + mode + '-note', 'En gris, « note fragile » : moins de ' + MIN_N + ' comparaisons, soit moins d\'une année complète de chiffres (mandat court, ou séries européennes qui commencent après), donc peu fiable. Une note ne couvre que les thèmes qui ont des chiffres pendant le mandat. Touchez une barre pour voir le détail.');
+  }
+  document.getElementById('gov-more').addEventListener('click', function () {
+    showAll = !showAll; this.setAttribute('aria-expanded', showAll); this.textContent = showAll ? 'Masquer le détail des autres gouvernements' : 'Voir le détail des autres gouvernements'; renderGov();
+  });
+  function renderGov() {
+    var box = document.getElementById('gov-list'); box.textContent = '';
+    var pend = document.createElement('div'); pend.className = 'gov pending';
+    pend.innerHTML = '<div class="badge p">à venir</div><div class="who"><b>Sébastien Lecornu</b> <span>· depuis sept. 2025 · Macron</span></div><div class="note">Pas encore noté : les chiffres de 2026 ne sont pas encore publiés.</div>';
+    box.appendChild(pend);
+    GOVS.slice().reverse().forEach(function (g, i) {
+      var note = noteOf(g), n = countOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i >= 2;
+      var nt = THEMES.filter(function (t) { return SAN.noteTheme(g, t) != null; }).length;
+      var badge = document.createElement('div'); badge.className = 'badge ' + (n < MIN_N ? 'p' : cls(note)); badge.innerHTML = '<span></span>';
+      badge.firstChild.textContent = note == null ? '—' : nfmt(note); var sm = document.createElement('small'); sm.textContent = '/20'; badge.appendChild(sm);
+      var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span></span>';
+      who.firstChild.textContent = g.n;
+      who.lastChild.textContent = '· ' + (g.y0 === g.y1 ? g.y0 : g.y0 + '-' + g.y1) + ' · ' + g.p + ' · ' + n + ' comparaison' + (n > 1 ? 's' : '') + (nt < THEMES.length ? ', ' + nt + ' thème' + (nt > 1 ? 's' : '') + ' noté' + (nt > 1 ? 's' : '') + ' sur ' + THEMES.length : '') + (n < MIN_N ? ' : trop peu pour une note fiable (il en faut ' + MIN_N + '), d\'où le gris' : '');
+      row.appendChild(badge); row.appendChild(who); row.appendChild(themeChips(g)); box.appendChild(row);
+    });
+  }
+
+  // ===== Courbes =====
+  var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Union européenne', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--es)': 'Espagne' };
+  function hover(box, svg, H, m, pts) {
+    if (!pts.length) return;
+    var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+    svg.classed('hov', true);
+    var g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
+    var vl = g.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--fg)').attr('stroke-opacity', .35).attr('stroke-width', 1);
+    var dots = g.append('g');
+    svg.append('rect').attr('x', 0).attr('y', 0).attr('width', svg.attr('viewBox').split(' ')[2]).attr('height', H).attr('fill', 'transparent');
+    var tip = document.createElement('div'); tip.className = 'ctip'; tip.hidden = true; box.appendChild(tip);
+    var node = svg.node(), VW = +svg.attr('viewBox').split(' ')[2], cur = -1;
+    function show(ev) {
+      var r = node.getBoundingClientRect(); if (!r.width) return;
+      var sx = (ev.clientX - r.left) * VW / r.width, best = 0;
+      pts.forEach(function (p, i) { if (Math.abs(p.px - sx) < Math.abs(pts[best].px - sx)) best = i; });
+      var p = pts[best]; g.style('display', null); vl.attr('x1', p.px).attr('x2', p.px);
+      if (best !== cur) {
+        cur = best; dots.selectAll('*').remove();
+        p.rows.forEach(function (rw) { dots.append('circle').attr('cx', p.px).attr('cy', rw.py).attr('r', 3.6).attr('fill', rw.c).attr('stroke', 'var(--panel)').attr('stroke-width', 1.5); });
+        tip.innerHTML = '<b>' + esc(p.t) + '</b>' + p.rows.slice().sort(function (a, b) { return a.py - b.py; }).map(function (rw) {
+          return '<span><em><i style="background:' + rw.c + '"></i>' + esc(rw.n) + '</em><strong>' + esc(rw.s) + '</strong></span>';
+        }).join('') + (p.note ? '<small>' + esc(p.note) + '</small>' : '');
+      }
+      tip.hidden = false;
+      var cx = p.px * r.width / VW, tw = tip.offsetWidth, bw = box.clientWidth;
+      var left = cx + 12 + tw <= bw ? cx + 12 : cx - 12 - tw;
+      tip.style.left = Math.max(0, Math.min(bw - tw, left)) + 'px';
+    }
+    function hide() { g.style('display', 'none'); tip.hidden = true; cur = -1; }
+    node.addEventListener('pointerdown', show);
+    node.addEventListener('pointermove', show);
+    node.addEventListener('pointerleave', function (ev) { if (ev.pointerType === 'mouse') hide(); });
+    document.addEventListener('pointerdown', function (ev) { if (!node.contains(ev.target)) hide(); });
+  }
+  function lineChart(id, series, o) {
+    var box = document.getElementById(id); box.textContent = '';
+    // Petite légende au-dessus de chaque courbe dont le bloc n'en a pas déjà une : en bas de page, on sait toujours qui est qui.
+    (function () {
+      var old = document.getElementById(id + '-mini'); if (old) old.remove();
+      var bloc = box.closest('section, .card, details, .metric');
+      if (bloc && bloc.querySelector('.key:not(.mini)')) return;
+      var vus = {}, items = series.filter(function (s) { return s.data.some(function (d) { return d.v != null; }); }).map(function (s) {
+        var n = s.n || SNAME[s.c] || ''; if (!n || vus[n]) return ''; vus[n] = 1;
+        return '<span><i' + (s.dash ? ' class="dash" data-c="' + s.c + '" style="background:repeating-linear-gradient(90deg,' + s.c + ' 0 4px,transparent 4px 6px) !important"' : ' style="background:' + s.c + '"') + '></i>' + String(n).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>';
+      }).filter(Boolean).reverse();
+      if (!items.length) return;
+      var k = document.createElement('div'); k.className = 'key mini'; k.id = id + '-mini'; k.innerHTML = items.join('');
+      box.parentNode.insertBefore(k, box);
+    })();
+    var W = Math.max(300, box.clientWidth), small = W < 520, H = o.h || (small ? 220 : 260), m = { t: 10, r: 46, b: 24, l: 40 };
+    var all = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null) all.push(d.v); }); });
+    var lo = d3.min(all), hi = d3.max(all), pad = (hi - lo) * .1;
+    var x = d3.scaleLinear().domain(o.x).range([m.l, W - m.r]);
+    if (o.obj) { lo = Math.min(lo, o.obj.v); hi = Math.max(hi, o.obj.v); pad = (hi - lo) * .1; }
+    var y = d3.scaleLinear().domain([o.min != null ? o.min : lo - pad, hi + pad]).nice().range([H - m.b, m.t]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', o.label);
+    if (o.bands) BANDS.forEach(function (g, i) {
+      var x0 = x(Math.max(o.x[0], g.y0 - .5)), x1 = x(Math.min(o.x[1], g.y1 + .5));
+      if (x1 > x0) svg.append('rect').attr('x', x0).attr('y', m.t).attr('width', x1 - x0).attr('height', H - m.t - m.b).attr('fill', i % 2 ? 'var(--band)' : 'transparent');
+    });
+    y.ticks(small ? 4 : 5).forEach(function (t) {
+      svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)');
+      svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(t.toLocaleString('fr-FR'));
+    });
+    (small ? o.xt.filter(function (_, i) { return i % 2 === 0; }) : o.xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t); });
+    if (o.obj) {
+      var yo = y(o.obj.v);
+      if (yo >= m.t && yo <= H - m.b) { svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', yo).attr('y2', yo).attr('stroke', 'var(--bad)').attr('stroke-width', 1.4).attr('stroke-dasharray', '2 3'); svg.append('text').attr('x', m.l + 4).attr('y', yo - 4).text('objectif ' + fmt(o.obj.v) + ' %').style('fill', 'var(--bad)').style('font-weight', 600); }
+    }
+    var line = d3.line().defined(function (d) { return d.v != null; }).x(function (d) { return x(d.x); }).y(function (d) { return y(d.v); });
+    var ends = [];
+    series.forEach(function (s) {
+      svg.append('path').datum(s.data).attr('d', line).attr('fill', 'none').attr('stroke', s.c).attr('stroke-width', s.main ? 2.6 : 1.8).attr('stroke-dasharray', s.dash ? '5 4' : null);
+      if (s.dots) s.data.forEach(function (d) { if (d.v == null) return; svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
+      var l = s.data.filter(function (d) { return d.v != null; }).pop();
+      svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
+      ends.push({ y: y(l.v), t: fmt(l.v, o.dec == null ? 1 : o.dec), c: s.c, x: x(l.x), main: s.main });
+    });
+    ends.sort(function (a, b) { return a.y - b.y; });
+    for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+    // Pile de chiffres trop basse : on la remonte pour qu'aucun ne sorte du graphique.
+    for (var j = ends.length - 1; j >= 0; j--) { var lim = j === ends.length - 1 ? H - 6 : ends[j + 1].y - 13; if (ends[j].y > lim) ends[j].y = lim; }
+    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+    var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); });
+    xs.sort(function (a, b) { return a - b; });
+    hover(box, svg, H, m, xs.map(function (xv) {
+      return { px: x(xv), t: String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n || SNAME[s.c] || '', py: y(d.v), s: fmt(d.v, o.dec == null ? 1 : o.dec) + (o.unit || '') } : null; }).filter(Boolean) };
+    }));
+  }
+  var serOf = function (c, w) { return c.y.map(function (y, i) { return { x: y, v: (c[w] || [])[i] }; }); };
+  var ticks = function (a, b) { var s = Math.max(1, Math.ceil((b - a) / 6)), t = []; for (var y = a; y <= b; y += s) t.push(y); return t; };
+  var NOMS = { fr: ['France', 'var(--fr)'], ue: ['Union européenne', 'var(--ea)'], de: ['Allemagne', 'var(--de)'], es: ['Espagne', 'var(--es)'], us: ['États-Unis', 'var(--us)'] };
+  var has = function (c, w) { return c[w] && c[w].some(function (v) { return v != null; }); };
+  // Années estimées par l'OTAN (affichées, pas comptées).
+  var estDe = function (c) { return Object.keys(c.est || {}).map(Number).sort(); };
+  // France : trait plein jusqu'à la dernière année publiée, pointillés pour les estimations.
+  var frSeries = function (c) {
+    var e = estDe(c); if (!e.length) return [{ c: 'var(--fr)', main: 1, data: serOf(c, 'fr'), dots: c.y.length < 8 }];
+    return [{ c: 'var(--fr)', n: 'France, estimation de l\'OTAN', dash: 1, data: serOf(c, 'fr').filter(function (d) { return d.x >= e[0] - 1; }) }, { c: 'var(--fr)', main: 1, data: serOf(c, 'fr').filter(function (d) { return d.x < e[0]; }) }];
+  };
+  function keyHtml(c) {
+    return ['fr', 'ue', 'ue_calc', 'de', 'es', 'us'].filter(function (w) { return has(c, w); }).map(function (w) {
+      if (w === 'ue' || w === 'ue_calc') return '<span><i class="dash"></i>' + (w === 'ue' ? 'Union européenne' : 'Moyenne de l\'UE') + '</span>';
+      return '<span><i style="background:' + NOMS[w][1] + '"></i>' + NOMS[w][0] + '</span>';
+    }).join('') + (estDe(c).length ? '<span><i class="dash" data-c="var(--fr)" style="background:repeating-linear-gradient(90deg,var(--fr) 0 4px,transparent 4px 6px) !important"></i>France, estimation de l\'OTAN</span>' : '') + (c.objectif ? '<span><i style="background:var(--bad)"></i>Objectif de l\'OTAN</span>' : '');
+  }
+  // Courbe d'une série France / UE / Allemagne / Espagne / États-Unis ; renvoie les phrases à écrire sous le graphique.
+  function serieChart(id, c, extra) {
+    var S = [], aff = extra && extra.affiche;
+    if (c.regle === 'propre') c = { l: c.l, unite: c.unite, y: c.y, fr: c.fr, dec: c.dec };
+    if (has(c, 'us')) S.push({ c: 'var(--us)', data: serOf(c, 'us') });
+    if (has(c, 'es')) S.push({ c: 'var(--es)', data: serOf(c, 'es') });
+    if (has(c, 'de')) S.push({ c: 'var(--de)', data: serOf(c, 'de'), dots: c.y.length < 8 });
+    if (has(c, 'ue')) S.push({ c: 'var(--ea)', dash: 1, data: serOf(c, 'ue'), dots: c.y.length < 8 });
+    if (has(c, 'ue_calc')) S.push({ c: 'var(--ea)', n: 'Moyenne UE (calcul Concret)', dash: 1, data: serOf(c, 'ue_calc') });
+    S = S.concat(frSeries(c));
+    var x0 = c.y[0], x1 = c.y[c.y.length - 1];
+    lineChart(id, S, Object.assign({ x: [x0 - .5, x1 + .5], xt: ticks(x0, x1), unit: c.unite.charAt(0) === '%' ? ' %' : '', dec: decOf(c), label: c.l, obj: c.objectif || null }, extra || {}));
+    var n = [];
+    if (!has(c, 'de') && !has(c, 'ue') && !has(c, 'us')) n.push('France seule.');
+    else if (!has(c, 'us')) n.push(c.us_note || 'Pas de courbe pour les États-Unis : pas de mesure comparable.');
+    var lastDe = c.de ? c.de.reduce(function (m, v, i) { return v != null ? i : m; }, -1) : -1, firstDe = c.de ? c.de.findIndex(function (v) { return v != null; }) : -1;
+    var compte = false;
+    // Années après le dernier chiffre allemand déjà expliquées par la phrase du provisoire (prov) : pas de seconde phrase.
+    var deProv = c.y.slice(lastDe + 1).every(function (y) { return (c.prov || {})[y]; });
+    if (has(c, 'de') && lastDe < c.y.length - 1 && !deProv) n.push(compte ? 'L\'Allemagne ne publie plus ce chiffre après ' + c.y[lastDe] + ' : ces années ne sont pas comptées.' : 'Pas de chiffre allemand après ' + c.y[lastDe] + '.');
+    if (has(c, 'de') && firstDe > 0) n.push('Pas de chiffre allemand avant ' + c.y[firstDe] + (compte ? ' : ces années ne sont pas comptées.' : '.'));
+    var ue0 = c.ue ? c.ue.findIndex(function (v) { return v != null; }) : -1;
+    if (ue0 > 0) n.push('La moyenne de l\'UE ne commence qu\'en ' + c.y[ue0] + ' : avant, elle n\'est pas publiée' + (!aff ? ', ces années ne sont pas comptées.' : '.'));
+    if (has(c, 'ue_calc')) n.push(c.ue_calc_note || 'Pointillés : moyenne de l\'UE calculée par Concret.');
+    Object.keys(c.prov || {}).forEach(function (y) { n.push(c.prov[y]); });
+    var e = estDe(c); if (e.length) n.push('Pointillés bleus : ' + (e.length > 1 ? e.slice(0, -1).join(', ') + ' et ' + e[e.length - 1] + ', estimations' : e[0] + ', estimation') + ' de l\'OTAN, révisées l\'année suivante : affichées, pas comptées.');
+    Object.keys(c.manque || {}).forEach(function (y) { n.push('Pas de point en ' + y + ' : ' + c.manque[y].replace(/^Non compté : /, '').replace(/^pour \d{4}, /, '')); });
+    if (c.objectif) n.push(c.objectif.texte + '.'); else if (c.objectif_note) n.push(c.objectif_note);
+    return n.join(' ');
+  }
+  // Bloc de courbe autonome (partageable) : titre, légende, graphique, phrases.
+  function card(wrap, id, titre, tag) {
+    var sec = document.createElement('section'); sec.className = 'card';
+    sec.innerHTML = '<h2><span class="eyebrow">' + titre + EX + (tag ? ' · ' + tag : '') + '</span></h2><div class="key"></div><div class="chart" id="' + id + '"></div><p class="note"></p>';
+    wrap.appendChild(sec); return sec;
+  }
+  function serieCard(wrap, id, c, tag, extra) {
+    var sec = card(wrap, id, c.l + ', ' + c.unite, tag);
+    sec.querySelector('.key').innerHTML = keyHtml(c);
+    return function () { sec.querySelector('.note').innerHTML = [serieChart(id, c, extra), c.note && extra && extra.affiche ? esc(c.note) : '', c.pourquoi, srcNote(c)].filter(Boolean).join(' '); };
+  }
+
+  // ===== Les cinq questions =====
+  var FOLDS = [];
+  var lien = function (c, txt) { return c.url ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">' + esc(txt) + '</a>' : esc(txt); };
+  var srcNote = function (c) { return c.source ? 'Source : ' + lien(c, c.source) + '.' : ''; };
+  // Ce qu'on montre en plus, sans le noter, sous chaque question.
+  var EN_PLUS = {
+    eff: function (w) { return [serieCard(w, 'ch-a-persn', AFF.pers_n, 'affiché, sans note', { affiche: true })]; }
+  };
+  // Courbes d'une question : chaque indicateur, et chaque élément d'un programme (vaccins, dépistages).
+  function courbes(t) {
+    var out = [];
+    t.crit.forEach(function (k) {
+      var c = C[k];
+      if (c.regle === 'composite') Object.keys(c.sous).forEach(function (j) { out.push({ id: k + '-' + j, c: c.sous[j], tag: 'noté, dans « ' + c.l + ' »' }); });
+      else out.push({ id: k, c: c, tag: 'noté' });
+    });
+    return out;
+  }
+  // Chaque thème : la courbe principale visible ; le tableau, les définitions et les autres courbes dans un dépliant.
+  var MAIN = [];
+  function buildThemes() {
+    var root = document.getElementById('questions');
+    THEMES.forEach(function (t) {
+      var e = themeEtat(t), cs = courbes(t), m0 = cs[0], c = m0.c;
+      var sec = document.createElement('section'); sec.className = 'card theme'; sec.id = 'q-' + t.k;
+      var pn = PRES.map(function (g) { return { g: g, n: SAN.noteTheme(g, t) }; }).reverse();
+      var defs = [];
+      t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || esc(x.ex || '')) + (x.source ? ' Source : ' + lien(x, x.source) + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + esc(q.l) + ' (' + esc(q.unite) + '). Source : ' + lien(q, q.source) + '.'); }); });
+      sec.innerHTML = '<h2></h2><p class="t-sum"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>La France fait mieux que ses voisins sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n + ' (dernier chiffre connu).</p>' +
+        '<span class="eyebrow" style="margin:4px 0 0">' + esc(c.l) + ', ' + esc(c.unite) + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p>' +
+        '<p class="tnotes">Note de ce thème, sur 20 (10 = la France a progressé autant que ses voisins) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>';
+      sec.querySelector('h2').textContent = t.q;
+      root.appendChild(sec);
+      MAIN.push(function () { sec.querySelector('.note').innerHTML = [serieChart('ch-' + m0.id, c), srcNote(c)].filter(Boolean).join(' '); });
+      var autres = cs.slice(1), grid = document.createElement('div'); grid.className = 'charts4';
+      var more = autres.map(function (o) { return serieCard(grid, 'ch-' + o.id, o.c, o.tag, null); });
+      if (EN_PLUS[t.k]) more = more.concat(EN_PLUS[t.k](grid));
+      var fold = document.createElement('details'); fold.className = 'fold';
+      // Bouton bien visible : on comprend qu'il y a d'autres courbes dessous.
+      var nb = grid.children.length, quoi = (nb ? nb + ' autre' + (nb > 1 ? 's' : '') + ' courbe' + (nb > 1 ? 's' : '') + ', ' : '') + 'le tableau et les sources';
+      fold.innerHTML = '<summary><span class="ouvrir">Voir ' + quoi + '</span><span class="fermer">Masquer ' + quoi + '</span></summary>';
+      var inner = document.createElement('div'); inner.className = 'fold-in';
+      inner.innerHTML = tableEtat(e) + '<p class="note defs">' + defs.join('<br>') + '</p>';
+      inner.appendChild(grid); fold.appendChild(inner); sec.appendChild(fold);
+      var f = { el: fold, draw: function () { more.forEach(function (d) { d(); }); } };
+      fold.addEventListener('toggle', function () { if (fold.open) f.draw(); });
+      FOLDS.push(f);
+    });
+  }
+  // Mini-courbes du haut de page : dépense de défense (OTAN) et militaires, France et moyenne de l'UE, avec des repères ; sans les estimations.
+  var lastReel = function (c, w) { for (var i = c.y.length - 1; i >= 0; i--) if ((c[w] || [])[i] != null && !(c.est || {})[c.y[i]]) return { v: c[w][i], y: c.y[i] }; return null; };
+  function drawToday() {
+    [['sp-otan', C.otan, ' %', 2, 'Dépense de défense au sens de l\'OTAN, % du PIB', ['us', 'ue_calc'], { v: SER.P.otan_2014.v }], ['sp-pers', C.pers, '', 2, 'Militaires pour 1 000 habitants', ['es', 'de', 'ue_calc'], null]].forEach(function (a) {
+      var c = a[1], yl = lastReel(c, 'fr').y, xs = c.y.filter(function (y) { return y <= yl; });
+      var S = a[5].map(function (w) { return { c: w === 'ue_calc' ? 'var(--ea)' : NOMS[w][1], dash: w === 'ue_calc' ? 1 : 0, n: w === 'ue_calc' ? 'UE (calcul Concret)' : NOMS[w][0], data: serOf(c, w) }; }).concat([{ c: 'var(--fr)', main: 1, data: serOf(c, 'fr') }]).map(function (q) { q.data = q.data.filter(function (d) { return d.x <= yl; }); return q; });
+      lineChart(a[0], S, { x: [xs[0] - .5, yl + .5], xt: ticks(xs[0], yl), dec: a[3], unit: a[2], h: 140, obj: a[6], label: a[4] + ', France et moyenne de l\'UE' });
+    });
+  }
+
+  // ===== La règle, indicateur par indicateur (tirée des données, pour rester à jour) =====
+  (function () {
+    var regle = function (c) {
+      if (c.regle === 'propre') return 'jugé sur la France seule (aucun voisin n\'a de comptes comparables) : 1 point si l\'équilibre est atteint, ½ si le déficit se réduit d\'au moins 0,1 point de PIB, 0 sinon ; compte triple';
+      if (c.regle === 'long') return 'comparés à ' + refN(c, 2) + ' ; ces résultats mettent des années à bouger, chaque année d\'un mandat compte donc pour la moyenne des points de l\'année et des quatre suivantes';
+      if (c.regle === 'composite') return 'le point de l\'année est la part des éléments où la France progresse mieux que la moyenne de l\'UE';
+      if (c.regle === 'niveau') return 'comparé chaque année à la moyenne de l\'UE (point si la France fait mieux)';
+      if (c.regle === 'ecart') return 'point si l\'écart français est plus faible que celui de l\'UE, ou s\'il se réduit plus vite';
+      return 'point si la France progresse mieux que ' + refN(c, 2) + (c.low ? ' (ici, une baisse est un progrès)' : ' (ici, une hausse compte comme un progrès)');
+    };
+    // Les indicateurs d'un thème qui suivent la même règle sont regroupés en une phrase.
+    var liste = function (a) { return a.length > 1 ? a.slice(0, -1).join(', ') + ' et ' + a[a.length - 1] : a[0]; };
+    setHtml('regles', THEMES.map(function (t) {
+      var par = {}, ordre = [];
+      t.crit.forEach(function (k) { var r = regle(C[k]); if (!par[r]) { par[r] = []; ordre.push(r); } par[r].push('<b>' + esc(C[k].lc || C[k].l) + '</b>'); });
+      return '<tr><td>' + esc(t.q) + '<span>' + ordre.map(function (r) { return liste(par[r]) + ' : ' + r + '.'; }).join(' ') + '</span></td></tr>';
+    }).join(''));
+  })();
+
+  // ===== Les chiffres clés, et un chiffre à retenir qui change chaque jour (ce sont des chiffres annuels : rien ne dit qu'ils ont changé aujourd'hui) =====
+  var PV = function (k) { return SER.P[k].v; }, day = new Date(); day.setHours(0, 0, 0, 0);
+  var idx = Math.floor((day - new Date(2026, 0, 1)) / 864e5), pick = function (a) { return a[((idx % a.length) + a.length) % a.length]; };
+  (function () {
+    var o = C.otan, of = lastReel(o, 'fr'), ou = SAN.val(o, 'ue_calc', of.y), oe = lastOf(o, 'fr');
+    setHtml('k-otan', fmt(of.v, 2) + '<small>% du PIB</small>'); setHtml('k-otan-d', 'en ' + of.y);
+    setHtml('k-otan-t', 'Dépense de défense déclarée à l\'OTAN, pensions comprises. Moyenne des pays de l\'UE membres de l\'OTAN (calcul Concret) : ' + fmt(ou, 2) + ' % ; Allemagne : ' + fmt(SAN.val(o, 'de', of.y), 2) + ' % ; Espagne : ' + fmt(SAN.val(o, 'es', of.y), 2) + ' % ; États-Unis : ' + fmt(SAN.val(o, 'us', of.y), 2) + ' %. Objectif de l\'OTAN : ' + fmt(PV('otan_2014')) + ' % du PIB (2014), ' + fmt(PV('otan_2035'), 1) + ' % d\'ici 2035 (2025). Source : ' + lien(o, 'OTAN') + '.');
+    var p = C.pers, pf = lastReel(p, 'fr'), N = AFF.pers_n, ni = N.y.indexOf(pf.y), pu = SAN.val(p, 'ue_calc', pf.y);
+    setHtml('k-pers', fmt(1000 * N.fr[ni]) + '<small>militaires</small>'); setHtml('k-pers-d', 'en ' + pf.y);
+    setHtml('k-pers-t', 'En temps de paix, hors réservistes : ' + fmt(pf.v, 2) + ' pour 1 000 habitants, contre ' + fmt(pu, 2) + ' en moyenne dans les pays de l\'UE membres de l\'OTAN (calcul Concret), ' + fmt(SAN.val(p, 'de', pf.y), 2) + ' en Allemagne et ' + fmt(SAN.val(p, 'es', pf.y), 2) + ' en Espagne. En ' + N.y[0] + ' : ' + fmt(1000 * N.fr[0]) + ' militaires en France. Source : ' + lien(p, 'OTAN') + '.');
+    var d = C.dep, df = lastReel(d, 'fr'), q = C.equip, qf = lastReel(q, 'fr'), v = C.inv, vf = lastReel(v, 'fr');
+    var FACTS = [
+      'En ' + of.y + ', la France a consacré <b>' + fmt(of.v, 2) + ' % de son PIB</b> à sa défense selon l\'OTAN, contre ' + fmt(ou, 2) + ' % en moyenne dans les pays de l\'UE membres de l\'OTAN.',
+      'Pour ' + oe.y + ', l\'OTAN estime la dépense de défense de la France à <b>' + fmt(oe.v, 2) + ' % du PIB</b>, contre ' + fmt(SAN.val(o, 'ue_calc', oe.y), 2) + ' % en moyenne dans les pays de l\'UE membres de l\'OTAN.',
+      'En ' + qf.y + ', <b>' + fmt(qf.v, 1) + ' %</b> de la dépense de défense de la France est allée aux grands équipements, contre ' + fmt(SAN.val(q, 'ue_calc', qf.y), 1) + ' % en moyenne dans l\'UE ; l\'objectif de l\'OTAN est d\'au moins ' + fmt(PV('otan_equip')) + ' %.',
+      'La France comptait <b>' + fmt(1000 * N.fr[ni]) + ' militaires</b> en ' + pf.y + ', soit ' + fmt(pf.v, 2) + ' pour 1 000 habitants, contre ' + fmt(pu, 2) + ' en moyenne dans l\'UE.',
+      'Selon Eurostat, les administrations publiques françaises ont consacré <b>' + fmt(df.v, 2) + ' % du PIB</b> à la défense en ' + df.y + ', contre ' + fmt(SAN.val(d, 'ue_calc', df.y), 2) + ' % en moyenne dans l\'UE et ' + fmt(SAN.val(d, 'fr', df.y - 20), 2) + ' % en France en ' + (df.y - 20) + '.',
+      'Le projet de budget 2027 prévoit <b>' + fmt(PV('plf_2027'), 1) + ' milliards d\'euros</b> pour la mission « Défense », hors pensions, soit ' + fmt(PV('plf_2027_hausse'), 1) + ' milliards de plus qu\'en 2026.',
+      'La loi de programmation militaire actualisée en 2026 ajoute <b>' + fmt(PV('lpm_plus')) + ' milliards d\'euros</b> pour les armées entre 2026 et 2030, en plus des ' + fmt(PV('lpm_2023')) + ' milliards programmés en 2023.'
+    ];
+    setHtml('daily-text', pick(FACTS));
+    setHtml('teaser-today', 'Défense : <b>' + fmt(of.v, 2) + '&nbsp;% du PIB</b> en ' + of.y + ' (OTAN) · <b>' + fmt(1000 * N.fr[ni]) + '</b> militaires · Un chiffre à retenir');
+  })();
+
+  // ===== Le budget des armées et l'objectif de l'OTAN =====
+  (function () {
+    var B = SER.P.plf_2027;
+    setHtml('p-lab', 'Budget des armées 2027 · projet de loi de finances');
+    setHtml('p-num', fmt(B.v, 1) + ' <small>Md€</small>');
+    document.getElementById('p-delta').textContent = '+' + fmt(PV('plf_2027_hausse'), 1) + ' Md€ par rapport à 2026';
+    setHtml('p-t', 'Crédits de la mission « Défense », hors pensions, prévus par le projet de loi de finances pour 2027 présenté le ' + dfr(B.date, true) + '. La loi de programmation militaire actualisée le 16 août 2026 prévoit ' + fmt(PV('lpm_plus')) + ' Md€ de plus entre 2026 et 2030, en plus des ' + fmt(PV('lpm_2023')) + ' Md€ programmés en 2023. Source : ' + lien(B, 'ministère des Armées') + '.');
+    var o = C.otan, la = lastOf(o, 'fr'), pr = SAN.val(o, 'fr', la.y - 1), ue = SAN.val(o, 'ue_calc', la.y), est = (o.est || {})[la.y];
+    setHtml('q-lab', 'Dépense de défense · ' + (est ? 'estimation de l\'OTAN pour ' : 'OTAN, ') + la.y);
+    setHtml('q-num', fmt(la.v, 2) + ' % <small>du PIB</small>');
+    if (pr != null) document.getElementById('q-delta').textContent = sg(la.v - pr, 2) + ' pt sur un an';
+    setHtml('q-t', (est ? 'Estimation de l\'OTAN, révisée l\'année suivante. ' : '') + 'Moyenne des pays de l\'UE membres de l\'OTAN (calcul Concret) : ' + fmt(ue, 2) + ' %. Objectif de l\'OTAN : ' + fmt(PV('otan_2014')) + ' % du PIB depuis 2014, ' + fmt(PV('otan_2035'), 1) + ' % d\'ici 2035 depuis le sommet de La Haye (2025). Source : ' + lien(o, 'OTAN') + '.');
+    setHtml('teaser-month', 'Budget 2027 des armées : <b>' + fmt(B.v, 1) + '&nbsp;Md€</b> (projet) · Défense : <b>' + fmt(la.v, 2) + '&nbsp;%</b> du PIB en ' + la.y + (est ? ' (estimation de l\'OTAN)' : ''));
+  })();
+  // Petite courbe : France (pointillés pour les estimations) et moyenne de l'UE, avec l'objectif de 2 %.
+  var drawMonth = function () {
+    var c = C.otan, S = [{ c: 'var(--ea)', dash: 1, n: 'UE (calcul Concret)', data: serOf(c, 'ue_calc') }].concat(frSeries(c));
+    lineChart('mo-q', S, { x: [c.y[0] - .5, c.y[c.y.length - 1] + .5], xt: ticks(c.y[0], c.y[c.y.length - 1]), dec: 2, unit: ' %', h: 150, obj: { v: SER.P.otan_2014.v }, label: 'Dépense de défense au sens de l\'OTAN, % du PIB, France et moyenne de l\'UE' });
+  };
+
+  // ===== Depuis votre dernière visite : seulement ce qui a vraiment changé (nouvelle année publiée, budget, actualités) =====
+  try {
+    (function () {
+      var now = Date.now(), vis = document.getElementById('visit'), ey = lastReel(C.dep, 'fr').y, oy = lastOf(C.otan, 'fr').y;
+      var snap = { t: now, ey: ey, oy: oy, b: PV('plf_2027') }, st = JSON.parse(localStorage.getItem('defense-visites') || 'null');
+      if (!st) st = { base: null, cur: snap, seen: now };
+      else if (now - st.seen > 3600e3) { st.base = st.cur; st.cur = snap; }
+      st.seen = now; localStorage.setItem('defense-visites', JSON.stringify(st));
+      var lv = st.base;
+      if (!lv) { vis.textContent = 'Revenez plus tard : cette ligne vous dira ce qui a changé depuis votre visite.'; vis.hidden = false; return; }
+      var dv = Math.round((now - lv.t) / 864e5), when = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h', pv = [];
+      if (ey > lv.ey) pv.push('dépense publique de défense ' + ey + ' (Eurostat) : <b>' + fmt(lastReel(C.dep, 'fr').v, 2) + ' % du PIB</b>');
+      if (oy > lv.oy) pv.push('nouveaux chiffres de l\'OTAN, jusqu\'à ' + oy);
+      if (lv.b != null && PV('plf_2027') !== lv.b) pv.push('budget des armées : <b>' + fmt(PV('plf_2027'), 1) + ' Md€</b>');
+      var na = (DS.actu_defense || []).filter(function (a) { return a.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
+      if (na) pv.push('<b>' + na + ' nouvelle' + (na > 1 ? 's' : '') + ' actualité' + (na > 1 ? 's' : '') + '</b>');
+      if (!pv.length) pv.push('pas de nouveau chiffre (les prochains : Eurostat au printemps, l\'OTAN avant l\'été)');
+      if (dv >= 1) pv.push('un nouveau chiffre à retenir et une nouvelle question');
+      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + pv.join(' ; ') + '.';
+      vis.hidden = false;
+    })();
+  } catch (e) {}
+
+  // ===== L'actualité et l'agenda =====
+  (function () {
+    var A = (DS.actu_defense || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).slice(0, 6), G = (DS.agenda_defense || []).slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    var li = function (d, t, src, url) { return '<li><span class="d">' + esc(d) + '</span><span>' + esc(t) + (url ? ' <a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(src || 'Source') + '</a>' : '') + '</span></li>'; };
+    setHtml('actu-list', A.map(function (a) { return li(dfr(a.date), a.texte, a.source, a.url); }).join('') || '<li><span class="d"></span><span>Pas d\'actualité relevée pour l\'instant : elle est mise à jour chaque jour à partir des sources officielles.</span></li>');
+    setHtml('agenda-list', G.map(function (a) { return li(a.quand || dfr(a.date), a.evenement, a.source, a.url); }).join('') || '<li><span class="d"></span><span>Pas de rendez-vous confirmé.</span></li>');
+    setHtml('teaser-actu', G[0] ? 'À venir, ' + esc((G[0].quand || dfr(G[0].date)).toLowerCase()) + ' : ' + esc(G[0].evenement) : 'L\'actualité de la défense');
+  })();
+
+  // ===== Question du jour =====
+  (function () {
+    var Q = pick(SER.QUIZ), opts = document.getElementById('quiz-opts'), ans = document.getElementById('quiz-a'), key = 'defense-quiz-' + idx;
+    document.getElementById('quiz-day').textContent = 'Question du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+    document.getElementById('quiz-q').textContent = Q.q;
+    function reveal(p) {
+      Array.prototype.forEach.call(opts.children, function (b, i) { b.disabled = true; if (i === Q.a) b.classList.add('right'); else if (i === p) b.classList.add('wrong'); });
+      ans.textContent = (p === Q.a ? 'Bonne réponse. ' : 'Raté. ') + Q.e + ' Nouvelle question demain.'; ans.hidden = false;
+      try { localStorage.setItem(key, String(p)); } catch (e) {}
+    }
+    Q.o.forEach(function (o, i) { var b = document.createElement('button'); b.className = 'opt'; b.id = 'opt-' + i; b.type = 'button'; b.textContent = o; b.addEventListener('click', function () { reveal(i); }); opts.appendChild(b); });
+    try { var prev = localStorage.getItem(key); if (prev != null) reveal(+prev); } catch (e) {}
+  })();
+
+  // ===== Le bilan : l'évolution sur dix ans de chaque indicateur, France et voisin de comparaison, en phrases factuelles calculées =====
+  // Règle : sens et ampleur de l'évolution, comparaison au voisin, écart au début et à la fin ; aucun adjectif.
+  function analyse(c) {
+    var r = SAN.ref(c), dec = decOf(c), last = null, i;
+    for (i = c.y.length - 1; i >= 0; i--) if (c.fr[i] != null && c[r] && c[r][i] != null && !(c.est || {})[c.y[i]]) { last = i; break; }
+    if (last == null) return null;
+    var y1 = c.y[last], first = null;
+    for (i = 0; i < last; i++) if (c.y[i] >= y1 - 10 && c.fr[i] != null && c[r][i] != null) { first = i; break; }
+    if (first == null) return null;
+    var y0 = c.y[first], a0 = c.fr[first], a1 = c.fr[last], b0 = c[r][first], b1 = c[r][last], u = c.uc === ' %' ? ' %' : '';
+    var pct = function (x0, x1) { return x0 ? sg(100 * (x1 - x0) / x0, 0) + ' %' : ''; };
+    var sens = function (x0, x1) { var d = Math.abs(x1 - x0) / Math.abs(x0 || 1); return d < 0.03 ? 'stable' : (x1 > x0 ? 'en hausse' : 'en baisse') + ' de ' + fmt(Math.abs(100 * (x1 - x0) / x0)) + ' %'; };
+    var g0 = a0 - b0, g1 = a1 - b1, ecart = g0 * g1 < 0 ? 'la France passe ' + (g1 < 0 ? 'sous ' : 'au-dessus de ') + refN(c, 2) : Math.abs(g1) < Math.abs(g0) - 1e-9 ? 'l\'écart se réduit' : Math.abs(g1) > Math.abs(g0) + 1e-9 ? 'l\'écart se creuse' : 'l\'écart ne bouge pas';
+    return esc(c.lc || c.l) + ' : de ' + fmt(a0, dec) + u + ' à ' + fmt(a1, dec) + u + ' en France entre ' + y0 + ' et ' + y1 + ' (' + sens(a0, a1) + '), de ' + fmt(b0, dec) + u + ' à ' + fmt(b1, dec) + u + ' pour ' + refN(c, 2) + ' (' + sens(b0, b1) + ') ; ' + ecart + ' (' + sg(g0, dec) + ' puis ' + sg(g1, dec) + ').';
+  }
+  (function () {
+    var items = THEMES.map(function (t) {
+      var parts = t.crit.map(function (k) { return analyse(C[k]); }).filter(Boolean);
+      return '<b>' + esc(t.q) + '.</b> ' + (parts.length ? parts.join(' ') : 'Pas assez d\'années comparables pour mesurer une évolution.');
+    });
+    var pr = PRES.map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
+    items.push('<b>Au bulletin</b>, ' + pr.map(function (r) { return esc(r.g.n) + ' ' + nfmt(r.n) + '/20'; }).join(', ') + '. La note mesure si la France a progressé plus vite que ses voisins.');
+    setHtml('sum-list', items.map(function (t) { return '<li>' + t + '</li>'; }).join(''));
+  })();
+
+  // ===== Année par année =====
+  var showYears = false;
+  document.getElementById('yr-more').addEventListener('click', function () {
+    showYears = !showYears; this.setAttribute('aria-expanded', showYears); this.textContent = showYears ? 'Masquer les années précédentes' : 'Voir toutes les années, depuis 1995';
+    renderYears();
+  });
+  setHtml('yr-head', '<tr><th>Année</th><th>Premier ministre</th>' + THEMES.map(function (t) { return '<th title="' + esc(t.q) + '">' + esc(t.abr || t.q) + '</th>'; }).join('') + '<th>Note</th></tr>');
+  function renderYears() {
+    var tb = document.getElementById('yr-body'); tb.textContent = '';
+    var lastPres = null, Y1 = Math.max.apply(null, GOVS.map(function (g) { return g.y1; })), ncol = THEMES.length + 3;
+    for (var y = Y1; y >= 1995; y--) {
+      var hide = !showYears && y < Y1 - 1;
+      var pres = PRES.filter(function (p) { return y >= p.y0 && y <= p.y1; })[0];
+      if (pres && pres !== lastPres) {
+        var hr = document.createElement('tr'); hr.className = 'pres-row'; var th = document.createElement('td'); th.colSpan = ncol;
+        th.textContent = pres.n + ' · ' + nfmt(noteOf(pres)) + '/20 sur le mandat'; hr.appendChild(th); hr.hidden = hide; tb.appendChild(hr); lastPres = pres;
+      }
+      var g = evaluate({ n: '', y0: y, y1: y }), pm = GOVS.filter(function (x) { return y >= x.y0 && y <= x.y1; })[0], tr = document.createElement('tr'), nc = [];
+      tr.innerHTML = '<td>' + y + '</td><td>' + (pm ? esc(nomCourt(pm.n)) : '—') + '</td>';
+      THEMES.forEach(function (t) {
+        var n = SAN.noteTheme(g, t), td = document.createElement('td');
+        td.className = 'dot' + (n == null ? '' : n > 10 ? ' g' : n < 10 ? ' b' : '');
+        td.textContent = n == null ? '–' : n > 10 ? '●' : n < 10 ? '○' : '◐'; td.title = t.q + ' : ' + (n == null ? 'pas de chiffre comparable' : nfmt(n) + '/20');
+        if (n == null) { var deb = Math.min.apply(null, t.crit.map(function (k) { return C[k].y[0]; })); nc.push(t.q.toLowerCase() + (y <= deb ? ' (les chiffres commencent en ' + deb + ', la première évolution comptée est celle de ' + (deb + 1) + ')' : '')); } tr.appendChild(td);
+      });
+      var nn = noteOf(g), tdn = document.createElement('td');
+      tdn.innerHTML = nn == null ? '–' : '<span class="yr-note ' + cls(nn) + '">' + nfmt(nn) + '</span>';
+      tr.appendChild(tdn); tr.hidden = hide; tb.appendChild(tr);
+      if (nc.length) {
+        var wr = document.createElement('tr'); wr.className = 'yr-why'; var wd = document.createElement('td'); wd.colSpan = ncol;
+        wd.textContent = 'Non compté en ' + y + ' : ' + nc.join(', ') + (nc.some(function (x) { return x.indexOf('(') < 0; }) ? ' (' + (y >= 2025 ? 'chiffres pas encore publiés, ou seulement estimés par l\'OTAN' : 'pas de chiffre comparable pour cette année') + ')' : '') + '.';
+        wr.appendChild(wd); wr.hidden = hide; tb.appendChild(wr);
+      }
+    }
+  }
+  renderYears();
+
+  // ===== Menus, mise à jour, alerte =====
+  document.querySelectorAll('.jump a').forEach(function (a) { a.addEventListener('click', function () { var t = document.querySelector(a.getAttribute('href')); if (t && t.tagName === 'DETAILS') t.open = true; }); });
+  ['acc-today', 'acc-month', 'acc-actu', 'acc-bilan'].forEach(function (id) {
+    var d = document.getElementById(id);
+    try { if (localStorage.getItem('defense-' + id) === 'open') d.open = true; } catch (e) {}
+    d.addEventListener('toggle', function () { try { localStorage.setItem('defense-' + id, d.open ? 'open' : 'closed'); } catch (e) {} if (d.open && id === 'acc-month') setTimeout(drawMonth, 30); if (d.open && id === 'acc-today') setTimeout(drawToday, 30); });
+  });
+  (function () {
+    var el = document.getElementById('upd'), d = FEED.updated_iso ? new Date(FEED.updated_iso) : null;
+    if (!d || isNaN(d)) { el.textContent = 'Dernière mise à jour des données : ' + FEED.updated + '.'; return; }
+    el.textContent = 'Dernière mise à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ') + ' · une par jour, vers midi';
+    if (Date.now() - d.getTime() > 30 * 3600e3) { var s = document.getElementById('stale'); s.textContent = 'Mise à jour en retard : les données datent du ' + FEED.updated + '.'; s.hidden = false; }
+  })();
+
+  buildThemes(); renderGov();
+  function drawAll() {
+    rankOne('pres'); rankOne('gov');
+    MAIN.forEach(function (d) { d(); });
+    FOLDS.forEach(function (f) { var up = f.el.parentElement.closest('details'); if (f.el.open && (!up || up.open)) f.draw(); });
+    if (document.getElementById('acc-today').open) drawToday();
+    if (document.getElementById('acc-month').open) drawMonth();
+  }
+  drawAll();
+  var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });
+}
+(function () {
+  var started = false;
+  function go(feed) {
+    if (started) return; started = true;
+    if (!feed || !feed.series || !feed.series.defense) { var u = document.getElementById('upd'); if (u) u.textContent = 'Les données n\'ont pas pu être chargées. Rechargez la page.'; return; }
+    main(feed);
+  }
+  try { fetch('../data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(go, function () { go(null); }); } catch (e) { go(null); }
+})();
+})();
+</script>
+<script src="/commun/partage.js?v=20261025a"></script>
+<script src="/commun/recherche.js?v=20261025b"></script>
+</body>
+</html>

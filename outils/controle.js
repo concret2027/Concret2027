@@ -73,7 +73,7 @@ if (S.education) {
   ['m', 'r', 's'].forEach(function (k) { ['fr', 'oe'].forEach(function (w) { serie('education.PI.' + k + '.' + w, E.PI[k][w], 300, 650); if (E.PI[k][w].length !== E.PI[k].y.length) err('education.PI.' + k + '.' + w + ' : longueur différente de y'); }); });
   serie('education.SP.fr', E.SP.fr, 2, 10);
 }
-['finances', 'education'].forEach(function (pg) {
+['finances', 'education', 'defense'].forEach(function (pg) {
   var P = (S[pg] || {}).P || {};
   Object.keys(P).forEach(function (k) { var p = P[k]; if (typeof p.v !== 'number' || !isFinite(p.v)) err(pg + '.P.' + k + ' : valeur invalide'); if (!p.source) err(pg + '.P.' + k + ' : source manquante'); if (!p.url) err(pg + '.P.' + k + ' : lien vers la source manquant (un chiffre non vérifiable ne se publie pas)'); if (/à confirmer|sans source/i.test(p.source + ' ' + (p.note || ''))) err(pg + '.P.' + k + ' : valeur non confirmée, elle ne se publie pas'); });
   var T = (d.textes || {})[pg] || {};
@@ -81,7 +81,7 @@ if (S.education) {
 });
 // Règle de CLAUDE.md : une donnée non comptée s'explique en clair, sans jargon.
 (function () { var JARGON = /\b(n\.d\.|n\.c\.)|rupture de série|\brupture\b|non comparable/i, vus = [];
-  ['finances', 'education'].forEach(function (pg) {
+  ['finances', 'education', 'defense'].forEach(function (pg) {
     Object.keys((d.textes || {})[pg] || {}).forEach(function (k) { if (JARGON.test(d.textes[pg][k].html)) vus.push('textes.' + pg + '.' + k); });
     ['FACTS', 'QUIZ'].forEach(function (k) { if (JARGON.test(JSON.stringify((S[pg] || {})[k] || []))) vus.push(pg + '.' + k); });
   });
@@ -90,8 +90,8 @@ if (S.education) {
 // Valeurs d'exemple (page en brouillon) : jamais publiées.
 Object.keys(S).forEach(function (pg) { if (S[pg] && S[pg].exemple) err('series.' + pg + ' contient des valeurs d\'exemple (brouillon) : à remplacer par des données sourcées avant publication'); });
 Object.keys(d.datasets || {}).forEach(function (k) { if ((d.datasets[k] || []).some(function (r) { return r.exemple; })) err('datasets.' + k + ' contient des lignes d\'exemple (brouillon)'); });
-// Santé, Sécurité et justice : séries alignées sur leurs années.
-['sante', 'securite'].forEach(function (p) { if (S[p]) ['C', 'AFF'].forEach(function (bloc) { Object.keys(S[p][bloc] || {}).forEach(function (k) {
+// Santé, Sécurité et justice, Défense : séries alignées sur leurs années.
+['sante', 'securite', 'defense'].forEach(function (p) { if (S[p]) ['C', 'AFF'].forEach(function (bloc) { Object.keys(S[p][bloc] || {}).forEach(function (k) {
   var c = S[p][bloc][k]; if (!c || !c.y) return;
   ['fr', 'ue', 'de', 'es', 'us', 'ue_calc', 'ue_calc_ev'].forEach(function (w) { if (c[w] && c[w].length !== c.y.length) err(p + '.' + bloc + '.' + k + '.' + w + ' : longueur différente de y'); });
 }); }); });
@@ -100,9 +100,14 @@ if (S.securite) {
   var PS = { hom: [0, 20], rob: [0, 600], bur: [0, 1500], occ: [30, 250], places: [10, 1000], dpol: [0, 3], dtrib: [0, 2], dpris: [0, 1], eloi: [0, 200], quart: [0, 50] };
   Object.keys(PS).forEach(function (k) { var c = S.securite.C[k]; if (!c) return err('securite.C.' + k + ' manquant'); ['fr', 'ue', 'ue_calc', 'de', 'es'].forEach(function (w) { if (c[w]) serie('securite.C.' + k + '.' + w, c[w], PS[k][0], PS[k][1]); }); if (!c.fr) err('securite.C.' + k + '.fr manquant'); });
 }
+// Défense : plages plausibles (% du PIB, % de la dépense de défense, militaires pour 1 000 habitants).
+if (S.defense) {
+  var PD = { otan: [0, 6], dep: [0, 5], inv: [0, 2], equip: [0, 70], pers: [0, 15] };
+  Object.keys(PD).forEach(function (k) { var c = S.defense.C[k]; if (!c) return err('defense.C.' + k + ' manquant'); ['fr', 'ue_calc', 'de', 'es', 'us'].forEach(function (w) { if (c[w]) serie('defense.C.' + k + '.' + w, c[w], PD[k][0], PD[k][1]); }); if (!c.fr) err('defense.C.' + k + '.fr manquant'); });
+}
 // Règle unique : un critère noté est comparé à la moyenne de l'UE, publiée par la source ('ue') ou calculée par
 // outils/ue_calc.py ('ue_calc', avec sa phrase d'explication), jamais à un pays seul.
-['sante', 'securite'].forEach(function (p) {
+['sante', 'securite', 'defense'].forEach(function (p) {
   if (!S[p] || !S[p].C) return;
   var crit = function (c, nom) {
     if (c.regle === 'propre') return;
@@ -113,8 +118,8 @@ if (S.securite) {
   };
   Object.keys(S[p].C).forEach(function (k) { crit(S[p].C[k], k); });
 });
-// Chaque critère noté appartient à un et un seul thème (au plus 5 thèmes, 5 indicateurs par thème) : Santé, Sécurité et justice.
-['sante', 'securite'].forEach(function (p) {
+// Chaque critère noté appartient à un et un seul thème (au plus 5 thèmes, 5 indicateurs par thème) : Santé, Sécurité et justice, Défense.
+['sante', 'securite', 'defense'].forEach(function (p) {
   if (!S[p] || !S[p].THEMES) return;
   var vusT = {}; S[p].THEMES.forEach(function (t) {
     if (t.crit.length > 5) err(p + ' : le thème « ' + t.q + ' » a plus de 5 indicateurs notés');
@@ -138,16 +143,17 @@ if (!bloquant.length) {
       education: { pres: lst(edu, S.education.PRES), gov: lst(edu, S.education.GOVS) },
       sante: S.sante ? { pres: lst(NOTES.sante(S.sante), S.sante.PRES), gov: lst(NOTES.sante(S.sante), S.sante.GOVS) } : { pres: [], gov: [] },
       securite: S.securite ? { pres: lst(NOTES.securite(S.securite), S.securite.PRES), gov: lst(NOTES.securite(S.securite), S.securite.GOVS) } : { pres: [], gov: [] },
+      defense: S.defense ? { pres: lst(NOTES.defense(S.defense), S.defense.PRES), gov: lst(NOTES.defense(S.defense), S.defense.GOVS) } : { pres: [], gov: [] },
       accueil: { pres: cl.pres.map(function (r) { return { n: r.n, v: r.m }; }), gov: cl.gov.map(function (r) { return { n: r.n, v: r.m }; }) }
     };
-    ['finances', 'education', 'sante', 'securite', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) { notes[m][k].forEach(function (r) { if (r.v != null && (r.v < 0 || r.v > 20 || isNaN(r.v))) err('note hors échelle : ' + m + ' ' + r.n + ' ' + r.v); }); }); });
+    ['finances', 'education', 'sante', 'securite', 'defense', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) { notes[m][k].forEach(function (r) { if (r.v != null && (r.v < 0 || r.v > 20 || isNaN(r.v))) err('note hors échelle : ' + m + ' ' + r.n + ' ' + r.v); }); }); });
   } catch (e) { err('calcul des notes impossible : ' + e.message); }
 }
 var avant = fs.existsSync(path.join(ROOT, 'donnees/notes.json')) ? rd('donnees/notes.json') : null;
 var chgNotes = [];
 if (notes && avant) {
-  var LAB = { finances: 'Finances', education: 'Éducation', sante: 'Santé', securite: 'Sécurité et justice', accueil: 'Classement général' };
-  ['finances', 'education', 'sante', 'securite', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) {
+  var LAB = { finances: 'Finances', education: 'Éducation', sante: 'Santé', securite: 'Sécurité et justice', defense: 'Défense', accueil: 'Classement général' };
+  ['finances', 'education', 'sante', 'securite', 'defense', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) {
     var old = {}; ((avant[m] || {})[k] || []).forEach(function (r) { old[r.n] = r.v; });
     notes[m][k].forEach(function (r) { var a = old[r.n] == null ? null : Math.round(old[r.n] * 10) / 10, b = r.v == null ? null : Math.round(r.v * 10) / 10; if (a !== b) chgNotes.push(LAB[m] + ' · ' + r.n + ' ' + nf(a) + ' → ' + nf(b)); });
   }); });
@@ -197,7 +203,7 @@ try {
 } catch (e) { alertes.push('comparaison avec la version publiée impossible : ' + e.message.split('\n')[0]); }
 
 // ===== 6. Écritures =====
-if (!bloquant.length && notes) { wr('donnees/notes.json', { date: today, finances: notes.finances, education: notes.education, sante: notes.sante, securite: notes.securite, accueil: notes.accueil }); wr('donnees/a_valider.json', aValider); }
+if (!bloquant.length && notes) { wr('donnees/notes.json', { date: today, finances: notes.finances, education: notes.education, sante: notes.sante, securite: notes.securite, defense: notes.defense, accueil: notes.accueil }); wr('donnees/a_valider.json', aValider); }
 var J = [];
 J.push('## ' + dateFr(today), '');
 J.push('**Statut :** ' + (bloquant.length ? 'données refusées, rien publié' : problemes.length ? 'publié, avec ' + problemes.length + ' problème(s)' : 'publié, tout est à jour'), '');
