@@ -325,7 +325,7 @@ footer p { margin: 0; } footer a { color: inherit; }
           <span class="mo-num" id="u-num">—</span>
           <span class="delta" id="u-delta"></span>
           <span class="mo-t" id="u-t"></span>
-          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Zone euro</span></div>
+          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span></div>
           <div class="chart" id="mo-u"></div>
           <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
         </div>
@@ -740,7 +740,7 @@ function main(FEED) {
   // ===== Graphes =====
   var BANDS = GOVS.concat([{ n: 'Lecornu', y0: 2026, y1: 2026 }]);
   // ===== Curseur au doigt ou à la souris : date et valeurs de toutes les courbes =====
-  var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Zone euro', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--it)': 'Italie', 'var(--es)': 'Espagne' };
+  var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Union européenne', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--it)': 'Italie', 'var(--es)': 'Espagne' };
   function hover(box, svg, H, m, pts) {
     if (!pts.length) return;
     var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
@@ -871,7 +871,7 @@ function main(FEED) {
   (function () {
     var fm = FEED && FEED.datasets && FEED.datasets.education_mois; if (!fm) return;
     var key = function (i) { var d = new Date(MO.start[0], MO.start[1] + i, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
-    [['chomage_jeunes_fr', 'fr'], ['chomage_jeunes_ze', 'ea']].forEach(function (p) {
+    [['chomage_jeunes_fr', 'fr'], ['chomage_jeunes_ue', 'eu']].forEach(function (p) {
       var m = {}; MO[p[1]].forEach(function (v, i) { m[key(i)] = v; });
       fm.filter(function (r) { return r.indicateur === p[0] && !isNaN(+r.valeur); }).forEach(function (r) { m[r.periode] = +r.valeur; });
       var out = [], i = 0; while (m[key(i)] != null) { out.push(m[key(i)]); i++; } MO[p[1]] = out;
@@ -879,19 +879,19 @@ function main(FEED) {
   })();
   var moLab = function (i) { return new Date(MO.start[0], MO.start[1] + i, 1).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }); };
   (function () {
-    var n = MO.fr.length - 1, ne = MO.ea.length - 1, g = Math.round((MO.fr[n] - MO.ea[Math.min(n, ne)]) * 10) / 10;
+    var n = MO.fr.length - 1, ne = MO.eu.length - 1, g = Math.round((MO.fr[n] - MO.eu[Math.min(n, ne)]) * 10) / 10;
     var set = function (id, html, c) { var e = document.getElementById(id); e.innerHTML = html; if (c != null) e.className = 'delta ' + c; };
     set('u-lab', 'Chômage des moins de 25 ans · ' + new Date(MO.start[0], MO.start[1] + n, 1).toLocaleDateString('fr-FR', { month: 'long' }));
     set('u-num', fmt(MO.fr[n], 1) + ' % <small>en France</small>');
-    set('u-delta', fmt(Math.abs(g), 1) + ' pt ' + (g > 0 ? 'au-dessus' : 'en dessous') + ' de la zone euro', g > 0 ? 'up' : 'dn');
-    set('u-t', fmt(MO.fr[n - 1], 1) + ' % le mois précédent, ' + fmt(MO.fr[Math.max(0, n - 12)], 1) + ' % il y a un an. Zone euro : ' + fmt(MO.ea[ne], 1) + ' % (Eurostat, données corrigées des variations saisonnières).');
-    document.getElementById('teaser-month').innerHTML = 'Chômage des moins de 25 ans <b>' + fmt(MO.fr[n], 1) + '&nbsp;%</b>, contre <b>' + fmt(MO.ea[ne], 1) + '&nbsp;%</b> dans la zone euro';
+    set('u-delta', fmt(Math.abs(g), 1) + ' pt ' + (g > 0 ? 'au-dessus' : 'en dessous') + ' de l\'UE', g > 0 ? 'up' : 'dn');
+    set('u-t', fmt(MO.fr[n - 1], 1) + ' % le mois précédent, ' + fmt(MO.fr[Math.max(0, n - 12)], 1) + ' % il y a un an. UE : ' + fmt(MO.eu[ne], 1) + ' % (Eurostat, données corrigées des variations saisonnières).');
+    document.getElementById('teaser-month').innerHTML = 'Chômage des moins de 25 ans <b>' + fmt(MO.fr[n], 1) + '&nbsp;%</b>, contre <b>' + fmt(MO.eu[ne], 1) + '&nbsp;%</b> dans l\'UE';
   })();
   function drawMonth() {
     var box = document.getElementById('mo-u'); box.textContent = '';
-    var W = Math.max(240, box.clientWidth), H = 140, m = { t: 10, r: 40, b: 18, l: 4 }, fr = MO.fr, ea = MO.ea, n = Math.max(fr.length, ea.length);
+    var W = Math.max(240, box.clientWidth), H = 140, m = { t: 10, r: 40, b: 18, l: 4 }, fr = MO.fr, ea = MO.eu, n = Math.max(fr.length, ea.length);
     var x = d3.scaleLinear().domain([0, n - 1]).range([m.l, W - m.r]), y = d3.scaleLinear().domain([12, 24]).range([H - m.b, m.t]);
-    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Chômage des moins de 25 ans, France et zone euro');
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Chômage des moins de 25 ans, France et Union européenne');
     y.ticks(3).forEach(function (t) { svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)'); });
     var line = d3.line().x(function (d, i) { return x(i); }).y(function (d) { return y(d); }).curve(d3.curveMonotoneX);
     svg.append('path').datum(ea).attr('d', line).attr('fill', 'none').attr('stroke', 'var(--ea)').attr('stroke-width', 1.6).attr('stroke-dasharray', '5 4');
@@ -900,7 +900,7 @@ function main(FEED) {
     svg.append('text').attr('x', m.l).attr('y', H - 3).text(moLab(0)).style('font-size', '10px');
     svg.append('text').attr('x', W - m.r).attr('y', H - 3).attr('text-anchor', 'end').text(moLab(n - 1)).style('font-size', '10px');
     hover(box, svg, H, m, d3.range(n).map(function (i) {
-      return { px: x(i), t: new Date(MO.start[0], MO.start[1] + i, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }), rows: [[fr, 'var(--fr)', 'France'], [ea, 'var(--ea)', 'Zone euro']].filter(function (s) { return s[0][i] != null; }).map(function (s) { return { c: s[1], n: s[2], py: y(s[0][i]), s: fmt(s[0][i], 1) + ' %' }; }) };
+      return { px: x(i), t: new Date(MO.start[0], MO.start[1] + i, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }), rows: [[fr, 'var(--fr)', 'France'], [ea, 'var(--ea)', 'UE']].filter(function (s) { return s[0][i] != null; }).map(function (s) { return { c: s[1], n: s[2], py: y(s[0][i]), s: fmt(s[0][i], 1) + ' %' }; }) };
     }));
   }
 
@@ -912,7 +912,7 @@ function main(FEED) {
   var lastEq = EQ.fr.length - 1;
   var FACTS = SER.FACTS.concat([
     'L\'Éducation nationale dépense <b>' + fmt(BUDGET / 365 / 1e6) + ' M€ par jour</b>, soit <b>' + fmt(BUDGET / POP) + ' €</b> par Français et par an.',
-    'Chez les moins de 25 ans, le chômage atteint <b>' + fmt(MO.fr[nU], 1) + ' %</b> en France, contre ' + fmt(MO.ea[MO.ea.length - 1], 1) + ' % dans la zone euro.',
+    'Chez les moins de 25 ans, le chômage atteint <b>' + fmt(MO.fr[nU], 1) + ' %</b> en France, contre ' + fmt(MO.eu[MO.eu.length - 1], 1) + ' % dans l\'UE.',
     'Les 12 Md€ que la France dépense en plus de la moyenne européenne paieraient <b>' + fmt(Math.round(12e9 / SMIC_AN / 1000) * 1000) + ' salariés au Smic</b> pendant un an.',
     'L\'écart social en maths était de <b>' + EQ.fr[0] + ' points</b> en 2003, ' + EQ.fr[1] + ' en 2012 et ' + EQ.fr[lastEq] + ' en 2025. Il baisse surtout parce que les meilleurs élèves reculent.',
     'Chômage des moins de 25 ans il y a un an : <b>' + fmt(MO.fr[Math.max(0, nU - 12)], 1) + ' %</b>. Aujourd\'hui : ' + fmt(MO.fr[nU], 1) + ' %.'
@@ -984,7 +984,7 @@ function main(FEED) {
       '<b>On diplôme plus que nos voisins.</b> ' + fmt(at(S.te.fr, 2025), 1) + ' % des 25-34 ans sont diplômés du supérieur, contre ' + fmt(at(S.te.eu, 2025), 1) + ' % dans l\'UE, et le décrochage est plus bas (' + fmt(at(S.el.fr, 2025), 1) + ' % contre ' + fmt(at(S.el.eu, 2025), 1) + ' %).',
       '<b>Mais les élèves apprennent moins.</b> À PISA, la France est passée de la 11<sup>e</sup> à la 30<sup>e</sup> place en maths depuis 2000, et se situe désormais sous la moyenne de l\'OCDE dans les trois domaines. À 17 ans, 14 % des jeunes lisent mal.',
       '<b>Et l\'école corrige peu les inégalités.</b> En maths, 95 points séparent les élèves favorisés des élèves défavorisés, contre 83 en moyenne dans l\'OCDE.',
-      '<b>Les jeunes trouvent moins vite un emploi.</b> Le chômage des moins de 25 ans est à ' + fmt(MO.fr[nU], 1) + ' %, contre ' + fmt(MO.ea[MO.ea.length - 1], 1) + ' % dans la zone euro, alors que la France dépense plus que l\'UE pour l\'éducation (5,1 % du PIB contre 4,7 %).',
+      '<b>Les jeunes trouvent moins vite un emploi.</b> Le chômage des moins de 25 ans est à ' + fmt(MO.fr[nU], 1) + ' %, contre ' + fmt(MO.eu[MO.eu.length - 1], 1) + ' % dans l\'UE, alors que la France dépense plus que l\'UE pour l\'éducation (5,1 % du PIB contre 4,7 %).',
       '<b>Au bulletin, ' + pres.filter(function (r) { return nfmt(r.n) === nfmt(pres[0].n); }).map(function (r) { return r.g.n; }).join(' et ') + (nfmt(pres[1].n) === nfmt(pres[0].n) ? ' font' : ' fait') + ' le mieux (' + nfmt(pres[0].n) + '/20)</b>, ' + pres[pres.length - 1].g.n + ' le moins bien (' + nfmt(pres[pres.length - 1].n) + '/20). La note mesure si la France progresse plus vite que ses voisins, année après année.'
     ];
     document.getElementById('sum-list').innerHTML = items.map(function (t) { return '<li>' + t + '</li>'; }).join('');
@@ -1047,8 +1047,8 @@ function main(FEED) {
     } else if (kind === 'chomage') {
       f = frame('Chômage des moins de 25 ans'); var n = MO.fr.length - 1;
       f.x.fillStyle = '#1c1d22'; f.x.font = '400 150px Newsreader, Georgia, serif'; f.x.fillText(fmt(MO.fr[n], 1) + ' %', 76, 360);
-      f.x.fillStyle = '#c43d3d'; f.x.font = '600 38px "Inter Tight", system-ui, sans-serif'; f.x.fillText('en France, contre ' + fmt(MO.ea[MO.ea.length - 1], 1) + ' % dans la zone euro', 80, 430);
-      lines(f, [{ v: MO.ea, c: '#b0812a', dash: 1, label: 'Zone euro' }, { v: MO.fr, c: '#2f5bd3', main: 1, label: 'France' }], 500, 420, moLab(0), moLab(n), [12, 24]);
+      f.x.fillStyle = '#c43d3d'; f.x.font = '600 38px "Inter Tight", system-ui, sans-serif'; f.x.fillText('en France, contre ' + fmt(MO.eu[MO.eu.length - 1], 1) + ' % dans l\'UE', 80, 430);
+      lines(f, [{ v: MO.eu, c: '#b0812a', dash: 1, label: 'UE' }, { v: MO.fr, c: '#2f5bd3', main: 1, label: 'France' }], 500, 420, moLab(0), moLab(n), [12, 24]);
       f.x.fillStyle = '#1c1d22'; f.x.font = '400 44px Newsreader, Georgia, serif'; wrapText(f.x, 'Plus d\'un jeune actif sur cinq est au chômage en France.', 80, 1050, f.W - 160, 56); foot(f, 'Eurostat');
     } else {
       f = frame('PISA · élèves de 15 ans');
