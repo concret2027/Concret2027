@@ -131,7 +131,8 @@
   function equiper(root) {
     Array.prototype.forEach.call((root || document).querySelectorAll(SEL), function (card) {
       if (card.dataset.partage || card.querySelector('.share, .pt-share')) return; // data-partage="non" : bloc d'en-tête, rien à partager
-      if (card.parentElement && card.parentElement.closest(SEL) && !card.matches('.today .metric')) return;
+      // Un bloc dans un autre n'a pas son propre bouton, sauf une courbe d'un dépliant (« Voir les autres courbes ») : on peut la partager seule.
+      if (card.parentElement && card.parentElement.closest(SEL) && !card.matches('.today .metric') && !card.parentElement.closest('.fold')) return;
       card.dataset.partage = '1';
       var b = document.createElement('button'); b.type = 'button'; b.className = 'share pt-share'; b.textContent = 'Partager';
       b.setAttribute('aria-label', 'Partager ce bloc en image');
