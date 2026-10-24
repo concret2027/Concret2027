@@ -380,6 +380,14 @@ footer p { margin: 0; } footer a { color: inherit; }
           <table class="cmp mo-tab"><thead><tr><th></th><th>12 derniers mois</th><th>Sur un an</th></tr></thead><tbody id="p-tab"></tbody></table>
           <span class="mo-t" id="p-t"></span>
         </div>
+        <div class="mo">
+          <span class="mo-lab" id="q-lab">Densité carcérale</span>
+          <span class="mo-num" id="q-num">—</span>
+          <span class="delta" id="q-delta"></span>
+          <div class="key"><span><i style="background:var(--fr)"></i>France, au 1er de chaque mois</span></div>
+          <div class="chart" id="mo-q"></div>
+          <span class="mo-t" id="q-t"></span>
+        </div>
       </div>
     </div>
   </details>
@@ -478,7 +486,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <details class="acc" id="methode">
     <summary><span class="acc-h">Méthode et sources</span><span class="acc-t">D'où viennent les chiffres, et leurs limites</span><span class="acc-cta"></span></summary>
     <div class="acc-body card" id="methode-body">
-      <p class="note"><b>Sources.</b> Homicides, vols avec violence, cambriolages de logement : Eurostat (crim_gen de 1993 à 2007, rapporté à la population au 1er janvier par Concret ; crim_off_cat depuis 2008), faits enregistrés par la police et la gendarmerie. Violences sexuelles : Eurostat (crim_off_cat). Délinquance dans le quartier : Eurostat (ilc_mddw03), enquête européenne auprès des ménages EU-SILC. Prisons : Eurostat (crim_pris_cap), taux d'occupation calculé par Concret (détenus ÷ places). Juges et policiers : Eurostat (crim_just_job). Obligations de quitter le territoire et départs : Eurostat (migr_eiord, migr_eirtn), rapport calculé par Concret. Dépense pour l'ordre et la sécurité : Eurostat (gov_10a_exp). Chiffres du mois : SSMSI, service statistique du ministère de l'Intérieur (base des séries chronologiques, data.gouv.fr).</p>
+      <p class="note"><b>Sources.</b> Homicides, vols avec violence, cambriolages de logement : Eurostat (crim_gen de 1993 à 2007, rapporté à la population au 1er janvier par Concret ; crim_off_cat depuis 2008), faits enregistrés par la police et la gendarmerie. Violences sexuelles : Eurostat (crim_off_cat). Délinquance dans le quartier : Eurostat (ilc_mddw03), enquête européenne auprès des ménages EU-SILC. Prisons : Eurostat (crim_pris_cap), taux d'occupation calculé par Concret (détenus ÷ places). Juges et policiers : Eurostat (crim_just_job). Places de prison pour 100 000 habitants : Eurostat (crim_pris_cap), rapportées à la population par Concret. Prisons chaque mois : ministère de la Justice, « Mesure de l'incarcération ». Obligations de quitter le territoire et départs : Eurostat (migr_eiord, migr_eirtn), rapport calculé par Concret. Dépense pour l'ordre et la sécurité : Eurostat (gov_10a_exp). Chiffres du mois : SSMSI, service statistique du ministère de l'Intérieur (base des séries chronologiques, data.gouv.fr).</p>
       <p class="note"><b>Limites.</b> Les faits enregistrés dépendent des plaintes et des définitions de chaque pays : la note porte sur leur évolution, pas sur leur niveau. Eurostat ne publie pas de moyenne européenne pour ces séries : la France est comparée à l'Allemagne. L'Allemagne ne publie son nombre de juges qu'une année sur deux : la France est comparée à l'Espagne pour ce chiffre. Homicides, vols avec violence et cambriolages de logement : deux tables Eurostat, de 1993 à 2007 puis depuis 2008 ; l'évolution entre 2007 et 2008 n'est pas comptée. Les autres séries commencent en 2008 ou plus tard. Le rapport entre départs et obligations de quitter le territoire n'est pas un taux d'exécution exact. Brouillon : délais de jugement et confiance dans la justice (Conseil de l'Europe, Eurobaromètre) restent à ajouter après vérification à la source.</p>
     </div>
   </details>
@@ -854,7 +862,7 @@ function main(FEED) {
   var EN_PLUS = {
     pers: function (w) { return [serieCard(w, 'ch-a-sex', AFF.sex, 'affiché, sans note', { affiche: true })]; },
     pris: function (w) { return [serieCard(w, 'ch-a-det', AFF.detenus, 'affiché, sans note', { affiche: true })]; },
-    just: function (w) { return [serieCard(w, 'ch-a-pol', AFF.police, 'affiché, sans note', { affiche: true }), serieCard(w, 'ch-a-dep', AFF.depense, 'affiché, sans note', { affiche: true })]; },
+    moy: function (w) { return [serieCard(w, 'ch-a-dep', AFF.depense, 'affiché, sans note', { affiche: true })]; },
     eloi: function (w) {
       var O = AFF.oqtf, n = O.y.length - 1; while (n > 0 && O.n.fr[n] == null) n--;
       O.note = 'En ' + O.y[n] + ' : ' + fmt(O.n.fr[n]) + ' obligations en France, ' + fmt(O.n.de[n]) + ' en Allemagne, ' + fmt(O.n.es[n]) + ' en Espagne, ' + fmt(O.n.ue[n]) + ' dans toute l\'UE ; départs : ' + fmt(O.nr.fr[n]) + ' en France, ' + fmt(O.nr.de[n]) + ' en Allemagne.';
@@ -917,7 +925,7 @@ function main(FEED) {
       if (c.regle === 'composite') return 'le point de l\'année est la part des éléments où la France progresse mieux que son voisin';
       if (c.regle === 'niveau') return 'comparé chaque année à la moyenne de l\'UE (point si la France fait mieux)';
       if (c.regle === 'ecart') return 'point si l\'écart français est plus faible que celui de l\'UE, ou s\'il se réduit plus vite';
-      return 'point si la France progresse mieux que ' + refN(c, 2) + (c.low ? ' (ici, une baisse est un progrès)' : '');
+      return 'point si la France progresse mieux que ' + refN(c, 2) + (c.low ? ' (ici, une baisse est un progrès)' : ' (ici, une hausse compte comme un progrès)');
     };
     // Les indicateurs d'un thème qui suivent la même règle sont regroupés en une phrase.
     var liste = function (a) { return a.length > 1 ? a.slice(0, -1).join(', ') + ' et ' + a[a.length - 1] : a[0]; };
@@ -968,33 +976,43 @@ function main(FEED) {
     var el = document.getElementById('p-delta'); el.textContent = sg(d.e, 1) + ' % sur un an'; el.className = 'delta ' + (d.e > 0 ? 'up' : 'dn');
     setHtml('p-tab', ['viol', 'vols', 'camb', 'hom'].map(function (k) { var q = MO[k], z = douze(q); return '<tr class="nm"><td>' + esc(q.l) + '</td><td>' + fmt(z.a) + ' <small>' + esc(q.unite) + '</small></td><td>' + sg(z.e, 1) + ' %</td></tr>'; }).join(''));
     setHtml('p-t', 'Chiffres de ' + moName(o, n) + '. « Sur un an » : total des 12 derniers mois comparé aux 12 mois précédents. ' + esc(MO.src.note) + ' France seule : il n\'existe pas de chiffre mensuel comparable chez nos voisins, ces chiffres ne comptent donc pas dans la note. Source : ' + lien(MO.src, MO.src.source) + '.');
-    setHtml('teaser-month', 'Violences physiques enregistrées : <b>' + sg(d.e, 1) + '&nbsp;%</b> sur les 12 derniers mois (à fin ' + moDate(o, n).toLocaleDateString('fr-FR', { month: 'long' }) + ')');
+    // Prisons : densité au 1er du mois (ministère de la Justice).
+    var P = MO.pris, k = P.v.length - 1; while (k > 0 && P.v[k] == null) k--;
+    var k12 = k - 12, au = function (i) { return '1er ' + moDate(P, i).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); };
+    setHtml('q-lab', 'Densité carcérale · au ' + au(k));
+    setHtml('q-num', fmt(P.v[k], 1) + ' % <small>détenus pour 100 places</small>');
+    var qd = document.getElementById('q-delta'); if (k12 >= 0 && P.v[k12] != null) { var g = P.v[k] - P.v[k12]; qd.textContent = sg(g, 1) + ' pt sur un an'; qd.className = 'delta ' + (g > 0 ? 'up' : 'dn'); } else qd.hidden = true;
+    setHtml('q-t', fmt(P.det[k]) + ' détenus pour ' + fmt(P.places[k]) + ' places opérationnelles ; dans les maisons d\'arrêt (personnes en attente de jugement et courtes peines) : ' + fmt(P.ma, 1) + ' % ; ' + fmt(P.mat) + ' matelas au sol. ' + (P.v.some(function (x) { return x == null; }) ? esc(P.manque_txt) + ' ' : '') + 'France seule, chiffre mensuel du ministère ; la comparaison avec les voisins, annuelle, est dans le thème Prisons. Source : ' + lien({ url: P.url_last }, P.source) + '.');
+    setHtml('teaser-month', 'Violences physiques enregistrées : <b>' + sg(d.e, 1) + '&nbsp;%</b> sur un an · Prisons : <b>' + fmt(P.v[k], 1) + '&nbsp;%</b> d\'occupation au ' + au(k));
   })();
-  function moChart(id, o) {
-    var box = document.getElementById(id); box.textContent = '';
+  function moChart(id, o, dec, suf) {
+    var box = document.getElementById(id); box.textContent = ''; dec = dec || 0; suf = suf == null ? ' ' + o.unite : suf;
     var v = o.v.slice(-36), off = o.v.length - v.length, W = Math.max(240, box.clientWidth), H = 140, m = { t: 10, r: 54, b: 18, l: 4 };
-    var x = d3.scaleLinear().domain([0, v.length - 1]).range([m.l, W - m.r]), y = d3.scaleLinear().domain(d3.extent(v)).nice().range([H - m.b, m.t]);
+    var li = v.length - 1; while (li > 0 && v[li] == null) li--;
+    var x = d3.scaleLinear().domain([0, v.length - 1]).range([m.l, W - m.r]), y = d3.scaleLinear().domain(d3.extent(v.filter(function (d) { return d != null; }))).nice().range([H - m.b, m.t]);
     var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', o.l + ', France, chaque mois');
     y.ticks(3).forEach(function (t) { svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)'); svg.append('text').attr('x', W - m.r + 4).attr('y', y(t) + 4).text(fmt(t)).style('font-size', '10px'); });
-    svg.append('path').datum(v).attr('d', d3.line().x(function (d, i) { return x(i); }).y(function (d) { return y(d); })).attr('fill', 'none').attr('stroke', 'var(--fr)').attr('stroke-width', 2.2);
-    svg.append('circle').attr('cx', x(v.length - 1)).attr('cy', y(v[v.length - 1])).attr('r', 3).attr('fill', 'var(--fr)');
+    var pts = v.map(function (d, i) { return { i: i, d: d }; }).filter(function (q) { return q.d != null; });
+    svg.append('path').datum(pts).attr('d', d3.line().x(function (q) { return x(q.i); }).y(function (q) { return y(q.d); })).attr('fill', 'none').attr('stroke', 'var(--fr)').attr('stroke-width', 2.2);
+    svg.append('circle').attr('cx', x(li)).attr('cy', y(v[li])).attr('r', 3).attr('fill', 'var(--fr)');
     svg.append('text').attr('x', m.l).attr('y', H - 3).text(moDate(o, off).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })).style('font-size', '10px');
     svg.append('text').attr('x', W - m.r).attr('y', H - 3).attr('text-anchor', 'end').text(moDate(o, o.v.length - 1).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })).style('font-size', '10px');
-    hover(box, svg, H, m, v.map(function (d, i) { return { px: x(i), t: moName(o, off + i, 1), rows: [{ c: 'var(--fr)', n: 'France', py: y(d), s: fmt(d) + ' ' + o.unite }] }; }));
+    hover(box, svg, H, m, pts.map(function (q) { return { px: x(q.i), t: moName(o, off + q.i, 1), rows: [{ c: 'var(--fr)', n: 'France', py: y(q.d), s: fmt(q.d, dec) + suf }] }; }));
   }
-  var drawMonth = function () { moChart('mo-p', MO.viol); };
+  var drawMonth = function () { moChart('mo-p', MO.viol); moChart('mo-q', MO.pris, 1, ' %'); };
 
   // ===== Depuis votre dernière visite : seulement ce qui a vraiment changé (nouveau mois de délinquance, nouvelle année, actualités) =====
   try {
     (function () {
       var now = Date.now(), vis = document.getElementById('visit'), o = MO.viol, n = o.v.length, ey = lastOf(C.eloi, 'fr').y;
-      var snap = { t: now, n: n, ey: ey }, st = JSON.parse(localStorage.getItem('securite-visites') || 'null');
+      var snap = { t: now, n: n, ey: ey, pk: MO.pris.v.length }, st = JSON.parse(localStorage.getItem('securite-visites') || 'null');
       if (!st) st = { base: null, cur: snap, seen: now };
       else if (now - st.seen > 3600e3) { st.base = st.cur; st.cur = snap; }
       st.seen = now; localStorage.setItem('securite-visites', JSON.stringify(st));
       var lv = st.base;
       if (!lv) { vis.textContent = 'Revenez plus tard : cette ligne vous dira ce qui a changé depuis votre visite.'; vis.hidden = false; return; }
       var dv = Math.round((now - lv.t) / 864e5), when = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h', pv = [];
+      var P = MO.pris, pk = P.v.length; if (lv.pk && pk > lv.pk) pv.push('prisons : <b>' + fmt(P.v[pk - 1], 1) + ' %</b> d\'occupation au 1er ' + moDate(P, pk - 1).toLocaleDateString('fr-FR', { month: 'long' }));
       if (n > lv.n) pv.push('chiffres de la délinquance de ' + moName(o, n - 1) + ' : violences physiques <b>' + sg(douze(o).e, 1) + ' %</b> sur 12 mois');
       if (ey > lv.ey) pv.push('obligations de quitter le territoire en ' + ey + ' : <b>' + fmt(lastOf(C.eloi, 'fr').v) + ' départs pour 100</b>');
       var na = (DS.actu_securite || []).filter(function (a) { return a.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
