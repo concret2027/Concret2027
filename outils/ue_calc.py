@@ -120,6 +120,26 @@ def crim(iccs):
         return {g: dict(list({y: v for y, v in a.get(g, {}).items() if y <= 2007}.items()) + list({y: v for y, v in b.get(g, {}).items() if y >= 2008}.items())) for g in UE}
     return f
 
+_pisa = {}
+def pisa(dom):
+    """Scores moyens PISA des pays de l'UE, toutes vagues : OCDE, PISA 2025 Results (Volume I), annexe B1,
+    tableaux I.B1.2a.36 (sciences), .37 (compréhension de l'écrit), .38 (mathématiques) (StatLink mrq53f)."""
+    def f():
+        if not _pisa:
+            import openpyxl, tempfile
+            noms = {'Czech Republic': 'CZ', 'Slovak Republic': 'SK'}
+            noms.update({v: k for k, v in NOM_EN.items()})
+            with tempfile.NamedTemporaryFile(suffix='.xlsx') as t:
+                t.write(get('https://stat.link/mrq53f')); t.flush()
+                wb = openpyxl.load_workbook(t.name, read_only=True, data_only=True)
+                for tab, k in (('Table I.B1.2a.36', 's'), ('Table I.B1.2a.37', 'r'), ('Table I.B1.2a.38', 'm')):
+                    rows = list(wb[tab].iter_rows(values_only=True))
+                    cols = [(i, int(str(h).split()[1])) for i, h in enumerate(rows[7]) if h and str(h).startswith('PISA ') and '\n' not in str(h)]
+                    _pisa[k] = {noms[n]: {y: r[i] for i, y in cols if isinstance(r[i], (int, float))} for r in rows[9:] for n in [str(r[0] or '').strip().rstrip('*').strip()] if n in noms}
+        return _pisa[dom]
+    return f
+
+
 _prisons = {}
 def prisons(ind):
     def f():
@@ -157,14 +177,22 @@ INDICATEURS = [
          methode="participation des pays de l'UE publiée par l'OCDE, pondérée par leur population", source="OCDE, données des programmes de dépistage ; population : Eurostat, demo_gind"),
     dict(cle='sante.dep.col', periodes=[(2005, None)], taux=lambda: ocde('OECD.ELS.HD,DSD_HEALTH_PROC@DF_SCREEN,', dict(CANCER_SITE='CICDCRVX', AGE='Y20T69', SEX='F', DATA_SRCE='PRG')),
          methode="participation des pays de l'UE publiée par l'OCDE, pondérée par leur population", source="OCDE, données des programmes de dépistage ; population : Eurostat, demo_gind"),
+    # Éducation : PISA, par vague (la note compare l'évolution d'une vague à la suivante).
+    dict(cle='education.PI.m', periodes=[(2003, None)], taux=pisa('m'), pas='vagues',
+         methode="scores des pays de l'UE pondérés par leur population", source="OCDE, PISA 2025, tableau I.B1.2a.38 ; population : Eurostat, demo_gind"),
+    dict(cle='education.PI.r', periodes=[(2000, None)], taux=pisa('r'), pas='vagues',
+         methode="scores des pays de l'UE pondérés par leur population", source="OCDE, PISA 2025, tableau I.B1.2a.37 ; population : Eurostat, demo_gind"),
+    dict(cle='education.PI.s', periodes=[(2006, None)], taux=pisa('s'), pas='vagues',
+         methode="scores des pays de l'UE pondérés par leur population", source="OCDE, PISA 2025, tableau I.B1.2a.36 ; population : Eurostat, demo_gind"),
 ]
 
 
 def critere(o, cle):
+    """Série visée par cle : page.critère (dans C), page.critère.élément (dans sous), ou chemin direct (education.PI.m)."""
     p, k = cle.split('.', 1)
-    c = o['series'][p]['C']
+    c = o['series'][p]
     for part in k.split('.'):
-        c = c[part] if part in c else c['sous'][part]
+        c = c['C'][part] if 'C' in c and part in c['C'] else c['sous'][part] if part in c.get('sous', {}) else c[part]
     return c
 
 
@@ -191,14 +219,15 @@ def calcule(ind, ans, dec):
         b = b or ans[-1]
         nb, cv, sous = [], [], []
         for y in [y for y in ans if a <= y <= b]:
+            av = ans[ans.index(y) - 1]  # année (ou vague PISA) précédente de la série
             pays = [g for g in UE if a_la(g, y)]
             if pays and couv(pays, y) >= SEUIL:
                 v = moy(pays, y); niv[y] = round(v, dec)
             if y == a:
                 continue
-            deux = [g for g in UE if a_la(g, y) and a_la(g, y - 1)]
+            deux = [g for g in UE if a_la(g, y) and a_la(g, av)]
             if deux and couv(deux, y) >= SEUIL:
-                ev[y] = round(moy(deux, y) - moy(deux, y - 1), 3)
+                ev[y] = round(moy(deux, y) - moy(deux, av), 3)
                 nb.append(len(deux)); cv.append(couv(deux, y))
             elif any(a_la(g, y) for g in UE):
                 sous.append(y)
@@ -209,7 +238,7 @@ def calcule(ind, ans, dec):
         trous = {}
         if faits:
             for g in UE:
-                manque = [y for y in range(min(faits), max(faits) + 1) if y in niv and not a_la(g, y)]
+                manque = [y for y in ans if min(faits) <= y <= max(faits) and y in niv and not a_la(g, y)]
                 if manque and len(manque) < len(faits) and P[g].get(manque[0], 0) >= 0.02 * sum(P[x].get(manque[0], 0) for x in UE):
                     trous[g] = manque
         info.append(dict(de=a, a=fin, pays_min=min(nb) if nb else 0, pays_max=max(nb) if nb else 0, couv_min=round(min(cv), 1) if cv else None, sous_seuil=[y for y in sous if y <= fin], trous=trous))
@@ -231,6 +260,8 @@ def note(ind, info):
         return ', '.join(r)
     tr = {g: l for i in ok for g, l in i.get('trous', {}).items()}
     fin = (" La courbe de la moyenne bouge aussi quand un grand pays manque (%s) ; la note, elle, compare toujours les mêmes pays d'une année à l'autre." % ' ; '.join('%s : %s' % (NOM_FR[g], annees(l)) for g, l in tr.items())) if tr else ''
+    if ind.get('pas') == 'vagues':
+        return tete + "Chaque évolution porte sur les pays qui ont participé aux deux vagues (%s) ; sous 70 %% de la population de l'UE, la moyenne de l'OCDE est gardée pour cette vague.%s" % (per, fin.replace("d'une année à l'autre", "d'une vague à l'autre"))
     return tete + "Chaque évolution porte sur les pays qui publient les deux années (%s) ; sous 70 %% de la population de l'UE, l'année n'est pas comptée.%s" % (per, fin)
 
 
