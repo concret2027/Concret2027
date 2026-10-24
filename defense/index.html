@@ -724,6 +724,13 @@ function main(FEED) {
     box.appendChild(pend);
     GOVS.slice().reverse().forEach(function (g, i) {
       var note = noteOf(g), n = countOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i >= 2;
+      // Aucune comparaison possible (année pas encore publiée, seulement estimée par l'OTAN) : comme le gouvernement en cours.
+      if (!n) {
+        row.className = 'gov pending'; row.innerHTML = '<div class="badge p">à venir</div><div class="who"><b></b> <span></span></div><div class="note"></div>';
+        row.querySelector('b').textContent = g.n; row.querySelector('.who span').textContent = '· ' + (g.y0 === g.y1 ? g.y0 : g.y0 + '-' + g.y1) + ' · ' + g.p;
+        row.querySelector('.note').textContent = 'Pas encore noté : les chiffres de ' + (g.y0 === g.y1 ? g.y0 : g.y0 + ' à ' + g.y1) + ' ne sont pas encore publiés (l\'OTAN n\'en donne qu\'une estimation).';
+        box.appendChild(row); return;
+      }
       var nt = THEMES.filter(function (t) { return SAN.noteTheme(g, t) != null; }).length;
       var badge = document.createElement('div'); badge.className = 'badge ' + (n < MIN_N ? 'p' : cls(note)); badge.innerHTML = '<span></span>';
       badge.firstChild.textContent = note == null ? '—' : nfmt(note); var sm = document.createElement('small'); sm.textContent = '/20'; badge.appendChild(sm);
@@ -811,7 +818,8 @@ function main(FEED) {
       if (s.dots) s.data.forEach(function (d) { if (d.v == null) return; svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
       var l = s.data.filter(function (d) { return d.v != null; }).pop();
       svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
-      ends.push({ y: y(l.v), t: fmt(l.v, o.dec == null ? 1 : o.dec), c: s.c, x: x(l.x), main: s.main });
+      // noEnd : la France s'arrête à la dernière année publiée, les estimations portent le chiffre de fin.
+      if (!s.noEnd) ends.push({ y: y(l.v), t: fmt(l.v, o.dec == null ? 1 : o.dec), c: s.c, x: x(l.x), main: s.main });
     });
     ends.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
@@ -833,7 +841,7 @@ function main(FEED) {
   // France : trait plein jusqu'à la dernière année publiée, pointillés pour les estimations.
   var frSeries = function (c) {
     var e = estDe(c); if (!e.length) return [{ c: 'var(--fr)', main: 1, data: serOf(c, 'fr'), dots: c.y.length < 8 }];
-    return [{ c: 'var(--fr)', n: 'France, estimation de l\'OTAN', dash: 1, data: serOf(c, 'fr').filter(function (d) { return d.x >= e[0] - 1; }) }, { c: 'var(--fr)', main: 1, data: serOf(c, 'fr').filter(function (d) { return d.x < e[0]; }) }];
+    return [{ c: 'var(--fr)', n: 'France, estimation de l\'OTAN', dash: 1, data: serOf(c, 'fr').filter(function (d) { return d.x >= e[0] - 1; }) }, { c: 'var(--fr)', main: 1, noEnd: 1, data: serOf(c, 'fr').filter(function (d) { return d.x < e[0]; }) }];
   };
   function keyHtml(c) {
     return ['fr', 'ue', 'ue_calc', 'de', 'es', 'us'].filter(function (w) { return has(c, w); }).map(function (w) {
