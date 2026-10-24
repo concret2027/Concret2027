@@ -322,7 +322,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card" id="profil" aria-labelledby="pr-t">
     <h2 id="pr-t"><span class="eyebrow">Le profil de chacun</span>Finances, éducation, santé : la note de chaque mission</h2>
-    <p class="note"><b>Comment lire :</b> chaque pointe est une mission, notée sur 20. Plus un point est loin du centre, plus la France a fait mieux que ses voisins sous ce président ou ce gouvernement. <b>Le triangle pointillé, 10, est le niveau de nos voisins.</b></p>
+    <p class="note"><b>Comment lire :</b> chaque pointe est une mission, notée sur 20. Plus un point est loin du centre, plus la France a fait mieux que la moyenne de l'UE sous ce président ou ce gouvernement. <b>La ligne pointillée, 10, est le niveau de la moyenne de l'UE.</b> L'échelle s'arrête juste au-dessus de la meilleure note affichée, pour que les écarts se voient.</p>
     <div class="chips" role="group" aria-label="Qui afficher"><button class="chip" id="radar-pres" aria-pressed="true">Présidents</button><button class="chip" id="radar-gov" aria-pressed="false">Gouvernements</button></div>
     <details class="pick"><summary>Choisir qui comparer</summary><div class="chips radar-who" id="radar-who" role="group" aria-label="Choisir qui comparer"></div></details>
     <div class="radar" id="radar"></div>
@@ -348,18 +348,30 @@ footer p { margin: 0; } footer a { color: inherit; }
   function draw() {
     var rows = data[kind].filter(function (r) { return chosen[r.n]; });
     var box = document.getElementById('radar'); box.textContent = '';
-    var W = Math.min(520, Math.max(300, box.clientWidth)), R = Math.min(W / 2 - 34, 190), H = R * 1.5 + 84, cx = W / 2, cy = R + 34, n = MISS.length;
-    var ang = function (i) { return -Math.PI / 2 + i * 2 * Math.PI / n; }, pt = function (i, v) { return [cx + Math.cos(ang(i)) * R * v / 20, cy + Math.sin(ang(i)) * R * v / 20]; };
-    var h = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Notes sur 20 par mission">';
-    [5, 10, 15, 20].forEach(function (v) {
+    // Échelle : juste au-dessus de la meilleure note affichée (12, 15 ou 20), pour que les écarts se voient ; 10 = moyenne de l'UE.
+    var vmax = 10; rows.forEach(function (r) { MISS.forEach(function (m) { if (r[m.k] != null && r[m.k] > vmax) vmax = r[m.k]; }); });
+    var S = vmax <= 11 ? 12 : vmax <= 14 ? 15 : 20, ring = S === 12 ? [3, 6, 9, 12] : S === 15 ? [5, 10, 15] : [5, 10, 15, 20];
+    if (ring.indexOf(10) < 0) ring.push(10);
+    // Noms de mission sur deux lignes au besoin (« Sécurité / et justice ») ; place réservée à gauche et à droite.
+    var lignes = function (l) { var w = l.split(' '); return w.length > 2 ? [w[0], w.slice(1).join(' ')] : [l]; };
+    var W = Math.min(520, Math.max(300, box.clientWidth)), side = 84, R = Math.min(W / 2 - side, 170), cx = W / 2, cy = R + 40, H = 2 * R + 84, n = MISS.length;
+    var ang = function (i) { return -Math.PI / 2 + i * 2 * Math.PI / n; }, pt = function (i, v) { return [cx + Math.cos(ang(i)) * R * Math.min(v, S) / S, cy + Math.sin(ang(i)) * R * Math.min(v, S) / S]; };
+    var h = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Notes sur 20 par mission, échelle de 0 à ' + S + '">';
+    ring.sort(function (a, b) { return a - b; }).forEach(function (v) {
       var p = MISS.map(function (_, i) { return pt(i, v).join(','); }).join(' ');
       h += '<polygon points="' + p + '" fill="none" stroke="' + (v === 10 ? 'var(--fg)' : 'var(--grid)') + '"' + (v === 10 ? ' stroke-dasharray="4 3"' : '') + '/>';
-      var q = pt(0, v); h += '<text x="' + (q[0] + 4) + '" y="' + (q[1] + 4) + '" class="rl">' + v + '</text>';
+      // Deux graduations seulement, sur les diagonales du haut, loin des points : 10 (moyenne de l'UE) à droite, le maximum à gauche.
+      if (v !== 10 && v !== S) return;
+      var a0 = pt(0, v), a1 = pt(v === 10 ? 1 : n - 1, v), q = [(a0[0] + a1[0]) / 2, (a0[1] + a1[1]) / 2];
+      h += '<text x="' + (q[0] + (v === 10 ? 9 : -4)) + '" y="' + (q[1] - (v === 10 ? 6 : 3)) + '" text-anchor="' + (v === 10 ? 'start' : 'end') + '" class="rl">' + (v === 10 ? '10 = moyenne UE' : v + ' sur 20') + '</text>';
     });
     MISS.forEach(function (m, i) {
-      var e = pt(i, 20), haut = e[1] < cy; h += '<line x1="' + cx + '" y1="' + cy + '" x2="' + e[0] + '" y2="' + e[1] + '" stroke="var(--grid)"/>';
-      // Nom de la mission au-dessus de la pointe du haut, sous les pointes du bas : la toile peut occuper toute la largeur.
-      h += '<text x="' + Math.max(40, Math.min(W - 40, e[0])) + '" y="' + (haut ? e[1] - 10 : e[1] + 22) + '" text-anchor="middle" class="ra">' + m.l + '</text>';
+      var e = pt(i, S), dx = e[0] - cx, dy = e[1] - cy, L = lignes(m.l);
+      h += '<line x1="' + cx + '" y1="' + cy + '" x2="' + e[0] + '" y2="' + e[1] + '" stroke="var(--grid)"/>';
+      // Haut : au-dessus ; bas : en dessous ; côtés : à côté de la pointe, aligné vers l'extérieur.
+      var side_ = Math.abs(dx) > Math.abs(dy), anchor = side_ ? (dx < 0 ? 'end' : 'start') : 'middle';
+      var x = side_ ? e[0] + (dx < 0 ? -8 : 8) : e[0], y0 = side_ ? e[1] + 4 - (L.length - 1) * 8 : dy < 0 ? e[1] - 10 - (L.length - 1) * 15 : e[1] + 20;
+      h += '<text x="' + x + '" y="' + y0 + '" text-anchor="' + anchor + '" class="ra">' + L.map(function (t, k) { return '<tspan x="' + x + '" dy="' + (k ? 15 : 0) + '">' + esc(t) + '</tspan>'; }).join('') + '</text>';
     });
     rows.forEach(function (r) {
       var c = colOf(r), pts = MISS.map(function (m, i) { return r[m.k] == null ? null : pt(i, r[m.k]); });
