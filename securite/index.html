@@ -410,7 +410,7 @@ footer p { margin: 0; } footer a { color: inherit; }
           <div class="metric">
             <span class="lab">Homicides volontaires</span>
             <div class="row"><span class="num" id="k-hom">—</span><span class="delta" id="k-hom-d"></span></div>
-            <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span></div>
+            <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>UE (calcul Concret)</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
             <div class="chart" id="sp-hom"></div>
             <div class="foot" id="k-hom-t"></div>
           </div>
@@ -512,7 +512,7 @@ function main(FEED) {
   var decOf = function (c) { return c.dec != null ? c.dec : c.unite === 'jours' || /100 000/.test(c.unite) ? 0 : 1; };
   var refDe = function (c) { return SAN.ref(c) !== 'ue'; };
   // Voisin de comparaison : la moyenne de l'UE, sinon l'Allemagne, ou l'Espagne (juges).
-  var REFN = { ue: ['UE', 'moyenne UE', 'la moyenne de l\'UE', 'de l\'UE'], de: ['Allemagne', 'Allemagne', 'l\'Allemagne', 'de l\'Allemagne'], es: ['Espagne', 'Espagne', 'l\'Espagne', 'de l\'Espagne'] };
+  var REFN = { ue: ['UE', 'moyenne UE', 'la moyenne de l\'UE', 'de l\'UE'], de: ['Allemagne', 'Allemagne', 'l\'Allemagne', 'de l\'Allemagne'], es: ['Espagne', 'Espagne', 'l\'Espagne', 'de l\'Espagne'], ue_calc: ['UE (calcul)', 'moyenne UE (calcul Concret)', 'la moyenne de l\'UE calculée par Concret', 'de la moyenne de l\'UE'] };
   var refN = function (c, f) { return REFN[SAN.ref(c)][f || 0]; };
   var nomRef = function (c) { return refN(c); };
 
@@ -833,11 +833,14 @@ function main(FEED) {
     else if (!has(c, 'us')) n.push(c.us_note || 'Pas de courbe pour les États-Unis : pas de mesure comparable.');
     var lastDe = c.de ? c.de.reduce(function (m, v, i) { return v != null ? i : m; }, -1) : -1, firstDe = c.de ? c.de.findIndex(function (v) { return v != null; }) : -1;
     var compte = !aff && SAN.ref(c) === 'de';
-    if (has(c, 'de') && lastDe < c.y.length - 1) n.push(compte ? 'L\'Allemagne ne publie plus ce chiffre après ' + c.y[lastDe] + ' : ces années ne sont pas comptées.' : 'Pas de chiffre allemand après ' + c.y[lastDe] + '.');
+    // Années après le dernier chiffre allemand déjà expliquées par la phrase du provisoire (prov) : pas de seconde phrase.
+    var deProv = c.y.slice(lastDe + 1).every(function (y) { return (c.prov || {})[y]; });
+    if (has(c, 'de') && lastDe < c.y.length - 1 && !deProv) n.push(compte ? 'L\'Allemagne ne publie plus ce chiffre après ' + c.y[lastDe] + ' : ces années ne sont pas comptées.' : 'Pas de chiffre allemand après ' + c.y[lastDe] + '.');
     if (has(c, 'de') && firstDe > 0) n.push('Pas de chiffre allemand avant ' + c.y[firstDe] + (compte ? ' : ces années ne sont pas comptées.' : '.'));
     var ue0 = c.ue ? c.ue.findIndex(function (v) { return v != null; }) : -1;
     if (ue0 > 0) n.push('La moyenne de l\'UE ne commence qu\'en ' + c.y[ue0] + ' : avant, elle n\'est pas publiée' + (!aff && !refDe(c) ? ', ces années ne sont pas comptées.' : '.'));
-    if (has(c, 'ue_calc')) n.push('Pointillés : moyenne des pays de l\'UE calculée par Concret à partir des données de l\'OMS (l\'OMS ne publie pas de moyenne de l\'UE).');
+    if (has(c, 'ue_calc')) n.push(c.ue_calc_note || 'Pointillés : moyenne de l\'UE calculée par Concret.');
+    Object.keys(c.prov || {}).forEach(function (y) { n.push(c.prov[y]); });
     Object.keys(c.manque || {}).forEach(function (y) { n.push('Pas de point en ' + y + ' : ' + c.manque[y].replace(/^Non compté : /, '').replace(/^pour \d{4}, /, '')); });
     if (c.objectif) n.push(c.objectif.texte + '.'); else if (c.objectif_note) n.push(c.objectif_note);
     return n.join(' ');
@@ -910,9 +913,9 @@ function main(FEED) {
   }
   // Mini-courbes du haut de page : occupation des prisons et homicides, France, Allemagne, Espagne.
   function drawToday() {
-    [['sp-occ', C.occ, ' %', 0, 'Taux d\'occupation des prisons'], ['sp-hom', C.hom, '', 2, 'Homicides volontaires pour 100 000 habitants']].forEach(function (a) {
+    [['sp-occ', C.occ, ' %', 0, 'Taux d\'occupation des prisons', ['es', 'de']], ['sp-hom', C.hom, '', 2, 'Homicides volontaires pour 100 000 habitants', ['us', 'ue_calc']]].forEach(function (a) {
       var c = a[1], yl = lastOf(c, 'fr').y, xs = c.y.filter(function (y) { return y <= yl; });
-      var S = [{ c: 'var(--es)', data: serOf(c, 'es') }, { c: 'var(--de)', data: serOf(c, 'de') }, { c: 'var(--fr)', main: 1, data: serOf(c, 'fr') }].map(function (q) { q.data = q.data.filter(function (d) { return d.x <= yl; }); return q; });
+      var S = a[5].map(function (w) { return { c: w === 'ue_calc' ? 'var(--ea)' : NOMS[w][1], dash: w === 'ue_calc' ? 1 : 0, n: w === 'ue_calc' ? 'UE (calcul Concret)' : NOMS[w][0], data: serOf(c, w) }; }).concat([{ c: 'var(--fr)', main: 1, data: serOf(c, 'fr') }]).map(function (q) { q.data = q.data.filter(function (d) { return d.x <= yl; }); return q; });
       lineChart(a[0], S, { x: [xs[0] - .5, yl + .5], xt: [xs[0], 2012, 2016, 2020, yl], dec: a[3], unit: a[2], h: 140, label: a[4] + ', France, Allemagne, Espagne' });
     });
   }
@@ -947,9 +950,9 @@ function main(FEED) {
     var R0 = SER.brut || {};
     setHtml('k-occ', fmt(of.v) + '<small>%</small>'); setHtml('k-occ-d', 'en ' + of.y);
     setHtml('k-occ-t', 'Détenus pour 100 places de prison. Au-dessus de 100, il y a plus de détenus que de places. Allemagne : ' + fmt(od) + ' % ; Espagne : ' + fmt(oe) + ' %. En ' + (of.y - 10) + ' : ' + fmt(SAN.val(o, 'fr', of.y - 10)) + ' % en France. Source : ' + lien(o, 'Eurostat') + ', calcul Concret (détenus ÷ places).');
-    var h = C.hom, hf = lastOf(h, 'fr'), hd = SAN.val(h, 'de', hf.y), he = SAN.val(h, 'es', hf.y);
+    var h = C.hom, hf = lastOf(h, 'fr'), hd = SAN.val(h, 'de', hf.y), he = SAN.val(h, 'es', hf.y), hu = SAN.val(h, 'ue_calc', hf.y), us = lastOf(h, 'us');
     setHtml('k-hom', fmt(hf.v, 2) + '<small>pour 100 000 hab.</small>'); setHtml('k-hom-d', 'en ' + hf.y);
-    setHtml('k-hom-t', 'Victimes d\'homicide volontaire enregistrées par la police et la gendarmerie. Allemagne : ' + fmt(hd, 2) + ' ; Espagne : ' + fmt(he, 2) + '. En ' + (hf.y - 10) + ' : ' + fmt(SAN.val(h, 'fr', hf.y - 10), 2) + ' en France. Source : ' + lien(h, 'Eurostat') + '.');
+    setHtml('k-hom-t', 'Victimes d\'homicide volontaire enregistrées par la police et la gendarmerie. Moyenne de l\'UE (calcul Concret) : ' + fmt(hu, 2) + ' ; Allemagne : ' + fmt(hd, 2) + ' ; Espagne : ' + fmt(he, 2) + (us ? ' ; États-Unis : ' + fmt(us.v, 2) + ' en ' + us.y + ' (ONU)' : '') + '. En ' + (hf.y - 10) + ' : ' + fmt(SAN.val(h, 'fr', hf.y - 10), 2) + ' en France. Source : ' + lien(h, 'Eurostat') + '.');
     var el = C.eloi, ef = lastOf(el, 'fr'), rb = C.rob, rf = lastOf(rb, 'fr'), j = AFF.juges, jf = lastOf(j, 'fr'), q = C.quart, qf = lastOf(q, 'fr'), O = AFF.oqtf, n = O.y.indexOf(ef.y);
     var FACTS = [
       'Fin ' + of.y + ', les prisons françaises comptaient <b>' + fmt(of.v) + ' détenus pour 100 places</b>, contre ' + fmt(od) + ' en Allemagne.',

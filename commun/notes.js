@@ -182,7 +182,7 @@
     }
     // Pourquoi une année n'est pas comptée pour un critère (phrase affichée sous le détail).
     function raisonSerie(c, y) {
-      var first = c.y[0], last = c.y[c.y.length - 1], r = ref(c), nomRef = r === 'de' ? 'l\'Allemagne' : r === 'es' ? 'l\'Espagne' : 'la moyenne de l\'UE';
+      var first = c.y[0], last = c.y[c.y.length - 1], r = ref(c), nomRef = r === 'de' ? 'l\'Allemagne' : r === 'es' ? 'l\'Espagne' : r === 'ue_calc' ? 'la moyenne de l\'UE calculée par Concret' : 'la moyenne de l\'UE';
       if ((c.br || {})[y]) return POURQUOI.methode(y, c.br[y]);
       if ((c.manque || {})[y]) return c.manque[y];
       if (y > last) return POURQUOI.pasPublie(y);
