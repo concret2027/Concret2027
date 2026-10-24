@@ -247,13 +247,18 @@
           // Note provisoire : moins d'une année complète de comparaisons (mandat court, ou chiffres pas encore publiés).
           var nb = calc.count ? calc.count(g) : null;
           r[m.k + '_n'] = nb; r[m.k + '_prov'] = r[m.k] != null && nb != null && calc.MIN_N != null && nb < calc.MIN_N;
+          // Poids dans la moyenne générale : la part d'une année complète de comparaisons, plafonnée à 1.
+          r[m.k + '_w'] = r[m.k] == null ? 0 : r[m.k + '_prov'] ? Math.round(100 * nb / calc.MIN_N) / 100 : 1;
           var ys = []; Object.keys(g.y).forEach(function (k) { g.y[k].forEach(function (d) { if (d.pt != null) ys.push(d.y); }); });
           r[m.k + '_ans'] = ys.length ? [Math.min.apply(null, ys), Math.max.apply(null, ys)] : null;
         });
       });
       out[kind] = order.map(function (n) {
-        var r = rows[n], v = MISSIONS.map(function (m) { return r[m.k]; }).filter(function (x) { return x != null; });
-        r.m = v.length ? r1(sum(v) / v.length) : null; r.k = v.length; return r;
+        // Moyenne des missions, chacune pesant selon ses comparaisons (une note provisoire ou fragile pèse moins) ;
+        // m_prov : aucune mission n'a une année complète de comparaisons.
+        var r = rows[n], ms = MISSIONS.filter(function (m) { return r[m.k] != null; }), sw = sum(ms.map(function (m) { return r[m.k + '_w']; }));
+        r.m = ms.length && sw ? r1(sum(ms.map(function (m) { return r[m.k] * r[m.k + '_w']; })) / sw) : null; r.k = ms.length;
+        r.m_prov = ms.length > 0 && !ms.some(function (m) { return r[m.k + '_w'] === 1; }); return r;
       }).sort(function (a, b) { return b.m - a.m; });
     });
     return out;
