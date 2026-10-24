@@ -202,7 +202,17 @@ def calcule(ind, ans, dec):
                 nb.append(len(deux)); cv.append(couv(deux, y))
             elif any(a_la(g, y) for g in UE):
                 sous.append(y)
-        info.append(dict(de=a, a=b, pays_min=min(nb) if nb else 0, pays_max=max(nb) if nb else 0, couv_min=round(min(cv), 1) if cv else None, sous_seuil=sous))
+        faits = [y for y in niv if a <= y <= b]
+        fin = max([y for y in ev if a <= y <= b] + faits + [a])
+        # Grands pays (au moins 2 % de la population de l'UE) absents certaines années : la courbe de la moyenne
+        # en est un peu déplacée ces années-là (pas la note, qui compare les mêmes pays d'une année à l'autre).
+        trous = {}
+        if faits:
+            for g in UE:
+                manque = [y for y in range(min(faits), max(faits) + 1) if y in niv and not a_la(g, y)]
+                if manque and len(manque) < len(faits) and P[g].get(manque[0], 0) >= 0.02 * sum(P[x].get(manque[0], 0) for x in UE):
+                    trous[g] = manque
+        info.append(dict(de=a, a=fin, pays_min=min(nb) if nb else 0, pays_max=max(nb) if nb else 0, couv_min=round(min(cv), 1) if cv else None, sous_seuil=[y for y in sous if y <= fin], trous=trous))
     return niv, ev, info
 
 
@@ -213,7 +223,15 @@ def note(ind, info):
         return tete + "Les pays qui publient ce chiffre deux années de suite font moins de 70 % de la population de l'UE : son évolution ne peut pas être calculée, rien n'est donc noté."
     nb = lambda i: ('%d pays' % i['pays_min']) if i['pays_min'] == i['pays_max'] else ('%d à %d pays' % (i['pays_min'], i['pays_max']))
     per = ' ; '.join(('%d-%d : ' % (i['de'], i['a']) if len(ok) > 1 else '') + ('%s, toute la population de l\'UE' % nb(i) if i['couv_min'] >= 99.95 else '%s, au moins %s %% de la population de l\'UE' % (nb(i), pct(i['couv_min']))) for i in ok)
-    return tete + "Chaque évolution porte sur les pays qui publient les deux années (%s) ; sous 70 %% de la population de l'UE, l'année n'est pas comptée." % per
+    def annees(l):
+        r, d = [], l[0]
+        for i in range(1, len(l) + 1):
+            if i == len(l) or l[i] != l[i - 1] + 1:
+                r.append(str(d) if d == l[i - 1] else ('%d et %d' if l[i - 1] == d + 1 else '%d à %d') % (d, l[i - 1])); d = l[i] if i < len(l) else None
+        return ', '.join(r)
+    tr = {g: l for i in ok for g, l in i.get('trous', {}).items()}
+    fin = (" La courbe de la moyenne bouge aussi quand un grand pays manque (%s) ; la note, elle, compare toujours les mêmes pays d'une année à l'autre." % ' ; '.join('%s : %s' % (NOM_FR[g], annees(l)) for g, l in tr.items())) if tr else ''
+    return tete + "Chaque évolution porte sur les pays qui publient les deux années (%s) ; sous 70 %% de la population de l'UE, l'année n'est pas comptée.%s" % (per, fin)
 
 
 def main():

@@ -19,6 +19,7 @@
     debut: function (y, source) { return 'Non compté : les séries ' + (source ? source + ' ' : '') + 'commencent en ' + y + ', il n\'y a pas d\'année précédente pour mesurer l\'évolution.'; },
     absent: function (y) { return 'Non compté : pas de chiffre disponible pour ' + y + '.'; },
     // Moyenne de l'UE calculée par Concret (outils/ue_calc.py) : il faut des pays qui font au moins 70 % de la population de l'UE.
+    provisoire: function (y) { return 'Non compté : le chiffre ' + y + ' est provisoire (statistiques nationales) ; la moyenne de l\'UE de ' + y + ' se calcule quand Eurostat publie les chiffres des pays de l\'UE.'; },
     couverture: function (y) { return 'Non compté : les pays de l\'UE qui publient ce chiffre en ' + (y - 1) + ' et en ' + y + ' font moins de 70 % de sa population, sa moyenne ne peut pas être calculée.'; },
     egalite: function (y, voisin) { return 'Demi-point : en ' + y + ', la France et ' + voisin + ' ont évolué exactement autant.'; }
   };
@@ -197,7 +198,7 @@
       if (y < first) return 'Non compté : pas de chiffre avant ' + first + '.';
       if (y === first) return POURQUOI.debut(first);
       if (val(c, 'fr', y) == null || val(c, 'fr', y - 1) == null) return POURQUOI.absent(val(c, 'fr', y) == null ? y : y - 1);
-      if (r === 'ue_calc' && refEv(c, y) == null) return POURQUOI.couverture(y);
+      if (r === 'ue_calc' && refEv(c, y) == null) return (c.prov || {})[y] ? POURQUOI.provisoire(y) : POURQUOI.couverture(y);
       if (val(c, r, y) == null || val(c, r, y - 1) == null) return 'Non compté : pas de chiffre pour ' + nomRef + ' en ' + (val(c, r, y) == null ? y : y - 1) + '.';
       return POURQUOI.absent(y);
     }
