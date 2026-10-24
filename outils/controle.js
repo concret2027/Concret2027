@@ -90,10 +90,16 @@ if (S.education) {
 // Valeurs d'exemple (page en brouillon) : jamais publiées.
 Object.keys(S).forEach(function (pg) { if (S[pg] && S[pg].exemple) err('series.' + pg + ' contient des valeurs d\'exemple (brouillon) : à remplacer par des données sourcées avant publication'); });
 Object.keys(d.datasets || {}).forEach(function (k) { if ((d.datasets[k] || []).some(function (r) { return r.exemple; })) err('datasets.' + k + ' contient des lignes d\'exemple (brouillon)'); });
-if (S.sante) ['C', 'AFF'].forEach(function (bloc) { Object.keys(S.sante[bloc] || {}).forEach(function (k) {
-  var c = S.sante[bloc][k]; if (!c || !c.y) return;
-  ['fr', 'ue', 'de', 'es', 'us', 'ue_calc'].forEach(function (w) { if (c[w] && c[w].length !== c.y.length) err('sante.' + bloc + '.' + k + '.' + w + ' : longueur différente de y'); });
-}); });
+// Santé, Sécurité et justice : séries alignées sur leurs années.
+['sante', 'securite'].forEach(function (p) { if (S[p]) ['C', 'AFF'].forEach(function (bloc) { Object.keys(S[p][bloc] || {}).forEach(function (k) {
+  var c = S[p][bloc][k]; if (!c || !c.y) return;
+  ['fr', 'ue', 'de', 'es', 'us', 'ue_calc', 'ue_calc_ev'].forEach(function (w) { if (c[w] && c[w].length !== c.y.length) err(p + '.' + bloc + '.' + k + '.' + w + ' : longueur différente de y'); });
+}); }); });
+// Sécurité et justice : plages plausibles des séries notées (pour 100 000 habitants, %, % du PIB).
+if (S.securite) {
+  var PS = { hom: [0, 20], rob: [0, 600], bur: [0, 1500], occ: [30, 250], places: [10, 1000], dpol: [0, 3], dtrib: [0, 2], dpris: [0, 1], eloi: [0, 200], quart: [0, 50] };
+  Object.keys(PS).forEach(function (k) { var c = S.securite.C[k]; if (!c) return err('securite.C.' + k + ' manquant'); ['fr', 'ue', 'ue_calc', 'de', 'es'].forEach(function (w) { if (c[w]) serie('securite.C.' + k + '.' + w, c[w], PS[k][0], PS[k][1]); }); if (!c.fr) err('securite.C.' + k + '.fr manquant'); });
+}
 // Règle unique : un critère noté est comparé à la moyenne de l'UE, publiée par la source ('ue') ou calculée par
 // outils/ue_calc.py ('ue_calc', avec sa phrase d'explication), jamais à un pays seul.
 ['sante', 'securite'].forEach(function (p) {
@@ -107,15 +113,16 @@ if (S.sante) ['C', 'AFF'].forEach(function (bloc) { Object.keys(S.sante[bloc] ||
   };
   Object.keys(S[p].C).forEach(function (k) { crit(S[p].C[k], k); });
 });
-// Chaque critère noté de la Santé appartient à une et une seule des questions (au plus 5 indicateurs par question).
-if (S.sante && S.sante.THEMES) {
-  var vusT = {}; S.sante.THEMES.forEach(function (t) {
-    if (t.crit.length > 5) err('sante : le thème « ' + t.q + ' » a plus de 5 indicateurs notés');
-    t.crit.forEach(function (k) { if (!S.sante.C[k]) err('sante : critère inconnu ' + k + ' dans « ' + t.q + ' »'); if (vusT[k]) err('sante : critère ' + k + ' dans deux thèmes'); vusT[k] = 1; });
+// Chaque critère noté appartient à un et un seul thème (au plus 5 thèmes, 5 indicateurs par thème) : Santé, Sécurité et justice.
+['sante', 'securite'].forEach(function (p) {
+  if (!S[p] || !S[p].THEMES) return;
+  var vusT = {}; S[p].THEMES.forEach(function (t) {
+    if (t.crit.length > 5) err(p + ' : le thème « ' + t.q + ' » a plus de 5 indicateurs notés');
+    t.crit.forEach(function (k) { if (!S[p].C[k]) err(p + ' : critère inconnu ' + k + ' dans « ' + t.q + ' »'); if (vusT[k]) err(p + ' : critère ' + k + ' dans deux thèmes'); vusT[k] = 1; });
   });
-  Object.keys(S.sante.C).forEach(function (k) { if (!vusT[k]) err('sante : critère ' + k + ' rattaché à aucun thème'); });
-  if (S.sante.THEMES.length > 5) err('sante : plus de 5 thèmes notés');
-}
+  Object.keys(S[p].C).forEach(function (k) { if (!vusT[k]) err(p + ' : critère ' + k + ' rattaché à aucun thème'); });
+  if (S[p].THEMES.length > 5) err(p + ' : plus de 5 thèmes notés');
+});
 var ids = {};
 cal.indicateurs.forEach(function (i) { if (ids[i.id]) err('calendrier : id en double ' + i.id); ids[i.id] = 1; if (!/^\d{4}-\d{2}-\d{2}$/.test(i.prochaine_verification || '')) err('calendrier : ' + i.id + ' sans prochaine_verification valide'); });
 
@@ -130,16 +137,17 @@ if (!bloquant.length) {
       finances: { pres: lst(fin, S.finances.PRES), gov: lst(fin, S.finances.GOVS) },
       education: { pres: lst(edu, S.education.PRES), gov: lst(edu, S.education.GOVS) },
       sante: S.sante ? { pres: lst(NOTES.sante(S.sante), S.sante.PRES), gov: lst(NOTES.sante(S.sante), S.sante.GOVS) } : { pres: [], gov: [] },
+      securite: S.securite ? { pres: lst(NOTES.securite(S.securite), S.securite.PRES), gov: lst(NOTES.securite(S.securite), S.securite.GOVS) } : { pres: [], gov: [] },
       accueil: { pres: cl.pres.map(function (r) { return { n: r.n, v: r.m }; }), gov: cl.gov.map(function (r) { return { n: r.n, v: r.m }; }) }
     };
-    ['finances', 'education', 'sante', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) { notes[m][k].forEach(function (r) { if (r.v != null && (r.v < 0 || r.v > 20 || isNaN(r.v))) err('note hors échelle : ' + m + ' ' + r.n + ' ' + r.v); }); }); });
+    ['finances', 'education', 'sante', 'securite', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) { notes[m][k].forEach(function (r) { if (r.v != null && (r.v < 0 || r.v > 20 || isNaN(r.v))) err('note hors échelle : ' + m + ' ' + r.n + ' ' + r.v); }); }); });
   } catch (e) { err('calcul des notes impossible : ' + e.message); }
 }
 var avant = fs.existsSync(path.join(ROOT, 'donnees/notes.json')) ? rd('donnees/notes.json') : null;
 var chgNotes = [];
 if (notes && avant) {
-  var LAB = { finances: 'Finances', education: 'Éducation', sante: 'Santé', accueil: 'Classement général' };
-  ['finances', 'education', 'sante', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) {
+  var LAB = { finances: 'Finances', education: 'Éducation', sante: 'Santé', securite: 'Sécurité et justice', accueil: 'Classement général' };
+  ['finances', 'education', 'sante', 'securite', 'accueil'].forEach(function (m) { ['pres', 'gov'].forEach(function (k) {
     var old = {}; ((avant[m] || {})[k] || []).forEach(function (r) { old[r.n] = r.v; });
     notes[m][k].forEach(function (r) { var a = old[r.n] == null ? null : Math.round(old[r.n] * 10) / 10, b = r.v == null ? null : Math.round(r.v * 10) / 10; if (a !== b) chgNotes.push(LAB[m] + ' · ' + r.n + ' ' + nf(a) + ' → ' + nf(b)); });
   }); });
@@ -189,7 +197,7 @@ try {
 } catch (e) { alertes.push('comparaison avec la version publiée impossible : ' + e.message.split('\n')[0]); }
 
 // ===== 6. Écritures =====
-if (!bloquant.length && notes) { wr('donnees/notes.json', { date: today, finances: notes.finances, education: notes.education, accueil: notes.accueil }); wr('donnees/a_valider.json', aValider); }
+if (!bloquant.length && notes) { wr('donnees/notes.json', { date: today, finances: notes.finances, education: notes.education, sante: notes.sante, securite: notes.securite, accueil: notes.accueil }); wr('donnees/a_valider.json', aValider); }
 var J = [];
 J.push('## ' + dateFr(today), '');
 J.push('**Statut :** ' + (bloquant.length ? 'données refusées, rien publié' : problemes.length ? 'publié, avec ' + problemes.length + ' problème(s)' : 'publié, tout est à jour'), '');

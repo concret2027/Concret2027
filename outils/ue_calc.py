@@ -219,11 +219,12 @@ def calcule(ind, ans, dec):
         b = b or ans[-1]
         nb, cv, sous = [], [], []
         for y in [y for y in ans if a <= y <= b]:
-            av = ans[ans.index(y) - 1]  # année (ou vague PISA) précédente de la série
+            i = ans.index(y)
+            av = ans[i - 1] if i > 0 and ans[i - 1] >= a else None  # année (ou vague PISA) précédente, dans la même période
             pays = [g for g in UE if a_la(g, y)]
             if pays and couv(pays, y) >= SEUIL:
                 v = moy(pays, y); niv[y] = round(v, dec)
-            if y == a:
+            if av is None:
                 continue
             deux = [g for g in UE if a_la(g, y) and a_la(g, av)]
             if deux and couv(deux, y) >= SEUIL:
@@ -258,7 +259,10 @@ def note(ind, info):
             if i == len(l) or l[i] != l[i - 1] + 1:
                 r.append(str(d) if d == l[i - 1] else ('%d et %d' if l[i - 1] == d + 1 else '%d à %d') % (d, l[i - 1])); d = l[i] if i < len(l) else None
         return ', '.join(r)
-    tr = {g: l for i in ok for g, l in i.get('trous', {}).items()}
+    tr = {}
+    for i in ok:
+        for g, l in i.get('trous', {}).items():
+            tr[g] = sorted(set(tr.get(g, []) + l))
     fin = (" La courbe de la moyenne bouge aussi quand un grand pays manque (%s) ; la note, elle, compare toujours les mêmes pays d'une année à l'autre." % ' ; '.join('%s : %s' % (NOM_FR[g], annees(l)) for g, l in tr.items())) if tr else ''
     if ind.get('pas') == 'vagues':
         return tete + "Chaque évolution porte sur les pays qui ont participé aux deux vagues (%s) ; sous 70 %% de la population de l'UE, la moyenne de l'OCDE est gardée pour cette vague.%s" % (per, fin.replace("d'une année à l'autre", "d'une vague à l'autre"))

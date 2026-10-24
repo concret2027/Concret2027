@@ -356,7 +356,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chacun des 6 critères, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne (pour PISA, calculée par Concret sur les pays de l'UE ; pour l'origine sociale, moyenne de l'OCDE, faute de chiffres comparables pour l'UE), <b>0 point</b> sinon. La note sur 20 est la part des points marqués, <b>PISA comptant triple</b> : c'est le résultat qui compte le plus, ce que les élèves savent vraiment. <b>10/20 = le niveau de nos voisins. En dessous de 10, la France fait moins bien que la moyenne européenne (ou de l'OCDE pour PISA).</b> Une note établie sur moins de 6 comparaisons est grisée : elle est peu fiable.</p>
+        <p class="explain"><b>La règle :</b> chaque année et pour chacun des 6 critères, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne (pour PISA, calculée par Concret sur les pays de l'UE ; pour l'origine sociale, moyenne de l'OCDE, faute de chiffres comparables pour l'UE), <b>0 point</b> sinon. La note sur 20 est la part des points marqués, <b>PISA comptant triple</b> : c'est le résultat qui compte le plus, ce que les élèves savent vraiment. <b>10/20 = le niveau de nos voisins. En dessous de 10, la France fait moins bien que la moyenne européenne (ou de l'OCDE pour l'origine sociale).</b> Une note établie sur moins de 6 comparaisons est grisée : elle est peu fiable.</p>
         <p><b>Les 6 critères :</b> quatre mesurés chaque année (Eurostat, Banque mondiale), deux mesurés par l'enquête PISA tous les trois ou quatre ans. PISA pèse trois fois plus que chacun des autres : sur 8 parts, il en compte 3.</p>
         <table class="seuils"><tbody>
           <tr><td>Décrochage<span>Mesure l'échec à l'école. Les 18-24 ans qui ont quitté l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et ne suivent aucune formation. La France marque le point si leur part baisse plus (ou monte moins) que dans l'UE.</span></td></tr>
@@ -536,8 +536,9 @@ function main(FEED) {
   function waveRow(k, W) {
     if (k === 'pi') {
       var i = WAVES.indexOf(W); if (i < 1) return null; var w0 = WAVES[i - 1], f = [], o = [];
-      ['m', 'r', 's'].forEach(function (d) { var c = PI[d], a = c.y.indexOf(w0), b = c.y.indexOf(W); if (a >= 0 && b >= 0) { f.push(c.fr[b] - c.fr[a]); o.push(EDU().pisaRef(c, a, b)); } });
-      return f.length ? { w0: w0, w: W, f: d3.mean(f), o: d3.mean(o), pt: waveRes(k, W) } : null;
+      var oc = false;
+      ['m', 'r', 's'].forEach(function (d) { var c = PI[d], a = c.y.indexOf(w0), b = c.y.indexOf(W); if (a >= 0 && b >= 0) { f.push(c.fr[b] - c.fr[a]); o.push(EDU().pisaRef(c, a, b)); if (!c.ue_calc_ev || c.ue_calc_ev[b] == null || b !== a + 1) oc = true; } });
+      return f.length ? { w0: w0, w: W, f: d3.mean(f), o: d3.mean(o), pt: waveRes(k, W), oc: oc } : null;
     }
     var j = EQ.y.indexOf(W); if (j < 1) return null;
     return { w0: EQ.y[j - 1], w: W, f: EQ.fr[j] - EQ.fr[j - 1], o: EQ.oe[j] - EQ.oe[j - 1], pt: waveRes(k, W), lf: EQ.fr[j], lo: EQ.oe[j] };
@@ -558,6 +559,7 @@ function main(FEED) {
       });
       h += '</tbody></table>';
       var why = [];
+      ws.forEach(function (r) { if (r.oc) why.push('Pour ' + r.w0 + '→' + r.w + ', la colonne UE donne la moyenne de l\'OCDE : les pays de l\'UE présents aux deux vagues font moins de 70 % de sa population.'); });
       ws.forEach(function (r) { if (r.pt === 0.5) why.push(k === 'pi' ? 'Demi-point pour ' + r.w0 + '→' + r.w + ' : la France et la moyenne de l\'UE ont évolué presque autant (moins d\'un demi-point d\'écart), compté comme une égalité.' : POURQUOI.egalite(r.w, 'l\'OCDE')); });
       g.y[k].forEach(function (d) { if (d.pt == null) why.push('Non compté en ' + d.y + ' : aucune vague ' + (k === 'pi' ? 'PISA' : 'de mesure') + ' ne couvre cette année.'); });
       h += '<p>Points retenus, année par année : ' + g.y[k].map(function (d) { return d.y + ' : ' + (d.pt == null ? 'non compté' : d.pt === 0.5 ? '½' : fmt(d.pt, d.pt % 1 ? 2 : 0)); }).join(' · ') + '.</p>';

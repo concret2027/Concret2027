@@ -1,5 +1,5 @@
 /* Règles de notation de Concret : la méthode affichée sur chaque page, sous forme de code.
-   Un seul fichier, utilisé par les pages Finances et Éducation, par l'accueil (classement général)
+   Un seul fichier, utilisé par les pages Finances, Éducation, Santé, Sécurité et justice, par l'accueil (classement général)
    et par le contrôle de la mise à jour automatique (outils/controle.js). Les notes ne sont jamais
    saisies à la main : elles se recalculent à partir des séries de data.json.
    Aucune dépendance (ni d3, ni DOM) pour tourner aussi bien dans le navigateur que sous Node. */
@@ -22,6 +22,7 @@
     absent: function (y) { return 'Non compté : pas de chiffre disponible pour ' + y + '.'; },
     // Moyenne de l'UE calculée par Concret (outils/ue_calc.py) : il faut des pays qui font au moins 70 % de la population de l'UE.
     provisoire: function (y) { return 'Non compté : le chiffre ' + y + ' est provisoire (statistiques nationales) ; la moyenne de l\'UE de ' + y + ' se calcule quand Eurostat publie les chiffres des pays de l\'UE.'; },
+    uePasPublie: function (y) { return 'Non compté : les pays de l\'UE n\'ont pas encore publié ce chiffre pour ' + y + ', sa moyenne ne peut pas encore être calculée.'; },
     couverture: function (y) { return 'Non compté : les pays de l\'UE qui publient ce chiffre en ' + (y - 1) + ' et en ' + y + ' font moins de 70 % de sa population, sa moyenne ne peut pas être calculée.'; },
     egalite: function (y, voisin) { return 'Demi-point : en ' + y + ', la France et ' + voisin + ' ont évolué exactement autant.'; }
   };
@@ -33,7 +34,7 @@
     return (lowerIsBetter ? fr < ref : fr > ref) ? 1 : 0;
   }
 
-  // ===== Finances publiques : 8 critères, France face à la zone euro, depuis 1995 =====
+  // ===== Finances publiques : 8 critères, France face à la moyenne de l'UE, depuis 1995 =====
   function finances(S) {
     var Y0 = 1995, D = S.D, X94 = S.X94, X95 = S.X95;
     var at = function (arr, y) { return arr[y - Y0]; };
@@ -203,7 +204,13 @@
       if (y < first) return 'Non compté : pas de chiffre avant ' + first + '.';
       if (y === first) return POURQUOI.debut(first);
       if (val(c, 'fr', y) == null || val(c, 'fr', y - 1) == null) return POURQUOI.absent(val(c, 'fr', y) == null ? y : y - 1);
-      if (r === 'ue_calc' && refEv(c, y) == null) return (c.prov || {})[y] ? POURQUOI.provisoire(y) : POURQUOI.couverture(y);
+      if (r === 'ue_calc' && refEv(c, y) == null) {
+        if ((c.prov || {})[y]) return POURQUOI.provisoire(y);
+        // Après la dernière année calculée, sans être sous le seuil : les pays de l'UE n'ont pas encore publié.
+        var info = c.ue_calc_info || [], fin = Math.max.apply(null, info.map(function (i) { return i.a; }).concat([-Infinity]));
+        var sous = info.some(function (i) { return (i.sous_seuil || []).indexOf(y) >= 0; });
+        return y > fin && !sous ? POURQUOI.uePasPublie(y) : POURQUOI.couverture(y);
+      }
       if (val(c, r, y) == null || val(c, r, y - 1) == null) return 'Non compté : pas de chiffre pour ' + nomRef + ' en ' + (val(c, r, y) == null ? y : y - 1) + '.';
       return POURQUOI.absent(y);
     }
