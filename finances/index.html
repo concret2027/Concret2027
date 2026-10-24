@@ -762,6 +762,7 @@ function main(FEED) {
       if (d.pt === 0.5) why.push(POURQUOI.egalite(d.y, 'la moyenne de l\'UE'));
       else if (d.pt == null) why.push(d.y === Y0 ? POURQUOI.debut(Y0, 'Eurostat') : D[k] && d.y <= ueDebut(k) ? POURQUOI.ueDebut(d.y, ueDebut(k)) : d.y >= lastYear(k) ? POURQUOI.pasPublie(d.y, 'Eurostat') : POURQUOI.absent(d.y));
     });
+    why = why.filter(function (t, i) { return why.indexOf(t) === i; });
     wrap.innerHTML = h + '</tbody></table>' + (why.length ? '<p class="kdet-why">' + why.join('<br>') + '</p>' : '') + '<p class="kdet-src">Sources : Eurostat (dette, solde, dépenses, prélèvements, intérêts), Banque mondiale (PIB par habitant, chômage, échanges). Écart = France moins moyenne de l\'UE.</p>';
     return wrap;
   }
