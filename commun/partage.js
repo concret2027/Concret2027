@@ -70,12 +70,23 @@
     o.addEventListener('click', function (e) { if (e.target === o) o.remove(); });
     document.body.appendChild(o);
   }
+  // Légende d'une courbe partagée seule : celle du bloc, sinon la légende commune placée juste avant le groupe de courbes
+  // (Finances : « Les courbes » en tête des quatre graphiques).
+  function legende(card) {
+    if (!card.querySelector('svg') || card.querySelector('.key')) return null;
+    for (var el = card, k = 0; el && k < 2; el = el.parentElement, k++) {
+      var p = el.previousElementSibling, key = p && (p.matches('.key') ? p : p.querySelector('.key'));
+      if (key) return key;
+    }
+    return null;
+  }
   function partager(card, btn) {
     var label = btn.textContent; btn.textContent = 'Préparation…'; btn.disabled = true;
     var wasClosed = card.tagName === 'DETAILS' && !card.open; if (wasClosed) card.open = true;
     lib().then(function (h2c) {
       // Le titre est déjà écrit en haut de l'image : on le retire de la capture pour ne pas le répéter.
       var h = card.querySelector('h1, h2, .acc-h, .lab, .eyebrow'); if (h) h.setAttribute('data-pt-titre', ''); card.setAttribute('data-pt-bloc', '');
+      var lg = legende(card); if (lg) lg.setAttribute('data-pt-legende', '');
       return h2c(card, { backgroundColor: getComputedStyle(document.body).backgroundColor, scale: 2, useCORS: true, logging: false,
         ignoreElements: function (el) { return el.classList && (el.classList.contains('share') || el.classList.contains('pt-share')); },
         // La capture ne sait pas ce qu'est un bloc replié : elle dessinerait son contenu par-dessus le reste.
@@ -93,12 +104,19 @@
             Array.prototype.forEach.call(bl.querySelectorAll('.note'), function (n) {
               var w = doc.createTreeWalker(n, 4), x; while ((x = w.nextNode())) x.nodeValue = x.nodeValue.replace(/\s*Touchez[^.]*\./g, '');
             });
+            // Légende commune recopiée au-dessus de la courbe.
+            var lk = doc.querySelector('[data-pt-legende]'), ch = bl.querySelector('.chart, svg');
+            if (lk && ch) { var cp = lk.cloneNode(true); cp.removeAttribute('data-pt-legende'); cp.style.margin = '4px 0 8px'; ch.parentNode.insertBefore(cp, ch); }
+            // Trait pointillé de la légende (moyenne de l'UE) : la capture ne sait pas dessiner un dégradé répété, on le refait en bordure.
+            Array.prototype.forEach.call(bl.querySelectorAll('.key i.dash'), function (i) {
+              i.style.setProperty('background', 'none', 'important'); i.style.height = '0'; i.style.borderRadius = '0'; i.style.borderTop = '3px dashed var(--ea)';
+            });
           }
           var t = doc.querySelector('[data-pt-titre]'), bloc = doc.querySelector('[data-pt-bloc]');
           if (bloc && bloc.tagName === 'DETAILS') { var sm = bloc.querySelector(':scope > summary'); if (sm) sm.remove(); }
           else if (t) t.remove();
         } }).then(function (shot) { fin(); return shot; }, function (e) { fin(); throw e; });
-      function fin() { if (h) h.removeAttribute('data-pt-titre'); card.removeAttribute('data-pt-bloc'); }
+      function fin() { if (h) h.removeAttribute('data-pt-titre'); card.removeAttribute('data-pt-bloc'); if (lg) lg.removeAttribute('data-pt-legende'); }
     }).then(function (shot) {
       var c = compose(shot, card);
       return new Promise(function (ok) { c.toBlob(function (b) { ok({ blob: b, url: c.toDataURL('image/png') }); }, 'image/png'); });
