@@ -18,6 +18,8 @@
     pasPublie: function (y, source) { return 'Non compté : le chiffre ' + y + ' n\'est pas encore publié' + (source ? ' par ' + source : '') + '.'; },
     debut: function (y, source) { return 'Non compté : les séries ' + (source ? source + ' ' : '') + 'commencent en ' + y + ', il n\'y a pas d\'année précédente pour mesurer l\'évolution.'; },
     absent: function (y) { return 'Non compté : pas de chiffre disponible pour ' + y + '.'; },
+    // Moyenne de l'UE calculée par Concret (outils/ue_calc.py) : il faut des pays qui font au moins 70 % de la population de l'UE.
+    couverture: function (y) { return 'Non compté : les pays de l\'UE qui publient ce chiffre en ' + (y - 1) + ' et en ' + y + ' font moins de 70 % de sa population, sa moyenne ne peut pas être calculée.'; },
     egalite: function (y, voisin) { return 'Demi-point : en ' + y + ', la France et ' + voisin + ' ont évolué exactement autant.'; }
   };
 
@@ -121,8 +123,9 @@
   }
 
   // ===== Santé : cinq questions, une note par question ; la note de la page est la moyenne des cinq =====
-  // S.THEMES : [{ k, q (la question), court, crit: [clés de S.C] }]. Chaque critère compare la France à l'UE,
-  // ou à l'Allemagne quand l'UE n'a pas de moyenne publiée (champ ref). Règles par critère (S.C[k].regle) :
+  // S.THEMES : [{ k, q (la question), court, crit: [clés de S.C] }]. Chaque critère compare la France à la moyenne de l'UE :
+  // celle de la source ('ue'), ou, si la source n'en publie pas, celle calculée par outils/ue_calc.py (champ ref 'ue_calc' ;
+  // son évolution, ue_calc_ev, porte sur les pays qui publient les deux années). Jamais un pays seul. Règles (S.C[k].regle) :
   //  - sinon : chaque année, 1 point si la France évolue mieux que la référence, 0 sinon, ½ en cas d'égalité ;
   //  - 'long' : résultats de santé (espérance de vie, mortalité) : les effets d'une politique de santé mettent des années
   //    à se voir, l'année t vaut donc la moyenne des points d'évolution de t à t+4 (années déjà publiées seulement) ;
@@ -138,10 +141,16 @@
     KEYS.forEach(function (k) { WT[k] = C[k].poids || 1; });
     var val = function (c, w, y) { var i = c.y.indexOf(y); return i < 0 || !c[w] ? null : c[w][i]; };
     var ref = function (c) { return c.ref || 'ue'; };
+    // Évolution de la référence entre y - 1 et y.
+    var refEv = function (c, y) {
+      if (ref(c) === 'ue_calc' && c.ue_calc_ev) return val(c, 'ue_calc_ev', y);
+      var e = val(c, ref(c), y), f = val(c, ref(c), y - 1);
+      return e == null || f == null ? null : e - f;
+    };
     function evol(c, y) {
-      var r = ref(c), a = val(c, 'fr', y), b = val(c, 'fr', y - 1), e = val(c, r, y), f = val(c, r, y - 1);
+      var a = val(c, 'fr', y), b = val(c, 'fr', y - 1), d = refEv(c, y);
       if ((c.br || {})[y]) return null;
-      return a == null || b == null || e == null || f == null ? null : match(a - b, e - f, c.low);
+      return a == null || b == null || d == null ? null : match(a - b, d, c.low);
     }
     // Années d'évolution prises en compte pour l'année y (règle 'long').
     var fenetre = function (y) { var a = []; for (var t = y; t < y + LONG; t++) a.push(t); return a; };
@@ -181,12 +190,14 @@
     }
     // Pourquoi une année n'est pas comptée pour un critère (phrase affichée sous le détail).
     function raisonSerie(c, y) {
-      var first = c.y[0], last = c.y[c.y.length - 1], r = ref(c), nomRef = r === 'de' ? 'l\'Allemagne' : 'la moyenne de l\'UE';
+      var first = c.y[0], last = c.y[c.y.length - 1], r = ref(c), nomRef = r === 'ue_calc' ? 'la moyenne de l\'UE calculée par Concret' : 'la moyenne de l\'UE';
       if ((c.br || {})[y]) return POURQUOI.methode(y, c.br[y]);
       if ((c.manque || {})[y]) return c.manque[y];
       if (y > last) return POURQUOI.pasPublie(y);
       if (y < first) return 'Non compté : pas de chiffre avant ' + first + '.';
       if (y === first) return POURQUOI.debut(first);
+      if (val(c, 'fr', y) == null || val(c, 'fr', y - 1) == null) return POURQUOI.absent(val(c, 'fr', y) == null ? y : y - 1);
+      if (r === 'ue_calc' && refEv(c, y) == null) return POURQUOI.couverture(y);
       if (val(c, r, y) == null || val(c, r, y - 1) == null) return 'Non compté : pas de chiffre pour ' + nomRef + ' en ' + (val(c, r, y) == null ? y : y - 1) + '.';
       return POURQUOI.absent(y);
     }
@@ -197,7 +208,7 @@
       if (c.regle === 'long') return y > c.y[c.y.length - 1] ? POURQUOI.pasPublie(y) : 'Non compté : aucune évolution comparable publiée entre ' + y + ' et ' + (y + LONG - 1) + '.';
       return raisonSerie(c, y);
     }
-    return { KEYS: KEYS, THEMES: THEMES, WT: WT, MIN_N: MIN_N, SEUIL_STABLE: SEUIL_STABLE, LONG: LONG, evaluate: evaluate, note: note, noteTheme: noteTheme, count: count, score: score, evol: evol, fenetre: fenetre, raison: raison, raisonSerie: raisonSerie, val: val, ref: ref };
+    return { KEYS: KEYS, THEMES: THEMES, WT: WT, MIN_N: MIN_N, SEUIL_STABLE: SEUIL_STABLE, LONG: LONG, evaluate: evaluate, note: note, noteTheme: noteTheme, count: count, score: score, evol: evol, fenetre: fenetre, raison: raison, raisonSerie: raisonSerie, val: val, ref: ref, refEv: refEv };
   }
 
   // ===== Classement général de l'accueil : moyenne des notes par mission, réglages par défaut de chaque page =====

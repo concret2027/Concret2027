@@ -86,6 +86,19 @@ if (S.sante) ['C', 'AFF'].forEach(function (bloc) { Object.keys(S.sante[bloc] ||
   var c = S.sante[bloc][k]; if (!c || !c.y) return;
   ['fr', 'ue', 'de', 'es', 'us', 'ue_calc'].forEach(function (w) { if (c[w] && c[w].length !== c.y.length) err('sante.' + bloc + '.' + k + '.' + w + ' : longueur différente de y'); });
 }); });
+// Règle unique : un critère noté est comparé à la moyenne de l'UE, publiée par la source ('ue') ou calculée par
+// outils/ue_calc.py ('ue_calc', avec sa phrase d'explication), jamais à un pays seul.
+['sante', 'securite'].forEach(function (p) {
+  if (!S[p] || !S[p].C) return;
+  var crit = function (c, nom) {
+    if (c.regle === 'propre') return;
+    if (c.regle === 'composite') return Object.keys(c.sous || {}).forEach(function (j) { crit(c.sous[j], nom + '.' + j); });
+    var r = c.ref || 'ue';
+    if (r !== 'ue' && r !== 'ue_calc') err(p + '.C.' + nom + ' : comparé à « ' + r + ' » ; un critère noté se compare à la moyenne de l\'UE (publiée, sinon outils/ue_calc.py)');
+    if (r === 'ue_calc' && (!c.ue_calc_note || !c.ue_calc_ev || c.ue_calc_ev.length !== c.y.length || !c.ue_calc || c.ue_calc.length !== c.y.length)) err(p + '.C.' + nom + ' : moyenne de l\'UE calculée incomplète (relancer python3 outils/ue_calc.py --ecrire)');
+  };
+  Object.keys(S[p].C).forEach(function (k) { crit(S[p].C[k], k); });
+});
 // Chaque critère noté de la Santé appartient à une et une seule des questions (au plus 5 indicateurs par question).
 if (S.sante && S.sante.THEMES) {
   var vusT = {}; S.sante.THEMES.forEach(function (t) {
