@@ -62,6 +62,11 @@ if (S.finances) {
   var ret = F.retraites || {};
   ['fr', 'eu', 'de', 'us'].forEach(function (w) { serie('finances.retraites.' + w, ret[w], 0, 25); if ((ret[w] || []).length !== (ret.annees || []).length) err('finances.retraites.' + w + ' : longueur différente de annees'); });
 }
+if (S.education && S.education.PI) ['m', 'r', 's'].forEach(function (k) {
+  // PISA : comparé à la moyenne de l'UE calculée par outils/ue_calc.py (la moyenne de l'OCDE ne sert que si elle manque).
+  var c = S.education.PI[k];
+  if (!c.ue_calc_ev || c.ue_calc_ev.length !== c.y.length || !c.ue_calc_note) err('education.PI.' + k + ' : moyenne de l\'UE calculée absente (relancer python3 outils/ue_calc.py --ecrire)');
+});
 if (S.education) {
   var E = S.education;
   ['el', 'ne', 'te', 'yu'].forEach(function (k) { ['fr', 'eu', 'de'].forEach(function (w) { serie('education.S.' + k + '.' + w, E.S[k][w], 0, 80); }); });

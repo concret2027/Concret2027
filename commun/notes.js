@@ -78,15 +78,18 @@
     return { CRIT: CRIT, evaluate: evaluate, note: note, match: match, pibAt: pibAt, at: at };
   }
 
-  // ===== Éducation : 6 critères, France face à l'UE (OCDE pour PISA), depuis 2002 ; PISA compte triple =====
+  // ===== Éducation : 6 critères, France face à l'UE (PISA : moyenne de l'UE calculée ; origine sociale : OCDE), depuis 2002 ; PISA compte triple =====
   function education(S, opts) {
     var LONG = !opts || opts.long !== false;
     var Y0 = 2002, C = S.S, PI = S.PI, WAVES = S.WAVES, EQ = S.EQ;
     var KEYS = ['el', 'ne', 'te', 'yu', 'pi', 'eq'], WT = { el: 1, ne: 1, te: 1, yu: 1, pi: 3, eq: 1 }, MIN_N = 6;
     var at = function (arr, y) { return arr[y - Y0]; };
+    var pisaRef = function (c, i0, i1) { var e = c.ue_calc_ev && i1 === i0 + 1 ? c.ue_calc_ev[i1] : null; return e != null ? e : c.oe[i1] - c.oe[i0]; };
     function pisaGap(w0, w1) {
       var d = [];
-      ['m', 'r', 's'].forEach(function (k) { var c = PI[k], i0 = c.y.indexOf(w0), i1 = c.y.indexOf(w1); if (i0 >= 0 && i1 >= 0) d.push((c.fr[i1] - c.fr[i0]) - (c.oe[i1] - c.oe[i0])); });
+      // Référence : la moyenne de l'UE calculée par outils/ue_calc.py (ue_calc_ev : évolution entre deux vagues, sur les pays
+      // qui ont passé les deux) ; si elle manque (moins de 70 % de la population de l'UE), la moyenne de l'OCDE comme avant.
+      ['m', 'r', 's'].forEach(function (k) { var c = PI[k], i0 = c.y.indexOf(w0), i1 = c.y.indexOf(w1); if (i0 >= 0 && i1 >= 0) d.push((c.fr[i1] - c.fr[i0]) - pisaRef(c, i0, i1)); });
       return d.length ? mean(d) : null;
     }
     function waveOf(ws, y) { for (var i = 1; i < ws.length; i++) if (y > ws[i - 1] && y <= ws[i]) return [ws[i - 1], ws[i]]; return null; }
@@ -121,7 +124,7 @@
       var sw = sum(r.map(function (p) { return p[1]; }));
       return sw ? 20 * sum(r.map(function (p) { return p[0] * p[1]; })) / sw : null;
     }
-    return { KEYS: KEYS, WT: WT, MIN_N: MIN_N, Y0: Y0, evaluate: evaluate, note: note, count: count, score: score, waveRes: waveRes, waveOf: waveOf, pisaGap: pisaGap, at: at };
+    return { KEYS: KEYS, WT: WT, MIN_N: MIN_N, Y0: Y0, evaluate: evaluate, note: note, count: count, score: score, waveRes: waveRes, waveOf: waveOf, pisaGap: pisaGap, pisaRef: pisaRef, at: at };
   }
 
   // ===== Santé : cinq questions, une note par question ; la note de la page est la moyenne des cinq =====
