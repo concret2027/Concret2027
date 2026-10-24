@@ -70,5 +70,6 @@ Santé, Sécurité et justice, Défense, Vie des Français, ou tout indicateur a
 
 ## Avant de publier une modification du site
 
+- Après une modification de `commun/notes.js` ou `commun/partage.js`, changer le numéro `?v=` de leur balise `<script>` dans toutes les pages (sinon les navigateurs gardent l'ancienne version jusqu'à 10 minutes).
 - Comparer le rendu avant et après (textes, graphiques, erreurs de console) et vérifier que les notes n'ont pas bougé, sauf si c'est le but.
 - `node outils/controle.js verifier` doit passer.
