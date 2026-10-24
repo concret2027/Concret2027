@@ -17,6 +17,7 @@
     },
     pasPublie: function (y, source) { return 'Non compté : le chiffre ' + y + ' n\'est pas encore publié' + (source ? ' par ' + source : '') + '.'; },
     debut: function (y, source) { return 'Non compté : les séries ' + (source ? source + ' ' : '') + 'commencent en ' + y + ', il n\'y a pas d\'année précédente pour mesurer l\'évolution.'; },
+    ueDebut: function (y, y0, source) { return 'Non compté : ' + (source || 'Eurostat') + ' ne publie la moyenne de l\'UE qu\'à partir de ' + y0 + (y === y0 ? ', il n\'y a pas d\'année précédente pour mesurer son évolution' : '') + '.'; },
     absent: function (y) { return 'Non compté : pas de chiffre disponible pour ' + y + '.'; },
     // Moyenne de l'UE calculée par Concret (outils/ue_calc.py) : il faut des pays qui font au moins 70 % de la population de l'UE.
     provisoire: function (y) { return 'Non compté : le chiffre ' + y + ' est provisoire (statistiques nationales) ; la moyenne de l\'UE de ' + y + ' se calcule quand Eurostat publie les chiffres des pays de l\'UE.'; },
@@ -44,16 +45,16 @@
       { k: 'dette', l: 'Dette' }, { k: 'deficit', l: 'Déficit' }, { k: 'dep', l: 'Dépenses' }, { k: 'po', l: 'Prélèvements' },
       { k: 'pib', l: 'Croissance/hab.' }, { k: 'emploi', l: 'Emploi' }, { k: 'com', l: 'Commerce' }, { k: 'int', l: 'Coût de la dette' }
     ];
-    // Ce que l'on compare, année par année : f / e = évolution France / zone euro, lf / le = niveau de l'année (pour le détail affiché).
+    // Ce que l'on compare, année par année : f / e = évolution France / moyenne de l'UE (Eurostat EU27_2020, Banque mondiale EUU ; la zone euro reste affichée comme repère), lf / le = niveau de l'année (pour le détail affiché).
     var CMP = {
-      dette: function (y) { return { f: chg('dette', 'fr', y), e: chg('dette', 'ea', y), low: true, lf: lvl('dette', 'fr', y), le: lvl('dette', 'ea', y) }; },
-      deficit: function (y) { return { f: chg('deficit', 'fr', y), e: chg('deficit', 'ea', y), low: false, lf: lvl('deficit', 'fr', y), le: lvl('deficit', 'ea', y) }; },
-      dep: function (y) { return { f: chg('dep', 'fr', y), e: chg('dep', 'ea', y), low: true, lf: lvl('dep', 'fr', y), le: lvl('dep', 'ea', y) }; },
-      po: function (y) { return { f: chg('po', 'fr', y), e: chg('po', 'ea', y), low: true, lf: lvl('po', 'fr', y), le: lvl('po', 'ea', y) }; },
-      pib: function (y) { return { f: pibAt('fr', y) / pibAt('fr', y - 1), e: pibAt('ea', y) / pibAt('ea', y - 1), low: false }; },
-      emploi: function (y) { return { f: x94('uFr', y) - x94('uFr', y - 1), e: x94('uEa', y) - x94('uEa', y - 1), low: true, lf: x94('uFr', y), le: x94('uEa', y) }; },
-      com: function (y) { return y > 1995 ? { f: cov('Fr', y) - cov('Fr', y - 1), e: cov('Ea', y) - cov('Ea', y - 1), low: false, lf: 100 * cov('Fr', y), le: 100 * cov('Ea', y) } : null; },
-      int: function (y) { return y > 1995 ? { f: X95.iFr[y - 1995] - X95.iFr[y - 1996], e: X95.iEa[y - 1995] - X95.iEa[y - 1996], low: true, lf: X95.iFr[y - 1995], le: X95.iEa[y - 1995] } : null; }
+      dette: function (y) { return { f: chg('dette', 'fr', y), e: chg('dette', 'eu', y), low: true, lf: lvl('dette', 'fr', y), le: lvl('dette', 'eu', y) }; },
+      deficit: function (y) { return { f: chg('deficit', 'fr', y), e: chg('deficit', 'eu', y), low: false, lf: lvl('deficit', 'fr', y), le: lvl('deficit', 'eu', y) }; },
+      dep: function (y) { return { f: chg('dep', 'fr', y), e: chg('dep', 'eu', y), low: true, lf: lvl('dep', 'fr', y), le: lvl('dep', 'eu', y) }; },
+      po: function (y) { return { f: chg('po', 'fr', y), e: chg('po', 'eu', y), low: true, lf: lvl('po', 'fr', y), le: lvl('po', 'eu', y) }; },
+      pib: function (y) { return { f: pibAt('fr', y) / pibAt('fr', y - 1), e: pibAt('eu', y) / pibAt('eu', y - 1), low: false }; },
+      emploi: function (y) { return { f: x94('uFr', y) - x94('uFr', y - 1), e: x94('uEu', y) - x94('uEu', y - 1), low: true, lf: x94('uFr', y), le: x94('uEu', y) }; },
+      com: function (y) { return y > 1995 ? { f: cov('Fr', y) - cov('Fr', y - 1), e: cov('Eu', y) - cov('Eu', y - 1), low: false, lf: 100 * cov('Fr', y), le: 100 * cov('Eu', y) } : null; },
+      int: function (y) { return y > 1995 ? { f: X95.iFr[y - 1995] - X95.iFr[y - 1996], e: X95.iEu[y - 1995] - X95.iEu[y - 1996], low: true, lf: X95.iFr[y - 1995], le: X95.iEu[y - 1995] } : null; }
     };
     function evaluate(g) {
       g.w = {}; g.y = {}; g.r = {};

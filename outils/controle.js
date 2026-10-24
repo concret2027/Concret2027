@@ -51,11 +51,14 @@ function serie(nom, arr, lo, hi) {
 }
 if (S.finances) {
   var F = S.finances, R = { dette: [0, 250], deficit: [-25, 10], dep: [20, 80], po: [10, 60] };
-  Object.keys(R).forEach(function (k) { ['fr', 'ea', 'de', 'us'].forEach(function (w) { serie('finances.D.' + k + '.' + w, (F.D[k] || {})[w], R[k][0], R[k][1]); }); });
-  ['fr', 'ea', 'de', 'us'].forEach(function (w) { serie('finances.PIB.' + w, F.PIB[w], 5000, 200000); });
-  ['uFr', 'uEa'].forEach(function (w) { serie('finances.X94.' + w, F.X94[w], 0, 40); });
-  ['xFr', 'xEa', 'mFr', 'mEa'].forEach(function (w) { serie('finances.X95.' + w, F.X95[w], 5, 120); });
-  ['iFr', 'iEa'].forEach(function (w) { serie('finances.X95.' + w, F.X95[w], 0, 15); });
+  Object.keys(R).forEach(function (k) { ['fr', 'eu', 'ea', 'de', 'us'].forEach(function (w) { serie('finances.D.' + k + '.' + w, (F.D[k] || {})[w], R[k][0], R[k][1]); }); });
+  ['fr', 'eu', 'ea', 'de', 'us'].forEach(function (w) { serie('finances.PIB.' + w, F.PIB[w], 5000, 200000); });
+  ['uFr', 'uEu', 'uEa'].forEach(function (w) { serie('finances.X94.' + w, F.X94[w], 0, 40); });
+  ['xFr', 'xEu', 'xEa', 'mFr', 'mEu', 'mEa'].forEach(function (w) { serie('finances.X95.' + w, F.X95[w], 5, 120); });
+  ['iFr', 'iEu', 'iEa'].forEach(function (w) { serie('finances.X95.' + w, F.X95[w], 0, 15); });
+  // Règle unique : la notation compare à la moyenne de l'UE ; ses séries doivent exister (la zone euro n'est qu'un repère).
+  ['dette', 'deficit', 'dep', 'po'].forEach(function (k) { if (!(F.D[k] || {}).eu || F.D[k].eu.length !== F.D[k].fr.length) err('finances.D.' + k + '.eu manquant ou de longueur différente de fr'); });
+  [['PIB', 'eu'], ['X94', 'uEu'], ['X95', 'xEu'], ['X95', 'mEu'], ['X95', 'iEu']].forEach(function (p) { if (!(F[p[0]] || {})[p[1]]) err('finances.' + p[0] + '.' + p[1] + ' manquant (moyenne de l\'UE)'); });
   var ret = F.retraites || {};
   ['fr', 'eu', 'de', 'us'].forEach(function (w) { serie('finances.retraites.' + w, ret[w], 0, 25); if ((ret[w] || []).length !== (ret.annees || []).length) err('finances.retraites.' + w + ' : longueur différente de annees'); });
 }
