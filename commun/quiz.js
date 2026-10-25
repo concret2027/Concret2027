@@ -8,7 +8,7 @@
   var API = 'https://abacus.jasoncameron.dev/', ESPACE = 'concret2027.fr', SEUIL = 2, PAS = 420;
   var css = '.opt .qz-pc{display:inline-block;width:100%;margin-top:2px;font-size:12px;font-weight:500;color:var(--muted);text-decoration:none;font-variant-numeric:tabular-nums}' +
     '.opt.qz-bar{background-image:linear-gradient(90deg,var(--line) 0,var(--line) var(--qz,0%),transparent var(--qz,0%));background-repeat:no-repeat;background-size:100% 4px;background-position:0 100%}' +
-    '.qz-res{margin:8px 0 0;font-size:13px;color:var(--muted)}.qz-voir{font-weight:600;white-space:nowrap;color:var(--fr)}';
+    '.qz-aide{margin:-4px 0 2px;font-size:13.5px;line-height:1.4;color:var(--muted)}.qz-res{margin:8px 0 0;font-size:13px;color:var(--muted)}.qz-voir{font-weight:600;white-space:nowrap;color:var(--fr)}';
   // Un identifiant court et stable pour la question (son texte) : la même question tirée un autre jour garde ses totaux.
   var empreinte = function (t) { var h = 5381; for (var i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0; return h.toString(36); };
   var chemin = function (page, Q, i) { return 'quiz-' + page + '-' + empreinte(Q.q) + '-' + i; };
@@ -53,12 +53,19 @@
     p.textContent = tot.toLocaleString('fr-FR') + ' personnes ont répondu à cette question' + (nouveau ? ', vous compris' : '') + '. Réponses comptées de façon anonyme.';
   }
 
+  function style() { if (!document.getElementById('quiz-css')) { var st = document.createElement('style'); st.id = 'quiz-css'; st.textContent = css; document.head.appendChild(st); } }
+  // Q.d (facultatif) : une ligne qui explique le terme technique de la question, affichée sous la question avant la réponse.
+  function aide(Q, qEl) {
+    if (!Q || !Q.d || !qEl || (qEl.nextElementSibling && qEl.nextElementSibling.className === 'qz-aide')) return;
+    style(); var p = document.createElement('p'); p.className = 'qz-aide'; p.textContent = Q.d; qEl.parentNode.insertBefore(p, qEl.nextSibling);
+  }
+
   // nouveau : la personne vient de cliquer (sinon la page rappelle une réponse déjà donnée sur cet appareil).
   // el (facultatif) : { opts, ans } quand la page a plusieurs questions ; sinon #quiz-opts et #quiz-a.
   function repondu(page, Q, choix, nouveau, el) {
     var opts = el ? el.opts : document.getElementById('quiz-opts'), ans = el ? el.ans : document.getElementById('quiz-a');
     if (!opts || !ans || !window.fetch || !window.Promise) return Promise.resolve(null);
-    if (!document.getElementById('quiz-css')) { var st = document.createElement('style'); st.id = 'quiz-css'; st.textContent = css; document.head.appendChild(st); }
+    style();
     // Le lien vers la courbe ou le chiffre de la page qui donne la réponse (Q.v : son identifiant).
     var cible = Q.v && document.getElementById(Q.v);
     if (cible && !ans.querySelector('.qz-voir')) {
@@ -74,5 +81,5 @@
     }
     return totaux(page, Q, choix, nouveau).then(function (n) { afficher(opts, ans, n, nouveau); return n; }, function () { return null; });
   }
-  window.ConcretQuiz = { repondu: repondu, chemin: chemin, compteur: compteur };
+  window.ConcretQuiz = { repondu: repondu, chemin: chemin, compteur: compteur, aide: aide };
 })();

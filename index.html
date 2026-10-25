@@ -39,7 +39,7 @@
 .po-actu .tag { display: inline-block; font-size: 11px; font-weight: 700; color: var(--fr); margin-right: 6px; text-decoration: none; }
 .po-actu .src { color: var(--muted); font-size: 12px; }
 .po-tab { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
-.po-tab caption { text-align: left; font-weight: 700; font-size: 14.5px; padding-bottom: 6px; }
+.po-sous > div { padding: 0 0 10px; overflow-x: auto; }
 .po-tab th { font-size: 11px; color: var(--muted); font-weight: 600; text-align: right; padding: 4px 5px; border-bottom: 1px solid var(--line); }
 .po-tab td { text-align: right; padding: 6px 5px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
 .po-tab th:first-child, .po-tab td:first-child { text-align: left; white-space: normal; }
@@ -391,21 +391,23 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="po-miss" id="po-miss"></div>
   </section>
 
-  <section class="card" id="pouls-semaine" aria-labelledby="pw-t">
-    <h2 id="pw-t"><span class="eyebrow">Le pouls de la France</span>Ce qui s'est passé cette semaine</h2>
-    <ul class="po-actu" id="po-actu"></ul>
-  </section>
+  <details class="acc" id="pouls-semaine">
+    <summary><span class="eyebrow" style="margin:0">Le pouls de la France</span><span class="acc-h">Ce qui s'est passé cette semaine</span><span class="acc-t" id="pw-teaser">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body"><ul class="po-actu" id="po-actu"></ul></div>
+  </details>
 
-  <section class="card" id="pouls-cote" aria-labelledby="pc-t">
-    <h2 id="pc-t"><span class="eyebrow">Le pouls de la France</span>Mis côte à côte</h2>
-    <p class="note">Les moyens et les résultats d'une même mission, pour la France, l'Allemagne, l'Espagne et la moyenne de l'UE. Les chiffres sont ceux des pages ; ✓ : la France fait mieux que la moyenne de l'UE, ✗ : moins bien.</p>
-    <div id="po-cote" style="display:grid;gap:16px"></div>
-  </section>
+  <details class="acc" id="pouls-cote">
+    <summary><span class="eyebrow" style="margin:0">Le pouls de la France</span><span class="acc-h">Mis côte à côte : les moyens et les résultats</span><span class="acc-t" id="pc-teaser">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body">
+      <p class="note">Pour une même mission, ce que la France dépense et ce qu'elle obtient, face à l'Allemagne, l'Espagne et la moyenne de l'UE. Les chiffres sont ceux des pages ; ✓ : la France fait mieux que la moyenne de l'UE, ✗ : moins bien. Touchez une mission pour voir son tableau.</p>
+      <div id="po-cote" style="display:grid;gap:0"></div>
+    </div>
+  </details>
 
-  <section class="card" id="pouls-agenda" aria-labelledby="pa-t">
-    <h2 id="pa-t"><span class="eyebrow">Le pouls de la France</span>La semaine qui vient</h2>
-    <ul class="po-actu" id="po-agenda"></ul>
-  </section>
+  <details class="acc" id="pouls-agenda">
+    <summary><span class="eyebrow" style="margin:0">Le pouls de la France</span><span class="acc-h">La semaine qui vient</span><span class="acc-t" id="pa-teaser">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body"><ul class="po-actu" id="po-agenda"></ul></div>
+  </details>
 
   <footer>
     <p>Concret est un projet indépendant, sans affiliation politique. Toutes les sources sont citées en bas de chaque page.</p>
@@ -439,6 +441,8 @@ footer p { margin: 0; } footer a { color: inherit; }
     var act = [];
     Object.keys(PAGES).forEach(function (p) { (DS['actu_' + p] || []).forEach(function (a) { if (a.date && a.date >= il7 && a.date <= A) act.push({ p: p, a: a }); }); });
     act.sort(function (x, y) { return x.a.date < y.a.date ? 1 : -1; });
+    var pp = function (n, m) { return n + ' ' + m + (n > 1 && !/s$/.test(m) ? 's' : ''); };
+    document.getElementById('pw-teaser').innerHTML = act.length ? '<b>' + pp(act.length, 'actualité') + '</b> en sept jours : ' + Array.from(new Set(act.map(function (x) { return PAGES[x.p]; }))).join(', ') : 'Aucune actualité cette semaine';
     document.getElementById('po-actu').innerHTML = act.length ? act.map(function (x) {
       return '<li><span class="d">' + dcourt(x.a.date) + '</span><span><a class="tag" href="/' + x.p + '/#acc-actu">' + esc(PAGES[x.p]) + '</a>' + esc(x.a.texte) + (x.a.url ? ' <a class="src" href="' + esc(x.a.url) + '" target="_blank" rel="noopener">' + esc(x.a.source || 'Source') + '</a>' : '') + '</span></li>';
     }).join('') : '<li><span class="d"></span><span>Aucune actualité cette semaine sur les sites officiels suivis par Concret.</span></li>';
@@ -454,12 +458,14 @@ footer p { margin: 0; } footer a { color: inherit; }
         var d = c.dec != null ? c.dec : 1, v = function (s) { return c[s] ? nf(c[s][i], d) : '—'; }, x = cl[T.p + '|ch-' + k] || '';
         return '<tr><td><a href="/' + T.p + '/#ch-' + k + '">' + esc(c.lc || c.l) + '</a><small>' + esc(c.unite) + ', ' + c.y[i] + '</small></td><td class="fr ' + x + '">' + v('fr') + (x === 'g' ? ' ✓' : x === 'b' ? ' ✗' : '') + '</td><td>' + v('de') + '</td><td>' + v('es') + '</td><td>' + v(ue) + '</td></tr>';
       }).join('');
-      return rows ? '<table class="po-tab"><caption>' + esc(T.t) + '</caption><thead><tr><th></th><th>France</th><th>Allemagne</th><th>Espagne</th><th>UE</th></tr></thead><tbody>' + rows + '</tbody></table>' : '';
+      return rows ? '<details class="sous po-sous"><summary>' + esc(T.t) + '</summary><div><table class="po-tab"><thead><tr><th></th><th>France</th><th>Allemagne</th><th>Espagne</th><th>UE</th></tr></thead><tbody>' + rows + '</tbody></table></div></details>' : '';
     }).join('');
+    document.getElementById('pc-teaser').textContent = ((S.pouls || {}).TABLES || []).map(function (T) { return T.t.split(' : ')[0]; }).join(', ') + ' : France, Allemagne, Espagne et moyenne de l\'UE';
     // 4. La semaine qui vient : les agendas de toutes les pages.
     var ag = [];
     Object.keys(PAGES).forEach(function (p) { (DS['agenda_' + p] || []).forEach(function (a) { if (a.date && a.date >= A && a.date <= dans8) ag.push({ p: p, a: a }); }); });
     ag.sort(function (x, y) { return x.a.date < y.a.date ? -1 : 1; });
+    document.getElementById('pa-teaser').innerHTML = ag.length ? '<b>' + pp(ag.length, 'rendez-vous') + '</b>, le premier ' + dcourt(ag[0].a.date) + ' : ' + esc(ag[0].a.evenement) : 'Aucun rendez-vous annoncé dans les huit prochains jours';
     document.getElementById('po-agenda').innerHTML = ag.length ? ag.map(function (x) {
       return '<li><span class="d">' + dcourt(x.a.date) + '</span><span><a class="tag" href="/' + x.p + '/">' + esc(PAGES[x.p]) + '</a>' + esc(x.a.evenement) + (x.a.quand && /h/.test(x.a.quand) ? ' (' + esc(x.a.quand) + ')' : '') + '</span></li>';
     }).join('') : '<li><span class="d"></span><span>Aucun rendez-vous annoncé dans les huit prochains jours.</span></li>';

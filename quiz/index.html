@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261025h"></script>
-<script src="/commun/quiz.js?v=20261025g"></script>
+<script src="/commun/quiz.js?v=20261025h"></script>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
 :root {
@@ -464,7 +464,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   function main(feed) {
     var S = feed.series, Qs = [];
     PAGES.forEach(function (pg) { var B = (S[pg.p] || {}).QUIZ; if (B && B.length) { var Q = pick(B); Qs.push({ page: pg.p, l: pg.l, q: Q.q, o: Q.o, a: Q.a, e: Q.e, cle: pg.cle + idx, lien: Q.v ? '/' + pg.p + '/#' + Q.v : '/' + pg.p + '/#quiz', src: pg.l, Q: Q }); } });
-    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz-' + i + '-' + idx; g.Q = { q: g.q, o: g.o }; Qs.push(g); });
+    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz-' + i + '-' + idx; g.Q = { q: g.q, o: g.o, d: 'La note de Concret, sur 20 : 10 = la France a fait aussi bien que la moyenne de l\'UE pendant le mandat, au-dessus mieux, en dessous moins bien.' }; Qs.push(g); });
     var total = Qs.length, rep = Qs.map(function () { return null; });
     document.getElementById('qz-titre').textContent = total + ' questions sur la France face à ses voisins';
     var prog = document.getElementById('qz-prog'); prog.innerHTML = Qs.map(function () { return '<i></i>'; }).join('');
@@ -475,6 +475,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       sec.innerHTML = '<span class="eyebrow">' + (n + 1) + ' / ' + total + ' · ' + esc(x.l) + '</span><p class="q">' + esc(x.q) + '</p><div class="opts"></div><p class="answer" hidden></p>';
       liste.appendChild(sec);
       var opts = sec.querySelector('.opts'), ans = sec.querySelector('.answer');
+      if (window.ConcretQuiz && ConcretQuiz.aide) ConcretQuiz.aide(x.Q, sec.querySelector('.q'));
       function reveal(p, nouveau) {
         rep[n] = p === x.a;
         Array.prototype.forEach.call(opts.children, function (b, i) { b.disabled = true; if (i === x.a) b.classList.add('right'); else if (i === p) b.classList.add('wrong'); });
