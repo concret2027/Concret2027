@@ -12,7 +12,14 @@
 <script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
-<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }</style>
+<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
+.sous { border-top: 1px solid var(--line); }
+.sous > summary { cursor: pointer; list-style: none; padding: 10px 0; font-weight: 600; font-size: 13.5px; color: var(--fr); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sous > summary::-webkit-details-marker { display: none; }
+.sous > summary::after { content: '▾'; font-size: 14px; } .sous[open] > summary::after { content: '▴'; }
+.sous > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 6px; }
+.sous > div { display: grid; gap: 8px; padding: 0 0 12px; }
+</style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
 :root {
@@ -251,7 +258,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .etapes { margin: 0; padding: 0; list-style: none; counter-reset: e; display: grid; gap: 12px; }
 .etapes li { counter-increment: e; position: relative; padding-left: 34px; font-size: 14.5px; line-height: 1.5; max-width: 72ch; }
 .etapes li::before { content: counter(e); position: absolute; left: 0; top: -3px; font-family: var(--serif); font-size: 24px; line-height: 1.2; color: var(--fr); }
-.etapes b { font-weight: 600; display: block; }
+.etapes .sous { border-top: 0; } .etapes .sous > summary { color: var(--fg); font-size: 14.5px; padding: 2px 0; } .etapes .sous p { margin: 0; color: var(--muted); }
 .hero p.lead { font-family: var(--serif); font-size: 21px; line-height: 1.35; }
 .radar svg { display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto; font-family: var(--sans); }
 .radar .ra { fill: var(--fg); font-size: 13px; font-weight: 600; } .radar .rl { fill: var(--muted); font-size: 10px; }
@@ -309,11 +316,11 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card" id="fonctionnement" aria-labelledby="fo-t">
     <h2 id="fo-t"><span class="eyebrow">Comment fonctionne Concret</span>Une même règle pour tous, en cinq étapes</h2>
     <ol class="etapes">
-      <li><b>Des chiffres publics, mesurés chaque année de la même façon.</b> Pour chaque mission, quelques indicateurs (dette, décrochage scolaire, espérance de vie, homicides, budget de la défense…), lus aux sources officielles : Eurostat, OCDE, OMS, OTAN, Insee. Chaque chiffre a sa source, en bas de chaque page.</li>
-      <li><b>Une seule référence : la moyenne de l'Union européenne.</b> La France est toujours comparée à la moyenne des 27 pays de l'UE : celle que publie la source, sinon celle que Concret calcule sur les pays qui publient le chiffre, s'ils font au moins 70 % de la population de l'UE. Jamais à un pays choisi : l'Allemagne, l'Espagne et les États-Unis sont montrés en repères.</li>
-      <li><b>Chaque année, un point ou pas.</b> La France marque 1 point quand elle progresse mieux que la moyenne de l'UE, ou quand elle fait déjà mieux qu'elle et ne se dégrade pas ; 0 sinon, ½ en cas d'égalité. Les résultats qui mettent des années à bouger (espérance de vie, niveau des élèves) sont jugés sur plusieurs années.</li>
-      <li><b>Une note sur 20 par mission.</b> C'est la part des points marqués pendant le mandat. Chaque année compte pour le Premier ministre en poste la plus grande partie de l'année ; les présidents sont notés sur toutes leurs années. 10/20 : autant d'années où la France a marqué le point que d'années où elle ne l'a pas marqué.</li>
-      <li><b>Un classement général.</b> C'est la moyenne des notes des missions ; une note qui repose sur peu de chiffres compte moins. Ce qui n'est pas compté (chiffre pas encore publié, changement de méthode de mesure…) est expliqué là où on le voit. Les chiffres sont mis à jour chaque jour.</li>
+      <li><details class="sous"><summary>Des chiffres publics, mesurés chaque année de la même façon.</summary><div><p>Pour chaque mission, quelques indicateurs (dette, décrochage scolaire, espérance de vie, homicides, budget de la défense…), lus aux sources officielles : Eurostat, OCDE, OMS, OTAN, Insee. Chaque chiffre a sa source, en bas de chaque page.</p></div></details></li>
+      <li><details class="sous"><summary>Une seule référence : la moyenne de l'Union européenne.</summary><div><p>La France est toujours comparée à la moyenne des 27 pays de l'UE : celle que publie la source, sinon celle que Concret calcule sur les pays qui publient le chiffre, s'ils font au moins 70 % de la population de l'UE. Jamais à un pays choisi : l'Allemagne, l'Espagne et les États-Unis sont montrés en repères.</p></div></details></li>
+      <li><details class="sous"><summary>Chaque année, un point ou pas.</summary><div><p>La France marque 1 point quand elle progresse mieux que la moyenne de l'UE, ou quand elle fait déjà mieux qu'elle et ne se dégrade pas ; 0 sinon, ½ en cas d'égalité. Les résultats qui mettent des années à bouger (espérance de vie, niveau des élèves) sont jugés sur plusieurs années.</p></div></details></li>
+      <li><details class="sous"><summary>Une note sur 20 par mission.</summary><div><p>C'est la part des points marqués pendant le mandat. Chaque année compte pour le Premier ministre en poste la plus grande partie de l'année ; les présidents sont notés sur toutes leurs années. 10/20 : autant d'années où la France a marqué le point que d'années où elle ne l'a pas marqué.</p></div></details></li>
+      <li><details class="sous"><summary>Un classement général.</summary><div><p>C'est la moyenne des notes des missions ; une note qui repose sur peu de chiffres compte moins. Ce qui n'est pas compté (chiffre pas encore publié, changement de méthode de mesure…) est expliqué là où on le voit. Les chiffres sont mis à jour chaque jour.</p></div></details></li>
     </ol>
   </section>
 

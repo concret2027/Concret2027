@@ -14,7 +14,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025f"></script>
-<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }</style>
+<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
+.sous { border-top: 1px solid var(--line); }
+.sous > summary { cursor: pointer; list-style: none; padding: 10px 0; font-weight: 600; font-size: 13.5px; color: var(--fr); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sous > summary::-webkit-details-marker { display: none; }
+.sous > summary::after { content: '▾'; font-size: 14px; } .sous[open] > summary::after { content: '▴'; }
+.sous > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 6px; }
+.sous > div { display: grid; gap: 8px; padding: 0 0 12px; }
+</style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
 :root {
@@ -357,9 +364,10 @@ footer p { margin: 0; } footer a { color: inherit; }
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chacun des 6 critères, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux que cette moyenne cette année-là et ne se dégrade pas</b> (pour PISA et l'origine sociale, jugés par vague, seule l'évolution compte ; pour PISA, calculée par Concret sur les pays de l'UE ; pour l'origine sociale, moyenne de l'OCDE, faute de chiffres comparables pour l'UE), <b>0 point</b> sinon. La note sur 20 est la part des points marqués, <b>PISA comptant triple</b> : c'est le résultat qui compte le plus, ce que les élèves savent vraiment. <b>10/20 = le niveau de nos voisins. En dessous de 10, la France fait moins bien que la moyenne européenne (ou de l'OCDE pour l'origine sociale).</b> Une note établie sur moins de 6 comparaisons est grisée : elle est peu fiable.</p>
-        <p><b>Les 6 critères :</b> quatre mesurés chaque année (Eurostat, Banque mondiale), deux mesurés par l'enquête PISA tous les trois ou quatre ans. PISA pèse trois fois plus que chacun des autres : sur 8 parts, il en compte 3.</p>
-        <table class="seuils"><tbody>
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque critère, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>La note sur 20 est la part des points marqués, PISA comptant triple : c'est le résultat qui compte le plus, ce que les élèves savent vraiment. 10/20 = autant d'années gagnées que perdues.</b></p>
+<details class="sous"><summary>Les 6 critères : quand la France marque-t-elle le point ?</summary><div>
+<p><b>Les 6 critères :</b> quatre mesurés chaque année (Eurostat, Banque mondiale), deux mesurés par l'enquête PISA tous les trois ou quatre ans. PISA pèse trois fois plus que chacun des autres : sur 8 parts, il en compte 3.</p>
+<table class="seuils"><tbody>
           <tr><td>Décrochage<span>Mesure l'échec à l'école. Les 18-24 ans qui ont quitté l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et ne suivent aucune formation. La France marque le point si leur part baisse plus (ou monte moins) que dans l'UE ; elle le garde aussi si elle est plus faible que dans l'UE et ne monte pas.</span></td></tr>
           <tr><td>Ni emploi ni études<span>Mesure les jeunes à l'arrêt, diplômés ou non. Tous les 15-29 ans qui ne travaillent pas, n'étudient pas et ne suivent aucune formation (les « NEET »). Un jeune diplômé qui cherche un emploi y figure, pas dans le décrochage. La France marque le point si leur part baisse plus que dans l'UE ; elle le garde aussi si elle est plus faible que dans l'UE et ne monte pas.</span></td></tr>
           <tr><td>Diplômés du supérieur<span>La part des 25-34 ans diplômés du supérieur. La France marque le point si elle progresse plus vite que dans l'UE ; elle le garde aussi si elle est plus élevée que dans l'UE et ne baisse pas.</span></td></tr>
@@ -367,12 +375,17 @@ footer p { margin: 0; } footer a { color: inherit; }
           <tr><td>PISA (compte triple)<span>Par défaut, chaque résultat est réparti sur les dix années de scolarité des élèves testés (voir le choix sous la règle). Le niveau des élèves de 15 ans en maths, en lecture et en sciences. À chaque vague, la France marque le point si son score évolue mieux que la moyenne de l'UE calculée par Concret à partir des scores de l'OCDE (moyenne des domaines comparables). Le résultat compte pour chacune des années écoulées depuis la vague précédente : PISA mesure plusieurs années d'école, pas la seule année du test.</span></td></tr>
           <tr><td>Origine sociale<span>L'écart en maths entre le quart des élèves le plus favorisé et le quart le plus défavorisé. La France marque le point si cet écart se réduit plus (ou augmente moins) que dans l'OCDE. Comparé à l'OCDE et non à l'UE : le chiffre français vient de l'Insee et de la DEPP (2003, 2012, 2022, 2025), et l'OCDE ne publie le même écart pour chaque pays de l'UE que depuis 2015. Même règle de répartition que PISA.</span></td></tr>
         </tbody></table>
-        <div class="ex" data-t="exemple_regle">
-          <b>Exemple : 2025</b>
-          <p><b>Décrochage :</b> 7,9 % → 7,2 % en France, 9,6 % → 9,1 % dans l'UE. La France baisse plus : <b>1 point</b>.</p>
+<p>PISA et l'origine sociale sont jugés d'une vague d'enquête à la suivante, sur leur seule évolution. La référence de PISA est la moyenne de l'UE calculée par Concret sur les pays de l'UE ; celle de l'origine sociale est la moyenne de l'OCDE, faute de chiffres comparables pour l'UE. Une note établie sur moins de 6 comparaisons est grisée : elle est peu fiable.</p>
+</div></details>
+<details class="sous"><summary>Un exemple : 2025</summary><div>
+<div class="ex" data-t="exemple_regle">
+                    <p><b>Décrochage :</b> 7,9 % → 7,2 % en France, 9,6 % → 9,1 % dans l'UE. La France baisse plus : <b>1 point</b>.</p>
           <p><b>Chômage des jeunes :</b> 18,6 % → 18,9 % en France, stable à 16,2 % dans l'UE : <b>0 point</b>.</p>
         </div>
-        <p class="note"><b>Limites.</b> L'école agit lentement : un diplômé de 2025 a été scolarisé sous plusieurs gouvernements. Les notes décrivent ce qui s'est passé pendant un mandat, pas tout ce qui en découle. Certaines années, la façon de mesurer un chiffre change (Eurostat le signale) : ces années-là, le critère n'est pas compté, pour ne pas récompenser un simple changement de mesure. Les vagues PISA couvrent plusieurs gouvernements : la chute de 2018 à 2022 compte pour Philippe, Castex et Borne. En 2025, l'écart social se réduit surtout parce que les meilleurs élèves reculent : la règle lui donne pourtant le point, c'est une de ses limites. Les séries européennes commencent en 2002 : Jacques Chirac n'est noté que sur 2003-2006.</p>
+</div></details>
+<details class="sous"><summary>Limites</summary><div>
+<p class="note">L'école agit lentement : un diplômé de 2025 a été scolarisé sous plusieurs gouvernements. Les notes décrivent ce qui s'est passé pendant un mandat, pas tout ce qui en découle. Certaines années, la façon de mesurer un chiffre change (Eurostat le signale) : ces années-là, le critère n'est pas compté, pour ne pas récompenser un simple changement de mesure. Les vagues PISA couvrent plusieurs gouvernements : la chute de 2018 à 2022 compte pour Philippe, Castex et Borne. En 2025, l'écart social se réduit surtout parce que les meilleurs élèves reculent : la règle lui donne pourtant le point, c'est une de ses limites. Les séries européennes commencent en 2002 : Jacques Chirac n'est noté que sur 2003-2006.</p>
+</div></details>
       </div>
     </details>
     <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>

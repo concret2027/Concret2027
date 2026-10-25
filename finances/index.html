@@ -14,7 +14,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025f"></script>
-<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }</style>
+<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
+.sous { border-top: 1px solid var(--line); }
+.sous > summary { cursor: pointer; list-style: none; padding: 10px 0; font-weight: 600; font-size: 13.5px; color: var(--fr); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sous > summary::-webkit-details-marker { display: none; }
+.sous > summary::after { content: '▾'; font-size: 14px; } .sous[open] > summary::after { content: '▴'; }
+.sous > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 6px; }
+.sous > div { display: grid; gap: 8px; padding: 0 0 12px; }
+</style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
 :root {
@@ -376,18 +383,21 @@ footer p { margin: 0; } footer a { color: inherit; }
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chacun des 8 critères, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux que cette moyenne cette année-là et ne se dégrade pas</b> (une avance qui se maintient n'est pas pénalisée parce que des pays en retard rattrapent), <b>0 point</b> sinon. La note sur 20 est la part des points marqués. <b>10/20 = le niveau de la moyenne de l'UE. En dessous de 10, la France fait moins bien que la moyenne européenne.</b></p>
-        <p><b>1. Chaque année, une comparaison avec la moyenne de l'UE.</b> Pour chaque critère, on compare l'évolution de la France sur l'année à celle de la moyenne des 27 pays de l'Union européenne, publiée par Eurostat et la Banque mondiale (la même référence sur toutes les pages). Si la France a fait mieux, elle marque 1 point. Si elle a fait moins bien, elle garde le point quand elle fait déjà mieux que la moyenne de l'UE cette année-là (dette, déficit, dépenses ou prélèvements plus bas, chômage plus faible, commerce mieux couvert, intérêts plus faibles) et ne se dégrade pas ; sinon, 0. Égalité : un demi-point. La croissance, comparée sans niveau, garde la seule règle de l'évolution.</p>
-        <p><b>2. Une note par critère.</b> On additionne les points du mandat et on divise par le nombre d'années. Un gouvernement de 3 ans qui marque 1 point sur 3 a donc 1/3 sur ce critère.</p>
-        <p><b>3. La note finale</b> est la moyenne des 8 critères, ramenée sur 20.</p>
-        <div class="ex" data-t="exemple_regle">
-          <b>Exemple : François Bayrou, 2025</b>
-          <p><b>Dette :</b> elle a pris 3,1 points de PIB en France, 1,2 dans l'UE. La France a fait moins bien : <b>0 point</b>.</p>
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque critère, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>La note sur 20 est la part des points marqués. 10/20 = autant d'années gagnées que perdues.</b></p>
+<details class="sous"><summary>Pas à pas</summary><div>
+<p><b>1. Chaque année, une comparaison avec la moyenne de l'UE.</b> Pour chaque critère, on compare l'évolution de la France sur l'année à celle de la moyenne des 27 pays de l'Union européenne, publiée par Eurostat et la Banque mondiale (la même référence sur toutes les pages). Si la France a fait mieux, elle marque 1 point. Si elle a fait moins bien, elle garde le point quand elle fait déjà mieux que la moyenne de l'UE cette année-là (dette, déficit, dépenses ou prélèvements plus bas, chômage plus faible, commerce mieux couvert, intérêts plus faibles) et ne se dégrade pas ; sinon, 0. Égalité : un demi-point. La croissance, comparée sans niveau, garde la seule règle de l'évolution.</p>
+<p><b>2. Une note par critère.</b> On additionne les points du mandat et on divise par le nombre d'années. Un gouvernement de 3 ans qui marque 1 point sur 3 a donc 1/3 sur ce critère.</p>
+<p><b>3. La note finale</b> est la moyenne des 8 critères, ramenée sur 20.</p>
+</div></details>
+<details class="sous"><summary>Un exemple : François Bayrou, 2025</summary><div>
+<div class="ex" data-t="exemple_regle">
+                    <p><b>Dette :</b> elle a pris 3,1 points de PIB en France, 1,2 dans l'UE. La France a fait moins bien : <b>0 point</b>.</p>
           <p><b>Dépenses publiques :</b> +0,3 point de PIB en France, +0,5 dans l'UE. Elles ont moins augmenté chez nous : <b>1 point</b>.</p>
           <p>Même exercice sur les autres critères. Bayrou marque 3 points sur 7 (les prélèvements 2025 ne sont pas encore publiés) : 3 ÷ 7 × 20 = <b>8,6/20</b>.</p>
         </div>
-        <p style="font-weight:600;margin-top:4px">Les 8 critères : quand la France marque-t-elle le point ?</p>
-        <table class="seuils"><tbody>
+</div></details>
+<details class="sous"><summary>Les 8 critères : quand la France marque-t-elle le point ?</summary><div>
+<table class="seuils"><tbody>
           <tr><td>Dette<span>La dette publique (État, Sécurité sociale, collectivités) en % du PIB. La France marque le point si sa dette augmente moins, ou baisse plus, que celle de l'UE ; elle le garde aussi si sa dette est plus basse que celle de l'UE et n'augmente pas.</span></td></tr>
           <tr><td>Déficit<span>Ce qui manque chaque année entre dépenses et recettes publiques, en % du PIB. La France marque le point si son déficit se réduit plus, ou se creuse moins, que celui de l'UE ; elle le garde aussi si son déficit est plus faible que celui de l'UE et ne se creuse pas.</span></td></tr>
           <tr><td>Dépenses publiques<span>Tout ce que dépensent l'État, la Sécurité sociale et les collectivités, en % du PIB. La France marque le point si ses dépenses augmentent moins que dans l'UE ; elle le garde aussi si elles sont plus basses que dans l'UE et n'augmentent pas.</span></td></tr>
@@ -397,7 +407,8 @@ footer p { margin: 0; } footer a { color: inherit; }
           <tr><td>Commerce extérieur<span>Ce que la France vend à l'étranger rapporté à ce qu'elle y achète (exportations ÷ importations). La France marque le point si ce rapport s'améliore plus que dans l'UE ; elle le garde aussi s'il est meilleur que dans l'UE et ne se dégrade pas.</span></td></tr>
           <tr><td>Coût de la dette<span>Les intérêts payés sur la dette, en % du PIB. La France marque le point si ses intérêts augmentent moins, ou baissent plus, que dans l'UE ; elle le garde aussi s'ils sont plus faibles que dans l'UE et n'augmentent pas.</span></td></tr>
         </tbody></table>
-        <p class="note">Choix assumé de Concret : moins de dépenses ou de prélèvements que la moyenne de l'UE rapporte un point. Chaque année est attribuée au Premier ministre en poste la majeure partie de l'année ; les présidents sont notés sur toutes leurs années. Limite : un point marqué de justesse vaut autant qu'un point marqué largement, et un gouvernement d'un an est jugé sur peu de comparaisons. Les séries Eurostat commençant en 1995, l'année 1995 ne compte que pour la croissance et l'emploi. Eurostat ne publie la moyenne de l'UE de la dette qu'à partir de 2000 : la dette n'est comptée qu'à partir de 2001.</p>
+<p class="note">Choix assumé de Concret : moins de dépenses ou de prélèvements que la moyenne de l'UE rapporte un point. Chaque année est attribuée au Premier ministre en poste la majeure partie de l'année ; les présidents sont notés sur toutes leurs années. Limite : un point marqué de justesse vaut autant qu'un point marqué largement, et un gouvernement d'un an est jugé sur peu de comparaisons. Les séries Eurostat commençant en 1995, l'année 1995 ne compte que pour la croissance et l'emploi. Eurostat ne publie la moyenne de l'UE de la dette qu'à partir de 2000 : la dette n'est comptée qu'à partir de 2001.</p>
+</div></details>
       </div>
     </details>
     <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>

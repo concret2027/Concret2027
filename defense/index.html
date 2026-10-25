@@ -27,6 +27,13 @@
 .dom td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--grid); }
 .dom th:first-child, .dom td:first-child { text-align: left; }
 .mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 14px; }
+/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
+.sous { border-top: 1px solid var(--line); }
+.sous > summary { cursor: pointer; list-style: none; padding: 10px 0; font-weight: 600; font-size: 13.5px; color: var(--fr); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sous > summary::-webkit-details-marker { display: none; }
+.sous > summary::after { content: '▾'; font-size: 14px; } .sous[open] > summary::after { content: '▴'; }
+.sous > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 6px; }
+.sous > div { display: grid; gap: 8px; padding: 0 0 12px; }
 </style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -442,8 +449,13 @@ footer p { margin: 0; } footer a { color: inherit; }
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse plus que la moyenne de l'Union européenne, <b>ou si, déjà au-dessus de cette moyenne, sa dépense ne recule pas hors inflation</b> ; <b>0 point</b> sinon, ½ en cas d'égalité. La moyenne de l'UE est celle d'Eurostat ; quand la source n'en publie pas, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul. Pourquoi « ou si elle ne recule pas » : les repères de l'OTAN sont des niveaux (2 % du PIB, 20 % d'équipement), et en 2014 les pays au-dessus se sont engagés à s'y maintenir, ceux en dessous à s'en rapprocher ; comparer seulement les hausses donnerait l'avantage aux pays partis de plus bas. « Hors inflation », parce que la part du PIB bouge aussi quand le PIB bouge (en 2020, le PIB chute et la part monte ; en 2021, il repart et la part baisse) sans que l'effort ait changé ; le même sommet demandait d'arrêter toute baisse et d'augmenter la dépense « en termes réels ». C'est la règle de toutes les pages de Concret ; pour une dépense, « ne recule pas » se mesure ici hors inflation. Chaque thème a une note sur 20 ; <b>la note défense est la moyenne des deux thèmes ; 10/20 = autant d'années ✓ que ✗.</b> Les deux thèmes mesurent des moyens (budget, équipement) : une hausse compte comme un progrès. Les effectifs sont affichés sans note (la raison est écrite dessous). Pour les deux dernières années, l'OTAN ne publie que des estimations : affichées, pas comptées.</p>
-        <table class="seuils"><tbody id="regles"></tbody></table>
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Chaque thème a une note sur 20 ; la note défense est la moyenne des deux thèmes. 10/20 = autant d'années gagnées que perdues.</b></p>
+<details class="sous"><summary>Précisions</summary><div>
+<p>Pour une dépense, « ne se dégrade pas » se mesure hors inflation : la part du PIB bouge aussi quand le PIB bouge (en 2020, le PIB chute et la part monte ; en 2021, il repart et la part baisse) sans que l'effort ait changé. Au sommet de l'OTAN de 2014, les pays s'étaient engagés à arrêter toute baisse et à augmenter leur dépense « en termes réels ».</p><p>Les repères de l'OTAN sont des niveaux (2 % du PIB, 20 % d'équipement) : en 2014, les pays au-dessus se sont engagés à s'y maintenir, ceux en dessous à s'en rapprocher. Comparer seulement les hausses donnerait l'avantage aux pays partis de plus bas.</p><p>Les deux thèmes mesurent des moyens (budget, équipement) : une hausse compte comme un progrès. Les effectifs sont affichés sans note (la raison est écrite dessous). Pour les deux dernières années, l'OTAN ne publie que des estimations : affichées, pas comptées. Quand la source ne publie pas la moyenne de l'UE, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul.</p>
+</div></details>
+<details class="sous"><summary>Thème par thème</summary><div>
+<table class="seuils"><tbody id="regles"></tbody></table>
+</div></details>
       </div>
     </details>
     <span class="eyebrow" style="margin:0">Les présidents</span>

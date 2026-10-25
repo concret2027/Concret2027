@@ -27,6 +27,13 @@
 .dom td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--grid); }
 .dom th:first-child, .dom td:first-child { text-align: left; }
 .mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 14px; }
+/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
+.sous { border-top: 1px solid var(--line); }
+.sous > summary { cursor: pointer; list-style: none; padding: 10px 0; font-weight: 600; font-size: 13.5px; color: var(--fr); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sous > summary::-webkit-details-marker { display: none; }
+.sous > summary::after { content: '▾'; font-size: 14px; } .sous[open] > summary::after { content: '▴'; }
+.sous > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 6px; }
+.sous > div { display: grid; gap: 8px; padding: 0 0 12px; }
 </style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -436,8 +443,13 @@ footer p { margin: 0; } footer a { color: inherit; }
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux que cette moyenne cette année-là et ne se dégrade pas</b> (une avance qui se maintient n'est pas pénalisée parce que des pays en retard rattrapent ; les résultats jugés sur cinq ans et les programmes de vaccins ou de dépistage gardent la seule évolution). Quand la source ne publie pas la moyenne de l'UE, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul), <b>0 point</b> sinon, ½ en cas d'égalité. Chaque thème a une note sur 20 ; <b>la note santé est la moyenne des cinq thèmes. 10/20 = le niveau de nos voisins.</b></p>
-        <table class="seuils"><tbody id="regles"></tbody></table>
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Chaque thème a une note sur 20 ; la note santé est la moyenne des cinq thèmes. 10/20 = autant d'années gagnées que perdues.</b></p>
+<details class="sous"><summary>Précisions</summary><div>
+<p>Une avance qui se maintient n'est pas pénalisée parce que des pays en retard rattrapent. Les résultats jugés sur cinq ans (comme l'espérance de vie) et les programmes de vaccins ou de dépistage gardent la seule évolution.</p><p>Quand la source ne publie pas la moyenne de l'UE, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population. Jamais un pays seul.</p>
+</div></details>
+<details class="sous"><summary>Thème par thème</summary><div>
+<table class="seuils"><tbody id="regles"></tbody></table>
+</div></details>
       </div>
     </details>
     <span class="eyebrow" style="margin:0">Les présidents</span>
