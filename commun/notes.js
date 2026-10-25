@@ -1,5 +1,5 @@
 /* Règles de notation de Concret : la méthode affichée sur chaque page, sous forme de code.
-   Un seul fichier, utilisé par les pages Finances, Éducation, Santé, Sécurité et justice, Défense, par l'accueil (classement général)
+   Un seul fichier, utilisé par les pages Finances, Éducation, Santé, Sécurité et justice, Défense, Vie des Français, par l'accueil (classement général)
    et par le contrôle de la mise à jour automatique (outils/controle.js). Les notes ne sont jamais
    saisies à la main : elles se recalculent à partir des séries de data.json.
    Aucune dépendance (ni d3, ni DOM) pour tourner aussi bien dans le navigateur que sous Node. */
@@ -14,7 +14,7 @@
     methode: function (y, qui) {
       if (qui === 'serie') return 'Non compté : en ' + y + ', Eurostat passe d\'une table à une autre (chiffres jusqu\'en ' + (y - 1) + ', puis depuis ' + y + '), qu\'il ne raccorde pas : l\'évolution entre les deux n\'est pas comptée.';
       var sujet = qui === 'fr' ? 'la France a changé sa façon de mesurer ce chiffre' : qui === 'fr_ue' ? 'la France et la moyenne européenne ont changé leur façon de mesurer ce chiffre' : 'la moyenne européenne a changé sa façon de mesurer ce chiffre';
-      return 'Non compté : en ' + y + ', ' + sujet + ', il n\'est pas comparable à ' + (y - 1) + '.';
+      return 'Non compté : en ' + y + ', ' + sujet + ' ; son évolution par rapport à ' + (y - 1) + ' ne compte pas.';
     },
     pasPublie: function (y, source) { return 'Non compté : le chiffre ' + y + ' n\'est pas encore publié' + (source ? ' par ' + source : '') + '.'; },
     debut: function (y, source) { return 'Non compté : les séries ' + (source ? source + ' ' : '') + 'commencent en ' + y + ', il n\'y a pas d\'année précédente pour mesurer l\'évolution.'; },
@@ -163,6 +163,8 @@
   //  - 'niveau' : par édition d'une étude (W.A.I.T.), 1 point si la France fait mieux que la référence l'année jugée ;
   //  - 'effort' : la règle par défaut, pour une dépense (défense) : « ne recule pas » se mesure hors inflation (fr_reel),
   //    car la part du PIB bouge aussi quand le PIB bouge (sommet de l'OTAN de 2014 : augmenter la dépense en termes réels) ;
+  //  - 'croissance' : un indice (revenu réel des ménages, 100 en 2008) : 1 point si la hausse en % de la France dépasse
+  //    celle de la moyenne de l'UE ; un indice n'a pas de niveau comparable, donc pas d'avance tenue ;
   //  - 'propre' : déficit de l'Assurance maladie, jugé sur la France seule faute de comparaison possible : 1 point si
   //    équilibre ou excédent, ½ si le déficit se réduit d'au moins 0,1 point de PIB, 0 s'il se creuse ou reste stable.
   function sante(S) {
@@ -194,6 +196,13 @@
     };
     // Avance tenue (règle commune) : le point d'évolution, ou 1 si la France fait mieux que la référence et ne recule pas.
     function effort(c, y) { return avance(evol(c, y), val(c, 'fr', y), val(c, ref(c), y), c.low, recule(c, y)); }
+    // Règle 'croissance' : un indice (100 une année donnée) mesure une évolution, pas un niveau ; on compare la hausse
+    // en % de la France à celle de la référence, sans avance tenue (comme la croissance en Finances).
+    function croissance(c, y) {
+      var a = val(c, 'fr', y), b = val(c, 'fr', y - 1), e = val(c, ref(c), y), f = val(c, ref(c), y - 1);
+      if ((c.br || {})[y] || a == null || b == null || e == null || f == null) return null;
+      return match(100 * (a / b - 1), 100 * (e / f - 1), c.low);
+    }
     var fenetre = function (y) { var a = []; for (var t = y; t < y + LONG; t++) a.push(t); return a; };
     function score(k, y) {
       var c = C[k];
@@ -202,6 +211,7 @@
       if (c.regle === 'composite') { var q = Object.keys(c.sous).map(function (j) { return evol(c.sous[j], y); }).filter(function (x) { return x != null; }); return q.length ? mean(q) : null; }
       if (c.regle === 'niveau') return c.y.indexOf(y) < 0 ? null : match(val(c, 'fr', y), val(c, ref(c), y), c.low);
       if (c.regle === 'effort') return effort(c, y);
+      if (c.regle === 'croissance') return croissance(c, y);
       if (c.regle === 'propre') { var v = val(c, 'fr', y), p = val(c, 'fr', y - 1); if (v == null) return null; if (v >= 0) return 1; if (p == null) return null; return v - p >= SEUIL_STABLE - 1e-9 ? 0.5 : 0; }
       if (c.regle === 'ecart') {
         var a = val(c, 'fr', y), e = val(c, ref(c), y), pa = val(c, 'fr', y - 1), pe = val(c, ref(c), y - 1);
@@ -226,10 +236,14 @@
       var sw = sum(r.map(function (p) { return p[1]; }));
       return sw ? 20 * sum(r.map(function (p) { return p[0] * p[1]; })) / sw : null;
     }
-    // Note de la page : moyenne des questions notées pour ce mandat.
+    // Poids d'un thème dans la note du mandat : 1 dès qu'il a une année complète de comparaisons (une par indicateur),
+    // sinon la part de cette année qu'il a (un thème noté sur une seule comparaison ne pèse pas autant qu'un thème noté sur dix).
+    var poidsTheme = function (g, t) { t = themeOf(t); return Math.min(1, count(g, t) / t.crit.length); };
+    // Note de la page : moyenne des thèmes notés pour ce mandat, chacun selon son poids.
     function note(g) {
-      var n = THEMES.map(function (t) { return noteTheme(g, t); }).filter(function (v) { return v != null; });
-      return n.length ? mean(n) : null;
+      var r = THEMES.map(function (t) { var n = noteTheme(g, t); return n == null ? null : [n, poidsTheme(g, t)]; }).filter(Boolean);
+      var sw = sum(r.map(function (p) { return p[1]; }));
+      return sw ? sum(r.map(function (p) { return p[0] * p[1]; })) / sw : null;
     }
     // Pourquoi une année n'est pas comptée pour un critère (phrase affichée sous le détail).
     function raisonSerie(c, y) {
@@ -258,7 +272,7 @@
       if (c.regle === 'long') return y > c.y[c.y.length - 1] ? POURQUOI.pasPublie(y) : 'Non compté : aucune évolution comparable publiée entre ' + y + ' et ' + (y + LONG - 1) + '.';
       return raisonSerie(c, y);
     }
-    return { KEYS: KEYS, THEMES: THEMES, WT: WT, MIN_N: MIN_N, SEUIL_STABLE: SEUIL_STABLE, LONG: LONG, evaluate: evaluate, note: note, noteTheme: noteTheme, count: count, score: score, evol: evol, fenetre: fenetre, raison: raison, raisonSerie: raisonSerie, val: val, ref: ref, refEv: refEv, effort: effort, recule: recule };
+    return { KEYS: KEYS, THEMES: THEMES, WT: WT, MIN_N: MIN_N, SEUIL_STABLE: SEUIL_STABLE, LONG: LONG, evaluate: evaluate, note: note, noteTheme: noteTheme, poidsTheme: poidsTheme, count: count, score: score, evol: evol, fenetre: fenetre, raison: raison, raisonSerie: raisonSerie, val: val, ref: ref, refEv: refEv, effort: effort, recule: recule, croissance: croissance };
   }
 
   // ===== Classement général de l'accueil : moyenne des notes par mission, réglages par défaut de chaque page =====
@@ -267,7 +281,8 @@
     { k: 'e', l: 'Éducation', url: '/education/#bulletin', debut: 'les chiffres de l\'éducation commencent en 2002, la première évolution mesurable est celle de 2003', calc: function (S) { return education(S.education, { long: true }); }, ser: 'education' },
     { k: 's', l: 'Santé', url: '/sante/#bulletin', debut: 'la plupart des chiffres européens de la santé commencent entre 2000 et 2011', calc: function (S) { return sante(S.sante); }, ser: 'sante' },
     { k: 'j', l: 'Sécurité et justice', url: '/securite/#bulletin', debut: 'les chiffres européens de la délinquance commencent en 1995', calc: function (S) { return securite(S.securite); }, ser: 'securite' },
-    { k: 'd', l: 'Défense', url: '/defense/#bulletin', debut: 'les chiffres européens de la défense commencent en 1995 (Eurostat) et en 2014 (OTAN)', calc: function (S) { return defense(S.defense); }, ser: 'defense' }
+    { k: 'd', l: 'Défense', url: '/defense/#bulletin', debut: 'les chiffres européens de la défense commencent en 1995 (Eurostat) et en 2014 (OTAN)', calc: function (S) { return defense(S.defense); }, ser: 'defense' },
+    { k: 'v', l: 'Vie des Français', url: '/vie/#bulletin', debut: 'les chiffres européens de la vie des Français commencent entre 1994 (moral des ménages) et 2015', calc: function (S) { return vie(S.vie); }, ser: 'vie' }
   ];
   var r1 = function (v) { return v == null ? null : Math.round(v * 10) / 10; };
   function classement(series) {
@@ -306,6 +321,8 @@
   var securite = function (S) { return sante(S); };
   // Défense : même méthode ; les moyens (budget, équipement, effectifs) sont jugés année par année.
   var defense = function (S) { return sante(S); };
-  var api = { match: match, avance: avance, degrade: degrade, POURQUOI: POURQUOI, finances: finances, education: education, sante: sante, securite: securite, defense: defense, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url, debut: m.debut }; }) };
+  // Vie des Français : même méthode ; conditions de vie jugées année par année (elles réagissent vite aux décisions).
+  var vie = function (S) { return sante(S); };
+  var api = { match: match, avance: avance, degrade: degrade, POURQUOI: POURQUOI, finances: finances, education: education, sante: sante, securite: securite, defense: defense, vie: vie, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url, debut: m.debut }; }) };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ConcretNotes = api;
 })(this);

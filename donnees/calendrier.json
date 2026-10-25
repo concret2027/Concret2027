@@ -1177,7 +1177,7 @@
   {
    "id": "ue_moyennes",
    "page": "sante",
-   "libelle": "Moyennes de l'UE calculées par Concret, pour les indicateurs notés dont la source n'en publie pas (Santé : alcool, essais cliniques, rougeole, diphtérie-tétanos-coqueluche, papillomavirus, dépistages ; Éducation : PISA (maths, lecture, sciences) ; Sécurité et justice : homicides, vols avec violence, cambriolages, occupation et places de prison, dépense publique pour la police, les tribunaux et les prisons avant 2010 ; Défense : dépense et investissement publics de défense avant 2010, dépense au sens de l'OTAN, part de l'équipement, militaires)",
+   "libelle": "Moyennes de l'UE calculées par Concret, pour les indicateurs notés dont la source n'en publie pas (Santé : alcool, essais cliniques, rougeole, diphtérie-tétanos-coqueluche, papillomavirus, dépistages ; Éducation : PISA (maths, lecture, sciences) ; Sécurité et justice : homicides, vols avec violence, cambriolages, occupation et places de prison, dépense publique pour la police, les tribunaux et les prisons avant 2010 ; Défense : dépense et investissement publics de défense avant 2010, dépense au sens de l'OTAN, part de l'équipement, militaires ; Vie des Français : retards de paiement, écart de revenu, logement, travailleurs pauvres avant 2010, indice de développement humain)",
    "frequence": "mensuel (les sources des 27 pays se mettent à jour à des dates différentes)",
    "source": "Les sources de chaque indicateur (OCDE, OMS et Unicef, ClinicalTrials.gov, Eurostat), pour les 27 pays de l'UE ; population : Eurostat demo_gind (Banque mondiale pour les essais cliniques, comme la série France). LANCER : python3 outils/ue_calc.py (calcul et comparaison), puis python3 outils/ue_calc.py --ecrire (écrit ue_calc, ue_calc_ev, ue_calc_info, ue_calc_note et la date de prochaine vérification). Ne pas saisir à la main.",
    "url": "https://github.com/concret2027/Concret2027/blob/main/outils/ue_calc.py",
@@ -1302,6 +1302,133 @@
    "tentatives": 0,
    "textes_lies": [],
    "note": "Vérifié le 25 octobre 2026 : 2021-2025 France 9,8 %, Allemagne 5,7 %, Italie 5,1 %, Espagne 2,3 % ; 2016-2020 France 8,8 % ; rang 2, comme la fiche SIPRI de mars 2026. Si la Banque mondiale n'a pas encore repris la nouvelle année du SIPRI, attendre (vérifier chaque mois)."
+  },
+  {
+   "id": "vie_silc",
+   "page": "vie",
+   "libelle": "Enquête européenne sur les revenus et les conditions de vie : pauvreté ou exclusion sociale, privation sévère, écart de revenu S80/S20, coût et surpeuplement du logement, logement mal chauffé, retards de paiement, travailleurs pauvres, satisfaction dans la vie (France, Allemagne, Espagne, moyenne de l'UE)",
+   "frequence": "annuel (Eurostat publie les chiffres de l'année d'enquête au fil des mois suivants, la plupart au printemps de l'année d'après)",
+   "source": "Eurostat, EU-SILC (ilc_peps01n, ilc_mdsd11, ilc_di11, ilc_lvho07a, ilc_lvho05a, ilc_mdes01, ilc_mdes05, ilc_iw01, ilc_pw01). LANCER : python3 outils/vie.py (lecture et comparaison), puis python3 outils/vie.py --ecrire, puis python3 outils/ue_calc.py --ecrire --seul vie.arr,vie.s80,vie.surch,vie.surp,vie.froid,vie.iw. Ne pas saisir à la main.",
+   "url": "https://ec.europa.eu/eurostat/web/income-and-living-conditions/database",
+   "cible": "series.vie.C.arope, priv, s80, surch, surp, froid, arr, iw, sat (y, fr, ue, de, es, br)",
+   "derniere_donnee": "2025",
+   "derniere_verification": "2026-10-25",
+   "prochaine_verification": "2027-04-15",
+   "publication_attendue": "",
+   "statut": "a_jour",
+   "tentatives": 0,
+   "textes_lies": [
+    "series.vie.QUIZ (pauvreté ou exclusion, surpeuplement, logement mal chauffé)"
+   ],
+   "note": "Changement de méthode : seulement s'il est signalé par Eurostat (code « b ») ; l'outil l'écrit dans br. Avant 2010, la moyenne de l'UE est calculée par outils/ue_calc.py (retards de paiement, S80/S20, logement, travailleurs pauvres)."
+  },
+  {
+   "id": "vie_revenu",
+   "page": "vie",
+   "libelle": "Revenu disponible brut des ménages par habitant, hors inflation, indice 100 en 2008 (France, Allemagne, Espagne, moyenne de l'UE)",
+   "frequence": "annuel (comptes nationaux, Eurostat)",
+   "source": "Eurostat tepsr_wc310. LANCER : python3 outils/vie.py (lecture et comparaison), puis python3 outils/vie.py --ecrire. Ne pas saisir à la main.",
+   "url": "https://ec.europa.eu/eurostat/databrowser/view/tepsr_wc310/default/table",
+   "cible": "series.vie.C.rev",
+   "derniere_donnee": "2024 (France) ; 2025 (moyenne de l'UE)",
+   "derniere_verification": "2026-10-25",
+   "prochaine_verification": "2026-12-15",
+   "publication_attendue": "",
+   "statut": "a_jour",
+   "tentatives": 0,
+   "textes_lies": [],
+   "note": "Règle « croissance » : on compare la hausse en % d'une année sur l'autre, pas le niveau de l'indice."
+  },
+  {
+   "id": "vie_emploi",
+   "page": "vie",
+   "libelle": "Taux d'emploi des 20-64 ans (France, Allemagne, Espagne, moyenne de l'UE)",
+   "frequence": "annuel (enquête sur les forces de travail, Eurostat, au printemps)",
+   "source": "Eurostat lfsi_emp_a. LANCER : python3 outils/vie.py (lecture et comparaison), puis python3 outils/vie.py --ecrire. Ne pas saisir à la main.",
+   "url": "https://ec.europa.eu/eurostat/databrowser/view/lfsi_emp_a/default/table",
+   "cible": "series.vie.C.emp",
+   "derniere_donnee": "2025",
+   "derniere_verification": "2026-10-25",
+   "prochaine_verification": "2027-04-30",
+   "publication_attendue": "",
+   "statut": "a_jour",
+   "tentatives": 0,
+   "textes_lies": [
+    "series.vie.QUIZ (taux d'emploi)"
+   ],
+   "note": ""
+  },
+  {
+   "id": "vie_salaire",
+   "page": "vie",
+   "libelle": "Écart de salaire horaire entre femmes et hommes, non corrigé (France, Allemagne, Espagne, moyenne de l'UE)",
+   "frequence": "annuel (Eurostat, au printemps, pour l'année n-2)",
+   "source": "Eurostat sdg_05_20. LANCER : python3 outils/vie.py (lecture et comparaison), puis python3 outils/vie.py --ecrire. Ne pas saisir à la main.",
+   "url": "https://ec.europa.eu/eurostat/databrowser/view/sdg_05_20/default/table",
+   "cible": "series.vie.C.ecsal",
+   "derniere_donnee": "2024",
+   "derniere_verification": "2026-10-25",
+   "prochaine_verification": "2027-03-15",
+   "publication_attendue": "",
+   "statut": "a_jour",
+   "tentatives": 0,
+   "textes_lies": [
+    "series.vie.QUIZ (écart de salaire)"
+   ],
+   "note": ""
+  },
+  {
+   "id": "vie_moral",
+   "page": "vie",
+   "libelle": "Moral des ménages : indicateur de confiance des consommateurs de la Commission européenne, chiffre du mois et moyenne de chaque année complète (France, Allemagne, Espagne, moyenne de l'UE)",
+   "frequence": "mensuel (Commission européenne, fin de mois)",
+   "source": "Commission européenne, enquête auprès des consommateurs, via Eurostat ei_bsco_m (BS-CSMCI, corrigé des variations saisonnières). LANCER : python3 outils/vie.py (lecture et comparaison), puis python3 outils/vie.py --ecrire. Ne pas saisir à la main.",
+   "url": "https://ec.europa.eu/eurostat/databrowser/view/ei_bsco_m/default/table",
+   "cible": "datasets.vie_moral (chiffre du mois) ; series.vie.C.conf (moyenne des douze mois de chaque année complète)",
+   "derniere_donnee": "2026-09",
+   "derniere_verification": "2026-10-25",
+   "prochaine_verification": "2026-10-30",
+   "publication_attendue": "",
+   "statut": "a_jour",
+   "tentatives": 0,
+   "textes_lies": [],
+   "note": "Une année n'entre dans la note que lorsque ses douze mois sont publiés (l'outil le fait)."
+  },
+  {
+   "id": "vie_idh",
+   "page": "vie",
+   "libelle": "Indice de développement humain (France, Allemagne, Espagne, États-Unis ; moyenne de l'UE calculée par Concret), affiché sans note",
+   "frequence": "annuel (Rapport sur le développement humain du PNUD, au printemps)",
+   "source": "PNUD, fichier des séries complètes de l'indice. LANCER : python3 outils/vie.py (lecture et comparaison), puis python3 outils/vie.py --ecrire, puis python3 outils/ue_calc.py --ecrire --seul vie.AFF.idh. L'outil cherche lui-même la dernière édition. Ne pas saisir à la main.",
+   "url": "https://hdr.undp.org/data-center/documentation-and-downloads",
+   "cible": "series.vie.AFF.idh (y, fr, de, es, us, rang_fr, annee_rang, source, url)",
+   "derniere_donnee": "2023 (édition 2025)",
+   "derniere_verification": "2026-10-25",
+   "prochaine_verification": "2027-05-15",
+   "publication_attendue": "",
+   "statut": "a_jour",
+   "tentatives": 0,
+   "textes_lies": [
+    "series.vie.QUIZ (rang de la France)"
+   ],
+   "note": "Le PNUD recalcule toute la série à chaque édition : réécrire toute la série."
+  },
+  {
+   "id": "vie_actu",
+   "page": "vie",
+   "libelle": "Actualité et agenda de la vie des Français",
+   "frequence": "quotidien",
+   "source": "Sites officiels : Insee (insee.fr : pouvoir d'achat, prix, confiance des ménages, pauvreté, logement, emploi), Eurostat (news), service-public.fr (revalorisations, smic, prestations), Drees, ministère du Travail",
+   "url": "https://www.insee.fr/fr/accueil",
+   "cible": "datasets.actu_vie (date, texte, source, url), datasets.agenda_vie (date, quand, evenement, source, url)",
+   "derniere_donnee": "2026-10-15",
+   "derniere_verification": "2026-10-25",
+   "prochaine_verification": "2026-10-26",
+   "publication_attendue": "",
+   "statut": "a_jour",
+   "tentatives": 0,
+   "textes_lies": [],
+   "note": "Une phrase factuelle par actualité, avec le lien de la source officielle lue ; l'heure de l'agenda est celle annoncée sur la page de l'Insee (« Prochaine publication »). Retirer de l'agenda les dates passées."
   }
  ]
 }

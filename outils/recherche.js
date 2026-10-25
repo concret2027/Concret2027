@@ -5,7 +5,7 @@
      node outils/recherche.js            (lance un petit serveur local sur le dossier du site) */
 var fs = require('fs'), path = require('path'), http = require('http');
 var ROOT = path.join(__dirname, '..');
-var PAGES = [['/', 'Accueil'], ['/finances/', 'Finances'], ['/education/', 'Éducation'], ['/sante/', 'Santé'], ['/securite/', 'Sécurité et justice'], ['/defense/', 'Défense'], ['/barometre/', 'Baromètre 2027']];
+var PAGES = [['/', 'Accueil'], ['/finances/', 'Finances'], ['/education/', 'Éducation'], ['/sante/', 'Santé'], ['/securite/', 'Sécurité et justice'], ['/defense/', 'Défense'], ['/vie/', 'Vie des Français'], ['/barometre/', 'Baromètre 2027']];
 // Mots que les lecteurs cherchent et qui ne sont pas écrits tels quels sur la page.
 var SYN = { inflation: 'prix ipch hausse des prix', chomage: 'emploi travail', dette: 'endettement dette publique', deficit: 'solde budget', homicide: 'meurtre crime',
   prison: 'détenus incarcération surpopulation', detenu: 'prison', oqtf: 'expulsion éloignement immigration obligation de quitter le territoire',
@@ -13,7 +13,9 @@ var SYN = { inflation: 'prix ipch hausse des prix', chomage: 'emploi travail', d
   vaccination: 'vaccin', papillomavirus: 'hpv', 'securite sociale': 'secu', 'assurance maladie': 'secu cpam', prelevements: 'impôts taxes cotisations',
   'pib par habitant': 'richesse niveau de vie', croissance: 'pib', 'esperance de vie': 'longévité', cambriolage: 'vol logement', sondage: 'présidentielle élection candidats',
   otan: 'nato alliance atlantique armée', militaires: 'soldats armée effectifs', equipement: 'matériel armement armes', 'programmation militaire': 'lpm budget armées',
-  'mission « defense »': 'budget des armées lpm', defense: 'armée armées militaire' };
+  'mission « defense »': 'budget des armées lpm', defense: 'armée armées militaire',
+  'pouvoir d\'achat': 'revenu salaire niveau de vie inflation', pauvrete: 'pauvres précarité exclusion minima sociaux', logement: 'loyer habitation mal-logement surpeuplement chauffage',
+  'moral des menages': 'confiance consommateurs insee', 'developpement humain': 'idh onu pnud', 'ecart de salaire': 'égalité femmes hommes salaires', satisfaction: 'bonheur bien-être' };
 var MIME = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript', '.json': 'application/json', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png' };
 
 function serveur() {

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-<script src="../commun/notes.js?v=20261025f"></script>
+<script src="../commun/notes.js?v=20261025i"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
 .recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
@@ -376,7 +376,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 </head>
 <body data-sources="Sources : Eurostat, SSMSI (ministère de l'Intérieur) (détail en bas de page).">
 <div class="wrap">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><a href="/sante/">Santé</a><a href="/securite/" aria-current="page">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><span class="soon">Bientôt : Vie des Français</span></nav>
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><a href="/sante/">Santé</a><a href="/securite/" aria-current="page">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/vie/">Vie des Français</a></nav>
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><b>Sécurité et justice</b><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
@@ -457,7 +457,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Chaque thème a une note sur 20 ; la note sécurité et justice est la moyenne des cinq thèmes. 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Chaque thème a une note sur 20 ; la note sécurité et justice est la moyenne des cinq thèmes. Un thème qui a moins d'une année de chiffres pendant le mandat compte en proportion (un tiers d'année, un tiers de poids). 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
 <details class="sous"><summary>Précisions</summary><div>
 <p>Une avance qui se maintient n'est pas pénalisée parce que des pays en retard rattrapent. Les résultats jugés sur cinq ans (comme l'espérance de vie) et les programmes de vaccins ou de dépistage gardent la seule évolution.</p><p>Quand la source ne publie pas la moyenne de l'UE, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population. Jamais un pays seul.</p>
 </div></details>
@@ -699,7 +699,7 @@ function main(FEED) {
       return { l: t.court, v: n == null ? 'non noté' : nfmt(n) + '/20', cl: n == null ? '' : n >= 10 ? 'g' : 'b', title: 'Voir les indicateurs de ce thème', open: function () {
         var w = document.createElement('div'); w.className = 'kdet';
         var p = document.createElement('p'); p.innerHTML = '<b></b> <span></span>'; p.firstChild.textContent = t.q;
-        p.lastChild.textContent = n == null ? 'Non noté : aucun indicateur de ce thème n\'a de chiffre comparable pendant ce mandat (les séries commencent plus tard).' : 'Note : ' + nfmt(n) + '/20, sur ' + SAN.count(g, t) + ' comparaison' + (SAN.count(g, t) > 1 ? 's' : '') + '. Touchez un indicateur :';
+        p.lastChild.textContent = n == null ? 'Non noté : aucun indicateur de ce thème n\'a de chiffre comparable pendant ce mandat (les séries commencent plus tard).' : 'Note : ' + nfmt(n) + '/20, sur ' + SAN.count(g, t) + ' comparaison' + (SAN.count(g, t) > 1 ? 's' : '') + (SAN.poidsTheme(g, t) < 1 ? ' : moins d\'une année de chiffres, ce thème compte pour ' + fmt(100 * SAN.poidsTheme(g, t)) + ' % dans la note du mandat' : '') + '. Touchez un indicateur :';
         w.appendChild(p); w.appendChild(critChips(g, t)); return w;
       } };
     }));
@@ -724,7 +724,7 @@ function main(FEED) {
     [0, 5, 10, 15, 20].forEach(function (t) {
       svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 4).attr('y2', H - 20).attr('stroke', t === 10 ? 'var(--fg)' : 'var(--grid)').attr('stroke-dasharray', t === 10 ? '4 3' : null);
       svg.append('text').attr('x', x(t)).attr('y', top - 8).attr('text-anchor', 'middle').text(t).style('fill', t === 10 ? 'var(--fg)' : null);
-      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = niveau de nos voisins').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
+      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = aussi bien que la moyenne de l\'UE').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
     });
     list.forEach(function (r, i) {
       var y = top + i * rh, name = small ? nomCourt(r.g.n) : r.g.n, few = countOf(r.g) < MIN_N, inside = x(r.n) - x(0) > 30 && (!few || x(r.n) > W - 140);
@@ -933,7 +933,7 @@ function main(FEED) {
       t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || esc(x.ex || '')) + (x.source ? ' Source : ' + lien(x, x.source) + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + esc(q.l) + ' (' + esc(q.unite) + '). Source : ' + lien(q, q.source) + '.'); }); });
       sec.innerHTML = '<h2></h2><p class="t-sum"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>La France fait mieux que ses voisins sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n + ' (dernier chiffre connu).</p>' +
         '<span class="eyebrow" style="margin:4px 0 0">' + esc(c.l) + ', ' + esc(c.unite) + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p>' +
-        '<p class="tnotes">Note de ce thème, sur 20 (10 = la France a progressé autant que ses voisins) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>';
+        '<p class="tnotes">Note de ce thème, sur 20 (10 = aussi bien que la moyenne de l\'UE) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>';
       sec.querySelector('h2').textContent = t.q;
       root.appendChild(sec);
       MAIN.push(function () { sec.querySelector('.note').innerHTML = [serieChart('ch-' + m0.id, c), srcNote(c)].filter(Boolean).join(' '); });
