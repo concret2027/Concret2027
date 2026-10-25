@@ -1,0 +1,1209 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vie des Français · Concret</title>
+<meta name="description" content="La vie des Français comparée à la moyenne de l'Union européenne, avec l'Allemagne et l'Espagne en repères : pouvoir d'achat, pauvreté, logement, travail, moral des ménages. La note de chaque président et gouvernement depuis 1995.">
+<meta property="og:title" content="Vie des Français · Concret">
+<meta property="og:description" content="Pouvoir d'achat, pauvreté, logement, travail, moral : la France comparée à ses voisins, et la note de chaque président et gouvernement.">
+<meta property="og:url" content="https://concret2027.fr/vie/">
+<meta property="og:type" content="website">
+<script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="../commun/notes.js?v=20261025g"></script>
+<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
+.recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
+.today-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 640px) { .today-grid.three { grid-template-columns: minmax(0, 1fr); } .today-grid.three .metric + .metric { border-left: 0; border-top: 1px solid var(--line); } }
+.month.four { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 0; }
+@media (max-width: 640px) { .month.four { grid-template-columns: minmax(0, 1fr); } .month.four .mo + .mo { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 10px; } }
+.industrie { font-size: 12px; font-weight: 600; color: var(--mid); }
+.dom { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.dom th { font-size: 11px; color: var(--muted); font-weight: 600; text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.dom td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--grid); }
+.dom th:first-child, .dom td:first-child { text-align: left; }
+.mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 14px; }
+/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
+.sous { border-top: 1px solid var(--line); }
+.sous > summary { cursor: pointer; list-style: none; padding: 10px 0; font-weight: 600; font-size: 13.5px; color: var(--fr); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sous > summary::-webkit-details-marker { display: none; }
+.sous > summary::after { content: '▾'; font-size: 14px; } .sous[open] > summary::after { content: '▴'; }
+.sous > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 6px; }
+.sous > div { display: grid; gap: 8px; padding: 0 0 12px; }
+</style>
+<style>
+/* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
+:root {
+  --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
+  --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a; --es: #d0632a;
+  --bad: #c43d3d; --ok: #1f8a4c; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
+  --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
+  --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
+  --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
+  --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --de: #a4a6b0; --it: #4cc27f; --ea: #d9b25a; --us: #d77fcf; --es: #f0905e; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a;
+  --band: rgba(122, 156, 255, .09); --grid: #2a2c32; --axis: #44464e; --draft: #3a3016; --draft-fg: #f0d58a;
+  --hero-bg: #172242; --hero-line: #26345c; --hero-fg: #eef2ff; --hero-muted: #a8b4d6; --hero-num: #ffffff; --hero-up: #ff8f8f; --pill: #1e2b52;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .18); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --de: #a4a6b0; --it: #4cc27f; --ea: #d9b25a; --us: #d77fcf; --es: #f0905e; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a;
+  --band: rgba(122, 156, 255, .09); --grid: #2a2c32; --axis: #44464e; --draft: #3a3016; --draft-fg: #f0d58a;
+  --hero-bg: #172242; --hero-line: #26345c; --hero-fg: #eef2ff; --hero-muted: #a8b4d6; --hero-num: #ffffff; --hero-up: #ff8f8f; --pill: #1e2b52;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .18); color-scheme: dark; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-text-size-adjust: 100%; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.draft { background: var(--draft); color: var(--draft-fg); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; }
+.brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.brand b { font-family: var(--serif); font-weight: 500; font-size: 22px; }
+.brand span { font-size: 12.5px; color: var(--muted); }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.card h2 { font-size: 19px; font-weight: 600; line-height: 1.25; margin: 0; text-wrap: balance; }
+.eyebrow { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 4px; }
+.note { font-size: 12.5px; color: var(--muted); margin: 0; max-width: 92ch; }
+.insight { font-family: var(--serif); font-size: 19px; line-height: 1.3; margin: 0; text-wrap: balance; }
+.insight b { font-weight: 500; color: var(--fr); }
+.explain { font-size: 13.5px; margin: 0; padding: 10px 12px; border-left: 3px solid var(--fr); background: var(--band); border-radius: 0 6px 6px 0; }
+.explain b { font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 34px; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip:focus-visible, .opt:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* Sommaire collant */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.jump { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 44px)); z-index: 9; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.jump::-webkit-scrollbar { display: none; }
+.jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+.jump a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
+.flash { animation: flash 1.6s ease-out; }
+@keyframes flash { 0% { background: var(--band); box-shadow: 0 0 0 3px var(--fr); border-radius: 10px; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
+.pres-detail { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
+.pres-detail .who b { font-weight: 600; }
+.share { font: inherit; font-family: var(--sans); font-size: 12.5px; font-weight: 500; margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 2px; border: 0; background: none; color: var(--muted); cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.share::before { content: "↗"; }
+.share.primary { background: var(--fr); color: #fff; border-color: var(--fr); }
+.acc-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.acc-actions .acc-cta, .acc-actions .share { margin-top: 0; }
+.share:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.daily .share { display: inline-flex; }
+.sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sheet-box { background: var(--panel); border-radius: 14px; padding: 14px; display: grid; gap: 10px; max-width: 420px; width: 100%; max-height: 100%; overflow: auto; }
+.sheet-box img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+/* Menus dépliables */
+.acc { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
+.acc > summary::-webkit-details-marker { display: none; }
+.acc-cta { justify-self: start; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--band); border: 1px solid var(--fr); border-radius: 999px; padding: 5px 12px; }
+.acc-cta::before { content: "Voir le détail ↓"; }
+.acc[open] > summary .acc-cta::before { content: "Masquer ↑"; }
+.acc > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 14px; }
+.acc-h { font-size: 17px; font-weight: 700; }
+.acc-t { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+.acc-t b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.acc-t i.r { font-style: normal; color: var(--bad); }
+.acc-t i.g { font-style: normal; color: var(--ok); }
+.acc-body { display: grid; gap: 14px; padding: 0 12px 12px; }
+.acc-body.card { border: 0; padding-top: 0; background: none; }
+.acc[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+
+/* Menu du site */
+.site { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 11; display: flex; flex-wrap: nowrap; align-items: baseline; gap: 16px; font-size: 14px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; margin: -16px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 10px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.site::-webkit-scrollbar { display: none; }
+@media (max-width: 520px) { .site { gap: 14px; } .site .lg { display: none; } .site a.logo { font-size: 18px; margin-right: 0; } }
+.site a { color: var(--muted); text-decoration: none; font-weight: 500; }
+.site a[aria-current="page"] { color: var(--fg); font-weight: 700; border-bottom: 2px solid var(--fr); }
+.site a.logo { font-family: var(--serif); font-size: 20px; color: var(--fg); font-weight: 500; margin-right: 6px; }
+.site .soon { color: var(--axis); font-size: 12.5px; }
+.site a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.stale { border: 1px solid var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.actu { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.actu li { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 10px; font-size: 14px; line-height: 1.4; }
+.actu .d { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; }
+.actu a { color: var(--muted); font-size: 12px; }
+.actu .next { font-weight: 600; }
+#agenda-edu li { grid-template-columns: 6.6rem minmax(0, 1fr); }
+.upd { margin: -12px 0 0; font-size: 12.5px; color: var(--muted); }
+/* Résumé */
+.summary { display: grid; gap: 10px; }
+.bilan summary { cursor: pointer; list-style: none; display: grid; gap: 2px; }
+.bilan summary::-webkit-details-marker { display: none; }
+.bilan .bilan-h { font-family: var(--serif); font-size: 24px; line-height: 1.15; }
+.bilan .bilan-h::after { content: " ▾"; font-family: var(--sans); font-size: 14px; color: var(--muted); }
+.bilan:not([open]) .bilan-h::after { content: " ▸"; }
+.summary .sum-h { font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.15; margin: 0; }
+.summary .sum-h .eyebrow { font-family: var(--sans); }
+.summary h1 { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 0; }
+.daily { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--band); border: 1px solid var(--line); font-family: var(--serif); font-size: 19px; line-height: 1.3; }
+.daily .eyebrow { font-family: var(--sans); margin-bottom: 6px; }
+.daily b { font-weight: 500; color: var(--fr); }
+.since { display: block; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-family: var(--sans); font-size: 13.5px; color: var(--muted); }
+.since b { font-weight: 600; color: var(--fg); }
+.visit { margin: 0; font-size: 14px; line-height: 1.45; padding: 8px 12px; border-left: 3px solid var(--fr); background: var(--panel); border-radius: 0 8px 8px 0; color: var(--fg); }
+.visit b { font-weight: 600; }
+.summary ol { margin: 0; padding: 0; list-style: none; counter-reset: k; display: grid; gap: 10px; }
+.summary li { counter-increment: k; position: relative; padding-left: 30px; font-size: 15px; line-height: 1.45; }
+.summary li::before { content: counter(k); position: absolute; left: 0; top: -2px; font-family: var(--serif); font-size: 20px; color: var(--fr); }
+.summary li b { font-weight: 600; }
+
+/* Question du jour */
+.quiz { border-color: var(--fr); }
+.quiz .q { font-family: var(--serif); font-size: 23px; line-height: 1.25; margin: 0; text-wrap: balance; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.opt { font: inherit; text-align: left; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); cursor: pointer; min-height: 48px; }
+.opt.right { border-color: var(--ok); color: var(--ok); font-weight: 600; background: var(--s-good); }
+.opt.wrong { border-color: var(--bad); color: var(--bad); text-decoration: line-through; }
+.answer { margin: 0; font-size: 14.5px; }
+
+/* Bandeau : deux chiffres du jour */
+.today { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.today-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 640px) { .today-grid { grid-template-columns: 1fr; } .metric + .metric { border-left: 0 !important; border-top: 1px solid var(--line); } }
+.metric { padding: 18px 18px 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.metric + .metric { border-left: 1px solid var(--line); }
+.metric .lab { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.metric .row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+.metric .num { font-family: var(--serif); font-size: 46px; line-height: 1; font-variant-numeric: tabular-nums; }
+.metric .num small { font-size: .42em; color: var(--muted); margin-left: .1em; }
+.delta { font-size: 12.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.delta.up { color: var(--bad); background: var(--s-bad); }
+.delta.dn { color: var(--ok); background: var(--s-good); }
+.month { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.mo .share { justify-self: start; }
+@media (max-width: 640px) { .month { grid-template-columns: 1fr; } .mo + .mo { border-left: 0 !important; border-top: 1px solid var(--line); padding-left: 0 !important; padding-top: 12px; } .mo { padding-right: 0 !important; padding-bottom: 12px; } }
+.mo { display: grid; gap: 5px; align-content: start; padding-right: 14px; }
+.mo + .mo { border-left: 1px solid var(--line); padding-left: 14px; }
+.mo-lab { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.mo-num { font-family: var(--serif); font-size: 30px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.mo-num small { font-size: .45em; color: var(--muted); }
+.mo .delta { justify-self: start; }
+.mo-t { font-size: 12.5px; color: var(--muted); }
+.metric .foot { font-size: 12.5px; color: var(--muted); }
+.metric .foot b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.spark svg { display: block; width: 100%; height: auto; }
+.spark text { fill: var(--muted); font-size: 10px; font-family: var(--sans); }
+.equiv-wrap { border-top: 1px solid var(--line); padding: 14px 18px 16px; display: grid; gap: 10px; }
+.equiv-wrap .lab { font-size: 12.5px; color: var(--muted); }
+.equiv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.eq { padding: 0 12px; display: grid; gap: 2px; }
+.eq:first-child { padding-left: 0; }
+.eq + .eq { border-left: 1px solid var(--line); }
+.eq .n { font-family: var(--serif); font-size: 26px; line-height: 1.1; color: var(--fr); font-variant-numeric: tabular-nums; }
+.eq .t { font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+/* Bulletin */
+.how { border: 1.5px solid var(--fr); border-radius: 10px; background: var(--panel); }
+.how > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; padding: 12px; font-weight: 700; font-size: 14.5px; color: var(--fr); background: var(--band); border-radius: 8px; }
+.how > summary::-webkit-details-marker { display: none; }
+.how > summary::before { content: '?'; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--fr); color: var(--panel); display: grid; place-items: center; font-size: 13px; }
+.how > summary::after { content: '▾'; margin-left: auto; }
+.how[open] > summary { border-radius: 8px 8px 0 0; margin-bottom: 10px; }
+.how[open] > summary::after { content: '▴'; }
+.how-body { padding: 0 12px 12px; display: grid; gap: 8px; font-size: 13.5px; }
+.how-body p { margin: 0; }
+.ex { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; }
+.seuils { min-width: 0; font-size: 12.5px; }
+.seuils td { text-align: left; padding: 5px 6px 5px 0; color: var(--muted); }
+.seuils td:first-child { color: var(--fg); font-weight: 600; }
+.seuils td span { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; }
+
+.gov-list { display: grid; gap: 0; }
+.more { font: inherit; font-weight: 600; font-size: 14px; width: 100%; min-height: 46px; border-radius: 10px; border: 1px solid var(--fg); background: var(--fg); color: var(--bg); cursor: pointer; }
+.more:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.gov { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+.gov .badge { grid-row: span 2; width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; font-family: var(--serif); font-size: 22px; font-variant-numeric: tabular-nums; }
+.gov .badge small { font-family: var(--sans); font-size: 10px; display: block; margin-top: -6px; opacity: .8; }
+.badge.g { background: var(--s-good); color: var(--ok); } .badge.m { background: var(--s-mid); color: var(--mid); } .badge.b { background: var(--s-bad); color: var(--bad); }
+.badge.p { background: var(--grid); color: var(--muted); font-size: 13px; }
+.gov .who b { font-weight: 600; } .gov .who span { color: var(--muted); font-size: 12.5px; }
+.kpis { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 560px) { .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; } .kpi { font-size: 11.5px; padding: 4px 7px; display: grid; min-width: 0; } .kpi em { margin: 0; font-size: 11px; } }
+.kpi { font-size: 12px; padding: 3px 8px; border-radius: 6px; background: var(--grid); font-variant-numeric: tabular-nums; }
+.kpi.g { background: var(--s-good); } .kpi.b { background: var(--s-bad); }
+.kpi em { font-style: normal; color: var(--muted); margin-right: 4px; }
+button.kpi { font: inherit; font-size: 12px; color: var(--fg); border: 1px solid transparent; cursor: pointer; text-align: left; position: relative; padding-right: 20px; }
+button.kpi::after { content: "▾"; color: var(--muted); font-size: 10px; position: absolute; right: 7px; top: 50%; transform: translateY(-50%); }
+button.kpi[aria-expanded="true"] { border-color: var(--fg); }
+button.kpi[aria-expanded="true"]::after { content: "▴"; }
+button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
+.kdet { margin-top: 4px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; font-size: 12.5px; overflow-x: auto; }
+.kdet p { margin: 0; color: var(--muted); line-height: 1.4; } .kdet p b { color: var(--fg); }
+.kdet-slot { grid-column: 1 / -1; min-width: 0; } .kdet-slot:empty { display: none; }
+.kdet table { border-collapse: collapse; font-variant-numeric: tabular-nums; width: 100%; }
+.kdet th { text-align: right; font-weight: 600; color: var(--muted); font-size: 11.5px; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+.kdet td { text-align: right; padding: 3px 6px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+.kdet th:first-child, .kdet td:first-child { text-align: left; }
+.kdet .pt { display: inline-block; min-width: 22px; text-align: center; border-radius: 5px; font-weight: 700; }
+.kdet .pt.g { background: var(--s-good); color: var(--ok); } .kdet .pt.b { background: var(--s-bad); color: var(--bad); } .kdet .pt.m { background: var(--s-mid); color: var(--mid); } .kdet .pt.na { color: var(--muted); font-weight: 400; }
+.kdet .kdet-src { font-size: 11px; }
+.kdet .kdet-why { color: var(--fg); font-size: 12px; }
+.kdet td:last-child { white-space: normal; } .kdet .pt.na { font-size: 11px; line-height: 1.2; display: inline-block; text-align: right; }
+@media (max-width: 560px) { button.kpi { font-size: 11.5px; } .kdet { font-size: 12px; padding: 8px; } .kdet td, .kdet th { padding: 3px 4px; } }
+.gov.pending .who span { font-style: italic; }
+
+/* Graphes */
+.longbox { display: grid; gap: 6px; padding: 12px; border-radius: 10px; background: var(--band); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--fg); border-radius: 10px; overflow: hidden; }
+.seg button { font: inherit; font-size: 13.5px; font-weight: 600; padding: 9px 8px; border: 0; background: var(--panel); color: var(--fg); cursor: pointer; line-height: 1.25; }
+.seg button small { display: block; font-weight: 400; font-size: 11px; opacity: .75; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg button:focus-visible { outline: 2px solid var(--fr); outline-offset: -3px; }
+.charts3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
+.charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
+.chart { position: relative; min-width: 0; }
+.chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.chart svg.hov { touch-action: pan-y; cursor: crosshair; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.ctip { position: absolute; top: 2px; z-index: 6; pointer-events: none; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 12px; line-height: 1.4; box-shadow: 0 4px 14px rgba(0,0,0,.14); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ctip b { display: block; margin-bottom: 2px; font-weight: 700; }
+.ctip span { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+.ctip span em { font-style: normal; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+.ctip span em i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.ctip span strong { font-weight: 600; margin-left: 10px; }
+.ctip small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; max-width: 200px; white-space: normal; }
+.chart text { fill: var(--muted); font-size: 11px; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
+.key i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.key i.dash { background: repeating-linear-gradient(90deg, var(--ea) 0 5px, transparent 5px 8px) !important; }
+.key.mini { font-size: 11px; gap: 2px 10px; margin: 0 0 2px; } .key.mini i { width: 12px; height: 2px; margin-right: 4px; }
+.bar-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.bars-big { font-family: var(--serif); font-size: 18px; margin: 0; }
+.events { margin: 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--muted); columns: 2 18rem; }
+.events li { break-inside: avoid; margin-bottom: 4px; }
+.events b { color: var(--fg); font-weight: 600; display: inline-block; min-width: 1.6em; }
+.agenda { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.agenda li { display: grid; grid-template-columns: 4.5rem 1fr; gap: 12px; align-items: baseline; }
+.agenda .d { font-family: var(--serif); font-size: 21px; font-variant-numeric: tabular-nums; }
+.agenda .d small { display: block; font-family: var(--sans); font-size: 11px; color: var(--muted); }
+.glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 12px 24px; margin: 0; }
+.glossary dt { font-weight: 600; font-size: 14px; }
+.glossary dd { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 8px; }
+footer p { margin: 0; } footer a { color: inherit; }
+
+.yrs { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.yrs th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: center; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+.yrs th:nth-child(-n+2), .yrs td:nth-child(-n+2) { text-align: left; }
+.yrs td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: center; }
+.yrs tr.yr-why td { text-align: left; font-size: 11.5px; color: var(--muted); padding: 2px 4px 7px; }
+.yrs .pres-row td { text-align: left; font-weight: 700; font-size: 13px; background: var(--band); padding: 8px 6px; }
+.yrs td.dot { font-size: 16px; line-height: 1; }
+.yrs td.dot.g { color: var(--ok); } .yrs td.dot.b { color: var(--bad); } .yrs td.dot.off { color: var(--axis); }
+.yr-note { display: inline-block; min-width: 2.2em; padding: 2px 6px; border-radius: 6px; font-weight: 700; }
+.yr-note.g { background: var(--s-good); color: var(--ok); } .yr-note.m { background: var(--s-mid); color: var(--mid); } .yr-note.b { background: var(--s-bad); color: var(--bad); }
+.yrs small { color: var(--muted); font-size: 10.5px; }
+@media (max-width: 420px) { .yrs { font-size: 12px; } .yrs th { font-size: 10px; } }
+.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
+.ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
+.recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
+.today-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 640px) { .today-grid.three { grid-template-columns: minmax(0, 1fr); } .today-grid.three .metric + .metric { border-left: 0; border-top: 1px solid var(--line); } }
+.month.four { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 0; }
+@media (max-width: 640px) { .month.four { grid-template-columns: minmax(0, 1fr); } .month.four .mo + .mo { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 10px; } }
+.industrie { font-size: 12px; font-weight: 600; color: var(--mid); }
+.dom { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.dom th { font-size: 11px; color: var(--muted); font-weight: 600; text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.dom td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--grid); }
+.dom th:first-child, .dom td:first-child { text-align: left; }
+.mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 14px; }
+/* Les cinq thèmes */
+.score { display: grid; gap: 0; }
+.sc { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); color: var(--fg); text-decoration: none; font-weight: 600; font-size: 15px; }
+.sc .ic { display: flex; gap: 6px; } .sc i { font-style: normal; font-weight: 700; width: 1.3em; text-align: center; }
+.sc i.g, .cmp .i.g { color: var(--ok); } .sc i.b, .cmp .i.b { color: var(--bad); } .sc i.m, .cmp .i.m { color: var(--mid); }
+.cmp { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.cmp th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.cmp td { padding: 8px 6px 2px; text-align: right; white-space: nowrap; vertical-align: top; }
+.cmp tr.xp td { text-align: left; white-space: normal; font-weight: 400; font-size: 12px; color: var(--muted); padding: 0 6px 8px; border-bottom: 1px solid var(--grid); }
+.cmp tr.grp.nm td { padding-top: 10px; } .cmp tr.xp.grp td { border-bottom: 0; } .cmp tr.xp.sub td { padding-left: 18px; }
+.cmp td:first-child { text-align: left; white-space: normal; font-weight: 600; }
+.cmp td small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); white-space: normal; }
+.cmp th:nth-child(1) { width: 36%; } .cmp th:nth-child(2) { width: 27%; } .cmp th:nth-child(3) { width: 29%; } .cmp th:nth-child(4) { width: 8%; }
+.cmp td { overflow-wrap: anywhere; } .cmp td:first-child { overflow-wrap: normal; hyphens: auto; }
+.grp-b { font: inherit; font-weight: 600; color: var(--fg); background: none; border: 0; padding: 0; cursor: pointer; text-align: left; } .grp-b::after { content: " ▾"; color: var(--fr); } .grp-b[aria-expanded="true"]::after { content: " ▴"; }
+.grp-b:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.cmp .i { font-weight: 700; text-align: center; width: 1.4em; }
+.cmp tr.sub td:first-child { padding-left: 18px; font-weight: 500; }
+.cmp tr.grp td { border-bottom: 0; padding-bottom: 2px; }
+.def > summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.def[open] > summary { margin-bottom: 6px; }
+.themes { display: grid; gap: 12px; }
+.verdict { font-family: var(--serif); font-size: 19px; line-height: 1.3; margin: 0; }
+.verdict b { font-weight: 500; color: var(--fr); }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; font-size: 14px; line-height: 1.4; }
+.checks li { display: grid; grid-template-columns: 1.3em minmax(0, 1fr); gap: 6px; }
+.checks .i { font-weight: 700; } .checks li.g .i { color: var(--ok); } .checks li.b .i { color: var(--bad); } .checks li.m .i { color: var(--mid); }
+.checks b { font-weight: 600; }
+.tnotes { margin: 0; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+.tnotes b { color: var(--fg); font-weight: 600; } .tnotes a, .pres-line a { color: var(--fr); }
+.fold { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.fold > summary { cursor: pointer; padding: 12px 14px; font-weight: 600; font-size: 14px; color: var(--fr); background: rgba(47, 91, 211, .08); border-radius: 12px; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary::after { content: '▾'; font-size: 16px; line-height: 1; transition: transform .2s; }
+.fold[open] > summary::after { transform: rotate(180deg); }
+.fold[open] > summary .ouvrir, .fold:not([open]) > summary .fermer { display: none; }
+.fold > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 12px; }
+.fold > .charts4 { padding: 0 10px 10px; }
+.fold .card { border-color: var(--grid); }
+.lire { margin: 0; font-size: 14.5px; line-height: 1.5; } .lire b.g { color: var(--ok); } .lire b.b { color: var(--bad); }
+.t-sum { margin: 0; font-size: 14px; color: var(--muted); } .t-sum .ic { display: inline-flex; gap: 4px; margin-right: 8px; } .t-sum .ic i { font-style: normal; font-weight: 700; } .t-sum .ic i.g { color: var(--ok); } .t-sum .ic i.b { color: var(--bad); } .t-sum .ic i.m { color: var(--mid); }
+.fold-in { display: grid; gap: 12px; padding: 0 10px 10px; } .defs { font-size: 12px; }
+.acc.theme .acc-h { font-size: 18px; } .acc-t .ic { display: inline-flex; gap: 4px; margin-right: 6px; } .acc-t .ic i { font-style: normal; font-weight: 700; } .acc-t .ic i.g { color: var(--ok); } .acc-t .ic i.b { color: var(--bad); } .acc-t .ic i.m { color: var(--mid); }
+.acc.theme > .acc-body > .card { border: 0; padding: 0 4px; background: none; }
+.checks.sub { margin-top: 6px; gap: 4px; font-size: 13px; color: var(--muted); }
+.qlist { margin: 4px 0 0; padding: 0; list-style: none; counter-reset: q; display: grid; gap: 8px; }
+.qlist li { counter-increment: q; position: relative; padding-left: 28px; display: grid; gap: 1px; font-size: 14px; line-height: 1.35; }
+.qlist li::before { content: counter(q); position: absolute; left: 0; top: -2px; font-family: var(--serif); font-size: 20px; color: var(--fr); }
+.qlist a { color: var(--fg); font-weight: 600; text-decoration: none; } .qlist span { color: var(--muted); font-size: 13px; } .qlist span b { color: var(--fg); font-weight: 600; }
+.pres-line { margin: 0; font-size: 13.5px; } .pres-line b { font-weight: 600; font-variant-numeric: tabular-nums; }
+#plus-loin > .acc-body { padding-top: 0; }
+.mo { min-width: 0; } /* Repères : une ligne par repère, lisible sur téléphone (pas de tableau à colonnes étroites). */
+.reps { list-style: none; margin: 0; padding: 0; display: grid; }
+.reps li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; padding: 10px 0; border-top: 1px solid var(--line); align-items: center; }
+.reps li:first-child { border-top: 0; padding-top: 2px; }
+.reps .rl { font-size: 12.5px; font-weight: 600; color: var(--muted); line-height: 1.35; }
+.reps .rv { grid-column: 1; font-size: 14.5px; line-height: 1.4; } .reps .rv b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.reps .st { grid-column: 2; grid-row: 1 / span 2; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; background: var(--grid); color: var(--fg); }
+.reps .st.ok { background: var(--s-good); color: var(--ok); } .reps .st.mid { background: var(--s-mid); color: var(--mid); } .reps .st:empty { display: none; } .mo-tab { width: 100%; table-layout: fixed; } .mo-tab th:first-child { width: 44%; } .mo-tab td small { display: block; } .mo-row { cursor: pointer; } .mo-row[aria-selected="true"] td { background: var(--band); } .mo-row[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--fr); }
+</style>
+</head>
+<body data-sources="Sources : Eurostat, Commission européenne, PNUD (détail en bas de page).">
+<div class="wrap">
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/education/">Éducation</a><a href="/sante/">Santé</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/vie/" aria-current="page">Vie des Français</a></nav>
+  <div class="stale" id="stale" role="status" hidden></div>
+  <div class="brand"><b>Vie des Français</b><span id="today"></span></div>
+  <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
+  <p class="visit" id="visit" hidden></p>
+  <nav class="jump" aria-label="Aller à"><a href="#acc-month">Moral du mois</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les cinq thèmes</a><a href="#q-idh">Développement humain</a><a href="#mots">Les mots</a></nav>
+
+  <details class="acc" id="acc-month">
+    <summary><span class="acc-h">Le moral des ménages ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card">
+      <div class="month" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr))">
+        <div class="mo">
+          <span class="mo-lab" id="p-lab">Moral des ménages</span>
+          <span class="mo-num" id="p-num">—</span>
+          <span class="delta" id="p-delta"></span>
+          <span class="mo-t" id="p-t"></span>
+        </div>
+        <div class="mo">
+          <span class="mo-lab">Le même mois chez les voisins</span>
+          <ul class="reps" id="rep-tab"></ul>
+          <span class="mo-t" id="q-t"></span>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc" id="acc-today">
+    <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-cta"></span></summary>
+    <div class="acc-body">
+      <section class="summary" aria-label="Un chiffre à retenir">
+        <p class="daily"><span class="eyebrow" id="daily-lab">Un chiffre à retenir</span><span id="daily-text">—</span></p>
+      </section>
+      <section class="today" aria-label="Les chiffres clés">
+        <div class="today-grid">
+          <div class="metric">
+            <span class="lab">Personnes pauvres ou en exclusion sociale</span>
+            <div class="row"><span class="num" id="k-otan">—</span><span class="delta" id="k-otan-d"></span></div>
+            <div class="foot" id="k-otan-t"></div>
+          </div>
+          <div class="metric">
+            <span class="lab">Revenu des ménages par habitant, hors inflation</span>
+            <div class="row"><span class="num" id="k-pers">—</span><span class="delta" id="k-pers-d"></span></div>
+            <div class="foot" id="k-pers-t"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </details>
+
+  <section class="card quiz" id="quiz" aria-labelledby="quiz-q">
+    <span class="eyebrow" id="quiz-day">Question du jour</span>
+    <p class="q" id="quiz-q">—</p>
+    <div class="opts" id="quiz-opts"></div>
+    <p class="answer" id="quiz-a" hidden></p>
+  </section>
+
+  <details class="acc" id="acc-bilan">
+    <summary><span class="acc-h">Le bilan</span><span class="acc-t">Ce qui a changé en dix ans, en France et chez ses voisins, thème par thème</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card summary"><ol id="sum-list"></ol></div>
+  </details>
+
+  <section class="card" id="bulletin" aria-labelledby="gov-title">
+    <h2 id="gov-title"><span class="eyebrow">Le bulletin de la vie des Français</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <details class="how">
+      <summary>La règle : comment la note est calculée</summary>
+      <div class="how-body">
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Chaque thème a une note sur 20 ; la note de la vie des Français est la moyenne des cinq thèmes. 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
+<details class="sous"><summary>Précisions</summary><div>
+<p>Ce sont des conditions de vie qui réagissent vite aux décisions (impôts, prestations, aides au logement, salaire minimum) : elles sont jugées année par année, comme les moyens sur les autres pages.</p><p>Le revenu des ménages hors inflation est un indice (100 en 2008) : il mesure une évolution, pas un niveau. On compare donc seulement sa hausse, en %, à celle de la moyenne de l'UE, sans avance tenue.</p><p>L'indice de développement humain est affiché sans note (la raison est écrite dessous). Quand Eurostat ne publie pas la moyenne de l'UE (avant 2010 pour l'enquête sur les conditions de vie), Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul.</p>
+</div></details>
+<details class="sous"><summary>Thème par thème</summary><div>
+<table class="seuils"><tbody id="regles"></tbody></table>
+</div></details>
+      </div>
+    </details>
+    <span class="eyebrow" style="margin:0">Les présidents</span>
+    <div class="chart" id="rank-pres"></div>
+    <div class="pres-detail" id="pres-detail" hidden></div>
+    <p class="note" id="rank-pres-note"></p>
+    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
+    <div class="chart" id="rank-gov"></div>
+    <p class="note" id="rank-gov-note"></p>
+    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
+    <p class="note pt-hors">Une note par thème. <b>Touchez un thème</b>, puis un indicateur, pour voir les chiffres année par année.</p>
+    <div class="gov-list" id="gov-list"></div>
+    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+  </section>
+
+  <section class="card" id="annees" aria-labelledby="yr-title">
+    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
+    <p class="note">● la France a fait mieux que ses voisins sur ce thème cette année-là, ○ moins bien, ◐ autant, – pas de chiffre comparable (la raison est sous la ligne).</p>
+    <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
+    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 1995</button>
+  </section>
+
+  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
+    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>Les cinq thèmes notés, la France face à ses voisins</h2>
+  </section>
+  <div class="themes" id="questions"></div>
+  <section class="card" id="q-idh" aria-labelledby="idh-t">
+    <h2 id="idh-t"><span class="eyebrow">Affiché, sans note</span>Indice de développement humain</h2>
+    <p class="note" id="idh-why"></p>
+    <div class="charts4" id="idh-charts"></div>
+  </section>
+
+  <section class="card" id="mots" aria-labelledby="gl">
+    <h2 id="gl">Les mots pour suivre</h2>
+    <dl class="glossary">
+      <div><dt>Revenu disponible</dt><dd>Ce qui reste aux ménages pour consommer et épargner : salaires, revenus des indépendants et du patrimoine, pensions et prestations sociales, moins les impôts directs et les cotisations.</dd></div>
+      <div><dt>Hors inflation</dt><dd>Corrigé de la hausse des prix : on regarde si le pouvoir d'achat augmente vraiment, et non seulement parce que les prix montent.</dd></div>
+      <div><dt>Seuil de pauvreté</dt><dd>En Europe, 60 % du revenu médian du pays (la moitié de la population gagne plus, l'autre moitié moins), par unité de consommation. Il dépend donc du niveau de vie de chaque pays.</dd></div>
+      <div><dt>Pauvreté ou exclusion sociale</dt><dd>L'indicateur de pauvreté de l'Union européenne : être sous le seuil de pauvreté, ou en privation matérielle et sociale sévère, ou vivre dans un ménage où les adultes travaillent très peu.</dd></div>
+      <div><dt>Privation matérielle et sociale sévère</dt><dd>Ne pas pouvoir se payer au moins 7 éléments sur 13 de la vie courante (une dépense imprévue, une semaine de vacances, chauffer son logement, remplacer des vêtements usés…).</dd></div>
+      <div><dt>Écart S80/S20</dt><dd>Le revenu des 20 % les plus aisés divisé par celui des 20 % les plus modestes. 4,7 veut dire que les premiers ont 4,7 fois plus de revenu, après impôts et prestations.</dd></div>
+      <div><dt>Surpeuplement</dt><dd>Un logement qui n'a pas assez de pièces selon la règle européenne : une pièce commune, une par couple, une par adulte, une pour deux enfants.</dd></div>
+      <div><dt>Moral des ménages</dt><dd>L'indicateur de confiance des consommateurs de la Commission européenne : chaque mois, les ménages disent si leur situation financière et celle du pays s'améliorent ou se dégradent. Le chiffre est un solde : réponses positives moins réponses négatives, en points ; il est négatif quand les réponses négatives sont plus nombreuses.</dd></div>
+      <div><dt>Enquête sur les revenus et les conditions de vie</dt><dd>L'enquête européenne (EU-SILC) d'où viennent la plupart des chiffres de cette page, faite chaque année de la même façon dans tous les pays de l'UE (en France, par l'Insee).</dd></div>
+      <div><dt>Indice de développement humain</dt><dd>Indice des Nations unies (PNUD), de 0 à 1, qui combine l'espérance de vie, la durée des études et le revenu national par habitant.</dd></div>
+    </dl>
+  </section>
+
+  <details class="acc" id="methode">
+    <summary><span class="acc-h">Méthode et sources</span><span class="acc-t">D'où viennent les chiffres, et leurs limites</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card" id="methode-body">
+      <p class="note"><b>Sources.</b> Pauvreté, privation, écart de revenu, logement, retards de paiement, travailleurs pauvres, satisfaction dans la vie : Eurostat, enquête européenne sur les revenus et les conditions de vie (EU-SILC ; en France, l'Insee), chiffres publiés chaque année pour l'année de l'enquête. Revenu des ménages hors inflation : Eurostat (tepsr_wc310, comptes nationaux). Taux d'emploi : Eurostat, enquête sur les forces de travail. Écart de salaire : Eurostat (sdg_05_20). Moral des ménages : Commission européenne, enquête mensuelle auprès des consommateurs (Eurostat, ei_bsco_m) ; moyenne annuelle calculée par Concret. Indice de développement humain : PNUD, Rapport sur le développement humain. Chaque série est relue à la source par l'outil de Concret (outils/vie.py), jamais saisie à la main.</p>
+      <p class="note"><b>Limites.</b> Eurostat ne publie la moyenne de l'UE de l'enquête sur les conditions de vie que depuis 2010 : avant, Concret la calcule sur les mêmes chiffres (depuis 2010, ce calcul redonne celle d'Eurostat à 0,2 point près). La pauvreté ou l'exclusion sociale et la privation sévère sont mesurées ainsi depuis 2015 seulement. La satisfaction dans la vie n'est mesurée chaque année que depuis 2021. Quand Eurostat signale que la France a changé sa façon de mesurer un chiffre (en 2020 et en 2022 pour l'enquête sur les conditions de vie), l'évolution de cette année-là n'est pas comptée. Ce que cette page ne mesure pas : le temps de travail, le prix des logements, le sentiment de sécurité (voir la page Sécurité et justice), la santé (voir la page Santé) ; et ces moyennes nationales ne disent rien des écarts entre régions.</p>
+    </div>
+  </details>
+
+  <footer><p><a href="/mentions-legales/">Mentions légales</a></p></footer>
+</div>
+<script>
+(function () {
+function main(FEED) {
+  // Toutes les données chiffrées viennent de data.json ; les règles de notation de commun/notes.js.
+  var SER = FEED.series.vie, C = SER.C, AFF = SER.AFF, POURQUOI = ConcretNotes.POURQUOI, SAN = ConcretNotes.vie(SER), THEMES = SAN.THEMES;
+  var fmt = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(v); };
+  var nfmt = function (n) { return fmt(Math.round(n * 10) / 10, 1); };
+  var sg = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d == null ? 1 : d); };
+  var setHtml = function (id, h) { var el = document.getElementById(id); if (el) el.innerHTML = h; };
+  var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+  var DS = FEED.datasets || {};
+  var EX = SER.exemple ? ' <span class="ex">exemple</span>' : '';
+  var dfr = function (iso, long) { return new Date(iso + 'T12:00:00').toLocaleDateString('fr-FR', long ? { day: 'numeric', month: 'long', year: 'numeric' } : { day: 'numeric', month: 'short' }); };
+  var mfr = function (p) { return new Date(p + '-15T12:00:00').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); };
+  document.getElementById('today').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  var lastOf = function (c, w) { var a = c[w] || []; for (var i = a.length - 1; i >= 0; i--) if (a[i] != null) return { v: a[i], y: c.y[i] }; return null; };
+  var decOf = function (c) { return c.dec != null ? c.dec : c.unite === 'jours' || /100 000/.test(c.unite) ? 0 : 1; };
+  // Référence de comparaison : toujours la moyenne de l'UE, publiée par la source ou calculée par Concret (outils/ue_calc.py).
+  var REFN = { ue: ['UE', 'moyenne UE', 'la moyenne de l\'UE', 'de l\'UE'], ue_calc: ['UE (calcul)', 'moyenne UE (calcul Concret)', 'la moyenne de l\'UE calculée par Concret', 'de la moyenne de l\'UE'] };
+  var refN = function (c, f) { return REFN[SAN.ref(c)][f || 0]; };
+  var nomRef = function (c) { return refN(c); };
+
+  // ===== Dernier chiffre connu : la France face à son voisin de comparaison (niveau, pas la note) =====
+  var ICON = { g: '✓', b: '✗', m: '=' };
+  var val1 = function (c, v, dec) { return fmt(v, dec) + (c.uc === ' %' ? ' %' : ''); };
+  function ligne(c) {
+    var dec = decOf(c), r = SAN.ref(c), i = c.y.length - 1;
+    while (i >= 0 && (c.fr[i] == null || !c[r] || c[r][i] == null || (c.est || {})[c.y[i]])) i--;
+    if (i < 0) return null;
+    var a = c.fr[i], e = c[r][i], cl = Math.abs(a - e) < 1e-9 ? 'm' : (c.low ? a < e : a > e) ? 'g' : 'b';
+    var j = c.y.indexOf(c.y[i] - 5), ok5 = j >= 0 && c.fr[j] != null && c[r][j] != null, ev = function (x, x0) { return sg(x - x0, dec) + (c.uc === ' %' ? ' pt' : ''); };
+    return { cl: cl, c: c, y: c.y[i], fr: val1(c, a, dec), fe: ok5 ? ev(a, c.fr[j]) + ' en 5 ans' : '', ref: val1(c, e, dec), re: refN(c, 1) + (ok5 ? ', ' + ev(e, c[r][j]) : '') };
+  }
+  // Indice (100 en 2008) : la hausse de la dernière année, France et moyenne de l'UE, en %.
+  function ligneCroissance(c) {
+    var i = c.y.length - 1;
+    while (i > 0 && (c.fr[i] == null || c.fr[i - 1] == null || c.ue[i] == null || c.ue[i - 1] == null)) i--;
+    if (i <= 0) return null;
+    var a = 100 * (c.fr[i] / c.fr[i - 1] - 1), e = 100 * (c.ue[i] / c.ue[i - 1] - 1), cl = Math.abs(a - e) < 1e-9 ? 'm' : a > e ? 'g' : 'b';
+    return { cl: cl, c: c, y: c.y[i], fr: sg(a, 1) + ' %', fe: 'en un an', ref: sg(e, 1) + ' %', re: refN(c, 1) + ', en un an' };
+  }
+  function etat(k) {
+    var c = C[k];
+    if (c.regle === 'croissance') return ligneCroissance(c);
+    if (c.regle === 'propre') {
+      var s = lastOf(c, 'fr'), k5 = c.y.indexOf(s.y), md = c.md[k5], md5 = c.md[k5 - 5];
+      return { cl: s.v >= 0 ? 'g' : 'b', c: c, y: s.y, fr: sg(md, 1) + ' Md€', fe: md5 != null ? sg(md - md5, 1) + ' en 5 ans' : '', ref: '—', re: 'France seule' };
+    }
+    if (c.regle === 'composite') {
+      var l = Object.keys(c.sous).map(function (j) { return ligne(c.sous[j]); }).filter(Boolean), ok = l.filter(function (x) { return x.cl === 'g'; }).length;
+      return { cl: ok * 2 > l.length ? 'g' : ok * 2 === l.length ? 'm' : 'b', c: c, sous: l, ok: ok };
+    }
+    return ligne(c);
+  }
+  var themeEtat = function (t) { var l = t.crit.map(etat); return { l: l, ok: l.filter(function (x) { return x.cl === 'g'; }).length, n: l.length }; };
+  var unitOf = function (c) { return c.uu || c.unite; };
+  function rowHtml(x, sub) {
+    var h = sub ? ' data-sub="' + sub + '" hidden' : '';
+    return '<tr class="nm' + (sub ? ' sub' : '') + '"' + h + '><td>' + esc(x.c.lc || x.c.l) + '</td><td>' + x.fr + (x.fe ? '<small>' + x.fe + '</small>' : '') + '</td><td>' + x.ref + '<small>' + x.re + '</small></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>' +
+      '<tr class="xp' + (sub ? ' sub' : '') + '"' + h + '><td colspan="4">' + esc(x.c.ex || unitOf(x.c)) + ' · ' + x.y + (x.c.sc ? ' · Source : ' + lien(x.c, x.c.sc) : '') + '</td></tr>';
+  }
+  function tableEtat(e) {
+    return '<table class="cmp"><thead><tr><th></th><th>France</th><th>Voisins</th><th></th></tr></thead><tbody>' + e.l.map(function (x) {
+      if (!x.sous) return rowHtml(x);
+      // Un programme (vaccins, dépistages) : une ligne, dépliable pour voir chaque élément.
+      var id = x.c.lc.replace(/\W/g, '');
+      return '<tr class="grp nm"><td colspan="3"><button type="button" class="grp-b" data-grp="' + id + '" aria-expanded="false">' + esc(x.c.lc) + '</button></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr><tr class="xp grp"><td colspan="4">' + esc(x.c.ex || '') + ' : la France fait mieux sur ' + x.ok + ' sur ' + x.sous.length + ' (touchez pour le détail)</td></tr>' + x.sous.map(function (s) { return rowHtml(s, id); }).join('');
+    }).join('') + '</tbody></table>';
+  }
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest && ev.target.closest('.grp-b'); if (!b) return;
+    var o = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', o ? 'true' : 'false');
+    Array.prototype.forEach.call(b.closest('tbody').querySelectorAll('[data-sub="' + b.dataset.grp + '"]'), function (r) { r.hidden = !o; });
+  });
+
+  // ===== Bulletin : notes =====
+  var KEYS = SAN.KEYS, WT = SAN.WT, MIN_N = SAN.MIN_N, GOVS = SER.GOVS, PRES = SER.PRES, BANDS = GOVS;
+  var evaluate = SAN.evaluate, noteOf = function (g) { return SAN.note(g); }, countOf = function (g) { return SAN.count(g); };
+  GOVS.forEach(evaluate); PRES.forEach(evaluate);
+  var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
+  var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
+  var nomCourt = function (n) { return n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin'); };
+
+  // ===== Bulletin : détail année par année =====
+  var ptHtml = function (v) { return v == null ? '<span class="pt na">non compté</span>' : v === 1 ? '<span class="pt g">1</span>' : v === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">' + (v === 0.5 ? '½' : fmt(v, 2)) + '</span>'; };
+  // Tableau d'évolution année par année d'une série comparée à la moyenne de l'UE (publiée ou calculée par Concret).
+  function evolTable(c, y0, y1, why) {
+    var r = SAN.ref(c), dec = decOf(c), v = function (w, y) { return SAN.val(c, w, y); }, rows = '';
+    for (var y = y0; y <= y1; y++) {
+      // d : évolution de la moyenne de l'UE (pour la moyenne calculée, sur les pays qui publient les deux années).
+      var cr = c.regle === 'croissance', pt = cr ? SAN.croissance(c, y) : SAN.effort(c, y), a = v('fr', y), b = v('fr', y - 1), e = v(r, y), d = SAN.refEv(c, y);
+      if (cr) {
+        var f0 = v(r, y - 1), pa = a == null || b == null ? null : 100 * (a / b - 1), pe = e == null || f0 == null ? null : 100 * (e / f0 - 1);
+        var cp = function (x, p) { return x == null ? '—' : p == null ? '— (' + fmt(x, dec) + ')' : sg(p, 1) + ' % (' + fmt(x, dec) + ')'; };
+        rows += '<tr><td>' + y + '</td><td>' + cp(a, pa) + '</td><td>' + cp(e, pe) + '</td><td>' + (pa == null || pe == null ? '' : sg(pa - pe, 2) + ' pt') + '</td><td>' + ptHtml(pt) + '</td></tr>';
+        if (pt === 0.5) why.push(POURQUOI.egalite(y, refN(c, 2))); else if (pt == null) why.push(SAN.raisonSerie(c, y));
+        continue;
+      }
+      var cell = function (x, dx) { return x == null ? '—' : dx == null ? '— (' + fmt(x, dec) + ')' : sg(dx, dec) + ' (' + fmt(x, dec) + ')'; };
+      var gap = a == null || b == null || d == null ? '' : sg((a - b) - d, dec);
+      rows += '<tr><td>' + y + '</td><td>' + cell(a, b == null ? null : a - b) + '</td><td>' + cell(e, d) + '</td><td>' + gap + '</td><td>' + ptHtml(pt) + '</td></tr>';
+      if (pt === 1 && c.regle !== 'effort' && SAN.evol(c, y) !== 1 && a != null && e != null) why.push(POURQUOI.avance(y, refN(c, 2), fmt(a, dec) + (c.uc === ' %' ? ' %' : ''), fmt(e, dec) + (c.uc === ' %' ? ' %' : '')));
+      else if (pt === 1 && c.regle === 'effort' && SAN.evol(c, y) !== 1) { var r1 = v('fr_reel', y), r0 = v('fr_reel', y - 1); why.push('1 point en ' + y + ' : la France progresse moins que ' + refN(c, 2) + ', mais elle reste au-dessus (' + fmt(a, dec) + (c.uc === ' %' ? ' %' : '') + ' contre ' + fmt(e, dec) + (c.uc === ' %' ? ' %' : '') + ') et sa dépense ne recule pas hors inflation' + (r1 != null && r0 != null ? ' (' + sg(100 * (r1 / r0 - 1), 1) + ' %)' : '') + '.'); }
+      else if (pt === 0 && c.regle === 'effort' && a != null && e != null && a > e && SAN.recule(c, y)) { var s1 = v('fr_reel', y), s0 = v('fr_reel', y - 1); why.push('0 point en ' + y + ' : la France reste au-dessus de ' + refN(c, 2) + ' (' + fmt(a, dec) + (c.uc === ' %' ? ' %' : '') + ' contre ' + fmt(e, dec) + (c.uc === ' %' ? ' %' : '') + '), mais sa dépense recule hors inflation' + (s1 != null && s0 != null ? ' (' + sg(100 * (s1 / s0 - 1), 1) + ' %)' : '') + '.'); }
+      else if (pt === 0.5) why.push(POURQUOI.egalite(y, refN(c, 2)));
+      else if (pt == null) why.push(SAN.raisonSerie(c, y));
+    }
+    return '<table><thead><tr><th>Année</th><th>France</th><th>' + nomRef(c) + '</th><th>Écart</th><th>Point</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+  function detailTable(g, k) {
+    var c = C[k], wrap = document.createElement('div'), why = [], h, foot = '';
+    var v = function (w, y) { return SAN.val(c, w, y); };
+    wrap.className = 'kdet';
+    h = '<p><b>' + c.l + (WT[k] > 1 ? ' (compte triple)' : '') + '.</b> Unité : ' + c.unite + '.' + (c.note ? ' ' + c.note : '') + EX + '</p>';
+    if (c.regle === 'propre') {
+      h += '<table><thead><tr><th>Année</th><th>Md€</th><th>% du PIB</th><th>Évolution</th><th>Point</th><th>Lu dans</th></tr></thead><tbody>';
+      g.y[k].forEach(function (d) {
+        var a = v('fr', d.y), b = v('fr', d.y - 1), md = v('md', d.y);
+        h += '<tr><td>' + d.y + '</td><td>' + (md == null ? '—' : sg(md, 1)) + '</td><td>' + (a == null ? '—' : sg(a, 2)) + '</td><td>' + (a == null || b == null ? '' : sg(a - b, 2)) + '</td><td>' + ptHtml(d.pt) + '</td><td>' + (c.rap && c.rap[d.y] ? lien({ url: c.rap[d.y][1] }, 'CCSS ' + c.rap[d.y][0]) : '') + '</td></tr>';
+        if (d.pt === 0.5) why.push('Demi-point en ' + d.y + ' : le déficit s\'est réduit, sans revenir à l\'équilibre.');
+        else if (d.pt === 0 && a != null && b != null && Math.abs(a - b) < SAN.SEUIL_STABLE) why.push('0 point en ' + d.y + ' : le solde n\'a bougé que de ' + fmt(Math.abs(a - b), 2) + ' point, moins de 0,1 : il est considéré comme stable.');
+        else if (d.pt == null) why.push(SAN.raison(k, d.y));
+      });
+      h += '</tbody></table>';
+      foot = 'Jugé sur la France seule : aucun autre pays n\'a de branche maladie comparable dans ses comptes publics. Évolution = variation du solde par rapport à l\'année précédente, en points de PIB. CCSS = rapport de la Commission des comptes de la Sécurité sociale. ' + (c.note_tot ? 'Toute la Sécurité sociale : ' + c.note_tot.charAt(0).toLowerCase() + c.note_tot.slice(1) + ' ' : '') + srcNote(c);
+    } else if (c.regle === 'composite') {
+      Object.keys(c.sous).forEach(function (j) {
+        var q = c.sous[j], w = [];
+        h += '<p><b>' + q.l + '</b> (comparé à ' + refN(q, 2) + ')</p>' + evolTable(q, g.y0, g.y1, w);
+        w.forEach(function (t) { why.push(q.l + ' : ' + t); });
+      });
+      h += '<p>Point de l\'année pour le critère (part des éléments où la France fait mieux) : ' + g.y[k].map(function (d) { return d.y + ' : ' + (d.pt == null ? 'non compté' : fmt(d.pt, d.pt % 1 ? 2 : 0)); }).join(' · ') + '.</p>';
+      foot = 'Écart = évolution de la France moins celle de la moyenne de l\'UE. Ici, une hausse est un progrès. Sources : ' + Object.keys(c.sous).map(function (j) { return c.sous[j].source; }).filter(function (x, i, a) { return a.indexOf(x) === i; }).join(' ; ') + '.';
+    } else if (c.regle === 'niveau') {
+      h += '<table><thead><tr><th>Année jugée</th><th>France</th><th>UE</th><th>Écart</th><th>Point</th></tr></thead><tbody>';
+      g.y[k].forEach(function (d) {
+        var a = v('fr', d.y), e = v('ue', d.y), i = c.y.indexOf(d.y);
+        if (a == null || e == null) { if (d.pt == null) why.push(SAN.raison(k, d.y)); return; }
+        h += '<tr><td>' + d.y + ' <small>(étude ' + c.edition[i] + ')</small></td><td>' + fmt(a) + '</td><td>' + fmt(e) + '</td><td>' + sg(a - e, 0) + '</td><td>' + ptHtml(d.pt) + '</td></tr>';
+        if (d.pt === 0.5) why.push('Demi-point en ' + d.y + ' : la France et la moyenne de l\'UE sont exactement au même niveau.');
+      });
+      h += '</tbody></table>';
+      foot = 'Écart = France moins moyenne de l\'UE. ' + (c.low ? 'Ici, moins c\'est mieux.' : 'Ici, plus c\'est mieux.') + ' ' + srcNote(c);
+    } else if (c.regle === 'long') {
+      var last = c.y[c.y.length - 1];
+      h += evolTable(c, g.y0, Math.max(g.y0, Math.min(g.y1 + SAN.LONG - 1, last)), why);
+      h += '<p>Point de chaque année du mandat (moyenne des points de l\'année et des quatre suivantes) : ' + g.y[k].map(function (d) {
+        var f = SAN.fenetre(d.y).filter(function (t) { return t <= last; });
+        return d.y + ' : ' + (d.pt == null ? 'non compté' : '<b>' + fmt(d.pt, d.pt % 1 ? 2 : 0) + '</b> <small>(' + f[0] + (f.length > 1 ? '-' + f[f.length - 1] : '') + ')</small>');
+      }).join(' · ') + '.</p>';
+      g.y[k].forEach(function (d) { if (d.pt == null) why.push(SAN.raison(k, d.y)); });
+      foot = 'Ce sont des résultats, qui mettent des années à bouger : chaque année du mandat compte pour la moyenne des points de l\'année et des quatre suivantes, quand elles sont publiées. Écart = évolution de la France moins celle ' + refN(c, 3) + '. ' + (c.low ? 'Ici, une baisse est un progrès.' : 'Ici, une hausse est un progrès.');
+    } else if (c.regle === 'ecart') {
+      h += '<table><thead><tr><th>Année</th><th>Écart France</th><th>Écart UE</th><th>Point</th></tr></thead><tbody>';
+      g.y[k].forEach(function (d) {
+        var a = v('fr', d.y), e = v('ue', d.y);
+        h += '<tr><td>' + d.y + '</td><td>' + (a == null ? '—' : fmt(a, 1)) + '</td><td>' + (e == null ? '—' : fmt(e, 1)) + '</td><td>' + ptHtml(d.pt) + '</td></tr>';
+        if (d.pt === 1 && a >= e) why.push('1 point en ' + d.y + ' : l\'écart français reste plus grand que celui de l\'UE, mais il s\'est réduit plus vite.');
+        else if (d.pt === 0.5) why.push('Demi-point en ' + d.y + ' : l\'écart est exactement le même qu\'en moyenne dans l\'UE.');
+        else if (d.pt == null) why.push(SAN.raison(k, d.y));
+      });
+      h += '</tbody></table>';
+      foot = 'Écart = part des 20 % les plus modestes qui renoncent à un examen médical, moins celle des 20 % les plus aisés, en points. Plus il est faible, plus l\'accès est égal.';
+    } else {
+      h += evolTable(c, g.y0, g.y1, why);
+      foot = c.regle === 'croissance' ? 'Hausse en % de l\'indice d\'une année sur l\'autre (entre parenthèses, l\'indice, 100 en 2008). Écart = hausse de la France moins celle ' + refN(c, 3) + ', en points.' : 'Écart = évolution de la France moins celle ' + refN(c, 3) + ' (entre parenthèses, le niveau de l\'année). ' + (c.low ? 'Ici, une baisse est un progrès.' : 'Ici, une hausse est un progrès.');
+      if (c.regle === 'effort') {
+        // La barre à dépasser est la moyenne de l'UE de chaque année (entre parenthèses dans la colonne UE) ; le repère de l'OTAN situe.
+        var lr = lastReel(c, 'fr'), u = c.uc === ' %' ? ' %' : '';
+        foot += ' Ce que la France doit dépasser pour garder le point quand elle progresse moins : la moyenne de l\'UE de l\'année (le chiffre entre parenthèses dans la colonne UE).' + (c.objectif ? ' Pour situer, le repère de l\'OTAN est de ' + fmt(c.objectif.v) + u + ' ; la France est à ' + fmt(lr.v, decOf(c)) + u + ' en ' + lr.y + ' (' + (lr.v >= c.objectif.v ? 'au-dessus' : 'en dessous') + ').' : ' Il n\'y a pas de repère de l\'OTAN pour cet indicateur.');
+      }
+    }
+    why = why.filter(function (t, i) { return why.indexOf(t) === i; });
+    if (why.length) h += '<p class="kdet-why">' + why.join('<br>') + '</p>';
+    wrap.innerHTML = h + '<p>' + foot + (/Sources? :/.test(foot) ? '' : ' ' + srcNote(c)) + '</p>'; return wrap;
+  }
+  // Une rangée de boutons ; un seul détail ouvert à la fois, sous la rangée.
+  function rangee(items) {
+    var box = document.createDocumentFragment(), kp = document.createElement('div'), det = document.createElement('div'), open = null;
+    kp.className = 'kpis'; det.className = 'kdet-slot'; box.appendChild(kp); box.appendChild(det);
+    items.forEach(function (it, i) {
+      var s = document.createElement('button');
+      s.type = 'button'; s.className = 'kpi' + (it.cl ? ' ' + it.cl : ''); s.setAttribute('aria-expanded', 'false'); s.title = it.title;
+      s.innerHTML = '<em></em><span></span>'; s.firstChild.textContent = it.l; s.lastChild.textContent = it.v;
+      s.addEventListener('click', function () {
+        Array.prototype.forEach.call(kp.children, function (b) { b.setAttribute('aria-expanded', 'false'); });
+        det.textContent = '';
+        if (open === i) { open = null; return; }
+        open = i; s.setAttribute('aria-expanded', 'true'); det.appendChild(it.open());
+      });
+      kp.appendChild(s);
+    });
+    return box;
+  }
+  function critChips(g, t) {
+    return rangee(t.crit.map(function (k) {
+      var l = g.w[k], won = d3.sum(l), n = l.length;
+      return { l: C[k].l + (WT[k] > 1 ? ' ×' + WT[k] : ''), v: !n ? 'non compté' : fmt(won, won % 1 ? 1 : 0) + (won > 1 ? ' pts' : ' pt') + ' sur ' + n, cl: !n ? '' : won / n >= 0.5 ? 'g' : 'b', title: 'Voir les chiffres année par année', open: function () { return detailTable(g, k); } };
+    }));
+  }
+  function themeChips(g) {
+    return rangee(THEMES.map(function (t) {
+      var n = SAN.noteTheme(g, t);
+      return { l: t.court, v: n == null ? 'non noté' : nfmt(n) + '/20', cl: n == null ? '' : n >= 10 ? 'g' : 'b', title: 'Voir les indicateurs de ce thème', open: function () {
+        var w = document.createElement('div'); w.className = 'kdet';
+        var p = document.createElement('p'); p.innerHTML = '<b></b> <span></span>'; p.firstChild.textContent = t.q;
+        p.lastChild.textContent = n == null ? 'Non noté : aucun indicateur de ce thème n\'a de chiffre comparable pendant ce mandat (les séries commencent plus tard).' : 'Note : ' + nfmt(n) + '/20, sur ' + SAN.count(g, t) + ' comparaison' + (SAN.count(g, t) > 1 ? 's' : '') + '. Touchez un indicateur :';
+        w.appendChild(p); w.appendChild(critChips(g, t)); return w;
+      } };
+    }));
+  }
+  var showAll = false;
+  function openDetail(mode, g) {
+    if (mode === 'gov') {
+      if (!showAll) { showAll = true; var b = document.getElementById('gov-more'); b.setAttribute('aria-expanded', 'true'); b.textContent = 'Masquer le détail des autres gouvernements'; renderGov(); }
+      var row = document.getElementById('gov-' + g.y0); if (row) { row.scrollIntoView({ block: 'center' }); row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash'); } return;
+    }
+    var box = document.getElementById('pres-detail'); box.textContent = ''; box.hidden = false;
+    var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span class="note"></span>';
+    who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + '. ' + countOf(g) + ' comparaisons. Note de chaque thème (touchez-en un pour le détail) :';
+    box.appendChild(who); box.appendChild(themeChips(g));
+  }
+  // Les séries européennes commencent entre 2004 et 2015 : tous les présidents ne sont pas notés sur les mêmes indicateurs, on le dit.
+  function nbIndic() {
+    var l = PRES.map(function (g) { return { n: nomCourt(g.n), k: KEYS.filter(function (k) { return g.w[k].length; }).length }; }).filter(function (r) { return r.k; });
+    if (l.every(function (r) { return r.k === KEYS.length; })) return '';
+    return 'Indicateurs comptés : ' + l.map(function (r) { return r.n + ' ' + r.k + ' sur ' + KEYS.length; }).join(', ') + ' (les chiffres européens commencent entre 2004 et 2015 selon l\'indicateur).';
+  }
+  function rankOne(mode) {
+    var list = (mode === 'gov' ? GOVS : PRES).map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
+    var box = document.getElementById('rank-' + mode); box.textContent = '';
+    var W = Math.max(300, box.clientWidth), small = W < 520, rh = 26, lw = small ? 92 : 150, top = 22, H = top + list.length * rh + 26;
+    var x = d3.scaleLinear().domain([0, 20]).range([lw, W - 34]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Classement des notes sur 20');
+    [0, 5, 10, 15, 20].forEach(function (t) {
+      svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 4).attr('y2', H - 20).attr('stroke', t === 10 ? 'var(--fg)' : 'var(--grid)').attr('stroke-dasharray', t === 10 ? '4 3' : null);
+      svg.append('text').attr('x', x(t)).attr('y', top - 8).attr('text-anchor', 'middle').text(t).style('fill', t === 10 ? 'var(--fg)' : null);
+      if (t === 10) svg.append('text').attr('x', x(10)).attr('y', H - 5).attr('text-anchor', 'middle').text('▲ 10 = aussi bien que la moyenne de l\'UE').style('fill', 'var(--fg)').style('font-weight', 600).style('font-size', '11px');
+    });
+    list.forEach(function (r, i) {
+      var y = top + i * rh, name = small ? nomCourt(r.g.n) : r.g.n, few = countOf(r.g) < MIN_N, inside = x(r.n) - x(0) > 30 && (!few || x(r.n) > W - 140);
+      svg.append('rect').attr('x', 0).attr('y', y).attr('width', W).attr('height', rh).attr('fill', 'transparent').style('cursor', 'pointer').on('click', function () { openDetail(mode, r.g); });
+      svg.append('text').attr('x', lw - 8).attr('y', y + 16).attr('text-anchor', 'end').text(name).style('fill', 'var(--fg)').style('font-size', '12px').style('pointer-events', 'none');
+      svg.append('rect').attr('x', x(0)).attr('y', y + 5).attr('width', Math.max(2, x(r.n) - x(0))).attr('height', 17).attr('rx', 3).attr('fill', few ? 'var(--axis)' : col(r.n)).style('pointer-events', 'none');
+      svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' (note fragile)' : '')).style('fill', few ? 'var(--fg)' : inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
+    });
+    setHtml('rank-' + mode + '-note', 'En gris, « note fragile » : moins de ' + MIN_N + ' comparaisons, soit moins d\'une année complète de chiffres (mandat court, ou séries européennes qui commencent après), donc peu fiable. Une note ne couvre que les thèmes qui ont des chiffres pendant le mandat. Touchez une barre pour voir le détail.' + (mode === 'pres' ? ' ' + nbIndic() : ''));
+  }
+  document.getElementById('gov-more').addEventListener('click', function () {
+    showAll = !showAll; this.setAttribute('aria-expanded', showAll); this.textContent = showAll ? 'Masquer le détail des autres gouvernements' : 'Voir le détail des autres gouvernements'; renderGov();
+  });
+  function renderGov() {
+    var box = document.getElementById('gov-list'); box.textContent = '';
+    var pend = document.createElement('div'); pend.className = 'gov pending';
+    pend.innerHTML = '<div class="badge p">à venir</div><div class="who"><b>Sébastien Lecornu</b> <span>· depuis sept. 2025 · Macron</span></div><div class="note">Pas encore noté : les chiffres de 2026 ne sont pas encore publiés.</div>';
+    box.appendChild(pend);
+    GOVS.slice().reverse().forEach(function (g, i) {
+      var note = noteOf(g), n = countOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i >= 2;
+      // Aucune comparaison possible (année pas encore publiée) : comme le gouvernement en cours.
+      if (!n) {
+        row.className = 'gov pending'; row.innerHTML = '<div class="badge p">à venir</div><div class="who"><b></b> <span></span></div><div class="note"></div>';
+        row.querySelector('b').textContent = g.n; row.querySelector('.who span').textContent = '· ' + (g.y0 === g.y1 ? g.y0 : g.y0 + '-' + g.y1) + ' · ' + g.p;
+        row.querySelector('.note').textContent = 'Pas encore noté : les chiffres de ' + (g.y0 === g.y1 ? g.y0 : g.y0 + ' à ' + g.y1) + ' ne sont pas encore publiés.';
+        box.appendChild(row); return;
+      }
+      var nt = THEMES.filter(function (t) { return SAN.noteTheme(g, t) != null; }).length;
+      var badge = document.createElement('div'); badge.className = 'badge ' + (n < MIN_N ? 'p' : cls(note)); badge.innerHTML = '<span></span>';
+      badge.firstChild.textContent = note == null ? '—' : nfmt(note); var sm = document.createElement('small'); sm.textContent = '/20'; badge.appendChild(sm);
+      var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span></span>';
+      who.firstChild.textContent = g.n;
+      who.lastChild.textContent = '· ' + (g.y0 === g.y1 ? g.y0 : g.y0 + '-' + g.y1) + ' · ' + g.p + ' · ' + n + ' comparaison' + (n > 1 ? 's' : '') + (nt < THEMES.length ? ', ' + nt + ' thème' + (nt > 1 ? 's' : '') + ' noté' + (nt > 1 ? 's' : '') + ' sur ' + THEMES.length : '') + (n < MIN_N ? ' : trop peu pour une note fiable (il en faut ' + MIN_N + '), d\'où le gris' : '');
+      row.appendChild(badge); row.appendChild(who); row.appendChild(themeChips(g)); box.appendChild(row);
+    });
+  }
+
+  // ===== Courbes =====
+  var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Union européenne', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--es)': 'Espagne' };
+  function hover(box, svg, H, m, pts) {
+    if (!pts.length) return;
+    var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+    svg.classed('hov', true);
+    var g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
+    var vl = g.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--fg)').attr('stroke-opacity', .35).attr('stroke-width', 1);
+    var dots = g.append('g');
+    svg.append('rect').attr('x', 0).attr('y', 0).attr('width', svg.attr('viewBox').split(' ')[2]).attr('height', H).attr('fill', 'transparent');
+    var tip = document.createElement('div'); tip.className = 'ctip'; tip.hidden = true; box.appendChild(tip);
+    var node = svg.node(), VW = +svg.attr('viewBox').split(' ')[2], cur = -1;
+    function show(ev) {
+      var r = node.getBoundingClientRect(); if (!r.width) return;
+      var sx = (ev.clientX - r.left) * VW / r.width, best = 0;
+      pts.forEach(function (p, i) { if (Math.abs(p.px - sx) < Math.abs(pts[best].px - sx)) best = i; });
+      var p = pts[best]; g.style('display', null); vl.attr('x1', p.px).attr('x2', p.px);
+      if (best !== cur) {
+        cur = best; dots.selectAll('*').remove();
+        p.rows.forEach(function (rw) { dots.append('circle').attr('cx', p.px).attr('cy', rw.py).attr('r', 3.6).attr('fill', rw.c).attr('stroke', 'var(--panel)').attr('stroke-width', 1.5); });
+        tip.innerHTML = '<b>' + esc(p.t) + '</b>' + p.rows.slice().sort(function (a, b) { return a.py - b.py; }).map(function (rw) {
+          return '<span><em><i style="background:' + rw.c + '"></i>' + esc(rw.n) + '</em><strong>' + esc(rw.s) + '</strong></span>';
+        }).join('') + (p.note ? '<small>' + esc(p.note) + '</small>' : '');
+      }
+      tip.hidden = false;
+      var cx = p.px * r.width / VW, tw = tip.offsetWidth, bw = box.clientWidth;
+      var left = cx + 12 + tw <= bw ? cx + 12 : cx - 12 - tw;
+      tip.style.left = Math.max(0, Math.min(bw - tw, left)) + 'px';
+    }
+    function hide() { g.style('display', 'none'); tip.hidden = true; cur = -1; }
+    node.addEventListener('pointerdown', show);
+    node.addEventListener('pointermove', show);
+    node.addEventListener('pointerleave', function (ev) { if (ev.pointerType === 'mouse') hide(); });
+    document.addEventListener('pointerdown', function (ev) { if (!node.contains(ev.target)) hide(); });
+  }
+  function lineChart(id, series, o) {
+    var box = document.getElementById(id); box.textContent = '';
+    // Petite légende au-dessus de chaque courbe dont le bloc n'en a pas déjà une : en bas de page, on sait toujours qui est qui.
+    (function () {
+      var old = document.getElementById(id + '-mini'); if (old) old.remove();
+      var bloc = box.closest('section, .card, details, .metric');
+      if (bloc && bloc.querySelector('.key:not(.mini)')) return;
+      var vus = {}, items = series.filter(function (s) { return s.data.some(function (d) { return d.v != null; }); }).map(function (s) {
+        var n = s.n || SNAME[s.c] || ''; if (!n || vus[n]) return ''; vus[n] = 1;
+        return '<span><i' + (s.dash ? ' class="dash" data-c="' + s.c + '" style="background:repeating-linear-gradient(90deg,' + s.c + ' 0 4px,transparent 4px 6px) !important"' : ' style="background:' + s.c + '"') + '></i>' + String(n).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>';
+      }).filter(Boolean).reverse();
+      if (!items.length) return;
+      var k = document.createElement('div'); k.className = 'key mini'; k.id = id + '-mini'; k.innerHTML = items.join('');
+      box.parentNode.insertBefore(k, box);
+    })();
+    var W = Math.max(300, box.clientWidth), small = W < 520, H = o.h || (small ? 220 : 260), m = { t: 10, r: 46, b: 24, l: 40 };
+    var all = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null) all.push(d.v); }); });
+    var lo = d3.min(all), hi = d3.max(all), pad = (hi - lo) * .1;
+    var x = d3.scaleLinear().domain(o.x).range([m.l, W - m.r]);
+    if (o.obj) { lo = Math.min(lo, o.obj.v); hi = Math.max(hi, o.obj.v); pad = (hi - lo) * .1; }
+    var y = d3.scaleLinear().domain([o.min != null ? o.min : lo - pad, hi + pad]).nice().range([H - m.b, m.t]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', o.label);
+    // Années estimées par l'OTAN (tous les pays) : zone grisée.
+    if (o.est) { var xe = x(o.est - .5); svg.append('rect').attr('x', xe).attr('y', m.t).attr('width', Math.max(0, W - m.r - xe)).attr('height', H - m.t - m.b).attr('fill', 'var(--grid)').attr('opacity', .7); svg.append('text').attr('x', W - m.r - 2).attr('y', m.t + 10).attr('text-anchor', 'end').text('estimations').style('font-size', '10px'); }
+    if (o.bands) BANDS.forEach(function (g, i) {
+      var x0 = x(Math.max(o.x[0], g.y0 - .5)), x1 = x(Math.min(o.x[1], g.y1 + .5));
+      if (x1 > x0) svg.append('rect').attr('x', x0).attr('y', m.t).attr('width', x1 - x0).attr('height', H - m.t - m.b).attr('fill', i % 2 ? 'var(--band)' : 'transparent');
+    });
+    y.ticks(small ? 4 : 5).forEach(function (t) {
+      svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)');
+      svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(t.toLocaleString('fr-FR'));
+    });
+    (small ? o.xt.filter(function (_, i) { return i % 2 === 0; }) : o.xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t); });
+    if (o.obj) {
+      var yo = y(o.obj.v);
+      if (yo >= m.t && yo <= H - m.b) { svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', yo).attr('y2', yo).attr('stroke', 'var(--bad)').attr('stroke-width', 1.4).attr('stroke-dasharray', '2 3'); svg.append('text').attr('x', m.l + 4).attr('y', yo - 4).text('repère ' + fmt(o.obj.v) + ' %').style('fill', 'var(--bad)').style('font-weight', 600); }
+    }
+    var line = d3.line().defined(function (d) { return d.v != null; }).x(function (d) { return x(d.x); }).y(function (d) { return y(d.v); });
+    var ends = [];
+    series.forEach(function (s) {
+      svg.append('path').datum(s.data).attr('d', line).attr('fill', 'none').attr('stroke', s.c).attr('stroke-width', s.main ? 2.6 : 1.8).attr('stroke-dasharray', s.dash ? '5 4' : null);
+      if (s.dots) s.data.forEach(function (d) { if (d.v == null) return; svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
+      var l = s.data.filter(function (d) { return d.v != null; }).pop();
+      svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
+      // noEnd : la France s'arrête à la dernière année publiée, les estimations portent le chiffre de fin.
+      if (!s.noEnd) ends.push({ y: y(l.v), t: fmt(l.v, o.dec == null ? 1 : o.dec), c: s.c, x: x(l.x), main: s.main });
+    });
+    ends.sort(function (a, b) { return a.y - b.y; });
+    for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+    // Pile de chiffres trop basse : on la remonte pour qu'aucun ne sorte du graphique.
+    for (var j = ends.length - 1; j >= 0; j--) { var lim = j === ends.length - 1 ? H - 6 : ends[j + 1].y - 13; if (ends[j].y > lim) ends[j].y = lim; }
+    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+    var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); });
+    xs.sort(function (a, b) { return a - b; });
+    hover(box, svg, H, m, xs.map(function (xv) {
+      return { px: x(xv), t: String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n || SNAME[s.c] || '', py: y(d.v), s: fmt(d.v, o.dec == null ? 1 : o.dec) + (o.unit || '') } : null; }).filter(Boolean) };
+    }));
+  }
+  var serOf = function (c, w) { return c.y.map(function (y, i) { return { x: y, v: (c[w] || [])[i] }; }); };
+  var ticks = function (a, b) { var s = Math.max(1, Math.ceil((b - a) / 6)), t = []; for (var y = a; y <= b; y += s) t.push(y); return t; };
+  var NOMS = { fr: ['France', 'var(--fr)'], ue: ['Union européenne', 'var(--ea)'], de: ['Allemagne', 'var(--de)'], es: ['Espagne', 'var(--es)'], us: ['États-Unis', 'var(--us)'] };
+  var has = function (c, w) { return c[w] && c[w].some(function (v) { return v != null; }); };
+  // Années estimées par l'OTAN (affichées, pas comptées).
+  var estDe = function (c) { return Object.keys(c.est || {}).map(Number).sort(); };
+  // France : trait plein jusqu'à la dernière année publiée, pointillés pour les estimations.
+  var frSeries = function (c) {
+    var e = estDe(c); if (!e.length) return [{ c: 'var(--fr)', main: 1, data: serOf(c, 'fr'), dots: c.y.length < 8 }];
+    return [{ c: 'var(--fr)', n: 'France, estimation de l\'OTAN', dash: 1, data: serOf(c, 'fr').filter(function (d) { return d.x >= e[0] - 1; }) }, { c: 'var(--fr)', main: 1, noEnd: 1, data: serOf(c, 'fr').filter(function (d) { return d.x < e[0]; }) }];
+  };
+  function keyHtml(c) {
+    return ['fr', 'ue', 'ue_calc', 'de', 'es', 'us'].filter(function (w) { return has(c, w); }).map(function (w) {
+      if (w === 'ue' || w === 'ue_calc') return '<span><i class="dash"></i>' + (w === 'ue' ? 'Union européenne' : 'Moyenne de l\'UE') + '</span>';
+      return '<span><i style="background:' + NOMS[w][1] + '"></i>' + NOMS[w][0] + '</span>';
+    }).join('') + (estDe(c).length ? '<span><i class="dash" data-c="var(--fr)" style="background:repeating-linear-gradient(90deg,var(--fr) 0 4px,transparent 4px 6px) !important"></i>France, estimation de l\'OTAN</span>' : '') + (c.objectif ? '<span><i style="background:var(--bad)"></i>Repère de l\'OTAN</span>' : '');
+  }
+  // Courbe d'une série France / UE / Allemagne / Espagne / États-Unis ; renvoie les phrases à écrire sous le graphique.
+  function serieChart(id, c, extra) {
+    var S = [], aff = extra && extra.affiche;
+    if (c.regle === 'propre') c = { l: c.l, unite: c.unite, y: c.y, fr: c.fr, dec: c.dec };
+    if (has(c, 'us')) S.push({ c: 'var(--us)', data: serOf(c, 'us') });
+    if (has(c, 'es')) S.push({ c: 'var(--es)', data: serOf(c, 'es') });
+    if (has(c, 'de')) S.push({ c: 'var(--de)', data: serOf(c, 'de'), dots: c.y.length < 8 });
+    if (has(c, 'ue')) S.push({ c: 'var(--ea)', dash: 1, data: serOf(c, 'ue'), dots: c.y.length < 8 });
+    if (has(c, 'ue_calc')) S.push({ c: 'var(--ea)', n: 'Moyenne UE (calcul Concret)', dash: 1, data: serOf(c, 'ue_calc') });
+    S = S.concat(frSeries(c));
+    var x0 = c.y[0], x1 = c.y[c.y.length - 1];
+    lineChart(id, S, Object.assign({ x: [x0 - .5, x1 + .5], xt: ticks(x0, x1), unit: c.unite.charAt(0) === '%' ? ' %' : '', dec: decOf(c), label: c.l, obj: c.objectif || null, est: estDe(c)[0] || null }, extra || {}));
+    var n = [];
+    if (!has(c, 'de') && !has(c, 'ue') && !has(c, 'us')) n.push('France seule.');
+    else if (!has(c, 'us')) n.push(c.us_note || 'Pas de courbe pour les États-Unis : pas de mesure comparable.');
+    var lastDe = c.de ? c.de.reduce(function (m, v, i) { return v != null ? i : m; }, -1) : -1, firstDe = c.de ? c.de.findIndex(function (v) { return v != null; }) : -1;
+    var compte = false;
+    // Années après le dernier chiffre allemand déjà expliquées par la phrase du provisoire (prov) : pas de seconde phrase.
+    var deProv = c.y.slice(lastDe + 1).every(function (y) { return (c.prov || {})[y]; });
+    if (has(c, 'de') && lastDe < c.y.length - 1 && !deProv) n.push(compte ? 'L\'Allemagne ne publie plus ce chiffre après ' + c.y[lastDe] + ' : ces années ne sont pas comptées.' : 'Pas de chiffre allemand après ' + c.y[lastDe] + '.');
+    if (has(c, 'de') && firstDe > 0) n.push('Pas de chiffre allemand avant ' + c.y[firstDe] + (compte ? ' : ces années ne sont pas comptées.' : '.'));
+    var ue0 = c.ue ? c.ue.findIndex(function (v) { return v != null; }) : -1;
+    if (ue0 > 0) n.push('La moyenne de l\'UE ne commence qu\'en ' + c.y[ue0] + ' : avant, elle n\'est pas publiée' + (!aff ? ', ces années ne sont pas comptées.' : '.'));
+    if (has(c, 'ue_calc')) n.push(c.ue_calc_note || 'Pointillés : moyenne de l\'UE calculée par Concret.');
+    Object.keys(c.prov || {}).forEach(function (y) { n.push(c.prov[y]); });
+    var e = estDe(c); if (e.length) n.push('Zone grisée : ' + (e.length > 1 ? e.slice(0, -1).join(', ') + ' et ' + e[e.length - 1] + ', estimations' : e[0] + ', estimation') + ' de l\'OTAN pour tous les pays (pointillés bleus pour la France), révisées l\'année suivante : affichées, pas comptées.');
+    Object.keys(c.manque || {}).forEach(function (y) { n.push('Pas de point en ' + y + ' : ' + c.manque[y].replace(/^Non compté : /, '').replace(/^pour \d{4}, /, '')); });
+    if (c.objectif) n.push(c.objectif.texte + '.'); else if (c.objectif_note) n.push(c.objectif_note);
+    return n.join(' ');
+  }
+  // Bloc de courbe autonome (partageable) : titre, légende, graphique, phrases.
+  function card(wrap, id, titre, tag) {
+    var sec = document.createElement('section'); sec.className = 'card';
+    sec.innerHTML = '<h2><span class="eyebrow">' + titre + EX + (tag ? ' · ' + tag : '') + '</span></h2><div class="key"></div><div class="chart" id="' + id + '"></div><p class="note"></p>';
+    wrap.appendChild(sec); return sec;
+  }
+  function serieCard(wrap, id, c, tag, extra) {
+    var sec = card(wrap, id, c.l + ', ' + c.unite, tag);
+    sec.querySelector('.key').innerHTML = keyHtml(c);
+    return function () { sec.querySelector('.note').innerHTML = [serieChart(id, c, extra), c.note && extra && extra.affiche ? esc(c.note) : '', c.pourquoi, srcNote(c)].filter(Boolean).join(' '); };
+  }
+
+  // ===== Les cinq questions =====
+  var FOLDS = [];
+  var lien = function (c, txt) { return c.url ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">' + esc(txt) + '</a>' : esc(txt); };
+  var srcNote = function (c) { return c.source ? 'Source : ' + lien(c, c.source) + '.' : ''; };
+  // Ce qu'on montre en plus, sans le noter, sous chaque question.
+  var EN_PLUS = {};
+  // Indice de développement humain : affiché, sans note, avec la raison.
+  function buildIDH() {
+    var X = AFF.idh, l = lastOf(X, 'fr'), u = SAN.val(X, 'ue_calc', l.y);
+    setHtml('idh-why', 'En ' + X.annee_rang + ', la France est au ' + X.rang_fr + '<sup>e</sup> rang mondial, avec ' + fmt(l.v, 3) + ' (moyenne de l\'UE calculée par Concret : ' + fmt(u, 3) + ' ; Allemagne : ' + fmt(SAN.val(X, 'de', l.y), 3) + ' ; Espagne : ' + fmt(SAN.val(X, 'es', l.y), 3) + ' ; États-Unis : ' + fmt(SAN.val(X, 'us', l.y), 3) + '). Pas de note : l\'indice combine l\'espérance de vie, la durée des études et le revenu par habitant, déjà notés sur les pages Santé, Éducation et Finances ; le noter ici les compterait deux fois.');
+    [serieCard(document.getElementById('idh-charts'), 'ch-a-idh', X, 'affiché, sans note', { affiche: true })].forEach(function (d) { MAIN.push(d); });
+  }
+  // Courbes d'une question : chaque indicateur, et chaque élément d'un programme (vaccins, dépistages).
+  function courbes(t) {
+    var out = [];
+    t.crit.forEach(function (k) {
+      var c = C[k];
+      if (c.regle === 'composite') Object.keys(c.sous).forEach(function (j) { out.push({ id: k + '-' + j, c: c.sous[j], tag: 'noté, dans « ' + c.l + ' »' }); });
+      else out.push({ id: k, c: c, tag: 'noté' });
+    });
+    return out;
+  }
+  // Chaque thème : la courbe principale visible ; le tableau, les définitions et les autres courbes dans un dépliant.
+  var MAIN = [];
+  function buildThemes() {
+    var root = document.getElementById('questions');
+    THEMES.forEach(function (t) {
+      var e = themeEtat(t), cs = courbes(t), m0 = cs[0], c = m0.c;
+      var sec = document.createElement('section'); sec.className = 'card theme'; sec.id = 'q-' + t.k;
+      var pn = PRES.map(function (g) { return { g: g, n: SAN.noteTheme(g, t) }; }).reverse();
+      var defs = [];
+      t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || esc(x.ex || '')) + (x.source ? ' Source : ' + lien(x, x.source) + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + esc(q.l) + ' (' + esc(q.unite) + '). Source : ' + lien(q, q.source) + '.'); }); });
+      sec.innerHTML = '<h2></h2><p class="t-sum"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>La France fait mieux que ses voisins sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n + ' (dernier chiffre connu).</p>' +
+        '<span class="eyebrow" style="margin:4px 0 0">' + esc(c.l) + ', ' + esc(c.unite) + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p>' +
+        '<p class="tnotes">Note de ce thème, sur 20 (10 = aussi bien que la moyenne de l\'UE) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>';
+      sec.querySelector('h2').textContent = t.q;
+      root.appendChild(sec);
+      MAIN.push(function () { sec.querySelector('.note').innerHTML = [serieChart('ch-' + m0.id, c), srcNote(c)].filter(Boolean).join(' '); });
+      var autres = cs.slice(1), grid = document.createElement('div'); grid.className = 'charts4';
+      var more = autres.map(function (o) { return serieCard(grid, 'ch-' + o.id, o.c, o.tag, null); });
+      if (EN_PLUS[t.k]) more = more.concat(EN_PLUS[t.k](grid));
+      var fold = document.createElement('details'); fold.className = 'fold';
+      // Bouton bien visible : on comprend qu'il y a d'autres courbes dessous.
+      var nb = grid.children.length, quoi = (nb ? nb + ' autre' + (nb > 1 ? 's' : '') + ' courbe' + (nb > 1 ? 's' : '') + ', ' : '') + 'le tableau et les sources';
+      fold.innerHTML = '<summary><span class="ouvrir">Voir ' + quoi + '</span><span class="fermer">Masquer ' + quoi + '</span></summary>';
+      var inner = document.createElement('div'); inner.className = 'fold-in';
+      inner.innerHTML = tableEtat(e) + '<p class="note defs">' + defs.join('<br>') + '</p>';
+      inner.appendChild(grid); fold.appendChild(inner); sec.appendChild(fold);
+      var f = { el: fold, draw: function () { more.forEach(function (d) { d(); }); } };
+      fold.addEventListener('toggle', function () { if (fold.open) f.draw(); });
+      FOLDS.push(f);
+    });
+  }
+
+  // ===== La règle, indicateur par indicateur (tirée des données, pour rester à jour) =====
+  (function () {
+    var regle = function (c) {
+      if (c.regle === 'propre') return 'jugé sur la France seule (aucun voisin n\'a de comptes comparables) : 1 point si l\'équilibre est atteint, ½ si le déficit se réduit d\'au moins 0,1 point de PIB, 0 sinon ; compte triple';
+      if (c.regle === 'long') return 'comparés à ' + refN(c, 2) + ' ; ces résultats mettent des années à bouger, chaque année d\'un mandat compte donc pour la moyenne des points de l\'année et des quatre suivantes';
+      if (c.regle === 'composite') return 'le point de l\'année est la part des éléments où la France progresse mieux que la moyenne de l\'UE';
+      if (c.regle === 'niveau') return 'comparé chaque année à la moyenne de l\'UE (point si la France fait mieux)';
+      if (c.regle === 'ecart') return 'point si l\'écart français est plus faible que celui de l\'UE, ou s\'il se réduit plus vite';
+      if (c.regle === 'croissance') return 'point si sa hausse, en %, dépasse celle de ' + refN(c, 2) + ' (un indice mesure une évolution, pas un niveau)';
+      return 'point si la France progresse mieux que ' + refN(c, 2) + ', ou si elle fait déjà mieux et ne se dégrade pas' + (c.low ? ' (ici, une baisse est un progrès)' : ' (ici, une hausse est un progrès)');
+    };
+    // Les indicateurs d'un thème qui suivent la même règle sont regroupés en une phrase.
+    var liste = function (a) { return a.length > 1 ? a.slice(0, -1).join(', ') + ' et ' + a[a.length - 1] : a[0]; };
+    setHtml('regles', THEMES.map(function (t) {
+      var par = {}, ordre = [];
+      t.crit.forEach(function (k) { var r = regle(C[k]); if (!par[r]) { par[r] = []; ordre.push(r); } par[r].push('<b>' + esc(C[k].lc || C[k].l) + '</b>'); });
+      return '<tr><td>' + esc(t.q) + '<span>' + ordre.map(function (r) { return liste(par[r]) + ' : ' + r + '.'; }).join(' ') + '</span></td></tr>';
+    }).join(''));
+  })();
+
+  // ===== Les chiffres clés, et un chiffre à retenir qui change chaque jour (ce sont des chiffres annuels : rien ne dit qu'ils ont changé aujourd'hui) =====
+  var day = new Date(); day.setHours(0, 0, 0, 0);
+  var idx = Math.floor((day - new Date(2026, 0, 1)) / 864e5), pick = function (a) { return a[((idx % a.length) + a.length) % a.length]; };
+  var dern = function (c) { var r = SAN.ref(c); for (var i = c.y.length - 1; i >= 0; i--) if (c.fr[i] != null && (c[r] || [])[i] != null) return { y: c.y[i], fr: c.fr[i], ue: c[r][i], de: (c.de || [])[i], es: (c.es || [])[i] }; return null; };
+  var pc = function (v, d) { return fmt(v, d == null ? 1 : d) + ' %'; };
+  (function () {
+    var a = dern(C.arope);
+    setHtml('k-otan', fmt(a.fr, 1) + '<small>% de la population</small>'); setHtml('k-otan-d', 'en ' + a.y);
+    setHtml('k-otan-t', 'Pauvres (sous 60 % du revenu médian), en privation sévère ou dans un ménage où l\'on travaille très peu. Moyenne de l\'UE : ' + pc(a.ue) + ' ; Allemagne : ' + pc(a.de) + ' ; Espagne : ' + pc(a.es) + '. Source : ' + lien(C.arope, 'Eurostat') + '.');
+    var r = C.rev, i = r.y.length - 1; while (r.fr[i] == null) i--;
+    var yr = r.y[i], fr = r.fr[i], ue = r.ue[i], j0 = r.y.indexOf(yr - 1);
+    setHtml('k-pers', sg(fr - 100, 1) + ' %<small>depuis 2008</small>'); setHtml('k-pers-d', 'en ' + yr);
+    setHtml('k-pers-t', 'Revenu disponible des ménages par habitant, corrigé de la hausse des prix. Sur ' + yr + ' : ' + sg(100 * (fr / r.fr[j0] - 1), 1) + ' % en France, ' + sg(100 * (ue / r.ue[j0] - 1), 1) + ' % en moyenne dans l\'UE. Depuis 2008 : ' + sg(fr - 100, 1) + ' % en France, ' + sg(ue - 100, 1) + ' % dans l\'UE, ' + sg(r.de[i] - 100, 1) + ' % en Allemagne, ' + sg(r.es[i] - 100, 1) + ' % en Espagne. Source : ' + lien(r, 'Eurostat') + '.');
+    var s = dern(C.surp), f = dern(C.froid), e = dern(C.emp), w = dern(C.ecsal), t = dern(C.sat), q = dern(C.s80), h = AFF.idh, hl = lastOf(h, 'fr'), cf = dern(C.conf), iw = dern(C.iw);
+    var FACTS = [
+      'En ' + a.y + ', <b>' + pc(a.fr) + ' des Français</b> sont pauvres ou en exclusion sociale selon la définition européenne, contre ' + pc(a.ue) + ' en moyenne dans l\'UE.',
+      'En ' + s.y + ', <b>' + pc(s.fr) + ' des Français</b> vivent dans un logement surpeuplé, contre ' + pc(s.ue) + ' en moyenne dans l\'UE.',
+      'En ' + f.y + ', <b>' + pc(f.fr) + ' des Français</b> disent ne pas avoir les moyens de chauffer correctement leur logement, contre ' + pc(f.ue) + ' en moyenne dans l\'UE.',
+      'En ' + e.y + ', <b>' + pc(e.fr) + ' des 20-64 ans</b> ont un emploi en France, contre ' + pc(e.ue) + ' en moyenne dans l\'UE.',
+      'En ' + w.y + ', le salaire horaire brut moyen des femmes est inférieur de <b>' + pc(w.fr) + '</b> à celui des hommes en France, contre ' + pc(w.ue) + ' en moyenne dans l\'UE.',
+      'En ' + t.y + ', les Français donnent en moyenne <b>' + fmt(t.fr, 1) + ' sur 10</b> à leur vie en général, contre ' + fmt(t.ue, 1) + ' en moyenne dans l\'UE.',
+      'En ' + q.y + ', les 20 % de Français les plus aisés ont un revenu <b>' + fmt(q.fr, 2) + ' fois</b> plus élevé que les 20 % les plus modestes, contre ' + fmt(q.ue, 2) + ' fois en moyenne dans l\'UE.',
+      'En ' + iw.y + ', <b>' + pc(iw.fr) + ' des personnes qui travaillent</b> vivent sous le seuil de pauvreté en France, contre ' + pc(iw.ue) + ' en moyenne dans l\'UE.',
+      'En ' + h.annee_rang + ', la France est au <b>' + h.rang_fr + '<sup>e</sup> rang mondial</b> de l\'indice de développement humain des Nations unies (' + fmt(hl.v, 3) + ').',
+      'En ' + cf.y + ', le moral des ménages français est à <b>' + sg(cf.fr, 1) + '</b> en moyenne sur l\'année, contre ' + sg(cf.ue, 1) + ' dans l\'UE (solde des réponses positives et négatives).'
+    ];
+    setHtml('daily-text', pick(FACTS));
+    setHtml('teaser-today', 'Pauvreté ou exclusion : <b>' + fmt(a.fr, 1) + '&nbsp;%</b> en ' + a.y + ' (UE ' + fmt(a.ue, 1) + '&nbsp;%) · Pouvoir d\'achat : <b>' + sg(fr - 100, 1) + '&nbsp;%</b> depuis 2008 · Un chiffre à retenir');
+  })();
+
+  // ===== Le moral des ménages du dernier mois publié (chiffre mensuel, mis à jour chaque mois) =====
+  (function () {
+    var M = (DS.vie_moral || [])[0], cf = dern(C.conf); if (!M) return;
+    var n = function (s) { return parseFloat(String(s).replace(',', '.').replace('−', '-')); };
+    setHtml('p-lab', 'Moral des ménages · ' + esc(M.mois));
+    setHtml('p-num', esc(M.fr) + ' <small>points</small>');
+    document.getElementById('p-delta').textContent = 'moyenne de l\'UE : ' + M.ue;
+    setHtml('p-t', 'Solde, en points, entre les ménages qui répondent positivement et ceux qui répondent négativement sur leur situation financière, la situation économique du pays et leurs projets de gros achats ; il est négatif quand les réponses négatives sont plus nombreuses. Moyenne de l\'année ' + cf.y + ' : ' + sg(cf.fr, 1) + ' en France, ' + sg(cf.ue, 1) + ' dans l\'UE. Source : ' + lien(M, 'Commission européenne (Eurostat)') + '.');
+    var L = [['France', M.fr], ['Moyenne de l\'UE', M.ue], ['Allemagne', M.de], ['Espagne', M.es]];
+    setHtml('rep-tab', L.map(function (l) { return '<li><span class="rl">' + l[0] + '</span><span class="rv"><b>' + esc(l[1]) + '</b> points</span><span class="st"></span></li>'; }).join(''));
+    setHtml('q-t', 'Chiffre mensuel, affiché sans note : la note du moral porte sur la moyenne de chaque année complète. Même enquête et mêmes questions dans tous les pays de l\'UE (en France, faite par l\'Insee).');
+    setHtml('teaser-month', 'Moral des ménages, ' + esc(M.mois) + ' : <b>' + esc(M.fr) + '</b> en France · <b>' + esc(M.ue) + '</b> en moyenne dans l\'UE' + (n(M.fr) > n(M.ue) ? '' : ''));
+  })();
+  var drawMonth = function () {};
+  var lastReel = function (c, w) { for (var i = c.y.length - 1; i >= 0; i--) if ((c[w] || [])[i] != null) return { v: c[w][i], y: c.y[i] }; return null; };
+  function drawToday() {}
+
+
+  // ===== Depuis votre dernière visite : seulement ce qui a vraiment changé (nouvelle année publiée, moral du mois) =====
+  try {
+    (function () {
+      var now = Date.now(), vis = document.getElementById('visit'), ey = lastReel(C.arope, 'fr').y, M = (DS.vie_moral || [])[0] || {};
+      var snap = { t: now, ey: ey, mm: M.periode }, st = JSON.parse(localStorage.getItem('vie-visites') || 'null');
+      if (!st) st = { base: null, cur: snap, seen: now };
+      else if (now - st.seen > 3600e3) { st.base = st.cur; st.cur = snap; }
+      st.seen = now; localStorage.setItem('vie-visites', JSON.stringify(st));
+      var lv = st.base;
+      if (!lv) { vis.textContent = 'Revenez plus tard : cette ligne vous dira ce qui a changé depuis votre visite.'; vis.hidden = false; return; }
+      var dv = Math.round((now - lv.t) / 864e5), when = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h', pv = [];
+      if (ey > lv.ey) pv.push('enquête sur les conditions de vie ' + ey + ' (Eurostat) : pauvreté ou exclusion <b>' + fmt(lastReel(C.arope, 'fr').v, 1) + ' %</b>');
+      if (M.periode && M.periode !== lv.mm) pv.push('moral des ménages de ' + esc(M.mois) + ' : <b>' + esc(M.fr) + '</b>');
+      if (!pv.length) pv.push('pas de nouveau chiffre (le prochain : le moral des ménages, chaque fin de mois)');
+      if (dv >= 1) pv.push('un nouveau chiffre à retenir et une nouvelle question');
+      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + pv.join(' ; ') + '.';
+      vis.hidden = false;
+    })();
+  } catch (e) {}
+
+  // ===== Question du jour =====
+  (function () {
+    var Q = pick(SER.QUIZ), opts = document.getElementById('quiz-opts'), ans = document.getElementById('quiz-a'), key = 'vie-quiz-' + idx;
+    document.getElementById('quiz-day').textContent = 'Question du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+    document.getElementById('quiz-q').textContent = Q.q;
+    function reveal(p) {
+      Array.prototype.forEach.call(opts.children, function (b, i) { b.disabled = true; if (i === Q.a) b.classList.add('right'); else if (i === p) b.classList.add('wrong'); });
+      ans.textContent = (p === Q.a ? 'Bonne réponse. ' : 'Raté. ') + Q.e + ' Nouvelle question demain.'; ans.hidden = false;
+      try { localStorage.setItem(key, String(p)); } catch (e) {}
+    }
+    Q.o.forEach(function (o, i) { var b = document.createElement('button'); b.className = 'opt'; b.id = 'opt-' + i; b.type = 'button'; b.textContent = o; b.addEventListener('click', function () { reveal(i); }); opts.appendChild(b); });
+    try { var prev = localStorage.getItem(key); if (prev != null) reveal(+prev); } catch (e) {}
+  })();
+
+  // ===== Le bilan : l'évolution sur dix ans de chaque indicateur, France et voisin de comparaison, en phrases factuelles calculées =====
+  // Règle : sens et ampleur de l'évolution, comparaison au voisin, écart au début et à la fin ; aucun adjectif.
+  function analyse(c) {
+    var r = SAN.ref(c), dec = decOf(c), last = null, i;
+    if (c.regle === 'croissance') {
+      for (i = c.y.length - 1; i >= 0; i--) if (c.fr[i] != null && c.ue[i] != null) { last = i; break; }
+      var i0 = c.y.indexOf(c.y[last] - 10); if (i0 < 0 || c.fr[i0] == null) return null;
+      var hf = 100 * (c.fr[last] / c.fr[i0] - 1), he = 100 * (c.ue[last] / c.ue[i0] - 1);
+      return esc(c.lc || c.l) + ' : ' + sg(hf, 1) + ' % en France entre ' + c.y[i0] + ' et ' + c.y[last] + ', ' + sg(he, 1) + ' % pour ' + refN(c, 2) + '.';
+    }
+    for (i = c.y.length - 1; i >= 0; i--) if (c.fr[i] != null && c[r] && c[r][i] != null && !(c.est || {})[c.y[i]]) { last = i; break; }
+    if (last == null) return null;
+    var y1 = c.y[last], first = null;
+    for (i = 0; i < last; i++) if (c.y[i] >= y1 - 10 && c.fr[i] != null && c[r][i] != null) { first = i; break; }
+    if (first == null) return null;
+    var y0 = c.y[first], a0 = c.fr[first], a1 = c.fr[last], b0 = c[r][first], b1 = c[r][last], u = c.uc === ' %' ? ' %' : '';
+    var pct = function (x0, x1) { return x0 ? sg(100 * (x1 - x0) / x0, 0) + ' %' : ''; };
+    var sens = function (x0, x1) { var d = Math.abs(x1 - x0) / Math.abs(x0 || 1); return d < 0.03 ? 'stable' : (x1 > x0 ? 'en hausse' : 'en baisse') + ' de ' + fmt(Math.abs(100 * (x1 - x0) / x0)) + ' %'; };
+    var g0 = a0 - b0, g1 = a1 - b1, ecart = g0 * g1 < 0 ? 'la France passe ' + (g1 < 0 ? 'sous ' : 'au-dessus de ') + refN(c, 2) : Math.abs(g1) < Math.abs(g0) - 1e-9 ? 'l\'écart se réduit' : Math.abs(g1) > Math.abs(g0) + 1e-9 ? 'l\'écart se creuse' : 'l\'écart ne bouge pas';
+    return esc(c.lc || c.l) + ' : de ' + fmt(a0, dec) + u + ' à ' + fmt(a1, dec) + u + ' en France entre ' + y0 + ' et ' + y1 + ' (' + sens(a0, a1) + '), de ' + fmt(b0, dec) + u + ' à ' + fmt(b1, dec) + u + ' pour ' + refN(c, 2) + ' (' + sens(b0, b1) + ') ; ' + ecart + ' (' + sg(g0, dec) + ' puis ' + sg(g1, dec) + ').';
+  }
+  (function () {
+    var items = THEMES.map(function (t) {
+      var parts = t.crit.map(function (k) { return analyse(C[k]); }).filter(Boolean);
+      return '<b>' + esc(t.q) + '.</b> ' + (parts.length ? parts.join(' ') : 'Pas assez d\'années comparables pour mesurer une évolution.');
+    });
+    var pr = PRES.map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
+    items.push('<b>Au bulletin</b>, ' + pr.map(function (r) { var k = KEYS.filter(function (q) { return r.g.w[q].length; }).length; return esc(r.g.n) + ' ' + nfmt(r.n) + '/20' + (k < KEYS.length ? ' (' + k + ' indicateurs sur ' + KEYS.length + ')' : ''); }).join(', ') + '. La note compte les années où la France a progressé plus que la moyenne de l\'UE, ou, déjà mieux placée, ne s\'est pas dégradée.');
+    setHtml('sum-list', items.map(function (t) { return '<li>' + t + '</li>'; }).join(''));
+  })();
+
+  // ===== Année par année =====
+  var showYears = false;
+  document.getElementById('yr-more').addEventListener('click', function () {
+    showYears = !showYears; this.setAttribute('aria-expanded', showYears); this.textContent = showYears ? 'Masquer les années précédentes' : 'Voir toutes les années, depuis 1995';
+    renderYears();
+  });
+  setHtml('yr-head', '<tr><th>Année</th><th>Premier ministre</th>' + THEMES.map(function (t) { return '<th title="' + esc(t.q) + '">' + esc(t.abr || t.q) + '</th>'; }).join('') + '<th>Note</th></tr>');
+  // Dernière année publiée (hors estimations), tous indicateurs notés confondus.
+  var Y_REEL = Math.max.apply(null, KEYS.map(function (k) { var r = lastReel(C[k], 'fr'); return r ? r.y : 0; }));
+  function renderYears() {
+    var tb = document.getElementById('yr-body'); tb.textContent = '';
+    var lastPres = null, Y1 = Math.max.apply(null, GOVS.map(function (g) { return g.y1; })), ncol = THEMES.length + 3;
+    for (var y = Y1; y >= 1995; y--) {
+      var hide = !showYears && y < Y1 - 1;
+      var pres = PRES.filter(function (p) { return y >= p.y0 && y <= p.y1; })[0];
+      if (pres && pres !== lastPres) {
+        var hr = document.createElement('tr'); hr.className = 'pres-row'; var th = document.createElement('td'); th.colSpan = ncol;
+        th.textContent = pres.n + ' · ' + nfmt(noteOf(pres)) + '/20 sur le mandat'; hr.appendChild(th); hr.hidden = hide; tb.appendChild(hr); lastPres = pres;
+      }
+      var g = evaluate({ n: '', y0: y, y1: y }), pm = GOVS.filter(function (x) { return y >= x.y0 && y <= x.y1; })[0], tr = document.createElement('tr'), nc = [];
+      tr.innerHTML = '<td>' + y + '</td><td>' + (pm ? esc(nomCourt(pm.n)) : '—') + '</td>';
+      THEMES.forEach(function (t) {
+        var n = SAN.noteTheme(g, t), td = document.createElement('td');
+        td.className = 'dot' + (n == null ? '' : n > 10 ? ' g' : n < 10 ? ' b' : '');
+        td.textContent = n == null ? '–' : n > 10 ? '●' : n < 10 ? '○' : '◐'; td.title = t.q + ' : ' + (n == null ? 'pas de chiffre comparable' : nfmt(n) + '/20');
+        if (n == null) { var deb = Math.min.apply(null, t.crit.map(function (k) { return C[k].y[0]; })); nc.push(t.q.toLowerCase() + (y <= deb ? ' (les chiffres commencent en ' + deb + ', la première évolution comptée est celle de ' + (deb + 1) + ')' : '')); } tr.appendChild(td);
+      });
+      var nn = noteOf(g), tdn = document.createElement('td');
+      tdn.innerHTML = nn == null ? '–' : '<span class="yr-note ' + cls(nn) + '">' + nfmt(nn) + '</span>';
+      tr.appendChild(tdn); tr.hidden = hide; tb.appendChild(tr);
+      if (nc.length) {
+        var wr = document.createElement('tr'); wr.className = 'yr-why'; var wd = document.createElement('td'); wd.colSpan = ncol;
+        wd.textContent = 'Non compté en ' + y + ' : ' + nc.join(', ') + (nc.some(function (x) { return x.indexOf('(') < 0; }) ? ' (' + (y > Y_REEL ? 'chiffres pas encore publiés' : 'pas de chiffre comparable pour cette année') + ')' : '') + '.';
+        wr.appendChild(wd); wr.hidden = hide; tb.appendChild(wr);
+      }
+    }
+  }
+  renderYears();
+
+  // ===== Menus, mise à jour, alerte =====
+  document.querySelectorAll('.jump a').forEach(function (a) { a.addEventListener('click', function () { var t = document.querySelector(a.getAttribute('href')); if (t && t.tagName === 'DETAILS') t.open = true; }); });
+  ['acc-today', 'acc-month', 'acc-bilan'].forEach(function (id) {
+    var d = document.getElementById(id);
+    try { if (localStorage.getItem('vie-' + id) === 'open') d.open = true; } catch (e) {}
+    d.addEventListener('toggle', function () { try { localStorage.setItem('vie-' + id, d.open ? 'open' : 'closed'); } catch (e) {} if (d.open && id === 'acc-month') setTimeout(drawMonth, 30); if (d.open && id === 'acc-today') setTimeout(drawToday, 30); });
+  });
+  (function () {
+    var el = document.getElementById('upd'), d = FEED.updated_iso ? new Date(FEED.updated_iso) : null;
+    if (!d || isNaN(d)) { el.textContent = 'Dernière mise à jour des données : ' + FEED.updated + '.'; return; }
+    el.textContent = 'Dernière mise à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ') + ' · une par jour, vers midi';
+    if (Date.now() - d.getTime() > 30 * 3600e3) { var s = document.getElementById('stale'); s.textContent = 'Mise à jour en retard : les données datent du ' + FEED.updated + '.'; s.hidden = false; }
+  })();
+
+  buildThemes(); buildIDH(); renderGov();
+  function drawAll() {
+    rankOne('pres'); rankOne('gov');
+    MAIN.forEach(function (d) { d(); });
+    FOLDS.forEach(function (f) { var up = f.el.parentElement.closest('details'); if (f.el.open && (!up || up.open)) f.draw(); });
+    if (document.getElementById('acc-today').open) drawToday();
+    if (document.getElementById('acc-month').open) drawMonth();
+  }
+  drawAll();
+  var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });
+}
+(function () {
+  var started = false;
+  function go(feed) {
+    if (started) return; started = true;
+    if (!feed || !feed.series || !feed.series.vie) { var u = document.getElementById('upd'); if (u) u.textContent = 'Les données n\'ont pas pu être chargées. Rechargez la page.'; return; }
+    main(feed);
+  }
+  try { fetch('../data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(go, function () { go(null); }); } catch (e) { go(null); }
+})();
+})();
+</script>
+<script src="/commun/partage.js?v=20261025a"></script>
+<script src="/commun/recherche.js?v=20261025b"></script>
+</body>
+</html>

@@ -17,7 +17,7 @@ n'est pas comptée (la page dit pourquoi). On ne relie pas deux tables différen
 
 Code de sortie 1 si une source est injoignable : les indicateurs de cette source gardent leurs valeurs (rien n'est écrit
 pour eux), les autres sont écrits, et la prochaine vérification n'avance pas."""
-import csv, io, json, os, subprocess, sys, time
+import csv, io, json, os, re, subprocess, sys, time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
@@ -214,6 +214,23 @@ def cofog(fonction, operation='TE'):
     return lambda: eurostat('gov_10a_exp', 'unit=MIO_EUR&sector=S13&na_item=%s&cofog99=%s' % (operation, fonction))
 
 
+def silc(table, filtres):
+    """Enquête européenne sur les revenus et les conditions de vie (Eurostat) : taux des 27 pays."""
+    return lambda: eurostat(table, filtres)
+
+
+def pnud_idh():
+    """Indice de développement humain des 27 pays (PNUD, séries complètes du dernier rapport, lu par outils/vie.py)."""
+    import vie
+    r = vie.pnud_csv()[0]
+    inv = {v: k for k, v in ISO3.items()}
+    out = {}
+    for x in r:
+        if x['iso3'] in inv:
+            out[inv[x['iso3']]] = {int(c[4:]): float(v) for c, v in x.items() if re.fullmatch(r'hdi_\d{4}', c) and v}
+    return out
+
+
 def pib_euros():
     return eurostat('nama_10_gdp', 'unit=CP_MEUR&na_item=B1GQ')
 
@@ -279,6 +296,22 @@ INDICATEURS = [
          methode="dépense d'équipement des pays de l'UE membres de l'OTAN divisée par leur dépense de défense, à prix constants", source="OTAN, classeur des chiffres de défense des pays de l'OTAN, tableaux 2 et 8a"),
     dict(cle='defense.AFF.pers', periodes=[(2014, None)], num=otan('Table 7'), den=population, facteur=1e6,
          methode="militaires des pays de l'UE membres de l'OTAN rapportés à leur population au 1er janvier", source="OTAN, classeur des chiffres de défense des pays de l'OTAN, tableau 7 ; population : Eurostat, demo_gind"),
+    # Vie des Français : enquête européenne sur les revenus et les conditions de vie. Eurostat ne publie la moyenne de l'UE
+    # que depuis 2010 ; Concret la calcule depuis 2005 sur les mêmes chiffres (depuis 2010, à 0,2 point près de celle d'Eurostat).
+    dict(cle='vie.arr', periodes=[(2004, None)], taux=silc('ilc_mdes05', 'hhcomp=TOTAL&rskpovth=TOTAL&unit=PC'), pourquoi="Eurostat ne publie la sienne que depuis 2010 ; ce calcul la redonne à 0,2 point près",
+         methode="part des personnes en retard de paiement dans les pays de l'UE, pondérée par leur population", source="Eurostat, ilc_mdes05 ; population : demo_gind"),
+    dict(cle='vie.s80', periodes=[(2004, None)], taux=silc('ilc_di11', 'unit=RAT&age=TOTAL&sex=T'), pourquoi="Eurostat ne publie la sienne que depuis 2010 ; ce calcul la redonne à 0,2 point près",
+         methode="écart de revenu de chaque pays de l'UE, pondéré par sa population", source="Eurostat, ilc_di11 ; population : demo_gind"),
+    dict(cle='vie.surch', periodes=[(2004, None)], taux=silc('ilc_lvho07a', 'unit=PC&age=TOTAL&sex=T&rskpovth=TOTAL'), pourquoi="Eurostat ne publie la sienne que depuis 2010 ; ce calcul la redonne à 0,2 point près",
+         methode="part des personnes dont le logement coûte plus de 40 % du revenu dans les pays de l'UE, pondérée par leur population", source="Eurostat, ilc_lvho07a ; population : demo_gind"),
+    dict(cle='vie.surp', periodes=[(2004, None)], taux=silc('ilc_lvho05a', 'unit=PC&age=TOTAL&sex=T&rskpovth=TOTAL'), pourquoi="Eurostat ne publie la sienne que depuis 2010 ; ce calcul la redonne à 0,2 point près",
+         methode="part des personnes en logement surpeuplé dans les pays de l'UE, pondérée par leur population", source="Eurostat, ilc_lvho05a ; population : demo_gind"),
+    dict(cle='vie.froid', periodes=[(2004, None)], taux=silc('ilc_mdes01', 'hhcomp=TOTAL&rskpovth=TOTAL&unit=PC'), pourquoi="Eurostat ne publie la sienne que depuis 2010 ; ce calcul la redonne à 0,2 point près",
+         methode="part des personnes qui ne peuvent pas chauffer correctement leur logement dans les pays de l'UE, pondérée par leur population", source="Eurostat, ilc_mdes01 ; population : demo_gind"),
+    dict(cle='vie.iw', periodes=[(2004, None)], taux=silc('ilc_iw01', 'wstatus=EMP&age=Y_GE18&sex=T&unit=PC'), pourquoi="Eurostat ne publie la sienne que depuis 2010 ; ce calcul la redonne à 0,2 point près",
+         methode="part des travailleurs pauvres dans les pays de l'UE, pondérée par leur population", source="Eurostat, ilc_iw01 ; population : demo_gind"),
+    dict(cle='vie.AFF.idh', periodes=[(1995, None)], taux=pnud_idh, dec=3,
+         methode="indice de chaque pays de l'UE, pondéré par sa population", source="PNUD, séries complètes de l'indice de développement humain ; population : Eurostat, demo_gind"),
 ]
 
 
@@ -381,7 +414,7 @@ def main():
         try:
             c = critere(o, ind['cle'])
             dec = max([len(repr(float(v)).split('.')[1].rstrip('0')) for v in c['fr'] if v is not None] + [1])
-            calc.append((ind, c, calcule(ind, c['y'], min(dec, 2))))
+            calc.append((ind, c, calcule(ind, c['y'], ind.get('dec', min(dec, 2)))))
         except Exception as e:
             echecs.append('%s (%s : %s)' % (ind['cle'], type(e).__name__, e))
     for e in echecs:
