@@ -676,7 +676,7 @@ function main(FEED) {
   // ===== Le chiffre du jour : une phrase différente chaque jour, calculée à partir des données =====
   (function () {
     var day = new Date(); day.setHours(0, 0, 0, 0);
-    var idx = Math.floor((day - new Date(2026, 0, 1)) / 864e5);
+    var idx = Math.round((day - new Date(2026, 0, 1)) / 864e5);
     var jan1 = new Date(new Date().getFullYear(), 0, 1), perDay = RATE * 86400, smicAn = SMIC_AN, sinceJan = RATE * (Date.now() - jan1.getTime()) / 1000;
     window.__facts = function () { return FACTS; };
     // Générateur : chaque montant du jour est traduit dans une unité qui parle à tout le monde.
@@ -1079,7 +1079,7 @@ function main(FEED) {
 
   // ===== Question du jour : une par jour, tirée d'une banque =====
   var QUIZ = SER.QUIZ;
-  var today = new Date(), dayIdx = Math.floor((new Date(today.getFullYear(), today.getMonth(), today.getDate()) - new Date(2026, 0, 1)) / 864e5);
+  var today = new Date(), dayIdx = Math.round((new Date(today.getFullYear(), today.getMonth(), today.getDate()) - new Date(2026, 0, 1)) / 864e5);
   var Q = QUIZ[((dayIdx % QUIZ.length) + QUIZ.length) % QUIZ.length];
   document.getElementById('quiz-day').textContent = 'Question du ' + today.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
   document.getElementById('quiz-q').textContent = Q.q; if (window.ConcretQuiz && ConcretQuiz.aide) ConcretQuiz.aide(Q, document.getElementById('quiz-q'));

@@ -414,7 +414,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   var fmt = function (v) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v); };
   var day = new Date(); day.setHours(0, 0, 0, 0);
   // Même jour, même question que sur chaque page (même calcul de l'indice du jour).
-  var idx = Math.floor((day - new Date(2026, 0, 1)) / 864e5), pick = function (a) { return a[((idx % a.length) + a.length) % a.length]; };
+  var idx = Math.round((day - new Date(2026, 0, 1)) / 864e5), pick = function (a) { return a[((idx % a.length) + a.length) % a.length]; };
   var iso = day.getFullYear() + '-' + ('0' + (day.getMonth() + 1)).slice(-2) + '-' + ('0' + day.getDate()).slice(-2);
   document.getElementById('today').textContent = day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   // Hasard reproductible : le même jour donne les mêmes questions à tout le monde.

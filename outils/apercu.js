@@ -84,7 +84,7 @@ function carte(o) {
   cartes.push({ f: 'barometre', titre: 'Baromètre 2027', sous: 'Sondages et parieurs de la présidentielle, mis à jour chaque jour', n: jours > 0 ? [String(jours), ' jours'] : null, nt: 'avant le premier tour de l\'élection présidentielle', dates: [t1, t2].filter(Boolean).map(function (a) { return [/premier/i.test(a.evenement) ? 'Premier tour' : 'Second tour', jour(a) + ' ' + a.date.slice(0, 4)]; }), pied: 'Sources : Commission des sondages, instituts, Polymarket', adresse: 'concret2027.fr/barometre' });
   // Quiz du jour : la première question du jour (celle de la page Vie des Français, même calcul que la page), refaite chaque jour.
   var SQ = (S.vie || {}).QUIZ || [], jq = new Date(); jq.setHours(0, 0, 0, 0);
-  var iq = Math.floor((jq - new Date(2026, 0, 1)) / 864e5), Q1 = SQ.length ? SQ[((iq % SQ.length) + SQ.length) % SQ.length] : null;
+  var iq = Math.round((jq - new Date(2026, 0, 1)) / 864e5), Q1 = SQ.length ? SQ[((iq % SQ.length) + SQ.length) % SQ.length] : null;
   if (Q1 && fs.existsSync(path.join(ROOT, 'quiz', 'index.html'))) cartes.push({ f: 'quiz', titre: 'Quiz du jour', sous: jq.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) + ' · la France face à ses voisins, la note des présidents', quiz: Q1, pied: 'Chaque réponse renvoie à la courbe qui la prouve', adresse: 'concret2027.fr/quiz' });
   // Une image n'est refaite que si son contenu a changé (empreinte du texte de la carte) : le dépôt ne grossit pas chaque jour.
   var EMP = path.join(OUT, 'empreintes.json'), emp = fs.existsSync(EMP) ? JSON.parse(fs.readFileSync(EMP, 'utf8')) : {}, faites = [];

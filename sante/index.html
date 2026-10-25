@@ -1009,7 +1009,7 @@ function main(FEED) {
 
   // ===== Les chiffres clés, et un chiffre à retenir qui change chaque jour (ce sont des chiffres annuels : rien ne dit qu'ils ont changé aujourd'hui) =====
   var PV = function (k) { return SER.P[k].v; }, day = new Date(); day.setHours(0, 0, 0, 0);
-  var idx = Math.floor((day - new Date(2026, 0, 1)) / 864e5), pick = function (a) { return a[((idx % a.length) + a.length) % a.length]; };
+  var idx = Math.round((day - new Date(2026, 0, 1)) / 864e5), pick = function (a) { return a[((idx % a.length) + a.length) % a.length]; };
   var MO = SER.MO, lastIdx = function (a) { var i = a.length - 1; while (i >= 0 && a[i] == null) i--; return i; };
   var moDate = function (o, i) { return new Date(o.start[0], o.start[1] + i, 1); };
   var moName = function (o, i, long) { return moDate(o, i).toLocaleDateString('fr-FR', long ? { month: 'long', year: 'numeric' } : { month: 'long' }); };
