@@ -73,6 +73,7 @@ Santé, Sécurité et justice, Défense, Vie des Français, ou tout indicateur a
 ## Avant de publier une modification du site
 
 - Après une modification de `commun/notes.js`, `commun/partage.js` ou `commun/bref.js` (le bloc « En bref » en tête de chaque page), changer le numéro `?v=` de leur balise `<script>` dans toutes les pages (sinon les navigateurs gardent l'ancienne version jusqu'à 10 minutes).
+- Les cartes d'aperçu des liens (`donnees/apercu/<page>.png`, balises `og:image` de chaque page) montrent les chiffres du bloc « En bref » et le classement général : `outils/apercu.js` les refait, lancé par `verifier` ; une carte n'est refaite que si son contenu change.
 - L'index du moteur de recherche (`donnees/recherche.json`) reprend le texte affiché des pages, chiffres compris : `node outils/controle.js verifier` le refait à chaque mise à jour des données (la tâche quotidienne le publie avec `data.json`). Après une modification des pages HTML, il est refait au prochain `verifier`, ou tout de suite par `node outils/recherche.js`.
 - Comparer le rendu avant et après (textes, graphiques, erreurs de console) et vérifier que les notes n'ont pas bougé, sauf si c'est le but.
 - `node outils/controle.js verifier` doit passer.

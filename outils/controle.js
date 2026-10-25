@@ -215,6 +215,9 @@ try {
 if (!bloquant.length) {
   var ix = cp.spawnSync('node', [path.join(__dirname, 'recherche.js')], { cwd: ROOT, encoding: 'utf8', timeout: 240000 });
   if (ix.status !== 0) alertes.push('index du moteur de recherche non refait (' + ((ix.stderr || ix.error && ix.error.message || 'délai dépassé').trim().split('\n').pop()) + ') : relancer node outils/recherche.js');
+  // Cartes d'aperçu des liens (og:image) : refaites quand les chiffres qu'elles montrent changent.
+  var ap = cp.spawnSync('node', [path.join(__dirname, 'apercu.js')], { cwd: ROOT, encoding: 'utf8', timeout: 240000 });
+  if (ap.status !== 0) alertes.push('cartes d\'aperçu des liens non refaites (' + ((ap.stderr || ap.error && ap.error.message || 'délai dépassé').trim().split('\n').pop()) + ') : relancer node outils/apercu.js');
 }
 if (!bloquant.length && notes) { wr('donnees/notes.json', { date: today, finances: notes.finances, education: notes.education, sante: notes.sante, securite: notes.securite, defense: notes.defense, vie: notes.vie, accueil: notes.accueil }); wr('donnees/a_valider.json', aValider); }
 var J = [];
