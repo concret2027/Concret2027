@@ -34,13 +34,13 @@
     var tot = n.reduce(function (a, b) { return a + b; }, 0); if (!tot) return;
     var p = document.getElementById('quiz-res') || ans.parentNode.insertBefore(document.createElement('p'), ans.nextSibling);
     p.id = 'quiz-res'; p.className = 'qz-res';
-    if (tot < SEUIL) { p.textContent = 'La part de chaque réponse s\'affiche à partir de ' + SEUIL + ' réponses comptées (total mis à jour toutes les quelques heures).'; return; }
+    if (tot < SEUIL) { p.textContent = 'Les pourcentages s\'affichent dès ' + SEUIL + ' réponses. Une réponse peut mettre jusqu\'à 4 heures à apparaître dans le total.'; return; }
     Array.prototype.forEach.call(opts.children, function (b, i) {
       var pc = Math.round(100 * n[i] / tot), s = b.querySelector('.qz-pc') || b.appendChild(document.createElement('span'));
       s.className = 'qz-pc'; s.textContent = pc + ' % des réponses'; b.classList.add('qz-bar'); b.style.setProperty('--qz', pc + '%');
     });
     p.textContent = (tot === 1 ? '1 personne a répondu à cette question' : tot.toLocaleString('fr-FR') + ' personnes ont répondu à cette question') +
-      (nouveau ? ', vous compris' : '') + '. Réponses comptées de façon anonyme ; total mis à jour toutes les quelques heures.';
+      (nouveau ? ', vous compris' : '') + '. Réponses comptées de façon anonyme ; une réponse peut mettre jusqu\'à 4 heures à apparaître.';
   }
 
   // nouveau : la personne vient de cliquer (sinon la page rappelle une réponse déjà donnée sur cet appareil).
