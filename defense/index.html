@@ -620,13 +620,16 @@ function main(FEED) {
       var pt = c.regle === 'effort' ? SAN.effort(c, y) : SAN.evol(c, y), a = v('fr', y), b = v('fr', y - 1), e = v(r, y), d = SAN.refEv(c, y);
       var cell = function (x, dx) { return x == null ? '—' : dx == null ? '— (' + fmt(x, dec) + ')' : sg(dx, dec) + ' (' + fmt(x, dec) + ')'; };
       var gap = a == null || b == null || d == null ? '' : sg((a - b) - d, dec);
-      rows += '<tr><td>' + y + '</td><td>' + cell(a, b == null ? null : a - b) + '</td><td>' + cell(e, d) + '</td><td>' + gap + '</td><td>' + ptHtml(pt) + '</td></tr>';
+      // Hors inflation (fr_reel) : l'évolution du montant dépensé par la France, ce qui décide du point quand elle est déjà au-dessus.
+      var q1 = v('fr_reel', y), q0 = v('fr_reel', y - 1), reel = c.fr_reel ? '<td>' + (q1 != null && q0 != null ? sg(100 * (q1 / q0 - 1), 1) + ' %' : '—') + '</td>' : '';
+      rows += '<tr><td>' + y + '</td><td>' + cell(a, b == null ? null : a - b) + '</td>' + reel + '<td>' + cell(e, d) + '</td><td>' + gap + '</td><td>' + ptHtml(pt) + '</td></tr>';
       if (pt === 1 && c.regle === 'effort' && SAN.evol(c, y) !== 1) { var r1 = v('fr_reel', y), r0 = v('fr_reel', y - 1); why.push('1 point en ' + y + ' : la France progresse moins que ' + refN(c, 2) + ', mais elle reste au-dessus (' + fmt(a, dec) + (c.uc === ' %' ? ' %' : '') + ' contre ' + fmt(e, dec) + (c.uc === ' %' ? ' %' : '') + ') et sa dépense ne recule pas hors inflation' + (r1 != null && r0 != null ? ' (' + sg(100 * (r1 / r0 - 1), 1) + ' %)' : '') + '.'); }
       else if (pt === 0 && c.regle === 'effort' && a != null && e != null && a > e && SAN.recule(c, y)) { var s1 = v('fr_reel', y), s0 = v('fr_reel', y - 1); why.push('0 point en ' + y + ' : la France reste au-dessus de ' + refN(c, 2) + ' (' + fmt(a, dec) + (c.uc === ' %' ? ' %' : '') + ' contre ' + fmt(e, dec) + (c.uc === ' %' ? ' %' : '') + '), mais sa dépense recule hors inflation' + (s1 != null && s0 != null ? ' (' + sg(100 * (s1 / s0 - 1), 1) + ' %)' : '') + '.'); }
       else if (pt === 0.5) why.push(POURQUOI.egalite(y, refN(c, 2)));
       else if (pt == null) why.push(SAN.raisonSerie(c, y));
     }
-    return '<table><thead><tr><th>Année</th><th>France</th><th>' + nomRef(c) + '</th><th>Écart</th><th>Point</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    return '<table><thead><tr><th>Année</th><th>France</th>' + (c.fr_reel ? '<th>France, hors inflation</th>' : '') + '<th>' + nomRef(c) + '</th><th>Écart</th><th>Point</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      (c.fr_reel ? '<p>France, hors inflation : évolution sur un an du montant que la France consacre à ce poste (' + c.fr_reel_u + '). C\'est elle qui décide du point quand la France, déjà au-dessus de ' + refN(c, 2) + ', progresse moins : le point est gardé si ce montant ne baisse pas.</p>' : '');
   }
   function detailTable(g, k) {
     var c = C[k], wrap = document.createElement('div'), why = [], h, foot = '';
