@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261025h"></script>
-<script src="/commun/quiz.js?v=20261025f"></script>
+<script src="/commun/quiz.js?v=20261025g"></script>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
 :root {
@@ -490,29 +490,73 @@ footer p { margin: 0; } footer a { color: inherit; }
     if (rep.every(function (v) { return v != null; })) fin(false);
 
     // Score du jour : un compteur par score possible (0 à total), remis à zéro chaque jour par la date dans son nom.
+    var classe = null; // le classement du jour, repris dans l'image partagée
     function fin(nouveau) {
       var ok = rep.filter(Boolean).length, box = document.getElementById('qz-fin');
       document.getElementById('qz-score').innerHTML = ok + '<small> / ' + total + '</small>';
       document.getElementById('qz-grille').textContent = rep.map(function (v) { return v ? '🟩' : '🟥'; }).join('');
       box.hidden = false; if (nouveau) setTimeout(function () { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
-      var deja = false; try { deja = localStorage.getItem('quiz-score-' + iso) != null; localStorage.setItem('quiz-score-' + iso, String(ok)); } catch (e) {}
+      // Le score n'est compté qu'une fois par jour et par appareil ; il n'est marqué « compté » qu'une fois le compteur d'accord
+      // (si l'envoi a échoué, il repart au prochain chargement de la page).
+      var cleCompte = 'quiz-score-compte-' + iso, deja = false; try { deja = localStorage.getItem(cleCompte) != null; } catch (e) {}
       var rang = document.getElementById('qz-rang');
       if (!window.ConcretQuiz) return;
       var cles = []; for (var k = 0; k <= total; k++) cles.push('score-' + total + '-' + iso + '-' + k);
-      Promise.all(cles.map(function (c, k) { return ConcretQuiz.compteur(nouveau && !deja && k === ok ? 'hit' : 'get', c); })).then(function (n) {
-        var tous = n.reduce(function (a, b) { return a + b; }, 0); if (!tous) return;
+      rang.textContent = 'Classement du jour en cours de chargement…';
+      // Le score de la personne est enregistré d'abord (en tête de file), puis on lit les autres scores du jour.
+      // Toutes ces requêtes passent devant celles des questions : on les ajoute en tête de file à l'envers, le score en dernier (donc en premier).
+      var prom = [];
+      for (var kk = total; kk >= 0; kk--) if (deja || kk !== ok) prom[kk] = ConcretQuiz.compteur('get', cles[kk], true);
+      if (!deja) prom[ok] = ConcretQuiz.compteur('hit', cles[ok], true).then(function (v) { try { localStorage.setItem(cleCompte, String(ok)); } catch (e) {} return v; });
+      Promise.all(prom).then(function (n) {
+        var tous = n.reduce(function (a, b) { return a + b; }, 0);
+        if (!tous) { rang.textContent = 'Le classement du jour s\'affiche quand vous finissez le quiz sur cet appareil.'; return; }
         if (tous < 2) { rang.textContent = 'Vous êtes la première personne à finir le quiz aujourd\'hui. Le classement s\'affiche dès 2 personnes.'; return; }
         var moins = n.slice(0, ok).reduce(function (a, b) { return a + b; }, 0), pareil = n[ok], pc = function (v) { return Math.round(100 * v / tous) + ' %'; };
+        classe = { tous: tous, moins: moins, pc: pc };
         rang.innerHTML = '<b>' + tous.toLocaleString('fr-FR') + ' personnes</b> ont fini le quiz aujourd\'hui. ' +
           (moins ? '<b>' + pc(moins) + '</b> ont fait moins bien que vous' : 'Personne n\'a fait moins bien que vous') + ', <b>' + pc(pareil) + '</b> aussi bien' + (tous - moins - pareil ? ', <b>' + pc(tous - moins - pareil) + '</b> mieux.' : ', personne n\'a fait mieux.');
-      }, function () {});
+      }, function () { rang.textContent = 'Le classement du jour n\'a pas pu être chargé. Rechargez la page pour réessayer.'; });
+    }
+    // Partager le score : une image du résultat (score, carrés, classement), dessinée ici, avec l'adresse en légende
+    // (sans lien complet, pour que la messagerie montre l'image et pas l'aperçu de la page).
+    function image(ok) {
+      var W = 1080, H = 1080, c = document.createElement('canvas'), g = c.getContext('2d'), serif = '"Newsreader", Georgia, serif', sans = '"Inter Tight", system-ui, sans-serif';
+      c.width = W; c.height = H;
+      g.fillStyle = '#f6f6f3'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#2f5bd3'; g.font = '500 56px ' + serif; g.textBaseline = 'alphabetic'; g.fillText('Concret', 80, 130);
+      g.font = '700 34px ' + sans; g.textAlign = 'right'; g.fillText('concret2027.fr/quiz', W - 80, 126); g.textAlign = 'left';
+      g.fillStyle = '#1c1d22'; g.font = '700 84px ' + sans; g.fillText('Quiz du jour', 80, 260);
+      g.fillStyle = '#62646d'; g.font = '500 38px ' + sans; g.fillText(day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }), 80, 320);
+      g.fillStyle = '#1c1d22'; g.font = '400 300px ' + serif; var s = String(ok), ws = g.measureText(s).width;
+      g.font = '400 120px ' + serif; var wt = g.measureText(' / ' + total).width, x0 = (W - ws - wt) / 2;
+      g.font = '400 300px ' + serif; g.fillText(s, x0, 610); g.fillStyle = '#62646d'; g.font = '400 120px ' + serif; g.fillText(' / ' + total, x0 + ws, 610);
+      var sz = 78, gap = 16, tw = total * sz + (total - 1) * gap, x = (W - tw) / 2;
+      rep.forEach(function (v, k) { g.fillStyle = v ? '#1f8a4c' : '#c43d3d'; var xx = x + k * (sz + gap), yy = 670, r = 14;
+        g.beginPath(); g.moveTo(xx + r, yy); g.arcTo(xx + sz, yy, xx + sz, yy + sz, r); g.arcTo(xx + sz, yy + sz, xx, yy + sz, r); g.arcTo(xx, yy + sz, xx, yy, r); g.arcTo(xx, yy, xx + sz, yy, r); g.fill(); });
+      // Le classement du jour, écrit pour la personne qui reçoit l'image, puis l'invitation à jouer.
+      var rang = classe && classe.tous >= 2 ? (classe.moins ? 'Mieux que ' + classe.pc(classe.moins) + ' des ' + classe.tous.toLocaleString('fr-FR') + ' personnes qui ont fini le quiz aujourd\'hui.' : classe.tous.toLocaleString('fr-FR') + ' personnes ont fini le quiz aujourd\'hui.') : '';
+      g.textAlign = 'center';
+      if (rang) {
+        g.fillStyle = '#1c1d22'; g.font = '500 42px ' + sans;
+        var mots = rang.split(' '), ligne = '', L = [];
+        mots.forEach(function (m) { var e = ligne ? ligne + ' ' + m : m; if (g.measureText(e).width > W - 160) { L.push(ligne); ligne = m; } else ligne = e; }); L.push(ligne);
+        L.slice(0, 3).forEach(function (l, k) { g.fillText(l, W / 2, 850 + k * 56); });
+      }
+      g.fillStyle = '#2f5bd3'; g.font = '700 44px ' + sans; g.fillText('Et vous ? concret2027.fr/quiz', W / 2, 1010); g.textAlign = 'left';
+      return new Promise(function (res) { c.toBlob(res, 'image/png'); });
     }
     document.getElementById('qz-partager').addEventListener('click', function () {
-      var ok = rep.filter(Boolean).length, t = 'Quiz du jour de Concret, ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + ' : ' + ok + ' / ' + total + '\n' + rep.map(function (v) { return v ? '🟩' : '🟥'; }).join('') + '\nhttps://concret2027.fr/quiz/';
-      var dit = document.getElementById('qz-copie');
-      if (navigator.share) navigator.share({ text: t }).catch(function () {});
-      else if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { dit.textContent = 'Copié : il ne reste qu\'à le coller.'; }, function () { dit.textContent = t; });
-      else dit.textContent = t;
+      var ok = rep.filter(Boolean).length, dit = document.getElementById('qz-copie'), jour = day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+      var t = 'Quiz du jour de Concret, ' + jour + ' : ' + ok + ' / ' + total + '. À vous : concret2027.fr/quiz';
+      (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () { return image(ok); }).then(function (blob) {
+        var f = blob && new File([blob], 'concret-quiz-' + iso + '.png', { type: 'image/png' });
+        if (f && navigator.canShare && navigator.canShare({ files: [f] })) return navigator.share({ files: [f], text: t }).catch(function () {});
+        // Ordinateur : l'image s'affiche, à enregistrer ou copier.
+        if (f) { var u = URL.createObjectURL(f); dit.innerHTML = '<img src="' + u + '" alt="Mon score du jour" style="width:100%;max-width:360px;border-radius:10px;border:1px solid var(--line);display:block;margin:8px auto"><a href="' + u + '" download="concret-quiz-' + iso + '.png">Enregistrer l\'image</a>'; return; }
+        if (navigator.share) return navigator.share({ text: t }).catch(function () {});
+        dit.textContent = t;
+      });
     });
   }
 
