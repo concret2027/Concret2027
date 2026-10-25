@@ -277,12 +277,12 @@
 
   // ===== Classement général de l'accueil : moyenne des notes par mission, réglages par défaut de chaque page =====
   var MISSIONS = [
+    { k: 'v', l: 'Vie des Français', url: '/vie/#bulletin', debut: 'les chiffres européens de la vie des Français commencent entre 1994 (moral des ménages) et 2015', calc: function (S) { return vie(S.vie); }, ser: 'vie' },
     { k: 'f', l: 'Finances', url: '/finances/#bulletin', debut: 'les séries des finances publiques commencent en 1995', calc: function (S) { return finances(S.finances); }, ser: 'finances' },
-    { k: 'e', l: 'Éducation', url: '/education/#bulletin', debut: 'les chiffres de l\'éducation commencent en 2002, la première évolution mesurable est celle de 2003', calc: function (S) { return education(S.education, { long: true }); }, ser: 'education' },
     { k: 's', l: 'Santé', url: '/sante/#bulletin', debut: 'la plupart des chiffres européens de la santé commencent entre 2000 et 2011', calc: function (S) { return sante(S.sante); }, ser: 'sante' },
+    { k: 'e', l: 'Éducation', url: '/education/#bulletin', debut: 'les chiffres de l\'éducation commencent en 2002, la première évolution mesurable est celle de 2003', calc: function (S) { return education(S.education, { long: true }); }, ser: 'education' },
     { k: 'j', l: 'Sécurité et justice', url: '/securite/#bulletin', debut: 'les chiffres européens de la délinquance commencent en 1995', calc: function (S) { return securite(S.securite); }, ser: 'securite' },
-    { k: 'd', l: 'Défense', url: '/defense/#bulletin', debut: 'les chiffres européens de la défense commencent en 1995 (Eurostat) et en 2014 (OTAN)', calc: function (S) { return defense(S.defense); }, ser: 'defense' },
-    { k: 'v', l: 'Vie des Français', url: '/vie/#bulletin', debut: 'les chiffres européens de la vie des Français commencent entre 1994 (moral des ménages) et 2015', calc: function (S) { return vie(S.vie); }, ser: 'vie' }
+    { k: 'd', l: 'Défense', url: '/defense/#bulletin', debut: 'les chiffres européens de la défense commencent en 1995 (Eurostat) et en 2014 (OTAN)', calc: function (S) { return defense(S.defense); }, ser: 'defense' }
   ];
   var r1 = function (v) { return v == null ? null : Math.round(v * 10) / 10; };
   function classement(series) {

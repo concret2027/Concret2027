@@ -7,7 +7,7 @@ var ROOT = path.join(__dirname, '..'), OUT = path.join(ROOT, 'donnees', 'apercu'
 var NOTES = require('../commun/notes.js');
 var MIME = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript', '.json': 'application/json', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png' };
 // Pages de mission : le chiffre et les notes viennent du bloc « En bref » de la page affichée.
-var MISSIONS = [['finances', 'Finances publiques'], ['education', 'Éducation'], ['sante', 'Santé'], ['securite', 'Sécurité et justice'], ['defense', 'Défense'], ['vie', 'Vie des Français']];
+var MISSIONS = [['vie', 'Vie des Français'], ['finances', 'Finances publiques'], ['sante', 'Santé'], ['education', 'Éducation'], ['securite', 'Sécurité et justice'], ['defense', 'Défense']];
 
 function serveur() {
   return new Promise(function (ok) {
