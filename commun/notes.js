@@ -140,6 +140,9 @@
   //  - 'composite' : un programme entier (vaccins, dépistages) : le point de l'année est la part des éléments où la France
   //    progresse mieux que sa référence (chaque élément a la sienne) ;
   //  - 'niveau' : par édition d'une étude (W.A.I.T.), 1 point si la France fait mieux que la référence l'année jugée ;
+  //  - 'effort' : un moyen dont les repères sont des niveaux (défense : 2 % du PIB, 20 % d'équipement) : 1 point si la
+  //    France progresse mieux que la référence, ou si, déjà au-dessus de la référence, son effort ne recule pas
+  //    (sommet de l'OTAN de 2014 : les pays au-dessus du repère le maintiennent, ceux en dessous s'en rapprochent) ;
   //  - 'propre' : déficit de l'Assurance maladie, jugé sur la France seule faute de comparaison possible : 1 point si
   //    équilibre ou excédent, ½ si le déficit se réduit d'au moins 0,1 point de PIB, 0 s'il se creuse ou reste stable.
   function sante(S) {
@@ -161,6 +164,12 @@
       return a == null || b == null || d == null ? null : match(a - b, d, c.low);
     }
     // Années d'évolution prises en compte pour l'année y (règle 'long').
+    // Règle 'effort' : le point d'évolution, ou 1 si la France est au-dessus de la référence et ne recule pas.
+    function effort(c, y) {
+      var ev = evol(c, y); if (ev == null || ev === 1) return ev;
+      var a = val(c, 'fr', y), b = val(c, 'fr', y - 1), e = val(c, ref(c), y);
+      return a != null && b != null && e != null && a > e + 1e-9 && a - b >= -1e-9 ? 1 : ev;
+    }
     var fenetre = function (y) { var a = []; for (var t = y; t < y + LONG; t++) a.push(t); return a; };
     function score(k, y) {
       var c = C[k];
@@ -168,6 +177,7 @@
       if ((c.br || {})[y]) return null;
       if (c.regle === 'composite') { var q = Object.keys(c.sous).map(function (j) { return evol(c.sous[j], y); }).filter(function (x) { return x != null; }); return q.length ? mean(q) : null; }
       if (c.regle === 'niveau') return c.y.indexOf(y) < 0 ? null : match(val(c, 'fr', y), val(c, ref(c), y), c.low);
+      if (c.regle === 'effort') return effort(c, y);
       if (c.regle === 'propre') { var v = val(c, 'fr', y), p = val(c, 'fr', y - 1); if (v == null) return null; if (v >= 0) return 1; if (p == null) return null; return v - p >= SEUIL_STABLE - 1e-9 ? 0.5 : 0; }
       if (c.regle === 'ecart') {
         var a = val(c, 'fr', y), e = val(c, ref(c), y), pa = val(c, 'fr', y - 1), pe = val(c, ref(c), y - 1);
@@ -223,7 +233,7 @@
       if (c.regle === 'long') return y > c.y[c.y.length - 1] ? POURQUOI.pasPublie(y) : 'Non compté : aucune évolution comparable publiée entre ' + y + ' et ' + (y + LONG - 1) + '.';
       return raisonSerie(c, y);
     }
-    return { KEYS: KEYS, THEMES: THEMES, WT: WT, MIN_N: MIN_N, SEUIL_STABLE: SEUIL_STABLE, LONG: LONG, evaluate: evaluate, note: note, noteTheme: noteTheme, count: count, score: score, evol: evol, fenetre: fenetre, raison: raison, raisonSerie: raisonSerie, val: val, ref: ref, refEv: refEv };
+    return { KEYS: KEYS, THEMES: THEMES, WT: WT, MIN_N: MIN_N, SEUIL_STABLE: SEUIL_STABLE, LONG: LONG, evaluate: evaluate, note: note, noteTheme: noteTheme, count: count, score: score, evol: evol, fenetre: fenetre, raison: raison, raisonSerie: raisonSerie, val: val, ref: ref, refEv: refEv, effort: effort };
   }
 
   // ===== Classement général de l'accueil : moyenne des notes par mission, réglages par défaut de chaque page =====
