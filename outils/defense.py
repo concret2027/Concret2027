@@ -50,10 +50,13 @@ def pop_us():
 def series():
     """{critère: {pays: {année: valeur}}, 'est': [années estimées]}"""
     pib = eurostat3('nama_10_gdp', 'unit=CP_MEUR&na_item=B1GQ')
-    out = {}
+    # Prix du PIB (2015 = 100) : la dépense hors inflation, pour savoir si l'effort de la France recule (règle « effort »).
+    prix = eurostat3('nama_10_gdp', 'unit=PD15_EUR&na_item=B1GQ')['FR']
+    out, reel = {}, {}
     for k, op in (('dep', 'TE'), ('inv', 'P51G')):
         m = eurostat3('gov_10a_exp', 'unit=MIO_EUR&sector=S13&na_item=%s&cofog99=GF02' % op)
         out[k] = {g: {y: round(100 * v / pib[g][y], 3) for y, v in m.get(g, {}).items() if pib.get(g, {}).get(y)} for g in PAYS}
+        reel[k] = {y: round(100 * v / prix[y], 1) for y, v in m['FR'].items() if prix.get(y)}
     pays = PAYS + ['US']
     t3, t8, t7 = U.otan_tab('Table 3', tous=True), U.otan_tab('Table 8a', tous=True), U.otan_tab('Table 7', tous=True)
     out['otan'] = {g: t3[g] for g in pays}
@@ -63,6 +66,11 @@ def series():
     # 4 décimales : à 2, deux évolutions minuscules s'afficheraient « 0,00 » sans qu'on voie laquelle est la plus grande.
     out['pers'] = {g: {y: round(1e6 * v / pop[g][y], 4) for y, v in t7[g].items() if pop[g].get(y)} for g in pays}
     out['pers_n'] = {g: t7[g] for g in pays}
+    # Dépense de défense de la France à prix constants (OTAN, tableau 2, dollars de 2021) et sa part pour l'équipement.
+    t2 = U.otan_tab('Table 2', 'Constant')['FR']
+    reel['otan'] = dict(t2)
+    reel['equip'] = {y: round(t8['FR'][y] * v / 100, 1) for y, v in t2.items() if y in t8['FR']}
+    out['reel'] = reel
     # Années estimées : celles dont l'en-tête finit par « e » dans le classeur.
     wb, url = U.otan_xlsx()
     rows = list(wb['Table 3'].iter_rows(values_only=True))
@@ -110,6 +118,9 @@ def main():
                     if c.get(f):
                         old = dict(zip(c['y'], c[f])); c[f] = [old.get(y) for y in ys]
             c.update(neuf)
+            if k in S['reel']:
+                c['fr_reel'] = [S['reel'][k].get(y) for y in ys]
+                c['fr_reel_u'] = "millions d'euros aux prix de 2015 (Eurostat, déflaté par le prix du PIB)" if k in ('dep', 'inv') else "millions de dollars aux prix de 2021 (OTAN)"
             if k in ('otan', 'equip', 'pers'):
                 c['est'] = {str(y): EST % y for y in S['est'] if y in ys}
                 c['url'] = S['url']

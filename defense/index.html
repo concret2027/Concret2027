@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-<script src="../commun/notes.js?v=20261025d"></script>
+<script src="../commun/notes.js?v=20261025e"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
 .recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
@@ -359,7 +359,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .qlist a { color: var(--fg); font-weight: 600; text-decoration: none; } .qlist span { color: var(--muted); font-size: 13px; } .qlist span b { color: var(--fg); font-weight: 600; }
 .pres-line { margin: 0; font-size: 13.5px; } .pres-line b { font-weight: 600; font-variant-numeric: tabular-nums; }
 #plus-loin > .acc-body { padding-top: 0; }
-.mo { min-width: 0; } .mo-tab { width: 100%; table-layout: fixed; } .mo-tab th:first-child { width: 44%; } .mo-tab td small { display: block; } .mo-row { cursor: pointer; } .mo-row[aria-selected="true"] td { background: var(--band); } .mo-row[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--fr); }
+.mo { min-width: 0; } .cmp.rep th:nth-child(1) { width: 52%; } .cmp.rep th:nth-child(2) { width: 34%; } .cmp.rep th:nth-child(3) { width: 14%; } .cmp.rep td { white-space: normal; } .cmp.rep td:last-child { text-align: center; } .mo-tab { width: 100%; table-layout: fixed; } .mo-tab th:first-child { width: 44%; } .mo-tab td small { display: block; } .mo-row { cursor: pointer; } .mo-row[aria-selected="true"] td { background: var(--band); } .mo-row[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--fr); }
 </style>
 </head>
 <body data-sources="Sources : Eurostat, OTAN, ministère des Armées (détail en bas de page).">
@@ -372,7 +372,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <nav class="jump" aria-label="Aller à"><a href="#acc-month">Budget</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les deux thèmes</a><a href="#q-eff">Effectifs</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
 
   <details class="acc" id="acc-month">
-    <summary><span class="acc-h">Le budget et l'objectif de l'OTAN</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
+    <summary><span class="acc-h">Le budget et les repères</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body card">
       <div class="month" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr))">
         <div class="mo">
@@ -382,11 +382,8 @@ footer p { margin: 0; } footer a { color: inherit; }
           <span class="mo-t" id="p-t"></span>
         </div>
         <div class="mo">
-          <span class="mo-lab" id="q-lab">Dépense de défense, estimation de l'OTAN</span>
-          <span class="mo-num" id="q-num">—</span>
-          <span class="delta" id="q-delta"></span>
-          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE (calcul Concret)</span><span><i style="background:var(--bad)"></i>Repère de 2 %</span></div>
-          <div class="chart" id="mo-q"></div>
+          <span class="mo-lab">Où en est la France face aux repères</span>
+          <table class="cmp rep"><thead><tr><th>Repère</th><th>France</th><th></th></tr></thead><tbody id="rep-tab"></tbody></table>
           <span class="mo-t" id="q-t"></span>
         </div>
       </div>
@@ -404,15 +401,11 @@ footer p { margin: 0; } footer a { color: inherit; }
           <div class="metric">
             <span class="lab">Dépense de défense au sens de l'OTAN</span>
             <div class="row"><span class="num" id="k-otan">—</span><span class="delta" id="k-otan-d"></span></div>
-            <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>UE (calcul Concret)</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
-            <div class="chart" id="sp-otan"></div>
             <div class="foot" id="k-otan-t"></div>
           </div>
           <div class="metric">
             <span class="lab">Militaires</span>
             <div class="row"><span class="num" id="k-pers">—</span><span class="delta" id="k-pers-d"></span></div>
-            <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>UE (calcul Concret)</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span></div>
-            <div class="chart" id="sp-pers"></div>
             <div class="foot" id="k-pers-t"></div>
           </div>
         </div>
@@ -442,7 +435,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse plus que la moyenne de l'Union européenne, <b>ou si, déjà au-dessus de cette moyenne, elle ne recule pas</b> ; <b>0 point</b> sinon, ½ en cas d'égalité. La moyenne de l'UE est celle d'Eurostat ; quand la source n'en publie pas, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul. Pourquoi « ou si elle ne recule pas » : les repères de l'OTAN sont des niveaux (2 % du PIB, 20 % d'équipement), et en 2014 les pays au-dessus se sont engagés à s'y maintenir, ceux en dessous à s'en rapprocher ; comparer seulement les hausses donnerait l'avantage aux pays partis de plus bas. C'est la logique déjà appliquée à l'égalité d'accès aux soins sur la page Santé. Chaque thème a une note sur 20 ; <b>la note défense est la moyenne des deux thèmes ; 10/20 = autant d'années ✓ que ✗.</b> Les deux thèmes mesurent des moyens (budget, équipement) : une hausse compte comme un progrès. Les effectifs sont affichés sans note (la raison est écrite dessous). Pour les deux dernières années, l'OTAN ne publie que des estimations : affichées, pas comptées.</p>
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse plus que la moyenne de l'Union européenne, <b>ou si, déjà au-dessus de cette moyenne, sa dépense ne recule pas hors inflation</b> ; <b>0 point</b> sinon, ½ en cas d'égalité. La moyenne de l'UE est celle d'Eurostat ; quand la source n'en publie pas, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul. Pourquoi « ou si elle ne recule pas » : les repères de l'OTAN sont des niveaux (2 % du PIB, 20 % d'équipement), et en 2014 les pays au-dessus se sont engagés à s'y maintenir, ceux en dessous à s'en rapprocher ; comparer seulement les hausses donnerait l'avantage aux pays partis de plus bas. « Hors inflation », parce que la part du PIB bouge aussi quand le PIB bouge (en 2020, le PIB chute et la part monte ; en 2021, il repart et la part baisse) sans que l'effort ait changé ; le même sommet demandait d'arrêter toute baisse et d'augmenter la dépense « en termes réels ». C'est la logique déjà appliquée à l'égalité d'accès aux soins sur la page Santé. Chaque thème a une note sur 20 ; <b>la note défense est la moyenne des deux thèmes ; 10/20 = autant d'années ✓ que ✗.</b> Les deux thèmes mesurent des moyens (budget, équipement) : une hausse compte comme un progrès. Les effectifs sont affichés sans note (la raison est écrite dessous). Pour les deux dernières années, l'OTAN ne publie que des estimations : affichées, pas comptées.</p>
         <table class="seuils"><tbody id="regles"></tbody></table>
       </div>
     </details>
@@ -487,6 +480,8 @@ footer p { margin: 0; } footer a { color: inherit; }
       <div><dt>Militaires en temps de paix</dt><dd>L'effectif des forces armées déclaré à l'OTAN, sans les réservistes.</dd></div>
       <div><dt>Estimation</dt><dd>Chiffre de l'OTAN pour une année pas encore close ou pas encore arrêtée, révisé l'année suivante. Il est affiché, mais pas compté dans la note.</dd></div>
       <div><dt>Loi de programmation militaire</dt><dd>La loi qui fixe pour plusieurs années les moyens des armées. Celle du 1er août 2023 couvre 2024 à 2030 ; elle a été actualisée par la loi du 16 août 2026.</dd></div>
+      <div><dt>Hors inflation</dt><dd>La dépense corrigée de la hausse des prix : on regarde si l'effort augmente vraiment, et non seulement parce que les prix montent ou que le PIB baisse.</dd></div>
+      <div><dt>Dissuasion nucléaire</dt><dd>L'arme nucléaire et les moyens de la mettre en œuvre (sous-marins, avions). Neuf pays l'ont ; la France est le seul de l'UE. Son coût est compris dans la dépense de défense mesurée sur cette page.</dd></div>
       <div><dt>Prix constants</dt><dd>Chiffres corrigés de la hausse des prix, pour comparer les années entre elles (l'OTAN utilise les prix de 2021).</dd></div>
     </dl>
   </section>
@@ -586,7 +581,8 @@ function main(FEED) {
       var cell = function (x, dx) { return x == null ? '—' : dx == null ? '— (' + fmt(x, dec) + ')' : sg(dx, dec) + ' (' + fmt(x, dec) + ')'; };
       var gap = a == null || b == null || d == null ? '' : sg((a - b) - d, dec);
       rows += '<tr><td>' + y + '</td><td>' + cell(a, b == null ? null : a - b) + '</td><td>' + cell(e, d) + '</td><td>' + gap + '</td><td>' + ptHtml(pt) + '</td></tr>';
-      if (pt === 1 && c.regle === 'effort' && SAN.evol(c, y) !== 1) why.push('1 point en ' + y + ' : la France progresse moins que ' + refN(c, 2) + ', mais elle reste au-dessus et ne recule pas.');
+      if (pt === 1 && c.regle === 'effort' && SAN.evol(c, y) !== 1) { var r1 = v('fr_reel', y), r0 = v('fr_reel', y - 1); why.push('1 point en ' + y + ' : la France progresse moins que ' + refN(c, 2) + ', mais elle reste au-dessus et sa dépense ne recule pas hors inflation' + (r1 != null && r0 != null ? ' (' + sg(100 * (r1 / r0 - 1), 1) + ' %)' : '') + '.'); }
+      else if (pt === 0 && c.regle === 'effort' && a != null && e != null && a > e && SAN.recule(c, y)) { var s1 = v('fr_reel', y), s0 = v('fr_reel', y - 1); why.push('0 point en ' + y + ' : la France reste au-dessus de ' + refN(c, 2) + ', mais sa dépense recule hors inflation' + (s1 != null && s0 != null ? ' (' + sg(100 * (s1 / s0 - 1), 1) + ' %)' : '') + '.'); }
       else if (pt === 0.5) why.push(POURQUOI.egalite(y, refN(c, 2)));
       else if (pt == null) why.push(SAN.raisonSerie(c, y));
     }
@@ -915,7 +911,7 @@ function main(FEED) {
   function buildEffectifs() {
     var w = document.getElementById('eff-charts'), PL = AFF.pers.pologne;
     setHtml('eff-why', 'Pas de note : aucun engagement de la France ni de l\'OTAN ne fixe un nombre de militaires, et plus de militaires n\'est pas en soi un progrès ni un recul. La moyenne de l\'UE dépend aussi beaucoup de quelques pays : la Pologne est passée de ' + fmt(1000 * PL.v0) + ' à ' + fmt(1000 * PL.v1) + ' militaires entre ' + PL.y0 + ' et ' + PL.y1 + ' (OTAN).');
-    [serieCard(w, 'ch-a-pers', AFF.pers, 'affiché, sans note', { affiche: true }), serieCard(w, 'ch-a-persn', AFF.pers_n, 'affiché, sans note', { affiche: true })].forEach(function (d) { MAIN.push(d); });
+    [serieCard(w, 'ch-a-pers', AFF.pers, 'affiché, sans note', { affiche: true })].forEach(function (d) { MAIN.push(d); });
   }
   // Courbes d'une question : chaque indicateur, et chaque élément d'un programme (vaccins, dépistages).
   function courbes(t) {
@@ -960,13 +956,7 @@ function main(FEED) {
   }
   // Mini-courbes du haut de page : dépense de défense (OTAN) et militaires, France et moyenne de l'UE, avec des repères ; sans les estimations.
   var lastReel = function (c, w) { for (var i = c.y.length - 1; i >= 0; i--) if ((c[w] || [])[i] != null && !(c.est || {})[c.y[i]]) return { v: c[w][i], y: c.y[i] }; return null; };
-  function drawToday() {
-    [['sp-otan', C.otan, ' %', 2, 'Dépense de défense au sens de l\'OTAN, % du PIB', ['us', 'ue_calc'], { v: SER.P.otan_2014.v }], ['sp-pers', AFF.pers, '', 2, 'Militaires pour 1 000 habitants', ['es', 'de', 'ue_calc'], null]].forEach(function (a) {
-      var c = a[1], yl = lastReel(c, 'fr').y, xs = c.y.filter(function (y) { return y <= yl; });
-      var S = a[5].map(function (w) { return { c: w === 'ue_calc' ? 'var(--ea)' : NOMS[w][1], dash: w === 'ue_calc' ? 1 : 0, n: w === 'ue_calc' ? 'UE (calcul Concret)' : NOMS[w][0], data: serOf(c, w) }; }).concat([{ c: 'var(--fr)', main: 1, data: serOf(c, 'fr') }]).map(function (q) { q.data = q.data.filter(function (d) { return d.x <= yl; }); return q; });
-      lineChart(a[0], S, { x: [xs[0] - .5, yl + .5], xt: ticks(xs[0], yl), dec: a[3], unit: a[2], h: 140, obj: a[6], label: a[4] + ', France et moyenne de l\'UE' });
-    });
-  }
+  function drawToday() {}
 
   // ===== La règle, indicateur par indicateur (tirée des données, pour rester à jour) =====
   (function () {
@@ -976,7 +966,7 @@ function main(FEED) {
       if (c.regle === 'composite') return 'le point de l\'année est la part des éléments où la France progresse mieux que la moyenne de l\'UE';
       if (c.regle === 'niveau') return 'comparé chaque année à la moyenne de l\'UE (point si la France fait mieux)';
       if (c.regle === 'ecart') return 'point si l\'écart français est plus faible que celui de l\'UE, ou s\'il se réduit plus vite';
-      if (c.regle === 'effort') return 'point si la France progresse plus que ' + refN(c, 2) + ', ou si, déjà au-dessus, elle ne recule pas (ici, une hausse compte comme un progrès)';
+      if (c.regle === 'effort') return 'point si la France progresse plus que ' + refN(c, 2) + ', ou si, déjà au-dessus, sa dépense ne recule pas hors inflation (ici, une hausse compte comme un progrès)';
       return 'point si la France progresse mieux que ' + refN(c, 2) + (c.low ? ' (ici, une baisse est un progrès)' : ' (ici, une hausse compte comme un progrès)');
     };
     // Les indicateurs d'un thème qui suivent la même règle sont regroupés en une phrase.
@@ -1019,23 +1009,24 @@ function main(FEED) {
     setHtml('p-num', fmt(B.v, 1) + ' <small>Md€</small>');
     document.getElementById('p-delta').textContent = sg(B.hausse, 1) + ' Md€ par rapport à ' + (B.annee - 1);
     setHtml('p-t', 'Crédits de la mission « Défense », hors pensions, ' + (projet ? 'prévus par le projet de loi de finances pour ' + B.annee + ' présenté le ' : 'votés dans la loi de finances pour ' + B.annee + ' du ') + dfr(B.date, true) + '. La loi de programmation militaire actualisée le 16 août 2026 prévoit ' + fmt(PV('lpm_plus')) + ' Md€ de plus entre 2026 et 2030, en plus des ' + fmt(PV('lpm_2023')) + ' Md€ programmés en 2023. Source : ' + lien(B, 'ministère des Armées') + '.');
-    var o = C.otan, la = lastOf(o, 'fr'), pr = SAN.val(o, 'fr', la.y - 1), ue = SAN.val(o, 'ue_calc', la.y), est = (o.est || {})[la.y];
-    setHtml('q-lab', 'Dépense de défense · ' + (est ? 'estimation de l\'OTAN pour ' : 'OTAN, ') + la.y);
-    setHtml('q-num', fmt(la.v, 2) + ' % <small>du PIB</small>');
-    if (pr != null) document.getElementById('q-delta').textContent = sg(la.v - pr, 2) + ' pt sur un an';
-    // Où en est la France face aux repères de l'OTAN : première année publiée au-dessus de 2 %, et ce qui reste jusqu'à 3,5 %.
-    var R2 = PV('otan_2014'), R35 = PV('otan_2035'), lr = lastReel(o, 'fr'), prem = null;
+    var o = C.otan, la = lastOf(o, 'fr'), est = (o.est || {})[la.y], lr = lastReel(o, 'fr'), R2 = PV('otan_2014'), R35 = PV('otan_2035'), prem = null;
     o.y.forEach(function (y, i) { if (prem == null && o.fr[i] != null && o.fr[i] >= R2 && !(o.est || {})[y]) prem = y; });
-    var qe = C.equip, qr = lastReel(qe, 'fr'), qmin = Math.min.apply(null, qe.fr.filter(function (v, i) { return v != null && !(qe.est || {})[qe.y[i]]; }));
-    var cible = 'Repère de ' + fmt(R2) + ' % : ' + (prem ? 'atteint en ' + prem + (prem > o.y[0] ? ', pour la première fois depuis le début de la série (' + o.y[0] + ')' : '') + ' ; ' + lr.y + ' : ' + fmt(lr.v, 2) + ' %' : 'pas encore atteint (' + fmt(lr.v, 2) + ' % en ' + lr.y + ')') + '. Il reste ' + fmt(R35 - la.v, 2) + ' point de PIB' + (est ? ' (d\'après l\'estimation ' + la.y + ')' : '') + ' pour atteindre ' + fmt(R35, 1) + ' % d\'ici 2035, l\'engagement pris au sommet de La Haye (2025). Équipement : ' + fmt(qr.v, 1) + ' % de la dépense en ' + qr.y + (qmin >= PV('otan_equip') ? ', au-dessus du repère de ' + fmt(PV('otan_equip')) + ' % chaque année depuis ' + qe.y[0] : '') + '. ';
-    setHtml('q-t', cible + (est ? 'Estimation de l\'OTAN, révisée l\'année suivante. ' : '') + 'Moyenne des pays de l\'UE membres de l\'OTAN (calcul Concret) : ' + fmt(ue, 2) + ' %. Source : ' + lien(o, 'OTAN') + '.');
-    setHtml('teaser-month', 'Budget ' + B.annee + ' des armées : <b>' + fmt(B.v, 1) + '&nbsp;Md€</b>' + (projet ? ' (projet)' : '') + ' · Défense : <b>' + fmt(la.v, 2) + '&nbsp;%</b> du PIB en ' + la.y + (est ? ' (estimation de l\'OTAN)' : ''));
+    var qe = C.equip, qr = lastReel(qe, 'fr'), L = SER.P.lpm_2019, ly = SAN.val(o, 'fr', L.annee), N = SER.P.nucleaire, DI = SER.P.dissuasion;
+    var pc = function (v, y, e) { return fmt(v, 2) + ' % en ' + y + (e ? ', estimation de l\'OTAN' : ''); };
+    // Une ligne par repère : ce qu'il demande, où en est la France, atteint ou non (sans jugement : un constat).
+    var lignes = [
+      ['Repère de l\'OTAN depuis 2014 : ' + fmt(R2) + ' % du PIB', pc(lr.v, lr.y) + (prem && prem > o.y[0] ? ', atteint pour la première fois depuis ' + o.y[0] : ''), lr.v >= R2 ? 'atteint' : 'non'],
+      ['Loi de programmation militaire 2019-2025 : ' + fmt(L.v) + ' % du PIB en ' + L.annee, ly == null ? 'pas encore publié' : pc(ly, L.annee, (o.est || {})[L.annee]) + ((o.est || {})[L.annee] ? '' : ' (mesure de l\'OTAN)'), ly == null ? '' : (ly >= L.v ? 'atteint' : 'non') + ((o.est || {})[L.annee] ? ', d\'après l\'estimation' : '')],
+      ['Engagement de La Haye (2025) : au moins ' + fmt(R35, 1) + ' % du PIB d\'ici 2035', pc(la.v, la.y, est) + ' ; il reste ' + fmt(R35 - la.v, 2) + ' point', 'en cours'],
+      ['Repère de l\'OTAN : ' + fmt(PV('otan_equip')) + ' % de la dépense pour les grands équipements', fmt(qr.v, 1) + ' % en ' + qr.y, qr.v >= PV('otan_equip') ? 'atteint' : 'non'],
+      ['Dissuasion nucléaire', 'seul pays de l\'UE parmi les ' + N.v + ' États qui ont l\'arme nucléaire ; ' + fmt(DI.v, 1) + ' Md€ dans le budget ' + DI.annee, '']
+    ];
+    setHtml('rep-tab', lignes.map(function (l) { return '<tr class="nm"><td>' + l[0] + '</td><td>' + l[1] + '</td><td class="i">' + l[2] + '</td></tr>'; }).join(''));
+    setHtml('q-t', 'Pas de note pour ces repères : la note compare la France à la moyenne de l\'UE, ces repères sont affichés pour situer. Le nucléaire n\'apporte pas de point : il ne se mesure pas chaque année de la même façon dans les autres pays de l\'UE, et son coût est déjà compté dans la dépense de défense. Sources : ' + lien(o, 'OTAN') + ', ' + lien(L, 'loi de programmation') + ', ' + lien(N, 'SIPRI') + ', ' + lien(DI, 'ministère des Armées') + '.');
+    setHtml('teaser-month', 'Budget ' + B.annee + ' des armées : <b>' + fmt(B.v, 1) + '&nbsp;Md€</b>' + (projet ? ' (projet)' : '') + ' · Défense : <b>' + fmt(lr.v, 2) + '&nbsp;%</b> du PIB en ' + lr.y + ' · repère de ' + fmt(R2) + ' % ' + (lr.v >= R2 ? 'atteint' : 'pas encore atteint'));
   })();
-  // Petite courbe : France (pointillés pour les estimations) et moyenne de l'UE, avec l'objectif de 2 %.
-  var drawMonth = function () {
-    var c = C.otan, S = [{ c: 'var(--ea)', dash: 1, n: 'UE (calcul Concret)', data: serOf(c, 'ue_calc') }].concat(frSeries(c));
-    lineChart('mo-q', S, { x: [c.y[0] - .5, c.y[c.y.length - 1] + .5], xt: ticks(c.y[0], c.y[c.y.length - 1]), dec: 2, unit: ' %', h: 150, obj: { v: SER.P.otan_2014.v }, est: estDe(c)[0] || null, label: 'Dépense de défense au sens de l\'OTAN, % du PIB, France et moyenne de l\'UE' });
-  };
+  var drawMonth = function () {};
+
 
   // ===== Depuis votre dernière visite : seulement ce qui a vraiment changé (nouvelle année publiée, budget, actualités) =====
   try {
@@ -1104,7 +1095,7 @@ function main(FEED) {
       return '<b>' + esc(t.q) + '.</b> ' + (parts.length ? parts.join(' ') : 'Pas assez d\'années comparables pour mesurer une évolution.');
     });
     var pr = PRES.map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
-    items.push('<b>Au bulletin</b>, ' + pr.map(function (r) { var k = KEYS.filter(function (q) { return r.g.w[q].length; }).length; return esc(r.g.n) + ' ' + nfmt(r.n) + '/20' + (k < KEYS.length ? ' (' + k + ' indicateurs sur ' + KEYS.length + ')' : ''); }).join(', ') + '. La note compte les années où la France a progressé plus que ses voisins, ou, déjà au-dessus d\'eux, n\'a pas reculé.');
+    items.push('<b>Au bulletin</b>, ' + pr.map(function (r) { var k = KEYS.filter(function (q) { return r.g.w[q].length; }).length; return esc(r.g.n) + ' ' + nfmt(r.n) + '/20' + (k < KEYS.length ? ' (' + k + ' indicateurs sur ' + KEYS.length + ')' : ''); }).join(', ') + '. La note compte les années où la France a progressé plus que ses voisins, ou, déjà au-dessus d\'eux, n\'a pas reculé hors inflation.');
     setHtml('sum-list', items.map(function (t) { return '<li>' + t + '</li>'; }).join(''));
   })();
 
