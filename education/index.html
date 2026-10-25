@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025i"></script>
+<script src="/commun/bref.js?v=20261025a"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
 .sous > summary { cursor: pointer; list-style: none; padding: 10px 0; font-weight: 600; font-size: 13.5px; color: var(--fr); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -304,6 +305,8 @@ footer p { margin: 0; } footer a { color: inherit; }
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
   <nav class="jump" aria-label="Aller à"><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Courbes</a><a href="#depense">Dépense</a><a href="#pisa">PISA</a><a href="#origine">Origine sociale</a><a href="#universites">Universités</a></nav>
+
+  <section class="card bref" id="reponse" aria-label="En bref"></section>
 
   <details class="acc" id="acc-today">
     <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-actions"><span class="acc-cta"></span><button class="share" id="share-fact-top" type="button" aria-label="Partager le chiffre du jour">Partager</button></span></summary>
@@ -607,6 +610,18 @@ function main(FEED) {
   var wmean = function (pairs) { var sw = d3.sum(pairs, function (p) { return p[1]; }); return sw ? d3.sum(pairs, function (p) { return p[0] * p[1]; }) / sw : null; };
   var countOf = function (g) { return EDU().count(g, on); };
   var noteOf = function (g) { return EDU().note(g, on); };
+  // En bref (premier écran) : le dernier chiffre de chaque critère face à la moyenne de l'UE, chacun menant à sa courbe.
+  (function () {
+    var D = SER.S, Y0 = 2002, items = ['el', 'ne', 'te', 'yu'].map(function (k) {
+      var c = D[k]; for (var i = Math.min(c.fr.length, c.eu.length) - 1; i >= 0; i--) if (c.fr[i] != null && c.eu[i] != null) return { l: c.l, cl: c.fr[i] === c.eu[i] ? 'm' : (c.low ? c.fr[i] < c.eu[i] : c.fr[i] > c.eu[i]) ? 'g' : 'b', cible: 'ch-' + k };
+      return null;
+    });
+    var dom = ['m', 'r', 's'].map(function (k) { var c = SER.PI[k], i = c.fr.length - 1; return c.fr[i] > c.ue_calc[i] ? 1 : 0; }), nd = dom.reduce(function (a, b) { return a + b; }, 0);
+    items.push({ l: 'PISA (' + nd + ' domaine' + (nd > 1 ? 's' : '') + ' sur 3)', cl: nd * 2 > 3 ? 'g' : 'b', cible: 'ch-pisa-m' });
+    var Q = SER.EQ, j = Q.fr.length - 1;
+    items.push({ l: 'Origine sociale (face à l\'OCDE)', cl: Q.fr[j] < Q.oe[j] ? 'g' : Q.fr[j] === Q.oe[j] ? 'm' : 'b', cible: 'ch-eq' });
+    ConcretBref.render({ items: items, pres: PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; }) });
+  })();
   var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
 

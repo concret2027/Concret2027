@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025i"></script>
+<script src="/commun/bref.js?v=20261025a"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
 .recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
@@ -383,6 +384,8 @@ footer p { margin: 0; } footer a { color: inherit; }
   <p class="visit" id="visit" hidden></p>
   <nav class="jump" aria-label="Aller à"><a href="#acc-month">Ce mois-ci</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les cinq thèmes</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
 
+  <section class="card bref" id="reponse" aria-label="En bref"></section>
+
   <details class="acc" id="acc-month">
     <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body card">
@@ -583,6 +586,8 @@ function main(FEED) {
   var KEYS = SAN.KEYS, WT = SAN.WT, MIN_N = SAN.MIN_N, GOVS = SER.GOVS, PRES = SER.PRES, BANDS = GOVS;
   var evaluate = SAN.evaluate, noteOf = function (g) { return SAN.note(g); }, countOf = function (g) { return SAN.count(g); };
   GOVS.forEach(evaluate); PRES.forEach(evaluate);
+  // En bref (premier écran) : le dernier chiffre de chaque indicateur face à la moyenne de l'UE, chacun menant à sa courbe.
+  ConcretBref.render({ items: KEYS.map(function (k) { var x = etat(k), c = C[k]; return x && c.regle !== 'propre' && { l: c.lc || c.l, cl: x.cl, cible: 'ch-' + (c.regle === 'composite' ? k + '-' + Object.keys(c.sous)[0] : k) }; }), pres: PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; }) });
   var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
   var nomCourt = function (n) { return n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin'); };

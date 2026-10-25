@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025i"></script>
+<script src="/commun/bref.js?v=20261025a"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
 .sous > summary { cursor: pointer; list-style: none; padding: 10px 0; font-weight: 600; font-size: 13.5px; color: var(--fr); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -287,6 +288,8 @@ footer p { margin: 0; } footer a { color: inherit; }
   <p class="upd" id="upd">Chargement des données…</p>
   <p class="visit" id="visit" hidden></p>
   <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#acc-month">Ce mois-ci</a><a href="#croissance">Croissance</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#courbes">Courbes</a><a href="#richesse">Richesse</a><a href="#marches">Marchés</a></nav>
+
+  <section class="card bref" id="reponse" aria-label="En bref"></section>
 
 
   <details class="acc" id="acc-today">
@@ -801,6 +804,19 @@ function main(FEED) {
     critBox.appendChild(b);
   });
   var noteOf = function (g) { return NOTES.note(g, on); };
+  // En bref (premier écran) : le dernier chiffre de chaque critère face à la moyenne de l'UE, chacun menant à sa courbe.
+  (function () {
+    var CIBLE = { dette: 'ch-dette', deficit: 'ch-deficit', dep: 'ch-dep', po: 'ch-po', pib: 'pib-chart', emploi: 'mo-u', com: 'bulletin', int: 'bulletin' }, Y = new Date().getFullYear();
+    var ok = function (v) { return v != null && isFinite(v); };
+    ConcretBref.render({ items: CRIT.map(function (c) {
+      for (var y = Y; y >= 1996; y--) {
+        var d = NOTES.evaluate({ y0: y, y1: y }).y[c.k][0]; if (!d) continue;
+        if (ok(d.lf) && ok(d.le)) return { l: c.l, cl: Math.abs(d.lf - d.le) < 1e-9 ? 'm' : (d.low ? d.lf < d.le : d.lf > d.le) ? 'g' : 'b', cible: CIBLE[c.k] };
+        if (c.k === 'pib' && ok(d.f) && ok(d.e)) return { l: c.l, cl: Math.abs(d.f - d.e) < 1e-12 ? 'm' : d.f > d.e ? 'g' : 'b', cible: CIBLE[c.k] };
+      }
+      return null;
+    }), pres: PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; }) });
+  })();
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
   var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
   var nfmt = function (n) { return fmt(Math.round(n * 10) / 10, 1); };
