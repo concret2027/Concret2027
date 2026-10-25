@@ -253,6 +253,17 @@ INDICATEURS = [
          methode="scores des pays de l'UE pondérés par leur population", source="OCDE, PISA 2025, tableau I.B1.2a.37 ; population : Eurostat, demo_gind"),
     dict(cle='education.PI.s', periodes=[(2006, None)], taux=pisa('s'), pas='vagues',
          methode="scores des pays de l'UE pondérés par leur population", source="OCDE, PISA 2025, tableau I.B1.2a.36 ; population : Eurostat, demo_gind"),
+    # Sécurité et justice : dépense publique pour la police, les tribunaux et les prisons. Eurostat ne publie la moyenne de
+    # l'UE que depuis 2010 ; avant, Concret la calcule sur les mêmes tables (depuis 2010, le calcul redonne la sienne).
+    dict(cle='securite.dpol', periodes=[(1995, None)], num=cofog('GF0301'), den=pib_euros, facteur=100,
+         pourquoi="Eurostat ne publie la sienne que depuis 2010, et ce calcul la redonne exactement",
+         methode="dépense publique pour la police des pays de l'UE divisée par leur PIB", source="Eurostat, gov_10a_exp (GF0301) et nama_10_gdp"),
+    dict(cle='securite.dtrib', periodes=[(1995, None)], num=cofog('GF0303'), den=pib_euros, facteur=100,
+         pourquoi="Eurostat ne publie la sienne que depuis 2010, et ce calcul la redonne exactement",
+         methode="dépense publique pour les tribunaux des pays de l'UE divisée par leur PIB", source="Eurostat, gov_10a_exp (GF0303) et nama_10_gdp"),
+    dict(cle='securite.dpris', periodes=[(1995, None)], num=cofog('GF0304'), den=pib_euros, facteur=100,
+         pourquoi="Eurostat ne publie la sienne que depuis 2010, et ce calcul la redonne exactement",
+         methode="dépense publique pour les prisons des pays de l'UE divisée par leur PIB", source="Eurostat, gov_10a_exp (GF0304) et nama_10_gdp"),
     # Défense. Dépense publique (Eurostat) : Eurostat ne publie la moyenne de l'UE que depuis 2010 ; avant, Concret la
     # calcule sur les mêmes tables (depuis 2010, le calcul redonne celle d'Eurostat). OTAN : les 23 pays de l'UE membres
     # de l'OTAN (Autriche, Irlande, Chypre et Malte n'en sont pas membres et ne publient pas ces chiffres).
