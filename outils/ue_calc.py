@@ -300,7 +300,7 @@ INDICATEURS = [
     # que depuis 2010 ; Concret la calcule depuis 2005 sur les mêmes chiffres (depuis 2010, à 0,2 point près de celle d'Eurostat).
     dict(cle='vie.arr', periodes=[(2004, None)], taux=silc('ilc_mdes05', 'hhcomp=TOTAL&rskpovth=TOTAL&unit=PC'), pourquoi="Eurostat ne publie la sienne que depuis 2010 ; ce calcul la redonne à 0,2 point près",
          methode="part des personnes en retard de paiement dans les pays de l'UE, pondérée par leur population", source="Eurostat, ilc_mdes05 ; population : demo_gind"),
-    dict(cle='vie.s80', periodes=[(2004, None)], taux=silc('ilc_di11', 'unit=RAT&age=TOTAL&sex=T'), pourquoi="Eurostat ne publie la sienne que depuis 2010 ; ce calcul la redonne à 0,2 point près",
+    dict(cle='vie.s80', periodes=[(2004, None)], taux=silc('ilc_di11', 'unit=RAT&age=TOTAL&sex=T'), pourquoi="Eurostat ne publie la sienne que depuis 2010 ; ce calcul la redonne à 0,02 près",
          methode="écart de revenu de chaque pays de l'UE, pondéré par sa population", source="Eurostat, ilc_di11 ; population : demo_gind"),
     dict(cle='vie.surch', periodes=[(2004, None)], taux=silc('ilc_lvho07a', 'unit=PC&age=TOTAL&sex=T&rskpovth=TOTAL'), pourquoi="Eurostat ne publie la sienne que depuis 2010 ; ce calcul la redonne à 0,2 point près",
          methode="part des personnes dont le logement coûte plus de 40 % du revenu dans les pays de l'UE, pondérée par leur population", source="Eurostat, ilc_lvho07a ; population : demo_gind"),
@@ -393,6 +393,13 @@ def note(ind, info):
         for g, l in i.get('trous', {}).items():
             tr[g] = sorted(set(tr.get(g, []) + l))
     fin = (" La courbe de la moyenne bouge aussi quand un grand pays manque (%s) ; la note, elle, compare toujours les mêmes pays d'une année à l'autre." % ' ; '.join('%s : %s' % (NOM_FR[g], annees(l)) for g, l in tr.items())) if tr else ''
+    # Affiché sans note : pas de phrase sur ce qui est compté.
+    if '.AFF.' in ind['cle'] and 'idh' in ind['cle']:
+        return tete + "Moyenne calculée sur %s." % per
+    # Années que le seuil de 70 % écarte : dites nommément (règle de CLAUDE.md).
+    ss = sorted(set(y for i in ok for y in i.get('sous_seuil', [])))
+    if ss and ind.get('pas') != 'vagues':
+        fin = (" En %s : non compté, les pays de l'UE qui publient ce chiffre cette année-là et la précédente font moins de 70 %% de sa population." % annees(ss)) + fin
     if ind.get('pas') == 'vagues':
         return tete + "Chaque évolution porte sur les pays qui ont participé aux deux vagues (%s) ; sous 70 %% de la population de l'UE, la moyenne de l'OCDE est gardée pour cette vague.%s" % (per, fin.replace("d'une année à l'autre", "d'une vague à l'autre"))
     return tete + "Chaque évolution porte sur les pays qui publient les deux années (%s) ; sous 70 %% de la population de l'UE, l'année n'est pas comptée.%s" % (per, fin)

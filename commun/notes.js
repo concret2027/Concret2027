@@ -14,7 +14,7 @@
     methode: function (y, qui) {
       if (qui === 'serie') return 'Non compté : en ' + y + ', Eurostat passe d\'une table à une autre (chiffres jusqu\'en ' + (y - 1) + ', puis depuis ' + y + '), qu\'il ne raccorde pas : l\'évolution entre les deux n\'est pas comptée.';
       var sujet = qui === 'fr' ? 'la France a changé sa façon de mesurer ce chiffre' : qui === 'fr_ue' ? 'la France et la moyenne européenne ont changé leur façon de mesurer ce chiffre' : 'la moyenne européenne a changé sa façon de mesurer ce chiffre';
-      return 'Non compté : en ' + y + ', ' + sujet + ', il n\'est pas comparable à ' + (y - 1) + '.';
+      return 'Non compté : en ' + y + ', ' + sujet + ' ; son évolution par rapport à ' + (y - 1) + ' ne compte pas.';
     },
     pasPublie: function (y, source) { return 'Non compté : le chiffre ' + y + ' n\'est pas encore publié' + (source ? ' par ' + source : '') + '.'; },
     debut: function (y, source) { return 'Non compté : les séries ' + (source ? source + ' ' : '') + 'commencent en ' + y + ', il n\'y a pas d\'année précédente pour mesurer l\'évolution.'; },
@@ -278,7 +278,7 @@
     { k: 's', l: 'Santé', url: '/sante/#bulletin', debut: 'la plupart des chiffres européens de la santé commencent entre 2000 et 2011', calc: function (S) { return sante(S.sante); }, ser: 'sante' },
     { k: 'j', l: 'Sécurité et justice', url: '/securite/#bulletin', debut: 'les chiffres européens de la délinquance commencent en 1995', calc: function (S) { return securite(S.securite); }, ser: 'securite' },
     { k: 'd', l: 'Défense', url: '/defense/#bulletin', debut: 'les chiffres européens de la défense commencent en 1995 (Eurostat) et en 2014 (OTAN)', calc: function (S) { return defense(S.defense); }, ser: 'defense' },
-    { k: 'v', l: 'Vie des Français', url: '/vie/#bulletin', debut: 'les chiffres européens des conditions de vie commencent entre 2004 et 2015', calc: function (S) { return vie(S.vie); }, ser: 'vie' }
+    { k: 'v', l: 'Vie des Français', url: '/vie/#bulletin', debut: 'les chiffres européens de la vie des Français commencent entre 1994 (moral des ménages) et 2015', calc: function (S) { return vie(S.vie); }, ser: 'vie' }
   ];
   var r1 = function (v) { return v == null ? null : Math.round(v * 10) / 10; };
   function classement(series) {

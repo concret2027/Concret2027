@@ -7,7 +7,7 @@
     personnes qui travaillent, écart de salaire entre femmes et hommes, satisfaction dans la vie.
     Un changement de méthode n'est retenu que s'il est signalé par Eurostat (code « b ») : champ br.
   - Moral des ménages : enquête de la Commission européenne (Eurostat ei_bsco_m, indicateur de confiance des
-    consommateurs, corrigé des variations saisonnières), moyenne des douze mois de chaque année complète, calcul Concret ;
+    consommateurs, corrigé des effets de saison), moyenne des douze mois de chaque année complète, calcul Concret ;
     le dernier mois publié va dans datasets.vie_moral.
   - Indice de développement humain : PNUD (fichier des séries complètes du dernier Rapport sur le développement humain),
     affiché sans note ; la moyenne de l'UE est calculée par outils/ue_calc.py (vie.AFF.idh).
@@ -139,9 +139,12 @@ def main():
         c, s = V['C'][k], S[k]
         ys = sorted(set().union(*[set(v) for v in s['v'].values()]))
         # Le moral des ménages est mesuré depuis 1985 : on garde depuis 1994, l'année avant le premier mandat noté.
-        ys = list(range(max(ys[0], 1994), ys[-1] + 1))
+        # La série commence à la première année publiée pour la France.
+        y0 = min(y for y in ys if s['v'].get('fr', {}).get(y) is not None)
+        ys = list(range(max(y0, 1994), ys[-1] + 1))
         neuf = {'y': ys}
-        for w in ('fr', 'ue', 'de', 'es'):
+        # Moyenne de l'UE calculée par Concret (ue_calc) : on ne garde pas en plus celle d'Eurostat (une seule courbe de moyenne).
+        for w in (('fr', 'de', 'es') if c.get('ref') == 'ue_calc' else ('fr', 'ue', 'de', 'es')):
             neuf[w] = [s['v'].get(w, {}).get(y) for y in ys]
         calc = c.get('ref') == 'ue_calc'
         b = {str(y): br(s['b'], y, calc) for y in ys[1:] if br(s['b'], y, calc)}
@@ -150,6 +153,8 @@ def main():
         # Dernières années publiées pour la moyenne de l'UE mais pas encore pour la France : on le dit.
         fin_fr = max(y for y in ys if s['v'].get('fr', {}).get(y) is not None)
         m = {str(y): "Non compté : le chiffre %d de la France n'est pas encore publié par Eurostat." % y for y in ys if y > fin_fr}
+        # Années sans chiffre français au milieu de la série (Eurostat ne l'a pas mesuré ou pas publié).
+        m.update({str(y): "Non compté : Eurostat n'a pas publié ce chiffre pour la France cette année-là." for y in ys if y < fin_fr and s['v'].get('fr', {}).get(y) is None})
         if m or c.get('manque'):
             neuf['manque'] = m
         ch = [w for w in neuf if c.get(w) != neuf[w]]
@@ -160,6 +165,8 @@ def main():
                 print('    %s : %s' % (w, ', '.join('%d %s→%s' % (y, old.get(y), v) for y, v in zip(ys, neuf[w]) if old.get(y) != v)))
         if ecrire:
             c.update(neuf)
+            if c.get('ref') == 'ue_calc':
+                c.pop('ue', None)
             if not neuf.get('br'):
                 c.pop('br', None)
             if not neuf.get('manque'):
@@ -186,7 +193,7 @@ def main():
         txt = lambda v: ('%.1f' % v).replace('.', ',').replace('-', '−')
         o['datasets']['vie_moral'] = [{'mois': '%s %s' % (MOIS[int(mo) - 1], a), 'periode': mm['mois'],
                                       'fr': txt(mm['fr']), 'ue': txt(mm['ue']), 'de': txt(mm['de']), 'es': txt(mm['es']),
-                                      'source': "Commission européenne, enquête auprès des consommateurs (Eurostat, ei_bsco_m), corrigé des variations saisonnières",
+                                      'source': "Commission européenne, enquête auprès des consommateurs (Eurostat, ei_bsco_m), corrigé des effets de saison",
                                       'url': 'https://ec.europa.eu/eurostat/databrowser/view/ei_bsco_m/default/table'}]
         open(os.path.join(ROOT, 'data.json'), 'w', encoding='utf-8').write(json.dumps(o, indent=0, ensure_ascii=False))
         print('Écrit dans data.json ; relancer python3 outils/ue_calc.py --ecrire --seul vie.AFF.idh')
