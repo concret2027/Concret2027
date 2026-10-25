@@ -1,7 +1,8 @@
 /* Cartes d'aperçu des liens (og:image) : l'image qu'affichent WhatsApp, X, LinkedIn ou un e-mail quand on colle un lien
    vers une page de Concret. Une image par page, 1200 × 630, dans donnees/apercu/<page>.png, refaite à partir des chiffres
    affichés (bloc « En bref » de chaque mission, classement général pour l'accueil) : jamais de chiffre saisi à la main.
-   Lancée par outils/controle.js verifier à chaque mise à jour ; à la main : node outils/apercu.js */
+   Lancée par outils/controle.js verifier à chaque mise à jour ; à la main : node outils/apercu.js
+   Écrit aussi donnees/bref.json : le bloc « En bref » de chaque mission, pour « Le pouls de la France » de l'accueil. */
 var fs = require('fs'), path = require('path'), http = require('http'), crypto = require('crypto');
 var ROOT = path.join(__dirname, '..'), OUT = path.join(ROOT, 'donnees', 'apercu');
 var NOTES = require('../commun/notes.js');
@@ -53,19 +54,25 @@ function carte(o) {
   var srv = await serveur(), base = 'http://localhost:' + srv.address().port;
   var { chromium } = require('playwright'), b = await chromium.launch(), cartes = [];
   var court = function (n) { return n.split(' ').slice(-1)[0]; };
-  // Missions : on lit le bloc « En bref » tel que la page l'affiche.
+  // Missions : on lit le bloc « En bref » tel que la page l'affiche. Il est aussi écrit dans donnees/bref.json, que l'accueil
+  // additionne pour « Le pouls de la France » (mêmes chiffres que les pages, recalculés à chaque mise à jour).
+  var bref = {};
   for (var i = 0; i < MISSIONS.length; i++) {
     var p = await b.newPage({ viewport: { width: 1280, height: 900 } });
     await p.goto(base + '/' + MISSIONS[i][0] + '/', { waitUntil: 'networkidle' }); await p.waitForTimeout(1200);
     var r = await p.evaluate(function () {
       var box = document.getElementById('reponse'); if (!box || !box.querySelector('.bref-n')) return null;
       var n = box.querySelector('.bref-n').textContent.split('/');
-      return { n: n, pres: Array.prototype.map.call(box.querySelectorAll('.bref-pres a'), function (a) { var t = a.querySelector('b').textContent.replace(',', '.'); return { n: a.querySelector('span').textContent, v: isNaN(+t) ? null : +t }; }) };
+      return { n: n, items: Array.prototype.map.call(box.querySelectorAll('.bref-chips a'), function (a) { return { l: a.textContent.replace(/^[✓✗=]/, ''), cl: a.className, cible: a.dataset.cible }; }),
+        pres: Array.prototype.map.call(box.querySelectorAll('.bref-pres a'), function (a) { var t = a.querySelector('b').textContent.replace(',', '.'); return { n: a.querySelector('span').textContent, v: isNaN(+t) ? null : +t }; }) };
     });
     await p.close();
     if (!r) throw new Error('bloc « En bref » introuvable sur la page ' + MISSIONS[i][0]);
+    bref[MISSIONS[i][0]] = { l: MISSIONS[i][1], n: +r.n[0], total: +r.n[1], items: r.items };
     cartes.push({ f: MISSIONS[i][0], titre: MISSIONS[i][1], sous: 'La France face à la moyenne de l\'Union européenne', n: [r.n[0], '/' + r.n[1]], nt: 'indicateurs où la France fait mieux, au dernier chiffre connu', pres: r.pres, pied: 'La note des présidents sur 20 · 10 = aussi bien que la moyenne de l\'UE', adresse: 'concret2027.fr/' + MISSIONS[i][0] });
   }
+  var BJ = path.join(ROOT, 'donnees', 'bref.json'), bj = JSON.stringify({ missions: bref }, null, 1) + '\n';
+  if (!fs.existsSync(BJ) || fs.readFileSync(BJ, 'utf8') !== bj) fs.writeFileSync(BJ, bj);
   // Accueil (et mentions légales) : le classement général, toutes missions confondues (même calcul que la page).
   var S = JSON.parse(fs.readFileSync(path.join(ROOT, 'data.json'), 'utf8')).series, cg = NOTES.classement(S).pres.slice().sort(function (a, c) { return a.y0 - c.y0; });
   var gen = { titre: 'Les présidents notés, mission par mission', sous: 'Finances, éducation, santé, sécurité et justice, défense, vie des Français : face à la moyenne de l\'UE, depuis 1995', pres: cg.map(function (x) { return { n: court(x.n), v: x.m }; }), pied: 'Classement général sur 20 · ' + NOTES.MISSIONS.length + ' missions', adresse: 'concret2027.fr' };
