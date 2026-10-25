@@ -38,7 +38,9 @@
     if (!document.getElementById('bref-css')) { var st = document.createElement('style'); st.id = 'bref-css'; st.textContent = css; document.head.appendChild(st); }
     var l = o.items.filter(Boolean), ok = l.filter(function (x) { return x.cl === 'g'; }).length, ref = o.ref || 'la moyenne de l\'UE';
     var tri = l.slice().sort(function (a, b) { var r = { g: 0, m: 1, b: 2 }; return r[a.cl] - r[b.cl]; });
-    box.innerHTML = '<h2><span class="eyebrow">En bref</span>La France face à ' + esc(ref) + '</h2>' +
+    // Le nom de la page dans le titre : l'image partagée dit de quelle mission il s'agit.
+    var page = document.querySelector('.brand b'), nom = page ? page.textContent.trim() : '';
+    box.innerHTML = '<h2><span class="eyebrow">' + (nom ? esc(nom) + ', en bref' : 'En bref') + '</span>La France face à ' + esc(ref) + '</h2>' +
       '<div class="bref-top"><span class="bref-n">' + ok + '<small>/' + l.length + '</small></span><span class="bref-t">indicateurs où la France fait mieux que ' + esc(ref) + ', au dernier chiffre connu' + (o.precision ? ' (' + esc(o.precision) + ')' : '') + '</span></div>' +
       '<details class="bref-det"><summary>Voir les ' + l.length + ' indicateurs</summary><div class="bref-chips">' +
       tri.map(function (x) { return '<a class="' + x.cl + '" href="#' + esc(x.cible) + '" data-cible="' + esc(x.cible) + '" title="Voir la courbe"><i>' + ICON[x.cl] + '</i>' + esc(x.l) + '</a>'; }).join('') +
@@ -48,7 +50,9 @@
         var c = p.v == null ? '' : p.v >= 10 ? 'g' : p.v >= 6 ? 'm' : 'b';
         return '<a class="' + c + '" href="#bulletin"><span>' + esc(p.n.split(' ').slice(-1)[0]) + '</span><b>' + (p.v == null ? '—' : fmt(p.v)) + '</b><i style="width:' + (p.v == null ? 0 : 5 * p.v) + '%"></i></a>';
       }).join('') + '</div>' +
-      '<p class="note">Sur 20 ; 10 = aussi bien que la moyenne de l\'UE. <a href="#bulletin">Le détail et les gouvernements ↓</a></p>';
+      '<p class="note">Sur 20 ; 10 = aussi bien que la moyenne de l\'UE. <a class="pt-hors" href="#bulletin">Le détail et les gouvernements ↓</a></p>';
+    // Le bouton « Partager » (commun/partage.js) a pu être posé sur le bloc encore vide : on le laisse le reposer.
+    box.removeAttribute('data-partage');
     box.querySelectorAll('.bref-chips a').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); });
   }
   window.ConcretBref = { render: render, aller: aller };
