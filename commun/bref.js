@@ -77,5 +77,10 @@
   }
   // Les liens de la ligne mènent au bloc visé (ouvert s'il est replié).
   function lier(box) { box.querySelectorAll('a[data-cible]').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); }); }
+  // Lien venu d'une autre page (par exemple le quiz) vers une courbe repliée : on attend qu'elle existe, puis on l'ouvre.
+  if (location.hash.length > 1) {
+    var vise = decodeURIComponent(location.hash.slice(1)), essais = 0;
+    var t = setInterval(function () { var el = document.getElementById(vise); if (el || ++essais > 40) { clearInterval(t); if (el) aller(vise); } }, 250);
+  }
   window.ConcretBref = { render: render, aller: aller, nouveau: nouveau, lier: lier };
 })();

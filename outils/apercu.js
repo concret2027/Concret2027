@@ -37,11 +37,13 @@ function carte(o) {
     '.p span{display:block;font-size:' + (large ? 30 : 24) + 'px;color:#62646d;font-weight:600}.p b{display:block;font-family:Newsreader,serif;font-size:' + (large ? 104 : 58) + 'px;font-weight:500;line-height:1.05}' +
     '.p i{position:absolute;left:0;bottom:0;height:9px}.g b{color:#1f8a4c}.g i{background:#1f8a4c}.m b{color:#b0812a}.m i{background:#b0812a}.b b{color:#c43d3d}.b i{background:#c43d3d}' +
     '.dates{display:flex;flex-direction:column;gap:14px;margin-left:auto}.d{background:#fff;border:2px solid #e2e2dc;border-radius:22px;padding:18px 28px}.d span{display:block;font-size:24px;color:#62646d;font-weight:600}.d b{font-family:Newsreader,serif;font-size:52px;font-weight:500}' +
+    '.qz{flex:1;display:flex;flex-direction:column;gap:22px}.qq{font-family:Newsreader,serif;font-size:44px;line-height:1.15}.qo{display:grid;grid-template-columns:1fr 1fr;gap:14px}.qo span{background:#fff;border:2px solid #e2e2dc;border-radius:16px;padding:14px 20px;font-size:28px;font-weight:600}' +
     '.f{font-size:23px;color:#62646d}</style></head><body>' +
     '<div class="top"><span class="brand">Concret</span><span class="adr">' + esc(o.adresse) + '</span></div>' +
     '<div class="t">' + esc(o.titre) + '</div><div class="s">' + esc(o.sous) + '</div>' +
     '<div class="mid">' + (o.n ? '<div class="gauche"><div class="n">' + esc(o.n[0]) + '<small>' + esc(o.n[1]) + '</small></div><div class="nt">' + esc(o.nt) + '</div></div>' : '') +
     (o.pres ? '<div class="pres">' + o.pres.map(function (p) { return '<div class="p ' + cl(p.v) + '"><span>' + esc(p.n) + '</span><b>' + nf(p.v) + '</b><i style="width:' + (p.v == null ? 0 : 5 * p.v) + '%"></i></div>'; }).join('') + '</div>' : '') +
+    (o.quiz ? '<div class="qz"><div class="qq">' + esc(o.quiz.q) + '</div><div class="qo">' + o.quiz.o.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('') + '</div></div>' : '') +
     (o.dates ? '<div class="dates">' + o.dates.map(function (d) { return '<div class="d"><span>' + esc(d[0]) + '</span><b>' + esc(d[1]) + '</b></div>'; }).join('') + '</div>' : '') + '</div>' +
     '<div class="f">' + esc(o.pied) + '</div></body></html>';
 }
@@ -73,6 +75,10 @@ function carte(o) {
   var t2 = (D.agenda_barometre || []).filter(function (a) { return /second tour/i.test(a.evenement); })[0], jour = function (a) { return new Date(a.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
   var jours = t1 ? Math.ceil((new Date(t1.date + 'T00:00:00+02:00') - new Date()) / 864e5) : null;
   cartes.push({ f: 'barometre', titre: 'Baromètre 2027', sous: 'Sondages et parieurs de la présidentielle, mis à jour chaque jour', n: jours > 0 ? [String(jours), ' jours'] : null, nt: 'avant le premier tour de l\'élection présidentielle', dates: [t1, t2].filter(Boolean).map(function (a) { return [/premier/i.test(a.evenement) ? 'Premier tour' : 'Second tour', jour(a) + ' ' + a.date.slice(0, 4)]; }), pied: 'Sources : Commission des sondages, instituts, Polymarket', adresse: 'concret2027.fr/barometre' });
+  // Quiz du jour : la première question du jour (celle de la page Vie des Français, même calcul que la page), refaite chaque jour.
+  var SQ = (S.vie || {}).QUIZ || [], jq = new Date(); jq.setHours(0, 0, 0, 0);
+  var iq = Math.floor((jq - new Date(2026, 0, 1)) / 864e5), Q1 = SQ.length ? SQ[((iq % SQ.length) + SQ.length) % SQ.length] : null;
+  if (Q1 && fs.existsSync(path.join(ROOT, 'quiz', 'index.html'))) cartes.push({ f: 'quiz', titre: 'Quiz du jour', sous: jq.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) + ' · la France face à ses voisins, la note des présidents', quiz: Q1, pied: 'Chaque réponse renvoie à la courbe qui la prouve', adresse: 'concret2027.fr/quiz' });
   // Une image n'est refaite que si son contenu a changé (empreinte du texte de la carte) : le dépôt ne grossit pas chaque jour.
   var EMP = path.join(OUT, 'empreintes.json'), emp = fs.existsSync(EMP) ? JSON.parse(fs.readFileSync(EMP, 'utf8')) : {}, faites = [];
   for (var j = 0; j < cartes.length; j++) {

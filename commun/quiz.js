@@ -61,6 +61,11 @@
       a.addEventListener('click', function (ev) { if (window.ConcretBref) { ev.preventDefault(); ConcretBref.aller(Q.v); } });
       ans.appendChild(document.createTextNode(' ')); ans.appendChild(a);
     }
+    // Sur une page de mission, un lien vers le quiz complet du jour.
+    if (!el && !ans.querySelector('.qz-tout')) {
+      var t = document.createElement('a'); t.className = 'qz-voir qz-tout'; t.href = '/quiz/'; t.textContent = 'Toutes les questions du jour →';
+      ans.appendChild(document.createTextNode(' ')); ans.appendChild(t);
+    }
     return totaux(page, Q, choix, nouveau).then(function (n) { afficher(opts, ans, n, nouveau); return n; }, function () { return null; });
   }
   window.ConcretQuiz = { repondu: repondu, chemin: chemin, compteur: compteur };
