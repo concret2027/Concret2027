@@ -69,7 +69,8 @@
     var na = A.filter(function (a) { return a.date > dep; });
     if (na.length) parts.push(lien('acc-actu', '<b>' + na.length + ' nouvelle' + (na.length > 1 ? 's' : '') + ' actualité' + (na.length > 1 ? 's' : '') + '</b>') + ' : « ' + esc(court(na[0].texte)) + ' »');
     if (!ch.length) {
-      if (!na.length && A[0]) parts.push('dernière actualité, le ' + dfr(A[0].date) + ' : ' + lien('acc-actu', '« ' + esc(court(A[0].texte)) + ' »'));
+      // La dernière actualité seulement si elle est récente (moins de 15 jours) : au-delà, ce n'est plus du nouveau.
+      if (!na.length && A[0] && (new Date(auj) - new Date(A[0].date)) / 864e5 < 15) parts.push('dernière actualité, le ' + dfr(A[0].date) + ' : ' + lien('acc-actu', '« ' + esc(court(A[0].texte)) + ' »'));
       var g = (o.agenda || []).filter(function (a) { return a.date && a.date >= auj; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
       parts.push('pas de nouveau chiffre' + (g ? ' ; prochain rendez-vous, ' + esc(min1(g.quand || dfr(g.date))) + ' : ' + esc(String(g.evenement).replace(/\.$/, '')) : o.prochains ? ' (' + o.prochains + ')' : ''));
     }
