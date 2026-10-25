@@ -376,7 +376,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><b>Défense</b><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#acc-month">Budget</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les deux thèmes</a><a href="#q-eff">Effectifs</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#acc-month">Budget</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les deux thèmes</a><a href="#q-eff">Effectifs</a><a href="#q-ind">Industrie</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
 
   <details class="acc" id="acc-month">
     <summary><span class="acc-h">Le budget et les repères</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
@@ -475,6 +475,11 @@ footer p { margin: 0; } footer a { color: inherit; }
     <h2 id="eff-t"><span class="eyebrow">Affiché, sans note</span>Effectifs militaires</h2>
     <p class="note" id="eff-why"></p>
     <div class="charts4" id="eff-charts"></div>
+  </section>
+  <section class="card" id="q-ind" aria-labelledby="ind-t">
+    <h2 id="ind-t"><span class="eyebrow">Affiché, sans note</span>Industrie de défense</h2>
+    <p class="note" id="ind-why"></p>
+    <div class="charts4" id="ind-charts"></div>
   </section>
 
   <section class="card" id="mots" aria-labelledby="gl">
@@ -915,6 +920,12 @@ function main(FEED) {
   // Ce qu'on montre en plus, sans le noter, sous chaque question.
   var EN_PLUS = {};
   // Effectifs militaires : affichés, sans note, avec la raison.
+  // Industrie de défense : les exportations d'armes, affichées sans note, avec la raison.
+  function buildIndustrie() {
+    var X = AFF.export, n = X.y.length - 1;
+    setHtml('ind-why', 'Sur ' + X.periode + ', la France est le ' + X.rang_fr + '<sup>e</sup> exportateur d\'armes au monde, avec ' + fmt(X.fr[n], 1) + ' % des livraisons mondiales (Allemagne ' + fmt(X.de[n], 1) + ' %, Italie ' + fmt(X.it[n], 1) + ' %, Espagne ' + fmt(X.es[n], 1) + ' %). Pas de note : exporter plus d\'armes n\'est pas en soi un progrès ni un recul, et une année seule dépend de quelques gros contrats.');
+    [serieCard(document.getElementById('ind-charts'), 'ch-a-export', X, 'affiché, sans note', { affiche: true })].forEach(function (d) { MAIN.push(d); });
+  }
   function buildEffectifs() {
     var w = document.getElementById('eff-charts'), PL = AFF.pers.pologne;
     setHtml('eff-why', 'Pas de note : aucun engagement de la France ni de l\'OTAN ne fixe un nombre de militaires, et plus de militaires n\'est pas en soi un progrès ni un recul. La moyenne de l\'UE dépend aussi beaucoup de quelques pays : la Pologne est passée de ' + fmt(1000 * PL.v0) + ' à ' + fmt(1000 * PL.v1) + ' militaires entre ' + PL.y0 + ' et ' + PL.y1 + ' (OTAN).');
@@ -1160,7 +1171,7 @@ function main(FEED) {
     if (Date.now() - d.getTime() > 30 * 3600e3) { var s = document.getElementById('stale'); s.textContent = 'Mise à jour en retard : les données datent du ' + FEED.updated + '.'; s.hidden = false; }
   })();
 
-  buildThemes(); buildEffectifs(); renderGov();
+  buildThemes(); buildEffectifs(); buildIndustrie(); renderGov();
   function drawAll() {
     rankOne('pres'); rankOne('gov');
     MAIN.forEach(function (d) { d(); });

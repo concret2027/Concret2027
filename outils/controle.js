@@ -102,8 +102,8 @@ if (S.securite) {
 }
 // Défense : plages plausibles (% du PIB, % de la dépense de défense, militaires pour 1 000 habitants).
 if (S.defense) {
-  var PD = { otan: [0, 6], dep: [0, 5], inv: [0, 2], equip: [0, 70], pers: [0, 15] };
-  Object.keys(PD).forEach(function (k) { var bl = k === 'pers' ? 'AFF' : 'C', c = S.defense[bl][k]; if (!c) return err('defense.' + bl + '.' + k + ' manquant'); ['fr', 'ue_calc', 'de', 'es', 'us'].forEach(function (w) { if (c[w]) serie('defense.' + bl + '.' + k + '.' + w, c[w], PD[k][0], PD[k][1]); }); if (!c.fr) err('defense.' + bl + '.' + k + '.fr manquant'); });
+  var PD = { otan: [0, 6], dep: [0, 5], inv: [0, 2], equip: [0, 70], pers: [0, 15], export: [0, 100] };
+  Object.keys(PD).forEach(function (k) { var bl = k === 'pers' || k === 'export' ? 'AFF' : 'C', c = S.defense[bl][k]; if (!c) return err('defense.' + bl + '.' + k + ' manquant'); ['fr', 'ue_calc', 'de', 'es', 'us'].forEach(function (w) { if (c[w]) serie('defense.' + bl + '.' + k + '.' + w, c[w], PD[k][0], PD[k][1]); }); if (!c.fr) err('defense.' + bl + '.' + k + '.fr manquant'); });
 }
 // Règle unique : un critère noté est comparé à la moyenne de l'UE, publiée par la source ('ue') ou calculée par
 // outils/ue_calc.py ('ue_calc', avec sa phrase d'explication), jamais à un pays seul.

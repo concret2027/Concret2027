@@ -47,6 +47,31 @@ def pop_us():
     return {int(x['date']): x['value'] for x in d[1] if x['value']}
 
 
+def exportations():
+    """Livraisons de grands matériels militaires (indice de volume TIV du SIPRI, repris par la Banque mondiale,
+    MS.MIL.XPRT.KD) : part de chaque pays dans le total mondial, sur 5 ans glissants comme le SIPRI (une année seule
+    dépend de quelques contrats). Vérifié : redonne les parts publiées par le SIPRI pour 2016-2020 et 2021-2025."""
+    d = json.loads(U.get('https://api.worldbank.org/v2/country/FRA;DEU;ESP;ITA;USA;WLD/indicator/MS.MIL.XPRT.KD?format=json&date=1990:2030&per_page=2000'))
+    r = {}
+    for x in d[1]:
+        if x['value'] is not None:
+            r.setdefault(x['countryiso3code'], {})[int(x['date'])] = x['value']
+    fin = max(r['WLD'])
+    ans = [y for y in range(min(r['WLD']) + 4, fin + 1) if all(t in r['WLD'] for t in range(y - 4, y + 1))]
+    part = lambda c, y: round(100 * sum(r.get(c, {}).get(t, 0) for t in range(y - 4, y + 1)) / sum(r['WLD'][t] for t in range(y - 4, y + 1)), 1)
+    # Rang de la France parmi tous les pays sur les 5 dernières années (sans les regroupements de pays de la Banque mondiale).
+    pays = json.loads(U.get('https://api.worldbank.org/v2/country?format=json&per_page=400'))[1]
+    vrais = {p['id'] for p in pays if p['region']['value'] != 'Aggregates'}
+    t = json.loads(U.get('https://api.worldbank.org/v2/country/all/indicator/MS.MIL.XPRT.KD?format=json&date=%d:%d&per_page=20000' % (fin - 4, fin)))[1]
+    somme = {}
+    for x in t:
+        if x['countryiso3code'] in vrais and x['value']:
+            somme[x['countryiso3code']] = somme.get(x['countryiso3code'], 0) + x['value']
+    rang = sorted(somme, key=lambda c: -somme[c]).index('FRA') + 1
+    return {'y': ans, 'fr': [part('FRA', y) for y in ans], 'de': [part('DEU', y) for y in ans], 'es': [part('ESP', y) for y in ans],
+            'it': [part('ITA', y) for y in ans], 'us_dernier': part('USA', fin), 'fin': fin, 'rang': rang}
+
+
 def series():
     """{critère: {pays: {année: valeur}}, 'est': [années estimées]}"""
     pib = eurostat3('nama_10_gdp', 'unit=CP_MEUR&na_item=B1GQ')
@@ -77,6 +102,7 @@ def series():
     tete = next(r for r in rows if r[1] == 2014)
     out['est'] = [int(str(v)[:-1]) for v in tete[1:] if isinstance(v, str) and v.endswith('e')]
     out['url'] = url
+    out['export'] = exportations()
     out['edition'] = int(re.search(r'def-exp-(\d{4})', url).group(1))
     # Repère affiché sous les effectifs : la Pologne, dont l'armée pèse le plus dans l'évolution de la moyenne de l'UE.
     pl = U.otan_tab('Table 7')['PL']
@@ -127,6 +153,11 @@ def main():
                 c['source'] = SRC[k] % S['edition']
     if ecrire:
         D['AFF']['pers']['pologne'] = S['pologne']
+        X, E = D['AFF'].setdefault('export', {}), S['export']
+        X.update({k: E[k] for k in ('y', 'fr', 'de', 'es', 'it')})
+        X['us_note'] = "Pas de courbe pour les États-Unis, hors de l'échelle : %s %% des livraisons mondiales sur %d-%d." % (('%.1f' % E['us_dernier']).replace('.', ','), E['fin'] - 4, E['fin'])
+        X['periode'] = '%d-%d' % (E['fin'] - 4, E['fin'])
+        X['rang_fr'] = E['rang']
         n = D['AFF']['pers_n']
         n['y'] = list(range(2014, max(S['pers_n']['FR']) + 1))
         # Sans les États-Unis : avec plus d'un million de militaires, ils écraseraient l'échelle de la courbe.
