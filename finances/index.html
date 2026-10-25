@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261025d"></script>
+<script src="/commun/bref.js?v=20261025e"></script>
 <script src="/commun/quiz.js?v=20261025d"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
@@ -724,9 +724,9 @@ function main(FEED) {
         var dd = RATE * (now - lastV.t) / 1000, days = Math.round((now - lastV.t) / 864e5);
         var when = days >= 1 ? 'il y a ' + days + ' jour' + (days > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lastV.t) / 3600e3)) + ' h';
         var dr = Math.round((LIVE.rate - lastV.r) * 100) / 100;
-        var lastDay = new Date(lastV.t).toISOString().slice(0, 10);
-        var na = ((FEED && FEED.datasets && FEED.datasets.actu_finances) || []).filter(function (a) { return a.date > lastDay; }).length;
-        vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : la dette a pris <b>' + big(dd) + '</b>' + (dr ? ', le taux d\'emprunt à 10 ans a ' + (dr > 0 ? 'pris' : 'perdu') + ' <b>' + fmt(Math.abs(dr), 2) + ' point</b>' : ', le taux d\'emprunt n\'a pas bougé') + (na ? ', <b>' + na + ' nouvelle' + (na > 1 ? 's' : '') + ' actualité' + (na > 1 ? 's' : '') + '</b>' : '') + '.';
+        var DSF = (FEED && FEED.datasets) || {};
+        var pv = ConcretBref.nouveau({ chiffres: ['la dette a pris <b>' + big(dd) + '</b>' + (dr ? ', le taux d\'emprunt à 10 ans a ' + (dr > 0 ? 'pris' : 'perdu') + ' <b>' + fmt(Math.abs(dr), 2) + ' point</b>' : ', le taux d\'emprunt n\'a pas bougé')], actu: DSF.actu_finances, agenda: DSF.agenda_finances, depuis: lastV.t, jour: days >= 1 });
+        vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + pv.join(' ; ') + '.'; ConcretBref.lier(vis);
       } else vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.';
       vis.hidden = false;
     } catch (e) {}

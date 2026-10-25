@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261025d"></script>
+<script src="/commun/bref.js?v=20261025e"></script>
 <script src="/commun/quiz.js?v=20261025d"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
@@ -1110,11 +1110,8 @@ function main(FEED) {
       var dv = Math.round((now - lv.t) / 864e5), when = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h', pv = [];
       if (ey > lv.ey) pv.push('enquête sur les conditions de vie ' + ey + ' (Eurostat) : pauvreté ou exclusion <b>' + fmt(lastReel(C.arope, 'fr').v, 1) + ' %</b>');
       if (M.periode && M.periode !== lv.mm) pv.push('moral des ménages de ' + esc(M.mois) + ' : <b>' + esc(M.fr) + '</b>');
-      var na = (DS.actu_vie || []).filter(function (a) { return a.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
-      if (na) pv.push('<b>' + na + ' nouvelle' + (na > 1 ? 's' : '') + ' actualité' + (na > 1 ? 's' : '') + '</b>');
-      if (!pv.length) pv.push('pas de nouveau chiffre (le prochain : le moral des ménages, chaque fin de mois)');
-      if (dv >= 1) pv.push('un nouveau chiffre à retenir et une nouvelle question');
-      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + pv.join(' ; ') + '.';
+      pv = ConcretBref.nouveau({ chiffres: pv, actu: DS.actu_vie, agenda: DS.agenda_vie, depuis: lv.t, jour: dv >= 1, prochains: 'prochains chiffres : le moral des ménages, chaque fin de mois' });
+      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + pv.join(' ; ') + '.'; ConcretBref.lier(vis);
       vis.hidden = false;
     })();
   } catch (e) {}

@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261025d"></script>
+<script src="/commun/bref.js?v=20261025e"></script>
 <script src="/commun/quiz.js?v=20261025d"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
@@ -1082,11 +1082,8 @@ function main(FEED) {
       var dv = Math.round((now - lv.t) / 864e5), when = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h', pv = [];
       if (pi > lv.pn) pv.push('prix des soins en ' + moName(P, pi) + ' : <b>' + sg(P.fr[pi], 1) + ' %</b> sur un an (contre ' + sg(lv.p, 1) + ' % au chiffre précédent)');
       if (sy > lv.dy) pv.push('déficit de la Sécurité sociale en ' + sy + ' : <b>' + fmt(Math.abs(s.tot[s.y.length - 1]), 1) + ' Md€</b>, dont ' + fmt(Math.abs(s.md[s.md.length - 1]), 1) + ' pour l\'Assurance maladie');
-      var na = (DS.actu_sante || []).filter(function (a) { return a.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
-      if (na) pv.push('<b>' + na + ' nouvelle' + (na > 1 ? 's' : '') + ' actualité' + (na > 1 ? 's' : '') + '</b>');
-      if (!pv.length) pv.push('pas de nouveau chiffre de santé (les prochains : les prix des soins chaque mois, le déficit de la Sécurité sociale au printemps)');
-      if (dv >= 1) pv.push('un nouveau chiffre à retenir et une nouvelle question');
-      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + pv.join(' ; ') + '.';
+      pv = ConcretBref.nouveau({ chiffres: pv, actu: DS.actu_sante, agenda: DS.agenda_sante, depuis: lv.t, jour: dv >= 1, prochains: 'prochains chiffres : les prix des soins chaque mois, le déficit de la Sécurité sociale au printemps' });
+      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + pv.join(' ; ') + '.'; ConcretBref.lier(vis);
       vis.hidden = false;
     })();
   } catch (e) {}

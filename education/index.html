@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261025d"></script>
+<script src="/commun/bref.js?v=20261025e"></script>
 <script src="/commun/quiz.js?v=20261025d"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
@@ -969,11 +969,10 @@ function main(FEED) {
     var lv = stv.base;
     if (lv) {
       var dv = Math.round((nowV - lv.t) / 864e5), whenV = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((nowV - lv.t) / 3600e3)) + ' h', pv = [];
-      pv.push(MO.fr.length > lv.n ? 'nouveau chiffre du chômage des moins de 25 ans : <b>' + fmt(MO.fr[nU], 1) + ' %</b> (contre ' + fmt(lv.u, 1) + ' %)' : 'pas de nouveau chiffre du chômage des jeunes');
-      var nav = ((FEED && FEED.datasets && FEED.datasets.actu_education) || []).filter(function (a) { return a.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
-      if (nav) pv.push('<b>' + nav + ' nouvelle' + (nav > 1 ? 's' : '') + ' actualité' + (nav > 1 ? 's' : '') + '</b>');
-      if (dv >= 1) pv.push('un nouveau chiffre à retenir et une nouvelle question');
-      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + whenV + ') : ' + pv.join(' ; ') + '.';
+      if (MO.fr.length > lv.n) pv.push('nouveau chiffre du chômage des moins de 25 ans : <b>' + fmt(MO.fr[nU], 1) + ' %</b> (contre ' + fmt(lv.u, 1) + ' %)');
+      var DSE = (FEED && FEED.datasets) || {};
+      pv = ConcretBref.nouveau({ chiffres: pv, actu: DSE.actu_education, agenda: DSE.agenda_education, depuis: lv.t, jour: dv >= 1, prochains: 'prochain chiffre : le chômage des moins de 25 ans, chaque mois' });
+      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + whenV + ') : ' + pv.join(' ; ') + '.'; ConcretBref.lier(vis);
     } else vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.';
     vis.hidden = false;
   } catch (e) {}

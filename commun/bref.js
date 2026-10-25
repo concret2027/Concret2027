@@ -24,7 +24,7 @@
   // Aller à une courbe : ouvre les blocs repliés qui la contiennent (elle se dessine à l'ouverture), puis y descend.
   function aller(id) {
     var el = document.getElementById(id); if (!el) return;
-    for (var d = el.parentElement; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
+    for (var d = el; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
     setTimeout(function () {
       var c = el.closest('section, .card, .mo') || el;
       c.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -55,5 +55,28 @@
     box.removeAttribute('data-partage');
     box.querySelectorAll('.bref-chips a').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); });
   }
-  window.ConcretBref = { render: render, aller: aller };
+  // « Depuis votre dernière visite » : d'abord ce qui est nouveau (chiffres, actualités, question du jour), puis, s'il n'y a
+  // pas de nouveau chiffre, la dernière actualité et le prochain rendez-vous de l'agenda. Renvoie les morceaux de la ligne.
+  // o : { chiffres: [html], actu: [{date, texte}], agenda: [{date, quand, evenement}], depuis: horodatage, jour: bool, prochains: texte }
+  function nouveau(o) {
+    var iso = function (d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); };
+    var dfr = function (s) { return new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }).replace(/^1 /, '1er '); };
+    var min1 = function (t) { t = String(t); return t.charAt(0).toLowerCase() + t.slice(1); };
+    var court = function (t) { t = String(t); if (t.length <= 120) return t.replace(/\.$/, ''); var c = t.slice(0, 117); return c.slice(0, c.lastIndexOf(' ')) + '…'; };
+    var lien = function (id, h) { return '<a href="#' + id + '" data-cible="' + id + '">' + h + '</a>'; };
+    var dep = iso(new Date(o.depuis)), auj = iso(new Date()), ch = (o.chiffres || []).slice(), parts = ch.slice();
+    var A = (o.actu || []).filter(function (a) { return a.texte && a.date; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var na = A.filter(function (a) { return a.date > dep; });
+    if (na.length) parts.push(lien('acc-actu', '<b>' + na.length + ' nouvelle' + (na.length > 1 ? 's' : '') + ' actualité' + (na.length > 1 ? 's' : '') + '</b>') + ' : « ' + esc(court(na[0].texte)) + ' »');
+    if (o.jour) parts.push(lien('quiz', 'une nouvelle question du jour') + ' et un nouveau chiffre à retenir');
+    if (!ch.length) {
+      if (!na.length && A[0]) parts.push('dernière actualité, le ' + dfr(A[0].date) + ' : ' + lien('acc-actu', '« ' + esc(court(A[0].texte)) + ' »'));
+      var g = (o.agenda || []).filter(function (a) { return a.date && a.date >= auj; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
+      parts.push('pas de nouveau chiffre' + (g ? ' ; prochain rendez-vous, ' + esc(min1(g.quand || dfr(g.date))) + ' : ' + esc(String(g.evenement).replace(/\.$/, '')) : o.prochains ? ' (' + o.prochains + ')' : ''));
+    }
+    return parts;
+  }
+  // Les liens de la ligne mènent au bloc visé (ouvert s'il est replié).
+  function lier(box) { box.querySelectorAll('a[data-cible]').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); }); }
+  window.ConcretBref = { render: render, aller: aller, nouveau: nouveau, lier: lier };
 })();
