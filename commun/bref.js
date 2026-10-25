@@ -55,7 +55,7 @@
     box.removeAttribute('data-partage');
     box.querySelectorAll('.bref-chips a').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); });
   }
-  // « Depuis votre dernière visite » : d'abord ce qui est nouveau (chiffres, actualités, question du jour), puis, s'il n'y a
+  // « Depuis votre dernière visite » : d'abord ce qui est nouveau (chiffres, actualités), puis, s'il n'y a
   // pas de nouveau chiffre, la dernière actualité et le prochain rendez-vous de l'agenda. Renvoie les morceaux de la ligne.
   // o : { chiffres: [html], actu: [{date, texte}], agenda: [{date, quand, evenement}], depuis: horodatage, jour: bool, prochains: texte }
   function nouveau(o) {
@@ -68,7 +68,6 @@
     var A = (o.actu || []).filter(function (a) { return a.texte && a.date; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
     var na = A.filter(function (a) { return a.date > dep; });
     if (na.length) parts.push(lien('acc-actu', '<b>' + na.length + ' nouvelle' + (na.length > 1 ? 's' : '') + ' actualité' + (na.length > 1 ? 's' : '') + '</b>') + ' : « ' + esc(court(na[0].texte)) + ' »');
-    if (o.jour) parts.push(lien('quiz', 'une nouvelle question du jour') + ' et un nouveau chiffre à retenir');
     if (!ch.length) {
       if (!na.length && A[0]) parts.push('dernière actualité, le ' + dfr(A[0].date) + ' : ' + lien('acc-actu', '« ' + esc(court(A[0].texte)) + ' »'));
       var g = (o.agenda || []).filter(function (a) { return a.date && a.date >= auj; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
