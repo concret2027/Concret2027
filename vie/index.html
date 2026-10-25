@@ -379,6 +379,17 @@ footer p { margin: 0; } footer a { color: inherit; }
 .reps .rv { grid-column: 1; font-size: 14.5px; line-height: 1.4; } .reps .rv b { font-weight: 700; font-variant-numeric: tabular-nums; }
 .reps .st { grid-column: 2; grid-row: 1 / span 2; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; background: var(--grid); color: var(--fg); }
 .reps .st.ok { background: var(--s-good); color: var(--ok); } .reps .st.mid { background: var(--s-mid); color: var(--mid); } .reps .st:empty { display: none; } .mo-tab { width: 100%; table-layout: fixed; } .mo-tab th:first-child { width: 44%; } .mo-tab td small { display: block; } .mo-row { cursor: pointer; } .mo-row[aria-selected="true"] td { background: var(--band); } .mo-row[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--fr); }
+.bref-top { display: flex; align-items: center; gap: 14px; margin: 6px 0 2px; }
+.bref-n { font-family: var(--serif); font-size: 60px; line-height: 1; color: var(--fg); white-space: nowrap; } .bref-n small { font-size: 26px; color: var(--muted); }
+.bref-t { font-size: 14.5px; color: var(--muted); line-height: 1.35; }
+.bref-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 16px; }
+.bref-chips span { font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--s-bad); color: var(--bad); }
+.bref-chips span.g { background: var(--s-good); color: var(--ok); } .bref-chips span.m { background: var(--s-mid); color: var(--mid); }
+.bref-pres { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 8px 0 10px; }
+.bref-pres a { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); color: var(--fg); text-decoration: none; overflow: hidden; }
+.bref-pres a span { font-size: 12.5px; color: var(--muted); font-weight: 600; } .bref-pres a b { font-family: var(--serif); font-size: 28px; font-weight: 500; line-height: 1.1; }
+.bref-pres a i { position: absolute; left: 0; bottom: 0; height: 4px; background: var(--bad); } .bref-pres a.g i { background: var(--ok); } .bref-pres a.m i { background: var(--mid); }
+.bref-pres a.g b { color: var(--ok); } .bref-pres a.m b { color: var(--mid); } .bref-pres a.b b { color: var(--bad); }
 </style>
 </head>
 <body data-sources="Sources : Eurostat, Commission européenne, PNUD (détail en bas de page).">
@@ -390,10 +401,13 @@ footer p { margin: 0; } footer a { color: inherit; }
   <p class="visit" id="visit" hidden></p>
   <nav class="jump" aria-label="Aller à"><a href="#acc-month">Moral du mois</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les cinq thèmes</a><a href="#q-idh">Développement humain</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
 
-  <section class="card" id="reponse" aria-labelledby="rep-t">
+  <section class="card bref" id="reponse" aria-labelledby="rep-t">
     <h2 id="rep-t"><span class="eyebrow">En bref</span>La France face à la moyenne de l'UE</h2>
-    <p class="t-sum" id="rep-ind"></p>
-    <p class="note" id="rep-pres"></p>
+    <div class="bref-top"><span class="bref-n" id="rep-n">—</span><span class="bref-t" id="rep-txt"></span></div>
+    <div class="bref-chips" id="rep-chips"></div>
+    <span class="eyebrow" style="margin:4px 0 0">La note des présidents sur cette page</span>
+    <div class="bref-pres" id="rep-pres"></div>
+    <p class="note">Sur 20 ; 10 = aussi bien que la moyenne de l'UE. <a href="#bulletin">Le détail et les gouvernements ↓</a></p>
   </section>
 
   <details class="acc" id="acc-month">
@@ -611,9 +625,14 @@ function main(FEED) {
   // ===== En bref : le dernier chiffre connu de chaque indicateur, et la note de chaque président (premier écran) =====
   (function () {
     var l = KEYS.map(etat).filter(Boolean), ok = l.filter(function (x) { return x.cl === 'g'; });
-    var noms = ok.map(function (x) { return (x.c.lc || x.c.l).toLowerCase(); });
-    setHtml('rep-ind', '<span class="ic">' + l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>Au dernier chiffre connu, la France fait mieux que la moyenne de l\'UE sur <b>' + ok.length + ' indicateur' + (ok.length > 1 ? 's' : '') + ' sur ' + l.length + '</b>' + (noms.length ? ' (' + esc(noms.join(', ')) + ')' : '') + '.');
-    setHtml('rep-pres', 'Note des présidents sur cette page, sur 20 : ' + PRES.map(function (g) { var n = noteOf(g); return '<b>' + esc(g.n.split(' ').slice(-1)[0]) + '</b> ' + (n == null ? 'non noté' : nfmt(n)); }).join(' · ') + '. 10 = aussi bien que la moyenne de l\'UE. <a href="#bulletin">Le détail</a>');
+    setHtml('rep-n', ok.length + '<small>/' + l.length + '</small>');
+    setHtml('rep-txt', 'indicateurs où la France fait mieux que la moyenne de l\'UE, au dernier chiffre connu');
+    var tri = l.slice().sort(function (a, b) { return (a.cl === 'g' ? 0 : a.cl === 'm' ? 1 : 2) - (b.cl === 'g' ? 0 : b.cl === 'm' ? 1 : 2); });
+    setHtml('rep-chips', tri.map(function (x) { return '<span class="' + x.cl + '">' + ICON[x.cl] + ' ' + esc(x.c.lc || x.c.l) + '</span>'; }).join(''));
+    setHtml('rep-pres', PRES.map(function (g) {
+      var n = noteOf(g), c = n == null ? '' : n >= 10 ? 'g' : n >= 6 ? 'm' : 'b';
+      return '<a class="' + c + '" href="#bulletin"><span>' + esc(g.n.split(' ').slice(-1)[0]) + '</span><b>' + (n == null ? '—' : nfmt(n)) + '</b><i style="width:' + (n == null ? 0 : 5 * n) + '%"></i></a>';
+    }).join(''));
   })();
   var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
