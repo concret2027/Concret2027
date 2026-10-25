@@ -236,10 +236,14 @@
       var sw = sum(r.map(function (p) { return p[1]; }));
       return sw ? 20 * sum(r.map(function (p) { return p[0] * p[1]; })) / sw : null;
     }
-    // Note de la page : moyenne des questions notées pour ce mandat.
+    // Poids d'un thème dans la note du mandat : 1 dès qu'il a une année complète de comparaisons (une par indicateur),
+    // sinon la part de cette année qu'il a (un thème noté sur une seule comparaison ne pèse pas autant qu'un thème noté sur dix).
+    var poidsTheme = function (g, t) { t = themeOf(t); return Math.min(1, count(g, t) / t.crit.length); };
+    // Note de la page : moyenne des thèmes notés pour ce mandat, chacun selon son poids.
     function note(g) {
-      var n = THEMES.map(function (t) { return noteTheme(g, t); }).filter(function (v) { return v != null; });
-      return n.length ? mean(n) : null;
+      var r = THEMES.map(function (t) { var n = noteTheme(g, t); return n == null ? null : [n, poidsTheme(g, t)]; }).filter(Boolean);
+      var sw = sum(r.map(function (p) { return p[1]; }));
+      return sw ? sum(r.map(function (p) { return p[0] * p[1]; })) / sw : null;
     }
     // Pourquoi une année n'est pas comptée pour un critère (phrase affichée sous le détail).
     function raisonSerie(c, y) {
@@ -268,7 +272,7 @@
       if (c.regle === 'long') return y > c.y[c.y.length - 1] ? POURQUOI.pasPublie(y) : 'Non compté : aucune évolution comparable publiée entre ' + y + ' et ' + (y + LONG - 1) + '.';
       return raisonSerie(c, y);
     }
-    return { KEYS: KEYS, THEMES: THEMES, WT: WT, MIN_N: MIN_N, SEUIL_STABLE: SEUIL_STABLE, LONG: LONG, evaluate: evaluate, note: note, noteTheme: noteTheme, count: count, score: score, evol: evol, fenetre: fenetre, raison: raison, raisonSerie: raisonSerie, val: val, ref: ref, refEv: refEv, effort: effort, recule: recule, croissance: croissance };
+    return { KEYS: KEYS, THEMES: THEMES, WT: WT, MIN_N: MIN_N, SEUIL_STABLE: SEUIL_STABLE, LONG: LONG, evaluate: evaluate, note: note, noteTheme: noteTheme, poidsTheme: poidsTheme, count: count, score: score, evol: evol, fenetre: fenetre, raison: raison, raisonSerie: raisonSerie, val: val, ref: ref, refEv: refEv, effort: effort, recule: recule, croissance: croissance };
   }
 
   // ===== Classement général de l'accueil : moyenne des notes par mission, réglages par défaut de chaque page =====

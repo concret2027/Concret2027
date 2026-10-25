@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-<script src="../commun/notes.js?v=20261025h"></script>
+<script src="../commun/notes.js?v=20261025i"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
 .recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
@@ -390,6 +390,12 @@ footer p { margin: 0; } footer a { color: inherit; }
   <p class="visit" id="visit" hidden></p>
   <nav class="jump" aria-label="Aller à"><a href="#acc-month">Moral du mois</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les cinq thèmes</a><a href="#q-idh">Développement humain</a><a href="#mots">Les mots</a></nav>
 
+  <section class="card" id="reponse" aria-labelledby="rep-t">
+    <h2 id="rep-t"><span class="eyebrow">En bref</span>La France face à la moyenne de l'UE</h2>
+    <p class="t-sum" id="rep-ind"></p>
+    <p class="note" id="rep-pres"></p>
+  </section>
+
   <details class="acc" id="acc-month">
     <summary><span class="acc-h">Le moral des ménages ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body card">
@@ -449,7 +455,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Chaque thème a une note sur 20 ; la note de la vie des Français est la moyenne des cinq thèmes. 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Chaque thème a une note sur 20 ; la note de la vie des Français est la moyenne des cinq thèmes. Un thème qui a moins d'une année de chiffres pendant le mandat compte en proportion (un tiers d'année, un tiers de poids). 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
 <details class="sous"><summary>Précisions</summary><div>
 <p>Chaque indicateur est jugé année par année.</p><p>Le revenu des ménages hors inflation est un indice (100 en 2008) : il mesure une évolution, pas un niveau. On compare donc seulement sa hausse, en %, à celle de la moyenne de l'UE, sans tenir compte de l'avance de la France.</p><p>L'indice de développement humain est affiché sans note (la raison est écrite dessous). Quand Eurostat ne publie pas la moyenne de l'UE (avant 2010 pour l'enquête sur les conditions de vie), Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul.</p>
 </div></details>
@@ -593,6 +599,13 @@ function main(FEED) {
   var KEYS = SAN.KEYS, WT = SAN.WT, MIN_N = SAN.MIN_N, GOVS = SER.GOVS, PRES = SER.PRES, BANDS = GOVS;
   var evaluate = SAN.evaluate, noteOf = function (g) { return SAN.note(g); }, countOf = function (g) { return SAN.count(g); };
   GOVS.forEach(evaluate); PRES.forEach(evaluate);
+  // ===== En bref : le dernier chiffre connu de chaque indicateur, et la note de chaque président (premier écran) =====
+  (function () {
+    var l = KEYS.map(etat).filter(Boolean), ok = l.filter(function (x) { return x.cl === 'g'; });
+    var noms = ok.map(function (x) { return (x.c.lc || x.c.l).toLowerCase(); });
+    setHtml('rep-ind', '<span class="ic">' + l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>Au dernier chiffre connu, la France fait mieux que la moyenne de l\'UE sur <b>' + ok.length + ' indicateur' + (ok.length > 1 ? 's' : '') + ' sur ' + l.length + '</b>' + (noms.length ? ' (' + esc(noms.join(', ')) + ')' : '') + '.');
+    setHtml('rep-pres', 'Note des présidents sur cette page, sur 20 : ' + PRES.map(function (g) { var n = noteOf(g); return '<b>' + esc(g.n.split(' ').slice(-1)[0]) + '</b> ' + (n == null ? 'non noté' : nfmt(n)); }).join(' · ') + '. 10 = aussi bien que la moyenne de l\'UE. <a href="#bulletin">Le détail</a>');
+  })();
   var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
   var nomCourt = function (n) { return n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin'); };
@@ -720,7 +733,7 @@ function main(FEED) {
       return { l: t.court, v: n == null ? 'non noté' : nfmt(n) + '/20', cl: n == null ? '' : n >= 10 ? 'g' : 'b', title: 'Voir les indicateurs de ce thème', open: function () {
         var w = document.createElement('div'); w.className = 'kdet';
         var p = document.createElement('p'); p.innerHTML = '<b></b> <span></span>'; p.firstChild.textContent = t.q;
-        p.lastChild.textContent = n == null ? 'Non noté : aucun indicateur de ce thème n\'a de chiffre comparable pendant ce mandat (les séries commencent plus tard).' : 'Note : ' + nfmt(n) + '/20, sur ' + SAN.count(g, t) + ' comparaison' + (SAN.count(g, t) > 1 ? 's' : '') + '. Touchez un indicateur :';
+        p.lastChild.textContent = n == null ? 'Non noté : aucun indicateur de ce thème n\'a de chiffre comparable pendant ce mandat (les séries commencent plus tard).' : 'Note : ' + nfmt(n) + '/20, sur ' + SAN.count(g, t) + ' comparaison' + (SAN.count(g, t) > 1 ? 's' : '') + (SAN.poidsTheme(g, t) < 1 ? ' : moins d\'une année de chiffres, ce thème compte pour ' + fmt(100 * SAN.poidsTheme(g, t)) + ' % dans la note du mandat' : '') + '. Touchez un indicateur :';
         w.appendChild(p); w.appendChild(critChips(g, t)); return w;
       } };
     }));
