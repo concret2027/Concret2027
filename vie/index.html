@@ -388,7 +388,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><b>Vie des Français</b><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#acc-month">Moral du mois</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les cinq thèmes</a><a href="#q-idh">Développement humain</a><a href="#mots">Les mots</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#acc-month">Moral du mois</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les cinq thèmes</a><a href="#q-idh">Développement humain</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
 
   <section class="card" id="reponse" aria-labelledby="rep-t">
     <h2 id="rep-t"><span class="eyebrow">En bref</span>La France face à la moyenne de l'UE</h2>
@@ -412,6 +412,10 @@ footer p { margin: 0; } footer a { color: inherit; }
           <span class="mo-t" id="q-t"></span>
         </div>
       </div>
+      <span class="eyebrow" style="margin:14px 0 0">Moral des ménages, chaque mois depuis cinq ans</span>
+      <div class="key" id="moral-key"></div>
+      <div class="chart" id="ch-moral-m"></div>
+      <p class="note" id="moral-note"></p>
     </div>
   </details>
 
@@ -436,6 +440,11 @@ footer p { margin: 0; } footer a { color: inherit; }
         </div>
       </section>
     </div>
+  </details>
+
+  <details class="acc" id="acc-actu">
+    <summary><span class="acc-h">L'actualité de la vie des Français</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-list"></ul></div>
   </details>
 
   <section class="card quiz" id="quiz" aria-labelledby="quiz-q">
@@ -892,7 +901,7 @@ function main(FEED) {
     var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); });
     xs.sort(function (a, b) { return a - b; });
     hover(box, svg, H, m, xs.map(function (xv) {
-      return { px: x(xv), t: String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n || SNAME[s.c] || '', py: y(d.v), s: fmt(d.v, o.dec == null ? 1 : o.dec) + (o.unit || '') } : null; }).filter(Boolean) };
+      return { px: x(xv), t: o.xlab ? o.xlab(xv) : String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n || SNAME[s.c] || '', py: y(d.v), s: fmt(d.v, o.dec == null ? 1 : o.dec) + (o.unit || '') } : null; }).filter(Boolean) };
     }));
   }
   var serOf = function (c, w) { return c.y.map(function (y, i) { return { x: y, v: (c[w] || [])[i] }; }); };
@@ -1038,11 +1047,11 @@ function main(FEED) {
   (function () {
     var a = dern(C.arope);
     setHtml('k-otan', fmt(a.fr, 1) + '<small>% de la population</small>'); setHtml('k-otan-d', 'en ' + a.y);
-    setHtml('k-otan-t', 'Pauvres (sous 60 % du revenu médian), en privation sévère ou dans un ménage où l\'on travaille très peu. Moyenne de l\'UE : ' + pc(a.ue) + ' ; Allemagne : ' + pc(a.de) + ' ; Espagne : ' + pc(a.es) + '. Source : ' + lien(C.arope, 'Eurostat') + '.');
+    setHtml('k-otan-t', 'Pauvres (sous 60 % du revenu médian), en privation sévère ou dans un ménage où l\'on travaille très peu. Moyenne de l\'UE : ' + pc(a.ue) + ' ; Allemagne : ' + pc(a.de) + ' ; Espagne : ' + pc(a.es) + '. Source : ' + lien(C.arope, 'Eurostat') + '. <a href="#q-pauv">Voir la courbe ↓</a>');
     var r = C.rev, i = r.y.length - 1; while (r.fr[i] == null) i--;
     var yr = r.y[i], fr = r.fr[i], ue = r.ue[i], j0 = r.y.indexOf(yr - 1);
     setHtml('k-pers', sg(fr - 100, 1) + ' %<small> depuis 2008</small>'); setHtml('k-pers-d', 'en ' + yr);
-    setHtml('k-pers-t', 'Revenu disponible des ménages par habitant, corrigé de la hausse des prix. Sur ' + yr + ' : ' + sg(100 * (fr / r.fr[j0] - 1), 2) + ' % en France, ' + sg(100 * (ue / r.ue[j0] - 1), 2) + ' % en moyenne dans l\'UE. Depuis 2008 : ' + sg(fr - 100, 1) + ' % en France, ' + sg(ue - 100, 1) + ' % dans l\'UE, ' + sg(r.de[i] - 100, 1) + ' % en Allemagne, ' + sg(r.es[i] - 100, 1) + ' % en Espagne. Source : ' + lien(r, 'Eurostat') + '.');
+    setHtml('k-pers-t', 'Revenu disponible des ménages par habitant, corrigé de la hausse des prix. Sur ' + yr + ' : ' + sg(100 * (fr / r.fr[j0] - 1), 2) + ' % en France, ' + sg(100 * (ue / r.ue[j0] - 1), 2) + ' % en moyenne dans l\'UE. Depuis 2008 : ' + sg(fr - 100, 1) + ' % en France, ' + sg(ue - 100, 1) + ' % dans l\'UE, ' + sg(r.de[i] - 100, 1) + ' % en Allemagne, ' + sg(r.es[i] - 100, 1) + ' % en Espagne. Source : ' + lien(r, 'Eurostat') + '. <a href="#q-achat">Voir la courbe ↓</a>');
     var s = dern(C.surp), f = dern(C.froid), e = dern(C.emp), w = dern(C.ecsal), t = dern(C.sat), q = dern(C.s80), h = AFF.idh, hl = lastOf(h, 'fr'), cf = dern(C.conf), iw = dern(C.iw);
     var FACTS = [
       'En ' + a.y + ', <b>' + pc(a.fr) + ' des Français</b> sont pauvres ou en exclusion sociale selon la définition européenne, contre ' + pc(a.ue) + ' en moyenne dans l\'UE.',
@@ -1073,7 +1082,18 @@ function main(FEED) {
     setHtml('q-t', 'Chiffre mensuel, affiché sans note : la note du moral porte sur la moyenne de chaque année complète. Même enquête et mêmes questions dans tous les pays de l\'UE (en France, faite par l\'Insee).');
     setHtml('teaser-month', 'Moral des ménages, ' + esc(M.mois) + ' : <b>' + esc(M.fr) + '</b> en France · <b>' + esc(M.ue) + '</b> en moyenne dans l\'UE' + (n(M.fr) > n(M.ue) ? '' : ''));
   })();
-  var drawMonth = function () {};
+  // Courbe mensuelle du moral (dessinée quand le bloc est ouvert : fermé, il n'a pas de largeur).
+  var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  var drawMonth = function () {
+    var M = SER.MORAL_M; if (!M || !document.getElementById('acc-month').open) return;
+    var xm = function (p) { return +p.slice(0, 4) + (+p.slice(5, 7) - 1) / 12; };
+    var ser = function (w) { return M.m.map(function (p, i) { return { x: xm(p), v: M[w][i] }; }); };
+    var y0 = +M.m[0].slice(0, 4), y1 = +M.m[M.m.length - 1].slice(0, 4), xt = []; for (var y = y0 + 1; y <= y1; y++) xt.push(y);
+    setHtml('moral-key', '<span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span>');
+    lineChart('ch-moral-m', [{ c: 'var(--es)', data: ser('es') }, { c: 'var(--de)', data: ser('de') }, { c: 'var(--ea)', dash: 1, data: ser('ue') }, { c: 'var(--fr)', main: 1, data: ser('fr') }],
+      { x: [xm(M.m[0]) - 0.05, xm(M.m[M.m.length - 1]) + 0.05], xt: xt, dec: 1, label: 'Moral des ménages, chaque mois', xlab: function (v) { var a = Math.floor(v + 1e-6), mo = Math.round((v - a) * 12); return MOIS[mo] + ' ' + a; } });
+    setHtml('moral-note', 'Solde d\'opinion, corrigé des effets de saison, de ' + MOIS[+M.m[0].slice(5, 7) - 1] + ' ' + M.m[0].slice(0, 4) + ' à ' + MOIS[+M.m[M.m.length - 1].slice(5, 7) - 1] + ' ' + M.m[M.m.length - 1].slice(0, 4) + '. Pas de note sur le mois : la note du moral porte sur la moyenne de chaque année complète (thème Moral, plus bas). Source : ' + lien((DS.vie_moral || [])[0] || {}, 'Commission européenne (Eurostat)') + '.');
+  };
   var lastReel = function (c, w) { for (var i = c.y.length - 1; i >= 0; i--) if ((c[w] || [])[i] != null) return { v: c[w][i], y: c.y[i] }; return null; };
   function drawToday() {}
 
@@ -1091,12 +1111,23 @@ function main(FEED) {
       var dv = Math.round((now - lv.t) / 864e5), when = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h', pv = [];
       if (ey > lv.ey) pv.push('enquête sur les conditions de vie ' + ey + ' (Eurostat) : pauvreté ou exclusion <b>' + fmt(lastReel(C.arope, 'fr').v, 1) + ' %</b>');
       if (M.periode && M.periode !== lv.mm) pv.push('moral des ménages de ' + esc(M.mois) + ' : <b>' + esc(M.fr) + '</b>');
+      var na = (DS.actu_vie || []).filter(function (a) { return a.date > new Date(lv.t).toISOString().slice(0, 10); }).length;
+      if (na) pv.push('<b>' + na + ' nouvelle' + (na > 1 ? 's' : '') + ' actualité' + (na > 1 ? 's' : '') + '</b>');
       if (!pv.length) pv.push('pas de nouveau chiffre (le prochain : le moral des ménages, chaque fin de mois)');
       if (dv >= 1) pv.push('un nouveau chiffre à retenir et une nouvelle question');
       vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + pv.join(' ; ') + '.';
       vis.hidden = false;
     })();
   } catch (e) {}
+
+  // ===== L'actualité et l'agenda =====
+  (function () {
+    var A = (DS.actu_vie || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).slice(0, 6), G = (DS.agenda_vie || []).slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    var li = function (d, t, src, url) { return '<li><span class="d">' + esc(d) + '</span><span>' + esc(t) + (url ? ' <a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(src || 'Source') + '</a>' : '') + '</span></li>'; };
+    setHtml('actu-list', A.map(function (a) { return li(dfr(a.date), a.texte, a.source, a.url); }).join('') || '<li><span class="d"></span><span>Pas d\'actualité relevée pour l\'instant : elle est mise à jour chaque jour à partir des sources officielles.</span></li>');
+    setHtml('agenda-list', G.map(function (a) { return li(a.quand || dfr(a.date), a.evenement, a.source, a.url); }).join('') || '<li><span class="d"></span><span>Pas de rendez-vous confirmé.</span></li>');
+    setHtml('teaser-actu', G[0] ? 'À venir, ' + esc((G[0].quand || dfr(G[0].date)).toLowerCase()) + ' : ' + esc(G[0].evenement) : 'L\'actualité de la vie des Français');
+  })();
 
   // ===== Question du jour =====
   (function () {
@@ -1185,7 +1216,7 @@ function main(FEED) {
 
   // ===== Menus, mise à jour, alerte =====
   document.querySelectorAll('.jump a').forEach(function (a) { a.addEventListener('click', function () { var t = document.querySelector(a.getAttribute('href')); if (t && t.tagName === 'DETAILS') t.open = true; }); });
-  ['acc-today', 'acc-month', 'acc-bilan'].forEach(function (id) {
+  ['acc-today', 'acc-month', 'acc-actu', 'acc-bilan'].forEach(function (id) {
     var d = document.getElementById(id);
     try { if (localStorage.getItem('vie-' + id) === 'open') d.open = true; } catch (e) {}
     d.addEventListener('toggle', function () { try { localStorage.setItem('vie-' + id, d.open ? 'open' : 'closed'); } catch (e) {} if (d.open && id === 'acc-month') setTimeout(drawMonth, 30); if (d.open && id === 'acc-today') setTimeout(drawToday, 30); });

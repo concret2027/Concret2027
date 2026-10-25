@@ -109,6 +109,10 @@ def series():
         an[GEO[g]] = {y: round(sum(l) / 12, 1) for y, l in par.items() if len(l) == 12}
     S['conf'] = {'v': an, 'b': {}}
     dernier = max(m['FR'])
+    # Les 60 derniers mois (cinq ans), pour la courbe mensuelle du haut de page.
+    mois = sorted(m['FR'])[-60:]
+    S['moral_m'] = {'m': mois, 'fr': [m['FR'].get(x) for x in mois], 'ue': [m['EU27_2020'].get(x) for x in mois],
+                    'de': [m['DE'].get(x) for x in mois], 'es': [m['ES'].get(x) for x in mois]}
     S['moral_mois'] = {'mois': dernier, 'fr': m['FR'][dernier], 'ue': m['EU27_2020'].get(dernier),
                        'de': m['DE'].get(dernier), 'es': m['ES'].get(dernier)}
     S['idh'], S['idh_fin'], S['idh_rang'], S['idh_edition'], S['idh_url'] = pnud()
@@ -191,6 +195,7 @@ def main():
         i['us_note'] = 'États-Unis : même source (PNUD).'
         a, mo = mm['mois'].split('-')
         txt = lambda v: ('%.1f' % v).replace('.', ',').replace('-', '−')
+        V['MORAL_M'] = S['moral_m']
         o['datasets']['vie_moral'] = [{'mois': '%s %s' % (MOIS[int(mo) - 1], a), 'periode': mm['mois'],
                                       'fr': txt(mm['fr']), 'ue': txt(mm['ue']), 'de': txt(mm['de']), 'es': txt(mm['es']),
                                       'source': "Commission européenne, enquête auprès des consommateurs (Eurostat, ei_bsco_m), corrigé des effets de saison",
