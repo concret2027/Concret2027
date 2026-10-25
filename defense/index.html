@@ -359,7 +359,14 @@ footer p { margin: 0; } footer a { color: inherit; }
 .qlist a { color: var(--fg); font-weight: 600; text-decoration: none; } .qlist span { color: var(--muted); font-size: 13px; } .qlist span b { color: var(--fg); font-weight: 600; }
 .pres-line { margin: 0; font-size: 13.5px; } .pres-line b { font-weight: 600; font-variant-numeric: tabular-nums; }
 #plus-loin > .acc-body { padding-top: 0; }
-.mo { min-width: 0; } .cmp.rep th:nth-child(1) { width: 52%; } .cmp.rep th:nth-child(2) { width: 34%; } .cmp.rep th:nth-child(3) { width: 14%; } .cmp.rep td { white-space: normal; } .cmp.rep td:last-child { text-align: center; } .mo-tab { width: 100%; table-layout: fixed; } .mo-tab th:first-child { width: 44%; } .mo-tab td small { display: block; } .mo-row { cursor: pointer; } .mo-row[aria-selected="true"] td { background: var(--band); } .mo-row[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--fr); }
+.mo { min-width: 0; } /* Repères : une ligne par repère, lisible sur téléphone (pas de tableau à colonnes étroites). */
+.reps { list-style: none; margin: 0; padding: 0; display: grid; }
+.reps li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; padding: 10px 0; border-top: 1px solid var(--line); align-items: center; }
+.reps li:first-child { border-top: 0; padding-top: 2px; }
+.reps .rl { font-size: 12.5px; font-weight: 600; color: var(--muted); line-height: 1.35; }
+.reps .rv { grid-column: 1; font-size: 14.5px; line-height: 1.4; } .reps .rv b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.reps .st { grid-column: 2; grid-row: 1 / span 2; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; background: var(--grid); color: var(--fg); }
+.reps .st.ok { background: var(--s-good); color: var(--ok); } .reps .st.mid { background: var(--s-mid); color: var(--mid); } .reps .st:empty { display: none; } .mo-tab { width: 100%; table-layout: fixed; } .mo-tab th:first-child { width: 44%; } .mo-tab td small { display: block; } .mo-row { cursor: pointer; } .mo-row[aria-selected="true"] td { background: var(--band); } .mo-row[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--fr); }
 </style>
 </head>
 <body data-sources="Sources : Eurostat, OTAN, ministère des Armées (détail en bas de page).">
@@ -383,7 +390,7 @@ footer p { margin: 0; } footer a { color: inherit; }
         </div>
         <div class="mo">
           <span class="mo-lab">Où en est la France face aux repères</span>
-          <table class="cmp rep"><thead><tr><th>Repère</th><th>France</th><th></th></tr></thead><tbody id="rep-tab"></tbody></table>
+          <ul class="reps" id="rep-tab"></ul>
           <span class="mo-t" id="q-t"></span>
         </div>
       </div>
@@ -1012,16 +1019,17 @@ function main(FEED) {
     var o = C.otan, la = lastOf(o, 'fr'), est = (o.est || {})[la.y], lr = lastReel(o, 'fr'), R2 = PV('otan_2014'), R35 = PV('otan_2035'), prem = null;
     o.y.forEach(function (y, i) { if (prem == null && o.fr[i] != null && o.fr[i] >= R2 && !(o.est || {})[y]) prem = y; });
     var qe = C.equip, qr = lastReel(qe, 'fr'), L = SER.P.lpm_2019, ly = SAN.val(o, 'fr', L.annee), N = SER.P.nucleaire, DI = SER.P.dissuasion;
-    var pc = function (v, y, e) { return fmt(v, 2) + ' % en ' + y + (e ? ', estimation de l\'OTAN' : ''); };
-    // Une ligne par repère : ce qu'il demande, où en est la France, atteint ou non (sans jugement : un constat).
+    var pc = function (v, y, e) { return '<b>' + fmt(v, 2) + ' %</b> en ' + y + (e ? ', estimation de l\'OTAN' : ''); };
+    var eL = (o.est || {})[L.annee];
+    // Une ligne par repère : ce qu'il demande, où en est la France, et un constat (atteint, en cours, pas atteint).
     var lignes = [
-      ['Repère de l\'OTAN depuis 2014 : ' + fmt(R2) + ' % du PIB', pc(lr.v, lr.y) + (prem && prem > o.y[0] ? ', atteint pour la première fois depuis ' + o.y[0] : ''), lr.v >= R2 ? 'atteint' : 'non'],
-      ['Loi de programmation militaire 2019-2025 : ' + fmt(L.v) + ' % du PIB en ' + L.annee, ly == null ? 'pas encore publié' : pc(ly, L.annee, (o.est || {})[L.annee]) + ((o.est || {})[L.annee] ? '' : ' (mesure de l\'OTAN)'), ly == null ? '' : (ly >= L.v ? 'atteint' : 'non') + ((o.est || {})[L.annee] ? ', d\'après l\'estimation' : '')],
-      ['Engagement de La Haye (2025) : au moins ' + fmt(R35, 1) + ' % du PIB d\'ici 2035', pc(la.v, la.y, est) + ' ; il reste ' + fmt(R35 - la.v, 2) + ' point', 'en cours'],
-      ['Repère de l\'OTAN : ' + fmt(PV('otan_equip')) + ' % de la dépense pour les grands équipements', fmt(qr.v, 1) + ' % en ' + qr.y, qr.v >= PV('otan_equip') ? 'atteint' : 'non'],
-      ['Dissuasion nucléaire', 'seul pays de l\'UE parmi les ' + N.v + ' États qui ont l\'arme nucléaire ; ' + fmt(DI.v, 1) + ' Md€ dans le budget ' + DI.annee, '']
+      ['Repère de l\'OTAN depuis 2014 : ' + fmt(R2) + ' % du PIB', pc(lr.v, lr.y) + (prem && prem > o.y[0] ? ', pour la première fois depuis ' + o.y[0] : ''), lr.v >= R2 ? 'atteint' : 'pas atteint'],
+      ['Loi de programmation militaire 2019-2025 : ' + fmt(L.v) + ' % du PIB en ' + L.annee, ly == null ? 'pas encore publié' : pc(ly, L.annee, eL) + (eL ? '' : ' (mesure de l\'OTAN)'), ly == null ? '' : ly >= L.v ? (eL ? 'atteint (estimation)' : 'atteint') : 'pas atteint'],
+      ['Engagement de La Haye (2025) : au moins ' + fmt(R35, 1) + ' % du PIB d\'ici 2035', pc(la.v, la.y, est) + ' ; il reste <b>' + fmt(R35 - la.v, 2) + ' point</b>', 'en cours'],
+      ['Repère de l\'OTAN : ' + fmt(PV('otan_equip')) + ' % de la dépense de défense pour les grands équipements', '<b>' + fmt(qr.v, 1) + ' %</b> en ' + qr.y, qr.v >= PV('otan_equip') ? 'atteint' : 'pas atteint'],
+      ['Dissuasion nucléaire', 'Seul pays de l\'UE parmi les ' + N.v + ' États qui ont l\'arme nucléaire ; <b>' + fmt(DI.v, 1) + ' Md€</b> dans le budget ' + DI.annee, '']
     ];
-    setHtml('rep-tab', lignes.map(function (l) { return '<tr class="nm"><td>' + l[0] + '</td><td>' + l[1] + '</td><td class="i">' + l[2] + '</td></tr>'; }).join(''));
+    setHtml('rep-tab', lignes.map(function (l) { return '<li><span class="rl">' + l[0] + '</span><span class="rv">' + l[1] + '</span><span class="st' + (/^atteint/.test(l[2]) ? ' ok' : l[2] === 'en cours' ? ' mid' : '') + '">' + l[2] + '</span></li>'; }).join(''));
     setHtml('q-t', 'Pas de note pour ces repères : la note compare la France à la moyenne de l\'UE, ces repères sont affichés pour situer. Le nucléaire n\'apporte pas de point : il ne se mesure pas chaque année de la même façon dans les autres pays de l\'UE, et son coût est déjà compté dans la dépense de défense. Sources : ' + lien(o, 'OTAN') + ', ' + lien(L, 'loi de programmation') + ', ' + lien(N, 'SIPRI') + ', ' + lien(DI, 'ministère des Armées') + '.');
     setHtml('teaser-month', 'Budget ' + B.annee + ' des armées : <b>' + fmt(B.v, 1) + '&nbsp;Md€</b>' + (projet ? ' (projet)' : '') + ' · Défense : <b>' + fmt(lr.v, 2) + '&nbsp;%</b> du PIB en ' + lr.y + ' · repère de ' + fmt(R2) + ' % ' + (lr.v >= R2 ? 'atteint' : 'pas encore atteint'));
   })();
