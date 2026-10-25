@@ -592,8 +592,8 @@ function main(FEED) {
       var cell = function (x, dx) { return x == null ? '—' : dx == null ? '— (' + fmt(x, dec) + ')' : sg(dx, dec) + ' (' + fmt(x, dec) + ')'; };
       var gap = a == null || b == null || d == null ? '' : sg((a - b) - d, dec);
       rows += '<tr><td>' + y + '</td><td>' + cell(a, b == null ? null : a - b) + '</td><td>' + cell(e, d) + '</td><td>' + gap + '</td><td>' + ptHtml(pt) + '</td></tr>';
-      if (pt === 1 && c.regle === 'effort' && SAN.evol(c, y) !== 1) { var r1 = v('fr_reel', y), r0 = v('fr_reel', y - 1); why.push('1 point en ' + y + ' : la France progresse moins que ' + refN(c, 2) + ', mais elle reste au-dessus et sa dépense ne recule pas hors inflation' + (r1 != null && r0 != null ? ' (' + sg(100 * (r1 / r0 - 1), 1) + ' %)' : '') + '.'); }
-      else if (pt === 0 && c.regle === 'effort' && a != null && e != null && a > e && SAN.recule(c, y)) { var s1 = v('fr_reel', y), s0 = v('fr_reel', y - 1); why.push('0 point en ' + y + ' : la France reste au-dessus de ' + refN(c, 2) + ', mais sa dépense recule hors inflation' + (s1 != null && s0 != null ? ' (' + sg(100 * (s1 / s0 - 1), 1) + ' %)' : '') + '.'); }
+      if (pt === 1 && c.regle === 'effort' && SAN.evol(c, y) !== 1) { var r1 = v('fr_reel', y), r0 = v('fr_reel', y - 1); why.push('1 point en ' + y + ' : la France progresse moins que ' + refN(c, 2) + ', mais elle reste au-dessus (' + fmt(a, dec) + (c.uc === ' %' ? ' %' : '') + ' contre ' + fmt(e, dec) + (c.uc === ' %' ? ' %' : '') + ') et sa dépense ne recule pas hors inflation' + (r1 != null && r0 != null ? ' (' + sg(100 * (r1 / r0 - 1), 1) + ' %)' : '') + '.'); }
+      else if (pt === 0 && c.regle === 'effort' && a != null && e != null && a > e && SAN.recule(c, y)) { var s1 = v('fr_reel', y), s0 = v('fr_reel', y - 1); why.push('0 point en ' + y + ' : la France reste au-dessus de ' + refN(c, 2) + ' (' + fmt(a, dec) + (c.uc === ' %' ? ' %' : '') + ' contre ' + fmt(e, dec) + (c.uc === ' %' ? ' %' : '') + '), mais sa dépense recule hors inflation' + (s1 != null && s0 != null ? ' (' + sg(100 * (s1 / s0 - 1), 1) + ' %)' : '') + '.'); }
       else if (pt === 0.5) why.push(POURQUOI.egalite(y, refN(c, 2)));
       else if (pt == null) why.push(SAN.raisonSerie(c, y));
     }
@@ -656,6 +656,11 @@ function main(FEED) {
     } else {
       h += evolTable(c, g.y0, g.y1, why);
       foot = 'Écart = évolution de la France moins celle ' + refN(c, 3) + '. ' + (c.low ? 'Ici, une baisse est un progrès.' : 'Ici, une hausse est un progrès.');
+      if (c.regle === 'effort') {
+        // La barre à dépasser est la moyenne de l'UE de chaque année (entre parenthèses dans la colonne UE) ; le repère de l'OTAN situe.
+        var lr = lastReel(c, 'fr'), u = c.uc === ' %' ? ' %' : '';
+        foot += ' Ce que la France doit dépasser pour garder le point quand elle progresse moins : la moyenne de l\'UE de l\'année (le chiffre entre parenthèses dans la colonne UE).' + (c.objectif ? ' Pour situer, le repère de l\'OTAN est de ' + fmt(c.objectif.v) + u + ' ; la France est à ' + fmt(lr.v, decOf(c)) + u + ' en ' + lr.y + ' (' + (lr.v >= c.objectif.v ? 'au-dessus' : 'en dessous') + ').' : ' Il n\'y a pas de repère de l\'OTAN pour cet indicateur.');
+      }
     }
     why = why.filter(function (t, i) { return why.indexOf(t) === i; });
     if (why.length) h += '<p class="kdet-why">' + why.join('<br>') + '</p>';
