@@ -87,6 +87,17 @@ if (S.education) {
   });
   vus.forEach(function (v) { alertes.push('jargon à remplacer par une phrase claire dans ' + v + ' (règle de CLAUDE.md)'); });
 })();
+// Question du jour : le lien « Vérifier » (QUIZ[i].v) mène à une courbe ou un bloc qui existe sur la page.
+(function () {
+  ['finances', 'education', 'sante', 'securite', 'defense', 'vie'].forEach(function (pg) {
+    var html = fs.readFileSync(path.join(ROOT, pg, 'index.html'), 'utf8'), ser = S[pg] || {}, cles = Object.keys(ser.C || {}).concat(Object.keys(ser.AFF || {}));
+    (ser.QUIZ || []).forEach(function (q, i) {
+      if (!q.v) return;
+      var ok = html.indexOf('id="' + q.v + '"') >= 0 || html.indexOf('\'' + q.v + '\'') >= 0 || cles.some(function (k) { return q.v === 'ch-' + k || q.v === 'ch-a-' + k || q.v.indexOf('ch-' + k + '-') === 0; });
+      if (!ok) err(pg + '.QUIZ[' + i + '] : lien « Vérifier » vers « ' + q.v + ' », absent de la page');
+    });
+  });
+})();
 // Sondages (loi du 19 juillet 1977) : chaque sondage publié a sa notice lue à la Commission des sondages
 // (datasets.sondages_notices, écrit par outils/sondages.py), avec commanditaire et marge d'erreur.
 (function () {
