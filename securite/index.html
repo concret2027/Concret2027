@@ -21,6 +21,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025i"></script>
 <script src="/commun/bref.js?v=20261025d"></script>
+<script src="/commun/quiz.js?v=20261025a"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
 .recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
@@ -1104,12 +1105,13 @@ function main(FEED) {
     var Q = pick(SER.QUIZ), opts = document.getElementById('quiz-opts'), ans = document.getElementById('quiz-a'), key = 'securite-quiz-' + idx;
     document.getElementById('quiz-day').textContent = 'Question du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
     document.getElementById('quiz-q').textContent = Q.q;
-    function reveal(p) {
+    function reveal(p, nouveau) {
       Array.prototype.forEach.call(opts.children, function (b, i) { b.disabled = true; if (i === Q.a) b.classList.add('right'); else if (i === p) b.classList.add('wrong'); });
       ans.textContent = (p === Q.a ? 'Bonne réponse. ' : 'Raté. ') + Q.e + ' Nouvelle question demain.'; ans.hidden = false;
       try { localStorage.setItem(key, String(p)); } catch (e) {}
+      if (window.ConcretQuiz) ConcretQuiz.repondu('securite', Q, p, !!nouveau);
     }
-    Q.o.forEach(function (o, i) { var b = document.createElement('button'); b.className = 'opt'; b.id = 'opt-' + i; b.type = 'button'; b.textContent = o; b.addEventListener('click', function () { reveal(i); }); opts.appendChild(b); });
+    Q.o.forEach(function (o, i) { var b = document.createElement('button'); b.className = 'opt'; b.id = 'opt-' + i; b.type = 'button'; b.textContent = o; b.addEventListener('click', function () { reveal(i, true); }); opts.appendChild(b); });
     try { var prev = localStorage.getItem(key); if (prev != null) reveal(+prev); } catch (e) {}
   })();
 

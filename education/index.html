@@ -21,6 +21,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025i"></script>
 <script src="/commun/bref.js?v=20261025d"></script>
+<script src="/commun/quiz.js?v=20261025a"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
 .sous > summary { cursor: pointer; list-style: none; padding: 10px 0; font-weight: 600; font-size: 13.5px; color: var(--fr); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -984,12 +985,13 @@ function main(FEED) {
   document.getElementById('quiz-day').textContent = 'Question du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
   document.getElementById('quiz-q').textContent = Q.q;
   var opts = document.getElementById('quiz-opts'), ans = document.getElementById('quiz-a'), storeKey = 'edu-quiz-' + idx;
-  function reveal(pick) {
+  function reveal(pick, nouveau) {
     Array.prototype.forEach.call(opts.children, function (b, i) { b.disabled = true; if (i === Q.a) b.classList.add('right'); else if (i === pick) b.classList.add('wrong'); });
     ans.textContent = (pick === Q.a ? 'Bonne réponse. ' : 'Raté. ') + Q.e + ' Nouvelle question demain.'; ans.hidden = false;
     try { localStorage.setItem(storeKey, String(pick)); } catch (e) {}
+    if (window.ConcretQuiz) ConcretQuiz.repondu('education', Q, pick, !!nouveau);
   }
-  Q.o.forEach(function (o, i) { var b = document.createElement('button'); b.className = 'opt'; b.id = 'opt-' + i; b.textContent = o; b.addEventListener('click', function () { reveal(i); }); opts.appendChild(b); });
+  Q.o.forEach(function (o, i) { var b = document.createElement('button'); b.className = 'opt'; b.id = 'opt-' + i; b.textContent = o; b.addEventListener('click', function () { reveal(i, true); }); opts.appendChild(b); });
   try { var prev = localStorage.getItem(storeKey); if (prev != null) reveal(+prev); } catch (e) {}
 
   // ===== Actualité =====
