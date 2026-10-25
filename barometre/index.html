@@ -18,6 +18,7 @@
 <style>html, body { margin: 0; } img { max-width: 100%; } [hidden] { display: none !important; }.bx-notices { list-style: none; margin: 8px 0 0; padding: 0; max-height: 420px; overflow: auto; border-top: 1px solid var(--line, #e2e2dc); }
 .bx-notices li { display: grid; grid-template-columns: 6.5em 1fr; gap: 8px; padding: 8px 2px; border-bottom: 1px solid var(--line, #e2e2dc); font-size: 13px; line-height: 1.4; }
 .bx-notices .d { color: var(--muted, #62646d); font-variant-numeric: tabular-nums; }
+.bx-sharing { overflow: hidden; } .bx-sharing .bx-chart { width: 740px !important; max-width: none !important; } .bx-sharing .bx-multi { width: 620px !important; max-width: none !important; }
 </style>
 <meta name="description" content="Sondages, parieurs et pouls du pays : la présidentielle 2027 en un coup d'œil, mis à jour en continu.">
 <style>
@@ -186,7 +187,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
     loader: function () {},
     data: function (id) { var d = get(id); return d ? { status: 'ok', data: d, columns: d[0] ? Object.keys(d[0]) : [], meta: [] } : { status: 'missing', data: [] }; },
     onData: function (fn) { fns.push(fn); },
-    params: function () { return {}; }, setParams: function () {}, resetParams: function () {}, setLink: function () {}, refresh: function () {}
+    params: function () { return {}; }, setParams: function () {}, resetParams: function () {}, setLink: function () {}, refresh: function () { run(); }
   };
   function run() { if (!P) return; fns.forEach(function (f) { try { f(); } catch (e) { console.error(e); } }); }
   var loaded = new Promise(function (r) { if (document.readyState === 'complete') r(); else window.addEventListener('load', r); });
@@ -966,11 +967,21 @@ window.addEventListener('baro:data', function () {
     return ['Dernier sondage représenté : ' + z.institut + ' pour ' + z.commanditaire + (z.terrain ? ', terrain du ' + z.terrain : ', publié le ' + fd(z.date)) + (z.echantillon ? ', ' + nb(z.echantillon) + ' personnes interrogées' : '') + ', marge d\'erreur ± ' + z.marge + ' points (notice n° ' + z.notice + ').',
       L.length + ' sondages représentés, du ' + fd(L[0].date) + ' au ' + fd(z.date) + ' (' + inst.join(', ') + '), marges d\'erreur de ± ' + fx(Math.min.apply(null, ms)) + ' à ± ' + fx(Math.max.apply(null, ms)) + ' points. Commanditaire, dates et nombre de personnes interrogées de chacun : concret2027.fr/barometre, « Les sondages, notice par notice » ; notices sur commission-des-sondages.fr. Tout sondage est affecté de marges d\'erreur.'];
   }
+  // Partage : le graphique est redessiné en grand format (740 px de large, agrandi dans l'image) le temps de la capture, quel que soit l'écran,
+  // pour que l'image soit lisible ; puis la page reprend sa taille.
   function share(card) {
+    card.classList.add('bx-sharing'); dash.refresh();
+    requestAnimationFrame(function () { requestAnimationFrame(function () { shareWide(card); }); });
+  }
+  function shareWide(card) {
+    var fin = function () { card.classList.remove('bx-sharing'); dash.refresh(); };
     var svgs = Array.prototype.filter.call(card.querySelectorAll('svg'), function (s) { return s.getBoundingClientRect().width > 50; });
-    if (!svgs.length) return;
+    if (!svgs.length) { fin(); return; }
     var labels = svgs.map(function (sv) { var pn = sv.closest('.bx-panel'), h = pn && pn.querySelector('h3'); return h ? h.textContent : ''; });
-    Promise.all(svgs.map(svgImage)).then(function (imgs) {
+    // Légende des couleurs (second tour : un trait par adversaire), reprise dans l'image.
+    var LEG = card.id === 'second-tour' ? Array.prototype.map.call(card.querySelectorAll('.bx-legend span'), function (sp) { var i = sp.querySelector('i'); return { c: i ? getComputedStyle(i).backgroundColor : '#888', t: sp.textContent.trim() }; }) : [];
+    var ready = Promise.all(svgs.map(svgImage)); ready.then(fin, fin);
+    ready.then(function (imgs) {
       var bs = getComputedStyle(document.body), bg = bs.backgroundColor, fg = bs.color;
       var W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
       var x = c.getContext('2d');
@@ -985,6 +996,7 @@ window.addEventListener('baro:data', function () {
       // Mentions légales des sondages, en bas de l'image : on mesure leur hauteur avant de placer les graphiques.
       var ML = mentions(card), mh = 0;
       if (ML.length) { x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var mc = document.createElement('canvas').getContext('2d'); mc.font = x.font; ML.forEach(function (t) { var line = '', n = 1; t.split(' ').forEach(function (w) { var u = line ? line + ' ' + w : w; if (mc.measureText(u).width > W - 140 && line) { n++; line = w; } else line = u; }); mh += n * 29 + 8; }); mh += 16; }
+      if (LEG.length) { x.font = '500 26px "Inter Tight", system-ui, sans-serif'; var lx = 70, ly = y + 14; LEG.forEach(function (g) { var w = 30 + x.measureText(g.t).width + 30; if (lx + w > W - 70) { lx = 70; ly += 40; } x.fillStyle = g.c; x.beginPath(); x.arc(lx + 10, ly - 9, 10, 0, 7); x.fill(); x.fillStyle = fg; x.fillText(g.t, lx + 28, ly); lx += w; }); y = ly + 22; }
       var top = y + 20, avail = H - 170 - top - mh, cols = imgs.length > 1 ? 2 : 1, rows = Math.ceil(imgs.length / cols), gw = (W - 140 - (cols - 1) * 30) / cols, gh = (avail - (rows - 1) * 24) / rows;
       imgs.forEach(function (im, i) {
         var lh = labels[i] ? 40 : 0, s = Math.min(gw / im.w, (gh - lh) / im.h), dw = im.w * s, dh = im.h * s, cx = 70 + (i % cols) * (gw + 30) + (gw - dw) / 2, cy = top + Math.floor(i / cols) * (gh + 24);
