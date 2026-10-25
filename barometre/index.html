@@ -946,6 +946,26 @@ window.addEventListener('baro:data', function () {
     words.forEach(function (w) { var t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line) { x.fillText(line, px, py); py += lh; line = w; } else line = t; });
     if (line) x.fillText(line, px, py); return py + lh;
   }
+  // Mentions de la loi du 19 juillet 1977 pour les sondages d'un graphique partagé : le dernier sondage en entier, puis
+  // l'ensemble (nombre, période, instituts, marges d'erreur) avec le renvoi vers la liste complète et les notices.
+  function mentions(card) {
+    var src = card.id === 'second-tour' ? 'sondages_t2' : card.id === 'premier-tour' || card.id === 'sondages-et-paris' ? 'sondages_t1' : null;
+    if (!src) return [];
+    var rows = dash.data(src).data || [], N = dash.data('sondages_notices').data || [], cle = function (d, i) { return d + '|' + String(i).replace(/ Interactive$/, ''); }, idx = {};
+    N.forEach(function (n) { idx[cle(n.date, n.institut)] = n; });
+    if (src === 'sondages_t2') rows = rows.filter(function (r) { return r.date >= '2026-01-01'; });
+    var polls = {}; rows.forEach(function (r) { var n = idx[cle(r.date, r.institut)]; if (n) polls[cle(r.date, r.institut)] = n; });
+    var L = Object.keys(polls).map(function (k) { return polls[k]; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    if (!L.length) return [];
+    var fd = function (d) { return new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); };
+    var nb = function (v) { return new Intl.NumberFormat('fr-FR').format(+v); };
+    var z = L[L.length - 1], ms = [];
+    L.forEach(function (n) { (n.marge || '').split(' à ').forEach(function (v) { var x = parseFloat(v.replace(',', '.')); if (!isNaN(x)) ms.push(x); }); });
+    var fx = function (v) { return String(v).replace('.', ','); };
+    var inst = Array.from(new Set(L.map(function (n) { return n.institut; })));
+    return ['Dernier sondage représenté : ' + z.institut + ' pour ' + z.commanditaire + (z.terrain ? ', terrain du ' + z.terrain : ', publié le ' + fd(z.date)) + (z.echantillon ? ', ' + nb(z.echantillon) + ' personnes interrogées' : '') + ', marge d\'erreur ± ' + z.marge + ' points (notice n° ' + z.notice + ').',
+      L.length + ' sondages représentés, du ' + fd(L[0].date) + ' au ' + fd(z.date) + ' (' + inst.join(', ') + '), marges d\'erreur de ± ' + fx(Math.min.apply(null, ms)) + ' à ± ' + fx(Math.max.apply(null, ms)) + ' points. Commanditaire, dates et nombre de personnes interrogées de chacun : concret2027.fr/barometre, « Les sondages, notice par notice » ; notices sur commission-des-sondages.fr. Tout sondage est affecté de marges d\'erreur.'];
+  }
   function share(card) {
     var svgs = Array.prototype.filter.call(card.querySelectorAll('svg'), function (s) { return s.getBoundingClientRect().width > 50; });
     if (!svgs.length) return;
@@ -962,12 +982,16 @@ window.addEventListener('baro:data', function () {
       var y = wrap(x, card.querySelector('h2').textContent, 70, 190, W - 140, 72);
       var note = card.querySelector('.bx-note');
       if (note) { x.globalAlpha = .7; x.font = '400 28px "Inter Tight", system-ui, sans-serif'; y = wrap(x, note.textContent.split('. ')[0].replace(/\.$/, '') + '.', 70, y + 4, W - 140, 38); x.globalAlpha = 1; }
-      var top = y + 20, avail = H - 170 - top, cols = imgs.length > 1 ? 2 : 1, rows = Math.ceil(imgs.length / cols), gw = (W - 140 - (cols - 1) * 30) / cols, gh = (avail - (rows - 1) * 24) / rows;
+      // Mentions légales des sondages, en bas de l'image : on mesure leur hauteur avant de placer les graphiques.
+      var ML = mentions(card), mh = 0;
+      if (ML.length) { x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var mc = document.createElement('canvas').getContext('2d'); mc.font = x.font; ML.forEach(function (t) { var line = '', n = 1; t.split(' ').forEach(function (w) { var u = line ? line + ' ' + w : w; if (mc.measureText(u).width > W - 140 && line) { n++; line = w; } else line = u; }); mh += n * 29 + 8; }); mh += 16; }
+      var top = y + 20, avail = H - 170 - top - mh, cols = imgs.length > 1 ? 2 : 1, rows = Math.ceil(imgs.length / cols), gw = (W - 140 - (cols - 1) * 30) / cols, gh = (avail - (rows - 1) * 24) / rows;
       imgs.forEach(function (im, i) {
         var lh = labels[i] ? 40 : 0, s = Math.min(gw / im.w, (gh - lh) / im.h), dw = im.w * s, dh = im.h * s, cx = 70 + (i % cols) * (gw + 30) + (gw - dw) / 2, cy = top + Math.floor(i / cols) * (gh + 24);
         if (lh) { x.fillStyle = fg; x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.fillText(labels[i], 70 + (i % cols) * (gw + 30), cy + 28); }
         x.drawImage(im.img, cx, cy + lh, dw, dh);
       });
+      if (ML.length) { x.fillStyle = fg; x.globalAlpha = .75; x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var my = H - 150 - mh + 16; ML.forEach(function (t) { my = wrap(x, t, 70, my + 22, W - 140, 29) - 22 + 8; }); x.globalAlpha = 1; }
       x.fillStyle = '#2f5bd3'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText('concret2027.fr', 70, H - 90);
       x.fillStyle = fg; x.globalAlpha = .6; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; x.fillText('Sources : Commission des sondages, instituts, Polymarket', 70, H - 48); x.globalAlpha = 1;
       var show = function () { document.getElementById('bx-sheet-img').src = c.toDataURL('image/png'); document.getElementById('bx-sheet').hidden = false; document.getElementById('bx-sheet-close').focus(); };
