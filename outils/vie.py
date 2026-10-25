@@ -147,16 +147,23 @@ def main():
         b = {str(y): br(s['b'], y, calc) for y in ys[1:] if br(s['b'], y, calc)}
         if b or c.get('br'):
             neuf['br'] = b
+        # Dernières années publiées pour la moyenne de l'UE mais pas encore pour la France : on le dit.
+        fin_fr = max(y for y in ys if s['v'].get('fr', {}).get(y) is not None)
+        m = {str(y): "Non compté : le chiffre %d de la France n'est pas encore publié par Eurostat." % y for y in ys if y > fin_fr}
+        if m or c.get('manque'):
+            neuf['manque'] = m
         ch = [w for w in neuf if c.get(w) != neuf[w]]
         print('%s : %d-%d%s' % (k, ys[0], ys[-1], (' ; changé : ' + ', '.join(ch)) if ch else ' ; inchangé'))
         for w in ch:
-            if w not in ('y', 'br') and c.get(w):
+            if w not in ('y', 'br', 'manque') and c.get(w):
                 old = dict(zip(c['y'], c[w]))
                 print('    %s : %s' % (w, ', '.join('%d %s→%s' % (y, old.get(y), v) for y, v in zip(ys, neuf[w]) if old.get(y) != v)))
         if ecrire:
             c.update(neuf)
             if not neuf.get('br'):
                 c.pop('br', None)
+            if not neuf.get('manque'):
+                c.pop('manque', None)
     i, I = V['AFF']['idh'], S['idh']
     ys = list(range(1995, S['idh_fin'] + 1))
     neuf = {'y': ys}
