@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-<script src="../commun/notes.js?v=20261025e"></script>
+<script src="../commun/notes.js?v=20261025f"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
 .recit { font-family: var(--serif); font-size: 26px; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
@@ -445,7 +445,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne (quand la source n'en publie pas, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul), <b>0 point</b> sinon, ½ en cas d'égalité. Chaque thème a une note sur 20 ; <b>la note sécurité et justice est la moyenne des cinq thèmes. 10/20 = le niveau de nos voisins.</b></p>
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux que cette moyenne cette année-là et ne se dégrade pas</b> (une avance qui se maintient n'est pas pénalisée parce que des pays en retard rattrapent ; les résultats jugés sur cinq ans et les programmes de vaccins ou de dépistage gardent la seule évolution). Quand la source ne publie pas la moyenne de l'UE, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul), <b>0 point</b> sinon, ½ en cas d'égalité. Chaque thème a une note sur 20 ; <b>la note sécurité et justice est la moyenne des cinq thèmes. 10/20 = le niveau de nos voisins.</b></p>
         <table class="seuils"><tbody id="regles"></tbody></table>
       </div>
     </details>
@@ -573,15 +573,17 @@ function main(FEED) {
   // ===== Bulletin : détail année par année =====
   var ptHtml = function (v) { return v == null ? '<span class="pt na">non compté</span>' : v === 1 ? '<span class="pt g">1</span>' : v === 0 ? '<span class="pt b">0</span>' : '<span class="pt m">' + (v === 0.5 ? '½' : fmt(v, 2)) + '</span>'; };
   // Tableau d'évolution année par année d'une série comparée à la moyenne de l'UE (publiée ou calculée par Concret).
-  function evolTable(c, y0, y1, why) {
+  // avance : la règle par défaut (avance tenue) ; sans, le seul point d'évolution (éléments d'un programme, résultats sur cinq ans).
+  function evolTable(c, y0, y1, why, avance) {
     var r = SAN.ref(c), dec = decOf(c), v = function (w, y) { return SAN.val(c, w, y); }, rows = '';
     for (var y = y0; y <= y1; y++) {
       // d : évolution de la moyenne de l'UE (pour la moyenne calculée, sur les pays qui publient les deux années).
-      var pt = SAN.evol(c, y), a = v('fr', y), b = v('fr', y - 1), e = v(r, y), d = SAN.refEv(c, y);
+      var pt = avance ? SAN.effort(c, y) : SAN.evol(c, y), a = v('fr', y), b = v('fr', y - 1), e = v(r, y), d = SAN.refEv(c, y);
       var cell = function (x, dx) { return x == null ? '—' : dx == null ? '— (' + fmt(x, dec) + ')' : sg(dx, dec) + ' (' + fmt(x, dec) + ')'; };
       var gap = a == null || b == null || d == null ? '' : sg((a - b) - d, dec);
       rows += '<tr><td>' + y + '</td><td>' + cell(a, b == null ? null : a - b) + '</td><td>' + cell(e, d) + '</td><td>' + gap + '</td><td>' + ptHtml(pt) + '</td></tr>';
-      if (pt === 0.5) why.push(POURQUOI.egalite(y, refN(c, 2)));
+      if (avance && pt === 1 && SAN.evol(c, y) !== 1) why.push(POURQUOI.avance(y, refN(c, 2), fmt(a, dec) + (c.uc === ' %' ? ' %' : ''), fmt(e, dec) + (c.uc === ' %' ? ' %' : '')));
+      else if (pt === 0.5) why.push(POURQUOI.egalite(y, refN(c, 2)));
       else if (pt == null) why.push(SAN.raisonSerie(c, y));
     }
     return '<table><thead><tr><th>Année</th><th>France</th><th>' + nomRef(c) + '</th><th>Écart</th><th>Point</th></tr></thead><tbody>' + rows + '</tbody></table>';
@@ -634,14 +636,16 @@ function main(FEED) {
       g.y[k].forEach(function (d) {
         var a = v('fr', d.y), e = v('ue', d.y);
         h += '<tr><td>' + d.y + '</td><td>' + (a == null ? '—' : fmt(a, 1)) + '</td><td>' + (e == null ? '—' : fmt(e, 1)) + '</td><td>' + ptHtml(d.pt) + '</td></tr>';
+        var pa = v('fr', d.y - 1);
         if (d.pt === 1 && a >= e) why.push('1 point en ' + d.y + ' : l\'écart français reste plus grand que celui de l\'UE, mais il s\'est réduit plus vite.');
+        else if (d.pt === 0 && a < e && pa != null && a > pa) why.push('0 point en ' + d.y + ' : l\'écart français est plus faible que celui de l\'UE, mais il s\'est creusé.');
         else if (d.pt === 0.5) why.push('Demi-point en ' + d.y + ' : l\'écart est exactement le même qu\'en moyenne dans l\'UE.');
         else if (d.pt == null) why.push(SAN.raison(k, d.y));
       });
       h += '</tbody></table>';
       foot = 'Écart = part des 20 % les plus modestes qui renoncent à un examen médical, moins celle des 20 % les plus aisés, en points. Plus il est faible, plus l\'accès est égal.';
     } else {
-      h += evolTable(c, g.y0, g.y1, why);
+      h += evolTable(c, g.y0, g.y1, why, true);
       foot = 'Écart = évolution de la France moins celle ' + refN(c, 3) + '. ' + (c.low ? 'Ici, une baisse est un progrès.' : 'Ici, une hausse est un progrès.');
     }
     why = why.filter(function (t, i) { return why.indexOf(t) === i; });
@@ -947,8 +951,8 @@ function main(FEED) {
       if (c.regle === 'long') return 'comparés à ' + refN(c, 2) + ' ; ces résultats mettent des années à bouger, chaque année d\'un mandat compte donc pour la moyenne des points de l\'année et des quatre suivantes';
       if (c.regle === 'composite') return 'le point de l\'année est la part des éléments où la France progresse mieux que la moyenne de l\'UE';
       if (c.regle === 'niveau') return 'comparé chaque année à la moyenne de l\'UE (point si la France fait mieux)';
-      if (c.regle === 'ecart') return 'point si l\'écart français est plus faible que celui de l\'UE, ou s\'il se réduit plus vite';
-      return 'point si la France progresse mieux que ' + refN(c, 2) + (c.low ? ' (ici, une baisse est un progrès)' : ' (ici, une hausse compte comme un progrès)');
+      if (c.regle === 'ecart') return 'point si l\'écart français est plus faible que celui de l\'UE et ne se creuse pas, ou s\'il se réduit plus vite';
+      return 'point si la France progresse mieux que ' + refN(c, 2) + ', ou si elle fait déjà mieux et ne se dégrade pas' + (c.low ? ' (ici, une baisse est un progrès)' : ' (ici, une hausse compte comme un progrès)');
     };
     // Les indicateurs d'un thème qui suivent la même règle sont regroupés en une phrase.
     var liste = function (a) { return a.length > 1 ? a.slice(0, -1).join(', ') + ' et ' + a[a.length - 1] : a[0]; };
@@ -1102,7 +1106,7 @@ function main(FEED) {
       return '<b>' + esc(t.q) + '.</b> ' + (parts.length ? parts.join(' ') : 'Pas assez d\'années comparables pour mesurer une évolution.');
     });
     var pr = PRES.map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
-    items.push('<b>Au bulletin</b>, ' + pr.map(function (r) { return esc(r.g.n) + ' ' + nfmt(r.n) + '/20'; }).join(', ') + '. La note mesure si la France a progressé plus vite que ses voisins.');
+    items.push('<b>Au bulletin</b>, ' + pr.map(function (r) { return esc(r.g.n) + ' ' + nfmt(r.n) + '/20'; }).join(', ') + '. La note mesure si la France a progressé plus vite que ses voisins, ou a tenu son avance.');
     setHtml('sum-list', items.map(function (t) { return '<li>' + t + '</li>'; }).join(''));
   })();
 

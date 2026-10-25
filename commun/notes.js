@@ -24,8 +24,20 @@
     provisoire: function (y) { return 'Non compté : le chiffre ' + y + ' est provisoire (statistiques nationales) ; la moyenne de l\'UE de ' + y + ' se calcule quand Eurostat publie les chiffres des pays de l\'UE.'; },
     uePasPublie: function (y) { return 'Non compté : les pays de l\'UE n\'ont pas encore publié ce chiffre pour ' + y + ', sa moyenne ne peut pas encore être calculée.'; },
     couverture: function (y) { return 'Non compté : les pays de l\'UE qui publient ce chiffre en ' + (y - 1) + ' et en ' + y + ' font moins de 70 % de sa population, sa moyenne ne peut pas être calculée.'; },
-    egalite: function (y, voisin) { return 'Demi-point : en ' + y + ', la France et ' + voisin + ' ont évolué exactement autant.'; }
+    egalite: function (y, voisin) { return 'Demi-point : en ' + y + ', la France et ' + voisin + ' ont évolué exactement autant.'; },
+    // Avance tenue : la France progresse moins que la moyenne, mais fait déjà mieux qu'elle et ne se dégrade pas.
+    avance: function (y, voisin, fr, ue) { return '1 point en ' + y + ' : la France progresse moins que ' + voisin + ', mais elle fait déjà mieux (' + fr + ' contre ' + ue + ') et ne se dégrade pas.'; }
   };
+
+  // Règle commune de Concret, « l'avance tenue » : pt est le point d'évolution de l'année (la France progresse-t-elle mieux
+  // que la moyenne de l'UE ?). S'il manque, la France le garde quand même si elle fait déjà mieux que cette moyenne cette
+  // année-là et qu'elle ne se dégrade pas : une avance qui se maintient n'est pas pénalisée parce que des pays en retard
+  // rattrapent. degrade : la France recule cette année-là (dans le sens de l'indicateur).
+  function avance(pt, fr, ref, low, degrade) {
+    if (pt == null || pt === 1 || fr == null || ref == null || degrade) return pt;
+    return (low ? fr < ref - 1e-9 : fr > ref + 1e-9) ? 1 : pt;
+  }
+  var degrade = function (a, b, low) { return a == null || b == null || (low ? a - b > 1e-9 : a - b < -1e-9); };
 
   // Chaque année : 1 si la France fait mieux que ses voisins, 0 sinon, 0,5 en cas d'égalité.
   function match(fr, ref, lowerIsBetter) {
@@ -64,6 +76,8 @@
       for (var y = g.y0; y <= g.y1; y++) {
         CRIT.forEach(function (c) {
           var d = CMP[c.k](y), m = d ? match(d.f, d.e, d.low) : null;
+          // Avance tenue (sauf la croissance, comparée sans niveau) ; av : le point vient de l'avance, pas de l'évolution.
+          if (d && d.lf != null) { var m0 = m; m = avance(m, d.lf, d.le, d.low, d.f == null || (d.low ? d.f > 1e-9 : d.f < -1e-9)); d.av = m === 1 && m0 !== 1; }
           if (m != null) g.w[c.k].push(m);
           if (!d) d = { f: null, e: null };
           d.y = y; d.pt = m; g.y[c.k].push(d);
@@ -110,7 +124,12 @@
       if (k === 'eq') { var v = waveOf(EQ.y, y); if (!v) return null; var i1 = EQ.y.indexOf(v[1]), e = (EQ.fr[i1] - EQ.fr[i1 - 1]) - (EQ.oe[i1] - EQ.oe[i1 - 1]); return e === 0 ? 0.5 : e < 0 ? 1 : 0; }
       var c = C[k];
       if (c.br.indexOf(y) >= 0) return null;
+      return avance(evolAn(c, y), at(c.fr, y), at(c.eu, y), c.low, degrade(at(c.fr, y), at(c.fr, y - 1), c.low));
+    }
+    // Point d'évolution d'un critère annuel (sans l'avance tenue).
+    function evolAn(c, y) {
       var df = at(c.fr, y) - at(c.fr, y - 1), de = at(c.eu, y) - at(c.eu, y - 1);
+      if (isNaN(df) || isNaN(de)) return null;
       if (Math.abs(df - de) < 1e-9) return 0.5;
       return (c.low ? df < de : df > de) ? 1 : 0;
     }
@@ -126,23 +145,24 @@
       var sw = sum(r.map(function (p) { return p[1]; }));
       return sw ? 20 * sum(r.map(function (p) { return p[0] * p[1]; })) / sw : null;
     }
-    return { KEYS: KEYS, WT: WT, MIN_N: MIN_N, Y0: Y0, evaluate: evaluate, note: note, count: count, score: score, waveRes: waveRes, waveOf: waveOf, pisaGap: pisaGap, pisaRef: pisaRef, at: at };
+    return { KEYS: KEYS, WT: WT, MIN_N: MIN_N, Y0: Y0, evaluate: evaluate, note: note, count: count, score: score, evolAn: evolAn, waveRes: waveRes, waveOf: waveOf, pisaGap: pisaGap, pisaRef: pisaRef, at: at };
   }
 
   // ===== Santé : cinq questions, une note par question ; la note de la page est la moyenne des cinq =====
   // S.THEMES : [{ k, q (la question), court, crit: [clés de S.C] }]. Chaque critère compare la France à la moyenne de l'UE :
   // celle de la source ('ue'), ou, si la source n'en publie pas, celle calculée par outils/ue_calc.py (champ ref 'ue_calc' ;
   // son évolution, ue_calc_ev, porte sur les pays qui publient les deux années). Jamais un pays seul. Règles (S.C[k].regle) :
-  //  - sinon : chaque année, 1 point si la France évolue mieux que la référence, 0 sinon, ½ en cas d'égalité ;
+  //  - sinon : chaque année, 1 point si la France évolue mieux que la référence, ou si elle fait déjà mieux qu'elle et ne
+  //    se dégrade pas (avance tenue), 0 sinon, ½ en cas d'égalité ;
   //  - 'long' : résultats de santé (espérance de vie, mortalité) : les effets d'une politique de santé mettent des années
   //    à se voir, l'année t vaut donc la moyenne des points d'évolution de t à t+4 (années déjà publiées seulement) ;
-  //  - 'ecart' : équité, 1 point si l'écart français est plus faible que celui de la référence ou se réduit plus vite ;
+  //  - 'ecart' : équité, 1 point si l'écart français est plus faible que celui de la référence et ne se creuse pas, ou s'il
+  //    se réduit plus vite ;
   //  - 'composite' : un programme entier (vaccins, dépistages) : le point de l'année est la part des éléments où la France
   //    progresse mieux que sa référence (chaque élément a la sienne) ;
   //  - 'niveau' : par édition d'une étude (W.A.I.T.), 1 point si la France fait mieux que la référence l'année jugée ;
-  //  - 'effort' : un moyen dont les repères sont des niveaux (défense : 2 % du PIB, 20 % d'équipement) : 1 point si la
-  //    France progresse mieux que la référence, ou si, déjà au-dessus de la référence, sa dépense ne recule pas hors
-  //    inflation (sommet de l'OTAN de 2014 : arrêter toute baisse, augmenter la dépense en termes réels) ;
+  //  - 'effort' : la règle par défaut, pour une dépense (défense) : « ne recule pas » se mesure hors inflation (fr_reel),
+  //    car la part du PIB bouge aussi quand le PIB bouge (sommet de l'OTAN de 2014 : augmenter la dépense en termes réels) ;
   //  - 'propre' : déficit de l'Assurance maladie, jugé sur la France seule faute de comparaison possible : 1 point si
   //    équilibre ou excédent, ½ si le déficit se réduit d'au moins 0,1 point de PIB, 0 s'il se creuse ou reste stable.
   function sante(S) {
@@ -170,13 +190,10 @@
     var recule = function (c, y) {
       var r1 = val(c, 'fr_reel', y), r0 = val(c, 'fr_reel', y - 1);
       if (r1 != null && r0 != null) return r1 < r0 - 1e-9;
-      var a = val(c, 'fr', y), b = val(c, 'fr', y - 1); return a == null || b == null || a - b < -1e-9;
+      return degrade(val(c, 'fr', y), val(c, 'fr', y - 1), c.low);
     };
-    function effort(c, y) {
-      var ev = evol(c, y); if (ev == null || ev === 1) return ev;
-      var a = val(c, 'fr', y), e = val(c, ref(c), y);
-      return a != null && e != null && a > e + 1e-9 && !recule(c, y) ? 1 : ev;
-    }
+    // Avance tenue (règle commune) : le point d'évolution, ou 1 si la France fait mieux que la référence et ne recule pas.
+    function effort(c, y) { return avance(evol(c, y), val(c, 'fr', y), val(c, ref(c), y), c.low, recule(c, y)); }
     var fenetre = function (y) { var a = []; for (var t = y; t < y + LONG; t++) a.push(t); return a; };
     function score(k, y) {
       var c = C[k];
@@ -189,11 +206,12 @@
       if (c.regle === 'ecart') {
         var a = val(c, 'fr', y), e = val(c, ref(c), y), pa = val(c, 'fr', y - 1), pe = val(c, ref(c), y - 1);
         if (a == null || e == null) return null;
-        if (a < e - 1e-9) return 1;
+        // Avance tenue : écart plus faible que celui de l'UE, et qui ne se creuse pas.
+        if (a < e - 1e-9 && !(pa != null && a - pa > 1e-9)) return 1;
         if (pa != null && pe != null && (a - pa) < (e - pe) - 1e-9) return 1;
         return Math.abs(a - e) < 1e-9 ? 0.5 : 0;
       }
-      return evol(c, y);
+      return effort(c, y);
     }
     function evaluate(g) {
       g.w = {}; g.y = {};
@@ -288,6 +306,6 @@
   var securite = function (S) { return sante(S); };
   // Défense : même méthode ; les moyens (budget, équipement, effectifs) sont jugés année par année.
   var defense = function (S) { return sante(S); };
-  var api = { match: match, POURQUOI: POURQUOI, finances: finances, education: education, sante: sante, securite: securite, defense: defense, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url, debut: m.debut }; }) };
+  var api = { match: match, avance: avance, degrade: degrade, POURQUOI: POURQUOI, finances: finances, education: education, sante: sante, securite: securite, defense: defense, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url, debut: m.debut }; }) };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ConcretNotes = api;
 })(this);
