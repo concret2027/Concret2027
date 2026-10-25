@@ -4,8 +4,8 @@
        Liste les indicateurs du calendrier à vérifier aujourd'hui.
    node outils/controle.js verifier [AAAA-MM-JJ] [--compte-rendu fichier.md]
        Valide data.json, recalcule toutes les notes (commun/notes.js), les compare à la dernière publication,
-       vérifie les récits (outils/recits.js), contrôle le calendrier, met à jour donnees/notes.json et
-       donnees/a_valider.json, écrit le journal du mois (journal/AAAA-MM.md) et imprime la notification.
+       vérifie les récits (outils/recits.js), contrôle le calendrier, met à jour donnees/notes.json,
+       donnees/a_valider.json et l'index du moteur de recherche (donnees/recherche.json, par outils/recherche.js), écrit le journal du mois (journal/AAAA-MM.md) et imprime la notification.
        Code de sortie 1 si data.json ne doit pas être publié. */
 var fs = require('fs'), path = require('path'), cp = require('child_process');
 var ROOT = path.join(__dirname, '..');
@@ -203,6 +203,12 @@ try {
 } catch (e) { alertes.push('comparaison avec la version publiée impossible : ' + e.message.split('\n')[0]); }
 
 // ===== 6. Écritures =====
+// Moteur de recherche : l'index reprend le texte affiché des pages, chiffres compris ; on le refait à chaque mise à jour
+// des données pour qu'il ne garde jamais d'anciens chiffres (donnees/recherche.json, publié avec data.json).
+if (!bloquant.length) {
+  var ix = cp.spawnSync('node', [path.join(__dirname, 'recherche.js')], { cwd: ROOT, encoding: 'utf8', timeout: 240000 });
+  if (ix.status !== 0) alertes.push('index du moteur de recherche non refait (' + ((ix.stderr || ix.error && ix.error.message || 'délai dépassé').trim().split('\n').pop()) + ') : relancer node outils/recherche.js');
+}
 if (!bloquant.length && notes) { wr('donnees/notes.json', { date: today, finances: notes.finances, education: notes.education, sante: notes.sante, securite: notes.securite, defense: notes.defense, accueil: notes.accueil }); wr('donnees/a_valider.json', aValider); }
 var J = [];
 J.push('## ' + dateFr(today), '');

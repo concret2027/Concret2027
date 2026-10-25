@@ -72,6 +72,6 @@ Santé, Sécurité et justice, Défense, Vie des Français, ou tout indicateur a
 ## Avant de publier une modification du site
 
 - Après une modification de `commun/notes.js` ou `commun/partage.js`, changer le numéro `?v=` de leur balise `<script>` dans toutes les pages (sinon les navigateurs gardent l'ancienne version jusqu'à 10 minutes).
-- Après une modification des pages HTML (titres, blocs, identifiants), relancer `node outils/recherche.js` : il refait l'index du moteur de recherche (`donnees/recherche.json`).
+- L'index du moteur de recherche (`donnees/recherche.json`) reprend le texte affiché des pages, chiffres compris : `node outils/controle.js verifier` le refait à chaque mise à jour des données (la tâche quotidienne le publie avec `data.json`). Après une modification des pages HTML, il est refait au prochain `verifier`, ou tout de suite par `node outils/recherche.js`.
 - Comparer le rendu avant et après (textes, graphiques, erreurs de console) et vérifier que les notes n'ont pas bougé, sauf si c'est le but.
 - `node outils/controle.js verifier` doit passer.
