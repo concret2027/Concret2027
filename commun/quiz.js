@@ -5,7 +5,7 @@
    (facultatif) est l'identifiant de la courbe ou du chiffre de la page qui donne la réponse, vérifié par outils/controle.js.
    Abacus limite chaque visiteur à 30 requêtes par 10 secondes : les requêtes partent l'une après l'autre, espacées. */
 (function () {
-  var API = 'https://abacus.jasoncameron.dev/', ESPACE = 'concret2027.fr', SEUIL = 2, PAS = 380;
+  var API = 'https://abacus.jasoncameron.dev/', ESPACE = 'concret2027.fr', SEUIL = 2, PAS = 420;
   var css = '.opt .qz-pc{display:inline-block;width:100%;margin-top:2px;font-size:12px;font-weight:500;color:var(--muted);text-decoration:none;font-variant-numeric:tabular-nums}' +
     '.opt.qz-bar{background-image:linear-gradient(90deg,var(--line) 0,var(--line) var(--qz,0%),transparent var(--qz,0%));background-repeat:no-repeat;background-size:100% 4px;background-position:0 100%}' +
     '.qz-res{margin:8px 0 0;font-size:13px;color:var(--muted)}.qz-voir{font-weight:600;white-space:nowrap;color:var(--fr)}';
@@ -22,13 +22,19 @@
       dernier = Date.now();
       fetch(API + r.op + '/' + ESPACE + '/' + r.cle).then(function (x) {
         if (x.status === 404) return { value: 0 };
+        // Trop de requêtes (plusieurs pages ouvertes, réponses rapides) : on attend, puis la requête repasse en tête de file.
+        if (x.status === 429 || x.status >= 500) { var e = new Error(x.status); e.reessayer = true; throw e; }
         if (!x.ok) throw new Error(x.status);
         return x.json();
-      }).then(function (j) { r.ok(+j.value || 0); }, r.ko).then(suivante);
+      }).then(function (j) { r.ok(+j.value || 0); suivante(); }, function (e) {
+        if ((e.reessayer || e instanceof TypeError) && (r.essais = (r.essais || 0) + 1) <= 4) { file.unshift(r); dernier = Date.now() + 2500 * r.essais; suivante(); }
+        else { r.ko(e); suivante(); }
+      });
     }, att);
   }
   // op : 'hit' (ajoute 1 et renvoie le total) ou 'get' (lit le total ; 0 si personne encore).
-  function compteur(op, cle) { return new Promise(function (ok, ko) { file.push({ op: op, cle: cle, ok: ok, ko: ko }); if (!actif) suivante(); }); }
+  // devant : la requête passe avant celles qui attendent (l'enregistrement d'un score ne doit pas attendre les lectures).
+  function compteur(op, cle, devant) { return new Promise(function (ok, ko) { var r = { op: op, cle: cle, ok: ok, ko: ko }; if (devant) file.unshift(r); else file.push(r); if (!actif) suivante(); }); }
 
   // Les totaux de chaque option ; si la personne vient de répondre, son choix est compté (hit), les autres sont lus (get).
   function totaux(page, Q, choix, nouveau) {
