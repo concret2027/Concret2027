@@ -15,7 +15,10 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://concret2027.fr/donnees/apercu/barometre.png">
 <script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-<style>html, body { margin: 0; } img { max-width: 100%; } [hidden] { display: none !important; }</style>
+<style>html, body { margin: 0; } img { max-width: 100%; } [hidden] { display: none !important; }.bx-notices { list-style: none; margin: 8px 0 0; padding: 0; max-height: 420px; overflow: auto; border-top: 1px solid var(--line, #e2e2dc); }
+.bx-notices li { display: grid; grid-template-columns: 6.5em 1fr; gap: 8px; padding: 8px 2px; border-bottom: 1px solid var(--line, #e2e2dc); font-size: 13px; line-height: 1.4; }
+.bx-notices .d { color: var(--muted, #62646d); font-variant-numeric: tabular-nums; }
+</style>
 <meta name="description" content="Sondages, parieurs et pouls du pays : la présidentielle 2027 en un coup d'œil, mis à jour en continu.">
 <style>
 /* Layout: one centered column of cards; tokens mirror the dashboard kit so the page reads the same, in both themes. */
@@ -252,7 +255,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 
     <section class="bx-card wide" id="premier-tour">
       <h2>Premier tour : intentions de vote</h2>
-      <p class="bx-note">Chaque point est un sondage (moyenne de ses hypothèses) ; la ligne suit la moyenne des sondages des trois semaines précédentes. Courbes des 8 premiers candidats des sondages. En juillet 2026, Marine Le Pen remplace Jordan Bardella comme candidate du RN.</p>
+      <p class="bx-note">Chaque point est un sondage (moyenne de ses hypothèses) ; la ligne suit la moyenne des sondages des trois semaines précédentes. Courbes des 8 premiers candidats des sondages. En juillet 2026, Marine Le Pen remplace Jordan Bardella comme candidate du RN. <a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
       <div class="bx-legend" id="legend-t1"></div>
       <div class="bx-chart" id="chart-t1" data-source="sondages_t1 tendance_t1 evenements"></div>
       <ol class="bx-events" id="events-list" data-source="evenements"></ol>
@@ -267,7 +270,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 
     <section class="bx-card" id="second-tour">
       <h2>Second tour : Marine Le Pen selon son adversaire</h2>
-      <p class="bx-note">Score de Marine Le Pen, en % des voix exprimées, dans chaque duel testé en 2026. Sous 50 %, elle perd.</p>
+      <p class="bx-note">Score de Marine Le Pen, en % des voix exprimées, dans chaque duel testé en 2026. Sous 50 %, elle perd. <a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
       <div class="bx-legend" id="legend-t2"></div>
       <div class="bx-chart small" id="chart-t2" data-source="sondages_t2"></div>
     </section>
@@ -280,7 +283,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 
     <section class="bx-card" id="duels">
       <h2>Derniers duels testés</h2>
-      <p class="bx-note">Sondages de second tour des 45 derniers jours.</p>
+      <p class="bx-note">Sondages de second tour des 45 derniers jours. <a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
       <div class="bx-tablebox">
         <table class="bx-table" data-source="duels_recents" data-row-key="duel">
           <thead><tr><th class="l" data-field="duel">Duel · institut</th><th data-field="date">Date</th><th data-field="score_rn">Le Pen</th><th data-field="score_adversaire">Adversaire</th></tr></thead>
@@ -289,9 +292,15 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       </div>
     </section>
 
+    <section class="bx-card wide" id="notices">
+      <h2>Les sondages, notice par notice</h2>
+      <p class="bx-note">Pour chaque sondage affiché sur cette page : l'institut et son commanditaire, les dates du terrain, le nombre de personnes interrogées et la marge d'erreur, lus dans sa notice déposée à la Commission des sondages (loi du 19 juillet 1977). Chaque notice est consultable sur le site de la Commission : touchez son numéro.</p>
+      <ul class="bx-notices" id="notices-list"></ul>
+    </section>
+
     <section class="bx-card" id="tous-sondages">
       <h2>Tous les sondages de premier tour</h2>
-      <p class="bx-note">Moyenne des hypothèses testées par chaque enquête, en %, pour les 15 premiers candidats des sondages. Case vide : le candidat ne figurait dans aucune hypothèse testée par ce sondage.</p>
+      <p class="bx-note">Moyenne des hypothèses testées par chaque enquête, en %, pour les 15 premiers candidats des sondages. Case vide : le candidat ne figurait dans aucune hypothèse testée par ce sondage. <a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
       <div class="bx-tablebox">
         <table class="bx-table" data-source="tableau_t1" data-row-key="sondage">
           <thead><tr id="thead-t1"><th class="l" data-field="sondage">Sondage</th></tr></thead>
@@ -568,12 +577,14 @@ dash.calc('duels_recents', {
     if (ks.length) { var p = document.createElement('p'); p.className = 'bx-note bx-why'; p.textContent = '— ' + ks.map(function (w) { return why[w].join(', ') + ' : ' + w + '.'; }).join(' '); box.appendChild(p); }
   }
 
+  var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); };
   function drawLast(rows) {
     var box = document.getElementById('last'); box.textContent = '';
     if (!rows.length) return;
     var r0 = rows[0];
     document.getElementById('last-title').textContent = 'Le dernier sondage : ' + r0.institut;
-    document.getElementById('last-note').textContent = 'Terrain du ' + r0.terrain + ', ' + new Intl.NumberFormat('fr-FR').format(r0.echantillon) + ' personnes. Premier tour, moyenne des hypothèses testées.';
+    var N = (dash.data('sondages_notices').data || []).filter(function (n) { return n.date === r0.date && n.institut === r0.institut; })[0];
+    document.getElementById('last-note').innerHTML = (N && N.commanditaire ? esc(r0.institut) + ' pour ' + esc(N.commanditaire) + '. ' : '') + 'Terrain du ' + esc(r0.terrain) + ', ' + new Intl.NumberFormat('fr-FR').format(r0.echantillon) + ' personnes interrogées.' + (N && N.marge ? ' Marge d\'erreur : ± ' + esc(N.marge) + ' points selon le score.' : '') + (N ? ' <a href="' + esc(N.url) + '" target="_blank" rel="noopener">Notice n° ' + esc(N.notice) + '</a> (Commission des sondages).' : '') + ' Premier tour, moyenne des hypothèses testées.';
     var max = rows[0].score;
     rows.filter(function (r) { return r.score >= 1; }).forEach(function (r) {
       var l = document.createElement('div'); l.className = 'bx-lastbar';
@@ -863,6 +874,19 @@ dash.calc('duels_recents', {
 
 <footer class="bx-foot">concret2027.fr · Données publiques : sondages déposés à la Commission des sondages (via Wikipédia), Polymarket, Insee, presse. Page indépendante de tout parti.</footer>
 <script>
+// Les mentions de la loi de 1977 pour chaque sondage affiché, lues dans sa notice (datasets.sondages_notices, outils/sondages.py).
+window.addEventListener('baro:data', function () {
+  var esc2 = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); };
+  var N = (dash.data('sondages_notices').data || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  var ul = document.getElementById('notices-list'); if (!ul) return;
+  ul.innerHTML = N.map(function (n) {
+    var d = new Date(n.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+    return '<li><span class="d">' + esc2(d) + '</span><span><b>' + esc2(n.institut) + '</b>' + (n.commanditaire ? ' pour ' + esc2(n.commanditaire) : '') +
+      (n.terrain ? ' · terrain du ' + esc2(n.terrain) : '') + (n.echantillon ? ' · ' + new Intl.NumberFormat('fr-FR').format(+n.echantillon) + ' personnes interrogées' : '') +
+      (n.marge ? ' · marge d\'erreur ± ' + esc2(n.marge) + ' points selon le score' : '') +
+      ' · <a href="' + esc2(n.url) + '" target="_blank" rel="noopener">notice n° ' + esc2(n.notice) + '</a></span></li>';
+  }).join('') || '<li>Chargement…</li>';
+});
 window.addEventListener('baro:data', function () {
   var el = document.getElementById('bx-updated'), iso = window.BARO_UPDATED_ISO;
   var d = iso ? new Date(iso) : null;

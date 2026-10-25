@@ -87,6 +87,24 @@ if (S.education) {
   });
   vus.forEach(function (v) { alertes.push('jargon à remplacer par une phrase claire dans ' + v + ' (règle de CLAUDE.md)'); });
 })();
+// Sondages (loi du 19 juillet 1977) : chaque sondage publié a sa notice lue à la Commission des sondages
+// (datasets.sondages_notices, écrit par outils/sondages.py), avec commanditaire et marge d'erreur.
+(function () {
+  var DS = d.datasets || {}, N = DS.sondages_notices || [], cle = function (dt, i) { return dt + '|' + String(i).replace(/ Interactive$/, ''); }, a = {};
+  N.forEach(function (n) { a[cle(n.date, n.institut)] = n; if (!n.commanditaire || !n.marge || !n.url) err('sondages_notices ' + n.date + ' ' + n.institut + ' : commanditaire, marge d\'erreur ou lien de la notice manquant'); });
+  var sans = {};
+  (DS.sondages_t1 || []).concat(DS.sondages_t2 || []).forEach(function (r) { if (!a[cle(r.date, r.institut)]) sans[r.date + ' ' + r.institut] = 1; });
+  Object.keys(sans).forEach(function (k) { err('sondage ' + k + ' sans notice lue : lancer python3 outils/sondages.py --ecrire (un sondage ne se publie pas sans les mentions de sa notice)'); });
+  // Silence électoral : aucun nouveau sondage la veille et le jour de chaque tour (dates lues dans l'agenda du baromètre).
+  var tours = (DS.agenda_barometre || []).filter(function (x) { return /tour de l.élection présidentielle/i.test(x.evenement); }).map(function (x) { return x.date; });
+  var veille = function (iso) { var t = new Date(iso + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() - 1); return t.toISOString().slice(0, 10); };
+  if (tours.some(function (t) { return today === t || today === veille(t); })) {
+    try {
+      var prev = JSON.parse(cp.execSync('git show HEAD:data.json', { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'] })).datasets || {};
+      ['sondages_t1', 'sondages_t2', 'sondages_notices'].forEach(function (k) { if (JSON.stringify(prev[k] || []) !== JSON.stringify(DS[k] || [])) err('silence électoral : ' + k + ' a changé ; aucun sondage ne se publie la veille ni le jour du vote (loi du 19 juillet 1977). Remettre la version publiée.'); });
+    } catch (e) { alertes.push('silence électoral : comparaison avec la version publiée impossible (' + e.message.split('\n')[0] + ')'); }
+  }
+})();
 // Valeurs d'exemple (page en brouillon) : jamais publiées.
 Object.keys(S).forEach(function (pg) { if (S[pg] && S[pg].exemple) err('series.' + pg + ' contient des valeurs d\'exemple (brouillon) : à remplacer par des données sourcées avant publication'); });
 Object.keys(d.datasets || {}).forEach(function (k) { if ((d.datasets[k] || []).some(function (r) { return r.exemple; })) err('datasets.' + k + ' contient des lignes d\'exemple (brouillon)'); });
