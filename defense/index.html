@@ -1023,7 +1023,12 @@ function main(FEED) {
     setHtml('q-lab', 'Dépense de défense · ' + (est ? 'estimation de l\'OTAN pour ' : 'OTAN, ') + la.y);
     setHtml('q-num', fmt(la.v, 2) + ' % <small>du PIB</small>');
     if (pr != null) document.getElementById('q-delta').textContent = sg(la.v - pr, 2) + ' pt sur un an';
-    setHtml('q-t', (est ? 'Estimation de l\'OTAN, révisée l\'année suivante. ' : '') + 'Moyenne des pays de l\'UE membres de l\'OTAN (calcul Concret) : ' + fmt(ue, 2) + ' %. Repère de l\'OTAN : ' + fmt(PV('otan_2014')) + ' % du PIB ; engagement pris au sommet de La Haye (2025) : au moins ' + fmt(PV('otan_2035'), 1) + ' % d\'ici 2035. Source : ' + lien(o, 'OTAN') + '.');
+    // Où en est la France face aux repères de l'OTAN : première année publiée au-dessus de 2 %, et ce qui reste jusqu'à 3,5 %.
+    var R2 = PV('otan_2014'), R35 = PV('otan_2035'), lr = lastReel(o, 'fr'), prem = null;
+    o.y.forEach(function (y, i) { if (prem == null && o.fr[i] != null && o.fr[i] >= R2 && !(o.est || {})[y]) prem = y; });
+    var qe = C.equip, qr = lastReel(qe, 'fr'), qmin = Math.min.apply(null, qe.fr.filter(function (v, i) { return v != null && !(qe.est || {})[qe.y[i]]; }));
+    var cible = 'Repère de ' + fmt(R2) + ' % : ' + (prem ? 'atteint en ' + prem + (prem > o.y[0] ? ', pour la première fois depuis le début de la série (' + o.y[0] + ')' : '') + ' ; ' + lr.y + ' : ' + fmt(lr.v, 2) + ' %' : 'pas encore atteint (' + fmt(lr.v, 2) + ' % en ' + lr.y + ')') + '. Il reste ' + fmt(R35 - la.v, 2) + ' point de PIB' + (est ? ' (d\'après l\'estimation ' + la.y + ')' : '') + ' pour atteindre ' + fmt(R35, 1) + ' % d\'ici 2035, l\'engagement pris au sommet de La Haye (2025). Équipement : ' + fmt(qr.v, 1) + ' % de la dépense en ' + qr.y + (qmin >= PV('otan_equip') ? ', au-dessus du repère de ' + fmt(PV('otan_equip')) + ' % chaque année depuis ' + qe.y[0] : '') + '. ';
+    setHtml('q-t', cible + (est ? 'Estimation de l\'OTAN, révisée l\'année suivante. ' : '') + 'Moyenne des pays de l\'UE membres de l\'OTAN (calcul Concret) : ' + fmt(ue, 2) + ' %. Source : ' + lien(o, 'OTAN') + '.');
     setHtml('teaser-month', 'Budget ' + B.annee + ' des armées : <b>' + fmt(B.v, 1) + '&nbsp;Md€</b>' + (projet ? ' (projet)' : '') + ' · Défense : <b>' + fmt(la.v, 2) + '&nbsp;%</b> du PIB en ' + la.y + (est ? ' (estimation de l\'OTAN)' : ''));
   })();
   // Petite courbe : France (pointillés pour les estimations) et moyenne de l'UE, avec l'objectif de 2 %.
