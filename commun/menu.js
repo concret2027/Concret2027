@@ -53,6 +53,7 @@
     '.mn-liste a[aria-current]{border:2px solid ' + V.fr + ';padding:10px 11px}.mn-liste a[aria-current] span::before{content:"Vous êtes ici · ";color:' + V.fr + ';font-weight:600}' +
     '.mn-pied{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.mn-pied a,.mn-pied button{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:600;color:' + V.fg + ';background:' + V.panel + ';border:1px solid ' + V.line + ';border-radius:999px;padding:6px 14px 6px 8px;text-decoration:none;cursor:pointer;min-height:44px}' +
     '.mn-pied .mn-ic{width:28px;height:28px;background:none}' +
+    '.pg.mn-avec{grid-template-columns:auto minmax(0,1fr);column-gap:12px}.pg.mn-avec>*{grid-column:2}.pg.mn-avec>.mn-ic{grid-column:1;grid-row:1/span 4;align-self:start;margin-top:2px}' +
     // Dans le Menu : une colonne, une ligne par page. En bas de page : deux colonnes sur téléphone (nom seul), quatre sur grand écran.
     '.mn-panneau .mn-liste{grid-template-columns:minmax(0,1fr);gap:6px}.mn-panneau .mn-liste a{padding:9px 12px}.mn-panneau .mn-liste a[aria-current]{padding:8px 11px}' +
     '.mn-autres .mn-liste a.mn-large{grid-column:auto}' +
@@ -138,6 +139,12 @@
       // (Sur téléphone, le bandeau tient en entier : il reste calé à gauche, logo visible.)
       if (cur && nav.scrollWidth > nav.clientWidth + 8 && !(window.matchMedia && matchMedia('(max-width: 520px)').matches)) nav.scrollLeft = Math.max(0, cur.offsetLeft - nav.offsetLeft - 110);
     }
+    // Sur l'accueil : la même icône devant chaque page de la liste des missions, des repères, du Baromètre et du Quiz.
+    Array.prototype.forEach.call(document.querySelectorAll('#missions a.pg, #reperes a.pg, #rendez-vous a.pg'), function (a) {
+      var p = PAGES.filter(function (x) { return x.u === a.getAttribute('href'); })[0];
+      if (!p || a.querySelector('.mn-ic')) return;
+      a.classList.add('mn-avec'); a.insertAdjacentHTML('afterbegin', icone(p.ic));
+    });
     // En bas de page (pas sur l'accueil, qui a déjà la liste des missions) : les autres pages.
     if (ici !== '/' && !document.querySelector('.mn-autres')) {
       var f = document.querySelector('footer'), sec = document.createElement('section');
