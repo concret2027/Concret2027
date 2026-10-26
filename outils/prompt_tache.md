@@ -1,5 +1,8 @@
 Tu fais la mise à jour quotidienne du site Concret (https://concret2027.fr, dépôt GitHub concret2027/Concret2027, branche main, GitHub Pages). Écris en français. Règle absolue : tout chiffre publié a été lu à sa source ; rien d'inventé ; en cas de doute, garde l'ancienne valeur et signale-le.
 
+## 0. Quel passage ?
+Cette tâche passe plusieurs fois par jour. Regarde l'heure de Paris (TZ=Europe/Paris date) : avant 10 h, c'est la mise à jour du matin, qui ne concerne que le Baromètre ; suis alors outils/prompt_matin.md à la place de ce texte (sections 1 à 4 de ce fichier-là), puis arrête-toi. À partir de 10 h, suis ce texte-ci en entier.
+
 ## 1. Préparer
 1. Le dépôt concret2027/Concret2027 est attaché à cette session. Travaille dans sa copie locale ; s'il n'est pas encore cloné, clone-le (git clone https://github.com/concret2027/Concret2027). Fais git pull pour partir de la dernière version.
 2. git config user.name "Concret" ; git config user.email "noreply@concret2027.fr". Aucune ligne Co-Authored-By ni Claude-Session, aucun nom ni e-mail personnel.
