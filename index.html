@@ -455,7 +455,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   var PAGES = { vie: 'Vie des Français', finances: 'Finances', sante: 'Santé', education: 'Éducation', securite: 'Sécurité et justice', defense: 'Défense', barometre: 'Présidentielle' };
   var auj = new Date(); auj.setHours(0, 0, 0, 0); var A = iso(auj), il7 = iso(new Date(auj - 7 * 864e5)), dans8 = iso(new Date(+auj + 8 * 864e5));
   Promise.all([
-    fetch('/data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }),
+    fetch('/data.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }),
     fetch('/donnees/bref.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }, function () { return null; })
   ]).then(function (res) {
     var D = res[0], B = res[1] && res[1].missions, DS = D.datasets || {}, S = D.series || {};
@@ -591,7 +591,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     ['pres', 'gov'].forEach(function (x) { document.getElementById('radar-' + x).setAttribute('aria-pressed', x === k ? 'true' : 'false'); });
     chips(); draw();
   }
-  fetch('/data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+  fetch('/data.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
     data = ConcretNotes.classement(d.series);
     ['pres', 'gov'].forEach(function (k) { data[k] = data[k].slice().sort(function (a, b) { return a.y0 - b.y0; }); });
     document.getElementById('radar-pres').addEventListener('click', function () { setKind('pres'); });
@@ -638,7 +638,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     });
   }
   function fail() { ['t-pres', 't-gov'].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = 'Le classement n\'a pas pu être chargé. Rechargez la page.'; }); }
-  fetch('/data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+  fetch('/data.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
     if (!d.series) return fail();
     var c = ConcretNotes.classement(d.series);
     table('t-pres', c.pres, d.series); table('t-gov', c.gov, d.series);

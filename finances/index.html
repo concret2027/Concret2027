@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261026b"></script>
+<script src="/commun/bref.js?v=20261026c"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
@@ -678,7 +678,7 @@ function main(FEED) {
       try { if (localStorage.getItem(id) === 'open') d.open = true; } catch (e) {}
       d.addEventListener('toggle', function () {
         try { localStorage.setItem(id, d.open ? 'open' : 'closed'); } catch (e) {}
-        if (d.open) window.dispatchEvent(new Event('acc-open'));
+        if (d.open) window.dispatchEvent(new CustomEvent('acc-open', { detail: id }));
       });
     });
   })();
@@ -1369,7 +1369,8 @@ function main(FEED) {
 
   function drawAll() { drawMonth(); spark(); four(); manque(); pibChart(); retraitesChart(); spreadChart(); rankChart(); }
   renderGov(); drawAll();
-  window.addEventListener('acc-open', function () { setTimeout(drawAll, 30); });
+  // Un bloc qui s'ouvre : on ne redessine que ses propres graphiques (ils n'avaient pas de largeur tant qu'il était fermé).
+  window.addEventListener('acc-open', function (e) { var f = { 'acc-today': spark, 'acc-month': drawMonth }[e.detail]; if (f) setTimeout(f, 30); });
   var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });
 }
   var started = false;
@@ -1380,7 +1381,7 @@ function main(FEED) {
     main(feed);
   }
   try {
-    fetch('../data.json?t=' + Date.now(), { cache: 'no-store' })
+    fetch('../data.json', { cache: 'no-cache' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(go, function () { go(null); });
   } catch (e) { go(null); }

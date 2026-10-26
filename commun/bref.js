@@ -25,11 +25,12 @@
   function aller(id) {
     var el = document.getElementById(id); if (!el) return;
     for (var d = el; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
-    setTimeout(function () {
+    // Défilement dès l'image suivante (le bloc ouvert a pris sa place), sans attente.
+    requestAnimationFrame(function () {
       var c = el.closest('section, .card, .mo') || el;
       c.scrollIntoView({ behavior: 'smooth', block: 'start' });
       c.classList.remove('bref-flash'); void c.offsetWidth; c.classList.add('bref-flash');
-    }, 200);
+    });
   }
 
   // o.items : [{ l, cl ('g' mieux, 'b' moins bien, 'm' égal), cible (id de la courbe) }] ; o.pres : [{ n, v }] ; o.ref : la référence.

@@ -214,7 +214,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
   };
   function run() { if (!P) return; fns.forEach(function (f) { try { f(); } catch (e) { console.error(e); } }); }
   var loaded = new Promise(function (r) { if (document.readyState === 'complete') r(); else window.addEventListener('load', r); });
-  var data = fetch('../data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+  var data = fetch('../data.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
   Promise.all([data, loaded]).then(function (res) {
     P = res[0]; ds = P.datasets; cache = {};
     window.BARO_UPDATED = P.updated; window.BARO_UPDATED_ISO = P.updated_iso;
@@ -1196,7 +1196,7 @@ window.addEventListener('baro:data', function () {
     ls.parentNode.hidden = !ev.length;
     document.getElementById('ag-hint').textContent = ag.length ? 'Prochain : ' + fd(ag[0].date, true) + ' · voir le détail' : 'Voir le détail';
   }
-  try { fetch('../data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(render, function () { render(null); }); } catch (e) { render(null); }
+  try { fetch('../data.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(render, function () { render(null); }); } catch (e) { render(null); }
 })();
 </script>
 <script>
@@ -1273,7 +1273,7 @@ window.addEventListener('baro:data', function () {
     } catch (e) {}
     if (!items.length) document.getElementById('aujourdhui').hidden = true;
   }
-  try { fetch('../data.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(render, function () { render(null); }); } catch (e) { render(null); }
+  try { fetch('../data.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(render, function () { render(null); }); } catch (e) { render(null); }
 })();
 </script>
 <script>
