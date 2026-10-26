@@ -29,6 +29,7 @@
     '.mn-liste a{display:grid;gap:2px;padding:12px 14px;border-radius:12px;border:1px solid ' + V.line + ';background:' + V.panel + ';color:' + V.fg + ';text-decoration:none}' +
     '.mn-liste a b{font-size:17px;font-weight:700}.mn-liste a span{font-size:13.5px;color:' + V.muted + ';line-height:1.35}' +
     '.mn-liste a[aria-current]{border:2px solid ' + V.fr + '}.mn-liste a[aria-current] b::after{content:" · vous êtes ici";font-size:12.5px;font-weight:600;color:' + V.fr + '}' +
+    '.mn-contact{margin:2px 0 0;font-size:14px;color:' + V.muted + '}.mn-contact a{color:' + V.fr + ';font-weight:600}' +
     '.mn-autres{display:grid;gap:10px;margin:8px 0 4px}.mn-autres h2{font-size:19px;font-weight:600;margin:0;color:' + V.fg + '}' +
     '.mn-autres .mn-liste{grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr))}' +
     // Sur téléphone : « Les autres pages » en grille compacte, sans les descriptions (le Menu les a).
@@ -113,7 +114,8 @@
     if (ici !== '/' && !document.querySelector('.mn-autres')) {
       var f = document.querySelector('footer'), sec = document.createElement('section');
       sec.className = 'mn-autres'; sec.setAttribute('aria-label', 'Les autres pages'); sec.setAttribute('data-partage', 'non');
-      sec.innerHTML = '<h2>Les autres pages</h2><nav class="mn-liste">' + PAGES.filter(function (p) { return p.u !== ici; }).map(lien).join('') + '</nav>';
+      sec.innerHTML = '<h2>Les autres pages</h2><nav class="mn-liste">' + PAGES.filter(function (p) { return p.u !== ici; }).map(lien).join('') + '</nav>' +
+        (ici !== '/contact/' ? '<p class="mn-contact">Une erreur dans un chiffre, une question ? <a href="/contact/">Écrire à Concret</a></p>' : '');
       if (f && f.parentNode) f.parentNode.insertBefore(sec, f); else (document.querySelector('.wrap, .bx') || document.body).appendChild(sec);
     }
   }
