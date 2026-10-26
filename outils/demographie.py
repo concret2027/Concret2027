@@ -257,11 +257,11 @@ def main():
         cal = json.load(open(cp, encoding='utf-8'))
         for it in cal.get('indicateurs', []):
             if it.get('id') == 'demo_mois':
-                it['derniere_verification'] = date.today().isoformat(); it['derniere_donnee'] = S['MOIS']['m'][-1]; it['prochaine_verification'] = (date.today() + timedelta(days=7)).isoformat()
+                it['derniere_verification'] = date.today().isoformat(); it['derniere_donnee'] = S['MOIS']['m'][-1]; it['prochaine_verification'] = (date.today() + timedelta(days=1)).isoformat()
             if it.get('id') in ('demo_eurostat', 'demo_migr'):
                 it['derniere_verification'] = date.today().isoformat()
                 it['derniere_donnee'] = str(K['nais']['y'][-1] if it['id'] == 'demo_eurostat' else max(S['M']['titres']['y']))
-                it['prochaine_verification'] = (date.today() + timedelta(days=30)).isoformat()
+                it['prochaine_verification'] = (date.today() + timedelta(days=1)).isoformat()
         open(cp, 'w', encoding='utf-8').write(json.dumps(cal, indent=1, ensure_ascii=False) + '\n')
         print('Écrit : series.demographie.')
 
