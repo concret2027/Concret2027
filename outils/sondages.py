@@ -10,8 +10,13 @@ personnes interrogées), la lit (PDF) et en tire le commanditaire et la phrase s
   python3 outils/sondages.py            affiche ce qui est trouvé, sans rien écrire
   python3 outils/sondages.py --ecrire   écrit datasets.sondages_notices dans data.json
 
-Un sondage dont la notice n'est pas retrouvée n'a pas de ligne : la page ne l'affiche pas (règle : on ne publie que des
-sondages dont la notice a été lue). Code de sortie 1 si le site de la Commission est injoignable (rien n'est écrit)."""
+Un sondage dont la notice n'est pas encore en ligne peut être publié avec ses mentions lues dans le rapport complet de
+l'institut ou du média (datasets.sondages_rapports, rempli par la tâche quotidienne : date, institut, terrain, echantillon,
+commanditaire, marge, url du rapport) : il reçoit alors une ligne « statut : rapport », affichée avec la mention « notice
+pas encore publiée par la Commission des sondages ». À chaque passage, l'outil recherche sa notice ; dès qu'elle est en
+ligne, elle devient la référence, la ligne du rapport est retirée et tout écart (commanditaire, échantillon, marge) est
+affiché. Sans notice ni rapport, un sondage n'a pas de ligne : la page ne l'affiche pas.
+Code de sortie 1 si le site de la Commission est injoignable (rien n'est écrit)."""
 import html, json, os, re, subprocess, sys, tempfile
 from datetime import date, timedelta
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -188,7 +193,8 @@ def main():
         N = liste()
     except Exception as e:
         print('Sondages ✗ site de la Commission des sondages injoignable (%s). Rien écrit.' % e); sys.exit(1)
-    out, manque = [], []
+    out, manque, remplaces = [], [], []
+    R = {(r['date'], r['institut'].replace(' Interactive', '')): r for r in D.get('sondages_rapports', [])}
     for k in sorted(polls):
         p = polls[k]
         fin = fin_terrain(p)
@@ -214,20 +220,35 @@ def main():
             if p['echantillon'] and not chiffre(p['echantillon']).search(t):
                 continue
             trouve = (n, t, url); break
+        rap = R.get(k)
         if not trouve:
+            if rap:
+                # Notice pas encore en ligne : les mentions lues dans le rapport de l'institut, en attendant.
+                out.append({'date': p['date'], 'institut': p['institut'], 'terrain': rap.get('terrain') or p['terrain'], 'echantillon': rap.get('echantillon') or p['echantillon'],
+                            'commanditaire': rap.get('commanditaire', ''), 'marge': rap.get('marge', ''), 'notice': '', 'url': rap.get('url', ''), 'statut': 'rapport'})
+                print('%s %-11s notice pas encore en ligne : mentions du rapport (%s)' % (p['date'], p['institut'], rap.get('url', '')))
+                continue
             manque.append(p); continue
         n, t, url = trouve
         c = commanditaire(t, n['titre'])
         mg = marge(t, p['echantillon'])
         num = n['titre'].split()[0]
-        out.append({'date': p['date'], 'institut': p['institut'], 'terrain': p['terrain'], 'echantillon': p['echantillon'],
-                    'commanditaire': c or '', 'marge': ('%s à %s' % (('%.1f' % mg[0]).replace('.', ','), ('%.1f' % mg[1]).replace('.', ','))) if mg else '', 'notice': num, 'url': url})
+        ligne = {'date': p['date'], 'institut': p['institut'], 'terrain': p['terrain'], 'echantillon': p['echantillon'],
+                 'commanditaire': c or '', 'marge': ('%s à %s' % (('%.1f' % mg[0]).replace('.', ','), ('%.1f' % mg[1]).replace('.', ','))) if mg else '', 'notice': num, 'url': url}
+        out.append(ligne)
+        if rap:
+            # La notice est arrivée : elle remplace le rapport ; on signale ce qui diffère.
+            ecarts = [ch for ch in ('commanditaire', 'echantillon', 'marge') if rap.get(ch) and ligne[ch] and str(rap[ch]).strip().lower() != str(ligne[ch]).strip().lower()]
+            print('%s %-11s notice %s en ligne : elle remplace le rapport%s' % (p['date'], p['institut'], num, (' ; ÉCART ' + ', '.join('%s : rapport « %s », notice « %s »' % (ch, rap[ch], ligne[ch]) for ch in ecarts)) if ecarts else ', mentions identiques'))
+            remplaces.append(k)
         print('%s %-11s notice %-6s commanditaire : %-30s marge : %s' % (p['date'], p['institut'], num, c or '(non lu)', ('%s-%s (%s)' % mg if mg else '(non lue)')))
     print('\n%d sondages avec notice, %d sans notice retrouvée :' % (len(out), len(manque)))
     for p in manque:
         print('   %s %s %s (%s personnes)' % (p['date'], p['institut'], p['terrain'], p['echantillon'] or '?'))
     if ecrire:
         D['sondages_notices'] = out
+        if 'sondages_rapports' in D:
+            D['sondages_rapports'] = [r for r in D['sondages_rapports'] if (r['date'], r['institut'].replace(' Interactive', '')) not in remplaces]
         open(os.path.join(ROOT, 'data.json'), 'w', encoding='utf-8').write(json.dumps(o, indent=0, ensure_ascii=False))
         print('Écrit : datasets.sondages_notices (%d lignes).' % len(out))
 

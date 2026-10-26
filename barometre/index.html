@@ -589,7 +589,7 @@ dash.calc('duels_recents', {
     var r0 = rows[0];
     document.getElementById('last-title').textContent = 'Le dernier sondage : ' + r0.institut;
     var N = (dash.data('sondages_notices').data || []).filter(function (n) { return n.date === r0.date && n.institut === r0.institut; })[0];
-    document.getElementById('last-note').innerHTML = (N && N.commanditaire ? esc(r0.institut) + ' pour ' + esc(N.commanditaire) + '. ' : '') + 'Terrain du ' + esc(r0.terrain) + ', ' + new Intl.NumberFormat('fr-FR').format(r0.echantillon) + ' personnes interrogées.' + (N && N.marge ? ' Marge d\'erreur : ± ' + esc(N.marge) + ' points selon le score.' : '') + (N ? ' <a href="' + esc(N.url) + '" target="_blank" rel="noopener">Notice n° ' + esc(N.notice) + '</a> (Commission des sondages).' : '') + ' Premier tour, moyenne des hypothèses testées.';
+    document.getElementById('last-note').innerHTML = (N && N.commanditaire ? esc(r0.institut) + ' pour ' + esc(N.commanditaire) + '. ' : '') + 'Terrain du ' + esc(r0.terrain) + ', ' + new Intl.NumberFormat('fr-FR').format(r0.echantillon) + ' personnes interrogées.' + (N && N.marge ? ' Marge d\'erreur : ± ' + esc(N.marge) + ' points selon le score.' : '') + (N ? (N.statut === 'rapport' ? ' <a href="' + esc(N.url) + '" target="_blank" rel="noopener">Rapport de l\'institut</a> ; notice pas encore publiée par la Commission des sondages.' : ' <a href="' + esc(N.url) + '" target="_blank" rel="noopener">Notice n° ' + esc(N.notice) + '</a> (Commission des sondages).') : '') + ' Premier tour, moyenne des hypothèses testées.';
     var max = rows[0].score;
     rows.filter(function (r) { return r.score >= 1; }).forEach(function (r) {
       var l = document.createElement('div'); l.className = 'bx-lastbar';
@@ -879,7 +879,8 @@ dash.calc('duels_recents', {
 
 <footer class="bx-foot">concret2027.fr · Données publiques : sondages déposés à la Commission des sondages (via Wikipédia), Polymarket, Insee, presse. Page indépendante de tout parti.</footer>
 <script>
-// Les mentions de la loi de 1977 pour chaque sondage affiché, lues dans sa notice (datasets.sondages_notices, outils/sondages.py).
+// Les mentions de la loi de 1977 pour chaque sondage affiché, lues dans sa notice (datasets.sondages_notices, outils/sondages.py),
+// ou, en attendant que la Commission la mette en ligne, dans le rapport complet de l'institut (statut « rapport »).
 window.addEventListener('baro:data', function () {
   var esc2 = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); };
   var N = (dash.data('sondages_notices').data || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
@@ -889,7 +890,7 @@ window.addEventListener('baro:data', function () {
     return '<li><span class="d">' + esc2(d) + '</span><span><b>' + esc2(n.institut) + '</b>' + (n.commanditaire ? ' pour ' + esc2(n.commanditaire) : '') +
       (n.terrain ? ' · terrain du ' + esc2(n.terrain) : '') + (n.echantillon ? ' · ' + new Intl.NumberFormat('fr-FR').format(+n.echantillon) + ' personnes interrogées' : '') +
       (n.marge ? ' · marge d\'erreur ± ' + esc2(n.marge) + ' points selon le score' : '') +
-      ' · <a href="' + esc2(n.url) + '" target="_blank" rel="noopener">notice n° ' + esc2(n.notice) + '</a></span></li>';
+      (n.statut === 'rapport' ? ' · <a href="' + esc2(n.url) + '" target="_blank" rel="noopener">rapport de l\'institut</a> (notice pas encore publiée par la Commission des sondages)' : ' · <a href="' + esc2(n.url) + '" target="_blank" rel="noopener">notice n° ' + esc2(n.notice) + '</a>') + '</span></li>';
   }).join('') || '<li>Chargement…</li>';
 });
 window.addEventListener('baro:data', function () {
@@ -968,7 +969,7 @@ window.addEventListener('baro:data', function () {
     L.forEach(function (n) { (n.marge || '').split(' à ').forEach(function (v) { var x = parseFloat(v.replace(',', '.')); if (!isNaN(x)) ms.push(x); }); });
     var fx = function (v) { return String(v).replace('.', ','); };
     var inst = Array.from(new Set(L.map(function (n) { return n.institut; })));
-    return ['Dernier sondage représenté : ' + z.institut + ' pour ' + z.commanditaire + (z.terrain ? ', terrain du ' + z.terrain : ', publié le ' + fd(z.date)) + (z.echantillon ? ', ' + nb(z.echantillon) + ' personnes interrogées' : '') + ', marge d\'erreur ± ' + z.marge + ' points (notice n° ' + z.notice + ').',
+    return ['Dernier sondage représenté : ' + z.institut + ' pour ' + z.commanditaire + (z.terrain ? ', terrain du ' + z.terrain : ', publié le ' + fd(z.date)) + (z.echantillon ? ', ' + nb(z.echantillon) + ' personnes interrogées' : '') + ', marge d\'erreur ± ' + z.marge + ' points (' + (z.statut === 'rapport' ? 'rapport de l\'institut ; notice pas encore publiée par la Commission des sondages' : 'notice n° ' + z.notice) + ').',
       L.length + ' sondages représentés, du ' + fd(L[0].date) + ' au ' + fd(z.date) + ' (' + inst.join(', ') + '), marges d\'erreur de ± ' + fx(Math.min.apply(null, ms)) + ' à ± ' + fx(Math.max.apply(null, ms)) + ' points. Commanditaire, dates et nombre de personnes interrogées de chacun : concret2027.fr/barometre, « Les sondages, notice par notice » ; notices sur commission-des-sondages.fr. Tout sondage est affecté de marges d\'erreur.'];
   }
   // Partage : le graphique est redessiné en grand format (740 px de large, agrandi dans l'image) le temps de la capture, quel que soit l'écran,

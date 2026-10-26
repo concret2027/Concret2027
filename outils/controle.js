@@ -99,10 +99,13 @@ if (S.education) {
   });
 })();
 // Sondages (loi du 19 juillet 1977) : chaque sondage publié a sa notice lue à la Commission des sondages
-// (datasets.sondages_notices, écrit par outils/sondages.py), avec commanditaire et marge d'erreur.
+// (datasets.sondages_notices, écrit par outils/sondages.py), avec commanditaire et marge d'erreur ; en attendant la notice,
+// ces mentions peuvent venir du rapport complet de l'institut (statut « rapport », datasets.sondages_rapports).
 (function () {
   var DS = d.datasets || {}, N = DS.sondages_notices || [], cle = function (dt, i) { return dt + '|' + String(i).replace(/ Interactive$/, ''); }, a = {};
-  N.forEach(function (n) { a[cle(n.date, n.institut)] = n; if (!n.commanditaire || !n.marge || !n.url) err('sondages_notices ' + n.date + ' ' + n.institut + ' : commanditaire, marge d\'erreur ou lien de la notice manquant'); });
+  N.forEach(function (n) { a[cle(n.date, n.institut)] = n; if (!n.commanditaire || !n.marge || !n.url) err('sondages_notices ' + n.date + ' ' + n.institut + ' : commanditaire, marge d\'erreur ou lien ' + (n.statut === 'rapport' ? 'du rapport' : 'de la notice') + ' manquant');
+    // Sondage publié avec les mentions de son rapport, en attendant la notice : signalé si elle tarde plus de 15 jours.
+    if (n.statut === 'rapport' && (Date.parse(today) - Date.parse(n.date)) / 864e5 > 15) alertes.push('sondage ' + n.date + ' ' + n.institut + ' : notice toujours pas en ligne à la Commission des sondages, plus de 15 jours après (mentions lues dans le rapport de l\'institut)'); });
   var sans = {};
   (DS.sondages_t1 || []).concat(DS.sondages_t2 || []).forEach(function (r) { if (!a[cle(r.date, r.institut)]) sans[r.date + ' ' + r.institut] = 1; });
   Object.keys(sans).forEach(function (k) { err('sondage ' + k + ' sans notice lue : lancer python3 outils/sondages.py --ecrire (un sondage ne se publie pas sans les mentions de sa notice)'); });
@@ -112,7 +115,7 @@ if (S.education) {
   if (tours.some(function (t) { return today === t || today === veille(t); })) {
     try {
       var prev = JSON.parse(cp.execSync('git show HEAD:data.json', { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'] })).datasets || {};
-      ['sondages_t1', 'sondages_t2', 'sondages_notices'].forEach(function (k) { if (JSON.stringify(prev[k] || []) !== JSON.stringify(DS[k] || [])) err('silence électoral : ' + k + ' a changé ; aucun sondage ne se publie la veille ni le jour du vote (loi du 19 juillet 1977). Remettre la version publiée.'); });
+      ['sondages_t1', 'sondages_t2', 'sondages_notices', 'sondages_rapports'].forEach(function (k) { if (JSON.stringify(prev[k] || []) !== JSON.stringify(DS[k] || [])) err('silence électoral : ' + k + ' a changé ; aucun sondage ne se publie la veille ni le jour du vote (loi du 19 juillet 1977). Remettre la version publiée.'); });
     } catch (e) { alertes.push('silence électoral : comparaison avec la version publiée impossible (' + e.message.split('\n')[0] + ')'); }
   }
 })();
