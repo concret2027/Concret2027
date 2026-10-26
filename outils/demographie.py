@@ -66,6 +66,7 @@ MIGR = {
     'asile': ('migr_asyappctza', 'applicant=FRST&citizen=TOTAL&sex=T&age=TOTAL&unit=PER', 'Premières demandes d\'asile', 'Eurostat (migr_asyappctza, primo-demandeurs)'),
     'irreg': ('migr_eipre', 'reason=TOTAL&apprehen=TOTAL&citizen=TOTAL&sex=T&age=TOTAL&unit=PER', 'Étrangers trouvés en situation irrégulière', 'Eurostat (migr_eipre, ressortissants de pays hors UE trouvés en situation irrégulière)'),
     'oqtf': ('migr_eiord', 'citizen=TOTAL&sex=T&age=TOTAL&unit=PER', 'Obligations de quitter le territoire', 'Eurostat (migr_eiord, ressortissants de pays hors UE ayant reçu l\'ordre de quitter le territoire)'),
+    'natu': ('migr_acq', 'citizen=TOTAL&agedef=COMPLET&age=TOTAL&sex=T&unit=NR', 'Acquisitions de la nationalité', 'Eurostat (migr_acq, personnes ayant acquis la nationalité du pays dans l\'année)'),
     'departs': ('migr_eirtn', 'c_dest=TOTAL&citizen=TOTAL&sex=T&age=TOTAL&unit=PER', 'Départs après une obligation de quitter le territoire', 'Eurostat (migr_eirtn, ressortissants de pays hors UE ayant quitté le territoire à la suite d\'un ordre)'),
 }
 MOTIFS = [('FAM', 'Famille'), ('EDUC', 'Études'), ('EMP', 'Travail'), ('OTH', 'Autres motifs (dont protection internationale)')]
@@ -162,6 +163,21 @@ def construire():
         if br:
             c['br'] = {y: 1 for y in br}; c['br_motif'] = br
         C[k] = c
+    # Étrangers (sans la nationalité du pays, apatrides compris), en % de la population au 1er janvier (Eurostat).
+    tot, _ = eurostat('migr_pop1ctz', 'citizen=TOTAL&age=TOTAL&sex=T&unit=NR')
+    v, dr = eurostat('migr_pop1ctz', 'citizen=FOR_STLS&age=TOTAL&sex=T&unit=NR')
+    ys = sorted(y for y in v.get('FR', {}) if y >= DEBUT)
+    prov, br = notes_drapeaux(dr)
+    c = {'l': 'Étrangers (sans la nationalité du pays)', 'unite': '% de la population', 'dec': 1, 'y': ys, 'url': PAGE % 'migr_pop1ctz',
+         'source': 'Eurostat (migr_pop1ctz, population au 1er janvier par nationalité), calcul Concret'}
+    for g, w in GEO.items():
+        c[w] = [None if v.get(g, {}).get(y) is None or not tot.get(g, {}).get(y) else round(100 * v[g][y] / tot[g][y], 2) for y in ys]
+    if prov:
+        c['prov'] = prov
+    br = {y: m for y, m in br.items() if int(y) in ys}
+    if br:
+        c['br'] = {y: 1 for y in br}; c['br_motif'] = br
+    C['etr'] = c
     us = oecd_nes_us()
     C['nes']['us'] = [us.get(y) for y in C['nes']['y']]
     C['nes']['us_source'] = 'États-Unis : OCDE (base de données sur les migrations internationales, personnes nées à l\'étranger) rapporté à la population de la Banque mondiale, calcul Concret'
@@ -229,6 +245,13 @@ def construire():
                          'source': 'Insee Première n° 2087, Bilan démographique 2025, 13 janvier 2026', 'url': 'https://www.insee.fr/fr/statistiques/8719824', 'date': '2026-01-13'},
          'irreguliers': {'v': 'Le nombre d\'étrangers en situation irrégulière présents en France est difficile à évaluer. Il est généralement estimé à partir du nombre de bénéficiaires de l\'aide médicale d\'État (439 000 en juin 2023), mais cette estimation présente de nombreuses limites.',
                          'source': 'Cour des comptes, « La politique de lutte contre l\'immigration irrégulière », janvier 2024', 'url': 'https://www.ccomptes.fr/fr/publications/la-politique-de-lutte-contre-limmigration-irreguliere', 'date': '2024-01-04'}}
+    # Immigrés, étrangers, descendants d'immigrés : phrases de l'Insee, recopiées telles quelles (relues à chaque nouvelle édition de la page).
+    INSEE = {'source': 'Insee, « L\'essentiel sur… les immigrés et les étrangers », paru le 25 juin 2026', 'url': 'https://www.insee.fr/fr/statistiques/3633212', 'date': '2026-06-25'}
+    for k, t in (('immigres', 'En 2025, 8,0 millions d\'immigrés vivent en France, soit 11,6 % de la population totale. 2,6 millions d\'immigrés, soit 33 % d\'entre eux, ont acquis la nationalité française.'),
+                 ('etrangers', 'La population étrangère vivant en France s\'élève à 6,3 millions de personnes, soit 9,1 % de la population totale. Elle se compose de 5,3 millions d\'immigrés n\'ayant pas acquis la nationalité française et de 1,0 million de personnes nées en France de nationalité étrangère.'),
+                 ('descendants', '7,5 millions de personnes sont quant à elles descendantes d\'immigrés de 2ᵉ génération (12 % de la population), c\'est-à-dire nées en France avec au moins un de leurs parents immigré.'),
+                 ('descendants_champ', 'En 2019-2020, parmi les personnes vivant en logement ordinaire en France métropolitaine')):
+        P[k] = dict(INSEE, v=t)
     return {'maj': auj, 'MOIS': insee_mois(), 'C': C, 'M': M, 'N': N, 'K': K, 'TITRES': T, 'PYR': PY, 'P': P}
 
 

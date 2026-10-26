@@ -143,13 +143,14 @@ if (S.politique) {
 }
 // L'évolution démographique (outils/demographie.py, Eurostat et Insee) : plages plausibles ; page sans note.
 if (S.demographie) {
-  var PQ = S.demographie, PR = { nes: [0, 40], nes_hue: [0, 40], fec: [0.8, 3], nat: [4, 20], solnat: [-10, 10], solmig: [-20, 40], p65: [5, 40], med: [25, 60] }, PM = { titres: [0, 40], asile: [0, 30], irreg: [0, 30], oqtf: [0, 20], departs: [0, 10] };
+  var PQ = S.demographie, PR = { nes: [0, 40], nes_hue: [0, 40], fec: [0.8, 3], nat: [4, 20], solnat: [-10, 10], solmig: [-20, 40], p65: [5, 40], med: [25, 60], etr: [0, 40] }, PM = { titres: [0, 40], asile: [0, 30], irreg: [0, 30], oqtf: [0, 20], natu: [0, 20], departs: [0, 10] };
   Object.keys(PR).forEach(function (k) { var c = (PQ.C || {})[k]; if (!c) return err('demographie.C.' + k + ' manquant (relancer python3 outils/demographie.py --ecrire)'); ['fr', 'ue', 'de', 'es'].forEach(function (w) { if ((c[w] || []).length !== c.y.length) err('demographie.C.' + k + '.' + w + ' : longueur différente de y'); else serie('demographie.C.' + k + '.' + w, c[w], PR[k][0], PR[k][1]); }); });
   Object.keys(PM).forEach(function (k) { var c = (PQ.M || {})[k]; if (!c) return err('demographie.M.' + k + ' manquant'); ['fr', 'ue', 'de', 'es'].forEach(function (w) { if ((c[w] || []).length !== c.y.length) err('demographie.M.' + k + '.' + w + ' : longueur différente de y'); else serie('demographie.M.' + k + '.' + w, c[w], PM[k][0], PM[k][1]); }); });
   if (!PQ.MOIS || PQ.MOIS.m.length < 12) err('demographie.MOIS : naissances et décès du mois absents (relancer python3 outils/demographie.py --ecrire)'); else { serie('demographie.MOIS.nais', PQ.MOIS.nais, 20000, 90000); serie('demographie.MOIS.deces', PQ.MOIS.deces, 20000, 120000); }
   ['nais', 'deces'].forEach(function (k) { serie('demographie.K.' + k, (PQ.K || {})[k] && PQ.K[k].fr, 300000, 1200000); });
   if (!PQ.PYR || Math.abs(PQ.PYR.fr.H.concat(PQ.PYR.fr.F).reduce(function (a, b) { return a + b; }, 0) - 100) > 0.5) err('demographie.PYR : la pyramide des âges ne fait pas 100 %');
   if (!(PQ.P || {}).irreguliers || !PQ.P.irreguliers.url) err('demographie.P.irreguliers : citation de la Cour des comptes sans source');
+  ['immigres', 'etrangers', 'descendants'].forEach(function (k) { var q = (PQ.P || {})[k]; if (!q || !q.v || !q.url) err('demographie.P.' + k + ' : phrase de l\'Insee absente ou sans source (relancer python3 outils/demographie.py --ecrire)'); });
 }
 // Valeurs d'exemple (page en brouillon) : jamais publiées.
 Object.keys(S).forEach(function (pg) { if (S[pg] && S[pg].exemple) err('series.' + pg + ' contient des valeurs d\'exemple (brouillon) : à remplacer par des données sourcées avant publication'); });

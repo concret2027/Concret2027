@@ -129,6 +129,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .dernier { margin: 0; font-size: 14px; }
 .dernier b { font-weight: 600; font-variant-numeric: tabular-nums; }
 .irr { border: 1.5px solid var(--fg); }
+.orig-l { margin: 0; padding-left: 18px; display: grid; gap: 8px; font-size: 14.5px; line-height: 1.45; }
+.orig .dernier { margin: 0; }
 .irr blockquote { margin: 0; padding: 10px 14px; border-left: 3px solid var(--line); font-family: var(--serif); font-size: 17px; line-height: 1.4; }
 details.def > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--fr); list-style: none; min-height: 32px; display: inline-flex; align-items: center; }
 details.def > summary::-webkit-details-marker { display: none; }
@@ -229,7 +231,15 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
     <p class="retenir" id="nes-t"></p>
     <section class="card"><h3>Personnes nées à l'étranger <small>· % de la population</small></h3><div class="key"></div><div class="chart" id="ch-nes"></div><p class="note" id="n-nes"></p></section>
     <p class="note">Née à l'étranger : née hors du pays où elle vit, quelle que soit sa nationalité. Les Français nés à l'étranger sont comptés, ce que ne fait pas le chiffre des « immigrés » de l'Insee, plus bas.</p>
-    <details class="plus" id="plus-nes"><summary>Voir 2 autres courbes : nées hors de l'UE, solde migratoire</summary><div class="grille">
+    <section class="card orig" id="orig">
+      <h3>Nés à l'étranger, immigrés, étrangers, enfants d'immigrés</h3>
+      <p class="dernier">Quatre chiffres qui ne comptent pas les mêmes personnes. Une personne née étrangère à l'étranger reste immigrée si elle devient française ; un enfant né en France de parents étrangers peut être étranger sans être immigré.</p>
+      <ul class="orig-l" id="orig-l"></ul>
+      <p class="note" id="orig-n"></p>
+    </section>
+    <details class="plus" id="plus-nes"><summary>Voir 4 autres courbes : étrangers, naturalisations, nées hors de l'UE, solde migratoire</summary><div class="grille">
+      <section class="card"><h3>Étrangers (sans la nationalité du pays) <small>· % de la population</small></h3><div class="key"></div><div class="chart" id="ch-etr"></div><p class="note" id="n-etr"></p></section>
+      <section class="card"><h3>Acquisitions de la nationalité <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-natu"></div><p class="note" id="n-natu"></p></section>
       <section class="card"><h3>Personnes nées hors de l'UE <small>· % de la population</small></h3><div class="key"></div><div class="chart" id="ch-neshue"></div><p class="note" id="n-neshue"></p></section>
       <section class="card"><h3>Solde migratoire (arrivées moins départs) <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-solmig"></div><p class="note" id="n-solmig"></p></section>
     </div></details>
@@ -280,6 +290,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
         <li><b>Enfants par femme</b> (indicateur conjoncturel de fécondité) : le nombre d'enfants qu'aurait une femme tout au long de sa vie si les taux de fécondité de l'année restaient les mêmes.</li>
         <li><b>Solde naturel</b> : naissances moins décès. <b>Solde migratoire</b> : arrivées moins départs, toutes nationalités (Français compris) ; Eurostat le calcule par différence (évolution de la population moins solde naturel), ce qui comprend aussi les ajustements statistiques.</li>
         <li><b>Personnes nées à l'étranger</b> : nées hors du pays où elles vivent, quelle que soit leur nationalité (Eurostat). États-Unis : nombre publié par l'OCDE, rapporté par Concret à la population publiée par la Banque mondiale ; affiché comme repère.</li>
+        <li><b>Immigré</b> (Insee) : personne née étrangère à l'étranger et vivant en France ; elle le reste si elle devient française. <b>Étranger</b> : personne qui n'a pas la nationalité du pays où elle vit, qu'elle soit née à l'étranger ou dans ce pays. <b>Descendant d'immigré de 2ᵉ génération</b> : personne née en France d'au moins un parent immigré. <b>Acquisition de la nationalité</b> : personnes devenues ressortissantes du pays dans l'année (naturalisation, déclaration, etc.), selon Eurostat.</li>
         <li><b>Premiers titres de séjour</b> : titres d'au moins trois mois délivrés pour la première fois à des personnes de pays hors de l'UE (motif famille, études, travail ; « autres » comprend la protection accordée aux réfugiés). <b>Premières demandes d'asile</b> : personnes qui demandent l'asile pour la première fois dans le pays.</li>
         <li><b>Situation irrégulière</b> : personnes de pays hors de l'UE contrôlées et trouvées sans droit au séjour ; <b>obligations de quitter le territoire</b> : décisions prises dans l'année ; <b>départs</b> : personnes parties à la suite d'une telle décision. Ce sont des procédures de l'année, pas des personnes présentes.</li>
         <li><b>Pour 1 000 habitants</b> : pour comparer des pays de tailles différentes. Pour les naissances et les soldes, taux publiés par Eurostat ; pour les migrations, calcul de Concret avec la population moyenne de l'année publiée par Eurostat.</li>
@@ -459,7 +470,21 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
       (sn.v <= 0 ? 'En ' + sm.y + ', la population augmente par le solde migratoire (' + signe(sm.v, 0) + '), le solde naturel étant de ' + signe(sn.v, 0) + '.' : 'En ' + sm.y + ', solde migratoire : ' + signe(sm.v, 0) + '.');
     serie('ch-nes', ne, 'n-nes');
 
-    quand('plus-nes', function () { serie('ch-neshue', P.C.nes_hue, 'n-neshue'); serie('ch-solmig', P.C.solmig, 'n-solmig'); });
+    quand('plus-nes', function () { serie('ch-etr', P.C.etr, 'n-etr'); serie('ch-natu', P.M.natu, 'n-natu'); serie('ch-neshue', P.C.nes_hue, 'n-neshue'); serie('ch-solmig', P.C.solmig, 'n-solmig'); });
+
+    // Immigrés, étrangers, enfants d'immigrés : les phrases de l'Insee, telles quelles.
+    var Pq = P.P || {};
+    if (Pq.immigres && Pq.etrangers && Pq.descendants) {
+      var et = dernier(P.C.etr, 'fr');
+      $('orig-l').innerHTML =
+        '<li><b>Nés à l\'étranger</b> (quelle que soit leur nationalité) : ' + fmt(e1.v, 1) + '\u00a0% de la population en ' + e1.y + ' (Eurostat, courbe ci-dessus).</li>' +
+        '<li><b>Immigrés</b> (nés étrangers à l\'étranger, devenus français ou non) : « ' + esc(Pq.immigres.v) + ' »</li>' +
+        '<li><b>Étrangers</b> (sans la nationalité française, nés à l\'étranger ou en France) : « ' + esc(Pq.etrangers.v) + ' »</li>' +
+        '<li><b>Enfants d\'immigrés</b> (nés en France d\'au moins un parent immigré) : « ' + esc((Pq.descendants_champ || {}).v ? Pq.descendants_champ.v + ', […] ' : '') + esc(Pq.descendants.v) + ' »</li>';
+      $('orig-n').innerHTML = 'Source : <a href="' + esc(Pq.immigres.url) + '">' + esc(Pq.immigres.source) + '</a>. ' +
+        (et ? 'Pour comparer les pays, Eurostat compte ' + fmt(et.v, 1) + '\u00a0% d\'étrangers en France en ' + et.y + ' (courbe « Étrangers » ci-dessous) ; le chiffre de l\'Insee, plus haut, vient du recensement. ' : '') +
+        'Les enfants d\'immigrés ne sont comptés que par une enquête de l\'Insee, pas chaque année ni dans les autres pays : il n\'y a pas de courbe comparée.';
+    } else $('orig').hidden = true;
 
     // Titres de séjour par motif (barres empilées, France).
     (function () {
