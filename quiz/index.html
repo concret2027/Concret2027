@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261025h"></script>
-<script src="/commun/quiz.js?v=20261025h"></script>
+<script src="/commun/quiz.js?v=20261026a"></script>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
 :root {
@@ -502,14 +502,11 @@ footer p { margin: 0; } footer a { color: inherit; }
       var cleCompte = 'quiz-score-compte-' + iso, deja = false; try { deja = localStorage.getItem(cleCompte) != null; } catch (e) {}
       var rang = document.getElementById('qz-rang');
       if (!window.ConcretQuiz) return;
-      var cles = []; for (var k = 0; k <= total; k++) cles.push('score-' + total + '-' + iso + '-' + k);
+      var cle = 'score-' + total + '-' + iso;
       rang.textContent = 'Classement du jour en cours de chargement…';
-      // Le score de la personne est enregistré d'abord (en tête de file), puis on lit les autres scores du jour.
-      // Toutes ces requêtes passent devant celles des questions : on les ajoute en tête de file à l'envers, le score en dernier (donc en premier).
-      var prom = [];
-      for (var kk = total; kk >= 0; kk--) if (deja || kk !== ok) prom[kk] = ConcretQuiz.compteur('get', cles[kk], true);
-      if (!deja) prom[ok] = ConcretQuiz.compteur('hit', cles[ok], true).then(function (v) { try { localStorage.setItem(cleCompte, String(ok)); } catch (e) {} return v; });
-      Promise.all(prom).then(function (n) {
+      // Une seule requête : le score de la personne est compté (sauf s'il l'a déjà été), et le compteur renvoie le nombre de personnes à chaque score.
+      var prom = deja ? ConcretQuiz.compteur('get', cle, total + 1) : ConcretQuiz.compteur('hit', cle, total + 1, ok).then(function (v) { try { localStorage.setItem(cleCompte, String(ok)); } catch (e) {} return v; });
+      prom.then(function (n) {
         var tous = n.reduce(function (a, b) { return a + b; }, 0);
         if (!tous) { rang.textContent = 'Le classement du jour s\'affiche quand vous finissez le quiz sur cet appareil.'; return; }
         if (tous < 2) { rang.textContent = 'Vous êtes la première personne à finir le quiz aujourd\'hui. Le classement s\'affiche dès 2 personnes.'; return; }
