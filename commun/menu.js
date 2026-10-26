@@ -11,7 +11,8 @@
     { u: '/sante/', l: 'Santé', t: 'Espérance de vie, accès aux soins, coût, prévention' },
     { u: '/education/', l: 'Éducation', t: 'PISA, décrochage, diplômés, chômage des jeunes' },
     { u: '/securite/', l: 'Sécurité et justice', t: 'Homicides, cambriolages, prisons, police, justice' },
-    { u: '/defense/', l: 'Défense', t: 'Budget, objectif de l\'OTAN, équipement, effectifs' }
+    { u: '/defense/', l: 'Défense', t: 'Budget, objectif de l\'OTAN, équipement, effectifs' },
+    { u: '/population/', l: 'Population et immigration', t: 'Naissances, âges, solde migratoire, titres de séjour, asile (sans note)' }
   ];
   // Couleurs des pages (les pages et le Baromètre n'ont pas les mêmes noms de variables).
   var V = { bg: 'var(--bg, var(--color-bg, #f6f6f3))', panel: 'var(--panel, var(--color-panel, #fff))', fg: 'var(--fg, var(--color-fg, #1c1d22))',

@@ -126,6 +126,15 @@ if (S.education) {
     } catch (e) { alertes.push('silence électoral : comparaison avec la version publiée impossible (' + e.message.split('\n')[0] + ')'); }
   }
 })();
+// Population et immigration (outils/population.py, Eurostat) : plages plausibles ; page sans note.
+if (S.population) {
+  var PQ = S.population, PR = { fec: [0.8, 3], nat: [4, 20], solnat: [-10, 10], solmig: [-20, 40], p65: [5, 40], med: [25, 60] }, PM = { titres: [0, 40], asile: [0, 30], irreg: [0, 30], oqtf: [0, 20], departs: [0, 10] };
+  Object.keys(PR).forEach(function (k) { var c = (PQ.C || {})[k]; if (!c) return err('population.C.' + k + ' manquant (relancer python3 outils/population.py --ecrire)'); ['fr', 'ue', 'de', 'es'].forEach(function (w) { if ((c[w] || []).length !== c.y.length) err('population.C.' + k + '.' + w + ' : longueur différente de y'); else serie('population.C.' + k + '.' + w, c[w], PR[k][0], PR[k][1]); }); });
+  Object.keys(PM).forEach(function (k) { var c = (PQ.M || {})[k]; if (!c) return err('population.M.' + k + ' manquant'); ['fr', 'ue', 'de', 'es'].forEach(function (w) { if ((c[w] || []).length !== c.y.length) err('population.M.' + k + '.' + w + ' : longueur différente de y'); else serie('population.M.' + k + '.' + w, c[w], PM[k][0], PM[k][1]); }); });
+  ['nais', 'deces'].forEach(function (k) { serie('population.K.' + k, (PQ.K || {})[k] && PQ.K[k].fr, 300000, 1200000); });
+  if (!PQ.PYR || Math.abs(PQ.PYR.fr.H.concat(PQ.PYR.fr.F).reduce(function (a, b) { return a + b; }, 0) - 100) > 0.5) err('population.PYR : la pyramide des âges ne fait pas 100 %');
+  if (!(PQ.P || {}).irreguliers || !PQ.P.irreguliers.url) err('population.P.irreguliers : citation de la Cour des comptes sans source');
+}
 // Valeurs d'exemple (page en brouillon) : jamais publiées.
 Object.keys(S).forEach(function (pg) { if (S[pg] && S[pg].exemple) err('series.' + pg + ' contient des valeurs d\'exemple (brouillon) : à remplacer par des données sourcées avant publication'); });
 Object.keys(d.datasets || {}).forEach(function (k) { if ((d.datasets[k] || []).some(function (r) { return r.exemple; })) err('datasets.' + k + ' contient des lignes d\'exemple (brouillon)'); });
