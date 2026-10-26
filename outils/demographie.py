@@ -225,7 +225,9 @@ def construire():
             continue
     if not PY:
         raise IOError('pyramide des âges introuvable')
-    P = {'irreguliers': {'v': 'Le nombre d\'étrangers en situation irrégulière présents en France est difficile à évaluer. Il est généralement estimé à partir du nombre de bénéficiaires de l\'aide médicale d\'État (439 000 en juin 2023), mais cette estimation présente de nombreuses limites.',
+    P = {'grippe_2025': {'v': 'Cette augmentation est notamment liée à l\'épidémie de grippe hivernale, qui a été particulièrement meurtrière en début d\'année.',
+                         'source': 'Insee Première n° 2087, Bilan démographique 2025, 13 janvier 2026', 'url': 'https://www.insee.fr/fr/statistiques/8719824', 'date': '2026-01-13'},
+         'irreguliers': {'v': 'Le nombre d\'étrangers en situation irrégulière présents en France est difficile à évaluer. Il est généralement estimé à partir du nombre de bénéficiaires de l\'aide médicale d\'État (439 000 en juin 2023), mais cette estimation présente de nombreuses limites.',
                          'source': 'Cour des comptes, « La politique de lutte contre l\'immigration irrégulière », janvier 2024', 'url': 'https://www.ccomptes.fr/fr/publications/la-politique-de-lutte-contre-limmigration-irreguliere', 'date': '2024-01-04'}}
     return {'maj': auj, 'MOIS': insee_mois(), 'C': C, 'M': M, 'N': N, 'K': K, 'TITRES': T, 'PYR': PY, 'P': P}
 

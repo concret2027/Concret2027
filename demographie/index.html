@@ -506,7 +506,11 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
           { x: [-0.5, xs.length - .5], xt: xs.map(function (x, i) { return i; }).filter(function (i) { return xs[i].slice(5) === '01' || xs[i].slice(5) === '07'; }), label: 'Naissances et décès par mois', yfmt: function (v) { return fmt(v / 1000, 0) + ' k'; }, efmt: function (v) { return nf(v); },
             xfmt: function (i) { return MO[+xs[i].slice(5) - 1] + ' ' + xs[i].slice(0, 4); }, xlab: function (i) { return nom(xs[i]); }, l: 40, r: 56 });
       });
-      $('n-mois').innerHTML = 'De janvier à ' + MOIS[mo - 1] + ' ' + an + ' : ' + nf(cum(an, 'nais')) + ' naissances et ' + nf(cum(an, 'deces')) + ' décès, contre ' + nf(cum(an - 1, 'nais')) + ' naissances et ' + nf(cum(an - 1, 'deces')) + ' décès sur la même période de ' + (an - 1) + '. Les derniers mois sont provisoires et révisés par l\'Insee. Source : <a href="' + esc(M.url) + '">' + esc(M.source) + '</a>.';
+      // Pic des décès sur la courbe : l'hiver ; pour janvier 2025, la raison donnée par l'Insee.
+      var kmax = k0; for (var q = k0; q <= n; q++) if (M.deces[q] > M.deces[kmax]) kmax = q;
+      var gr = (P.P || {}).grippe_2025, pic = 'Les décès montent chaque hiver : le plus haut sur la courbe est ' + nom(M.m[kmax]) + ' (' + nf(M.deces[kmax]) + ')' +
+        (M.m.slice(k0).indexOf('2025-01') >= 0 && gr ? '. Pour 2025, l\'Insee écrit : « ' + esc(gr.v) + ' » (<a href="' + esc(gr.url) + '">' + esc(gr.source) + '</a>). ' : '. ');
+      $('n-mois').innerHTML = pic + 'De janvier à ' + MOIS[mo - 1] + ' ' + an + ' : ' + nf(cum(an, 'nais')) + ' naissances et ' + nf(cum(an, 'deces')) + ' décès, contre ' + nf(cum(an - 1, 'nais')) + ' naissances et ' + nf(cum(an - 1, 'deces')) + ' décès sur la même période de ' + (an - 1) + '. Les derniers mois sont provisoires et révisés par l\'Insee. Source : <a href="' + esc(M.url) + '">' + esc(M.source) + '</a>.';
     })();
     (function () {
       var A = (DS.actu_demographie || []).slice(0, 8), G = (DS.agenda_demographie || []).filter(function (a) { return a.date >= new Date().toISOString().slice(0, 10); });
