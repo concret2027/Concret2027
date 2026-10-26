@@ -128,7 +128,7 @@ if (S.education) {
 })();
 // Population et immigration (outils/population.py, Eurostat) : plages plausibles ; page sans note.
 if (S.population) {
-  var PQ = S.population, PR = { fec: [0.8, 3], nat: [4, 20], solnat: [-10, 10], solmig: [-20, 40], p65: [5, 40], med: [25, 60] }, PM = { titres: [0, 40], asile: [0, 30], irreg: [0, 30], oqtf: [0, 20], departs: [0, 10] };
+  var PQ = S.population, PR = { nes: [0, 40], nes_hue: [0, 40], fec: [0.8, 3], nat: [4, 20], solnat: [-10, 10], solmig: [-20, 40], p65: [5, 40], med: [25, 60] }, PM = { titres: [0, 40], asile: [0, 30], irreg: [0, 30], oqtf: [0, 20], departs: [0, 10] };
   Object.keys(PR).forEach(function (k) { var c = (PQ.C || {})[k]; if (!c) return err('population.C.' + k + ' manquant (relancer python3 outils/population.py --ecrire)'); ['fr', 'ue', 'de', 'es'].forEach(function (w) { if ((c[w] || []).length !== c.y.length) err('population.C.' + k + '.' + w + ' : longueur différente de y'); else serie('population.C.' + k + '.' + w, c[w], PR[k][0], PR[k][1]); }); });
   Object.keys(PM).forEach(function (k) { var c = (PQ.M || {})[k]; if (!c) return err('population.M.' + k + ' manquant'); ['fr', 'ue', 'de', 'es'].forEach(function (w) { if ((c[w] || []).length !== c.y.length) err('population.M.' + k + '.' + w + ' : longueur différente de y'); else serie('population.M.' + k + '.' + w, c[w], PM[k][0], PM[k][1]); }); });
   ['nais', 'deces'].forEach(function (k) { serie('population.K.' + k, (PQ.K || {})[k] && PQ.K[k].fr, 300000, 1200000); });

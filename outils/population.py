@@ -4,6 +4,9 @@
   - Démographie (France, Allemagne, Espagne, moyenne de l'UE publiée par Eurostat) : enfants par femme (demo_find),
     naissances, solde naturel et solde migratoire pour 1 000 habitants (demo_gind), part des 65 ans et plus et âge
     médian (demo_pjanind) ; pour la France, les nombres : naissances, décès, solde naturel, solde migratoire, population.
+  - Personnes nées à l'étranger, en % de la population au 1er janvier (migr_pop3ctb : toutes, et nées hors de l'UE) ;
+    États-Unis, repère : OCDE (base de données sur les migrations internationales, stocks de personnes nées à l'étranger)
+    rapporté à la population de la Banque mondiale, calcul Concret.
   - Pyramide des âges au 1er janvier de la dernière année publiée (demo_pjangroup), France et UE, en % de la population.
   - Migrations : premiers titres de séjour par motif (migr_resfirst : famille, études, travail, autres), premières
     demandes d'asile (migr_asyappctza), étrangers hors UE trouvés en situation irrégulière (migr_eipre), obligations de
@@ -89,6 +92,20 @@ def serie(vals, ys, g):
     return [None if vals.get(g, {}).get(y) is None else round(vals[g][y], 4) for y in ys]
 
 
+OCDE_NES = 'https://sdmx.oecd.org/public/rest/data/OECD.ELS.IMD,DSD_MIG_F@DF_MIG_POPF,1.0/USA........?startPeriod=2000&dimensionAtObservation=AllDimensions&format=csvfilewithlabels'
+
+
+def oecd_nes_us():
+    """États-Unis : personnes nées à l'étranger (OCDE) en % de la population (Banque mondiale), {année: %}."""
+    import csv, io
+    nes = {}
+    for x in csv.DictReader(io.StringIO(U.get(OCDE_NES).decode('utf-8-sig'))):
+        if x['SEX'] == '_T' and x['BIRTH_COUNTRY'] == 'W' and x['OBS_VALUE']:
+            nes[int(x['TIME_PERIOD'])] = float(x['OBS_VALUE'])
+    pop = {int(r['date']): r['value'] for r in json.loads(U.get('https://api.worldbank.org/v2/country/USA/indicator/SP.POP.TOTL?format=json&date=2000:2030&per_page=100'))[1] if r['value']}
+    return {y: round(100 * nes[y] / pop[y], 2) for y in nes if pop.get(y)}
+
+
 def construire():
     auj = date.today().isoformat()
     C = {}
@@ -103,9 +120,30 @@ def construire():
             C[k][w] = serie(v, ys, g)
         if prov:
             C[k]['prov'] = prov
+        br = {y: m for y, m in br.items() if int(y) in ys}
         if br:
             C[k]['br'] = {y: 1 for y in br}
             C[k]['br_motif'] = br
+    # Personnes nées à l'étranger, en % de la population au 1er janvier (Eurostat) ; États-Unis : OCDE et Banque mondiale.
+    tot, _ = eurostat('migr_pop3ctb', 'c_birth=TOTAL&age=TOTAL&sex=T&unit=NR')
+    for k, code, l in (('nes', 'FOR', 'Personnes nées à l\'étranger'), ('nes_hue', 'NEU27_2020_FOR', 'Personnes nées hors de l\'UE')):
+        v, dr = eurostat('migr_pop3ctb', 'c_birth=%s&age=TOTAL&sex=T&unit=NR' % code)
+        ys = sorted(y for y in v.get('FR', {}) if y >= DEBUT)
+        prov, br = notes_drapeaux(dr)
+        c = {'l': l, 'unite': '% de la population', 'dec': 1, 'y': ys, 'url': PAGE % 'migr_pop3ctb',
+             'source': 'Eurostat (migr_pop3ctb, population au 1er janvier par pays de naissance), calcul Concret'}
+        for g, w in GEO.items():
+            c[w] = [None if v.get(g, {}).get(y) is None or not tot.get(g, {}).get(y) else round(100 * v[g][y] / tot[g][y], 2) for y in ys]
+        if prov:
+            c['prov'] = prov
+        br = {y: m for y, m in br.items() if int(y) in ys}
+        if br:
+            c['br'] = {y: 1 for y in br}; c['br_motif'] = br
+        C[k] = c
+    us = oecd_nes_us()
+    C['nes']['us'] = [us.get(y) for y in C['nes']['y']]
+    C['nes']['us_source'] = 'États-Unis : OCDE (base de données sur les migrations internationales, personnes nées à l\'étranger) rapporté à la population de la Banque mondiale, calcul Concret'
+    C['nes']['us_url'] = OCDE_NES
     # Population moyenne de chaque année (dénominateur des taux pour 1 000 habitants).
     pop, _ = eurostat('demo_gind', 'indic_de=AVG')
     M, N = {}, {}
@@ -118,6 +156,7 @@ def construire():
             c[w] = [None if v.get(g, {}).get(y) is None or not pop.get(g, {}).get(y) else round(1000 * v[g][y] / pop[g][y], 3) for y in ys]
         if prov:
             c['prov'] = prov
+        br = {y: m for y, m in br.items() if int(y) in ys}
         if br:
             c['br'] = {y: 1 for y in br}; c['br_motif'] = br
         M[k] = c
