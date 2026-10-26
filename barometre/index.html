@@ -394,9 +394,11 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
     });
     return out;
   };
-  // Classement Polymarket, sans la ligne « Autres candidats ».
+  // Qui ne se présente pas : ses paris restent dans les données, mais ne sont pas affichés (la raison est écrite sous les barres).
+  BX.HORS = { 'Jordan Bardella': 'Marine Le Pen est la candidate du RN depuis le 7 juillet 2026' };
+  // Classement Polymarket, sans la ligne « Autres candidats » ni ceux qui ne se présentent pas.
   BX.pmRank = function (pm) {
-    return pm.filter(function (r) { return r.candidat !== 'Autres candidats'; }).slice().sort(function (a, b) { return +b.probabilite - +a.probabilite; })
+    return pm.filter(function (r) { return r.candidat !== 'Autres candidats' && !BX.HORS[r.candidat]; }).slice().sort(function (a, b) { return +b.probabilite - +a.probabilite; })
       .map(function (r) { var s = BX.short(r.candidat); return { short: s, key: BX.key(s), name: r.candidat, v: +r.probabilite }; });
   };
   BX.TOP_TILES = 4; BX.TOP_CURVES = 8; BX.TOP_TABLE = 15; BX.TOP_PM = 6; BX.TOP_MV = 8; BX.TOP_MV_PM = 6; BX.TOP_PM_BARS = 10;
@@ -895,7 +897,7 @@ dash.calc('duels_recents', {
   function drawPM(id, rows, aria) {
     var box = document.getElementById(id);
     box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
-    var data = rows.filter(function (r) { return r.candidat !== 'Autres candidats'; }).sort(function (a, b) { return +b.probabilite - +a.probabilite; }).slice(0, BX.TOP_PM_BARS).map(function (r) { return { n: r.candidat, v: +r.probabilite }; });
+    var data = rows.filter(function (r) { return r.candidat !== 'Autres candidats' && !BX.HORS[r.candidat]; }).sort(function (a, b) { return +b.probabilite - +a.probabilite; }).slice(0, BX.TOP_PM_BARS).map(function (r) { return { n: r.candidat, v: +r.probabilite }; });
     var W = box.clientWidth || 400, row = 26, H = data.length * row + 8;
     var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', aria);
     var names = svg.append('g').selectAll('text').data(data).join('text').attr('x', 0).attr('y', function (d, i) { return i * row + 17; }).attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text(function (d) { return d.n; });
@@ -906,6 +908,10 @@ dash.calc('duels_recents', {
       .attr('fill', function (d, i) { return i === 0 && d.n !== 'Autres candidats' ? dash.colors[0] : 'var(--cds-chart-muted)'; });
     svg.append('g').selectAll('text').data(data).join('text').attr('x', function (d) { return mL + Math.max(2, x(d.v)) + 6; }).attr('y', function (d, i) { return i * row + 17; })
       .attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').style('font-variant-numeric', 'tabular-nums').text(function (d) { return BX.pct(d.v); });
+      // Ceux qui ne se présentent pas : leur chiffre et la raison, en une phrase sous les barres.
+    box.querySelectorAll('.bx-hors').forEach(function (n) { n.remove(); });
+    var hors = rows.filter(function (r) { return BX.HORS[r.candidat]; });
+    if (hors.length) { var p = document.createElement('p'); p.className = 'bx-note bx-hors'; p.textContent = hors.map(function (r) { return r.candidat + ' (' + BX.pct(+r.probabilite) + ') n\'est pas affiché : ' + BX.HORS[r.candidat] + '.'; }).join(' '); box.appendChild(p); }
   }
 
   var T1COLS = [];
