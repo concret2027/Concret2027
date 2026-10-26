@@ -105,8 +105,8 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
 .acc > summary::-webkit-details-marker { display: none; }
 .acc-cta { justify-self: start; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--band); border: 1px solid var(--fr); border-radius: 999px; padding: 5px 12px; }
-.acc-cta::before { content: "Voir le détail ↓"; }
-.acc[open] > summary .acc-cta::before { content: "Masquer ↑"; }
+.acc-cta::before { content: "Afficher ▾"; }
+.acc[open] > summary .acc-cta::before { content: "Masquer ▴"; }
 .acc > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 14px; }
 .acc-h { font-size: 17px; font-weight: 700; }
 .acc-t { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
@@ -311,9 +311,121 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><h1>Éducation</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Courbes</a><a href="#depense">Dépense</a><a href="#pisa">PISA</a><a href="#origine">Origine sociale</a><a href="#universites">Universités</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#annees">Année par année</a><a href="#actualite">Actualité</a><a href="#quiz">Question</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
+
+  <section class="card" id="bulletin" aria-labelledby="gov-title">
+    <h2 id="gov-title"><span class="eyebrow">Le bulletin de l'éducation</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <button class="share" id="share-rank" type="button" style="justify-self:start;margin:0">Partager le classement</button>
+    <details class="how">
+      <summary>La règle : comment la note est calculée</summary>
+      <div class="how-body">
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque critère, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>La note sur 20 est la part des points marqués, PISA comptant triple : c'est le résultat qui compte le plus, ce que les élèves savent vraiment. 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
+<details class="sous"><summary>Les 6 critères : quand la France marque-t-elle le point ?</summary><div>
+<p><b>Les 6 critères :</b> quatre mesurés chaque année (Eurostat, Banque mondiale), deux mesurés par l'enquête PISA tous les trois ou quatre ans. PISA pèse trois fois plus que chacun des autres : sur 8 parts, il en compte 3.</p>
+<table class="seuils"><tbody>
+          <tr><td>Décrochage<span>Mesure l'échec à l'école. Les 18-24 ans qui ont quitté l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et ne suivent aucune formation. La France marque le point si leur part baisse plus (ou monte moins) que dans l'UE ; elle le garde aussi si elle est plus faible que dans l'UE et ne monte pas.</span></td></tr>
+          <tr><td>Ni emploi ni études<span>Mesure les jeunes à l'arrêt, diplômés ou non. Tous les 15-29 ans qui ne travaillent pas, n'étudient pas et ne suivent aucune formation (les « NEET »). Un jeune diplômé qui cherche un emploi y figure, pas dans le décrochage. La France marque le point si leur part baisse plus que dans l'UE ; elle le garde aussi si elle est plus faible que dans l'UE et ne monte pas.</span></td></tr>
+          <tr><td>Diplômés du supérieur<span>La part des 25-34 ans diplômés du supérieur. La France marque le point si elle progresse plus vite que dans l'UE ; elle le garde aussi si elle est plus élevée que dans l'UE et ne baisse pas.</span></td></tr>
+          <tr><td>Chômage des jeunes<span>Le chômage des 15-24 ans. La France marque le point s'il baisse plus, ou monte moins, que dans l'UE ; elle le garde aussi s'il est plus bas que dans l'UE et ne monte pas.</span></td></tr>
+          <tr><td>PISA (compte triple)<span>Par défaut, chaque résultat est réparti sur les dix années de scolarité des élèves testés (voir le choix sous la règle). Le niveau des élèves de 15 ans en maths, en lecture et en sciences. À chaque vague, la France marque le point si son score évolue mieux que la moyenne de l'UE calculée par Concret à partir des scores de l'OCDE (moyenne des domaines comparables). Le résultat compte pour chacune des années écoulées depuis la vague précédente : PISA mesure plusieurs années d'école, pas la seule année du test.</span></td></tr>
+          <tr><td>Origine sociale<span>L'écart en maths entre le quart des élèves le plus favorisé et le quart le plus défavorisé. La France marque le point si cet écart se réduit plus (ou augmente moins) que dans l'OCDE. Comparé à l'OCDE et non à l'UE : le chiffre français vient de l'Insee et de la DEPP (2003, 2012, 2022, 2025), et l'OCDE ne publie le même écart pour chaque pays de l'UE que depuis 2015. Même règle de répartition que PISA.</span></td></tr>
+        </tbody></table>
+<p>PISA et l'origine sociale sont jugés d'une vague d'enquête à la suivante, sur leur seule évolution. La référence de PISA est la moyenne de l'UE calculée par Concret sur les pays de l'UE ; celle de l'origine sociale est la moyenne de l'OCDE, faute de chiffres comparables pour l'UE. Une note établie sur moins de 6 comparaisons est grisée : elle est peu fiable.</p>
+</div></details>
+<details class="sous"><summary>Un exemple : 2025</summary><div>
+<div class="ex" data-t="exemple_regle">
+                    <p><b>Décrochage :</b> 7,9 % → 7,2 % en France, 9,6 % → 9,1 % dans l'UE. La France baisse plus : <b>1 point</b>.</p>
+          <p><b>Chômage des jeunes :</b> 18,6 % → 18,9 % en France, stable à 16,2 % dans l'UE : <b>0 point</b>.</p>
+        </div>
+</div></details>
+<details class="sous"><summary>Limites</summary><div>
+<p class="note">L'école agit lentement : un diplômé de 2025 a été scolarisé sous plusieurs gouvernements. Les notes décrivent ce qui s'est passé pendant un mandat, pas tout ce qui en découle. Certaines années, la façon de mesurer un chiffre change (Eurostat le signale) : ces années-là, le critère n'est pas compté, pour ne pas récompenser un simple changement de mesure. Les vagues PISA couvrent plusieurs gouvernements : la chute de 2018 à 2022 compte pour Philippe, Castex et Borne. En 2025, l'écart social se réduit surtout parce que les meilleurs élèves reculent : la règle lui donne pourtant le point, c'est une de ses limites. Les séries européennes commencent en 2002 : Jacques Chirac n'est noté que sur 2003-2006.</p>
+</div></details>
+      </div>
+    </details>
+    <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
+    <div class="longbox">
+      <span class="eyebrow" style="margin:0">À qui attribuer les résultats PISA ?</span>
+      <div class="seg" role="group" aria-label="Mode de calcul PISA"><button type="button" id="mode-long" aria-pressed="true">Aux dix années d'école <small>par défaut</small></button><button type="button" id="mode-test" aria-pressed="false">À l'année du test</button></div>
+      <p class="note" id="long-note"></p>
+    </div>
+    <span class="eyebrow" style="margin:0">Les présidents</span>
+    <p class="note">Touchez une barre pour voir le détail.</p>
+    <div class="chart" id="rank-pres"></div>
+    <div class="pres-detail" id="pres-detail" hidden></div>
+    <p class="note" id="rank-pres-note"></p>
+    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
+    <div class="chart" id="rank-gov"></div>
+    <p class="note" id="rank-gov-note"></p>
+    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
+    <p class="note" data-t="ruptures">« Non compté » : certaines années, la France ou la moyenne européenne a changé sa façon de mesurer le décrochage, les jeunes sans emploi ni études ou les diplômés (Eurostat le signale en 2003, 2006, 2013, 2014, 2021 et 2024). Le chiffre n'est alors pas comparable à l'année d'avant : l'année ne rapporte ni ne coûte de point, et la raison est écrite sous chaque tableau. C'est pour cela que Gabriel Attal (2024) n'est jugé que sur trois critères.</p>
+    <p class="note pt-hors">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que ses voisins. <b>Touchez un critère</b> pour voir les chiffres. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
+    <div class="gov-list" id="gov-list"></div>
+    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+  </section>
+
+  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
+    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>La France face à l'Union européenne, l'Allemagne et les États-Unis</h2>
+    <p class="note">Bandes de fond : Premiers ministres successifs.</p>
+    <p class="note">Les États-Unis n'apparaissent que là où une série comparable existe : le décrochage, les jeunes sans emploi ni études et les diplômés du supérieur sont des indicateurs européens.</p>
+  </section>
+
+  <div class="charts4">
+    <section class="card" aria-labelledby="c1"><h2 id="c1"><span class="eyebrow">Décrochage, % des 18-24 ans</span>Moins de décrocheurs que nos voisins</h2><div class="chart" id="ch-el"></div><p class="note">Les 18-24 ans sortis de l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et sans formation.</p></section>
+    <section class="card" aria-labelledby="c2"><h2 id="c2"><span class="eyebrow">Ni emploi ni études, % des 15-29 ans</span>Plus de jeunes à l'arrêt que nos voisins</h2><div class="chart" id="ch-ne"></div><p class="note">Tous les 15-29 ans qui ne travaillent pas et n'étudient pas, diplômés ou non.</p></section>
+    <section class="card" aria-labelledby="c3"><h2 id="c3"><span class="eyebrow">Diplômés du supérieur, % des 25-34 ans</span>Plus de diplômés : 11 points d'avance sur l'UE</h2><div class="chart" id="ch-te"></div></section>
+    <section class="card" aria-labelledby="c4"><h2 id="c4"><span class="eyebrow">Chômage des 15-24 ans, %</span>Deux à trois fois plus qu'en Allemagne</h2><div class="chart" id="ch-yu"></div><p class="note">Estimations de l'OIT (Banque mondiale), mêmes définitions pour les quatre.</p></section>
+  </div>
+
+  <section class="card" id="depense" aria-labelledby="dep-title">
+    <h2 id="dep-title"><span class="eyebrow">Ce que ça coûte, % du PIB</span>La France dépense plus que ses voisins, pour des résultats PISA inférieurs</h2>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
+    <div class="chart" id="ch-dep"></div>
+    <p class="note" data-t="depense_note">Dépense publique d'éducation, de la maternelle au supérieur (Eurostat). En 2024 : France 5,1 %, Union européenne 4,7 %, Allemagne 4,5 %. L'écart avec l'UE représente environ 12 Md€ par an. États-Unis : chiffres de l'Unesco (2015-2021), calculés un peu différemment ; sur cette base, la France est autour de 5,4 %. Ce critère n'entre pas dans la note : dépenser plus n'est ni bien ni mal en soi, c'est le résultat qui compte.</p>
+  </section>
+
+  <section class="card" id="pisa" aria-labelledby="pisa-title">
+    <h2 id="pisa-title"><span class="eyebrow">PISA, élèves de 15 ans</span>Vingt-cinq ans de recul, et sous la moyenne de l'OCDE</h2>
+    <p class="insight" data-t="pisa_rang">En 2000, la France était <b>11<sup>e</sup></b> en maths. En 2025, elle est <b>30<sup>e</sup></b> sur 91 pays, avec 458 points, sous la moyenne de l'OCDE (463), au niveau de l'Allemagne (464) et des États-Unis (463).</p>
+    
+    <p class="note" id="pisa-ue-note"></p>
+    <button class="share" type="button" data-share="pisa" style="justify-self:start">Partager le graphique des maths</button>
+  </section>
+
+  <div class="charts3">
+    <section class="card" aria-labelledby="p1"><h2 id="p1"><span class="eyebrow">Mathématiques, points</span>−53 points depuis 2003</h2><div class="chart" id="ch-pisa-m"></div><p class="note" data-t="pisa_maths_note"><b>Élèves en difficulté : 36 %</b> en 2025 (29 % en 2022), contre 35 % dans l'OCDE.</p></section>
+    <section class="card" aria-labelledby="p2"><h2 id="p2"><span class="eyebrow">Compréhension de l'écrit, points</span>Le plus fort recul : −49 points depuis 2012</h2><div class="chart" id="ch-pisa-r"></div><p class="note" data-t="pisa_lecture_note"><b>Élèves en difficulté : 33 %</b> en 2025, contre 15 % en 2000 ; 30 % dans l'OCDE. États-Unis 2006 : pas de résultat en lecture, invalidé à cause d'une erreur d'impression des cahiers de test (<a href="https://nces.ed.gov/surveys/international/tables/B_1_06.asp">NCES</a>).</p></section>
+    <section class="card" aria-labelledby="p3"><h2 id="p3"><span class="eyebrow">Sciences, points</span>Le domaine qui résiste le mieux</h2><div class="chart" id="ch-pisa-s"></div><p class="note" data-t="pisa_sciences_note">Près de <b>3 élèves sur 4</b> atteignent le niveau de base en 2025. Score au niveau de la moyenne de l'OCDE.</p></section>
+  </div>
+
+  <section class="card" id="origine" aria-labelledby="eq-title">
+    <h2 id="eq-title"><span class="eyebrow">Poids de l'origine sociale, maths</span>L'école française corrige moins les inégalités que la moyenne de l'OCDE</h2>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne OCDE</span></div>
+    <div class="chart" id="ch-eq"></div>
+    <p class="note">Pas de courbe pour l'Allemagne, l'Espagne et les États-Unis : cet écart est calculé par l'Insee et la DEPP pour la France seulement ; la comparaison se fait avec la moyenne de l'OCDE.</p>
+    <p class="note" data-t="origine_note">Écart de score en maths entre le quart des élèves le plus favorisé et le quart le plus défavorisé. En 2025 : 95 points en France, 83 dans l'OCDE. L'écart se réduit depuis 2012, mais en 2025 surtout parce que les élèves favorisés reculent. Sources : Insee (France, portrait social 2025) pour 2003-2022, DEPP pour 2025.</p>
+  </section>
+
+  <section class="card" id="universites" aria-labelledby="u-title">
+    <h2 id="u-title"><span class="eyebrow">Universités, classement de Shanghai</span>Quatre universités dans le top 100 mondial, autant que l'Allemagne</h2>
+    <p class="insight" data-t="shanghai_texte">La meilleure université française est passée de la <b>65<sup>e</sup></b> place en 2003 à la <b>13<sup>e</sup></b> en 2026 (Paris-Saclay). Mais ce bond date de 2020 et vient surtout du regroupement d'établissements en grandes universités (Paris-Saclay, PSL, Université Paris Cité), qui additionne leurs publications et leurs prix : le nombre d'universités françaises dans le top 100 n'a, lui, presque pas bougé.</p>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span></div>
+    <div class="chart" id="ch-arwu"></div>
+    <span class="eyebrow" style="margin:6px 0 0">États-Unis, même classement</span>
+    <div class="chart" id="ch-arwu-us"></div>
+    <p class="note" data-t="shanghai_note">Nombre d'établissements classés dans les 100 premiers. Les États-Unis dominent mais reculent : 58 universités en 2003, 37 en 2026. 2018 : chiffre américain non vérifié, laissé vide. Le classement de Shanghai mesure la recherche (prix Nobel, médailles Fields, publications, citations), pas la qualité de l'enseignement ; il n'entre pas dans la note, car un regroupement d'universités suffit à faire monter un établissement sans que rien ne change pour les étudiants. Source : <a href="https://www.shanghairanking.com/rankings/arwu/2025">ShanghaiRanking</a>, éditions 2003 à 2026 ; 2018 : <a href="https://www.letudiant.fr/etudes/fac/classement-de-shanghai-2018-quelles-sont-les-19-universites-francaises-du-top-500.html">L'Étudiant</a>.</p>
+  </section>
+
+  <section class="card" id="annees" aria-labelledby="yr-title">
+    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
+    <p class="note">Chaque ligne est une année : <i class="pt p1"></i> point marqué (mieux que nos voisins), <i class="pt p0"></i> pas de point, <i class="pt ph"></i> demi-point (égalité), – non compté (la raison est écrite sous la ligne). PISA et origine sociale : le résultat d'une vague compte pour chacune des années écoulées depuis la précédente (ou, avec « temps long », pour les dix années de scolarité des élèves testés). La note de l'année est la part des points marqués, sur 20, PISA comptant triple.</p>
+    <div class="tbl-wrap"><table class="yrs"><thead><tr><th>Année</th><th>Premier ministre</th><th title="Décrochage">Décr.</th><th title="Ni emploi ni études">Ni-ni</th><th title="Diplômés du supérieur">Dipl.</th><th title="Chômage des jeunes">Chôm.</th><th title="PISA">PISA</th><th title="Origine sociale">Orig.</th><th>Note</th></tr></thead><tbody id="yr-body"></tbody></table></div>
+    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 2003</button>
+  </section>
+
+  <h2 class="grp-t" id="actualite">L'actualité</h2>
 
   <details class="acc" id="acc-today">
     <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-actions"><span class="acc-cta"></span><button class="share" id="share-fact-top" type="button" aria-label="Partager le chiffre du jour">Partager</button></span></summary>
@@ -368,120 +480,9 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="answer" id="quiz-a" hidden></p>
   </section>
 
-  <details class="acc" id="acc-bilan">
-    <summary><span class="acc-h">Le bilan</span><span class="acc-t">On diplôme plus que nos voisins, mais les élèves apprennent moins, et les jeunes trouvent moins vite un emploi</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card summary"><ol id="sum-list"></ol></div>
-  </details>
-
-  <section class="card" id="bulletin" aria-labelledby="gov-title">
-    <h2 id="gov-title"><span class="eyebrow">Le bulletin de l'éducation</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
-    <button class="share" id="share-rank" type="button" style="justify-self:start;margin:0">Partager le classement</button>
-    <details class="how">
-      <summary>La règle : comment la note est calculée</summary>
-      <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque critère, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>La note sur 20 est la part des points marqués, PISA comptant triple : c'est le résultat qui compte le plus, ce que les élèves savent vraiment. 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
-<details class="sous"><summary>Les 6 critères : quand la France marque-t-elle le point ?</summary><div>
-<p><b>Les 6 critères :</b> quatre mesurés chaque année (Eurostat, Banque mondiale), deux mesurés par l'enquête PISA tous les trois ou quatre ans. PISA pèse trois fois plus que chacun des autres : sur 8 parts, il en compte 3.</p>
-<table class="seuils"><tbody>
-          <tr><td>Décrochage<span>Mesure l'échec à l'école. Les 18-24 ans qui ont quitté l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et ne suivent aucune formation. La France marque le point si leur part baisse plus (ou monte moins) que dans l'UE ; elle le garde aussi si elle est plus faible que dans l'UE et ne monte pas.</span></td></tr>
-          <tr><td>Ni emploi ni études<span>Mesure les jeunes à l'arrêt, diplômés ou non. Tous les 15-29 ans qui ne travaillent pas, n'étudient pas et ne suivent aucune formation (les « NEET »). Un jeune diplômé qui cherche un emploi y figure, pas dans le décrochage. La France marque le point si leur part baisse plus que dans l'UE ; elle le garde aussi si elle est plus faible que dans l'UE et ne monte pas.</span></td></tr>
-          <tr><td>Diplômés du supérieur<span>La part des 25-34 ans diplômés du supérieur. La France marque le point si elle progresse plus vite que dans l'UE ; elle le garde aussi si elle est plus élevée que dans l'UE et ne baisse pas.</span></td></tr>
-          <tr><td>Chômage des jeunes<span>Le chômage des 15-24 ans. La France marque le point s'il baisse plus, ou monte moins, que dans l'UE ; elle le garde aussi s'il est plus bas que dans l'UE et ne monte pas.</span></td></tr>
-          <tr><td>PISA (compte triple)<span>Par défaut, chaque résultat est réparti sur les dix années de scolarité des élèves testés (voir le choix sous la règle). Le niveau des élèves de 15 ans en maths, en lecture et en sciences. À chaque vague, la France marque le point si son score évolue mieux que la moyenne de l'UE calculée par Concret à partir des scores de l'OCDE (moyenne des domaines comparables). Le résultat compte pour chacune des années écoulées depuis la vague précédente : PISA mesure plusieurs années d'école, pas la seule année du test.</span></td></tr>
-          <tr><td>Origine sociale<span>L'écart en maths entre le quart des élèves le plus favorisé et le quart le plus défavorisé. La France marque le point si cet écart se réduit plus (ou augmente moins) que dans l'OCDE. Comparé à l'OCDE et non à l'UE : le chiffre français vient de l'Insee et de la DEPP (2003, 2012, 2022, 2025), et l'OCDE ne publie le même écart pour chaque pays de l'UE que depuis 2015. Même règle de répartition que PISA.</span></td></tr>
-        </tbody></table>
-<p>PISA et l'origine sociale sont jugés d'une vague d'enquête à la suivante, sur leur seule évolution. La référence de PISA est la moyenne de l'UE calculée par Concret sur les pays de l'UE ; celle de l'origine sociale est la moyenne de l'OCDE, faute de chiffres comparables pour l'UE. Une note établie sur moins de 6 comparaisons est grisée : elle est peu fiable.</p>
-</div></details>
-<details class="sous"><summary>Un exemple : 2025</summary><div>
-<div class="ex" data-t="exemple_regle">
-                    <p><b>Décrochage :</b> 7,9 % → 7,2 % en France, 9,6 % → 9,1 % dans l'UE. La France baisse plus : <b>1 point</b>.</p>
-          <p><b>Chômage des jeunes :</b> 18,6 % → 18,9 % en France, stable à 16,2 % dans l'UE : <b>0 point</b>.</p>
-        </div>
-</div></details>
-<details class="sous"><summary>Limites</summary><div>
-<p class="note">L'école agit lentement : un diplômé de 2025 a été scolarisé sous plusieurs gouvernements. Les notes décrivent ce qui s'est passé pendant un mandat, pas tout ce qui en découle. Certaines années, la façon de mesurer un chiffre change (Eurostat le signale) : ces années-là, le critère n'est pas compté, pour ne pas récompenser un simple changement de mesure. Les vagues PISA couvrent plusieurs gouvernements : la chute de 2018 à 2022 compte pour Philippe, Castex et Borne. En 2025, l'écart social se réduit surtout parce que les meilleurs élèves reculent : la règle lui donne pourtant le point, c'est une de ses limites. Les séries européennes commencent en 2002 : Jacques Chirac n'est noté que sur 2003-2006.</p>
-</div></details>
-      </div>
-    </details>
-    <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
-    <div class="longbox">
-      <span class="eyebrow" style="margin:0">À qui attribuer les résultats PISA ?</span>
-      <div class="seg" role="group" aria-label="Mode de calcul PISA"><button type="button" id="mode-long" aria-pressed="true">Aux dix années d'école <small>par défaut</small></button><button type="button" id="mode-test" aria-pressed="false">À l'année du test</button></div>
-      <p class="note" id="long-note"></p>
-    </div>
-    <span class="eyebrow" style="margin:0">Les présidents</span>
-    <p class="note">Touchez une barre pour voir le détail.</p>
-    <div class="chart" id="rank-pres"></div>
-    <div class="pres-detail" id="pres-detail" hidden></div>
-    <p class="note" id="rank-pres-note"></p>
-    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
-    <div class="chart" id="rank-gov"></div>
-    <p class="note" id="rank-gov-note"></p>
-    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
-    <p class="note" data-t="ruptures">« Non compté » : certaines années, la France ou la moyenne européenne a changé sa façon de mesurer le décrochage, les jeunes sans emploi ni études ou les diplômés (Eurostat le signale en 2003, 2006, 2013, 2014, 2021 et 2024). Le chiffre n'est alors pas comparable à l'année d'avant : l'année ne rapporte ni ne coûte de point, et la raison est écrite sous chaque tableau. C'est pour cela que Gabriel Attal (2024) n'est jugé que sur trois critères.</p>
-    <p class="note pt-hors">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que ses voisins. <b>Touchez un critère</b> pour voir les chiffres. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
-    <div class="gov-list" id="gov-list"></div>
-    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
-  </section>
-
-  <section class="card" id="annees" aria-labelledby="yr-title">
-    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
-    <p class="note">Chaque ligne est une année : <i class="pt p1"></i> point marqué (mieux que nos voisins), <i class="pt p0"></i> pas de point, <i class="pt ph"></i> demi-point (égalité), – non compté (la raison est écrite sous la ligne). PISA et origine sociale : le résultat d'une vague compte pour chacune des années écoulées depuis la précédente (ou, avec « temps long », pour les dix années de scolarité des élèves testés). La note de l'année est la part des points marqués, sur 20, PISA comptant triple.</p>
-    <div class="tbl-wrap"><table class="yrs"><thead><tr><th>Année</th><th>Premier ministre</th><th title="Décrochage">Décr.</th><th title="Ni emploi ni études">Ni-ni</th><th title="Diplômés du supérieur">Dipl.</th><th title="Chômage des jeunes">Chôm.</th><th title="PISA">PISA</th><th title="Origine sociale">Orig.</th><th>Note</th></tr></thead><tbody id="yr-body"></tbody></table></div>
-    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 2003</button>
-  </section>
-
-  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
-    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>La France face à l'Union européenne, l'Allemagne et les États-Unis</h2>
-    <p class="note">Bandes de fond : Premiers ministres successifs.</p>
-    <p class="note">Les États-Unis n'apparaissent que là où une série comparable existe : le décrochage, les jeunes sans emploi ni études et les diplômés du supérieur sont des indicateurs européens.</p>
-  </section>
-  <div class="charts4">
-    <section class="card" aria-labelledby="c1"><h2 id="c1"><span class="eyebrow">Décrochage, % des 18-24 ans</span>Moins de décrocheurs que nos voisins</h2><div class="chart" id="ch-el"></div><p class="note">Les 18-24 ans sortis de l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et sans formation.</p></section>
-    <section class="card" aria-labelledby="c2"><h2 id="c2"><span class="eyebrow">Ni emploi ni études, % des 15-29 ans</span>Plus de jeunes à l'arrêt que nos voisins</h2><div class="chart" id="ch-ne"></div><p class="note">Tous les 15-29 ans qui ne travaillent pas et n'étudient pas, diplômés ou non.</p></section>
-    <section class="card" aria-labelledby="c3"><h2 id="c3"><span class="eyebrow">Diplômés du supérieur, % des 25-34 ans</span>Plus de diplômés : 11 points d'avance sur l'UE</h2><div class="chart" id="ch-te"></div></section>
-    <section class="card" aria-labelledby="c4"><h2 id="c4"><span class="eyebrow">Chômage des 15-24 ans, %</span>Deux à trois fois plus qu'en Allemagne</h2><div class="chart" id="ch-yu"></div><p class="note">Estimations de l'OIT (Banque mondiale), mêmes définitions pour les quatre.</p></section>
-  </div>
-
-  <section class="card" id="depense" aria-labelledby="dep-title">
-    <h2 id="dep-title"><span class="eyebrow">Ce que ça coûte, % du PIB</span>La France dépense plus que ses voisins, pour des résultats PISA inférieurs</h2>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
-    <div class="chart" id="ch-dep"></div>
-    <p class="note" data-t="depense_note">Dépense publique d'éducation, de la maternelle au supérieur (Eurostat). En 2024 : France 5,1 %, Union européenne 4,7 %, Allemagne 4,5 %. L'écart avec l'UE représente environ 12 Md€ par an. États-Unis : chiffres de l'Unesco (2015-2021), calculés un peu différemment ; sur cette base, la France est autour de 5,4 %. Ce critère n'entre pas dans la note : dépenser plus n'est ni bien ni mal en soi, c'est le résultat qui compte.</p>
-  </section>
-
-  <section class="card" id="pisa" aria-labelledby="pisa-title">
-    <h2 id="pisa-title"><span class="eyebrow">PISA, élèves de 15 ans</span>Vingt-cinq ans de recul, et sous la moyenne de l'OCDE</h2>
-    <p class="insight" data-t="pisa_rang">En 2000, la France était <b>11<sup>e</sup></b> en maths. En 2025, elle est <b>30<sup>e</sup></b> sur 91 pays, avec 458 points, sous la moyenne de l'OCDE (463), au niveau de l'Allemagne (464) et des États-Unis (463).</p>
-    
-    <p class="note" id="pisa-ue-note"></p>
-    <button class="share" type="button" data-share="pisa" style="justify-self:start">Partager le graphique des maths</button>
-  </section>
-  <div class="charts3">
-    <section class="card" aria-labelledby="p1"><h2 id="p1"><span class="eyebrow">Mathématiques, points</span>−53 points depuis 2003</h2><div class="chart" id="ch-pisa-m"></div><p class="note" data-t="pisa_maths_note"><b>Élèves en difficulté : 36 %</b> en 2025 (29 % en 2022), contre 35 % dans l'OCDE.</p></section>
-    <section class="card" aria-labelledby="p2"><h2 id="p2"><span class="eyebrow">Compréhension de l'écrit, points</span>Le plus fort recul : −49 points depuis 2012</h2><div class="chart" id="ch-pisa-r"></div><p class="note" data-t="pisa_lecture_note"><b>Élèves en difficulté : 33 %</b> en 2025, contre 15 % en 2000 ; 30 % dans l'OCDE. États-Unis 2006 : pas de résultat en lecture, invalidé à cause d'une erreur d'impression des cahiers de test (<a href="https://nces.ed.gov/surveys/international/tables/B_1_06.asp">NCES</a>).</p></section>
-    <section class="card" aria-labelledby="p3"><h2 id="p3"><span class="eyebrow">Sciences, points</span>Le domaine qui résiste le mieux</h2><div class="chart" id="ch-pisa-s"></div><p class="note" data-t="pisa_sciences_note">Près de <b>3 élèves sur 4</b> atteignent le niveau de base en 2025. Score au niveau de la moyenne de l'OCDE.</p></section>
-  </div>
-  <section class="card" id="origine" aria-labelledby="eq-title">
-    <h2 id="eq-title"><span class="eyebrow">Poids de l'origine sociale, maths</span>L'école française corrige moins les inégalités que la moyenne de l'OCDE</h2>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne OCDE</span></div>
-    <div class="chart" id="ch-eq"></div>
-    <p class="note">Pas de courbe pour l'Allemagne, l'Espagne et les États-Unis : cet écart est calculé par l'Insee et la DEPP pour la France seulement ; la comparaison se fait avec la moyenne de l'OCDE.</p>
-    <p class="note" data-t="origine_note">Écart de score en maths entre le quart des élèves le plus favorisé et le quart le plus défavorisé. En 2025 : 95 points en France, 83 dans l'OCDE. L'écart se réduit depuis 2012, mais en 2025 surtout parce que les élèves favorisés reculent. Sources : Insee (France, portrait social 2025) pour 2003-2022, DEPP pour 2025.</p>
-  </section>
-
-  <section class="card" id="universites" aria-labelledby="u-title">
-    <h2 id="u-title"><span class="eyebrow">Universités, classement de Shanghai</span>Quatre universités dans le top 100 mondial, autant que l'Allemagne</h2>
-    <p class="insight" data-t="shanghai_texte">La meilleure université française est passée de la <b>65<sup>e</sup></b> place en 2003 à la <b>13<sup>e</sup></b> en 2026 (Paris-Saclay). Mais ce bond date de 2020 et vient surtout du regroupement d'établissements en grandes universités (Paris-Saclay, PSL, Université Paris Cité), qui additionne leurs publications et leurs prix : le nombre d'universités françaises dans le top 100 n'a, lui, presque pas bougé.</p>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span></div>
-    <div class="chart" id="ch-arwu"></div>
-    <span class="eyebrow" style="margin:6px 0 0">États-Unis, même classement</span>
-    <div class="chart" id="ch-arwu-us"></div>
-    <p class="note" data-t="shanghai_note">Nombre d'établissements classés dans les 100 premiers. Les États-Unis dominent mais reculent : 58 universités en 2003, 37 en 2026. 2018 : chiffre américain non vérifié, laissé vide. Le classement de Shanghai mesure la recherche (prix Nobel, médailles Fields, publications, citations), pas la qualité de l'enseignement ; il n'entre pas dans la note, car un regroupement d'universités suffit à faire monter un établissement sans que rien ne change pour les étudiants. Source : <a href="https://www.shanghairanking.com/rankings/arwu/2025">ShanghaiRanking</a>, éditions 2003 à 2026 ; 2018 : <a href="https://www.letudiant.fr/etudes/fac/classement-de-shanghai-2018-quelles-sont-les-19-universites-francaises-du-top-500.html">L'Étudiant</a>.</p>
-  </section>
-
-  <section class="card" aria-labelledby="gl">
-    <h2 id="gl">Les mots pour suivre</h2>
+  <details class="acc" id="mots">
+    <summary><span class="acc-h">Les mots pour suivre</span><span class="acc-t">Les termes techniques de la page, expliqués en une phrase</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card">
     <dl class="glossary">
       <div><dt>PISA</dt><dd>Enquête de l'OCDE qui teste tous les 3 ou 4 ans les élèves de 15 ans en maths, en lecture et en sciences, dans plus de 90 pays.</dd></div>
       <div><dt>Décrochage</dt><dd>Les 18-24 ans qui ont quitté l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et ne sont pas en formation.</dd></div>
@@ -489,7 +490,13 @@ footer p { margin: 0; } footer a { color: inherit; }
       <div><dt>Journée défense et citoyenneté</dt><dd>Journée obligatoire vers 17 ans, pendant laquelle les jeunes passent un test de lecture : c'est la seule mesure annuelle de la lecture sur toute une génération.</dd></div>
       <div><dt>Parcoursup</dt><dd>La plateforme nationale d'admission dans l'enseignement supérieur après le bac.</dd></div>
     </dl>
-  </section>
+  </div>
+  </details>
+
+  <details class="acc" id="acc-bilan">
+    <summary><span class="acc-h">Le bilan</span><span class="acc-t">On diplôme plus que nos voisins, mais les élèves apprennent moins, et les jeunes trouvent moins vite un emploi</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card summary"><ol id="sum-list"></ol></div>
+  </details>
 
   <footer>
     <p><b>Sources.</b> PISA 2025 : <a href="https://www.education.gouv.fr/sites/default/files/document/pisa-2025-une-baisse-des-r-sultats-commune-l-ocde-un-rel-vement-poursuivre-520338.pdf">ministère de l'Éducation nationale</a>, <a href="https://www.education.gouv.fr/sites/default/files/document/depp-ni-2026-40pisa-mathspdf-520231.pdf">DEPP</a> ; scores et rangs depuis 2000 : <a href="https://www.ifrap.org/education-et-culture/les-evolutions-du-classement-francais-au-test-pisa-depuis-25-ans">iFRAP, d'après l'OCDE</a>. Lecture à 17 ans : <a href="https://www.education.gouv.fr/depp/journee-defense-et-citoyennete-2025-14-des-jeunes-rencontrent-des-difficultes-de-lecture-506086">DEPP, JDC 2025</a>. Décrochage, jeunes sans emploi ni formation, diplômés du supérieur, dépense d'éducation, chômage mensuel des moins de 25 ans : Eurostat (edat_lfse_14, edat_lfse_20, edat_lfse_03, gov_10a_exp, une_rt_m). Chômage annuel des 15-24 ans : Banque mondiale (SL.UEM.1524.ZS, estimations OIT). Scores PISA de l'Allemagne, des États-Unis et de la moyenne OCDE : OCDE, d'après les tableaux du ministère américain de l'Éducation (NCES : <a href="https://nces.ed.gov/surveys/international/tables/B_1_06.asp">lecture 2000-2006</a>, <a href="https://nces.ed.gov/programs/digest/d05/tables/dt05_392.asp">maths 2003</a>, <a href="https://nces.ed.gov/programs/digest/d09/tables/dt09_402.asp">2006</a>, <a href="https://nces.ed.gov/programs/digest/d17/tables/dt17_602.40.asp">2009-2015</a>), <a href="https://en.wikipedia.org/wiki/Programme_for_International_Student_Assessment">2015-2025</a> ; Allemagne 2025 : <a href="https://www.bildungsserver.de/bildung+innovation/pressedossier-zu-pisa-2025-ergebnisse-deutscher-jugendlicher-auf-historischem-tiefstand-nur-auf-oecd-durchschnittsniveau-1493.html">Bildungsserver</a> ; États-Unis 2025 : <a href="https://voz.us/en/society/260908/38946/the-u-s-slows-the-global-decline-in-pisa-but-the-setback-in-reading-sounds-the-alarm.html">Voz</a>, participation incomplète selon l'OCDE, à lire avec prudence. Écarts sociaux : <a href="https://www.insee.fr/fr/statistiques/8612522?sommaire=8612596">Insee, France, portrait social 2025</a>, et DEPP. Élèves à la rentrée 2025 et budget : <a href="https://www.senat.fr/rap/l25-139-313/l25-139-313_mono.html">Sénat, rapport sur le PLF 2026</a>. Dépense d'éducation des États-Unis : Unesco (Banque mondiale, SE.XPD.TOTL.GD.ZS). Budget 2026 de l'Éducation nationale : projet de loi de finances.</p>

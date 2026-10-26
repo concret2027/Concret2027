@@ -105,8 +105,8 @@ section[id], details[id], .growth[id] { scroll-margin-top: calc(var(--navh, 44px
 .acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
 .acc > summary::-webkit-details-marker { display: none; }
 .acc-cta { justify-self: start; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--band); border: 1px solid var(--fr); border-radius: 999px; padding: 5px 12px; }
-.acc-cta::before { content: "Voir le détail ↓"; }
-.acc[open] > summary .acc-cta::before { content: "Masquer ↑"; }
+.acc-cta::before { content: "Afficher ▾"; }
+.acc[open] > summary .acc-cta::before { content: "Masquer ▴"; }
 .acc > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 14px; }
 .acc-h { font-size: 17px; font-weight: 700; }
 .acc-t { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
@@ -294,10 +294,102 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><h1>Finances publiques</h1><span id="today"></span></div>
   <p class="upd" id="upd">Chargement des données…</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#acc-month">Ce mois-ci</a><a href="#croissance">Croissance</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#courbes">Courbes</a><a href="#richesse">Richesse</a><a href="#marches">Marchés</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#actualite">Actualité</a><a href="#quiz">Question</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
 
+  <section class="card" id="bulletin" aria-labelledby="gov-title">
+    <h2 id="gov-title"><span class="eyebrow">Le bulletin économique</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <button class="share" id="share-rank" type="button" style="justify-self:start;margin:0" aria-label="Partager le classement">Partager le classement</button>
+    <details class="how">
+      <summary>La règle : comment la note est calculée</summary>
+      <div class="how-body">
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque critère, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>La note sur 20 est la part des points marqués. 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
+<details class="sous"><summary>Pas à pas</summary><div>
+<p><b>1. Chaque année, une comparaison avec la moyenne de l'UE.</b> Pour chaque critère, on compare l'évolution de la France sur l'année à celle de la moyenne des 27 pays de l'Union européenne, publiée par Eurostat et la Banque mondiale (la même référence sur toutes les pages). Si la France a fait mieux, elle marque 1 point. Si elle a fait moins bien, elle garde le point quand elle fait déjà mieux que la moyenne de l'UE cette année-là (dette, déficit, dépenses ou prélèvements plus bas, chômage plus faible, commerce mieux couvert, intérêts plus faibles) et ne se dégrade pas ; sinon, 0. Égalité : un demi-point. La croissance, comparée sans niveau, garde la seule règle de l'évolution.</p>
+<p><b>2. Une note par critère.</b> On additionne les points du mandat et on divise par le nombre d'années. Un gouvernement de 3 ans qui marque 1 point sur 3 a donc 1/3 sur ce critère.</p>
+<p><b>3. La note finale</b> est la moyenne des 8 critères, ramenée sur 20.</p>
+</div></details>
+<details class="sous"><summary>Un exemple : François Bayrou, 2025</summary><div>
+<div class="ex" data-t="exemple_regle">
+                    <p><b>Dette :</b> elle a pris 3,1 points de PIB en France, 1,2 dans l'UE. La France a fait moins bien : <b>0 point</b>.</p>
+          <p><b>Dépenses publiques :</b> +0,3 point de PIB en France, +0,5 dans l'UE. Elles ont moins augmenté chez nous : <b>1 point</b>.</p>
+          <p>Même exercice sur les autres critères. Bayrou marque 3 points sur 7 (les prélèvements 2025 ne sont pas encore publiés) : 3 ÷ 7 × 20 = <b>8,6/20</b>.</p>
+        </div>
+</div></details>
+<details class="sous"><summary>Les 8 critères : quand la France marque-t-elle le point ?</summary><div>
+<table class="seuils"><tbody>
+          <tr><td>Dette<span>La dette publique (État, Sécurité sociale, collectivités) en % du PIB. La France marque le point si sa dette augmente moins, ou baisse plus, que celle de l'UE ; elle le garde aussi si sa dette est plus basse que celle de l'UE et n'augmente pas.</span></td></tr>
+          <tr><td>Déficit<span>Ce qui manque chaque année entre dépenses et recettes publiques, en % du PIB. La France marque le point si son déficit se réduit plus, ou se creuse moins, que celui de l'UE ; elle le garde aussi si son déficit est plus faible que celui de l'UE et ne se creuse pas.</span></td></tr>
+          <tr><td>Dépenses publiques<span>Tout ce que dépensent l'État, la Sécurité sociale et les collectivités, en % du PIB. La France marque le point si ses dépenses augmentent moins que dans l'UE ; elle le garde aussi si elles sont plus basses que dans l'UE et n'augmentent pas.</span></td></tr>
+          <tr><td>Prélèvements<span>Impôts et cotisations sociales, en % du PIB. La France marque le point si ses prélèvements augmentent moins (ou baissent plus) que dans l'UE ; elle le garde aussi s'ils sont plus bas que dans l'UE et n'augmentent pas.</span></td></tr>
+          <tr><td>Croissance par habitant<span>La croissance du PIB par habitant, c'est-à-dire de la richesse produite par personne. C'est le critère « croissance » du bulletin : on la mesure par habitant pour ne pas avantager les pays dont la population augmente vite. La France marque le point si la sienne est plus forte que celle de l'UE.</span></td></tr>
+          <tr><td>Emploi<span>Le taux de chômage. La France marque le point si son chômage baisse plus, ou monte moins, que dans l'UE ; elle le garde aussi s'il est plus bas que dans l'UE et ne monte pas.</span></td></tr>
+          <tr><td>Commerce extérieur<span>Ce que la France vend à l'étranger rapporté à ce qu'elle y achète (exportations ÷ importations). La France marque le point si ce rapport s'améliore plus que dans l'UE ; elle le garde aussi s'il est meilleur que dans l'UE et ne se dégrade pas.</span></td></tr>
+          <tr><td>Coût de la dette<span>Les intérêts payés sur la dette, en % du PIB. La France marque le point si ses intérêts augmentent moins, ou baissent plus, que dans l'UE ; elle le garde aussi s'ils sont plus faibles que dans l'UE et n'augmentent pas.</span></td></tr>
+        </tbody></table>
+<p class="note">Choix assumé de Concret : moins de dépenses ou de prélèvements que la moyenne de l'UE rapporte un point. Chaque année est attribuée au Premier ministre en poste la majeure partie de l'année ; les présidents sont notés sur toutes leurs années. Limite : un point marqué de justesse vaut autant qu'un point marqué largement, et un gouvernement d'un an est jugé sur peu de comparaisons. Les séries Eurostat commençant en 1995, l'année 1995 ne compte que pour la croissance et l'emploi. Eurostat ne publie la moyenne de l'UE de la dette qu'à partir de 2000 : la dette n'est comptée qu'à partir de 2001.</p>
+</div></details>
+      </div>
+    </details>
+    <p class="note" style="margin:0">Critères comptés dans la note : touchez-en un pour le retirer (ou le remettre) et voir les notes changer.</p>
+    <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
+    <span class="eyebrow" style="margin:0">Les présidents</span>
+    <p class="note">Touchez une barre pour voir le détail.</p>
+    <div class="chart" id="rank-pres"></div>
+    <div class="pres-detail" id="pres-detail" hidden></div>
+    <p class="note" id="rank-pres-note"></p>
+    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
+    <div class="chart" id="rank-gov"></div>
+    <p class="note" id="rank-gov-note"></p>
+    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
+    <p class="note pt-hors">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que la moyenne de l'UE. <b>Touchez un critère</b> pour voir les chiffres, année par année. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
+    <div class="gov-list" id="gov-list"></div>
+    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+  </section>
+
+  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
+    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>La France face à la moyenne de l'UE, avec l'Allemagne, l'Espagne et les États-Unis en repères, depuis 1995</h2>
+    <p class="note">Bandes de fond : Premiers ministres successifs.</p>
+  </section>
+
+  <div class="charts4">
+    <section class="card" aria-labelledby="c1"><h2 id="c1"><span class="eyebrow">Dette, % du PIB</span>De 7 points sous la moyenne de l'UE en 2000 à 34 points au-dessus</h2><div class="chart" id="ch-dette"></div><p class="note">Chiffres de fin d'année : <span id="debt-ye">115,7 % fin 2025</span>. Depuis, la dette a continué de monter : <span id="debt-last">119 % fin juin 2026</span> selon le dernier chiffre trimestriel de l'Insee, celui affiché en haut de page. États-Unis : dette brute des administrations publiques (FMI, Perspectives de l'économie mondiale, octobre 2026), de 2001 à 2024.</p></section>
+    <section class="card" aria-labelledby="c2"><h2 id="c2"><span class="eyebrow">Déficit, % du PIB</span>Un déficit plus élevé que la moyenne de l'UE chaque année depuis 2002</h2><div class="chart" id="ch-deficit"></div><p class="note">États-Unis : solde des administrations publiques (FMI, Perspectives de l'économie mondiale, octobre 2026), de 2001 à 2024.</p></section>
+    <section class="card" aria-labelledby="c3"><h2 id="c3"><span class="eyebrow">Dépenses, % du PIB</span>L'écart avec l'UE est passé de 2,6 à 7,9 points</h2><div class="chart" id="ch-dep"></div><p class="note">États-Unis : dépenses des administrations publiques (FMI, base des finances publiques historiques, décembre 2025), jusqu'en 2024.</p><p class="bars-big" data-t="depenses_allemagne">Dépenser comme l'Allemagne, ce serait <b>≈ 215 Md€</b> de moins par an.</p></section>
+    <section class="card" aria-labelledby="c4"><h2 id="c4"><span class="eyebrow">Prélèvements, % du PIB</span>Entre 3,5 et 7,5 points au-dessus de l'UE depuis 1995</h2><div class="chart" id="ch-po"></div><p class="note" data-t="prelevements_rang">Impôts et cotisations (Eurostat). En 2024, la France est 2e de l'UE, derrière le Danemark. États-Unis : OCDE (Statistiques des recettes publiques), jusqu'en 2024 ; sur cette base, la France ressort environ 2 points plus bas qu'avec Eurostat (43,5 % contre 45,3 % en 2024), l'écart réel est donc un peu plus faible que sur le graphique.</p></section>
+  </div>
+
+  <section class="card" id="richesse" aria-labelledby="pib-title">
+    <h2 id="pib-title"><span class="eyebrow">Richesse par habitant</span>16 % au-dessus de la moyenne de l'UE en 1990, au même niveau en 2025</h2>
+    <p class="insight" id="pib-insight">En 1990, un Français produisait <b>16 % de plus</b> que la moyenne de l'UE. En 2025, <b>autant</b>.</p>
+    <div class="bar-row">
+      <div class="key"><span><i style="background:var(--us)"></i>États-Unis</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--fr)"></i>France</span></div>
+      <div class="chips" role="group" aria-label="Mode d'affichage">
+        <button class="chip" id="pib-lvl" aria-pressed="true">En dollars</button>
+        <button class="chip" id="pib-idx" aria-pressed="false">Base 100 en 1990</button>
+      </div>
+    </div>
+    <div class="chart" id="pib-chart"></div>
+    <p class="note" id="pib-note">PIB par habitant en parité de pouvoir d'achat, dollars constants de 2021 (Banque mondiale). Depuis 1990 : France +43 %, Union européenne +65 %, Allemagne +48 %, États-Unis +73 %.</p>
+  </section>
+
+  <section class="card" id="retraites" aria-labelledby="ret-title" hidden>
+    <h2 id="ret-title"><span class="eyebrow">Retraites publiques, % du PIB</span>Le poids des retraites dans la richesse nationale</h2>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
+    <div class="chart" id="ch-retraites"></div>
+    <p class="note" id="ret-note"></p>
+  </section>
+
+  <section class="card" id="marches" aria-labelledby="sp-title">
+    <h2 id="sp-title"><span class="eyebrow">Politique et marchés</span>La France emprunte plus cher que l'Italie</h2>
+    <p class="explain"><b>À lire ainsi :</b> chaque courbe montre combien un pays paie de plus que l'Allemagne pour emprunter à 10 ans (le « spread », en points de base). Les numéros renvoient aux événements listés dessous.</p>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--it)"></i>Italie</span><span><i style="background:var(--es)"></i>Espagne</span><span id="sp-key">moyennes mensuelles, puis point du 20 oct. 2026</span></div>
+    <div class="chart" id="spread-chart"></div>
+    <ol class="events" id="events"></ol>
+  </section>
+
+  <h2 class="grp-t" id="actualite">L'actualité</h2>
 
   <details class="acc" id="acc-today">
     <summary><span class="acc-h">Ce qui a changé aujourd'hui</span><span class="acc-t" id="teaser-today">—</span><span class="acc-actions"><span class="acc-cta"></span><button class="share" id="share-fact-top" type="button" aria-label="Partager le chiffre du jour">Partager</button></span></summary>
@@ -333,6 +425,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   </section>
     </div>
   </details>
+
   <details class="acc" id="acc-month">
     <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body card">
@@ -377,10 +470,17 @@ footer p { margin: 0; } footer a { color: inherit; }
     </div>
     </div>
   </details>
+
   <details class="acc" id="acc-actu">
     <summary><span class="acc-h">L'actualité des finances publiques</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body card"><ul class="actu" id="actu-list"></ul></div>
   </details>
+
+  <section class="card" aria-labelledby="ag-title">
+    <h2 id="ag-title">Prochains rendez-vous</h2>
+    <ul class="agenda" id="agenda"></ul>
+  </section>
+
   <section class="card quiz" id="quiz" aria-labelledby="quiz-q">
     <span class="eyebrow" id="quiz-day">Question du jour</span>
     <p class="q" id="quiz-q">—</p>
@@ -388,106 +488,9 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="answer" id="quiz-a" hidden></p>
   </section>
 
-  <details class="acc" id="acc-bilan">
-    <summary><span class="acc-h">Le bilan depuis 1995</span><span class="acc-t">Aucun président n'a la moyenne en économie · dette, dépenses et impôts au-dessus de la moyenne de l'UE</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card summary"><ol id="sum-list"></ol></div>
-  </details>
-  <section class="card" id="bulletin" aria-labelledby="gov-title">
-    <h2 id="gov-title"><span class="eyebrow">Le bulletin économique</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
-    <button class="share" id="share-rank" type="button" style="justify-self:start;margin:0" aria-label="Partager le classement">Partager le classement</button>
-    <details class="how">
-      <summary>La règle : comment la note est calculée</summary>
-      <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque critère, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>La note sur 20 est la part des points marqués. 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
-<details class="sous"><summary>Pas à pas</summary><div>
-<p><b>1. Chaque année, une comparaison avec la moyenne de l'UE.</b> Pour chaque critère, on compare l'évolution de la France sur l'année à celle de la moyenne des 27 pays de l'Union européenne, publiée par Eurostat et la Banque mondiale (la même référence sur toutes les pages). Si la France a fait mieux, elle marque 1 point. Si elle a fait moins bien, elle garde le point quand elle fait déjà mieux que la moyenne de l'UE cette année-là (dette, déficit, dépenses ou prélèvements plus bas, chômage plus faible, commerce mieux couvert, intérêts plus faibles) et ne se dégrade pas ; sinon, 0. Égalité : un demi-point. La croissance, comparée sans niveau, garde la seule règle de l'évolution.</p>
-<p><b>2. Une note par critère.</b> On additionne les points du mandat et on divise par le nombre d'années. Un gouvernement de 3 ans qui marque 1 point sur 3 a donc 1/3 sur ce critère.</p>
-<p><b>3. La note finale</b> est la moyenne des 8 critères, ramenée sur 20.</p>
-</div></details>
-<details class="sous"><summary>Un exemple : François Bayrou, 2025</summary><div>
-<div class="ex" data-t="exemple_regle">
-                    <p><b>Dette :</b> elle a pris 3,1 points de PIB en France, 1,2 dans l'UE. La France a fait moins bien : <b>0 point</b>.</p>
-          <p><b>Dépenses publiques :</b> +0,3 point de PIB en France, +0,5 dans l'UE. Elles ont moins augmenté chez nous : <b>1 point</b>.</p>
-          <p>Même exercice sur les autres critères. Bayrou marque 3 points sur 7 (les prélèvements 2025 ne sont pas encore publiés) : 3 ÷ 7 × 20 = <b>8,6/20</b>.</p>
-        </div>
-</div></details>
-<details class="sous"><summary>Les 8 critères : quand la France marque-t-elle le point ?</summary><div>
-<table class="seuils"><tbody>
-          <tr><td>Dette<span>La dette publique (État, Sécurité sociale, collectivités) en % du PIB. La France marque le point si sa dette augmente moins, ou baisse plus, que celle de l'UE ; elle le garde aussi si sa dette est plus basse que celle de l'UE et n'augmente pas.</span></td></tr>
-          <tr><td>Déficit<span>Ce qui manque chaque année entre dépenses et recettes publiques, en % du PIB. La France marque le point si son déficit se réduit plus, ou se creuse moins, que celui de l'UE ; elle le garde aussi si son déficit est plus faible que celui de l'UE et ne se creuse pas.</span></td></tr>
-          <tr><td>Dépenses publiques<span>Tout ce que dépensent l'État, la Sécurité sociale et les collectivités, en % du PIB. La France marque le point si ses dépenses augmentent moins que dans l'UE ; elle le garde aussi si elles sont plus basses que dans l'UE et n'augmentent pas.</span></td></tr>
-          <tr><td>Prélèvements<span>Impôts et cotisations sociales, en % du PIB. La France marque le point si ses prélèvements augmentent moins (ou baissent plus) que dans l'UE ; elle le garde aussi s'ils sont plus bas que dans l'UE et n'augmentent pas.</span></td></tr>
-          <tr><td>Croissance par habitant<span>La croissance du PIB par habitant, c'est-à-dire de la richesse produite par personne. C'est le critère « croissance » du bulletin : on la mesure par habitant pour ne pas avantager les pays dont la population augmente vite. La France marque le point si la sienne est plus forte que celle de l'UE.</span></td></tr>
-          <tr><td>Emploi<span>Le taux de chômage. La France marque le point si son chômage baisse plus, ou monte moins, que dans l'UE ; elle le garde aussi s'il est plus bas que dans l'UE et ne monte pas.</span></td></tr>
-          <tr><td>Commerce extérieur<span>Ce que la France vend à l'étranger rapporté à ce qu'elle y achète (exportations ÷ importations). La France marque le point si ce rapport s'améliore plus que dans l'UE ; elle le garde aussi s'il est meilleur que dans l'UE et ne se dégrade pas.</span></td></tr>
-          <tr><td>Coût de la dette<span>Les intérêts payés sur la dette, en % du PIB. La France marque le point si ses intérêts augmentent moins, ou baissent plus, que dans l'UE ; elle le garde aussi s'ils sont plus faibles que dans l'UE et n'augmentent pas.</span></td></tr>
-        </tbody></table>
-<p class="note">Choix assumé de Concret : moins de dépenses ou de prélèvements que la moyenne de l'UE rapporte un point. Chaque année est attribuée au Premier ministre en poste la majeure partie de l'année ; les présidents sont notés sur toutes leurs années. Limite : un point marqué de justesse vaut autant qu'un point marqué largement, et un gouvernement d'un an est jugé sur peu de comparaisons. Les séries Eurostat commençant en 1995, l'année 1995 ne compte que pour la croissance et l'emploi. Eurostat ne publie la moyenne de l'UE de la dette qu'à partir de 2000 : la dette n'est comptée qu'à partir de 2001.</p>
-</div></details>
-      </div>
-    </details>
-    <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
-    <span class="eyebrow" style="margin:0">Les présidents</span>
-    <p class="note">Touchez une barre pour voir le détail.</p>
-    <div class="chart" id="rank-pres"></div>
-    <div class="pres-detail" id="pres-detail" hidden></div>
-    <p class="note" id="rank-pres-note"></p>
-    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
-    <div class="chart" id="rank-gov"></div>
-    <p class="note" id="rank-gov-note"></p>
-    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
-    <p class="note pt-hors">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que la moyenne de l'UE. <b>Touchez un critère</b> pour voir les chiffres, année par année. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
-    <div class="gov-list" id="gov-list"></div>
-    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
-  </section>
-
-  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
-    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>La France face à la moyenne de l'UE, avec l'Allemagne, l'Espagne et les États-Unis en repères, depuis 1995</h2>
-    <p class="note">Bandes de fond : Premiers ministres successifs.</p>
-  </section>
-  <div class="charts4">
-    <section class="card" aria-labelledby="c1"><h2 id="c1"><span class="eyebrow">Dette, % du PIB</span>De 7 points sous la moyenne de l'UE en 2000 à 34 points au-dessus</h2><div class="chart" id="ch-dette"></div><p class="note">Chiffres de fin d'année : <span id="debt-ye">115,7 % fin 2025</span>. Depuis, la dette a continué de monter : <span id="debt-last">119 % fin juin 2026</span> selon le dernier chiffre trimestriel de l'Insee, celui affiché en haut de page. États-Unis : dette brute des administrations publiques (FMI, Perspectives de l'économie mondiale, octobre 2026), de 2001 à 2024.</p></section>
-    <section class="card" aria-labelledby="c2"><h2 id="c2"><span class="eyebrow">Déficit, % du PIB</span>Un déficit plus élevé que la moyenne de l'UE chaque année depuis 2002</h2><div class="chart" id="ch-deficit"></div><p class="note">États-Unis : solde des administrations publiques (FMI, Perspectives de l'économie mondiale, octobre 2026), de 2001 à 2024.</p></section>
-    <section class="card" aria-labelledby="c3"><h2 id="c3"><span class="eyebrow">Dépenses, % du PIB</span>L'écart avec l'UE est passé de 2,6 à 7,9 points</h2><div class="chart" id="ch-dep"></div><p class="note">États-Unis : dépenses des administrations publiques (FMI, base des finances publiques historiques, décembre 2025), jusqu'en 2024.</p><p class="bars-big" data-t="depenses_allemagne">Dépenser comme l'Allemagne, ce serait <b>≈ 215 Md€</b> de moins par an.</p></section>
-    <section class="card" aria-labelledby="c4"><h2 id="c4"><span class="eyebrow">Prélèvements, % du PIB</span>Entre 3,5 et 7,5 points au-dessus de l'UE depuis 1995</h2><div class="chart" id="ch-po"></div><p class="note" data-t="prelevements_rang">Impôts et cotisations (Eurostat). En 2024, la France est 2e de l'UE, derrière le Danemark. États-Unis : OCDE (Statistiques des recettes publiques), jusqu'en 2024 ; sur cette base, la France ressort environ 2 points plus bas qu'avec Eurostat (43,5 % contre 45,3 % en 2024), l'écart réel est donc un peu plus faible que sur le graphique.</p></section>
-  </div>
-
-  <section class="card" id="richesse" aria-labelledby="pib-title">
-    <h2 id="pib-title"><span class="eyebrow">Richesse par habitant</span>16 % au-dessus de la moyenne de l'UE en 1990, au même niveau en 2025</h2>
-    <p class="insight" id="pib-insight">En 1990, un Français produisait <b>16 % de plus</b> que la moyenne de l'UE. En 2025, <b>autant</b>.</p>
-    <div class="bar-row">
-      <div class="key"><span><i style="background:var(--us)"></i>États-Unis</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--fr)"></i>France</span></div>
-      <div class="chips" role="group" aria-label="Mode d'affichage">
-        <button class="chip" id="pib-lvl" aria-pressed="true">En dollars</button>
-        <button class="chip" id="pib-idx" aria-pressed="false">Base 100 en 1990</button>
-      </div>
-    </div>
-    <div class="chart" id="pib-chart"></div>
-    <p class="note" id="pib-note">PIB par habitant en parité de pouvoir d'achat, dollars constants de 2021 (Banque mondiale). Depuis 1990 : France +43 %, Union européenne +65 %, Allemagne +48 %, États-Unis +73 %.</p>
-  </section>
-
-  <section class="card" id="retraites" aria-labelledby="ret-title" hidden>
-    <h2 id="ret-title"><span class="eyebrow">Retraites publiques, % du PIB</span>Le poids des retraites dans la richesse nationale</h2>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
-    <div class="chart" id="ch-retraites"></div>
-    <p class="note" id="ret-note"></p>
-  </section>
-
-  <section class="card" id="marches" aria-labelledby="sp-title">
-    <h2 id="sp-title"><span class="eyebrow">Politique et marchés</span>La France emprunte plus cher que l'Italie</h2>
-    <p class="explain"><b>À lire ainsi :</b> chaque courbe montre combien un pays paie de plus que l'Allemagne pour emprunter à 10 ans (le « spread », en points de base). Les numéros renvoient aux événements listés dessous.</p>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--it)"></i>Italie</span><span><i style="background:var(--es)"></i>Espagne</span><span id="sp-key">moyennes mensuelles, puis point du 20 oct. 2026</span></div>
-    <div class="chart" id="spread-chart"></div>
-    <ol class="events" id="events"></ol>
-  </section>
-
-  <section class="card" aria-labelledby="ag-title">
-    <h2 id="ag-title">Prochains rendez-vous</h2>
-    <ul class="agenda" id="agenda"></ul>
-  </section>
-
-  <section class="card" aria-labelledby="gl">
-    <h2 id="gl">Les mots pour suivre</h2>
+  <details class="acc" id="mots">
+    <summary><span class="acc-h">Les mots pour suivre</span><span class="acc-t">Les termes techniques de la page, expliqués en une phrase</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card">
     <dl class="glossary">
       <div><dt>% du PIB</dt><dd>Le PIB est la richesse produite en un an. Rapporter la dette ou les dépenses au PIB permet de comparer les pays et les années.</dd></div>
       <div><dt>Déficit</dt><dd>Ce qui manque chaque année entre dépenses et recettes publiques. Il s'ajoute à la dette.</dd></div>
@@ -497,7 +500,13 @@ footer p { margin: 0; } footer a { color: inherit; }
       <div><dt>Spread</dt><dd>L'écart entre le taux français et le taux allemand, en points de base (100 pb = 1 point). Plus il monte, plus les marchés jugent la France risquée.</dd></div>
       <div><dt>Ondam</dt><dd>Objectif national de dépenses d'assurance maladie : l'enveloppe votée chaque année pour les soins remboursés.</dd></div>
     </dl>
-  </section>
+  </div>
+  </details>
+
+  <details class="acc" id="acc-bilan">
+    <summary><span class="acc-h">Le bilan depuis 1995</span><span class="acc-t">Aucun président n'a la moyenne en économie · dette, dépenses et impôts au-dessus de la moyenne de l'UE</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card summary"><ol id="sum-list"></ol></div>
+  </details>
 
   <footer>
     <p><b>Sources.</b> Dette fin T2 2026 : <a href="https://www.insee.fr/fr/statistiques/9053525">Insee, 29 sept. 2026</a>. Comptes 2025 et intérêts : <a href="https://www.insee.fr/fr/statistiques/fichier/version-html/8997691/ip2106.pdf">Insee Première, mai 2026</a>. Budgets 2026 : Défense hors pensions (<a href="https://www.senat.fr/rap/l25-139-38/l25-139-38_mono.html">Sénat, PLF 2026</a>), Éducation nationale hors pensions (PLF 2026), Ondam 2026 (<a href="https://www.banquedesterritoires.fr/loi-de-financement-de-la-securite-sociale-pour-2026-quels-credits-quelles-nouveautes">LFSS 2026</a>). Séries 1995-2025 : Eurostat (gov_10a_main, gov_10dd_edpt1, gov_10a_taxag) ; croissance trimestrielle : Eurostat (namq_10_gdp) ; États-Unis : FMI (dette et solde : Perspectives de l'économie mondiale, octobre 2026 ; dépenses : base des finances publiques historiques, décembre 2025) et OCDE (prélèvements : Statistiques des recettes publiques) ; taux à 10 ans mensuels et annuels : Eurostat (irt_lt_mcby_m, irt_lt_mcby_a) ; taux quotidiens : Idéal Investisseur ; 340 Md€ d'emprunts prévus en 2027 : Agence France Trésor, citée par Boursorama ; PIB par habitant, chômage et balance commerciale : Banque mondiale (NY.GDP.PCAP.PP.KD, SL.UEM.TOTL.ZS, NE.RSB.GNFS.ZS). Taux du 20 oct. 2026 : Idéal Investisseur et ANSA. Publications du mois : déficit de l'État fin août (ministère de l'Action et des Comptes publics, via Boursorama), chômage d'août (Eurostat), inflation de septembre (Eurostat, Insee).</p>

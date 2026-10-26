@@ -118,8 +118,8 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
 .acc > summary::-webkit-details-marker { display: none; }
 .acc-cta { justify-self: start; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--band); border: 1px solid var(--fr); border-radius: 999px; padding: 5px 12px; }
-.acc-cta::before { content: "Voir le détail ↓"; }
-.acc[open] > summary .acc-cta::before { content: "Masquer ↑"; }
+.acc-cta::before { content: "Afficher ▾"; }
+.acc[open] > summary .acc-cta::before { content: "Masquer ▴"; }
 .acc > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 14px; }
 .acc-h { font-size: 17px; font-weight: 700; }
 .acc-t { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
@@ -396,9 +396,63 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><h1>Défense</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#acc-month">Budget</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les deux thèmes</a><a href="#q-eff">Effectifs</a><a href="#q-ind">Industrie</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#annees">Année par année</a><a href="#actualite">Actualité</a><a href="#quiz">Question</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
+
+  <section class="card" id="bulletin" aria-labelledby="gov-title">
+    <h2 id="gov-title"><span class="eyebrow">Le bulletin de la défense</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <details class="how">
+      <summary>La règle : comment la note est calculée</summary>
+      <div class="how-body">
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Chaque thème a une note sur 20 ; la note défense est la moyenne des deux thèmes. Un thème qui a moins d'une année de chiffres pendant le mandat compte en proportion (un tiers d'année, un tiers de poids). 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
+<details class="sous"><summary>Précisions</summary><div>
+<p>Pour une dépense, « ne se dégrade pas » se mesure hors inflation : la part du PIB bouge aussi quand le PIB bouge (en 2020, le PIB chute et la part monte ; en 2021, il repart et la part baisse) sans que l'effort ait changé. Au sommet de l'OTAN de 2014, les pays s'étaient engagés à arrêter toute baisse et à augmenter leur dépense « en termes réels ».</p><p>Les repères de l'OTAN sont des niveaux (2 % du PIB, 20 % d'équipement) : en 2014, les pays au-dessus se sont engagés à s'y maintenir, ceux en dessous à s'en rapprocher. Comparer seulement les hausses donnerait l'avantage aux pays partis de plus bas.</p><p>Les deux thèmes mesurent des moyens (budget, équipement) : une hausse compte comme un progrès. Les effectifs sont affichés sans note (la raison est écrite dessous). Pour les deux dernières années, l'OTAN ne publie que des estimations : affichées, pas comptées. Quand la source ne publie pas la moyenne de l'UE, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul.</p>
+</div></details>
+<details class="sous"><summary>Thème par thème</summary><div>
+<table class="seuils"><tbody id="regles"></tbody></table>
+</div></details>
+      </div>
+    </details>
+    <span class="eyebrow" style="margin:0">Les présidents</span>
+    <div class="chart" id="rank-pres"></div>
+    <div class="pres-detail" id="pres-detail" hidden></div>
+    <p class="note" id="rank-pres-note"></p>
+    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
+    <div class="chart" id="rank-gov"></div>
+    <p class="note" id="rank-gov-note"></p>
+    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
+    <p class="note pt-hors">Une note par thème. <b>Touchez un thème</b>, puis un indicateur, pour voir les chiffres année par année.</p>
+    <div class="gov-list" id="gov-list"></div>
+    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+  </section>
+
+  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
+    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>Les deux thèmes notés, la France face à ses voisins</h2>
+  </section>
+
+  <div class="themes" id="questions"></div>
+
+  <section class="card" id="q-eff" aria-labelledby="eff-t">
+    <h2 id="eff-t"><span class="eyebrow">Affiché, sans note</span>Effectifs militaires</h2>
+    <p class="note" id="eff-why"></p>
+    <div class="charts4" id="eff-charts"></div>
+  </section>
+
+  <section class="card" id="q-ind" aria-labelledby="ind-t">
+    <h2 id="ind-t"><span class="eyebrow">Affiché, sans note</span>Industrie de défense</h2>
+    <p class="note" id="ind-why"></p>
+    <div class="charts4" id="ind-charts"></div>
+  </section>
+
+  <section class="card" id="annees" aria-labelledby="yr-title">
+    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
+    <p class="note"><i class="pt p1"></i> la France a fait mieux que ses voisins sur ce thème cette année-là, <i class="pt p0"></i> moins bien, <i class="pt ph"></i> autant, – pas de chiffre comparable (la raison est sous la ligne).</p>
+    <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
+    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 1995</button>
+  </section>
+
+  <h2 class="grp-t" id="actualite">L'actualité</h2>
 
   <details class="acc" id="acc-month">
     <summary><span class="acc-h">Le budget et les repères</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
@@ -454,62 +508,9 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="answer" id="quiz-a" hidden></p>
   </section>
 
-  <details class="acc" id="acc-bilan">
-    <summary><span class="acc-h">Le bilan</span><span class="acc-t">Ce qui a changé en dix ans, en France et chez ses voisins, thème par thème</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card summary"><ol id="sum-list"></ol></div>
-  </details>
-
-  <section class="card" id="bulletin" aria-labelledby="gov-title">
-    <h2 id="gov-title"><span class="eyebrow">Le bulletin de la défense</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
-    <details class="how">
-      <summary>La règle : comment la note est calculée</summary>
-      <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Chaque thème a une note sur 20 ; la note défense est la moyenne des deux thèmes. Un thème qui a moins d'une année de chiffres pendant le mandat compte en proportion (un tiers d'année, un tiers de poids). 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
-<details class="sous"><summary>Précisions</summary><div>
-<p>Pour une dépense, « ne se dégrade pas » se mesure hors inflation : la part du PIB bouge aussi quand le PIB bouge (en 2020, le PIB chute et la part monte ; en 2021, il repart et la part baisse) sans que l'effort ait changé. Au sommet de l'OTAN de 2014, les pays s'étaient engagés à arrêter toute baisse et à augmenter leur dépense « en termes réels ».</p><p>Les repères de l'OTAN sont des niveaux (2 % du PIB, 20 % d'équipement) : en 2014, les pays au-dessus se sont engagés à s'y maintenir, ceux en dessous à s'en rapprocher. Comparer seulement les hausses donnerait l'avantage aux pays partis de plus bas.</p><p>Les deux thèmes mesurent des moyens (budget, équipement) : une hausse compte comme un progrès. Les effectifs sont affichés sans note (la raison est écrite dessous). Pour les deux dernières années, l'OTAN ne publie que des estimations : affichées, pas comptées. Quand la source ne publie pas la moyenne de l'UE, Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul.</p>
-</div></details>
-<details class="sous"><summary>Thème par thème</summary><div>
-<table class="seuils"><tbody id="regles"></tbody></table>
-</div></details>
-      </div>
-    </details>
-    <span class="eyebrow" style="margin:0">Les présidents</span>
-    <div class="chart" id="rank-pres"></div>
-    <div class="pres-detail" id="pres-detail" hidden></div>
-    <p class="note" id="rank-pres-note"></p>
-    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
-    <div class="chart" id="rank-gov"></div>
-    <p class="note" id="rank-gov-note"></p>
-    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
-    <p class="note pt-hors">Une note par thème. <b>Touchez un thème</b>, puis un indicateur, pour voir les chiffres année par année.</p>
-    <div class="gov-list" id="gov-list"></div>
-    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
-  </section>
-
-  <section class="card" id="annees" aria-labelledby="yr-title">
-    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
-    <p class="note"><i class="pt p1"></i> la France a fait mieux que ses voisins sur ce thème cette année-là, <i class="pt p0"></i> moins bien, <i class="pt ph"></i> autant, – pas de chiffre comparable (la raison est sous la ligne).</p>
-    <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
-    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 1995</button>
-  </section>
-
-  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
-    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>Les deux thèmes notés, la France face à ses voisins</h2>
-  </section>
-  <div class="themes" id="questions"></div>
-  <section class="card" id="q-eff" aria-labelledby="eff-t">
-    <h2 id="eff-t"><span class="eyebrow">Affiché, sans note</span>Effectifs militaires</h2>
-    <p class="note" id="eff-why"></p>
-    <div class="charts4" id="eff-charts"></div>
-  </section>
-  <section class="card" id="q-ind" aria-labelledby="ind-t">
-    <h2 id="ind-t"><span class="eyebrow">Affiché, sans note</span>Industrie de défense</h2>
-    <p class="note" id="ind-why"></p>
-    <div class="charts4" id="ind-charts"></div>
-  </section>
-
-  <section class="card" id="mots" aria-labelledby="gl">
-    <h2 id="gl">Les mots pour suivre</h2>
+  <details class="acc" id="mots">
+    <summary><span class="acc-h">Les mots pour suivre</span><span class="acc-t">Les termes techniques de la page, expliqués en une phrase</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card">
     <dl class="glossary">
       <div><dt>OTAN</dt><dd>L'Organisation du traité de l'Atlantique Nord, l'alliance militaire dont font partie 23 des 27 pays de l'UE (pas l'Autriche, l'Irlande, Chypre ni Malte), avec notamment les États-Unis, le Canada et le Royaume-Uni.</dd></div>
       <div><dt>Dépense de défense au sens de l'OTAN</dt><dd>La dépense que chaque pays déclare à l'OTAN selon une définition commune : forces armées, pensions des militaires et des civils de la défense, recherche-développement, opérations, aide militaire aux alliés. C'est elle que visent les objectifs de 2 % puis 3,5 % du PIB.</dd></div>
@@ -522,7 +523,13 @@ footer p { margin: 0; } footer a { color: inherit; }
       <div><dt>Dissuasion nucléaire</dt><dd>L'arme nucléaire et les moyens de la mettre en œuvre (sous-marins, avions). Neuf pays l'ont ; la France est le seul de l'UE. Son coût est compris dans la dépense de défense mesurée sur cette page.</dd></div>
       <div><dt>Prix constants</dt><dd>Chiffres corrigés de la hausse des prix, pour comparer les années entre elles (l'OTAN utilise les prix de 2021).</dd></div>
     </dl>
-  </section>
+  </div>
+  </details>
+
+  <details class="acc" id="acc-bilan">
+    <summary><span class="acc-h">Le bilan</span><span class="acc-t">Ce qui a changé en dix ans, en France et chez ses voisins, thème par thème</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card summary"><ol id="sum-list"></ol></div>
+  </details>
 
   <details class="acc" id="methode">
     <summary><span class="acc-h">Méthode et sources</span><span class="acc-t">D'où viennent les chiffres, et leurs limites</span><span class="acc-cta"></span></summary>

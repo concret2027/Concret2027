@@ -118,8 +118,8 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
 .acc > summary::-webkit-details-marker { display: none; }
 .acc-cta { justify-self: start; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--band); border: 1px solid var(--fr); border-radius: 999px; padding: 5px 12px; }
-.acc-cta::before { content: "Voir le détail ↓"; }
-.acc[open] > summary .acc-cta::before { content: "Masquer ↑"; }
+.acc-cta::before { content: "Afficher ▾"; }
+.acc[open] > summary .acc-cta::before { content: "Masquer ▴"; }
 .acc > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 14px; }
 .acc-h { font-size: 17px; font-weight: 700; }
 .acc-t { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
@@ -396,9 +396,57 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><h1>Vie des Français</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#acc-month">Moral du mois</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les cinq thèmes</a><a href="#q-idh">Développement humain</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#annees">Année par année</a><a href="#actualite">Actualité</a><a href="#quiz">Question</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
+
+  <section class="card" id="bulletin" aria-labelledby="gov-title">
+    <h2 id="gov-title"><span class="eyebrow">Le bulletin de la vie des Français</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <details class="how">
+      <summary>La règle : comment la note est calculée</summary>
+      <div class="how-body">
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Chaque thème a une note sur 20 ; la note de la vie des Français est la moyenne des cinq thèmes. Un thème qui a moins d'une année de chiffres pendant le mandat compte en proportion (un tiers d'année, un tiers de poids). 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
+<details class="sous"><summary>Précisions</summary><div>
+<p>Chaque indicateur est jugé année par année.</p><p>Le revenu des ménages hors inflation est un indice (100 en 2008) : il mesure une évolution, pas un niveau. On compare donc seulement sa hausse, en %, à celle de la moyenne de l'UE, sans tenir compte de l'avance de la France.</p><p>L'indice de développement humain est affiché sans note (la raison est écrite dessous). Quand Eurostat ne publie pas la moyenne de l'UE (avant 2010 pour l'enquête sur les conditions de vie), Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul.</p>
+</div></details>
+<details class="sous"><summary>Thème par thème</summary><div>
+<table class="seuils"><tbody id="regles"></tbody></table>
+</div></details>
+      </div>
+    </details>
+    <span class="eyebrow" style="margin:0">Les présidents</span>
+    <div class="chart" id="rank-pres"></div>
+    <div class="pres-detail" id="pres-detail" hidden></div>
+    <p class="note" id="rank-pres-note"></p>
+    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
+    <div class="chart" id="rank-gov"></div>
+    <p class="note" id="rank-gov-note"></p>
+    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
+    <p class="note pt-hors">Une note par thème. <b>Touchez un thème</b>, puis un indicateur, pour voir les chiffres année par année.</p>
+    <div class="gov-list" id="gov-list"></div>
+    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+  </section>
+
+  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
+    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>Les cinq thèmes notés, la France face à ses voisins</h2>
+  </section>
+
+  <div class="themes" id="questions"></div>
+
+  <section class="card" id="q-idh" aria-labelledby="idh-t">
+    <h2 id="idh-t"><span class="eyebrow">Affiché, sans note</span>Indice de développement humain</h2>
+    <p class="note" id="idh-why"></p>
+    <div class="charts4" id="idh-charts"></div>
+  </section>
+
+  <section class="card" id="annees" aria-labelledby="yr-title">
+    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
+    <p class="note"><i class="pt p1"></i> la France a fait mieux que la moyenne de l'UE sur ce thème cette année-là, <i class="pt p0"></i> moins bien, <i class="pt ph"></i> autant, – non compté (la raison est sous la ligne).</p>
+    <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
+    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 1995</button>
+  </section>
+
+  <h2 class="grp-t" id="actualite">L'actualité</h2>
 
   <details class="acc" id="acc-month">
     <summary><span class="acc-h">Le moral des ménages ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
@@ -458,57 +506,9 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="answer" id="quiz-a" hidden></p>
   </section>
 
-  <details class="acc" id="acc-bilan">
-    <summary><span class="acc-h">Le bilan</span><span class="acc-t">Ce qui a changé en dix ans, en France et chez ses voisins, thème par thème</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card summary"><ol id="sum-list"></ol></div>
-  </details>
-
-  <section class="card" id="bulletin" aria-labelledby="gov-title">
-    <h2 id="gov-title"><span class="eyebrow">Le bulletin de la vie des Français</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
-    <details class="how">
-      <summary>La règle : comment la note est calculée</summary>
-      <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque indicateur, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Chaque thème a une note sur 20 ; la note de la vie des Français est la moyenne des cinq thèmes. Un thème qui a moins d'une année de chiffres pendant le mandat compte en proportion (un tiers d'année, un tiers de poids). 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
-<details class="sous"><summary>Précisions</summary><div>
-<p>Chaque indicateur est jugé année par année.</p><p>Le revenu des ménages hors inflation est un indice (100 en 2008) : il mesure une évolution, pas un niveau. On compare donc seulement sa hausse, en %, à celle de la moyenne de l'UE, sans tenir compte de l'avance de la France.</p><p>L'indice de développement humain est affiché sans note (la raison est écrite dessous). Quand Eurostat ne publie pas la moyenne de l'UE (avant 2010 pour l'enquête sur les conditions de vie), Concret la calcule sur les pays de l'UE qui publient le chiffre, s'ils font au moins 70 % de sa population ; jamais un pays seul.</p>
-</div></details>
-<details class="sous"><summary>Thème par thème</summary><div>
-<table class="seuils"><tbody id="regles"></tbody></table>
-</div></details>
-      </div>
-    </details>
-    <span class="eyebrow" style="margin:0">Les présidents</span>
-    <div class="chart" id="rank-pres"></div>
-    <div class="pres-detail" id="pres-detail" hidden></div>
-    <p class="note" id="rank-pres-note"></p>
-    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
-    <div class="chart" id="rank-gov"></div>
-    <p class="note" id="rank-gov-note"></p>
-    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
-    <p class="note pt-hors">Une note par thème. <b>Touchez un thème</b>, puis un indicateur, pour voir les chiffres année par année.</p>
-    <div class="gov-list" id="gov-list"></div>
-    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
-  </section>
-
-  <section class="card" id="annees" aria-labelledby="yr-title">
-    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
-    <p class="note"><i class="pt p1"></i> la France a fait mieux que la moyenne de l'UE sur ce thème cette année-là, <i class="pt p0"></i> moins bien, <i class="pt ph"></i> autant, – non compté (la raison est sous la ligne).</p>
-    <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
-    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 1995</button>
-  </section>
-
-  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
-    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>Les cinq thèmes notés, la France face à ses voisins</h2>
-  </section>
-  <div class="themes" id="questions"></div>
-  <section class="card" id="q-idh" aria-labelledby="idh-t">
-    <h2 id="idh-t"><span class="eyebrow">Affiché, sans note</span>Indice de développement humain</h2>
-    <p class="note" id="idh-why"></p>
-    <div class="charts4" id="idh-charts"></div>
-  </section>
-
-  <section class="card" id="mots" aria-labelledby="gl">
-    <h2 id="gl">Les mots pour suivre</h2>
+  <details class="acc" id="mots">
+    <summary><span class="acc-h">Les mots pour suivre</span><span class="acc-t">Les termes techniques de la page, expliqués en une phrase</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card">
     <dl class="glossary">
       <div><dt>Revenu disponible</dt><dd>Ce qui reste aux ménages pour consommer et épargner : salaires, revenus des indépendants et du patrimoine, pensions et prestations sociales, moins les impôts directs et les cotisations.</dd></div>
       <div><dt>Hors inflation</dt><dd>Corrigé de la hausse des prix : on regarde si le revenu augmente plus vite que les prix.</dd></div>
@@ -521,7 +521,13 @@ footer p { margin: 0; } footer a { color: inherit; }
       <div><dt>Enquête sur les revenus et les conditions de vie</dt><dd>L'enquête européenne (EU-SILC) d'où viennent la plupart des chiffres de cette page, faite chaque année de la même façon dans tous les pays de l'UE (en France, par l'Insee).</dd></div>
       <div><dt>Indice de développement humain</dt><dd>Indice des Nations unies (PNUD), de 0 à 1, qui combine l'espérance de vie, la durée des études et le revenu national par habitant.</dd></div>
     </dl>
-  </section>
+  </div>
+  </details>
+
+  <details class="acc" id="acc-bilan">
+    <summary><span class="acc-h">Le bilan</span><span class="acc-t">Ce qui a changé en dix ans, en France et chez ses voisins, thème par thème</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card summary"><ol id="sum-list"></ol></div>
+  </details>
 
   <details class="acc" id="methode">
     <summary><span class="acc-h">Méthode et sources</span><span class="acc-t">D'où viennent les chiffres, et leurs limites</span><span class="acc-cta"></span></summary>

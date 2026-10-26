@@ -370,6 +370,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 <style>
 .qz-intro { display: grid; gap: 8px; }
 .qz-intro h1 { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 0; }
+.qz-suivi { position: sticky; top: var(--navh, 56px); z-index: 8; display: flex; gap: 12px; align-items: center; padding: 8px 2px; margin: -8px 0; background: var(--bg); font-size: 14px; font-variant-numeric: tabular-nums; }
+.qz-suivi .qz-prog { flex: 1; }
+.qz-suite { margin: 4px 0 0; } .qz-suite button { font: inherit; font-size: 14px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid var(--fr); background: var(--panel); color: var(--fr); cursor: pointer; }
 .qz-prog { display: flex; gap: 4px; }
 .qz-prog i { flex: 1; height: 6px; border-radius: 3px; background: var(--line); }
 .qz-prog i.g { background: var(--ok); } .qz-prog i.b { background: var(--bad); }
@@ -411,9 +414,10 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card qz-intro" data-partage="non" aria-labelledby="qz-titre">
     <h1 id="qz-titre">Huit questions sur la France face à ses voisins</h1>
-    <p class="note" style="font-size:14px">Une question par page de Concret, et deux sur la note des présidents et des gouvernements. Chaque réponse renvoie à la courbe ou au tableau qui la prouve. Nouvelles questions chaque jour à minuit ; vos réponses sont gardées sur cet appareil, dans ce navigateur.</p>
-    <div class="qz-prog" id="qz-prog" aria-hidden="true"></div>
+    <p class="note" style="font-size:14px">Une question par page de Concret et deux sur la note des présidents, avec la réponse sourcée. Nouvelles questions chaque jour à minuit.</p>
   </section>
+
+  <div class="qz-suivi" id="qz-suivi"><b id="qz-n">0 / 8</b><div class="qz-prog" id="qz-prog" aria-hidden="true"></div></div>
 
   <div id="qz-liste" style="display:grid;gap:20px"></div>
 
@@ -518,6 +522,17 @@ footer p { margin: 0; } footer a { color: inherit; }
         ans.innerHTML = esc((p === x.a ? 'Bonne réponse. ' : 'Raté. ') + x.e) + ' <a class="qz-src" href="' + esc(x.lien) + '">Vérifier sur la page ' + esc(x.src) + ' →</a>'; ans.hidden = false;
         try { localStorage.setItem(x.cle, String(p)); } catch (e) {}
         prog.children[n].className = p === x.a ? 'g' : 'b';
+        document.getElementById('qz-n').textContent = rep.filter(function (v) { return v != null; }).length + ' / ' + total;
+        if (!sec.querySelector('.qz-suite')) {
+          var su = document.createElement('p'); su.className = 'qz-suite'; var bt = document.createElement('button'); bt.type = 'button'; su.appendChild(bt); sec.appendChild(su);
+          bt.addEventListener('click', function () {
+            // La prochaine question sans réponse (après celle-ci, puis depuis le début) ; sinon, le score.
+            var k = -1; for (var d = 1; d < total; d++) { var j = (n + d) % total; if (rep[j] == null) { k = j; break; } }
+            var cible = k < 0 ? document.getElementById('qz-fin') : document.getElementById('q' + (k + 1));
+            if (cible) cible.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }
+        suites();
         if (window.ConcretQuiz) ConcretQuiz.repondu(x.page, x.Q, p, !!nouveau, { opts: opts, ans: ans });
         if (nouveau && rep.every(function (v) { return v != null; })) fin(true);
       }
@@ -525,6 +540,11 @@ footer p { margin: 0; } footer a { color: inherit; }
       try { var prev = localStorage.getItem(x.cle); if (prev != null && +prev < x.o.length) reveal(+prev); } catch (e) {}
     });
     if (rep.every(function (v) { return v != null; })) fin(false);
+    // Le libellé des boutons « Question suivante » : « Voir mon score » quand toutes les questions ont une réponse.
+    function suites() {
+      var toutes = rep.every(function (v) { return v != null; });
+      document.querySelectorAll('.qz-suite button').forEach(function (b) { b.textContent = toutes ? 'Voir mon score ↓' : 'Question suivante ↓'; });
+    }
 
     // Score du jour : un compteur par score possible (0 à total), remis à zéro chaque jour par la date dans son nom.
     var classe = null; // le classement du jour, repris dans l'image partagée
