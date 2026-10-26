@@ -472,8 +472,9 @@ dash.calc('dernier_sondage', {
   description: 'Les scores du sondage de premier tour le plus récent, du plus haut au plus bas.',
   fn: function (sondages_t1) {
     var last = sondages_t1.reduce(function (m, r) { return r.date > m ? r.date : m; }, '');
+    // Plusieurs sondages peuvent finir leur terrain le même jour : le dernier publié est le dernier ajouté à la liste.
     var first = sondages_t1.filter(function (r) { return r.date === last; });
-    var inst = first[0].institut;
+    var inst = first[first.length - 1].institut;
     return first.filter(function (r) { return r.institut === inst; })
       .map(function (r) { return { candidat: r.candidat, score: Number(r.score), institut: r.institut, terrain: r.terrain, echantillon: Number(r.echantillon), date: r.date }; })
       .sort(function (a, b) { return b.score - a.score; });
@@ -1089,9 +1090,9 @@ window.addEventListener('baro:data', function () {
     var st = ds.sondages_t1 || [];
     if (st.length) {
       var last = st.map(function (r) { return r.date; }).sort().pop(), rows = st.filter(function (r) { return r.date === last; });
-      var inst = Array.from(new Set(rows.map(function (r) { return r.institut; }))), n = ago(last);
+      var inst = Array.from(new Set(rows.map(function (r) { return r.institut; }))).reverse(), n = ago(last); // le dernier publié d'abord
       var top = rows.filter(function (r) { return r.institut === inst[0]; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
-      items.push((n <= 4 ? '<b>Nouveau sondage ' : '<b>Pas de nouveau sondage depuis ' + n + ' jours.</b> Dernier en date : ') + esc(inst.join(', ')) + (n <= 4 ? '</b>' : '') + ' (terrain du ' + esc(rows[0].terrain || fd(last)) + ') : ' +
+      items.push((n <= 4 ? '<b>' + (inst.length > 1 ? 'Nouveaux sondages ' : 'Nouveau sondage ') : '<b>Pas de nouveau sondage depuis ' + n + ' jours.</b> Dernier en date : ') + esc(inst.join(', ')) + (n <= 4 ? '</b>' : '') + ' (' + (inst.length > 1 ? esc(inst[0]) + ', ' : '') + 'terrain du ' + esc(top[0].terrain || fd(last)) + ') : ' +
         top.map(function (r) { return esc(r.candidat) + ' ' + nf(+r.score, 1) + ' %'; }).join(', ') + '.');
     }
     // Événement récent
@@ -1109,14 +1110,17 @@ window.addEventListener('baro:data', function () {
       var now = Date.now(), vis = document.getElementById('visit');
       var pmNow = {}; (ds.polymarket || []).forEach(function (r) { if (r.candidat !== 'Autres candidats') pmNow[r.candidat] = +r.probabilite; });
       var lastPoll = (ds.sondages_t1 || []).map(function (r) { return r.date; }).sort().pop() || '';
-      var snap = { t: now, poll: lastPoll, pm: pmNow }, stv = JSON.parse(localStorage.getItem('baro-visites') || 'null');
+      // polls : les sondages déjà vus (date de fin du terrain + institut), car plusieurs peuvent finir le même jour.
+      var vus = {}; (ds.sondages_t1 || []).forEach(function (r) { vus[r.date + '|' + r.institut] = 1; });
+      var snap = { t: now, poll: lastPoll, polls: Object.keys(vus), pm: pmNow }, stv = JSON.parse(localStorage.getItem('baro-visites') || 'null');
       if (!stv) { var old = JSON.parse(localStorage.getItem('baro-visite') || 'null'); stv = old ? { base: null, cur: old, seen: old.t } : { base: null, cur: snap, seen: now }; }
       else if (now - stv.seen > 3600e3) { stv.base = stv.cur; stv.cur = snap; }
       stv.seen = now; localStorage.setItem('baro-visites', JSON.stringify(stv));
       var lv = stv.base;
       if (lv) {
         var days = Math.round((now - lv.t) / 864e5), when = days >= 1 ? 'il y a ' + days + ' jour' + (days > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h';
-        var polls = {}; (ds.sondages_t1 || []).forEach(function (r) { if (r.date > (lv.poll || '')) polls[r.date + r.institut] = r.institut; });
+        var dejaVus = {}; (lv.polls || []).forEach(function (k) { dejaVus[k] = 1; });
+        var polls = {}; (ds.sondages_t1 || []).forEach(function (r) { if (lv.polls ? !dejaVus[r.date + '|' + r.institut] : r.date > (lv.poll || '')) polls[r.date + r.institut] = r.institut; });
         var np = Object.keys(polls).length, parts = [];
         parts.push(np ? '<b>' + np + ' nouveau' + (np > 1 ? 'x' : '') + ' sondage' + (np > 1 ? 's' : '') + '</b> (' + esc(Array.from(new Set(Object.keys(polls).map(function (k) { return polls[k]; }))).join(', ')) + ')' : 'aucun nouveau sondage');
         var mv = Object.keys(pmNow).filter(function (c) { return lv.pm && lv.pm[c] != null; }).map(function (c) { return { c: c, d: pmNow[c] - lv.pm[c] }; }).filter(function (m) { return Math.abs(m.d) >= 0.5; }).sort(function (a, b) { return Math.abs(b.d) - Math.abs(a.d); }).slice(0, 3);
