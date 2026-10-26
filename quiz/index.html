@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261025h"></script>
-<script src="/commun/quiz.js?v=20261026a"></script>
+<script src="/commun/quiz.js?v=20261026b"></script>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
 :root {
@@ -387,6 +387,19 @@ footer p { margin: 0; } footer a { color: inherit; }
 .qz-semaine div { display: grid; gap: 2px; justify-items: center; font-size: 11.5px; color: var(--muted); }
 .qz-semaine b { display: grid; place-items: center; width: 100%; height: 34px; border-radius: 8px; background: var(--line); color: var(--fg); font-size: 14px; font-variant-numeric: tabular-nums; }
 .qz-semaine b.j { background: var(--fr); color: #fff; }
+.qz-cl { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.qz-cl h2 { font-family: var(--serif); font-weight: 400; font-size: 24px; margin: 0; }
+.qz-onglets { display: flex; gap: 6px; flex-wrap: wrap; }
+.qz-onglets button { font: inherit; font-size: 13.5px; font-weight: 600; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
+.qz-onglets button.on { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.qz-cl-moi { margin: 0; font-size: 15.5px; } .qz-cl-moi b { font-weight: 600; }
+.qz-cl-top { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-variant-numeric: tabular-nums; }
+.qz-cl-top li { display: grid; grid-template-columns: 2.4em minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 6px 8px; border-radius: 8px; font-size: 14.5px; }
+.qz-cl-top li:nth-child(odd) { background: var(--band); } .qz-cl-top li.moi { outline: 2px solid var(--fr); font-weight: 600; }
+.qz-cl-top .r { color: var(--muted); font-weight: 600; } .qz-cl-top .p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .qz-cl-top .p i { color: var(--muted); font-style: normal; } .qz-cl-top .s { color: var(--muted); font-size: 13px; }
+.qz-pseudo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding-top: 8px; border-top: 1px solid var(--line); } .qz-pseudo label { font-size: 14px; font-weight: 600; }
+.qz-pseudo div { display: flex; gap: 8px; min-width: 0; } .qz-pseudo .qz-btn { flex: none; } .qz-pseudo input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
+.qz-pseudo-msg { margin: 0; font-size: 13px; min-height: 1em; color: var(--muted); }
 .qz-copie { font-size: 13px; color: var(--ok); margin: 0; min-height: 1em; }
 </style>
 </head>
@@ -411,6 +424,19 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="qz-perso" id="qz-perso" hidden></div>
     <button class="qz-btn" id="qz-partager" type="button">Partager mon score</button>
     <p class="qz-copie" id="qz-copie"></p>
+  </section>
+
+  <section class="card qz-cl" id="qz-cl" data-partage="non" aria-labelledby="qz-cl-t" hidden>
+    <h2 id="qz-cl-t">Le classement</h2>
+    <div class="qz-onglets" role="tablist"><button type="button" data-p="semaine" class="on">Semaine</button><button type="button" data-p="mois">Mois</button><button type="button" data-p="total">Depuis le début</button></div>
+    <p class="qz-cl-moi" id="qz-cl-moi"></p>
+    <ol class="qz-cl-top" id="qz-cl-top"></ol>
+    <form class="qz-pseudo" id="qz-pseudo">
+      <label for="qz-pseudo-in" id="qz-pseudo-l">Choisissez un pseudo pour apparaître dans le classement (facultatif)</label>
+      <div><input id="qz-pseudo-in" maxlength="20" autocomplete="nickname" placeholder="Votre pseudo"><button type="submit" class="qz-btn">Enregistrer</button></div>
+      <p class="qz-pseudo-msg" id="qz-pseudo-msg"></p>
+    </form>
+    <p class="note">Un point par bonne réponse, chaque jour ; seul le premier essai compte. Le classement de la semaine repart chaque lundi. Votre place est gardée grâce à un identifiant tiré au hasard sur cet appareil : ni e-mail, ni nom. Le pseudo est visible de tous ; pas d'insulte ni de nom de personnalité politique. <a href="#" id="qz-oubli">Effacer mes scores et mon pseudo</a></p>
   </section>
 
   <footer><p>Les réponses sont comptées de façon anonyme, pour afficher la part de chaque réponse et le classement du jour. <a href="/mentions-legales/">Mentions légales</a></p></footer>
@@ -506,6 +532,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       box.hidden = false; if (nouveau) setTimeout(function () { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
       try { localStorage.setItem('quiz-histo-' + iso, ok + '/' + total); } catch (e) {}
       perso();
+      classement();
       // Le score n'est compté qu'une fois par jour et par appareil ; il n'est marqué « compté » qu'une fois le compteur d'accord
       // (si l'envoi a échoué, il repart au prochain chargement de la page).
       var cleCompte = 'quiz-score-compte-' + iso, deja = false; try { deja = localStorage.getItem(cleCompte) != null; } catch (e) {}
@@ -553,6 +580,60 @@ footer p { margin: 0; } footer a { color: inherit; }
         '<small>Vos scores et votre série sont gardés sur cet appareil, dans ce navigateur, et ne sont envoyés nulle part.</small>';
       el.hidden = false;
     }
+    // Le classement (semaine, mois, depuis le début) : un identifiant tiré au hasard sur cet appareil, un pseudo facultatif.
+    // Le serveur recalcule les points des questions des pages à partir des réponses ; seul le premier essai du jour compte.
+    var CL = null, periode = 'semaine';
+    function joueur() {
+      try {
+        var id = localStorage.getItem('concret-joueur');
+        if (!id) { var a = new Uint8Array(16); crypto.getRandomValues(a); id = btoa(String.fromCharCode.apply(null, a)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); localStorage.setItem('concret-joueur', id); }
+        return id;
+      } catch (e) { return null; }
+    }
+    function appel(op, p, methode) {
+      var u = ConcretQuiz.api + op + '?' + Object.keys(p).map(function (k) { return k + '=' + encodeURIComponent(p[k]); }).join('&');
+      return fetch(u, { method: methode || 'GET', cache: 'no-store' }).then(function (r) { return r.json().then(function (j) { if (!r.ok) { var e = new Error(j.erreur || r.status); e.message = j.erreur || String(r.status); throw e; } return j; }); });
+    }
+    function classement() {
+      var id = joueur(), sec = document.getElementById('qz-cl'); if (!id || !window.ConcretQuiz || !ConcretQuiz.api || !window.fetch) return;
+      var cle = 'quiz-classement-' + iso, envoye = false; try { envoye = localStorage.getItem(cle) != null; } catch (e) {}
+      var pr;
+      if (envoye) pr = appel('classement', { id: id, jour: iso });
+      else {
+        var c = [], g = 0;
+        Qs.forEach(function (x, i) {
+          if (x.page === 'notes') { if (rep[i]) g++; return; }
+          var v = null; try { v = localStorage.getItem(x.cle); } catch (e) {}
+          if (v != null) c.push(x.page + ':' + v);
+        });
+        pr = appel('partie', { id: id, jour: iso, c: c.join(','), g: g }, 'POST').then(function (j) { try { localStorage.setItem(cle, String(j.score)); } catch (e) {} return j.classement; });
+      }
+      pr.then(function (cl) { CL = cl; sec.hidden = false; dessine(); }, function () {});
+    }
+    function dessine() {
+      if (!CL) return;
+      var P = CL[periode], nf = function (v) { return v.toLocaleString('fr-FR'); }, quand = { semaine: 'cette semaine', mois: 'ce mois-ci', total: 'depuis le début' }[periode];
+      document.querySelectorAll('.qz-onglets button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-p') === periode); });
+      document.getElementById('qz-cl-moi').innerHTML = P.moi ? 'Vous êtes à la <b>' + (P.moi.rang === 1 ? '1re' : P.moi.rang + 'e') + ' place</b> sur <b>' + nf(P.joueurs) + (P.joueurs > 1 ? ' joueurs' : ' joueur') + '</b> ' + quand + ', avec ' + nf(P.moi.points) + ' point' + (P.moi.points > 1 ? 's' : '') + ' en ' + P.moi.jours + ' jour' + (P.moi.jours > 1 ? 's' : '') + '.' : 'Vous n\'avez pas encore de points ' + quand + '.';
+      document.getElementById('qz-cl-top').innerHTML = P.top.map(function (r) {
+        return '<li' + (r.moi ? ' class="moi"' : '') + '><span class="r">' + r.rang + '</span><span class="p">' + (r.pseudo ? esc(r.pseudo) : '<i>Sans pseudo</i>') + (r.moi ? ' (vous)' : '') + '</span><span>' + nf(r.points) + (r.points > 1 ? ' pts' : ' pt') + ' <span class="s">· ' + r.jours + ' j</span></span></li>';
+      }).join('');
+      var inp = document.getElementById('qz-pseudo-in');
+      if (document.activeElement !== inp) inp.value = CL.pseudo || '';
+      document.getElementById('qz-pseudo-l').textContent = CL.pseudo ? 'Votre pseudo (videz la case pour le retirer)' : 'Choisissez un pseudo pour apparaître dans le classement (facultatif)';
+    }
+    document.querySelectorAll('.qz-onglets button').forEach(function (b) { b.addEventListener('click', function () { periode = b.getAttribute('data-p'); dessine(); }); });
+    document.getElementById('qz-pseudo').addEventListener('submit', function (ev) {
+      ev.preventDefault(); var msg = document.getElementById('qz-pseudo-msg'), id = joueur(), v = document.getElementById('qz-pseudo-in').value.trim();
+      msg.textContent = 'Enregistrement…';
+      appel('pseudo', { id: id, pseudo: v }, 'POST').then(function () { msg.textContent = v ? 'Pseudo enregistré.' : 'Pseudo retiré.'; return appel('classement', { id: id, jour: iso }); })
+        .then(function (cl) { CL = cl; dessine(); }, function (e) { msg.textContent = e.message || 'Le pseudo n\'a pas pu être enregistré. Réessayez.'; });
+    });
+    document.getElementById('qz-oubli').addEventListener('click', function (ev) {
+      ev.preventDefault(); if (!confirm('Effacer vos scores et votre pseudo du classement ?')) return;
+      appel('oubli', { id: joueur() }, 'POST').then(function () { try { localStorage.removeItem('concret-joueur'); localStorage.removeItem('quiz-classement-' + iso); } catch (e) {} document.getElementById('qz-cl').hidden = true; CL = null; }, function () {});
+    });
+
     // Partager le score : une image du résultat (score, carrés, classement), dessinée ici, avec l'adresse en légende
     // (sans lien complet, pour que la messagerie montre l'image et pas l'aperçu de la page).
     function image(ok) {

@@ -73,5 +73,5 @@
     }
     return totaux(page, Q, choix, nouveau).then(function (n) { afficher(opts, ans, n, nouveau); return n; }, function () { return null; });
   }
-  window.ConcretQuiz = { repondu: repondu, chemin: chemin, compteur: compteur, aide: aide };
+  window.ConcretQuiz = { repondu: repondu, chemin: chemin, compteur: compteur, aide: aide, api: API };
 })();
