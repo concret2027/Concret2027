@@ -157,6 +157,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 .bx-lastbar .tr { height: 12px; background: var(--cds-chart-grid); border-radius: 6px; overflow: hidden; }
 .bx-lastbar .fl { height: 100%; border-radius: 6px; }
 .bx-lastbar .pv { text-align: right; }
+.bx-lastsrc { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
 .bx-thermo { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--cds-gap-md); }
 .bx-th { display: grid; gap: 4px; align-content: start; padding: var(--cds-pad-md); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); min-width: 0; }
 .bx-th .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
@@ -469,15 +470,21 @@ dash.calc('mouvements', {
 dash.calc('dernier_sondage', {
   inputs: ['sondages_t1'],
   title: 'Le dernier sondage',
-  description: 'Les scores du sondage de premier tour le plus récent, du plus haut au plus bas.',
+  description: 'Les scores du sondage de premier tour le plus récent, du plus haut au plus bas ; si plusieurs sondages finissent leur terrain le même jour, la moyenne de ces sondages.',
   fn: function (sondages_t1) {
     var last = sondages_t1.reduce(function (m, r) { return r.date > m ? r.date : m; }, '');
-    // Plusieurs sondages peuvent finir leur terrain le même jour : le dernier publié est le dernier ajouté à la liste.
     var first = sondages_t1.filter(function (r) { return r.date === last; });
-    var inst = first[first.length - 1].institut;
-    return first.filter(function (r) { return r.institut === inst; })
-      .map(function (r) { return { candidat: r.candidat, score: Number(r.score), institut: r.institut, terrain: r.terrain, echantillon: Number(r.echantillon), date: r.date }; })
-      .sort(function (a, b) { return b.score - a.score; });
+    // Les sondages de ce jour-là, du dernier publié (le dernier ajouté à la liste) au premier.
+    var polls = [], by = {};
+    first.forEach(function (r) {
+      if (!polls.some(function (p) { return p.institut === r.institut; })) polls.push({ institut: r.institut, terrain: r.terrain, echantillon: Number(r.echantillon), date: r.date });
+      (by[r.candidat] = by[r.candidat] || []).push(Number(r.score));
+    });
+    polls.reverse();
+    return Object.keys(by).map(function (c) {
+      var v = by[c];
+      return { candidat: c, score: Math.round(v.reduce(function (x, y) { return x + y; }, 0) / v.length * 10) / 10, n: v.length, polls: polls };
+    }).sort(function (x, y) { return y.score - x.score; });
   }
 });
 
@@ -587,20 +594,36 @@ dash.calc('duels_recents', {
   function drawLast(rows) {
     var box = document.getElementById('last'); box.textContent = '';
     if (!rows.length) return;
-    var r0 = rows[0];
-    document.getElementById('last-title').textContent = 'Le dernier sondage : ' + r0.institut;
-    var N = (dash.data('sondages_notices').data || []).filter(function (n) { return n.date === r0.date && n.institut === r0.institut; })[0];
-    document.getElementById('last-note').innerHTML = (N && N.commanditaire ? esc(r0.institut) + ' pour ' + esc(N.commanditaire) + '. ' : '') + 'Terrain du ' + esc(r0.terrain) + ', ' + new Intl.NumberFormat('fr-FR').format(r0.echantillon) + ' personnes interrogées.' + (N && N.marge ? ' Marge d\'erreur : ± ' + esc(N.marge) + ' points selon le score.' : '') + (N ? (N.statut === 'rapport' ? ' <a href="' + esc(N.url) + '" target="_blank" rel="noopener">Rapport de l\'institut</a> ; notice pas encore publiée par la Commission des sondages.' : ' <a href="' + esc(N.url) + '" target="_blank" rel="noopener">Notice n° ' + esc(N.notice) + '</a> (Commission des sondages).') : '') + ' Premier tour, moyenne des hypothèses testées.';
+    var P = rows[0].polls, nb = new Intl.NumberFormat('fr-FR'), cle = function (d, i) { return d + '|' + String(i).replace(/ Interactive$/, ''); }, idx = {};
+    (dash.data('sondages_notices').data || []).forEach(function (n) { idx[cle(n.date, n.institut)] = n; });
+    // Mentions obligatoires (loi du 19 juillet 1977) de chaque sondage affiché.
+    var mention = function (p) {
+      var N = idx[cle(p.date, p.institut)];
+      return (N && N.commanditaire ? esc(p.institut) + ' pour ' + esc(N.commanditaire) : esc(p.institut)) + ', terrain du ' + esc(p.terrain) + ', ' + nb.format(p.echantillon) + ' personnes interrogées' + (N && N.marge ? ', marge d\'erreur ± ' + esc(N.marge) + ' points selon le score' : '') +
+        (N ? (N.statut === 'rapport' ? ' (<a href="' + esc(N.url) + '" target="_blank" rel="noopener">rapport de l\'institut</a> ; notice pas encore publiée par la Commission des sondages)' : ' (<a href="' + esc(N.url) + '" target="_blank" rel="noopener">notice n° ' + esc(N.notice) + '</a>, Commission des sondages)') : '') + '.';
+    };
+    var noms = P.map(function (p) { return p.institut; }), et = function (l) { return l.length > 1 ? l.slice(0, -1).join(', ') + ' et ' + l[l.length - 1] : l[0]; };
+    if (P.length === 1) {
+      document.getElementById('last-title').textContent = 'Le dernier sondage : ' + P[0].institut;
+      document.getElementById('last-note').innerHTML = mention(P[0]).replace(/\.$/, '. ') + 'Premier tour, moyenne des hypothèses testées.';
+    } else {
+      document.getElementById('last-title').textContent = 'Les derniers sondages : ' + et(noms);
+      var jour = new Date(P[0].date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+      document.getElementById('last-note').textContent = 'Moyenne des ' + P.length + ' sondages dont le terrain finit le ' + jour + ' (pour chacun, moyenne de ses hypothèses de premier tour).';
+    }
     var max = rows[0].score;
     rows.filter(function (r) { return r.score >= 1; }).forEach(function (r) {
       var l = document.createElement('div'); l.className = 'bx-lastbar';
-      var n = document.createElement('div'); n.textContent = r.candidat; l.appendChild(n);
+      var n = document.createElement('div'); n.textContent = r.candidat + (r.n < P.length ? ' *' : ''); l.appendChild(n);
       var tr = document.createElement('div'); tr.className = 'tr'; var fl = document.createElement('div'); fl.className = 'fl';
       fl.style.width = (r.score / max * 100) + '%'; fl.style.background = colorOf(r.candidat);
       tr.appendChild(fl); l.appendChild(tr);
       var v = document.createElement('div'); v.className = 'pv'; v.textContent = BX.pct(r.score); l.appendChild(v);
       box.appendChild(l);
     });
+    var part = rows.filter(function (r) { return r.score >= 1 && r.n < P.length; });
+    if (part.length) { var w = document.createElement('p'); w.className = 'bx-note'; w.textContent = '* ' + et(part.map(function (r) { return r.candidat + ' (' + r.n + ' sur ' + P.length + ')'; })) + ' : ' + (part.length > 1 ? 'testés' : 'testé') + ' dans une partie de ces sondages seulement ; moyenne des sondages où ' + (part.length > 1 ? 'ils figurent' : 'il figure') + '.'; box.appendChild(w); }
+    if (P.length > 1) { var ul = document.createElement('ul'); ul.className = 'bx-note bx-lastsrc'; ul.innerHTML = P.map(function (p) { return '<li>' + mention(p) + '</li>'; }).join(''); box.appendChild(ul); }
   }
 
   function drawSpark(boxId, rows, indic, ref, col) {
@@ -1091,8 +1114,10 @@ window.addEventListener('baro:data', function () {
     if (st.length) {
       var last = st.map(function (r) { return r.date; }).sort().pop(), rows = st.filter(function (r) { return r.date === last; });
       var inst = Array.from(new Set(rows.map(function (r) { return r.institut; }))).reverse(), n = ago(last); // le dernier publié d'abord
-      var top = rows.filter(function (r) { return r.institut === inst[0]; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
-      items.push((n <= 4 ? '<b>' + (inst.length > 1 ? 'Nouveaux sondages ' : 'Nouveau sondage ') : '<b>Pas de nouveau sondage depuis ' + n + ' jours.</b> Dernier en date : ') + esc(inst.join(', ')) + (n <= 4 ? '</b>' : '') + ' (' + (inst.length > 1 ? esc(inst[0]) + ', ' : '') + 'terrain du ' + esc(top[0].terrain || fd(last)) + ') : ' +
+      // Plusieurs sondages le même jour : la moyenne de ces sondages, comme le bloc « Les derniers sondages ».
+      var moy = {}; rows.forEach(function (r) { (moy[r.candidat] = moy[r.candidat] || []).push(+r.score); });
+      var top = Object.keys(moy).map(function (c) { var v = moy[c]; return { candidat: c, score: v.reduce(function (a, b) { return a + b; }, 0) / v.length, terrain: rows[0].terrain }; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
+      items.push((n <= 4 ? '<b>' + (inst.length > 1 ? 'Nouveaux sondages ' : 'Nouveau sondage ') : '<b>Pas de nouveau sondage depuis ' + n + ' jours.</b> Dernier en date : ') + esc(inst.join(', ')) + (n <= 4 ? '</b>' : '') + ' (' + (inst.length > 1 ? 'moyenne des ' + inst.length + ' sondages, terrains finis le ' + fd(last) : 'terrain du ' + esc(rows[0].terrain || fd(last))) + ') : ' +
         top.map(function (r) { return esc(r.candidat) + ' ' + nf(+r.score, 1) + ' %'; }).join(', ') + '.');
     }
     // Événement récent
