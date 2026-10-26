@@ -32,6 +32,10 @@ Phrases d'actualité, d'agenda et d'événements : une phrase neutre et factuell
 - Ne modifie jamais aucun fichier HTML, ni CNAME, ni README.md, ni CLAUDE.md, ni commun/, ni outils/. Les notes et le classement de l'accueil se recalculent seuls.
 - Ne modifie jamais un titre ou une conclusion (récits) : si l'un d'eux ne tient plus, le contrôle le signale et il attend la validation de l'éditeur du site.
 
+## 3 bis. L'analyse de la semaine (le lundi seulement)
+- Le lundi, prépare une nouvelle version de « L'état de la France » (textes.accueil.pouls_analyse de data.json) : mêmes sections que la version en ligne (en une ligne, comptes publics, santé, école, sécurité et justice, vie quotidienne, défense), avec les derniers chiffres des pages (data.json) et les actualités de la semaine écoulée. Chaque chiffre vient de data.json ou d'une source officielle lue ; les faits sont rapprochés sans dire lequel cause l'autre quand ce n'est pas établi ; aucun adjectif ni jugement.
+- Ne la publie pas : écris-la dans donnees/pouls_proposition.md (date, titre, puis un paragraphe par section) et ajoute en tête de ta réponse finale la ligne « Analyse de la semaine à valider : donnees/pouls_proposition.md ». Elle n'est mise en ligne qu'après validation de l'éditeur du site.
+
 ## 4. Contrôler et publier
 1. Mets à jour "updated" (date du jour, ex. « 23 octobre 2026 », heure de Paris) et "updated_iso" (heure actuelle, ISO 8601 avec +01:00 ou +02:00) ; écris data.json avec json.dump(..., ensure_ascii=False, indent=0). Publie même si aucune autre donnée n'a changé.
 2. Écris hors du dépôt un compte rendu détaillé (sources consultées avec URL, valeurs ancienne → nouvelle, ce qui manque et pourquoi), puis lance `node outils/controle.js verifier --compte-rendu <ce fichier>`. Il valide data.json, recalcule les notes, vérifie les récits, écrit journal/AAAA-MM.md, donnees/notes.json et donnees/a_valider.json, refait l'index du moteur de recherche (donnees/recherche.json, avec les chiffres du jour), et imprime la notification.
@@ -45,6 +49,6 @@ Phrases d'actualité, d'agenda et d'événements : une phrase neutre et factuell
    - Corps en texte simple (pas de Markdown) : la sortie complète de verifier ; puis, en une ligne par indicateur, ce qui a été vérifié aujourd'hui (source lue, ancienne → nouvelle valeur, ou « inchangé ») ; puis le lien vers le journal du mois (https://github.com/concret2027/Concret2027/blob/main/journal/AAAA-MM.md) et vers https://concret2027.fr.
    - Un chiffre que tu n'as pas pu lire à sa source n'est jamais présenté comme vérifié : écris-le comme non vérifié, avec la raison.
    - Si l'envoi échoue, ajoute la ligne « ÉCHEC e-mail : <erreur exacte> » à ta réponse finale.
-2. Ta réponse finale est exactement la sortie de `controle.js verifier` (une ligne si tout va bien ; une ligne par problème ; une ligne par texte à valider), précédée d'une seule ligne « ÉCHEC GitHub : <erreur exacte> » si le push a échoué. Rien d'autre : le détail est dans le journal du dépôt.
+2. Ta réponse finale est exactement la sortie de `controle.js verifier` (précédée, le lundi, de la ligne sur l'analyse de la semaine) (une ligne si tout va bien ; une ligne par problème ; une ligne par texte à valider), précédée d'une seule ligne « ÉCHEC GitHub : <erreur exacte> » si le push a échoué. Rien d'autre : le détail est dans le journal du dépôt.
 
 Sois économe : un appel par source, pas de recherche hors des indicateurs dus (les actualités du jour en font partie).

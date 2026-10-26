@@ -34,6 +34,7 @@ Les pages HTML ne contiennent pas de chiffres : seulement de la mise en forme et
 - `data.json`
   - `datasets` : les données vivantes (sondages, taux, chiffres du mois, actualité, agendas). Valeurs en chaînes de caractères.
   - `series.<page>` : les séries annuelles, les listes de gouvernements et de présidents (`GOVS`, `PRES`), les questions du jour (`QUIZ` ; `v` : la courbe qui donne la réponse, `d` : une ligne qui explique le terme technique de la question, à écrire pour toute nouvelle question qui en emploie un), les chiffres du jour fixes (`FACTS`), et les paramètres sourcés `P` (`{v, source, url, date}`).
+  - `textes.accueil.pouls_analyse` : « L'état de la France », l'analyse écrite du Pouls de la France (accueil), datée ; refaite chaque semaine (proposée le lundi par la tâche quotidienne dans `donnees/pouls_proposition.md`), publiée seulement après validation, comme un récit.
   - `textes.<page>.<clé>` : les paragraphes chiffrés affichés dans les éléments `data-t="<clé>"` (le HTML garde la même version en secours).
 - `commun/notes.js` : les règles de notation, la méthode affichée sur le site, en code. Utilisées par les pages, par l'accueil (classement général, recalculé à chaque visite) et par le contrôle. Une note n'est jamais saisie à la main.
 - `donnees/calendrier.json` : chaque indicateur, sa fréquence, sa source exacte, sa cible dans `data.json`, sa dernière donnée et sa prochaine vérification.

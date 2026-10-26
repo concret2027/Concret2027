@@ -81,7 +81,7 @@ if (S.education) {
 });
 // Règle de CLAUDE.md : une donnée non comptée s'explique en clair, sans jargon.
 (function () { var JARGON = /\b(n\.d\.|n\.c\.)|rupture de série|\brupture\b|non comparable/i, vus = [];
-  ['finances', 'education', 'defense', 'vie'].forEach(function (pg) {
+  ['finances', 'education', 'defense', 'vie', 'accueil'].forEach(function (pg) {
     Object.keys((d.textes || {})[pg] || {}).forEach(function (k) { if (JARGON.test(d.textes[pg][k].html)) vus.push('textes.' + pg + '.' + k); });
     ['FACTS', 'QUIZ'].forEach(function (k) { if (JARGON.test(JSON.stringify((S[pg] || {})[k] || []))) vus.push(pg + '.' + k); });
   });

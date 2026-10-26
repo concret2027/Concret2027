@@ -25,6 +25,8 @@
 .sous > summary::after { content: '▾'; font-size: 14px; } .sous[open] > summary::after { content: '▴'; }
 .sous > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 6px; }
 .sous > div { display: grid; gap: 8px; padding: 0 0 12px; }
+.pan-texte { display: grid; gap: 10px; font-size: 15px; line-height: 1.55; } .pan-texte p { margin: 0; } .pan-texte b { font-weight: 600; } .pan-texte a { color: var(--fr); font-weight: 600; white-space: nowrap; }
+.pan-suite > summary { font-size: 14px; }
 .po-big { display: flex; align-items: center; gap: 14px; }
 .po-n { font-family: var(--serif); font-size: 60px; line-height: 1; white-space: nowrap; } .po-n small { font-size: 26px; color: var(--muted); }
 .po-t { font-size: 14.5px; color: var(--muted); line-height: 1.35; }
@@ -395,9 +397,17 @@ footer p { margin: 0; } footer a { color: inherit; }
   </section>
 
   <section class="card" id="pouls" aria-labelledby="po-t">
-    <h2 id="po-t"><span class="eyebrow">Le pouls de la France · mis à jour chaque jour</span>Toutes les pages en une</h2>
+    <h2 id="po-t"><span class="eyebrow">Le pouls de la France</span>Toutes les pages en une</h2>
+    <p class="note" style="font-size:13.5px">Les chiffres, les actualités et l'agenda se mettent à jour chaque jour ; l'analyse écrite, chaque semaine.</p>
     <div class="po-big"><span class="po-n" id="po-n">—</span><span class="po-t" id="po-t2">indicateurs où la France fait mieux que la moyenne de l'UE, au dernier chiffre connu, toutes pages confondues</span></div>
     <div class="po-miss" id="po-miss"></div>
+  </section>
+
+  <section class="card" id="pouls-analyse" aria-labelledby="pan-t" hidden>
+    <h2 id="pan-t"><span class="eyebrow">Le pouls de la France · l'analyse de la semaine</span><span id="pan-titre">L'état de la France</span></h2>
+    <p class="note" id="pan-date"></p>
+    <div class="pan-texte" id="pan-debut"></div>
+    <details class="sous pan-suite"><summary>Lire l'analyse complète</summary><div class="pan-texte" id="pan-suite"></div></details>
   </section>
 
   <details class="acc" id="pouls-semaine">
@@ -439,6 +449,16 @@ footer p { margin: 0; } footer a { color: inherit; }
     fetch('/donnees/bref.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }, function () { return null; })
   ]).then(function (res) {
     var D = res[0], B = res[1] && res[1].missions, DS = D.datasets || {}, S = D.series || {};
+    // L'analyse de la semaine (textes.accueil.pouls_analyse) : écrite et validée chaque semaine, datée ; le premier paragraphe visible, la suite repliée.
+    var AN = ((D.textes || {}).accueil || {}).pouls_analyse;
+    if (AN && AN.html) {
+      var tmp = document.createElement('div'); tmp.innerHTML = AN.html; var ps = Array.prototype.slice.call(tmp.children);
+      document.getElementById('pan-titre').textContent = AN.titre || 'L\'état de la France';
+      document.getElementById('pan-date').textContent = 'Écrite le ' + new Date(AN.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) + ', à partir des chiffres des pages de Concret. Les faits sont rapprochés, sans dire lequel cause l\'autre quand ce n\'est pas établi.';
+      ps.slice(0, 1).forEach(function (p) { document.getElementById('pan-debut').appendChild(p); });
+      ps.slice(1).forEach(function (p) { document.getElementById('pan-suite').appendChild(p); });
+      document.getElementById('pouls-analyse').hidden = false;
+    }
     // 1. La photo : la somme des blocs « En bref ».
     if (B) {
       var ord = Object.keys(B), n = 0, t = 0;
