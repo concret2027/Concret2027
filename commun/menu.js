@@ -4,14 +4,15 @@
 (function () {
   var PAGES = [
     { u: '/', l: 'Accueil', t: 'Le classement des présidents et le pouls de la France' },
-    { u: '/barometre/', l: 'Baromètre 2027', t: 'Sondages, parieurs et agenda de la présidentielle' },
     { u: '/quiz/', l: 'Quiz du jour', t: 'Huit questions, deux minutes, la réponse sourcée' },
-    { u: '/vie/', l: 'Vie des Français', t: 'Pouvoir d\'achat, pauvreté, logement, travail, moral' },
-    { u: '/finances/', l: 'Finances publiques', t: 'Dette, déficit, impôts, dépenses, croissance' },
-    { u: '/sante/', l: 'Santé', t: 'Espérance de vie, accès aux soins, coût, prévention' },
-    { u: '/education/', l: 'Éducation', t: 'PISA, décrochage, diplômés, chômage des jeunes' },
-    { u: '/securite/', l: 'Sécurité et justice', t: 'Homicides, cambriolages, prisons, police, justice' },
-    { u: '/defense/', l: 'Défense', t: 'Budget, objectif de l\'OTAN, équipement, effectifs' }
+    { u: '/barometre/', l: 'Baromètre 2027', t: 'Sondages, parieurs et agenda de la présidentielle', g: 'Politique' },
+    { u: '/politique/', l: 'La vie politique', t: 'Les votes de l\'Assemblée, les lois publiées, les grandes dates depuis 1995', g: 'Politique' },
+    { u: '/vie/', l: 'Vie des Français', t: 'Pouvoir d\'achat, pauvreté, logement, travail, moral', g: 'Les missions' },
+    { u: '/finances/', l: 'Finances publiques', t: 'Dette, déficit, impôts, dépenses, croissance', g: 'Les missions' },
+    { u: '/sante/', l: 'Santé', t: 'Espérance de vie, accès aux soins, coût, prévention', g: 'Les missions' },
+    { u: '/education/', l: 'Éducation', t: 'PISA, décrochage, diplômés, chômage des jeunes', g: 'Les missions' },
+    { u: '/securite/', l: 'Sécurité et justice', t: 'Homicides, cambriolages, prisons, police, justice', g: 'Les missions' },
+    { u: '/defense/', l: 'Défense', t: 'Budget, objectif de l\'OTAN, équipement, effectifs', g: 'Les missions' }
   ];
   // Couleurs des pages (les pages et le Baromètre n'ont pas les mêmes noms de variables).
   var V = { bg: 'var(--bg, var(--color-bg, #f6f6f3))', panel: 'var(--panel, var(--color-panel, #fff))', fg: 'var(--fg, var(--color-fg, #1c1d22))',
@@ -25,7 +26,7 @@
     '.mn-panneau{background:' + V.bg + ';width:min(100%,420px);height:100%;overflow:auto;padding:max(14px,env(safe-area-inset-top,0px)) 16px max(20px,env(safe-area-inset-bottom,0px));display:grid;align-content:start;gap:10px;box-sizing:border-box}' +
     '.mn-haut{display:flex;justify-content:space-between;align-items:center;padding:4px 2px 6px}.mn-haut b{font-family:"Newsreader",Georgia,serif;font-weight:500;font-size:24px;color:' + V.fg + '}' +
     '.mn-ferme{font:inherit;font-size:15px;font-weight:600;border:1.5px solid ' + V.line + ';background:' + V.panel + ';color:' + V.fg + ';border-radius:999px;padding:6px 14px;cursor:pointer}' +
-    '.mn-liste{display:grid;gap:8px}' +
+    '.mn-liste{display:grid;gap:8px}.mn-g{grid-column:1/-1;margin:8px 2px 0;font-size:12.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:' + V.muted + '}' +
     '.mn-liste a{display:grid;gap:2px;padding:12px 14px;border-radius:12px;border:1px solid ' + V.line + ';background:' + V.panel + ';color:' + V.fg + ';text-decoration:none}' +
     '.mn-liste a b{font-size:17px;font-weight:700}.mn-liste a span{font-size:13.5px;color:' + V.muted + ';line-height:1.35}' +
     '.mn-liste a[aria-current]{border:2px solid ' + V.fr + '}.mn-liste a[aria-current] b::after{content:" · vous êtes ici";font-size:12.5px;font-weight:600;color:' + V.fr + '}' +
@@ -44,10 +45,12 @@
     '.rech-b{min-width:44px;min-height:44px;justify-content:center}button.share,.bx-share{min-height:40px}';
   var ici = location.pathname.replace(/index\.html$/, '');
   var lien = function (p) { return '<a href="' + p.u + '"' + (p.u === ici ? ' aria-current="page"' : '') + '><b>' + p.l + '</b><span>' + p.t + '</span></a>'; };
+  // Les pages par groupe (« Politique », « Les missions ») : un intitulé avant chaque groupe.
+  var liste = function (L) { var g = null; return L.map(function (p) { var h = p.g && p.g !== g ? '<h3 class="mn-g">' + p.g + '</h3>' : ''; g = p.g || g; return h + lien(p); }).join(''); };
 
   function ouvrir(btn) {
     var v = document.createElement('div'); v.className = 'mn-voile';
-    v.innerHTML = '<div class="mn-panneau" role="dialog" aria-modal="true" aria-label="Les pages de Concret"><div class="mn-haut"><b>Les pages de Concret</b><button type="button" class="mn-ferme">Fermer ✕</button></div><nav class="mn-liste">' + PAGES.map(lien).join('') + '</nav></div>';
+    v.innerHTML = '<div class="mn-panneau" role="dialog" aria-modal="true" aria-label="Les pages de Concret"><div class="mn-haut"><b>Les pages de Concret</b><button type="button" class="mn-ferme">Fermer ✕</button></div><nav class="mn-liste">' + liste(PAGES) + '</nav></div>';
     var fermer = function () { v.remove(); document.removeEventListener('keydown', esc); document.documentElement.style.overflow = ''; btn.focus(); };
     var esc = function (e) { if (e.key === 'Escape') fermer(); };
     v.addEventListener('click', function (e) { if (e.target === v || e.target.closest('.mn-ferme')) fermer(); });
@@ -78,7 +81,7 @@
     if (ici !== '/' && !document.querySelector('.mn-autres')) {
       var f = document.querySelector('footer'), sec = document.createElement('section');
       sec.className = 'mn-autres'; sec.setAttribute('aria-label', 'Les autres pages'); sec.setAttribute('data-partage', 'non');
-      sec.innerHTML = '<h2>Les autres pages</h2><nav class="mn-liste">' + PAGES.filter(function (p) { return p.u !== ici; }).map(lien).join('') + '</nav>';
+      sec.innerHTML = '<h2>Les autres pages</h2><nav class="mn-liste">' + liste(PAGES.filter(function (p) { return p.u !== ici; })) + '</nav>';
       if (f && f.parentNode) f.parentNode.insertBefore(sec, f); else (document.querySelector('.wrap, .bx') || document.body).appendChild(sec);
     }
   }

@@ -126,6 +126,20 @@ if (S.education) {
     } catch (e) { alertes.push('silence électoral : comparaison avec la version publiée impossible (' + e.message.split('\n')[0] + ')'); }
   }
 })();
+// La vie politique (outils/parlement.py) : votes, lois, agenda et frise, chacun avec sa source ; jamais de saisie à la main.
+if (S.politique) {
+  var PO = S.politique, jo = /^\d{4}-\d{2}-\d{2}$/;
+  ['GROUPES', 'VOTES', 'LOIS', 'AGENDA', 'FRISE'].forEach(function (k) { if (!Array.isArray(PO[k])) err('politique.' + k + ' manquant (relancer python3 outils/parlement.py --ecrire)'); });
+  (PO.VOTES || []).forEach(function (v) {
+    if (!jo.test(v.d) || v.d > today) err('politique.VOTES scrutin ' + v.n + ' : date invalide ' + v.d);
+    if (['adopté', 'rejeté'].indexOf(v.s) < 0) err('politique.VOTES scrutin ' + v.n + ' : sort inconnu « ' + v.s + ' »');
+    if (!v.g || Object.keys(v.g).length < 5) err('politique.VOTES scrutin ' + v.n + ' : position des groupes absente');
+    if (v.p + v.c + v.a > 577) err('politique.VOTES scrutin ' + v.n + ' : plus de 577 voix');
+  });
+  (PO.LOIS || []).forEach(function (l) { if (!/^\d{4}-\d+$/.test(l.code || '') || !jo.test(l.d) || l.d > today) err('politique.LOIS : loi mal formée ' + JSON.stringify(l).slice(0, 80)); });
+  (PO.FRISE || []).forEach(function (e) { if (!jo.test(e.d) || !e.src || !/^https:\/\//.test(e.url || '')) err('politique.FRISE ' + e.d + ' « ' + e.t + ' » : date, source ou lien manquant'); });
+  if (PO.maj && (Date.parse(today) - Date.parse(PO.maj)) / 864e5 > 3) alertes.push('La vie politique : données de l\'Assemblée lues le ' + PO.maj + ', plus de trois jours : relancer python3 outils/parlement.py --ecrire');
+}
 // Valeurs d'exemple (page en brouillon) : jamais publiées.
 Object.keys(S).forEach(function (pg) { if (S[pg] && S[pg].exemple) err('series.' + pg + ' contient des valeurs d\'exemple (brouillon) : à remplacer par des données sourcées avant publication'); });
 Object.keys(d.datasets || {}).forEach(function (k) { if ((d.datasets[k] || []).some(function (r) { return r.exemple; })) err('datasets.' + k + ' contient des lignes d\'exemple (brouillon)'); });
