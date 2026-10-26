@@ -5,7 +5,7 @@
      node outils/recherche.js            (lance un petit serveur local sur le dossier du site) */
 var fs = require('fs'), path = require('path'), http = require('http');
 var ROOT = path.join(__dirname, '..');
-var PAGES = [['/', 'Accueil'], ['/finances/', 'Finances'], ['/education/', 'Éducation'], ['/sante/', 'Santé'], ['/securite/', 'Sécurité et justice'], ['/defense/', 'Défense'], ['/vie/', 'Vie des Français'], ['/barometre/', 'Baromètre 2027']];
+var PAGES = [['/', 'Accueil'], ['/finances/', 'Finances'], ['/education/', 'Éducation'], ['/sante/', 'Santé'], ['/securite/', 'Sécurité et justice'], ['/defense/', 'Défense'], ['/vie/', 'Vie des Français'], ['/barometre/', 'Baromètre 2027'], ['/politique/', 'La vie politique'], ['/demographie/', 'Évolution démographique']];
 // Mots que les lecteurs cherchent et qui ne sont pas écrits tels quels sur la page.
 var SYN = { inflation: 'prix ipch hausse des prix', chomage: 'emploi travail', dette: 'endettement dette publique', deficit: 'solde budget', homicide: 'meurtre crime',
   prison: 'détenus incarcération surpopulation', detenu: 'prison', oqtf: 'expulsion éloignement immigration obligation de quitter le territoire',
