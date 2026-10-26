@@ -148,6 +148,7 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 /* Agenda */
 .ag { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .ag li { display: grid; grid-template-columns: 6.8rem minmax(0, 1fr); gap: 10px; font-size: 14px; line-height: 1.4; }
+.ag li[hidden] { display: none; }
 .ag .d { font-size: 12.5px; font-weight: 600; color: var(--muted); padding-top: 2px; }
 .ag ul { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
 .ag li li { display: list-item; overflow-wrap: anywhere; }
@@ -238,6 +239,7 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
     <h2 id="agenda-t">À l'ordre du jour de l'Assemblée</h2>
     <p class="note">Les textes inscrits à la séance publique pour les deux semaines qui viennent (points confirmés). L'ordre du jour peut encore changer.</p>
     <ul class="ag" id="agenda-l"></ul>
+    <button class="plus" type="button" id="agenda-plus" hidden></button>
   </section>
 
   <section class="card" id="frise" aria-labelledby="frise-t" data-src="Sources : Conseil constitutionnel, Assemblée nationale, Élysée, Sénat (chaque date a sa source).">
@@ -409,7 +411,12 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 
     // L'agenda.
     var pt = function (o) { return '<li>' + esc(o) + '</li>'; };
-    $('agenda-l').innerHTML = S.AGENDA.map(function (a) { return '<li><span class="d">' + maj1(dJour(a.d)) + '</span><div><ul>' + a.o.slice(0, 4).map(pt).join('') + '</ul>' + (a.o.length > 4 ? '<details class="ag-plus"><summary>' + (a.o.length - 4) + ' autre' + (a.o.length > 5 ? 's' : '') + ' point' + (a.o.length > 5 ? 's' : '') + '</summary><ul>' + a.o.slice(4).map(pt).join('') + '</ul></details>' : '') + '</div></li>'; }).join('') || '<li><span></span><p class="vide">Aucune séance confirmée dans les quatorze jours qui viennent.</p></li>';
+    $('agenda-l').innerHTML = S.AGENDA.map(function (a, i) { return '<li' + (i >= 4 ? ' hidden' : '') + '><span class="d">' + maj1(dJour(a.d)) + '</span><div><ul>' + a.o.slice(0, 3).map(pt).join('') + '</ul>' + (a.o.length > 3 ? '<details class="ag-plus"><summary>' + (a.o.length - 3) + ' autre' + (a.o.length > 4 ? 's' : '') + ' point' + (a.o.length > 4 ? 's' : '') + '</summary><ul>' + a.o.slice(3).map(pt).join('') + '</ul></details>' : '') + '</div></li>'; }).join('') || '<li><span></span><p class="vide">Aucune séance confirmée dans les quatorze jours qui viennent.</p></li>';
+    if (S.AGENDA.length > 4) {
+      var agp = $('agenda-plus'), nr = S.AGENDA.length - 4;
+      agp.textContent = 'Voir les ' + nr + ' jours de séance suivants'; agp.hidden = false;
+      agp.onclick = function () { $('agenda-l').querySelectorAll('li[hidden]').forEach(function (li) { li.hidden = false; }); agp.hidden = true; };
+    }
 
     // La frise.
     var F = S.FRISE.slice(), P = F.filter(function (e) { return e.k === 'presidentielle'; });
@@ -455,7 +462,7 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
     $('groupes-det').querySelector('summary').textContent = 'Comment chaque groupe a voté sur les ' + VOTES.length + ' votes retenus';
 
     var Pr = S.P || {};
-    $('sources').innerHTML = 'Sources : ' + Object.keys(Pr).map(function (k) { return '<a href="' + esc(Pr[k].url) + '">' + esc(Pr[k].source) + '</a> (lu le ' + dLong(Pr[k].date) + ')'; }).join(' ; ') + '.';
+    $('sources').innerHTML = 'Sources : ' + Object.keys(Pr).filter(function (k) { return Pr[k].url && Pr[k].date; }).map(function (k) { return '<a href="' + esc(Pr[k].url) + '">' + esc(Pr[k].source) + '</a> (lu le ' + dLong(Pr[k].date) + ')'; }).join(' ; ') + '.';
 
     // Sommaire : la rubrique en cours est soulignée.
     if (window.IntersectionObserver) {

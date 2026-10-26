@@ -160,6 +160,11 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
 .actu .d { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; }
 .actu a { color: var(--muted); font-size: 12px; }
 .mois-chiffres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+#ch-pyr { max-width: 640px; margin: 0 auto; }
+.renvoi { display: flex; flex-wrap: wrap; gap: 10px; }
+.renvoi a { flex: 1 1 16rem; display: grid; gap: 2px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-decoration: none; }
+.renvoi a b { font-size: 16px; } .renvoi a span { font-size: 13px; color: var(--muted); }
+.renvoi a:hover { border-color: var(--fr); }
 </style>
 </head>
 <body data-sources="Sources : Eurostat et Insee (démographie et migrations), Cour des comptes (détail sous chaque courbe).">
@@ -271,7 +276,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
         <li><b>Premiers titres de séjour</b> : titres d'au moins trois mois délivrés pour la première fois à des personnes de pays hors de l'UE (motif famille, études, travail ; « autres » comprend la protection accordée aux réfugiés). <b>Premières demandes d'asile</b> : personnes qui demandent l'asile pour la première fois dans le pays.</li>
         <li><b>Situation irrégulière</b> : personnes de pays hors de l'UE contrôlées et trouvées sans droit au séjour ; <b>obligations de quitter le territoire</b> : décisions prises dans l'année ; <b>départs</b> : personnes parties à la suite d'une telle décision. Ce sont des procédures de l'année, pas des personnes présentes.</li>
         <li><b>Pour 1 000 habitants</b> : pour comparer des pays de tailles différentes. Pour les naissances et les soldes, taux publiés par Eurostat ; pour les migrations, calcul de Concret avec la population moyenne de l'année publiée par Eurostat.</li>
-        <li><b>Mise à jour</b> : par l'outil de Concret qui lit Eurostat (python3 outils/population.py) ; les chiffres provisoires et les changements de méthode signalés par Eurostat sont écrits sous chaque courbe.</li>
+        <li><b>Mise à jour</b> : chaque jour, par l'outil de Concret qui lit l'Insee et Eurostat ; une valeur ne change que si la source l'a publiée. Les chiffres provisoires et les changements de méthode signalés par Eurostat sont écrits sous chaque courbe.</li>
       </ul>
       <p class="note" id="sources"></p>
     </div>
@@ -469,7 +474,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
       var j = T.y.length - 1, parts = T.motifs.map(function (mo) { return mo.l.replace(/ \(.*\)/, '').toLowerCase() + ' ' + fmt(100 * mo.fr[j] / tot[j], 0) + ' %'; });
       $('n-mot').innerHTML = 'En ' + T.y[j] + ' : ' + nf(tot[j]) + ' premiers titres (' + parts.join(', ') + '). Source : <a href="' + esc(T.url) + '">' + esc(T.source) + '</a>.';
       var ord = T.motifs.map(function (mo) { return { l: mo.l.replace(/ \(.*\)/, '').toLowerCase(), v: mo.fr[j] }; }).sort(function (a, b) { return b.v - a.v; });
-      $('titres-t').innerHTML = 'En ' + T.y[j] + ', <b>' + nf(tot[j]) + ' premiers titres de séjour</b> pour des personnes de pays hors de l\'UE, ' + (function (r) { var e = Math.round(r); return Math.abs(r - e) <= 0.05 && e >= 2 && e <= 4 ? ['', '', 'deux', 'trois', 'quatre'][e] : fmt(r, 1); })(tot[j] / tot[0]) + ' fois plus qu\'en ' + T.y[0] + '. Premier motif : ' + (ord[0].l === 'autres motifs' ? 'les autres motifs, dont la protection des réfugiés' : ord[0].l === 'famille' ? 'la famille' : ord[0].l === 'travail' ? 'le travail' : 'les ' + ord[0].l) + ' (' + fmt(100 * ord[0].v / tot[j], 0) + ' %), puis ' + ord.slice(1).map(function (o) { return (o.l === 'autres motifs' ? 'les autres motifs, dont la protection des réfugiés' : o.l === 'famille' ? 'la famille' : o.l === 'travail' ? 'le travail' : 'les ' + o.l) + ' (' + fmt(100 * o.v / tot[j], 0) + ' %)'; }).join(', ') + '.';
+      $('titres-t').innerHTML = 'En ' + T.y[j] + ', <b>' + nf(tot[j]) + ' premiers titres de séjour</b> pour des personnes de pays hors de l\'UE, ' + (function (r) { var e = Math.round(r); return Math.abs(r - e) <= 0.05 && e >= 2 && e <= 4 ? ['', '', 'deux', 'trois', 'quatre'][e] : fmt(r, 1); })(tot[j] / tot[0]) + ' fois plus qu\'en ' + T.y[0] + '. Par motif : ' + ord.map(function (o) { return (o.l === 'autres motifs' ? 'autres motifs, dont la protection des réfugiés,' : o.l) + ' ' + fmt(100 * o.v / tot[j], 0) + ' %'; }).join(' ; ') + '.';
     })();
     quand('plus-titres', function () { serie('ch-titres', P.M.titres, 'n-titres'); });
 
