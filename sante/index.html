@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261025h"></script>
+<script src="/commun/bref.js?v=20261026a"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
@@ -48,7 +48,7 @@
 :root {
   --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
   --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a; --es: #d0632a;
-  --bad: #c43d3d; --ok: #1f8a4c; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
+  --bad: #c43d3d; --ok: #1a7a43; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
   --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
   --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
   --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
@@ -72,7 +72,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-s
 .wrap { max-width: 1100px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 48px; display: grid; gap: 20px; }
 .draft { background: var(--draft); color: var(--draft-fg); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; }
 .brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.brand b { font-family: var(--serif); font-weight: 500; font-size: 22px; }
+.brand b, .brand h1 { margin: 0; font-family: var(--serif); font-weight: 500; font-size: 26px; line-height: 1.15; }
 .brand span { font-size: 12.5px; color: var(--muted); }
 
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
@@ -385,7 +385,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/" aria-current="page">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a></nav>
   <div class="stale" id="stale" role="status" hidden></div>
-  <div class="brand"><b>Santé</b><span id="today"></span></div>
+  <div class="brand"><h1>Santé</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
   <nav class="jump" aria-label="Aller à"><a href="#acc-month">Ce mois-ci</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#annees">Année par année</a><a href="#courbes">Les cinq thèmes</a><a href="#acc-actu">Actualité</a><a href="#mots">Les mots</a></nav>
@@ -482,7 +482,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card" id="annees" aria-labelledby="yr-title">
     <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
-    <p class="note">● la France a fait mieux que ses voisins sur ce thème cette année-là, ○ moins bien, ◐ autant, – pas de chiffre comparable (la raison est sous la ligne).</p>
+    <p class="note"><i class="pt p1"></i> la France a fait mieux que ses voisins sur ce thème cette année-là, <i class="pt p0"></i> moins bien, <i class="pt ph"></i> autant, – pas de chiffre comparable (la raison est sous la ligne).</p>
     <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
     <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 2005</button>
   </section>
@@ -1078,7 +1078,7 @@ function main(FEED) {
       else if (now - st.seen > 3600e3) { st.base = st.cur; st.cur = snap; }
       st.seen = now; localStorage.setItem('sante-visites', JSON.stringify(st));
       var lv = st.base;
-      if (!lv) { vis.textContent = 'Revenez plus tard : cette ligne vous dira ce qui a changé depuis votre visite.'; vis.hidden = false; return; }
+      if (!lv) return; // Première visite : rien à comparer, la ligne reste cachée.
       var dv = Math.round((now - lv.t) / 864e5), when = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h', pv = [];
       if (pi > lv.pn) pv.push('prix des soins en ' + moName(P, pi) + ' : <b>' + sg(P.fr[pi], 1) + ' %</b> sur un an (contre ' + sg(lv.p, 1) + ' % au chiffre précédent)');
       if (sy > lv.dy) pv.push('déficit de la Sécurité sociale en ' + sy + ' : <b>' + fmt(Math.abs(s.tot[s.y.length - 1]), 1) + ' Md€</b>, dont ' + fmt(Math.abs(s.md[s.md.length - 1]), 1) + ' pour l\'Assurance maladie');
@@ -1149,7 +1149,7 @@ function main(FEED) {
       THEMES.forEach(function (t) {
         var n = SAN.noteTheme(g, t), td = document.createElement('td');
         td.className = 'dot' + (n == null ? '' : n > 10 ? ' g' : n < 10 ? ' b' : '');
-        td.textContent = n == null ? '–' : n > 10 ? '●' : n < 10 ? '○' : '◐'; td.title = t.q + ' : ' + (n == null ? 'pas de chiffre comparable' : nfmt(n) + '/20');
+        td.innerHTML = n == null ? '–' : '<i class="pt ' + (n > 10 ? 'p1' : n < 10 ? 'p0' : 'ph') + '"></i>'; td.title = t.q + ' : ' + (n == null ? 'pas de chiffre comparable' : nfmt(n) + '/20');
         if (n == null) nc.push(t.q.toLowerCase()); tr.appendChild(td);
       });
       var nn = noteOf(g), tdn = document.createElement('td');
@@ -1202,6 +1202,6 @@ function main(FEED) {
 </script>
 <script src="/commun/partage.js?v=20261025a"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261025a"></script>
+<script src="/commun/menu.js?v=20261026b"></script>
 </body>
 </html>

@@ -39,7 +39,7 @@
     var l = o.items.filter(Boolean), ok = l.filter(function (x) { return x.cl === 'g'; }).length, ref = o.ref || 'la moyenne de l\'UE';
     var tri = l.slice().sort(function (a, b) { var r = { g: 0, m: 1, b: 2 }; return r[a.cl] - r[b.cl]; });
     // Le nom de la page dans le titre : l'image partagée dit de quelle mission il s'agit.
-    var page = document.querySelector('.brand b'), nom = page ? page.textContent.trim() : '';
+    var page = document.querySelector('.brand h1, .brand b'), nom = page ? page.textContent.trim() : '';
     box.innerHTML = '<h2><span class="eyebrow">' + (nom ? esc(nom) + ', en bref' : 'En bref') + '</span>La France face à ' + esc(ref) + '</h2>' +
       '<div class="bref-top"><span class="bref-n">' + ok + '<small>/' + l.length + '</small></span><span class="bref-t">indicateurs où la France fait mieux que ' + esc(ref) + ', au dernier chiffre connu' + (o.precision ? ' (' + esc(o.precision) + ')' : '') + '</span></div>' +
       '<details class="bref-det"><summary>Voir les ' + l.length + ' indicateurs</summary><div class="bref-chips">' +

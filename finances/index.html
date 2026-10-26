@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261025h"></script>
+<script src="/commun/bref.js?v=20261026a"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
@@ -35,7 +35,7 @@
 :root {
   --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
   --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a; --es: #d0632a;
-  --bad: #c43d3d; --ok: #1f8a4c; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
+  --bad: #c43d3d; --ok: #1a7a43; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
   --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
   --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
   --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
@@ -59,7 +59,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-s
 .wrap { max-width: 1100px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 48px; display: grid; gap: 20px; }
 .draft { background: var(--draft); color: var(--draft-fg); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; }
 .brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.brand b { font-family: var(--serif); font-weight: 500; font-size: 22px; }
+.brand b, .brand h1 { margin: 0; font-family: var(--serif); font-weight: 500; font-size: 26px; line-height: 1.15; }
 .brand span { font-size: 12.5px; color: var(--muted); }
 
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
@@ -291,7 +291,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/vie/">Vie des Français</a><a href="/finances/" aria-current="page">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a></nav>
   <div class="stale" id="stale" role="status" hidden></div>
-  <div class="brand"><b>Finances publiques</b><span id="today"></span></div>
+  <div class="brand"><h1>Finances publiques</h1><span id="today"></span></div>
   <p class="upd" id="upd">Chargement des données…</p>
   <p class="visit" id="visit" hidden></p>
   <nav class="jump" aria-label="Aller à"><a href="#acc-today">Aujourd'hui</a><a href="#acc-month">Ce mois-ci</a><a href="#croissance">Croissance</a><a href="#quiz">Question</a><a href="#bulletin">Bulletin</a><a href="#courbes">Courbes</a><a href="#richesse">Richesse</a><a href="#marches">Marchés</a></nav>
@@ -727,8 +727,9 @@ function main(FEED) {
         var DSF = (FEED && FEED.datasets) || {};
         var pv = ConcretBref.nouveau({ chiffres: ['la dette a pris <b>' + big(dd) + '</b>' + (dr ? ', le taux d\'emprunt à 10 ans a ' + (dr > 0 ? 'pris' : 'perdu') + ' <b>' + fmt(Math.abs(dr), 2) + ' point</b>' : ', le taux d\'emprunt n\'a pas bougé')], actu: DSF.actu_finances, agenda: DSF.agenda_finances, depuis: lastV.t, jour: days >= 1 });
         vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + pv.join(' ; ') + '.'; ConcretBref.lier(vis);
-      } else vis.textContent = 'Revenez demain : cette ligne vous dira ce qui a changé depuis votre visite.';
-      vis.hidden = false;
+      }
+      // Première visite : rien à comparer, la ligne reste cachée.
+      vis.hidden = !lastV;
     } catch (e) {}
     document.getElementById('daily-lab').textContent = 'Le chiffre du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
     document.getElementById('daily-text').innerHTML = FACTS[((idx % FACTS.length) + FACTS.length) % FACTS.length];
@@ -956,7 +957,7 @@ function main(FEED) {
     });
     y.ticks(small ? 4 : 5).forEach(function (t) {
       svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', t === 0 ? 'var(--axis)' : 'var(--grid)');
-      svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(o.yfmt ? o.yfmt(t) : t);
+      svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(o.yfmt ? o.yfmt(t) : String(t).replace('.', ','));
     });
     (small ? o.xt.filter(function (_, i) { return i % 2 === 0; }) : o.xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t); });
     var line = d3.line().defined(function (d) { return d.v != null; }).x(function (d) { return x(d.x); }).y(function (d) { return y(d.v); });
@@ -971,7 +972,9 @@ function main(FEED) {
     for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
     // Pile de chiffres trop basse : on la remonte pour qu'aucun ne sorte du graphique.
     for (var j = ends.length - 1; j >= 0; j--) { var lim = j === ends.length - 1 ? H - 6 : ends[j + 1].y - 13; if (ends[j].y > lim) ends[j].y = lim; }
-    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+    // Les chiffres de fin de courbe en colonne, au bout de la courbe la plus longue : une courbe qui s'arrête plus tôt ne croise pas les autres.
+    var xFin = Math.max.apply(null, ends.map(function (e) { return e.x; }));
+    ends.forEach(function (e) { svg.append('text').attr('x', xFin + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
     var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); });
     xs.sort(function (a, b) { return a - b; });
     var tf = o.tfmt || o.efmt || function (v) { return fmt(v, 1) + (o.unit || ''); };
@@ -1047,7 +1050,7 @@ function main(FEED) {
     var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Écart de taux à 10 ans avec l\'Allemagne, France et Italie, 2017-2026');
     y.ticks(6).forEach(function (t) {
       svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)');
-      svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(t);
+      svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(String(t).replace('.', ','));
     });
     d3.range(2017, 2027).forEach(function (yr) { if (W < 520 && yr % 2) return; svg.append('text').attr('x', x(new Date(yr, 0, 1))).attr('y', H - 6).attr('text-anchor', 'middle').text(yr); });
     EVENTS.forEach(function (e, i) {
@@ -1394,6 +1397,6 @@ function main(FEED) {
 </script>
 <script src="/commun/partage.js?v=20261025a"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261025a"></script>
+<script src="/commun/menu.js?v=20261026b"></script>
 </body>
 </html>

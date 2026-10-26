@@ -30,7 +30,18 @@
     '.mn-liste a b{font-size:17px;font-weight:700}.mn-liste a span{font-size:13.5px;color:' + V.muted + ';line-height:1.35}' +
     '.mn-liste a[aria-current]{border:2px solid ' + V.fr + '}.mn-liste a[aria-current] b::after{content:" · vous êtes ici";font-size:12.5px;font-weight:600;color:' + V.fr + '}' +
     '.mn-autres{display:grid;gap:10px;margin:8px 0 4px}.mn-autres h2{font-size:19px;font-weight:600;margin:0;color:' + V.fg + '}' +
-    '.mn-autres .mn-liste{grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr))}';
+    '.mn-autres .mn-liste{grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr))}' +
+    // Sur téléphone : « Les autres pages » en grille compacte, sans les descriptions (le Menu les a).
+    '@media (max-width:600px){.mn-autres .mn-liste{grid-template-columns:repeat(2,minmax(0,1fr))}.mn-autres .mn-liste a{padding:10px 12px}.mn-autres .mn-liste a span{display:none}.mn-autres .mn-liste a b{font-size:15px}}' +
+    // Sur téléphone, le bandeau garde le logo, le Baromètre, le Quiz, la loupe et le Menu ; les autres pages sont dans le Menu.
+    '@media (max-width:520px){nav.site>a:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]){display:none}nav.site>a{padding-block:8px}nav.site{gap:12px!important}.mn-btn{padding-left:12px}}' +
+    // Le Baromètre et le Quiz, les deux rendez-vous quotidiens, ressortent dans le bandeau.
+    'nav.site>a[href="/barometre/"],nav.site>a[href="/quiz/"]{color:' + V.fg + ';font-weight:600}' +
+    // Lisibilité commune à toutes les pages : textes d'appoint pas trop petits, graduations des graphiques lisibles, zones à toucher assez grandes.
+    '.note{font-size:14px;line-height:1.45}.bx-note{font-size:13.5px}.eyebrow{font-size:12.5px}svg .tick text{font-size:12px}' +
+    // Pastilles des tableaux « Année par année » : point marqué, pas de point, demi-point (égalité).
+    '.pt{display:inline-block;width:.8em;height:.8em;border-radius:50%;border:2px solid currentColor;box-sizing:border-box;vertical-align:-.08em}.pt.p1{background:currentColor}.pt.ph{background:linear-gradient(90deg,currentColor 50%,transparent 50%)}' +
+    '.rech-b{min-width:44px;min-height:44px;justify-content:center}button.share,.bx-share{min-height:40px}';
   var ici = location.pathname.replace(/index\.html$/, '');
   var lien = function (p) { return '<a href="' + p.u + '"' + (p.u === ici ? ' aria-current="page"' : '') + '><b>' + p.l + '</b><span>' + p.t + '</span></a>'; };
 
@@ -44,7 +55,15 @@
     document.body.appendChild(v); v.querySelector('.mn-ferme').focus();
   }
 
+  // Hauteur du bandeau du haut (--navh) : les barres « Aller à » se collent juste en dessous, et les ancres ne passent pas dessous.
+  function hauteur() {
+    var n = document.querySelector('nav.site'); if (!n) return;
+    var f = function () { document.documentElement.style.setProperty('--navh', n.offsetHeight + 'px'); };
+    f(); if (window.ResizeObserver) new ResizeObserver(f).observe(n); else addEventListener('resize', f);
+  }
+
   function init() {
+    hauteur();
     if (!document.getElementById('mn-css')) { var st = document.createElement('style'); st.id = 'mn-css'; st.textContent = css; document.head.appendChild(st); }
     var nav = document.querySelector('nav.site');
     if (nav && !nav.querySelector('.mn-btn')) {
@@ -52,7 +71,8 @@
       b.innerHTML = '<span>☰ Menu</span>'; b.addEventListener('click', function () { ouvrir(b); }); nav.appendChild(b);
       // Le bandeau défile jusqu'à la page en cours, pour qu'elle ne soit pas cachée derrière le bouton.
       var cur = nav.querySelector('a[aria-current]:not(.logo)');
-      if (cur && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, cur.offsetLeft - nav.offsetLeft - 110);
+      // (Sur téléphone, le bandeau tient en entier : il reste calé à gauche, logo visible.)
+      if (cur && nav.scrollWidth > nav.clientWidth + 8 && !(window.matchMedia && matchMedia('(max-width: 520px)').matches)) nav.scrollLeft = Math.max(0, cur.offsetLeft - nav.offsetLeft - 110);
     }
     // En bas de page (pas sur l'accueil, qui a déjà la liste des missions) : les autres pages.
     if (ici !== '/' && !document.querySelector('.mn-autres')) {
