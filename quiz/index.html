@@ -431,6 +431,8 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="qz-onglets" role="tablist"><button type="button" data-p="semaine" class="on">Semaine</button><button type="button" data-p="mois">Mois</button><button type="button" data-p="total">Depuis le début</button></div>
     <p class="qz-cl-moi" id="qz-cl-moi"></p>
     <ol class="qz-cl-top" id="qz-cl-top"></ol>
+    <button class="qz-btn" id="qz-cl-partager" type="button" style="justify-self:center">Partager mon classement</button>
+    <p class="qz-copie" id="qz-cl-copie" style="text-align:center"></p>
     <form class="qz-pseudo" id="qz-pseudo">
       <label for="qz-pseudo-in" id="qz-pseudo-l">Choisissez un pseudo pour apparaître dans le classement (facultatif)</label>
       <div><input id="qz-pseudo-in" maxlength="20" autocomplete="nickname" placeholder="Votre pseudo"><button type="submit" class="qz-btn">Enregistrer</button></div>
@@ -634,6 +636,48 @@ footer p { margin: 0; } footer a { color: inherit; }
     document.getElementById('qz-oubli').addEventListener('click', function (ev) {
       ev.preventDefault(); if (!confirm('Effacer vos scores et votre pseudo du classement ?')) return;
       appel('oubli', { id: joueur() }, 'POST').then(function () { try { localStorage.removeItem('concret-joueur'); localStorage.removeItem('quiz-classement-' + iso); } catch (e) {} document.getElementById('qz-cl').hidden = true; CL = null; }, function () {});
+    });
+
+    // Partager le classement : une image (période, place, points, les 5 premiers et la ligne du joueur), comme pour le score.
+    function imageClassement() {
+      var P = CL[periode], W = 1080, H = 1080, c = document.createElement('canvas'), g = c.getContext('2d'), serif = '"Newsreader", Georgia, serif', sans = '"Inter Tight", system-ui, sans-serif';
+      var quand = { semaine: 'cette semaine', mois: 'ce mois-ci', total: 'depuis le début' }[periode], nf = function (v) { return v.toLocaleString('fr-FR'); };
+      c.width = W; c.height = H;
+      g.fillStyle = '#f6f6f3'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#2f5bd3'; g.font = '500 56px ' + serif; g.fillText('Concret', 80, 130);
+      g.font = '700 34px ' + sans; g.textAlign = 'right'; g.fillText('concret2027.fr/quiz', W - 80, 126); g.textAlign = 'left';
+      g.fillStyle = '#1c1d22'; g.font = '700 72px ' + sans; g.fillText('Classement du quiz', 80, 250);
+      g.fillStyle = '#62646d'; g.font = '500 38px ' + sans; g.fillText(quand.charAt(0).toUpperCase() + quand.slice(1) + (serie > 1 ? ' · 🔥 ' + serie + ' jours de suite' : ''), 80, 310);
+      if (P.moi) {
+        g.fillStyle = '#1c1d22'; g.font = '400 150px ' + serif; var o = (P.moi.rang === 1 ? '1re' : P.moi.rang + 'e'); g.fillText(o, 80, 470);
+        var w = g.measureText(o).width; g.fillStyle = '#62646d'; g.font = '500 40px ' + sans; g.fillText('sur ' + nf(P.joueurs) + ' joueurs · ' + nf(P.moi.points) + ' points', 80 + w + 24, 465);
+      }
+      // Les 5 premiers ; si le joueur n'en fait pas partie, les 3 premiers puis sa ligne.
+      var dedans = P.top.slice(0, 5).some(function (r) { return r.moi; });
+      var L = P.top.slice(0, P.moi && !dedans ? 3 : 5).map(function (r) { return { r: r.rang, p: r.pseudo || 'Sans pseudo', pts: r.points, moi: r.moi }; });
+      if (P.moi && !dedans) L.push({ sep: true }, { r: P.moi.rang, p: CL.pseudo || 'Sans pseudo', pts: P.moi.points, moi: true });
+      var y = 540;
+      L.forEach(function (x) {
+        if (x.sep) { g.fillStyle = '#62646d'; g.font = '500 34px ' + sans; g.textAlign = 'center'; g.fillText('…', W / 2, y + 20); g.textAlign = 'left'; y += 50; return; }
+        if (x.moi) { g.fillStyle = '#dfe6fb'; g.fillRect(70, y - 6, W - 140, 64); }
+        g.fillStyle = '#62646d'; g.font = '600 36px ' + sans; g.fillText(x.r, 90, y + 40);
+        g.fillStyle = '#1c1d22'; g.font = (x.moi ? '700 ' : '500 ') + '36px ' + sans; var nom = x.p + (x.moi ? ' (moi)' : ''); while (g.measureText(nom).width > 600 && nom.length > 4) nom = nom.slice(0, -2); g.fillText(nom, 180, y + 40);
+        g.textAlign = 'right'; g.fillText(nf(x.pts) + (x.pts > 1 ? ' pts' : ' pt'), W - 90, y + 40); g.textAlign = 'left'; y += 70;
+      });
+      g.fillStyle = '#2f5bd3'; g.font = '700 44px ' + sans; g.textAlign = 'center'; g.fillText('Et vous ? concret2027.fr/quiz', W / 2, 1020); g.textAlign = 'left';
+      return new Promise(function (res) { c.toBlob(res, 'image/png'); });
+    }
+    document.getElementById('qz-cl-partager').addEventListener('click', function () {
+      if (!CL) return;
+      var dit = document.getElementById('qz-cl-copie'), P = CL[periode], quand = { semaine: 'cette semaine', mois: 'ce mois-ci', total: 'depuis le début' }[periode];
+      var t = 'Classement du quiz de Concret ' + quand + (P.moi ? ' : ' + (P.moi.rang === 1 ? '1re' : P.moi.rang + 'e') + ' sur ' + P.joueurs.toLocaleString('fr-FR') + ' joueurs' : '') + '. À vous : concret2027.fr/quiz';
+      (document.fonts ? document.fonts.ready : Promise.resolve()).then(imageClassement).then(function (blob) {
+        var f = blob && new File([blob], 'concret-classement-' + iso + '.png', { type: 'image/png' });
+        if (f && navigator.canShare && navigator.canShare({ files: [f] })) return navigator.share({ files: [f], text: t }).catch(function () {});
+        if (f) { var u = URL.createObjectURL(f); dit.innerHTML = '<img src="' + u + '" alt="Mon classement" style="width:100%;max-width:360px;border-radius:10px;border:1px solid var(--line);display:block;margin:8px auto"><a href="' + u + '" download="concret-classement-' + iso + '.png">Enregistrer l\'image</a>'; return; }
+        if (navigator.share) return navigator.share({ text: t }).catch(function () {});
+        dit.textContent = t;
+      });
     });
 
     // Partager le score : une image du résultat (score, carrés, classement), dessinée ici, avec l'adresse en légende
