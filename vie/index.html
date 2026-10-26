@@ -798,8 +798,10 @@ function main(FEED) {
     var pend = document.createElement('div'); pend.className = 'gov pending';
     pend.innerHTML = '<div class="badge p">à venir</div><div class="who"><b>Sébastien Lecornu</b> <span>· depuis sept. 2025 · Macron</span></div><div class="note">Pas encore noté : les chiffres de 2026 ne sont pas encore publiés.</div>';
     box.appendChild(pend);
+    // Repliés : on montre les gouvernements jusqu'au premier qui a une note, puis le bouton pour voir les autres.
+    var premier = Math.max(0, GOVS.slice().reverse().findIndex(function (g) { return countOf(g) > 0; }));
     GOVS.slice().reverse().forEach(function (g, i) {
-      var note = noteOf(g), n = countOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i >= 2;
+      var note = noteOf(g), n = countOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i > premier;
       // Aucune comparaison possible (année pas encore publiée) : comme le gouvernement en cours.
       if (!n) {
         row.className = 'gov pending'; row.innerHTML = '<div class="badge p">à venir</div><div class="who"><b></b> <span></span></div><div class="note"></div>';

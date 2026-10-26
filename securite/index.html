@@ -761,8 +761,10 @@ function main(FEED) {
     var pend = document.createElement('div'); pend.className = 'gov pending';
     pend.innerHTML = '<div class="badge p">à venir</div><div class="who"><b>Sébastien Lecornu</b> <span>· depuis sept. 2025 · Macron</span></div><div class="note">Pas encore noté : les chiffres de 2026 ne sont pas encore publiés.</div>';
     box.appendChild(pend);
+    // Repliés : on montre les gouvernements jusqu'au premier qui a une note, puis le bouton pour voir les autres.
+    var premier = Math.max(0, GOVS.slice().reverse().findIndex(function (g) { return countOf(g) > 0; }));
     GOVS.slice().reverse().forEach(function (g, i) {
-      var note = noteOf(g), n = countOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i >= 2;
+      var note = noteOf(g), n = countOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i > premier;
       var nt = THEMES.filter(function (t) { return SAN.noteTheme(g, t) != null; }).length;
       var badge = document.createElement('div'); badge.className = 'badge ' + (n < MIN_N ? 'p' : cls(note)); badge.innerHTML = '<span></span>';
       badge.firstChild.textContent = note == null ? '—' : nfmt(note); var sm = document.createElement('small'); sm.textContent = '/20'; badge.appendChild(sm);
