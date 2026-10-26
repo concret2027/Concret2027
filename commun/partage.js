@@ -88,7 +88,7 @@
       var h = card.querySelector('h1, h2, .acc-h, .lab, .eyebrow'); if (h) h.setAttribute('data-pt-titre', ''); card.setAttribute('data-pt-bloc', '');
       var lg = legende(card); if (lg) lg.setAttribute('data-pt-legende', '');
       return h2c(card, { backgroundColor: getComputedStyle(document.body).backgroundColor, scale: 2, useCORS: true, logging: false,
-        ignoreElements: function (el) { return el.classList && (el.classList.contains('share') || el.classList.contains('pt-share')); },
+        ignoreElements: function (el) { return el.classList && (el.classList.contains('share') || el.classList.contains('pt-share') || el.classList.contains('nt-btn')); },
         // La capture ne sait pas ce qu'est un bloc replié : elle dessinerait son contenu par-dessus le reste.
         // Dans la copie capturée, on ne garde que ce qui est visible à l'écran.
         onclone: function (doc) {
@@ -96,7 +96,9 @@
             if (!d.open) Array.prototype.forEach.call(d.children, function (c) { if (c.tagName !== 'SUMMARY') c.remove(); });
           });
           Array.prototype.forEach.call(doc.querySelectorAll('summary'), function (s) { s.style.listStyle = 'none'; s.style.display = 'block'; });
-          Array.prototype.forEach.call(doc.querySelectorAll('[hidden], .pt-overlay'), function (e) { e.remove(); });
+          Array.prototype.forEach.call(doc.querySelectorAll('[hidden], .pt-overlay, .nt-btn'), function (e) { e.remove(); });
+          // Texte sous la courbe replié à l'écran (« Détail du graphe ») : en entier dans l'image.
+          Array.prototype.forEach.call(doc.querySelectorAll('.nt-pli'), function (e) { e.classList.remove('nt-pli'); });
           // Dans l'image, seulement ce qui se lit : pas de bouton, pas de liste de détail à toucher, pas de bloc replié.
           var bl = doc.querySelector('[data-pt-bloc]');
           if (bl) {
