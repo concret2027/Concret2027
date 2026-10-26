@@ -106,6 +106,13 @@ if (S.education) {
   N.forEach(function (n) { a[cle(n.date, n.institut)] = n; if (!n.commanditaire || !n.marge || !n.url) err('sondages_notices ' + n.date + ' ' + n.institut + ' : commanditaire, marge d\'erreur ou lien ' + (n.statut === 'rapport' ? 'du rapport' : 'de la notice') + ' manquant');
     // Sondage publié avec les mentions de son rapport, en attendant la notice : signalé si elle tarde plus de 15 jours.
     if (n.statut === 'rapport' && (Date.parse(today) - Date.parse(n.date)) / 864e5 > 15) alertes.push('sondage ' + n.date + ' ' + n.institut + ' : notice toujours pas en ligne à la Commission des sondages, plus de 15 jours après (mentions lues dans le rapport de l\'institut)'); });
+  // Agenda : un rendez-vous dont la date est passée quitte l'agenda ; son résultat, s'il est publié, va dans l'actualité de la page.
+  Object.keys(DS).filter(function (k) { return /^agenda_/.test(k); }).forEach(function (k) {
+    (DS[k] || []).forEach(function (r) {
+      if (!r.date || (r.quand && !/\d/.test(r.quand))) return; // rendez-vous au mois près : on attend la fin du mois
+      if (r.date < today) alertes.push(k + ' : le rendez-vous du ' + r.date + ' (« ' + String(r.evenement || '').slice(0, 70) + ' ») est passé ; chercher son résultat, l\'ajouter à l\'actualité de la page avec sa source, et retirer le rendez-vous.');
+    });
+  });
   var sans = {};
   (DS.sondages_t1 || []).concat(DS.sondages_t2 || []).forEach(function (r) { if (!a[cle(r.date, r.institut)]) sans[r.date + ' ' + r.institut] = 1; });
   Object.keys(sans).forEach(function (k) { err('sondage ' + k + ' sans notice lue : lancer python3 outils/sondages.py --ecrire (un sondage ne se publie pas sans les mentions de sa notice)'); });
