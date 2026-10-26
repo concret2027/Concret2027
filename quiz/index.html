@@ -395,7 +395,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .qz-cl-moi { margin: 0; font-size: 15.5px; } .qz-cl-moi b { font-weight: 600; }
 .qz-cl-top { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-variant-numeric: tabular-nums; }
 .qz-cl-top li { display: grid; grid-template-columns: 2.4em minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 6px 8px; border-radius: 8px; font-size: 14.5px; }
-.qz-cl-top li:nth-child(odd) { background: var(--band); } .qz-cl-top li.moi { outline: 2px solid var(--fr); font-weight: 600; }
+.qz-cl-top li:nth-child(odd) { background: var(--band); } .qz-cl-top li.sep { display: block; background: none; text-align: center; color: var(--muted); padding: 0; line-height: 1; } .qz-cl-top li.moi { outline: 2px solid var(--fr); font-weight: 600; }
 .qz-cl-top .r { color: var(--muted); font-weight: 600; } .qz-cl-top .p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .qz-cl-top .p i { color: var(--muted); font-style: normal; } .qz-cl-top .s { color: var(--muted); font-size: 13px; }
 .qz-pseudo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding-top: 8px; border-top: 1px solid var(--line); } .qz-pseudo label { font-size: 14px; font-weight: 600; }
 .qz-pseudo div { display: flex; gap: 8px; min-width: 0; } .qz-pseudo .qz-btn { flex: none; } .qz-pseudo input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
@@ -617,7 +617,9 @@ footer p { margin: 0; } footer a { color: inherit; }
       document.getElementById('qz-cl-moi').innerHTML = P.moi ? 'Vous êtes à la <b>' + (P.moi.rang === 1 ? '1re' : P.moi.rang + 'e') + ' place</b> sur <b>' + nf(P.joueurs) + (P.joueurs > 1 ? ' joueurs' : ' joueur') + '</b> ' + quand + ', avec ' + nf(P.moi.points) + ' point' + (P.moi.points > 1 ? 's' : '') + ' en ' + P.moi.jours + ' jour' + (P.moi.jours > 1 ? 's' : '') + '.' : 'Vous n\'avez pas encore de points ' + quand + '.';
       document.getElementById('qz-cl-top').innerHTML = P.top.map(function (r) {
         return '<li' + (r.moi ? ' class="moi"' : '') + '><span class="r">' + r.rang + '</span><span class="p">' + (r.pseudo ? esc(r.pseudo) : '<i>Sans pseudo</i>') + (r.moi ? ' (vous)' : '') + '</span><span>' + nf(r.points) + (r.points > 1 ? ' pts' : ' pt') + ' <span class="s">· ' + r.jours + ' j</span></span></li>';
-      }).join('');
+      }).join('') +
+        // Hors du top 10 : la ligne du joueur sous le tableau, avec sa place.
+        (P.moi && !P.top.some(function (r) { return r.moi; }) ? '<li class="sep" aria-hidden="true">…</li><li class="moi"><span class="r">' + P.moi.rang + '</span><span class="p">' + (CL.pseudo ? esc(CL.pseudo) : '<i>Sans pseudo</i>') + ' (vous)</span><span>' + nf(P.moi.points) + (P.moi.points > 1 ? ' pts' : ' pt') + ' <span class="s">· ' + P.moi.jours + ' j</span></span></li>' : '');
       var inp = document.getElementById('qz-pseudo-in');
       if (document.activeElement !== inp) inp.value = CL.pseudo || '';
       document.getElementById('qz-pseudo-l').textContent = CL.pseudo ? 'Votre pseudo (videz la case pour le retirer)' : 'Choisissez un pseudo pour apparaître dans le classement (facultatif)';
