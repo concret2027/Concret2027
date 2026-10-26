@@ -193,6 +193,8 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 .renvoi a { flex: 1 1 16rem; display: grid; gap: 2px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-decoration: none; }
 .renvoi a b { font-size: 16px; } .renvoi a span { font-size: 13px; color: var(--muted); }
 .renvoi a:hover { border-color: var(--fr); }
+.chap { display: flex; align-items: center; gap: 10px; margin: 22px 0 -2px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.chap::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 </style>
 </head>
 <body data-sources="Sources : Assemblée nationale (données ouvertes), Conseil constitutionnel, Élysée, Sénat (détail dans « La règle et les sources »).">
@@ -202,19 +204,22 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 
   <section class="card" id="reponse" data-partage="non" aria-labelledby="titre">
     <h1 id="titre">Ce que vote l'Assemblée, ce qui devient loi</h1>
-    <p class="lead">Les votes importants de l'Assemblée nationale, groupe par groupe, les lois publiées au Journal officiel, ce qui vient à l'ordre du jour, et les grandes dates depuis 1995. Pas de note ici : seulement les faits, lus aux sources officielles.</p>
+    <p class="lead">Ce qui vient à l'ordre du jour de l'Assemblée nationale, ses votes groupe par groupe, les lois publiées au Journal officiel ; puis, sur la durée, les grandes lois de chaque gouvernement depuis 2012 et les grandes dates depuis 1995. Pas de note ici : seulement les faits, lus aux sources officielles.</p>
     <p class="visit" id="visite" hidden></p>
     <div class="bref3" id="bref3"></div>
   </section>
 
   <nav class="jump" aria-label="Aller à">
-    <a href="#grandes">Les grandes lois</a><a href="#votes">Les votes</a><a href="#lois">Les lois publiées</a><a href="#agenda">L'agenda</a><a href="#frise">Depuis 1995</a><a href="#groupes">Les groupes</a><a href="#regle">La règle</a>
+    <a href="#agenda">L'agenda</a><a href="#votes">Les votes</a><a href="#lois">Les lois publiées</a><a href="#groupes">Les groupes</a><a href="#grandes">Les grandes lois</a><a href="#frise">Depuis 1995</a><a href="#regle">La règle</a>
   </nav>
 
- <section class="card" id="grandes" aria-labelledby="grandes-t" data-src="Source : Assemblée nationale, données ouvertes (dossiers législatifs et scrutins depuis juin 2012).">
-    <h2 id="grandes-t">Les grandes lois, mission par mission</h2>
-    <p class="note" style="font-size:14px">Ce que chaque gouvernement a fait voter depuis 2012, rangé selon les missions notées sur Concret. Choisissez une mission, puis touchez un gouvernement.</p>
-    <div data-lois="toutes"></div>
+  <p class="chap">En ce moment à l'Assemblée</p>
+
+  <section class="card" id="agenda" aria-labelledby="agenda-t" data-src="Source : Assemblée nationale, données ouvertes (agenda de la séance publique).">
+    <h2 id="agenda-t">À l'ordre du jour de l'Assemblée</h2>
+    <p class="note">Les textes inscrits à la séance publique pour les deux semaines qui viennent (points confirmés). L'ordre du jour peut encore changer.</p>
+    <ul class="ag" id="agenda-l"></ul>
+    <button class="plus" type="button" id="agenda-plus" hidden></button>
   </section>
 
   <section class="card" id="votes" aria-labelledby="votes-t" data-src="Source : Assemblée nationale, données ouvertes (scrutins de la 17e législature).">
@@ -235,11 +240,23 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
     <p class="note">Une loi entre en vigueur après sa promulgation par le président de la République et sa publication au Journal officiel. « Vote final à l'Assemblée » : le dernier vote de l'Assemblée sur l'ensemble du texte, quand il a eu lieu par scrutin public ; sinon, le texte a été adopté à main levée, sans décompte des voix, ou adopté définitivement au Sénat.</p>
   </section>
 
-  <section class="card" id="agenda" aria-labelledby="agenda-t" data-src="Source : Assemblée nationale, données ouvertes (agenda de la séance publique).">
-    <h2 id="agenda-t">À l'ordre du jour de l'Assemblée</h2>
-    <p class="note">Les textes inscrits à la séance publique pour les deux semaines qui viennent (points confirmés). L'ordre du jour peut encore changer.</p>
-    <ul class="ag" id="agenda-l"></ul>
-    <button class="plus" type="button" id="agenda-plus" hidden></button>
+  <section class="card" id="groupes" aria-labelledby="groupes-t" data-src="Source : Assemblée nationale, données ouvertes (scrutins et organes).">
+    <h2 id="groupes-t">Les groupes de l'Assemblée</h2>
+    <p class="note" id="groupes-n"></p>
+    <div class="grp" id="groupes-l"></div>
+    <details class="vote" id="groupes-det" style="padding:10px 14px">
+      <summary>Comment chaque groupe a voté sur les votes retenus</summary>
+      <div class="tw"><table id="groupes-tab"></table></div>
+      <p class="note">Nombre de votes où la majorité du groupe a voté pour, contre, s'est abstenue, ou n'a pas pris part au vote (aucun député du groupe n'a voté). Ce décompte ne dit rien du sens des textes : il compte seulement les positions.</p>
+    </details>
+  </section>
+
+  <p class="chap">Sur la durée</p>
+
+  <section class="card" id="grandes" aria-labelledby="grandes-t" data-src="Source : Assemblée nationale, données ouvertes (dossiers législatifs et scrutins depuis juin 2012).">
+    <h2 id="grandes-t">Les grandes lois, mission par mission</h2>
+    <p class="note" style="font-size:14px">Ce que chaque gouvernement a fait voter depuis 2012, rangé selon les missions notées sur Concret. Choisissez une mission, puis touchez un gouvernement.</p>
+    <div data-lois="toutes"></div>
   </section>
 
   <section class="card" id="frise" aria-labelledby="frise-t" data-src="Sources : Conseil constitutionnel, Assemblée nationale, Élysée, Sénat (chaque date a sa source).">
@@ -250,17 +267,6 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
     <ul class="frise" id="frise-l"></ul>
     <button class="plus" type="button" id="frise-plus" hidden></button>
     <p class="note">Les élections législatives ne sont pas encore dans la frise : leurs résultats officiels sont publiés par le ministère de l'Intérieur, dont le site refuse la lecture automatique.</p>
-  </section>
-
-  <section class="card" id="groupes" aria-labelledby="groupes-t" data-src="Source : Assemblée nationale, données ouvertes (scrutins et organes).">
-    <h2 id="groupes-t">Les groupes de l'Assemblée</h2>
-    <p class="note" id="groupes-n"></p>
-    <div class="grp" id="groupes-l"></div>
-    <details class="vote" id="groupes-det" style="padding:10px 14px">
-      <summary>Comment chaque groupe a voté sur les votes retenus</summary>
-      <div class="tw"><table id="groupes-tab"></table></div>
-      <p class="note">Nombre de votes où la majorité du groupe a voté pour, contre, s'est abstenue, ou n'a pas pris part au vote (aucun député du groupe n'a voté). Ce décompte ne dit rien du sens des textes : il compte seulement les positions.</p>
-    </details>
   </section>
 
   <div class="renvoi">
