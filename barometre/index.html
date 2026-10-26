@@ -55,7 +55,10 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .site::-webkit-scrollbar { display: none; }
 @media (max-width: 520px) { .site { gap: 14px; } .site .lg { display: none; } .site a.logo { font-size: 18px; margin-right: 0; } }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 21; background: var(--color-bg); }
-.bx [id] { scroll-margin-top: calc(var(--navh, 44px) + 60px); }
+.bx [id] { scroll-margin-top: calc(var(--navh, 44px) + 96px); }
+.jump { display: grid !important; gap: 6px; } .jump-l1, .jump-l2 { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; } .jump-l1::-webkit-scrollbar, .jump-l2::-webkit-scrollbar { display: none; }
+.jump a.on { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.jump-l2 a { font-weight: 500; padding: 4px 11px; }
 .jump { position: -webkit-sticky; position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 44px)); z-index: 19; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: calc(-1 * var(--cds-gap-lg) + 4px) calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--color-bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--color-border-line); }
 .jump::-webkit-scrollbar { display: none; }
 .jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--color-fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); }
@@ -87,7 +90,10 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-quiz b { font-size: 19px; } .bx-quiz span { font-size: 13.5px; color: var(--color-fg-muted); line-height: 1.4; } .bx-quiz .bx-quiz-e { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
 .bx-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
 .bx-card.wide { grid-column: 1 / -1; }
-.bx-group { grid-column: 1 / -1; margin: var(--cds-gap-md) 0 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); padding-top: var(--cds-gap-md); border-top: 1px solid var(--color-border-line); }
+.bx-group { grid-column: 1 / -1; margin: var(--cds-gap-md) 0 0; padding-top: var(--cds-gap-md); border-top: 1px solid var(--color-border-line); display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
+.bx-group h2 { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); }
+.bx-grouplinks { display: flex; flex-wrap: wrap; gap: 6px; }
+.bx-grouplinks a { font-size: 13px; font-weight: 600; color: var(--color-fg); text-decoration: none; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); }
 .bx-groupnote { grid-column: 1 / -1; margin: -6px 0 0; max-width: 82ch; }
 .bx-sub { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-sm) 0 0; }
 details.bx-fold > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding-right: 28px; position: relative; }
@@ -227,7 +233,10 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
     <p class="bx-visit" id="visit" hidden></p>
     <div class="bx-stale" id="bx-stale" hidden>Données en cours d’actualisation : la dernière mise à jour date de plus d’un jour.</div>
   </header>
-  <nav class="jump" aria-label="Aller à"><a href="#aujourdhui">Aujourd'hui</a><a href="#mouvements">Ce qui a bougé</a><a href="#agenda">Agenda</a><a href="#dernier-sondage">Sondages 1er tour</a><a href="#dernier-t2">Sondages 2nd tour</a><a href="#parieurs-t1">Parieurs 1er tour</a><a href="#polymarket">Parieurs 2nd tour</a><a href="#detail">Tous les sondages</a><a href="#methode">Méthode</a></nav>
+  <nav class="jump" aria-label="Aller à">
+    <div class="jump-l1"><a href="#aujourdhui" data-g="moment">En ce moment</a><a href="#sondages" data-g="sondages">Sondages</a><a href="#parieurs" data-g="parieurs">Parieurs</a><a href="#detail" data-g="detail">Tous les sondages</a><a href="#methode" data-g="methode">Méthode</a></div>
+    <div class="jump-l2" hidden></div>
+  </nav>
 
   <section class="bx-hero" aria-label="La course en un coup d'œil">
   <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
@@ -262,7 +271,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       </div>
     </details>
 
-    <h2 class="bx-group" id="sondages">Les sondages</h2>
+    <div class="bx-group" id="sondages"><h2>Les sondages</h2><nav class="bx-grouplinks" aria-label="Sondages"><a href="#dernier-sondage">Premier tour ↓</a><a href="#dernier-t2">Second tour ↓</a></nav></div>
 
     <section class="bx-card" id="dernier-sondage">
       <h2 id="last-title">Premier tour : le dernier sondage</h2>
@@ -291,7 +300,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <div class="bx-chart small" id="chart-t2" data-source="sondages_t2"></div>
     </section>
 
-    <h2 class="bx-group" id="parieurs">Les parieurs</h2>
+    <div class="bx-group" id="parieurs"><h2>Les parieurs</h2><nav class="bx-grouplinks" aria-label="Parieurs"><a href="#parieurs-t1">Premier tour ↓</a><a href="#polymarket">Second tour ↓</a></nav></div>
     <p class="bx-note bx-groupnote">Ce que misent les parieurs de Polymarket, une plateforme de paris en ligne : chaque prix se lit comme une probabilité. Ce n'est pas un sondage : les parieurs ne représentent pas les électeurs.</p>
 
     <section class="bx-card wide" id="parieurs-t1">
@@ -312,7 +321,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <div class="bx-chart" id="chart-pmh" data-source="polymarket_hist"></div>
     </section>
 
-    <h2 class="bx-group" id="detail">Le détail des sondages</h2>
+    <div class="bx-group" id="detail"><h2>Le détail des sondages</h2><nav class="bx-grouplinks" aria-label="Détail"><a href="#duels">Duels ↓</a><a href="#tous-sondages">Premier tour ↓</a><a href="#notices">Notices ↓</a></nav></div>
 
     <section class="bx-card" id="duels">
       <h2>Derniers duels testés</h2>
@@ -1122,6 +1131,37 @@ window.addEventListener('baro:data', function () {
   });
   document.getElementById('bx-sheet-close').addEventListener('click', function () { document.getElementById('bx-sheet').hidden = true; });
   document.getElementById('bx-sheet').addEventListener('click', function (e) { if (e.target.id === 'bx-sheet') this.hidden = true; });
+})();
+</script>
+<script>
+// Barre « Aller à » : le groupe où l'on se trouve est surligné ; dans un groupe à plusieurs blocs, une seconde ligne de liens apparaît.
+(function () {
+  var nav = document.querySelector('.jump'); if (!nav) return;
+  var l2 = nav.querySelector('.jump-l2');
+  var G = [
+    { g: 'moment', id: null, sub: [['#aujourdhui', 'Aujourd\'hui', 'aujourdhui'], ['#mouvements', 'Ce qui a bougé', 'mouvements'], ['#agenda', 'Agenda', 'agenda']] },
+    { g: 'sondages', id: 'sondages', sub: [['#dernier-sondage', 'Premier tour', 'sondages'], ['#dernier-t2', 'Second tour', 'dernier-t2']] },
+    { g: 'parieurs', id: 'parieurs', sub: [['#parieurs-t1', 'Premier tour', 'parieurs'], ['#polymarket', 'Second tour', 'polymarket']] },
+    { g: 'detail', id: 'detail', sub: [] },
+    { g: 'methode', id: 'methode', sub: [] }
+  ];
+  var cur = null;
+  function maj() {
+    var lim = nav.getBoundingClientRect().bottom + 24, g = G[0];
+    G.forEach(function (x) { var e = x.id && document.getElementById(x.id); if (e && e.getBoundingClientRect().top <= lim) g = x; });
+    if (g !== cur) {
+      cur = g;
+      nav.querySelectorAll('.jump-l1 a').forEach(function (a) { var on = a.getAttribute('data-g') === g.g; a.classList.toggle('on', on); if (on) a.parentNode.scrollLeft = Math.max(0, a.offsetLeft - 40); });
+      l2.innerHTML = g.sub.map(function (x) { return '<a href="' + x[0] + '" data-s="' + x[2] + '">' + x[1] + '</a>'; }).join('');
+      l2.hidden = !g.sub.length;
+    }
+    // Dans le groupe : le bloc où l'on se trouve.
+    var on = null; g.sub.forEach(function (x) { var e = document.getElementById(x[2]); if (e && e.getBoundingClientRect().top <= lim) on = x[2]; });
+    if (!on && g.sub.length) on = g.sub[0][2];
+    l2.querySelectorAll('a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-s') === on); });
+  }
+  var t = 0; addEventListener('scroll', function () { if (!t) t = requestAnimationFrame(function () { t = 0; maj(); }); }, { passive: true });
+  addEventListener('resize', maj); maj();
 })();
 </script>
 <script>(function () { var n = document.querySelector('.site'); if (!n) return; var f = function () { document.documentElement.style.setProperty('--navh', n.offsetHeight + 'px'); }; f(); if (window.ResizeObserver) new ResizeObserver(f).observe(n); else addEventListener('resize', f); })();</script>
