@@ -55,8 +55,8 @@
     box.removeAttribute('data-partage');
     box.querySelectorAll('.bref-chips a').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); });
   }
-  // « Depuis votre dernière visite » : d'abord ce qui est nouveau (chiffres, actualités), puis, s'il n'y a
-  // pas de nouveau chiffre, la dernière actualité et le prochain rendez-vous de l'agenda. Renvoie les morceaux de la ligne.
+  // « Depuis votre dernière visite » : d'abord ce qui est nouveau (chiffres, actualités) ; sinon « rien de nouveau »
+  // et le prochain rendez-vous de l'agenda (une actualité déjà vue n'est pas reprise). Renvoie les morceaux de la ligne.
   // o : { chiffres: [html], actu: [{date, texte}], agenda: [{date, quand, evenement}], depuis: horodatage, jour: bool, prochains: texte }
   function nouveau(o) {
     var iso = function (d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); };
@@ -69,10 +69,10 @@
     var na = A.filter(function (a) { return a.date > dep; });
     if (na.length) parts.push(lien('acc-actu', '<b>' + na.length + ' nouvelle' + (na.length > 1 ? 's' : '') + ' actualité' + (na.length > 1 ? 's' : '') + '</b>') + ' : « ' + esc(court(na[0].texte)) + ' »');
     if (!ch.length) {
-      // La dernière actualité seulement si elle est récente (moins de 15 jours) : au-delà, ce n'est plus du nouveau.
-      if (!na.length && A[0] && (new Date(auj) - new Date(A[0].date)) / 864e5 < 15) parts.push('dernière actualité, le ' + dfr(A[0].date) + ' : ' + lien('acc-actu', '« ' + esc(court(A[0].texte)) + ' »'));
+      // Rien de neuf depuis la visite : on le dit, sans repêcher une actualité déjà vue ; puis le prochain rendez-vous.
       var g = (o.agenda || []).filter(function (a) { return a.date && a.date >= auj; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
-      parts.push('pas de nouveau chiffre' + (g ? ' ; prochain rendez-vous, ' + esc(min1(g.quand || dfr(g.date))) + ' : ' + esc(String(g.evenement).replace(/\.$/, '')) : o.prochains ? ' (' + o.prochains + ')' : ''));
+      if (!na.length) parts.push('rien de nouveau' + (g ? ' ; prochain rendez-vous, ' + esc(min1(g.quand || dfr(g.date))) + ' : ' + esc(String(g.evenement).replace(/\.$/, '')) : o.prochains ? ' (' + o.prochains + ')' : ''));
+      else if (g) parts.push('prochain rendez-vous, ' + esc(min1(g.quand || dfr(g.date))) + ' : ' + esc(String(g.evenement).replace(/\.$/, '')));
     }
     return parts;
   }
