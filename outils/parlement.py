@@ -4,6 +4,8 @@ lus dans les données ouvertes de l'Assemblée nationale (data.assemblee-nationa
 
   python3 outils/parlement.py                 lit les données ouvertes et compare à data.json, sans rien écrire
   python3 outils/parlement.py --ecrire        écrit series.politique dans data.json et met à jour le calendrier
+  python3 outils/parlement.py --historique  (avec --ecrire) relit aussi les législatures closes (14e à 16e, depuis juin 2012)
+                                              pour les grandes lois ; sinon elles sont gardées telles quelles dans data.json
   python3 outils/parlement.py --frise         relit chaque source de la frise et vérifie que ses chiffres et ses dates y figurent
 Chaque passage affiche aussi les « actualités possibles » : votes et lois des trois derniers jours rattachés à une page de
 mission, avec une phrase neutre et le lien de la source, que la tâche quotidienne reprend dans actu_<page> après vérification.
@@ -334,6 +336,107 @@ def agenda(reunions, de, a):
     return [{'d': d, 'o': jours[d]} for d in sorted(jours)]
 
 
+# Grandes lois : chaque loi promulguée depuis juin 2012 (14e législature, début des données ouvertes de l'Assemblée)
+# qui a eu un scrutin public solennel à l'Assemblée, ou a été adoptée par l'article 49, alinéa 3 (sans vote), ou est un
+# budget (loi de finances de l'année ou rectificative, loi de financement de la sécurité sociale). Rattachée à une mission
+# par la commission de l'Assemblée saisie au fond.
+REPO = 'https://data.assemblee-nationale.fr/static/openData/repository/'
+LEGIS = {
+    14: (REPO + '14/loi/dossiers_legislatifs/Dossiers_Legislatifs_XIV.json.zip', REPO + '14/loi/scrutins/Scrutins_XIV.json.zip'),
+    15: (REPO + '15/loi/dossiers_legislatifs/Dossiers_Legislatifs_XV.json.zip', REPO + '15/loi/scrutins/Scrutins_XV.json.zip'),
+    16: (REPO + '16/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip', REPO + '16/loi/scrutins/Scrutins.json.zip'),
+    17: (SRC['dossiers'], SRC['scrutins']),
+}
+ORGANES_HIST = REPO + '17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip'
+COMMISSIONS = [  # (mots du nom de la commission, pages de mission)
+    ('lois constitutionnelles', ['securite']), ('finances', ['finances']), ('affaires sociales', ['sante', 'vie']),
+    ('défense', ['defense']), ('affaires culturelles', ['education']),
+]
+BUDGETS = {'3': 'loi de finances de l\'année', '21': 'loi de finances rectificative', '4': 'loi de financement de la sécurité sociale'}
+
+
+def objets_zip(url):
+    """Dossiers ou scrutins d'une archive, quel que soit son format (un fichier par objet, ou un seul fichier pour la 14e)."""
+    for j in lire_zip(url):
+        if 'export' in j:
+            for d in liste(j['export']['dossiersLegislatifs']['dossier']):
+                yield d
+        elif 'scrutins' in j:
+            for x in liste(j['scrutins']['scrutin']):
+                yield {'scrutin': x}
+        else:
+            yield j
+
+
+def commissions():
+    """{organe: (nom court, pages)} pour les commissions permanentes de toutes les législatures."""
+    out = {}
+    for j in lire_zip(ORGANES_HIST, 'json/organe/'):
+        o = j.get('organe') or {}
+        if o.get('codeType') != 'COMPER':
+            continue
+        nom = o.get('libelle') or ''
+        for mots, pages in COMMISSIONS:
+            if mots in nom.lower():
+                out[o['uid']] = (o.get('libelleAbrege') or nom, pages)
+                break
+        else:
+            out[o['uid']] = (o.get('libelleAbrege') or nom, [])
+    return out
+
+
+def grandes_lois(legs, coms):
+    out = []
+    for leg in legs:
+        url_dos, url_scr = LEGIS[leg]
+        sps = {}
+        for s in objets_zip(url_scr):
+            s = s['scrutin']
+            if s['typeVote']['codeTypeVote'] == 'SPS':
+                d = s['syntheseVote']['decompte']
+                sps[s['uid']] = {'n': int(s['numero']), 'd': s['dateScrutin'], 'p': nb(d.get('pour')), 'c': nb(d.get('contre')), 's': s['sort']['code']}
+        for j in objets_zip(url_dos):
+            d = j.get('dossierParlementaire')
+            if not d:
+                continue
+            actes, pile = [], [d.get('actesLegislatifs')]
+            while pile:
+                a = pile.pop()
+                if isinstance(a, list):
+                    pile.extend(a)
+                elif isinstance(a, dict):
+                    actes.append(a); pile.extend(v for v in a.values() if isinstance(v, (dict, list)))
+            prom = [a for a in actes if a.get('codeActe') == 'PROM-PUB' and a.get('codeLoi')]
+            if not prom:
+                continue
+            code = (d.get('procedureParlementaire') or {}).get('code')
+            votes = [sps[v] for a in actes if (a.get('codeActe') or '').startswith('AN') for v in [((a.get('voteRefs') or {}).get('voteRef'))] if isinstance(v, str) and v in sps]
+            for a in actes:
+                if (a.get('codeActe') or '').startswith('AN') and isinstance((a.get('voteRefs') or {}).get('voteRef'), list):
+                    votes += [sps[v] for v in a['voteRefs']['voteRef'] if v in sps]
+            b493 = any((a.get('codeActe') or '').startswith('AN') and '49' in ((a.get('statutConclusion') or {}).get('libelle') or '') for a in actes)
+            motif = 'budget' if code in BUDGETS else 'sol' if votes else '493' if b493 else None
+            if not motif:
+                continue
+            fond = [a.get('organeRef') for a in actes if (a.get('codeActe') or '').startswith('AN') and a.get('codeActe', '').endswith('COM-FOND-SAISIE')]
+            com = coms.get(fond[0]) if fond else None
+            for pr in prom:
+                jo = pr.get('infoJO') or {}
+                e = {'d': jour(pr['dateActe']), 'code': pr['codeLoi'], 't': (pr.get('titreLoi') or d['titreDossier']['titre']).strip(),
+                     'jo': jour(jo.get('dateJO')), 'dos': d['uid'], 'leg': leg, 'motif': motif, 'pg': com[1] if com else [], 'com': com[0] if com else ''}
+                if b493:
+                    e['a493'] = True
+                if votes:
+                    v = sorted(votes, key=lambda x: x['d'])[-1]
+                    e['sc'] = v
+                out.append(e)
+    vus, res = set(), []
+    for e in sorted(out, key=lambda e: e['d'], reverse=True):
+        if e['code'] not in vus:
+            vus.add(e['code']); res.append(e)
+    return res
+
+
 def construire(auj):
     scr = [s for s in lire_zip(SRC['scrutins'])]
     gp = groupes(lire_zip(SRC['organes'], 'json/organe/'))
@@ -368,7 +471,18 @@ def construire(auj):
         'agenda': {'source': 'Assemblée nationale, données ouvertes : agenda (ordre du jour de la séance publique)', 'url': SRC['agenda'], 'date': auj.isoformat()},
         'groupes': {'source': 'Assemblée nationale, données ouvertes : organes (groupes politiques)', 'url': SRC['organes'], 'date': auj.isoformat()},
     }
-    return {'maj': auj.isoformat(), 'GROUPES': G, 'VOTES': V + VL, 'LOIS': L, 'AGENDA': A, 'FRISE': frise, 'P': P}
+    # Grandes lois : la 17e législature à chaque passage ; les législatures closes avec --historique, sinon gardées.
+    coms = commissions()
+    legs = [14, 15, 16, 17] if '--historique' in sys.argv else [17]
+    GL = grandes_lois(legs, coms)
+    if legs == [17]:
+        avant = ((json.load(open(os.path.join(ROOT, 'data.json'), encoding='utf-8')).get('series') or {}).get('politique') or {}).get('GRANDES') or []
+        GL = sorted(GL + [e for e in avant if e.get('leg', 17) < 17], key=lambda e: e['d'], reverse=True)
+    # Certains titres reprennent l'intitulé complet (« LOI n° 2021-160 du 15 février 2021 prorogeant… ») : on garde l'objet.
+    for e in GL:
+        e['t'] = re.sub(r'^LOI (organique )?n°\s*\S+ du \d{1,2}(er)? \S+ \d{4}\s*', '', e['t'], flags=re.I).strip()
+    P['grandes'] = {'source': 'Assemblée nationale, données ouvertes : dossiers législatifs et scrutins des 14e à 17e législatures (depuis juin 2012)', 'url': REPO, 'date': auj.isoformat()}
+    return {'maj': auj.isoformat(), 'GROUPES': G, 'VOTES': V + VL, 'LOIS': L, 'AGENDA': A, 'FRISE': frise, 'GRANDES': GL, 'P': P}
 
 
 def verifier_frise():

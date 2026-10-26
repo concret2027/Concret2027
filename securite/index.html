@@ -297,6 +297,20 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .agenda li { display: grid; grid-template-columns: 4.5rem 1fr; gap: 12px; align-items: baseline; }
 .agenda .d { font-family: var(--serif); font-size: 21px; font-variant-numeric: tabular-nums; }
 .agenda .d small { display: block; font-family: var(--sans); font-size: 11px; color: var(--muted); }
+.gl-gov { border-top: 1px solid var(--line); }
+.gl-gov > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 0; min-height: 40px; }
+.gl-gov > summary::-webkit-details-marker { display: none; }
+.gl-gov > summary b { font-size: 15px; }
+.gl-gov > summary span span { font-size: 13px; color: var(--muted); }
+.gl-govs { display: grid; gap: 0; }
+.gl-gov > summary .gl-n { font-weight: 700; color: var(--fr); white-space: nowrap; }
+.gl-gov > summary .gl-n::after { content: " ▾"; } .gl-gov[open] > summary .gl-n::after { content: " ▴"; }
+.gl-gov.vide > summary { cursor: default; } .gl-gov.vide > summary .gl-n { color: var(--muted); font-weight: 500; } .gl-gov.vide > summary .gl-n::after { content: ""; }
+.gl-liste { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 10px; }
+.gl-liste li { font-size: 14px; line-height: 1.4; }
+.gl-liste li b { font-weight: 600; }
+.gl-liste .m { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.gl-liste .m a { color: inherit; }
 .glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 12px 24px; margin: 0; }
 .glossary dt { font-weight: 600; font-size: 14px; }
 .glossary dd { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
@@ -389,7 +403,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><h1>Sécurité et justice</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#actualite">Actualité</a><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#annees">Année par année</a><a href="#quiz">Question</a><a href="#mots">Les mots</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#actualite">Actualité</a><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#annees">Année par année</a><a href="#quiz">Question</a><a href="#lois">Les grandes lois</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
 
@@ -500,6 +514,11 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="answer" id="quiz-a" hidden></p>
   </section>
 
+  <details class="acc" id="lois">
+    <summary><span class="acc-h">Les grandes lois</span><span class="acc-t" id="teaser-lois">Ce que chaque gouvernement a fait voter depuis 2012</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card" id="lois-body"></div>
+  </details>
+
   <details class="acc" id="mots">
     <summary><span class="acc-h">Les mots pour suivre</span><span class="acc-t">Les termes techniques de la page, expliqués en une phrase</span><span class="acc-cta"></span></summary>
     <div class="acc-body card">
@@ -534,6 +553,40 @@ footer p { margin: 0; } footer a { color: inherit; }
 function main(FEED) {
   // Toutes les données chiffrées viennent de data.json ; les règles de notation de commun/notes.js.
   var SER = FEED.series.securite, C = SER.C, AFF = SER.AFF, POURQUOI = ConcretNotes.POURQUOI, SAN = ConcretNotes.securite(SER), THEMES = SAN.THEMES;
+  // Les grandes lois de la mission (outils/parlement.py) : par gouvernement depuis juin 2012, sans note.
+  (function () {
+    var PO = (FEED.series || {}).politique, box = document.getElementById('lois-body'); if (!PO || !PO.GRANDES || !box) { var dl = document.getElementById('lois'); if (dl) dl.hidden = true; return; }
+    var MISSION = 'securite', MO = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'], MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+    var esc = function (t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); };
+    var dl = function (d) { return (+d.slice(8) === 1 ? '1er' : +d.slice(8)) + ' ' + MOIS[+d.slice(5, 7) - 1] + ' ' + d.slice(0, 4); };
+    var dc = function (d) { return MO[+d.slice(5, 7) - 1] + ' ' + d.slice(0, 4); };
+    var nf = function (v) { return new Intl.NumberFormat('fr-FR').format(v); };
+    // Gouvernements : de la nomination d'un Premier ministre (frise de la page La vie politique) à celle du suivant.
+    var N = PO.FRISE.filter(function (e) { return e.k === 'gouvernement'; }).map(function (e) { return { d: e.d, n: e.t.replace(/ nommée? Premi.*$/, '') }; });
+    var G = [];
+    N.forEach(function (e) { var g = G[G.length - 1]; if (!g || g.n !== e.n) G.push({ n: e.n, de: e.d }); });
+    G.forEach(function (g, i) { g.a = G[i + 1] ? G[i + 1].de : null; });
+    G = G.filter(function (g) { return !g.a || g.a > '2012-06-20'; });
+    var L = PO.GRANDES.filter(function (l) { return (l.pg || []).indexOf(MISSION) >= 0; });
+    var com = (L[0] || {}).com || 'Lois';
+    var MOTIF = { sol: 'vote solennel', '493': 'adoptée sans vote (article 49.3)', budget: 'budget' };
+    var h = '<p class="note">Une « grande loi » : une loi publiée au Journal officiel qui a eu un vote solennel à l\'Assemblée nationale (réservé par sa Conférence des présidents aux textes qu\'elle juge importants), ou a été adoptée par l\'article 49.3, ou est un budget. Ici, celles examinées par la commission des ' + esc(com.replace(/^Commission des /i, '')) + ' de l\'Assemblée, qui traite de la sécurité et de la justice, mais aussi des institutions, des élections et des collectivités. Pas de note : un nombre de lois n\'est ni bon ni mauvais.</p>';
+    h += '<div class="gl-govs">';
+    G.slice().reverse().forEach(function (g) {
+      var mine = L.filter(function (l) { return l.d >= g.de && (!g.a || l.d < g.a); });
+      var per = g.a ? dc(g.de) + ' à ' + dc(g.a) : 'depuis ' + dc(g.de);
+      h += '<details class="gl-gov' + (mine.length ? '' : ' vide') + '"' + (mine.length ? '' : ' data-vide') + '><summary><span><b>' + esc(g.n) + '</b> <span>· ' + per + '</span></span><span class="gl-n">' + (mine.length ? mine.length + ' loi' + (mine.length > 1 ? 's' : '') : 'aucune') + '</span></summary>' +
+        (mine.length ? '<ul class="gl-liste">' + mine.map(function (l) {
+          var v = l.sc, m = l.motif === 'sol' && v ? 'vote solennel du ' + dl(v.d) + ' : ' + nf(v.p) + ' pour, ' + nf(v.c) + ' contre' : MOTIF[l.motif];
+          return '<li><b>Loi n° ' + esc(l.code) + '</b> du ' + dl(l.d) + ' ' + esc(l.t) + '<div class="m"><span>' + esc(m) + '</span>' + (v ? '<a href="https://www.assemblee-nationale.fr/dyn/' + l.leg + '/scrutins/' + v.n + '">le scrutin</a>' : '') + '<a href="https://www.assemblee-nationale.fr/dyn/' + l.leg + '/dossiers/' + esc(l.dos) + '">le dossier</a></div></li>';
+        }).join('') + '</ul>' : '') + '</details>';
+    });
+    h += '</div>';
+    h += '<p class="note">Chaque loi est comptée pour le gouvernement en place le jour de sa promulgation. Avant juin 2012 (Jacques Chirac, Nicolas Sarkozy) : les données ouvertes de l\'Assemblée nationale ne couvrent pas encore ces années. Source : <a href="' + esc(PO.P.grandes.url) + '">' + esc(PO.P.grandes.source) + '</a>.</p>';
+    box.innerHTML = h;
+    Array.prototype.forEach.call(box.querySelectorAll('details[data-vide] > summary'), function (s) { s.addEventListener('click', function (e) { e.preventDefault(); }); });
+    var t = document.getElementById('teaser-lois'); if (t) t.textContent = L.length + ' lois depuis 2012, gouvernement par gouvernement';
+  })();
   var fmt = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }).format(v); };
   var nfmt = function (n) { return fmt(Math.round(n * 10) / 10, 1); };
   var sg = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d == null ? 1 : d); };
