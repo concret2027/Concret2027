@@ -126,6 +126,31 @@ if (S.education) {
     } catch (e) { alertes.push('silence électoral : comparaison avec la version publiée impossible (' + e.message.split('\n')[0] + ')'); }
   }
 })();
+// La vie politique (outils/parlement.py) : votes, lois, agenda et frise, chacun avec sa source ; jamais de saisie à la main.
+if (S.politique) {
+  var PO = S.politique, jo = /^\d{4}-\d{2}-\d{2}$/;
+  ['GROUPES', 'VOTES', 'LOIS', 'AGENDA', 'FRISE'].forEach(function (k) { if (!Array.isArray(PO[k])) err('politique.' + k + ' manquant (relancer python3 outils/parlement.py --ecrire)'); });
+  (PO.VOTES || []).forEach(function (v) {
+    if (!jo.test(v.d) || v.d > today) err('politique.VOTES scrutin ' + v.n + ' : date invalide ' + v.d);
+    if (['adopté', 'rejeté'].indexOf(v.s) < 0) err('politique.VOTES scrutin ' + v.n + ' : sort inconnu « ' + v.s + ' »');
+    if (!v.g || Object.keys(v.g).length < 5) err('politique.VOTES scrutin ' + v.n + ' : position des groupes absente');
+    if (v.p + v.c + v.a > 577) err('politique.VOTES scrutin ' + v.n + ' : plus de 577 voix');
+  });
+  (PO.LOIS || []).forEach(function (l) { if (!/^\d{4}-\d+$/.test(l.code || '') || !jo.test(l.d) || l.d > today) err('politique.LOIS : loi mal formée ' + JSON.stringify(l).slice(0, 80)); });
+  (PO.FRISE || []).forEach(function (e) { if (!jo.test(e.d) || !e.src || !/^https:\/\//.test(e.url || '')) err('politique.FRISE ' + e.d + ' « ' + e.t + ' » : date, source ou lien manquant'); });
+  if (PO.maj && (Date.parse(today) - Date.parse(PO.maj)) / 864e5 > 3) alertes.push('La vie politique : données de l\'Assemblée lues le ' + PO.maj + ', plus de trois jours : relancer python3 outils/parlement.py --ecrire');
+  (PO.GRANDES || []).forEach(function (l) { if (!/^\d{4}-\d+$/.test(l.code || '') || !jo.test(l.d) || ['sol', '493', 'cc', 'budget'].indexOf(l.motif) < 0) err('politique.GRANDES : loi mal formée ' + JSON.stringify(l).slice(0, 80)); });
+}
+// L'évolution démographique (outils/demographie.py, Eurostat et Insee) : plages plausibles ; page sans note.
+if (S.demographie) {
+  var PQ = S.demographie, PR = { nes: [0, 40], nes_hue: [0, 40], fec: [0.8, 3], nat: [4, 20], solnat: [-10, 10], solmig: [-20, 40], p65: [5, 40], med: [25, 60] }, PM = { titres: [0, 40], asile: [0, 30], irreg: [0, 30], oqtf: [0, 20], departs: [0, 10] };
+  Object.keys(PR).forEach(function (k) { var c = (PQ.C || {})[k]; if (!c) return err('demographie.C.' + k + ' manquant (relancer python3 outils/demographie.py --ecrire)'); ['fr', 'ue', 'de', 'es'].forEach(function (w) { if ((c[w] || []).length !== c.y.length) err('demographie.C.' + k + '.' + w + ' : longueur différente de y'); else serie('demographie.C.' + k + '.' + w, c[w], PR[k][0], PR[k][1]); }); });
+  Object.keys(PM).forEach(function (k) { var c = (PQ.M || {})[k]; if (!c) return err('demographie.M.' + k + ' manquant'); ['fr', 'ue', 'de', 'es'].forEach(function (w) { if ((c[w] || []).length !== c.y.length) err('demographie.M.' + k + '.' + w + ' : longueur différente de y'); else serie('demographie.M.' + k + '.' + w, c[w], PM[k][0], PM[k][1]); }); });
+  if (!PQ.MOIS || PQ.MOIS.m.length < 12) err('demographie.MOIS : naissances et décès du mois absents (relancer python3 outils/demographie.py --ecrire)'); else { serie('demographie.MOIS.nais', PQ.MOIS.nais, 20000, 90000); serie('demographie.MOIS.deces', PQ.MOIS.deces, 20000, 120000); }
+  ['nais', 'deces'].forEach(function (k) { serie('demographie.K.' + k, (PQ.K || {})[k] && PQ.K[k].fr, 300000, 1200000); });
+  if (!PQ.PYR || Math.abs(PQ.PYR.fr.H.concat(PQ.PYR.fr.F).reduce(function (a, b) { return a + b; }, 0) - 100) > 0.5) err('demographie.PYR : la pyramide des âges ne fait pas 100 %');
+  if (!(PQ.P || {}).irreguliers || !PQ.P.irreguliers.url) err('demographie.P.irreguliers : citation de la Cour des comptes sans source');
+}
 // Valeurs d'exemple (page en brouillon) : jamais publiées.
 Object.keys(S).forEach(function (pg) { if (S[pg] && S[pg].exemple) err('series.' + pg + ' contient des valeurs d\'exemple (brouillon) : à remplacer par des données sourcées avant publication'); });
 Object.keys(d.datasets || {}).forEach(function (k) { if ((d.datasets[k] || []).some(function (r) { return r.exemple; })) err('datasets.' + k + ' contient des lignes d\'exemple (brouillon)'); });

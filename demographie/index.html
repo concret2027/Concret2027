@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
+<link rel="apple-touch-icon" href="/donnees/icone/icone-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Concret">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)">
+<title>L'évolution démographique de la France · Concret</title>
+<meta name="description" content="Naissances et décès, âge de la population, personnes nées à l'étranger, titres de séjour et asile : la France à côté de l'Allemagne, de l'Espagne et de la moyenne de l'Union européenne. Chiffres d'Eurostat et de l'Insee, sans note.">
+<meta property="og:title" content="L'évolution démographique de la France · Concret">
+<meta property="og:description" content="Naissances, âges, migrations : la France face à ses voisins, chiffres d'Eurostat et de l'Insee, sans note.">
+<meta property="og:url" content="https://concret2027.fr/demographie/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://concret2027.fr/donnees/apercu/demographie.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="L'évolution démographique de la France sur Concret : naissances, décès et solde migratoire">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://concret2027.fr/donnees/apercu/demographie.png">
+<script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>html, body { margin: 0; }
+:root {
+  --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
+  --fr: #2f5bd3; --bad: #c43d3d; --ok: #1a7a43; --mid: #b0812a; --band: rgba(47, 91, 211, .06); --axis: #c9c9c2;
+  --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .16); --s-nv: rgba(98, 100, 109, .12);
+  --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a; --band: rgba(122, 156, 255, .09); --axis: #44464e;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .2); --s-nv: rgba(164, 166, 173, .14); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037;
+  --fr: #7a9cff; --bad: #ff7070; --ok: #4cc27f; --mid: #d9b25a; --band: rgba(122, 156, 255, .09); --axis: #44464e;
+  --s-good: rgba(76, 194, 127, .18); --s-bad: rgba(255, 112, 112, .18); --s-mid: rgba(217, 178, 90, .2); --s-nv: rgba(164, 166, 173, .14); color-scheme: dark; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-text-size-adjust: 100%; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.brand b { font-family: var(--serif); font-weight: 500; font-size: 22px; }
+.brand span { font-size: 12.5px; color: var(--muted); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.card h2 { font-size: 19px; font-weight: 600; line-height: 1.25; margin: 0; text-wrap: balance; }
+.eyebrow { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 4px; }
+.note { font-size: 12.5px; color: var(--muted); margin: 0; max-width: 92ch; }
+.note a, .src a { color: inherit; }
+h1 { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 0; text-wrap: balance; }
+.lead { margin: 0; font-size: 15.5px; max-width: 70ch; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+/* Menu du site et sommaire collant (mêmes règles que les autres pages) */
+.site { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 11; display: flex; flex-wrap: nowrap; align-items: baseline; gap: 16px; font-size: 14px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; margin: -16px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 10px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.site::-webkit-scrollbar { display: none; }
+@media (max-width: 520px) { .site { gap: 14px; } .site .lg { display: none; } .site a.logo { font-size: 18px; margin-right: 0; } }
+.site a { color: var(--muted); text-decoration: none; font-weight: 500; }
+.site a[aria-current="page"] { color: var(--fg); font-weight: 700; border-bottom: 2px solid var(--fr); }
+.site a.logo { font-family: var(--serif); font-size: 20px; color: var(--fg); font-weight: 500; margin-right: 6px; }
+.site a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.jump { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 44px)); z-index: 9; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.jump::-webkit-scrollbar { display: none; }
+.jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+.jump a.on { border-color: var(--fr); color: var(--fr); }
+.jump a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+section[id], div[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
+footer { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 8px; }
+footer p { margin: 0; } footer a { color: inherit; }
+.share { font: inherit; font-family: var(--sans); font-size: 12.5px; font-weight: 500; margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 2px; border: 0; background: none; color: var(--muted); cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.share::before { content: "↗"; }
+.sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: 16px; }
+.sheet-box { background: var(--panel); border-radius: 14px; padding: 14px; display: grid; gap: 10px; max-width: 420px; width: 100%; max-height: 100%; overflow: auto; }
+.sheet-box img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+.grp-t { font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.15; margin: 10px 0 -6px; }
+/* En bref : trois cases */
+.bref3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .bref3 { grid-template-columns: minmax(0, 1fr); } }
+.bcase { display: grid; gap: 6px; align-content: start; padding: 12px 14px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); color: var(--fg); text-decoration: none; min-width: 0; }
+.bcase:hover { border-color: var(--fr); }
+.bcase .lab { font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.bcase .t { font-size: 14.5px; line-height: 1.35; font-weight: 500; overflow-wrap: anywhere; }
+.bcase .d { font-size: 12.5px; color: var(--muted); }
+.visit { margin: 0; font-size: 14px; line-height: 1.45; padding: 8px 12px; border-left: 3px solid var(--fr); background: var(--panel); border-radius: 0 8px 8px 0; }
+.visit b { font-weight: 600; }
+
+:root { --us: #a2459a; --de: #6f7280; --ea: #b0812a; --es: #d0632a; --grid: #ececE6; --fam: #2f5bd3; --educ: #1f8a4c; --emp: #b0812a; --oth: #8a8d96; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --us: #d77fcf; --de: #a4a6b0; --ea: #d9b25a; --es: #f0905e; --grid: #2a2c32; --fam: #7a9cff; --educ: #4cc27f; --emp: #d9b25a; --oth: #a4a6ad; } }
+:root[data-theme="dark"] { --us: #d77fcf; --de: #a4a6b0; --ea: #d9b25a; --es: #f0905e; --grid: #2a2c32; --fam: #7a9cff; --educ: #4cc27f; --emp: #d9b25a; --oth: #a4a6ad; }
+.sansnote { margin: 0; font-size: 14px; padding: 8px 12px; border-left: 3px solid var(--mid); background: var(--s-mid); border-radius: 0 8px 8px 0; }
+.chiffres { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .chiffres { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.chiffre { display: grid; gap: 4px; align-content: start; padding: 12px 14px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); color: var(--fg); text-decoration: none; min-width: 0; }
+.chiffre:hover { border-color: var(--fr); }
+.chiffre .lab { font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.chiffre .n { font-family: var(--serif); font-size: 30px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.chiffre .n small { font-size: .5em; color: var(--muted); }
+.chiffre .t { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.theme { display: grid; gap: 14px; }
+.theme > h2 { font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.15; margin: 10px 0 0; }
+.theme > .intro { margin: -6px 0 0; font-size: 14.5px; max-width: 75ch; }
+.grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
+.card h3 { font-size: 16px; font-weight: 600; margin: 0; line-height: 1.3; }
+.card h3 small { font-weight: 500; color: var(--muted); font-size: 13px; }
+.chart { position: relative; min-width: 0; }
+.chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.chart svg.hov { touch-action: pan-y; cursor: crosshair; -webkit-user-select: none; user-select: none; }
+.chart text { fill: var(--muted); font-size: 11px; }
+.ctip { position: absolute; top: 2px; z-index: 6; pointer-events: none; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 12px; line-height: 1.4; box-shadow: 0 4px 14px rgba(0,0,0,.14); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ctip b { display: block; margin-bottom: 2px; font-weight: 700; }
+.ctip span { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+.ctip span em { font-style: normal; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+.ctip span em i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.ctip span strong { font-weight: 600; margin-left: 10px; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
+.key i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.key i.dash { background: repeating-linear-gradient(90deg, var(--ea) 0 5px, transparent 5px 8px) !important; }
+.key i.sq { width: 11px; height: 11px; border-radius: 3px; }
+.dernier { margin: 0; font-size: 14px; }
+.dernier b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.irr { border: 1.5px solid var(--fg); }
+.irr blockquote { margin: 0; padding: 10px 14px; border-left: 3px solid var(--line); font-family: var(--serif); font-size: 17px; line-height: 1.4; }
+details.def > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--fr); list-style: none; min-height: 32px; display: inline-flex; align-items: center; }
+details.def > summary::-webkit-details-marker { display: none; }
+details.def > summary::after { content: "\00a0▾"; } details.def[open] > summary::after { content: "\00a0▴"; }
+details.def > div { display: grid; gap: 8px; font-size: 13.5px; padding-top: 4px; }
+details.def p { margin: 0; }
+.retenir { margin: -4px 0 0; font-family: var(--serif); font-size: 19px; line-height: 1.35; max-width: 70ch; text-wrap: pretty; }
+.retenir b { font-weight: 500; color: var(--fr); }
+.retenir a { color: inherit; }
+details.plus { border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); }
+details.plus > summary { cursor: pointer; list-style: none; padding: 12px 16px; font-size: 14px; font-weight: 600; color: var(--fr); min-height: 44px; display: flex; align-items: center; }
+details.plus > summary::-webkit-details-marker { display: none; }
+details.plus > summary::after { content: "\00a0▾"; } details.plus[open] > summary::after { content: "\00a0▴"; }
+details.plus > .grille { padding: 0 12px 12px; }
+details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
+.grp-t { font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.15; margin: 10px 0 -6px; }
+.acc { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; }
+.acc > summary::-webkit-details-marker { display: none; }
+.acc-h { font-size: 17px; font-weight: 700; }
+.acc-t { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+.acc-t b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.acc-cta { justify-self: start; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--band); border: 1px solid var(--fr); border-radius: 999px; padding: 5px 12px; }
+.acc-cta::before { content: "Afficher ▾"; } .acc[open] > summary .acc-cta::before { content: "Masquer ▴"; }
+.acc[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+.acc-body { display: grid; gap: 14px; padding: 0 16px 16px; min-width: 0; }
+.actu { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.actu li { display: grid; grid-template-columns: 4.6rem minmax(0, 1fr); gap: 10px; font-size: 14px; line-height: 1.4; }
+.actu .d { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 2px; }
+.actu a { color: var(--muted); font-size: 12px; }
+.mois-chiffres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+</style>
+</head>
+<body data-sources="Sources : Eurostat et Insee (démographie et migrations), Cour des comptes (détail sous chaque courbe).">
+<div class="wrap">
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/" aria-current="page">Démographie</a></nav>
+  <div class="brand"><b>Démographie</b><span id="maj"></span></div>
+
+  <section class="card" id="reponse" data-partage="non" aria-labelledby="titre">
+    <h1 id="titre">L'évolution démographique de la France</h1>
+    <p class="lead">Combien de bébés naissent, combien de personnes meurent, quel âge a la population, combien de personnes arrivent et partent : la France à côté de l'Allemagne, de l'Espagne et de la moyenne de l'Union européenne.</p>
+    <div class="chiffres" id="chiffres"></div>
+    <p class="sansnote"><b>Pas de note sur cette page</b> : les chiffres sont montrés sans dire s'ils vont dans le bon ou le mauvais sens. La page n'entre pas dans le classement des présidents.</p>
+  </section>
+
+  <nav class="jump" aria-label="Aller à">
+    <a href="#actualite">Actualité</a><a href="#naissances">Naissances</a><a href="#ages">Âges</a><a href="#nes">Nés à l'étranger</a><a href="#titres">Titres de séjour</a><a href="#asile">Asile</a><a href="#lois">Les lois</a><a href="#regle">Sources</a>
+  </nav>
+
+  <h2 class="grp-t" id="actualite">L'actualité</h2>
+  <details class="acc" id="acc-mois">
+    <summary><span class="acc-h">Les naissances du mois</span><span class="acc-t" id="teaser-mois">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body">
+      <div class="mois-chiffres" id="mois-chiffres"></div>
+      <div class="key" id="k-mois"></div><div class="chart" id="ch-mois"></div>
+      <p class="note" id="n-mois"></p>
+    </div>
+  </details>
+  <details class="acc" id="acc-actu">
+    <summary><span class="acc-h">L'actualité de la démographie</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-list"></ul></div>
+  </details>
+
+  <div class="theme" id="naissances">
+    <h2>Naissances et décès</h2>
+    <p class="retenir" id="naissances-t"></p>
+    <section class="card"><h3>Naissances et décès en France <small>· nombre par an</small></h3><div class="key" id="k-nd"></div><div class="chart" id="ch-nd"></div><p class="note" id="n-nd"></p></section>
+    <details class="plus" id="plus-naissances"><summary>Voir 3 autres courbes : enfants par femme, naissances et solde naturel comparés</summary><div class="grille">
+      <section class="card"><h3>Enfants par femme</h3><div class="key"></div><div class="chart" id="ch-fec"></div><p class="note" id="n-fec"></p></section>
+      <section class="card"><h3>Naissances <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-nat"></div><p class="note" id="n-nat"></p></section>
+      <section class="card"><h3>Solde naturel (naissances moins décès) <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-solnat"></div><p class="note" id="n-solnat"></p></section>
+    </div></details>
+  </div>
+
+  <div class="theme" id="ages">
+    <h2>L'âge de la population</h2>
+    <p class="retenir" id="ages-t"></p>
+    <section class="card"><h3 id="pyr-t">Pyramide des âges</h3><div class="key" id="k-pyr"></div><div class="chart" id="ch-pyr"></div><p class="note" id="n-pyr"></p></section>
+    <details class="plus" id="plus-ages"><summary>Voir 2 autres courbes : part des 65 ans et plus, âge médian</summary><div class="grille">
+      <section class="card"><h3>Part des 65 ans et plus <small>· % de la population</small></h3><div class="key"></div><div class="chart" id="ch-p65"></div><p class="note" id="n-p65"></p></section>
+      <section class="card"><h3>Âge médian <small>· ans</small></h3><div class="key"></div><div class="chart" id="ch-med"></div><p class="note" id="n-med"></p></section>
+    </div></details>
+  </div>
+
+  <div class="theme" id="nes">
+    <h2>Les personnes nées à l'étranger</h2>
+    <p class="retenir" id="nes-t"></p>
+    <section class="card"><h3>Personnes nées à l'étranger <small>· % de la population</small></h3><div class="key"></div><div class="chart" id="ch-nes"></div><p class="note" id="n-nes"></p></section>
+    <details class="plus" id="plus-nes"><summary>Voir 2 autres courbes : nées hors de l'UE, solde migratoire</summary><div class="grille">
+      <section class="card"><h3>Personnes nées hors de l'UE <small>· % de la population</small></h3><div class="key"></div><div class="chart" id="ch-neshue"></div><p class="note" id="n-neshue"></p></section>
+      <section class="card"><h3>Solde migratoire (arrivées moins départs) <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-solmig"></div><p class="note" id="n-solmig"></p></section>
+    </div></details>
+    <p class="note">Née à l'étranger : toute personne née hors du pays où elle vit, quelle que soit sa nationalité. En France, cela compte aussi les Français nés à l'étranger ; l'Insee, qui compte les « immigrés » (personnes nées étrangères à l'étranger), ne les inclut pas, d'où un chiffre plus bas. La même définition est appliquée à tous les pays.</p>
+  </div>
+
+  <div class="theme" id="titres">
+    <h2>Les premiers titres de séjour</h2>
+    <p class="retenir" id="titres-t"></p>
+    <section class="card"><h3>Premiers titres de séjour en France, par motif <small>· nombre par an</small></h3><div class="key" id="k-mot"></div><div class="chart" id="ch-mot"></div><p class="note" id="n-mot"></p></section>
+    <details class="plus" id="plus-titres"><summary>Voir la comparaison avec les voisins : titres pour 1 000 habitants</summary><div class="grille">
+      <section class="card"><h3>Premiers titres de séjour <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-titres"></div><p class="note" id="n-titres"></p></section>
+    </div></details>
+  </div>
+
+  <div class="theme" id="asile">
+    <h2>Asile et séjour irrégulier</h2>
+    <p class="retenir" id="asile-t"></p>
+    <section class="card"><h3>Premières demandes d'asile <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-asile"></div><p class="note" id="n-asile"></p></section>
+    <section class="card irr" id="irr">
+      <h3>Combien de personnes en situation irrégulière ?</h3>
+      <p class="dernier">Personne ne les compte directement : leur nombre est seulement estimé. Les chiffres ci-dessous comptent des procédures (personnes contrôlées, obligations de quitter le territoire, départs), pas les personnes présentes.</p>
+      <blockquote id="irr-q"></blockquote>
+      <p class="note" id="irr-src"></p>
+    </section>
+    <details class="plus" id="plus-asile"><summary>Voir 3 autres courbes : situation irrégulière, obligations de quitter le territoire, départs</summary><div class="grille">
+      <section class="card"><h3>Étrangers trouvés en situation irrégulière <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-irreg"></div><p class="note" id="n-irreg"></p></section>
+      <section class="card"><h3>Obligations de quitter le territoire et départs, en France <small>· nombre par an</small></h3><div class="key" id="k-oq"></div><div class="chart" id="ch-oq"></div><p class="note" id="n-oq"></p></section>
+      <section class="card"><h3>Obligations de quitter le territoire <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-oqtf"></div><p class="note" id="n-oqtf"></p></section>
+    </div></details>
+  </div>
+
+  <details class="acc" id="lois">
+    <summary><span class="acc-h">Les grandes lois</span><span class="acc-t" data-lois-teaser>Immigration, asile, nationalité, natalité : ce que chaque gouvernement a fait voter depuis 2012</span><span class="acc-cta"></span></summary>
+    <div class="acc-body"><div data-lois="demographie"></div></div>
+  </details>
+
+  <div class="renvoi">
+    <a href="/securite/"><b>Sécurité et justice →</b><span>La part des obligations de quitter le territoire suivies d'un départ, notée face à la moyenne de l'UE</span></a>
+    <a href="/vie/"><b>Vie des Français →</b><span>Pouvoir d'achat, pauvreté, logement, travail, moral</span></a>
+  </div>
+
+  <details class="how" id="regle">
+    <summary>Définitions et sources</summary>
+    <div>
+      <ul>
+        <li><b>Pourquoi pas de note</b> : sur les autres pages, chaque indicateur a un sens (une dette qui baisse, une espérance de vie qui monte). Ici, les chiffres décrivent la population et les migrations : la page les montre, la France à côté de ses voisins, sans les classer.</li>
+        <li><b>Enfants par femme</b> (indicateur conjoncturel de fécondité) : le nombre d'enfants qu'aurait une femme tout au long de sa vie si les taux de fécondité de l'année restaient les mêmes.</li>
+        <li><b>Solde naturel</b> : naissances moins décès. <b>Solde migratoire</b> : arrivées moins départs, toutes nationalités (Français compris) ; Eurostat le calcule par différence (évolution de la population moins solde naturel), ce qui comprend aussi les ajustements statistiques.</li>
+        <li><b>Personnes nées à l'étranger</b> : nées hors du pays où elles vivent, quelle que soit leur nationalité (Eurostat). États-Unis : nombre publié par l'OCDE, rapporté par Concret à la population publiée par la Banque mondiale ; affiché comme repère.</li>
+        <li><b>Premiers titres de séjour</b> : titres d'au moins trois mois délivrés pour la première fois à des personnes de pays hors de l'UE (motif famille, études, travail ; « autres » comprend la protection accordée aux réfugiés). <b>Premières demandes d'asile</b> : personnes qui demandent l'asile pour la première fois dans le pays.</li>
+        <li><b>Situation irrégulière</b> : personnes de pays hors de l'UE contrôlées et trouvées sans droit au séjour ; <b>obligations de quitter le territoire</b> : décisions prises dans l'année ; <b>départs</b> : personnes parties à la suite d'une telle décision. Ce sont des procédures de l'année, pas des personnes présentes.</li>
+        <li><b>Pour 1 000 habitants</b> : pour comparer des pays de tailles différentes. Pour les naissances et les soldes, taux publiés par Eurostat ; pour les migrations, calcul de Concret avec la population moyenne de l'année publiée par Eurostat.</li>
+        <li><b>Mise à jour</b> : par l'outil de Concret qui lit Eurostat (python3 outils/population.py) ; les chiffres provisoires et les changements de méthode signalés par Eurostat sont écrits sous chaque courbe.</li>
+      </ul>
+      <p class="note" id="sources"></p>
+    </div>
+  </details>
+
+  <footer><p>concret2027.fr · Page indépendante de tout parti. Données : Eurostat, Insee, Cour des comptes, Assemblée nationale. <a href="/mentions-legales/">Mentions légales</a></p></footer>
+</div>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); };
+  var fmt = function (v, d) { return v == null ? '–' : new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }).format(v); };
+  var nf = function (v) { return new Intl.NumberFormat('fr-FR').format(v); };
+  var signe = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d); };
+  var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  var dLong = function (s) { var d = new Date(s + 'T12:00:00'); return (d.getDate() === 1 ? '1er' : d.getDate()) + ' ' + MOIS[d.getMonth()] + ' ' + d.getFullYear(); };
+  var NOMS = { fr: ['France', 'var(--fr)'], ue: ['Union européenne', 'var(--ea)'], de: ['Allemagne', 'var(--de)'], es: ['Espagne', 'var(--es)'], us: ['États-Unis', 'var(--us)'] };
+  var QUI = { fr: 'la France', ue: 'la moyenne de l\'UE', de: 'l\'Allemagne', es: 'l\'Espagne', 'les deux': 'la France et la moyenne de l\'UE' };
+  var maj1 = function (t) { return t.charAt(0).toUpperCase() + t.slice(1); };
+  var dernier = function (c, w) { for (var i = c.y.length - 1; i >= 0; i--) if (c[w] && c[w][i] != null) return { y: c.y[i], v: c[w][i], i: i }; return null; };
+
+  // ===== Courbes (même dessin que les autres pages) =====
+  function hover(box, svg, H, m, pts) {
+    if (!pts.length) return;
+    svg.classed('hov', true);
+    var g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
+    var vl = g.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--fg)').attr('stroke-opacity', .35);
+    var dots = g.append('g');
+    svg.append('rect').attr('width', svg.attr('viewBox').split(' ')[2]).attr('height', H).attr('fill', 'transparent');
+    var tip = document.createElement('div'); tip.className = 'ctip'; tip.hidden = true; box.appendChild(tip);
+    var node = svg.node(), VW = +svg.attr('viewBox').split(' ')[2], cur = -1;
+    function show(ev) {
+      var r = node.getBoundingClientRect(); if (!r.width) return;
+      var sx = (ev.clientX - r.left) * VW / r.width, best = 0;
+      pts.forEach(function (p, i) { if (Math.abs(p.px - sx) < Math.abs(pts[best].px - sx)) best = i; });
+      var p = pts[best]; g.style('display', null); vl.attr('x1', p.px).attr('x2', p.px);
+      if (best !== cur) {
+        cur = best; dots.selectAll('*').remove();
+        p.rows.forEach(function (rw) { if (rw.py != null) dots.append('circle').attr('cx', p.px).attr('cy', rw.py).attr('r', 3.6).attr('fill', rw.c).attr('stroke', 'var(--panel)').attr('stroke-width', 1.5); });
+        tip.innerHTML = '<b>' + esc(p.t) + '</b>' + p.rows.map(function (rw) { return '<span><em><i style="background:' + rw.c + '"></i>' + esc(rw.n) + '</em><strong>' + esc(rw.s) + '</strong></span>'; }).join('');
+      }
+      tip.hidden = false;
+      var cx = p.px * r.width / VW, tw = tip.offsetWidth, bw = box.clientWidth;
+      tip.style.left = Math.max(0, Math.min(bw - tw, cx + 12 + tw <= bw ? cx + 12 : cx - 12 - tw)) + 'px';
+    }
+    function hide() { g.style('display', 'none'); tip.hidden = true; cur = -1; }
+    node.addEventListener('pointerdown', show); node.addEventListener('pointermove', show);
+    node.addEventListener('pointerleave', function (ev) { if (ev.pointerType === 'mouse') hide(); });
+    document.addEventListener('pointerdown', function (ev) { if (!node.contains(ev.target)) hide(); });
+  }
+  function axes(svg, x, y, W, H, m, xt, small, yfmt, xfmt) {
+    y.ticks(small ? 4 : 5).forEach(function (t) {
+      svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', t === 0 ? 'var(--axis)' : 'var(--grid)');
+      svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(yfmt ? yfmt(t) : t.toLocaleString('fr-FR'));
+    });
+    (small ? xt.filter(function (_, i) { return i % 2 === 0; }) : xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(xfmt ? xfmt(t) : t); });
+  }
+  var ticks = function (a, b) { var s = Math.max(1, Math.ceil((b - a) / 6)), t = []; for (var y = a; y <= b; y += s) t.push(y); return t; };
+  function lineChart(id, series, o) {
+    var box = $(id); box.textContent = '';
+    var W = Math.max(300, box.clientWidth), small = W < 520, H = small ? 220 : 250, m = { t: 10, r: o.r || 46, b: 24, l: o.l || 40 };
+    var all = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null) all.push(d.v); }); });
+    var lo = d3.min(all), hi = d3.max(all), pad = (hi - lo) * .1 || 1;
+    var x = d3.scaleLinear().domain(o.x).range([m.l, W - m.r]);
+    var y = d3.scaleLinear().domain([o.min != null ? o.min : lo - pad, hi + pad]).nice().range([H - m.b, m.t]);
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', o.label);
+    axes(svg, x, y, W, H, m, o.xt, small, o.yfmt, o.xfmt);
+    var line = d3.line().defined(function (d) { return d.v != null; }).x(function (d) { return x(d.x); }).y(function (d) { return y(d.v); });
+    var ends = [];
+    series.forEach(function (s) {
+      svg.append('path').datum(s.data).attr('d', line).attr('fill', 'none').attr('stroke', s.c).attr('stroke-width', s.main ? 2.6 : 1.8).attr('stroke-dasharray', s.dash ? '5 4' : null);
+      var l = s.data.filter(function (d) { return d.v != null; }).pop(); if (!l) return;
+      svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
+      ends.push({ y: y(l.v), t: o.efmt ? o.efmt(l.v) : fmt(l.v, o.dec), c: s.c, x: x(l.x), main: s.main });
+    });
+    ends.sort(function (a, b) { return a.y - b.y; });
+    for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+    for (var j = ends.length - 1; j >= 0; j--) { var lim = j === ends.length - 1 ? H - 6 : ends[j + 1].y - 13; if (ends[j].y > lim) ends[j].y = lim; }
+    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+    var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); }); xs.sort(function (a, b) { return a - b; });
+    hover(box, svg, H, m, xs.map(function (xv) {
+      return { px: x(xv), t: o.xlab ? o.xlab(xv) : String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n, py: y(d.v), s: (o.efmt ? o.efmt(d.v) : fmt(d.v, o.dec)) } : null; }).filter(Boolean) };
+    }));
+  }
+  // Une série France / UE / Allemagne / Espagne, avec la légende au-dessus et les phrases dessous.
+  function serie(id, c, noteId) {
+    var S = [];
+    ['us', 'es', 'de', 'ue', 'fr'].forEach(function (w) { if (c[w] && c[w].some(function (v) { return v != null; })) S.push({ c: NOMS[w][1], n: NOMS[w][0], dash: w === 'ue', main: w === 'fr', data: c.y.map(function (yy, i) { return { x: yy, v: c[w][i] }; }) }); });
+    var key = $(id).previousElementSibling;
+    if (key && key.classList.contains('key')) key.innerHTML = S.slice().reverse().map(function (s) { return '<span><i' + (s.dash ? ' class="dash"' : ' style="background:' + s.c + '"') + '></i>' + s.n + '</span>'; }).join('');
+    var x0 = c.y[0], x1 = c.y[c.y.length - 1];
+    lineChart(id, S, { x: [x0 - .5, x1 + .5], xt: ticks(x0, x1), dec: c.dec, label: c.l });
+    var n = [];
+    var dFr = dernier(c, 'fr'), dUe = dernier(c, 'ue');
+    if (dFr) n.push('En ' + dFr.y + ' : ' + fmt(dFr.v, c.dec) + ' en France' + (dUe && dUe.y === dFr.y ? ', ' + fmt(dUe.v, c.dec) + ' en moyenne dans l\'UE' : '') + '.');
+    ['de', 'es', 'ue', 'us'].forEach(function (w) { var d = dernier(c, w); if (d && dFr && d.y < dFr.y) n.push((w === 'ue' ? 'La moyenne de l\'UE' : NOMS[w][0]) + ' : pas encore de chiffre pour ' + dFr.y + ' (dernier : ' + fmt(d.v, c.dec) + ' en ' + d.y + ').'); });
+    var prov = Object.keys(c.prov || {}).filter(function (y) { return +y >= c.y[c.y.length - 1] - 2; });
+    if (prov.length) n.push('Chiffre' + (prov.length > 1 ? 's' : '') + ' ' + prov.join(', ').replace(/, (\d+)$/, ' et $1') + ' de la France provisoire' + (prov.length > 1 ? 's' : '') + ' (Eurostat).');
+    // Changements de méthode signalés par Eurostat (code « b ») : années de la France, nombre d'années pour les autres.
+    var br = c.br_motif || {}, liste = function (a) { return a.length > 1 ? a.slice(0, -1).join(', ') + ' et ' + a[a.length - 1] : a[0]; };
+    var bFr = Object.keys(br).filter(function (y) { return br[y] === 'fr' || br[y] === 'les deux'; }).sort(), bUe = Object.keys(br).filter(function (y) { return br[y] === 'ue' || br[y] === 'les deux'; }).sort();
+    var bAu = Object.keys(br).filter(function (y) { return br[y] === 'de' || br[y] === 'es'; }).sort();
+    var bt = [];
+    if (bFr.length) bt.push('pour la France en ' + liste(bFr));
+    if (bUe.length) bt.push('pour la moyenne de l\'UE ' + (bUe.length > 2 ? bUe.length + ' années entre ' + bUe[0] + ' et ' + bUe[bUe.length - 1] : 'en ' + liste(bUe)));
+    if (bAu.length) bt.push('pour ' + QUI[br[bAu[0]]] + ' en ' + liste(bAu));
+    if (bt.length) n.push('Changements de méthode signalés par Eurostat ' + bt.join(' ; ') + ' : l\'évolution sur un an est à lire avec prudence ces années-là.');
+    n.push('Source : <a href="' + esc(c.url) + '">' + esc(c.source) + '</a>' + (c.us_source ? ' ; <a href="' + esc(c.us_url) + '">' + esc(c.us_source) + '</a>' : '') + '.');
+    $(noteId).innerHTML = n.join(' ');
+  }
+
+  fetch('../data.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (D) {
+    var P = (D.series || {}).demographie, DS = D.datasets || {};
+    // Courbes repliées : dessinées à la première ouverture de leur bloc (à la bonne largeur).
+    var quand = function (id, f) { var d = $(id), fait = false; var go = function () { if (!fait && d.open) { fait = true; f(); } }; d.addEventListener('toggle', go); go(); };
+    var compare = function (a, b) { return Math.abs(a - b) <= 0.05 * Math.abs(b) ? 'proche de' : a < b ? 'moins que' : 'plus que'; };
+    if (!P) { $('chiffres').innerHTML = '<p class="note">Données indisponibles pour le moment.</p>'; return; }
+    $('maj').textContent = 'Chiffres lus le ' + dLong(P.maj);
+    var K = P.K, last = function (k) { return { y: K[k].y[K[k].y.length - 1], v: K[k].fr[K[k].fr.length - 1], prov: (K[k].prov || []).indexOf(K[k].y[K[k].y.length - 1]) >= 0 }; };
+    var pop = last('pop'), na = last('nais'), de = last('deces'), sn = last('solnat'), sm = last('solmig');
+    var T = P.TITRES, ti = P.N.titres, tl = ti.fr[ti.fr.length - 1], ty = ti.y[ti.y.length - 1];
+    var mil = function (v) { return fmt(v / 1e6, 1); };
+    $('chiffres').innerHTML =
+      '<a class="chiffre" href="#ages"><span class="lab">Population · 1er janvier ' + pop.y + '</span><span class="n">' + mil(pop.v) + ' <small>millions</small></span><span class="t">' + (pop.prov ? 'chiffre provisoire' : '') + '</span></a>' +
+      '<a class="chiffre" href="#naissances"><span class="lab">Naissances ' + na.y + '</span><span class="n">' + nf(na.v) + '</span><span class="t">et ' + nf(de.v) + ' décès : solde naturel ' + signe(sn.v, 0) + '</span></a>' +
+      '<a class="chiffre" href="#nes"><span class="lab">Solde migratoire ' + sm.y + '</span><span class="n">' + signe(sm.v, 0) + '</span><span class="t">arrivées moins départs' + (sm.prov ? ', chiffre provisoire' : '') + '</span></a>' +
+      '<a class="chiffre" href="#nes"><span class="lab">Nés à l\'étranger · ' + dernier(P.C.nes, 'fr').y + '</span><span class="n">' + fmt(dernier(P.C.nes, 'fr').v, 1) + ' <small>%</small></span><span class="t">de la population ; ' + fmt(dernier(P.C.nes, 'ue').v, 1) + ' % dans l\'UE</span></a>';
+
+    // Naissances et décès (nombres).
+    var nd = [{ c: 'var(--fr)', n: 'Naissances', main: 1, data: K.nais.y.map(function (y, i) { return { x: y, v: K.nais.fr[i] }; }).filter(function (d) { return d.x >= 2000; }) },
+      { c: 'var(--bad)', n: 'Décès', data: K.deces.y.map(function (y, i) { return { x: y, v: K.deces.fr[i] }; }).filter(function (d) { return d.x >= 2000; }) }];
+    $('k-nd').innerHTML = '<span><i style="background:var(--fr)"></i>Naissances</span><span><i style="background:var(--bad)"></i>Décès</span>';
+    var kf = function (v) { return fmt(v / 1000, 0) + ' k'; };
+    lineChart('ch-nd', nd, { x: [1999.5, na.y + .5], xt: ticks(2000, na.y), label: 'Naissances et décès en France', yfmt: kf, efmt: function (v) { return nf(Math.round(v / 1000)) + ' 000'; }, l: 44, r: 64 });
+    var i2010 = K.nais.y.indexOf(2010);
+    $('n-nd').innerHTML = 'En ' + na.y + ' : ' + nf(na.v) + ' naissances et ' + nf(de.v) + ' décès en France' + (i2010 >= 0 ? ' (en 2010 : ' + nf(K.nais.fr[i2010]) + ' naissances, ' + nf(K.deces.fr[K.deces.y.indexOf(2010)]) + ' décès)' : '') + '. Source : <a href="' + esc(K.url) + '">' + esc(K.source) + '</a>.';
+    var fec = P.C.fec, f1 = dernier(fec, 'fr'), fu = dernier(fec, 'ue');
+    $('naissances-t').innerHTML = (sn.v < 0 ? 'En ' + na.y + ', la France a compté <b>' + nf(-sn.v) + ' décès de plus que de naissances</b> : selon l\'<a href="https://www.insee.fr/fr/statistiques/8719824">Insee</a>, c\'est la première fois depuis la fin de la Seconde Guerre mondiale. '
+      : 'En ' + na.y + ', la France a compté <b>' + nf(sn.v) + ' naissances de plus que de décès</b>. ') + 'L\'indicateur de fécondité est de ' + fmt(f1.v, 2) + ' enfant par femme (' + f1.y + '), ' + compare(f1.v, fu.v) + ' la moyenne de l\'UE (' + fmt(fu.v, 2) + ').';
+    quand('plus-naissances', function () { serie('ch-fec', fec, 'n-fec'); serie('ch-nat', P.C.nat, 'n-nat'); serie('ch-solnat', P.C.solnat, 'n-solnat'); });
+
+    // Pyramide des âges (France en barres, UE en contour), en % de la population.
+    (function () {
+      var Y = P.PYR, box = $('ch-pyr'); box.textContent = '';
+      $('pyr-t').innerHTML = 'Pyramide des âges au 1er janvier ' + Y.annee + ' <small>· % de la population</small>';
+      $('k-pyr').innerHTML = '<span><i class="sq" style="background:var(--fr);opacity:.75"></i>France</span><span><i class="sq" style="border:1.5px solid var(--ea);background:none"></i>Union européenne</span>';
+      var W = Math.max(300, box.clientWidth), n = Y.ages.length, bh = W < 520 ? 13 : 14, H = n * bh + 34, mid = W / 2, lab = 44;
+      var mx = d3.max([].concat(Y.fr.H, Y.fr.F, Y.ue.H, Y.ue.F)), sc = d3.scaleLinear().domain([0, mx * 1.05]).range([0, mid - lab / 2 - 8]);
+      var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Pyramide des âges, France et Union européenne');
+      svg.append('text').attr('x', mid - lab / 2 - 4).attr('y', 11).attr('text-anchor', 'end').text('Hommes').style('font-weight', 600);
+      svg.append('text').attr('x', mid + lab / 2 + 4).attr('y', 11).text('Femmes').style('font-weight', 600);
+      for (var i = 0; i < n; i++) {
+        var yy = 18 + (n - 1 - i) * bh;
+        svg.append('rect').attr('x', mid - lab / 2 - sc(Y.fr.H[i])).attr('y', yy).attr('width', sc(Y.fr.H[i])).attr('height', bh - 2).attr('fill', 'var(--fr)').attr('opacity', .75);
+        svg.append('rect').attr('x', mid + lab / 2).attr('y', yy).attr('width', sc(Y.fr.F[i])).attr('height', bh - 2).attr('fill', 'var(--fr)').attr('opacity', .75);
+        svg.append('rect').attr('x', mid - lab / 2 - sc(Y.ue.H[i])).attr('y', yy).attr('width', sc(Y.ue.H[i])).attr('height', bh - 2).attr('fill', 'none').attr('stroke', 'var(--ea)').attr('stroke-width', 1.3);
+        svg.append('rect').attr('x', mid + lab / 2).attr('y', yy).attr('width', sc(Y.ue.F[i])).attr('height', bh - 2).attr('fill', 'none').attr('stroke', 'var(--ea)').attr('stroke-width', 1.3);
+        if (i % 2 === 0 || W >= 520) svg.append('text').attr('x', mid).attr('y', yy + bh - 4).attr('text-anchor', 'middle').text(Y.ages[i]).style('font-size', '10px');
+      }
+      svg.append('text').attr('x', mid).attr('y', H - 2).attr('text-anchor', 'middle').text('âge').style('font-size', '10px');
+      var jeunes = function (g) { return d3.sum(Y[g].H.slice(0, 4)) + d3.sum(Y[g].F.slice(0, 4)); };
+      $('n-pyr').innerHTML = 'Moins de 20 ans : ' + fmt(jeunes('fr'), 1) + ' % de la population en France, ' + fmt(jeunes('ue'), 1) + ' % dans l\'UE. Chaque barre : la part des hommes ou des femmes de cet âge dans toute la population. Source : <a href="' + esc(Y.url) + '">' + esc(Y.source) + '</a>.';
+    })();
+    var p65 = P.C.p65, a1 = dernier(p65, 'fr'), a2 = dernier(p65, 'ue'), md = dernier(P.C.med, 'fr'), mu = dernier(P.C.med, 'ue');
+    $('ages-t').innerHTML = 'Environ <b>un habitant sur ' + Math.round(100 / a1.v) + ' a 65 ans ou plus</b> : ' + fmt(a1.v, 1) + ' % en ' + a1.y + ', contre ' + fmt(p65.fr[0], 1) + ' % en ' + p65.y[0] + ' ; ' + fmt(a2.v, 1) + ' % en moyenne dans l\'UE. La moitié des habitants a plus de ' + fmt(md.v, 1) + ' ans (' + fmt(mu.v, 1) + ' dans l\'UE).';
+    quand('plus-ages', function () { serie('ch-p65', p65, 'n-p65'); serie('ch-med', P.C.med, 'n-med'); });
+
+    // Personnes nées à l'étranger.
+    var ne = P.C.nes, e1 = dernier(ne, 'fr'), e2 = dernier(ne, 'ue'), eh = dernier(P.C.nes_hue, 'fr');
+    var eDe = dernier(ne, 'de'), eEs = dernier(ne, 'es');
+    $('nes-t').innerHTML = '<b>' + fmt(e1.v, 1) + ' % des habitants de la France sont nés à l\'étranger</b> (' + e1.y + '), ' + compare(e1.v, e2.v) + ' la moyenne de l\'UE (' + fmt(e2.v, 1) + ' %), moins qu\'en Allemagne (' + fmt(eDe.v, 1) + ' %) et en Espagne (' + fmt(eEs.v, 1) + ' %) ; dont ' + fmt(eh.v, 1) + ' % nés hors de l\'UE. ' +
+      (sn.v <= 0 ? 'En ' + sm.y + ', la population augmente par le solde migratoire (' + signe(sm.v, 0) + '), le solde naturel étant de ' + signe(sn.v, 0) + '.' : 'En ' + sm.y + ', solde migratoire : ' + signe(sm.v, 0) + '.');
+    serie('ch-nes', ne, 'n-nes');
+
+    quand('plus-nes', function () { serie('ch-neshue', P.C.nes_hue, 'n-neshue'); serie('ch-solmig', P.C.solmig, 'n-solmig'); });
+
+    // Titres de séjour par motif (barres empilées, France).
+    (function () {
+      var box = $('ch-mot'); box.textContent = '';
+      var C = { FAM: 'var(--fam)', EDUC: 'var(--educ)', EMP: 'var(--emp)', OTH: 'var(--oth)' };
+      $('k-mot').innerHTML = T.motifs.map(function (m) { return '<span><i class="sq" style="background:' + C[m.c] + '"></i>' + esc(m.l) + '</span>'; }).join('');
+      var W = Math.max(300, box.clientWidth), small = W < 520, H = small ? 220 : 250, m = { t: 10, r: 10, b: 24, l: 44 };
+      var tot = T.y.map(function (y, i) { return d3.sum(T.motifs, function (mo) { return mo.fr[i] || 0; }); });
+      var x = d3.scaleBand().domain(T.y).range([m.l, W - m.r]).padding(.18), y = d3.scaleLinear().domain([0, d3.max(tot)]).nice().range([H - m.b, m.t]);
+      var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Premiers titres de séjour en France par motif');
+      y.ticks(small ? 4 : 5).forEach(function (t) { svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)'); svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(fmt(t / 1000, 0) + ' k'); });
+      T.y.forEach(function (yr, i) {
+        var base = 0;
+        T.motifs.forEach(function (mo) { var v = mo.fr[i] || 0; svg.append('rect').attr('x', x(yr)).attr('width', x.bandwidth()).attr('y', y(base + v)).attr('height', y(base) - y(base + v)).attr('fill', C[mo.c]); base += v; });
+        if (!small || (T.y.length - 1 - i) % 2 === 0) svg.append('text').attr('x', x(yr) + x.bandwidth() / 2).attr('y', H - 6).attr('text-anchor', 'middle').text(small ? "'" + String(yr).slice(2) : yr);
+      });
+      var pts = T.y.map(function (yr, i) { return { px: x(yr) + x.bandwidth() / 2, t: String(yr) + ' · ' + nf(tot[i]), rows: T.motifs.slice().reverse().map(function (mo) { return { c: C[mo.c], n: mo.l.replace(/ \(.*\)/, ''), s: nf(mo.fr[i] || 0) }; }) }; });
+      hover(box, svg, H, m, pts);
+      var j = T.y.length - 1, parts = T.motifs.map(function (mo) { return mo.l.replace(/ \(.*\)/, '').toLowerCase() + ' ' + fmt(100 * mo.fr[j] / tot[j], 0) + ' %'; });
+      $('n-mot').innerHTML = 'En ' + T.y[j] + ' : ' + nf(tot[j]) + ' premiers titres (' + parts.join(', ') + '). Source : <a href="' + esc(T.url) + '">' + esc(T.source) + '</a>.';
+      var ord = T.motifs.map(function (mo) { return { l: mo.l.replace(/ \(.*\)/, '').toLowerCase(), v: mo.fr[j] }; }).sort(function (a, b) { return b.v - a.v; });
+      $('titres-t').innerHTML = 'En ' + T.y[j] + ', <b>' + nf(tot[j]) + ' premiers titres de séjour</b> pour des personnes de pays hors de l\'UE, ' + (function (r) { var e = Math.round(r); return Math.abs(r - e) <= 0.05 && e >= 2 && e <= 4 ? ['', '', 'deux', 'trois', 'quatre'][e] : fmt(r, 1); })(tot[j] / tot[0]) + ' fois plus qu\'en ' + T.y[0] + '. Premier motif : ' + (ord[0].l === 'autres motifs' ? 'les autres motifs, dont la protection des réfugiés' : ord[0].l === 'famille' ? 'la famille' : ord[0].l === 'travail' ? 'le travail' : 'les ' + ord[0].l) + ' (' + fmt(100 * ord[0].v / tot[j], 0) + ' %), puis ' + ord.slice(1).map(function (o) { return (o.l === 'autres motifs' ? 'les autres motifs, dont la protection des réfugiés' : o.l === 'famille' ? 'la famille' : o.l === 'travail' ? 'le travail' : 'les ' + o.l) + ' (' + fmt(100 * o.v / tot[j], 0) + ' %)'; }).join(', ') + '.';
+    })();
+    quand('plus-titres', function () { serie('ch-titres', P.M.titres, 'n-titres'); });
+
+    // Asile et séjour irrégulier.
+    var NN = P.N, lastN = function (k) { var a = NN[k]; return { y: a.y[a.y.length - 1], v: a.fr[a.fr.length - 1] }; };
+    var as = lastN('asile'), ir = lastN('irreg'), oq = lastN('oqtf'), dp = lastN('departs');
+    var aF = dernier(P.M.asile, 'fr'), aU = dernier(P.M.asile, 'ue');
+    $('asile-t').innerHTML = 'En ' + as.y + ', <b>' + nf(as.v) + ' premières demandes d\'asile</b> en France, soit ' + fmt(aF.v, 1) + ' pour 1 000 habitants, ' + compare(aF.v, aU.v) + ' la moyenne de l\'UE (' + fmt(aU.v, 1) + '). ' + nf(oq.v) + ' obligations de quitter le territoire ont été prononcées, et ' + nf(dp.v) + ' départs ont suivi une obligation.';
+    var Q = P.P.irreguliers;
+    $('irr-q').textContent = '« ' + Q.v + ' »';
+    $('irr-src').innerHTML = 'Source : <a href="' + esc(Q.url) + '">' + esc(Q.source) + '</a>.';
+    serie('ch-asile', P.M.asile, 'n-asile');
+    quand('plus-asile', function () { serie('ch-irreg', P.M.irreg, 'n-irreg'); serie('ch-oqtf', P.M.oqtf, 'n-oqtf');
+    $('k-oq').innerHTML = '<span><i style="background:var(--fr)"></i>Obligations de quitter le territoire</span><span><i style="background:var(--ea)"></i>Départs qui ont suivi</span>';
+    var y0 = NN.oqtf.y[0], y1 = NN.oqtf.y[NN.oqtf.y.length - 1];
+    lineChart('ch-oq', [{ c: 'var(--fr)', n: 'Obligations', main: 1, data: NN.oqtf.y.map(function (y, i) { return { x: y, v: NN.oqtf.fr[i] }; }) }, { c: 'var(--ea)', n: 'Départs', data: NN.departs.y.map(function (y, i) { return { x: y, v: NN.departs.fr[i] }; }) }],
+      { x: [y0 - .5, y1 + .5], xt: ticks(y0, y1), min: 0, label: 'Obligations de quitter le territoire et départs en France', yfmt: kf, efmt: function (v) { return nf(v); }, l: 44, r: 58 });
+    $('n-oq').innerHTML = 'En ' + oq.y + ' : ' + nf(oq.v) + ' obligations et ' + nf(dp.v) + ' départs. Un départ peut suivre une obligation prise une année précédente ; la page Sécurité et justice note la part des obligations suivies d\'un départ. Source : <a href="' + esc(NN.oqtf.url) + '">' + esc(NN.oqtf.source) + '</a> ; <a href="' + esc(NN.departs.url) + '">' + esc(NN.departs.source) + '</a>.';
+    });
+
+    // Les naissances du mois (Insee, France métropolitaine) : le dernier mois, le même mois un an plus tôt, le cumul depuis janvier.
+    (function () {
+      var M = P.MOIS, n = M.m.length - 1, mm = M.m[n], an = +mm.slice(0, 4), mo = +mm.slice(5);
+      var MO = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'], nom = function (k) { return MOIS[+k.slice(5) - 1] + ' ' + k.slice(0, 4); };
+      var avant = M.m.indexOf((an - 1) + mm.slice(4)), cum = function (a, k) { return M.m.reduce(function (s, x, i) { return x.slice(0, 4) === String(a) && +x.slice(5) <= mo ? s + M[k][i] : s; }, 0); };
+      var prov = M.prov.indexOf(mm) >= 0 ? ' (provisoire)' : '';
+      $('teaser-mois').innerHTML = maj1(nom(mm)) + ' : <b>' + nf(M.nais[n]) + ' naissances</b>, ' + nf(M.deces[n]) + ' décès en France métropolitaine' + prov;
+      $('mois-chiffres').innerHTML = '<div class="chiffre"><span class="lab">Naissances, ' + nom(mm) + '</span><span class="n">' + nf(M.nais[n]) + '</span><span class="t">' + (avant >= 0 ? nf(M.nais[avant]) + ' en ' + nom(M.m[avant]) : '') + '</span></div>' +
+        '<div class="chiffre"><span class="lab">Décès, ' + nom(mm) + '</span><span class="n">' + nf(M.deces[n]) + '</span><span class="t">' + (avant >= 0 ? nf(M.deces[avant]) + ' en ' + nom(M.m[avant]) : '') + '</span></div>';
+      $('k-mois').innerHTML = '<span><i style="background:var(--fr)"></i>Naissances</span><span><i style="background:var(--bad)"></i>Décès</span>';
+      var k0 = Math.max(0, n - 23), xs = M.m.slice(k0);
+      quand('acc-mois', function () {
+        lineChart('ch-mois', [{ c: 'var(--fr)', n: 'Naissances', main: 1, data: xs.map(function (x, i) { return { x: i, v: M.nais[k0 + i] }; }) }, { c: 'var(--bad)', n: 'Décès', data: xs.map(function (x, i) { return { x: i, v: M.deces[k0 + i] }; }) }],
+          { x: [-0.5, xs.length - .5], xt: xs.map(function (x, i) { return i; }).filter(function (i) { return xs[i].slice(5) === '01' || xs[i].slice(5) === '07'; }), label: 'Naissances et décès par mois', yfmt: function (v) { return fmt(v / 1000, 0) + ' k'; }, efmt: function (v) { return nf(v); },
+            xfmt: function (i) { return MO[+xs[i].slice(5) - 1] + ' ' + xs[i].slice(0, 4); }, xlab: function (i) { return nom(xs[i]); }, l: 40, r: 56 });
+      });
+      $('n-mois').innerHTML = 'De janvier à ' + MOIS[mo - 1] + ' ' + an + ' : ' + nf(cum(an, 'nais')) + ' naissances et ' + nf(cum(an, 'deces')) + ' décès, contre ' + nf(cum(an - 1, 'nais')) + ' naissances et ' + nf(cum(an - 1, 'deces')) + ' décès sur la même période de ' + (an - 1) + '. Les derniers mois sont provisoires et révisés par l\'Insee. Source : <a href="' + esc(M.url) + '">' + esc(M.source) + '</a>.';
+    })();
+    (function () {
+      var A = (DS.actu_demographie || []).slice(0, 8), G = (DS.agenda_demographie || []).filter(function (a) { return a.date >= new Date().toISOString().slice(0, 10); });
+      var dC = function (d) { var x = new Date(d + 'T12:00:00'); return x.getDate() + ' ' + ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'][x.getMonth()] + ' ' + String(x.getFullYear()).slice(2); };
+      $('actu-list').innerHTML = A.map(function (a) { return '<li><span class="d">' + dC(a.date) + '</span><span>' + esc(a.texte) + ' <a href="' + esc(a.url) + '">' + esc(a.source) + '</a></span></li>'; }).join('') || '<li><span></span><span>Pas encore d\'actualité.</span></li>';
+      $('agenda-list').innerHTML = G.map(function (a) { return '<li><span class="d">' + esc(a.quand || dC(a.date)) + '</span><span>' + esc(a.evenement) + ' <a href="' + esc(a.url) + '">' + esc(a.source) + '</a></span></li>'; }).join('') || '<li><span></span><span>Pas de rendez-vous annoncé.</span></li>';
+      if (A[0]) $('teaser-actu').innerHTML = '<b>' + dC(A[0].date) + '</b> · ' + esc(A[0].texte.length > 110 ? A[0].texte.slice(0, 108).replace(/\s\S*$/, '') + '…' : A[0].texte);
+    })();
+
+    $('sources').innerHTML = 'Sources : Eurostat (demo_find, demo_gind, demo_pjanind, demo_pjangroup, migr_resfirst, migr_asyappctza, migr_eipre, migr_eiord, migr_eirtn), lues le ' + dLong(P.maj) + ' ; Insee (naissances et décès mensuels) ; Cour des comptes, janvier 2024.';
+
+    // Sommaire : la rubrique en cours est soulignée.
+    if (window.IntersectionObserver) {
+      var liens = document.querySelectorAll('.jump a'), io = new IntersectionObserver(function (es) {
+        es.forEach(function (x) { if (x.isIntersecting) liens.forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + x.target.id); }); });
+      }, { rootMargin: '-40% 0px -55% 0px' });
+      ['actualite', 'naissances', 'ages', 'nes', 'titres', 'asile', 'lois', 'regle'].forEach(function (id) { io.observe($(id)); });
+    }
+    if (location.hash.length > 1) { var cible = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (cible) cible.scrollIntoView(); }
+  }).catch(function (e) { $('chiffres').innerHTML = '<p class="note">Les données n\'ont pas pu être chargées. Rechargez la page.</p>'; if (window.console) console.error(e); });
+})();
+</script>
+<script src="/commun/lois.js?v=20261027a"></script>
+<script src="/commun/partage.js?v=20261025a"></script>
+<script src="/commun/recherche.js?v=20261025b"></script>
+<script src="/commun/menu.js?v=20261027f"></script>
+</body>
+</html>

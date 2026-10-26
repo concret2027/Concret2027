@@ -82,6 +82,18 @@ function carte(o) {
   var t2 = (D.agenda_barometre || []).filter(function (a) { return /second tour/i.test(a.evenement); })[0], jour = function (a) { return new Date(a.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
   var jours = t1 ? Math.ceil((new Date(t1.date + 'T00:00:00+02:00') - new Date()) / 864e5) : null;
   cartes.push({ f: 'barometre', titre: 'Baromètre 2027', sous: 'Sondages et parieurs de la présidentielle, mis à jour chaque jour', n: jours > 0 ? [String(jours), ' jours'] : null, nt: 'avant le premier tour de l\'élection présidentielle', dates: [t1, t2].filter(Boolean).map(function (a) { return [/premier/i.test(a.evenement) ? 'Premier tour' : 'Second tour', jour(a) + ' ' + a.date.slice(0, 4)]; }), pied: 'Sources : Commission des sondages, instituts, Polymarket', adresse: 'concret2027.fr/barometre' });
+  // La vie politique : le nombre de lois publiées en douze mois, le dernier vote retenu et la dernière loi publiée (données ouvertes de l'Assemblée).
+  var SP = S.politique, jl = function (d) { return new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); };
+  if (SP && fs.existsSync(path.join(ROOT, 'politique', 'index.html'))) {
+    var v0 = SP.VOTES.filter(function (v) { return !v.loi; })[0], l0 = SP.LOIS[0];
+    cartes.push({ f: 'politique', titre: 'La vie politique', sous: 'Les grandes lois de chaque gouvernement, les votes de l\'Assemblée, les dates depuis 1995', n: [String(SP.LOIS.length), ' lois'], nt: 'publiées au Journal officiel en douze mois', dates: [v0 ? ['Dernier vote', jl(v0.d)] : null, l0 ? ['Dernière loi publiée', jl(l0.jo || l0.d)] : null].filter(Boolean), pied: 'Source : Assemblée nationale, données ouvertes', adresse: 'concret2027.fr/politique' });
+  }
+  // L'évolution démographique : naissances et décès de la dernière année publiée par Eurostat (page sans note).
+  var PP = S.demographie;
+  if (PP && fs.existsSync(path.join(ROOT, 'demographie', 'index.html'))) {
+    var kn = PP.K.nais, kd = PP.K.deces, km = PP.K.solmig, nfr = function (v) { return new Intl.NumberFormat('fr-FR').format(v).replace(/\u202f/g, ' '); };
+    cartes.push({ f: 'demographie', titre: 'L\'évolution démographique', sous: 'Naissances, âges, migrations : la France face à l\'Europe, sans note', n: [nfr(kn.fr[kn.fr.length - 1]), ''], nt: 'naissances en France en ' + kn.y[kn.y.length - 1], dates: [['Décès ' + kd.y[kd.y.length - 1], nfr(kd.fr[kd.fr.length - 1])], ['Solde migratoire ' + km.y[km.y.length - 1], (km.fr[km.fr.length - 1] > 0 ? '+' : '') + nfr(km.fr[km.fr.length - 1])]], pied: 'Source : Eurostat', adresse: 'concret2027.fr/demographie' });
+  }
   // Quiz du jour : la première question du jour (celle de la page Vie des Français, même calcul que la page), refaite chaque jour.
   var SQ = (S.vie || {}).QUIZ || [], jq = new Date(); jq.setHours(0, 0, 0, 0);
   var iq = Math.round((jq - new Date(2026, 0, 1)) / 864e5), Q1 = SQ.length ? SQ[((iq % SQ.length) + SQ.length) % SQ.length] : null;
