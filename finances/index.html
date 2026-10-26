@@ -3,6 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
+<link rel="apple-touch-icon" href="/donnees/icone/icone-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Concret">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)">
 <title>Finances publiques · Concret</title>
 <meta name="description" content="Dette, taux d'emprunt, impôts, dépenses : les finances publiques françaises comparées à la moyenne de l'Union européenne, et la note de chaque président et gouvernement depuis 1995.">
 <meta property="og:title" content="Finances publiques · Concret">
@@ -927,8 +936,10 @@ function main(FEED) {
     var pend = document.createElement('div'); pend.className = 'gov pending';
     pend.innerHTML = '<div class="badge p">à venir</div><div class="who"><b>Sébastien Lecornu</b> <span>· depuis sept. 2025 · Macron</span></div><div class="note">Noté à la publication des comptes 2026 par l\'Insee (printemps 2027).</div>';
     box.appendChild(pend);
+    // Repliés : on montre les gouvernements jusqu'au premier qui a une note, puis le bouton pour voir les autres.
+    var premier = Math.max(0, GOVS.slice().reverse().findIndex(function (g) { return noteOf(g) != null && !isNaN(noteOf(g)); }));
     GOVS.slice().reverse().forEach(function (g, i) {
-      var note = noteOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i >= 2;
+      var note = noteOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i > premier;
       var badge = document.createElement('div'); badge.className = 'badge ' + cls(note); badge.innerHTML = '<span></span>';
       badge.firstChild.textContent = nfmt(note); var sm = document.createElement('small'); sm.textContent = '/20'; badge.appendChild(sm);
       var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span></span>';
@@ -1407,8 +1418,8 @@ function main(FEED) {
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261025a"></script>
+<script src="/commun/partage.js?v=20261027a"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261027b"></script>
+<script src="/commun/menu.js?v=20261027d"></script>
 </body>
 </html>

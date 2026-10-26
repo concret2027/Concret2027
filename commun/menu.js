@@ -42,7 +42,11 @@
     '.note{font-size:14px;line-height:1.45}.bx-note{font-size:13.5px}.eyebrow{font-size:12.5px}svg .tick text{font-size:12px}' +
     // Pastilles des tableaux « Année par année » : point marqué, pas de point, demi-point (égalité).
     '.pt{display:inline-block;width:.8em;height:.8em;border-radius:50%;border:2px solid currentColor;box-sizing:border-box;vertical-align:-.08em}.pt.p1{background:currentColor}.pt.ph{background:linear-gradient(90deg,currentColor 50%,transparent 50%)}' +
-    '.rech-b{min-width:44px;min-height:44px;justify-content:center}button.share,.bx-share{min-height:40px}';
+    '.rech-b{min-width:44px;min-height:44px;justify-content:center}button.share,.bx-share{min-height:40px}' +
+    // Long texte sous une courbe : deux lignes, puis « Détail du graphe » pour lire la suite.
+    '.nt-pli{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}' +
+    '.nt-btn{font:inherit;font-size:13.5px;font-weight:600;color:' + V.fr + ';background:none;border:0;padding:6px 0;margin-top:-6px;min-height:36px;cursor:pointer;justify-self:start;align-self:start;text-align:left}' +
+    '.nt-btn:focus-visible{outline:2px solid ' + V.fr + ';outline-offset:2px}';
   var ici = location.pathname.replace(/index\.html$/, '');
   var lien = function (p) { return '<a href="' + p.u + '"' + (p.u === ici ? ' aria-current="page"' : '') + '><b>' + p.l + '</b><span>' + p.t + '</span></a>'; };
 
@@ -63,8 +67,39 @@
     f(); if (window.ResizeObserver) new ResizeObserver(f).observe(n); else addEventListener('resize', f);
   }
 
+  // Textes sous les courbes : au-delà de trois lignes, on n'en montre que deux, avec un lien « Détail du graphe » qui déplie
+  // le reste. Les pages réécrivent ces textes quand elles redessinent une courbe : on les revoit à chaque changement.
+  var NT = '.chart ~ p.note';
+  function plier() {
+    Array.prototype.forEach.call(document.querySelectorAll(NT), function (n) {
+      if (n.classList.contains('pt-hors') || n.classList.contains('defs')) return;
+      var b = n.nextElementSibling;
+      if (!b || !b.classList.contains('nt-btn')) {
+        b = document.createElement('button'); b.type = 'button'; b.className = 'nt-btn'; b.hidden = true;
+        b.addEventListener('click', function () { n.dataset.ntOuvert = n.dataset.ntOuvert ? '' : '1'; plier(); });
+        n.parentNode.insertBefore(b, n.nextSibling);
+      }
+      var ouvert = !!n.dataset.ntOuvert, deja = n.classList.contains('nt-pli');
+      if (deja) n.classList.remove('nt-pli');
+      var lh = parseFloat(getComputedStyle(n).lineHeight) || 20, long = n.offsetHeight > lh * 3.4;
+      if (long && !ouvert) n.classList.add('nt-pli');
+      var t = !long ? '' : ouvert ? 'Masquer le détail ▴' : 'Détail du graphe ▾';
+      if (b.textContent !== t) b.textContent = t;
+      if (b.hidden === !!t) b.hidden = !t;
+      b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
+    });
+  }
+  var plierPrevu = 0;
+  function plierBientot() { if (!plierPrevu) plierPrevu = setTimeout(function () { plierPrevu = 0; plier(); }, 120); }
+
   function init() {
     hauteur();
+    plier();
+    if (window.MutationObserver) new MutationObserver(function (ms) {
+      for (var i = 0; i < ms.length; i++) { var t = ms[i].target; if (t.nodeType !== 1) t = t.parentNode; if (t && t.closest && t.closest('p.note, .chart') || ms[i].addedNodes.length) { plierBientot(); return; } }
+    }).observe(document.body, { childList: true, characterData: true, subtree: true });
+    addEventListener('resize', plierBientot);
+    document.addEventListener('toggle', plierBientot, true);
     if (!document.getElementById('mn-css')) { var st = document.createElement('style'); st.id = 'mn-css'; st.textContent = css; document.head.appendChild(st); }
     var nav = document.querySelector('nav.site');
     if (nav && !nav.querySelector('.mn-btn')) {

@@ -3,6 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
+<link rel="apple-touch-icon" href="/donnees/icone/icone-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Concret">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)">
 <title>Défense · Concret</title>
 <meta name="description" content="La défense de la France comparée à la moyenne de l'Union européenne, avec l'Allemagne, l'Espagne et les États-Unis en repères : budget, objectif de l'OTAN, équipement, effectifs. La note de chaque président et gouvernement depuis 1995.">
 <meta property="og:title" content="Défense · Concret">
@@ -786,8 +795,10 @@ function main(FEED) {
     var pend = document.createElement('div'); pend.className = 'gov pending';
     pend.innerHTML = '<div class="badge p">à venir</div><div class="who"><b>Sébastien Lecornu</b> <span>· depuis sept. 2025 · Macron</span></div><div class="note">Pas encore noté : les chiffres de 2026 ne sont pas encore publiés (l\'OTAN n\'en donne qu\'une estimation).</div>';
     box.appendChild(pend);
+    // Repliés : on montre les gouvernements jusqu'au premier qui a une note, puis le bouton pour voir les autres.
+    var premier = Math.max(0, GOVS.slice().reverse().findIndex(function (g) { return countOf(g) > 0; }));
     GOVS.slice().reverse().forEach(function (g, i) {
-      var note = noteOf(g), n = countOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i >= 2;
+      var note = noteOf(g), n = countOf(g), row = document.createElement('div'); row.className = 'gov'; row.id = 'gov-' + g.y0; row.hidden = !showAll && i > premier;
       // Aucune comparaison possible (année pas encore publiée, seulement estimée par l'OTAN) : comme le gouvernement en cours.
       if (!n) {
         row.className = 'gov pending'; row.innerHTML = '<div class="badge p">à venir</div><div class="who"><b></b> <span></span></div><div class="note"></div>';
@@ -1237,8 +1248,8 @@ function main(FEED) {
 })();
 })();
 </script>
-<script src="/commun/partage.js?v=20261025a"></script>
+<script src="/commun/partage.js?v=20261027a"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261027b"></script>
+<script src="/commun/menu.js?v=20261027d"></script>
 </body>
 </html>
