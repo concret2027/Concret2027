@@ -362,13 +362,13 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card" aria-labelledby="bu-dep-t">
     <h2 id="bu-dep-t"><span class="eyebrow">Ce que dépensent l'État, la Sécurité sociale et les collectivités</span>Les dépenses, poste par poste</h2>
-    <p class="note">Chaque curseur va du pays de l'UE qui dépense le moins pour ce poste à celui qui dépense le plus, en part de la richesse produite (PIB). Il part du chiffre réel de la France.</p>
+    <p class="note">Chaque curseur va du pays qui dépense le moins pour ce poste à celui qui dépense le plus (27 pays de l'UE et 6 autres), en part de la richesse produite (PIB). Il part du chiffre réel de la France.</p>
     <ul class="bu-l" id="bu-dep"></ul>
   </section>
 
   <section class="card" aria-labelledby="bu-rec-t">
     <h2 id="bu-rec-t"><span class="eyebrow">Ce qu'ils encaissent</span>Les impôts et cotisations, type par type</h2>
-    <p class="note">Même règle : du pays de l'UE qui prélève le moins à celui qui prélève le plus. Changer un impôt ne calcule pas ce que le changement ferait aux salaires, aux prix ou à l'activité : seulement ce qu'il rapporterait au niveau d'aujourd'hui.</p>
+    <p class="note">Même règle : du pays qui prélève le moins à celui qui prélève le plus. Changer un impôt ne calcule pas ce que le changement ferait aux salaires, aux prix ou à l'activité : seulement ce qu'il rapporterait au niveau d'aujourd'hui.</p>
     <ul class="bu-l" id="bu-rec"></ul>
   </section>
 
@@ -443,7 +443,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       '<div><small>Recettes</small><b>' + nf(rec, 1) + ' %</b><span>' + nf(md(rec), 0) + ' Md€</span></div>' +
       '<div><small>' + (solde < 0 ? 'Déficit' : 'Excédent') + '</small><b>' + nf(Math.abs(solde), 1) + ' %</b><span>' + nf(md(Math.abs(solde)), 0) + ' Md€</span></div>' +
       '<p class="pays">Votre budget ressemble à celui de <b>' + pr[0].nom + '</b>' + (pr[0].annee < B.annee ? ' (' + pr[0].annee + ')' : '') + '</p>';
-    $('bu-proches').innerHTML = pr.slice(0, 3).map(function (p) { return '<li><span>' + p.nom.charAt(0).toUpperCase() + p.nom.slice(1) + (p.annee < B.annee ? ' (' + p.annee + ')' : '') + '</span><span>écart moyen ' + nf(p.d, 1) + ' point</span></li>'; }).join('');
+    $('bu-proches').innerHTML = pr.slice(0, 3).map(function (p) { return '<li><span>' + p.nom.charAt(0).toUpperCase() + p.nom.slice(1) + (p.annee < B.annee ? ' (' + p.annee + ')' : '') + (p.hue ? ' · hors UE' : '') + '</span><span>écart moyen ' + nf(p.d, 1) + ' point</span></li>'; }).join('');
   }
   // Pays le plus proche : écart moyen (en points de PIB) sur les lignes publiées des deux côtés ; l'impôt sur le revenu et celui
   // des sociétés comptent ensemble (plusieurs pays ne publient pas le détail).
@@ -452,10 +452,13 @@ footer p { margin: 0; } footer a { color: inherit; }
     Object.keys(P).forEach(function (g) {
       if (g === 'EU27_2020' || g === 'FR') return;
       var s = 0, n = 0, add = function (a, b) { if (a != null && b != null) { s += (a - b) * (a - b); n++; } };
-      DEP.forEach(function (x) { add(val('dep', x), P[g].dep[x.k]); });
+      // Protection sociale non détaillée par un pays (États-Unis) : son total contre la somme des postes sociaux.
+      var SOC = ['retraites', 'maladie', 'famille', 'chomage', 'logement'], detail = SOC.every(function (k) { return P[g].dep[k] != null; });
+      DEP.forEach(function (x) { if (detail || SOC.indexOf(x.k) < 0) add(val('dep', x), P[g].dep[x.k]); });
+      if (!detail) add(DEP.filter(function (x) { return SOC.indexOf(x.k) >= 0; }).reduce(function (t, x) { return t + val('dep', x); }, 0), P[g].social);
       REC.forEach(function (x) { if (x.k !== 'revenu' && x.k !== 'societes') add(val('rec', x), P[g].rec[x.k]); });
       add(val('rec', REC.filter(function (x) { return x.k === 'revenu'; })[0]) + val('rec', REC.filter(function (x) { return x.k === 'societes'; })[0]), P[g].impots_revenus);
-      if (n) out.push({ g: g, nom: P[g].nom, annee: P[g].annee, d: Math.sqrt(s / n) });
+      if (n) out.push({ g: g, nom: P[g].nom, annee: P[g].annee, hue: (B.hors_ue || []).indexOf(g) >= 0, d: Math.sqrt(s / n) });
     });
     return out.sort(function (a, b) { return a.d - b.d; });
   }
@@ -464,7 +467,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     B = j; var F = B.pays.FR;
     MD = F.pib_meur / 100 / 1000; PAR_HAB = F.pib_meur * 1e6 / 100 / (F.pop_milliers * 1000);
     DEP = lignes('dep'); REC = lignes('rec');
-    $('bu-lead').textContent = 'Le vrai budget public de la France en ' + B.annee + ' (État, Sécurité sociale, collectivités) : ' + nf(F.depenses, 1) + ' € dépensés et ' + nf(F.recettes, 1) + ' € encaissés pour 100 € de richesse produite. Changez chaque poste, dans les limites de ce que font les 27 pays de l\'UE : voyez le déficit, et le pays qui vous ressemble.';
+    $('bu-lead').textContent = 'Le vrai budget public de la France en ' + B.annee + ' (État, Sécurité sociale, collectivités) : ' + nf(F.depenses, 1) + ' € dépensés et ' + nf(F.recettes, 1) + ' € encaissés pour 100 € de richesse produite. Changez chaque poste, dans les limites de ce que font les 27 pays de l\'UE et ' + B.hors_ue.length + ' autres pays (' + B.hors_ue.map(function (g) { return B.pays[g] ? B.pays[g].nom.replace(/^(la |le |les |l\')/, '') : ''; }).filter(Boolean).join(', ') + ') : voyez le déficit, et le pays qui vous ressemble.';
     rendreListe('bu-dep', 'dep', DEP); rendreListe('bu-rec', 'rec', REC);
     $('bu-dep').insertAdjacentHTML('beforeend', '<li class="fixe"><span class="n">Intérêts de la dette</span><span class="v">' + nf(F.interets, 1) + ' %</span><span class="e">' + nf(md(F.interets), 0) + ' Md€. Ne se choisit pas : ils suivent la dette déjà contractée.</span></li>');
     $('bu-rec').insertAdjacentHTML('beforeend', '<li class="fixe"><span class="n">Autres recettes</span><span class="v">' + nf(F.autres_recettes, 1) + ' %</span><span class="e">' + nf(md(F.autres_recettes), 0) + ' Md€ : ventes de services, revenus du patrimoine public, etc. Ne se choisissent pas ici.</span></li>');
@@ -473,6 +476,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       'Chiffres de ' + B.annee + ' pour la France, en % du PIB : <a href="' + S.depenses.url + '">' + S.depenses.source + '</a> ; <a href="' + S.recettes.url + '">' + S.recettes.source + '</a> ; <a href="' + S.totaux.url + '">' + S.totaux.source + '</a>. Lus le ' + new Date(B.maj).toLocaleDateString('fr-FR') + '.',
       'Les dépenses par poste additionnées font ' + nf(DEP.reduce(function (s, x) { return s + x.fr; }, 0) + F.interets, 1) + ' % du PIB, le total publié ' + nf(F.depenses, 1) + ' % : les deux tableaux d\'Eurostat ne sont pas mis à jour le même jour. Le déficit de départ de cette page peut donc différer de quelques dixièmes du déficit publié (' + nf(Math.abs(F.solde), 1) + ' %).',
       'Milliards d\'euros et euros par habitant : part du PIB × PIB de la France en ' + B.annee + ' (' + nf(F.pib_meur / 1000, 0) + ' Md€), divisé par sa population (' + nf(F.pop_milliers / 1000, 1) + ' millions) ; <a href="' + S.pib.url + '">' + S.pib.source + '</a>.',
+      'Hors UE : la Norvège, l\'Islande et la Suisse publient les mêmes tableaux chez Eurostat ; le Royaume-Uni, le Japon et les États-Unis sont lus à l\'<a href="' + S.ocde.url + '">' + S.ocde.source + '</a>, en monnaie nationale rapportée au PIB. Une ligne de l\'OCDE n\'est gardée que si la France, lue de la même façon, redonne le chiffre d\'Eurostat. Les États-Unis ne détaillent pas leur protection sociale : leur total est comparé à la somme des postes sociaux. Le Canada ne publie pas ses dépenses par fonction dans ces tableaux.',
       'Pays le plus proche : l\'écart moyen entre vos choix et chaque pays, ligne par ligne, en points de PIB (les pays qui n\'ont pas encore publié ' + B.annee + ' sont pris à leur dernière année). Une ligne non publiée par un pays est laissée de côté pour lui.',
       'Ce qui n\'est pas calculé : l\'effet d\'un changement sur l\'activité, l\'emploi ou les comportements, et sur ce que rapportent les impôts. Le résultat dit seulement l\'argent dépensé et encaissé, au niveau d\'aujourd\'hui.'
     ].map(function (t) { return '<li>' + t + '</li>'; }).join('');
