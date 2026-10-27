@@ -176,7 +176,11 @@ if (S.politique) {
       if (/\b(afin de|afin que|vis(e|ant) à|dans le but|pour que)\b/i.test(x.e || '')) err(id + ' : l\'explication prête un but au texte (« afin de », « visant à »…) : dire seulement ce qu\'il change');
       if (!/^https:\/\/(www\.)?(assemblee-nationale\.fr|senat\.fr|legifrance\.gouv\.fr)\//.test(x.url || '') || !x.src || !jo.test(x.lu || '')) err(id + ' : source officielle, lien ou date de lecture manquant');
       if (typeof x.valide !== 'boolean') err(id + ' : « valide » doit être vrai ou faux');
-      else if (!x.valide) alertes.push('Votez les lois : explication du scrutin ' + n + ' à valider');
+      else if (!x.valide) {
+        // L'alerte donne l'intitulé et l'explication, pour la relire depuis la notification.
+        var vt = (VZ.VOTES || []).filter(function (v) { return String(v.n) === n; })[0], at = av && (VZ.AVENIR || []).filter(function (a) { return n === 'avenir:' + a.cle; })[0];
+        alertes.push('Votez les lois, explication à valider (' + n + ') : « ' + String(vt ? vt.t : at ? at.o : '').slice(0, 120) + ' » → ' + x.e);
+      }
     });
   } catch (e) { err('donnees/votes.json illisible (relancer python3 outils/parlement.py --ecrire)'); }
 })();
