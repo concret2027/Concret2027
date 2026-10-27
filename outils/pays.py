@@ -16,9 +16,14 @@ import ue_calc as U
 
 ROOT = U.ROOT
 # Pays hors UE proposés aussi : ils n'ont des chiffres que là où la même source les publie (Eurostat pour la Norvège, la
-# Suisse, l'Islande et le Royaume-Uni jusqu'en 2019 ; Banque mondiale, OCDE, OTAN, PISA pour les États-Unis, le Japon, le Canada).
+# Suisse, l'Islande et le Royaume-Uni jusqu'en 2019 ; Banque mondiale, OCDE, OTAN, PISA pour les autres : États-Unis, Japon, Canada,
+# Corée du Sud, Australie, Nouvelle-Zélande, Turquie, Chine, Inde, Russie, Brésil, Argentine, Chili, Mexique, Colombie).
 HORS = {'US': ('USA', 'United States', 'États-Unis'), 'UK': ('GBR', 'United Kingdom', 'Royaume-Uni'), 'NO': ('NOR', 'Norway', 'Norvège'),
-        'CH': ('CHE', 'Switzerland', 'Suisse'), 'IS': ('ISL', 'Iceland', 'Islande'), 'JP': ('JPN', 'Japan', 'Japon'), 'CA': ('CAN', 'Canada', 'Canada')}
+        'CH': ('CHE', 'Switzerland', 'Suisse'), 'IS': ('ISL', 'Iceland', 'Islande'), 'JP': ('JPN', 'Japan', 'Japon'), 'CA': ('CAN', 'Canada', 'Canada'),
+        'KR': ('KOR', 'Korea', 'Corée du Sud'), 'AU': ('AUS', 'Australia', 'Australie'), 'NZ': ('NZL', 'New Zealand', 'Nouvelle-Zélande'),
+        'TR': ('TUR', 'Türkiye', 'Turquie'), 'CN': ('CHN', 'China', 'Chine'), 'IN': ('IND', 'India', 'Inde'), 'RU': ('RUS', 'Russia', 'Russie'),
+        'BR': ('BRA', 'Brazil', 'Brésil'), 'AR': ('ARG', 'Argentina', 'Argentine'), 'CL': ('CHL', 'Chile', 'Chili'), 'MX': ('MEX', 'Mexico', 'Mexique'),
+        'CO': ('COL', 'Colombia', 'Colombie')}
 for _g, (_iso, _en, _fr) in HORS.items():
     U.ISO3[_g], U.NOM_EN[_g], U.NOM_FR[_g] = _iso, _en, _fr
     if _g not in U.UE:
@@ -233,7 +238,12 @@ def main():
         doc = {'maj': date.today().isoformat(), 'noms': {g: U.NOM_FR[g] for g in UE if g not in ('FR', 'DE', 'ES')}, 'hors_ue': sorted(HORS), 'series': out}
         open(os.path.join(ROOT, 'donnees', 'pays.json'), 'w', encoding='utf-8').write(json.dumps(doc, ensure_ascii=False, separators=(',', ':')))
         # Petit index (les courbes qui peuvent recevoir un pays, et les noms) : chargé par chaque page, le gros fichier seulement si un pays est choisi.
-        idx = {'maj': doc['maj'], 'noms': doc['noms'], 'hors_ue': doc['hors_ue'], 'cles': sorted(out)}
+        # Et, pour chaque courbe, les pays qui ont un chiffre : le menu ne propose qu'eux. Les pays hors UE sont rangés par région.
+        REG = {'NO': 'Europe hors UE', 'CH': 'Europe hors UE', 'IS': 'Europe hors UE', 'UK': 'Europe hors UE', 'TR': 'Europe hors UE', 'RU': 'Europe hors UE',
+               'US': 'Amériques', 'CA': 'Amériques', 'MX': 'Amériques', 'BR': 'Amériques', 'AR': 'Amériques', 'CL': 'Amériques', 'CO': 'Amériques',
+               'JP': 'Asie et Océanie', 'KR': 'Asie et Océanie', 'CN': 'Asie et Océanie', 'IN': 'Asie et Océanie', 'AU': 'Asie et Océanie', 'NZ': 'Asie et Océanie'}
+        dispo = {k: sorted(g for g in out[k] if g != 'y' and any(v is not None for v in out[k][g])) for k in out}
+        idx = {'maj': doc['maj'], 'noms': doc['noms'], 'hors_ue': doc['hors_ue'], 'regions': {g: REG.get(g, 'Hors UE') for g in HORS}, 'cles': sorted(out), 'dispo': dispo}
         open(os.path.join(ROOT, 'donnees', 'pays_index.json'), 'w', encoding='utf-8').write(json.dumps(idx, ensure_ascii=False, separators=(',', ':')))
         print('Écrit : donnees/pays.json et donnees/pays_index.json')
 
