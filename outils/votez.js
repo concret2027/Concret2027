@@ -1,6 +1,6 @@
 // node outils/votez.js a-ecrire : les votes de la page Votez les lois qui n'ont pas encore d'explication (une ligne JSON par vote :
 //   clé à utiliser dans donnees/votez_explications.json, date, genre, intitulé officiel, dossier), votes à venir compris.
-// node outils/votez.js verifier [--tout] : chaque explication à valider (ou toutes avec --tout) est relue à la source : longueur,
+// node outils/votez.js verifier [--tout | <clé>] : chaque explication à valider (ou toutes avec --tout) est relue à la source : longueur,
 //   aucun but prêté au texte, et chaque citation de « preuves » retrouvée dans le document de son lien (après normalisation des
 //   espaces, apostrophes et tirets). Sort en erreur (code 1) si une citation est introuvable.
 'use strict';
@@ -62,9 +62,10 @@ if (ordre === 'a-ecrire') {
     console.error(n ? n + ' vote(s) sans explication.' : 'Tous les votes ont leur explication.');
   });
 } else if (ordre === 'verifier') {
-  var tout = process.argv.indexOf('--tout') > 0, ko = 0, vus = 0;
+  // « verifier 217 » : une seule explication, relue même si elle est validée.
+  var tout = process.argv.indexOf('--tout') > 0, seule = /^[\w:-]+$/.test(process.argv[3] || '') && process.argv[3] !== '--tout' ? process.argv[3] : null, ko = 0, vus = 0;
   Object.keys(X).forEach(function (k) {
-    var x = X[k]; if (x.valide && !tout) return;
+    var x = X[k]; if (seule ? k !== seule : x.valide && !tout) return;
     vus++;
     var pb = [];
     if (!x.e || x.e.length > 320) pb.push('explication absente ou trop longue');
@@ -80,5 +81,5 @@ if (ordre === 'a-ecrire') {
   console.log(ko ? ko + ' explication(s) à corriger sur ' + vus + '.' : vus + ' explication(s) relue(s) à la source : tout est retrouvé.');
   process.exit(ko ? 1 : 0);
 } else {
-  console.log('Usage : node outils/votez.js a-ecrire | verifier [--tout]');
+  console.log('Usage : node outils/votez.js a-ecrire | verifier [--tout | <clé>]');
 }
