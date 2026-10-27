@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="6759c97a9025">
+<meta name="concret-version" content="8dd074dad030">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -297,6 +297,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 <style>
 .vz-intro h1 { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 0; }
 .vz-prive { margin: 0; font-size: 13px; color: var(--muted); }
+.vz-retour { margin: 0; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--line) 45%, transparent); font-size: 14.5px; line-height: 1.45; }
+.vz-retour a { font-weight: 600; white-space: nowrap; color: var(--fr); }
+.vz-revoter { display: block; margin-top: 4px; text-align: center; font-weight: 600; }
 .vz-prive::before { content: "🔒 "; }
 .vz-prive span { font-weight: 600; color: var(--fg); }
 .vz-suivi { position: sticky; top: var(--navh, 56px); z-index: 8; display: flex; gap: 12px; align-items: center; padding: 8px 2px; margin: -8px 0; background: var(--bg); font-size: 14px; font-variant-numeric: tabular-nums; }
@@ -335,8 +338,9 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card vz-intro" data-partage="non" aria-labelledby="vz-titre">
     <span class="eyebrow">Votez les lois</span>
     <h1 id="vz-titre">Et vous, qu'auriez-vous voté&nbsp;?</h1>
-    <p class="note" style="font-size:14.5px" id="vz-lead">De vrais votes de l'Assemblée, expliqués en deux phrases. Au bout de 5 votes, voyez de quels groupes de députés vous êtes le plus proche.</p>
-    <p class="vz-prive"><span id="vz-nb"></span>vos votes restent sur cet appareil.</p>
+    <p class="note" style="font-size:14.5px" id="vz-lead">De vrais votes de l'Assemblée, expliqués en deux phrases, par séries de 10. Dès 5 votes, voyez de quels groupes de députés vous êtes le plus proche.</p>
+    <p class="vz-prive">Vos votes restent sur cet appareil.</p>
+    <p class="vz-retour" id="vz-retour" hidden></p>
   </section>
 
   <div class="vz-suivi" id="vz-suivi"><b id="vz-n"></b><div class="vz-prog" aria-hidden="true"><i id="vz-barre" style="width:0"></i></div></div>
@@ -362,9 +366,9 @@ footer p { margin: 0; } footer a { color: inherit; }
       <ol>
         <li><b>Les votes proposés</b> : tous les votes importants de l'Assemblée nationale depuis le début de la législature (<span id="vz-debut"></span>) : vote sur l'ensemble d'un texte ou sur une partie d'un budget, motion de rejet, motion de censure, vote de confiance, déclaration du Gouvernement suivie d'un vote. Un texte voté plusieurs fois n'est proposé qu'une fois : son dernier vote sur l'ensemble.</li>
         <li><b>L'explication de chaque texte</b> : une ou deux phrases écrites par Concret à partir du texte voté, dont le lien est donné juste en dessous : ce que le texte change, sans son but ni jugement. Pour un texte long, elle ne cite que quelques mesures, choisies par Concret parmi celles qui touchent le plus directement la vie des gens : elle ne dit jamais tout, le texte complet est en lien. Un texte n'est proposé qu'une fois son explication relue.</li>
-        <li><b>L'ordre</b> : d'abord les dix votes où les groupes se sont le plus partagés (sièges des groupes pour et contre les plus proches ; une seule motion de censure parmi eux), puis trois votes par thème, les plus partagés d'abord, pour que chaque thème ait son résultat, puis tous les autres, du plus récent au plus ancien.</li>
+        <li><b>L'ordre</b> : d'abord dix votes variés : une motion de censure et, pour chaque thème, le vote où les groupes se sont le plus partagés (sièges des groupes pour et contre les plus proches), complétés par les plus partagés des textes sans thème ; puis trois votes par thème, les plus partagés d'abord, pour que chaque thème ait son résultat, puis tous les autres, du plus récent au plus ancien.</li>
         <li><b>La position d'un groupe</b> : celle de la majorité de ses députés qui ont voté, publiée par l'Assemblée. Pour une motion de censure, seuls les votes pour sont comptés : un groupe est compté pour si la majorité de ses membres l'a votée, contre sinon. Un groupe dont aucun député n'a voté n'est pas compté pour ce vote. Les députés non inscrits ne forment pas un groupe : ils ne sont pas comptés.</li>
-        <li><b>L'accord</b> : pour chaque texte, votre choix est comparé à celui de la majorité du groupe. Même choix (pour et pour, contre et contre) : 1 point. Choix opposés (pour d'un côté, contre de l'autre) : 0 point. Si un seul des deux s'est abstenu : ½ point, à mi-chemin. Le pourcentage est la moyenne de ces points : par exemple 1 + 1 + ½ + 0 sur 4 textes, soit 2,5 sur 4 = 63 %. « Je ne sais pas » n'est pas compté.</li>
+        <li><b>L'accord</b> : pour chaque texte, votre choix est comparé à celui de la majorité du groupe. Même choix (pour et pour, contre et contre) : 1 point. Vous pour et le groupe contre, ou l'inverse : 0 point. Vous vous abstenez et le groupe vote pour ou contre, ou l'inverse : ½ point, à mi-chemin. Le pourcentage est la moyenne de ces points : par exemple 1 + 1 + ½ + 0 sur 4 textes, soit 2,5 sur 4 = 63 %. « Je ne sais pas » n'est pas compté.</li>
         <li><b>Les groupes</b> : les groupes actuels de l'Assemblée. Un groupe qui n'existait pas encore lors d'un vote n'est pas compté pour ce vote.</li>
         <li><b>Vos votes</b> restent dans le navigateur de cet appareil : ils ne sont envoyés nulle part, et Concret ne peut pas les voir. Ils s'effacent avec les données du navigateur, ou avec le lien « Effacer tous mes votes ».</li>
       </ol>
@@ -374,7 +378,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <footer><p>concret2027.fr · Page indépendante de tout parti. Un groupe n'est pas un candidat : le résultat dit seulement de quels groupes de députés vos votes sont proches. <a href="/mentions-legales/">Mentions légales</a></p></footer>
 </div>
-<script src="/commun/votez.js?v=20261028k"></script>
+<script src="/commun/votez.js?v=20261028o"></script>
 <script>
 (function () {
   var V = window.ConcretVotez, $ = function (id) { return document.getElementById(id); }, D = null, cible = 0, force = null, tous = false;
@@ -400,7 +404,15 @@ footer p { margin: 0; } footer a { color: inherit; }
     }).join('');
     $('vz-mes-plus').hidden = tous || L.length <= 10;
   }
-  function tout() { suivi(); V.bilan($('vz-res'), D); mesVotes(); }
+  // Visiteur qui a déjà son résultat : une ligne en tête qui le résume et y mène ; la question suivante reste juste dessous.
+  function retour() {
+    var R = V.resultat(D), g = R.groupes[0], el = $('vz-retour');
+    el.hidden = !(R.nb >= V.MIN && g);
+    if (!el.hidden) el.innerHTML = 'Votre résultat après ' + R.nb + ' votes : le plus proche de <b>' + V.esc(g.n) + '</b> (' + g.pct + ' %). <a href="#vz-res">Voir votre hémicycle ↓</a>';
+    // Sous le résultat : retour à la question en cours.
+    if (!el.hidden && compte() < D.ordre.length) $('vz-res').insertAdjacentHTML('beforeend', '<a class="vz-revoter" href="#vz-carte">↑ Continuer à voter</a>');
+  }
+  function tout() { suivi(); V.bilan($('vz-res'), D); retour(); mesVotes(); }
   function afficher(defiler) {
     var m = V.mes(), n = compte(), el = $('vz-carte');
     var q = force ? D.ordre.filter(function (x) { return x.id === force; })[0] : D.ordre.filter(function (x) { return !m[x.id]; })[0];
@@ -409,7 +421,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       el.innerHTML = '<span class="eyebrow">C\'est fait</span><h2>Vous avez voté les ' + D.ordre.length + ' textes</h2><p class="note">Un nouveau vote s\'ajoute ici dès que l\'Assemblée en tient un.</p><p class="vz-suite-l"><a href="/quiz/">Le quiz du jour →</a><a href="/politique/">Comment chaque groupe a voté, sur La vie politique →</a></p>';
     } else if (!force && n >= cible) {
       el.className = 'card vz-carte vz-pause';
-      el.innerHTML = '<span class="eyebrow">Étape franchie · ' + n + ' votes</span><h2>' + (n === V.SERIE ? 'Les dix votes qui ont le plus partagé l\'Assemblée sont faits' : n === etapeThemes() && themesPrets() ? 'Chaque thème a maintenant son résultat' : n + ' votes : votre résultat s\'affine') + '</h2>' +
+      el.innerHTML = '<span class="eyebrow">Étape franchie · ' + n + ' votes</span><h2>' + (n === V.SERIE ? 'Les dix premiers votes sont faits' : n === etapeThemes() && themesPrets() ? 'Chaque thème a maintenant son résultat' : n + ' votes : votre résultat s\'affine') + '</h2>' +
         (function () { var R = V.resultat(D), g = R.groupes[0]; return R.nb >= V.MIN && g ? '<p class="vz-top">Pour l\'instant, vos votes ressemblent le plus à ceux du groupe <b>' + V.esc(g.n) + '</b> (' + g.pct + ' %).</p>' : ''; })() +
         '<p class="note">Votre hémicycle se met à jour à chaque vote. Plus vous votez, plus le résultat est solide.</p><button type="button" class="vz-suite" id="vz-continuer">Prochaine étape : ' + etape(n) + ' votes</button>';
       $('vz-continuer').addEventListener('click', function () { cible = etape(n); afficher(true); });
@@ -423,9 +435,6 @@ footer p { margin: 0; } footer a { color: inherit; }
     D = J; var n = compte();
     // Une pause à chaque étape à partir de 10 (si la personne revient pile sur une étape, elle voit d'abord son résultat).
     cible = n >= V.SERIE && estEtape(n) ? n : Math.max(V.SERIE, etape(n));
-    $('vz-nb').textContent = D.ordre.length + ' textes · ';
-    // Visiteur qui revient (résultat déjà affiché) : son hémicycle d'abord, puis le vote suivant.
-    if (V.resultat(D).nb >= V.MIN) $('vz-suivi').parentNode.insertBefore($('vz-res'), $('vz-suivi'));
     $('vz-debut').textContent = 'premier vote le ' + V.dateFr(D.debut);
     $('vz-src').innerHTML = 'Source : <a href="' + D.P.votes.url + '">' + V.esc(D.P.votes.source) + '</a>, relue chaque jour (dernière lecture le ' + V.dateFr(D.maj) + ').';
     tout(); afficher(false);

@@ -59,7 +59,10 @@
     '.vz-hemi{position:relative}.vz-hemi svg{display:block;width:100%;height:auto;font-family:var(--sans)}.vz-hs{cursor:pointer;outline:none}.vz-hs:hover path,.vz-hs:focus path{filter:brightness(1.08)}' +
     '.vz-tip{position:absolute;top:0;z-index:3;max-width:260px;padding:7px 10px;border-radius:9px;background:var(--fg);color:var(--bg);font-size:12.5px;line-height:1.35;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
     '.vz-lire{margin:0;font-size:13.5px;color:var(--muted)}' +
-    '.vz-th{display:grid;gap:8px;padding-top:6px;border-top:1px solid var(--line)}.vz-th h3{margin:0;font-size:16px;font-weight:700}.vz-th ul{list-style:none;margin:0;padding:0;display:grid}' +
+    '.vz-th{display:grid;gap:8px;border:1px solid var(--line);border-radius:12px;padding:0 12px}.vz-th[open]{padding-bottom:12px}' +
+    '.vz-th>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:12px 0;font-size:16px;font-weight:700}.vz-th>summary::-webkit-details-marker{display:none}' +
+    '.vz-th>summary small{display:block;font-size:13px;font-weight:500;color:var(--muted)}.vz-th>summary::after{content:"Voir ▾";margin-left:auto;color:var(--fr);font-size:14px;white-space:nowrap}.vz-th[open]>summary::after{content:"Masquer ▴"}' +
+    '.vz-th ul{list-style:none;margin:0;padding:0;display:grid}' +
     '.vz-th li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 12px 12px;margin-top:8px;border:1px solid var(--line);border-radius:12px;font-size:14px;align-items:center}' +
     '.vz-th .t{font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:8px;color:var(--fg);text-decoration:none}.vz-th a.t:hover{color:var(--fr)}' +
     '.vz-th .t i{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,var(--line) 70%,transparent);color:var(--fg);flex:none}.vz-th .n{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}' +
@@ -180,11 +183,23 @@
       return { id: 'av:' + a.cle, avenir: true, cle: a.cle, dos: a.dos, k: a.k, d: a.d, titre: a.o, type: 'Vote prévu à l\'Assemblée', expl: X['avenir:' + a.cle],
         q: a.k === 'partie' ? 'Adopter cette partie du texte ?' : 'Adopter ce texte ?', choix: ['pour', 'contre', 'abstention'] };
     });
-    // Ordre de la page : les dix votes qui ont le plus partagé l'Assemblée (une seule motion de censure parmi eux), puis de quoi
-    // donner un résultat à chaque thème (trois votes par thème, les plus partagés d'abord, un thème après l'autre), puis tous les
-    // autres, du plus récent au plus ancien.
+    // Ordre de la page : d'abord dix votes variés (pour la censure et pour chaque thème, le vote qui a le plus partagé l'Assemblée,
+    // complétés par les plus partagés des textes sans thème), du plus partagé au moins partagé ; puis de quoi donner un résultat à
+    // chaque thème (trois votes par thème, les plus partagés d'abord, un thème après l'autre) ; puis tous les autres, du plus
+    // récent au plus ancien.
     var parPartage = Q.slice().sort(function (a, b) { return b.partage - a.partage || (a.d < b.d ? 1 : -1); });
-    var censure = 0, premiers = parPartage.filter(function (q) { return q.k !== 'censure' || !censure++; }).slice(0, SERIE);
+    var premiers = [], libre = function (q) { return premiers.indexOf(q) < 0; };
+    var censure = parPartage.filter(function (q) { return q.k === 'censure'; })[0]; if (censure) premiers.push(censure);
+    THEMES.forEach(function (t) {
+      // Un thème déjà présent n'en reprend pas ; de préférence un texte de ce seul thème.
+      if (premiers.some(function (p) { return p.pg.indexOf(t[0]) >= 0; })) return;
+      var L = parPartage.filter(function (x) { return libre(x) && x.pg.indexOf(t[0]) >= 0; });
+      var q = L.filter(function (x) { return x.pg.length === 1; })[0] || L[0];
+      if (q) premiers.push(q);
+    });
+    parPartage.forEach(function (q) { if (premiers.length < SERIE && libre(q) && q.k !== 'censure' && !q.pg.length) premiers.push(q); });
+    parPartage.forEach(function (q) { if (premiers.length < SERIE && libre(q) && q.k !== 'censure') premiers.push(q); });
+    premiers = premiers.slice(0, SERIE).sort(function (a, b) { return b.partage - a.partage; });
     var pris = premiers.slice(), nbTh = {};
     var compter = function (q) { q.pg.forEach(function (t) { nbTh[t] = (nbTh[t] || 0) + 1; }); };
     premiers.forEach(compter);
@@ -300,6 +315,35 @@
       (top ? '<text class="vz-c1" x="' + cx + '" y="' + (cy - 14) + '" text-anchor="middle" font-family="var(--serif)" font-size="30" fill="var(--fg)" data-def="' + top.pct + ' %">' + top.pct + ' %</text><text class="vz-c2" x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)" data-def="d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '">d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '</text>' : '') +
       '</svg><div class="vz-tip" hidden></div></div>';
   }
+  // Image à partager (1080 × 1080) : la phrase, l'hémicycle de la personne tel qu'affiché, et l'adresse de la page.
+  function image(svg, g, fin) {
+    try {
+      var cs = getComputedStyle(document.documentElement), v = function (n) { return cs.getPropertyValue(n).trim(); };
+      var sans = getComputedStyle(document.body).fontFamily, serif = v('--serif') || 'Georgia, serif';
+      var copie = svg.cloneNode(true);
+      Array.prototype.forEach.call(copie.querySelectorAll('.vz-c1, .vz-c2'), function (t) { t.remove(); });
+      copie.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); copie.setAttribute('font-family', 'Helvetica Neue, Helvetica, Arial, sans-serif'); copie.setAttribute('width', '960'); copie.setAttribute('height', '535');
+      var src = new XMLSerializer().serializeToString(copie).replace(/var\((--[\w-]+)\)/g, function (m, n) { return v(n) || '#888'; });
+      var img = new Image();
+      img.onload = function () {
+        var c = document.createElement('canvas'); c.width = 1080; c.height = 1080;
+        var x = c.getContext('2d'), fg = v('--fg') || '#0b1530', mu = v('--muted') || '#5b6275';
+        var ajuste = function (t, taille, poids, police, larg) { do { x.font = poids + ' ' + taille + 'px ' + police; taille -= 2; } while (x.measureText(t).width > larg && taille > 20); };
+        x.fillStyle = v('--panel') || v('--bg') || '#fff'; x.fillRect(0, 0, 1080, 1080);
+        x.textAlign = 'center'; x.fillStyle = mu; x.font = '600 26px ' + sans; x.fillText('MON HÉMICYCLE', 540, 92);
+        x.fillStyle = fg; x.font = '400 66px ' + serif; x.fillText('Je vote à ' + g.pct + ' % comme', 540, 178);
+        ajuste(g.n, 50, 700, sans, 980); x.fillText(g.n, 540, 248);
+        x.drawImage(img, 60, 300, 960, 535);
+        x.font = '400 72px ' + serif; x.fillText(g.pct + ' %', 540, 790);
+        x.fillStyle = mu; x.font = '400 26px ' + sans; x.fillText('d\'accord avec ' + g.c.replace('-NFP', ''), 540, 826);
+        x.font = '400 28px ' + sans; x.fillText('De vrais votes de l\'Assemblée nationale. Et vous ?', 540, 930);
+        x.fillStyle = v('--fr') || '#2f5bd3'; x.font = '700 34px ' + sans; x.fillText('concret2027.fr/votez', 540, 986);
+        c.toBlob(function (b) { fin(b); }, 'image/png');
+      };
+      img.onerror = function () { fin(null); };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(src);
+    } catch (e) { fin(null); }
+  }
   // Par thème : les textes rattachés à une page de Concret par les mots de leur titre (même règle que la page La vie politique).
   var THEMES = [['finances', 'Finances publiques'], ['vie', 'Vie des Français'], ['sante', 'Santé'], ['education', 'Éducation'], ['securite', 'Sécurité et justice'], ['defense', 'Défense'], ['demographie', 'Démographie et migrations']], MIN_THEME = 3;
   // Mêmes icônes que le menu du site (commun/menu.js).
@@ -314,6 +358,9 @@
   };
   // Chaque thème : une barre à la couleur du groupe le plus proche, remplie à sa part d'accord (deux barres si presque à égalité) ;
   // avant trois votes, une barre grise qui avance vers le résultat.
+  // Thèmes qui ont déjà un résultat (au moins trois votes) ; le bloc replié le dit, et reste ouvert d'un vote à l'autre s'il l'a été.
+  var thOuvert = false;
+  function prets(D) { return THEMES.filter(function (t) { var R = resultat(D, function (q) { return q.pg.indexOf(t[0]) >= 0; }); return R.nb >= MIN_THEME && R.groupes.length; }).length; }
   function parTheme(D) {
     return THEMES.map(function (t) {
       var R = resultat(D, function (q) { return q.pg.indexOf(t[0]) >= 0; }), dispo = D.Q.filter(function (q) { return q.pg.indexOf(t[0]) >= 0; }).length;
@@ -339,15 +386,15 @@
     // Écart de moins de 3 points avec le suivant : les deux groupes sont nommés, « presque à égalité ».
     var top = R.groupes.filter(function (g, i) { return i < 2 && (R.groupes[0] || {}).pct - g.pct < 3; });
     el.innerHTML = '<span class="eyebrow">Votre hémicycle' + (R.nb ? ' · ' + R.nb + ' vote' + (R.nb > 1 ? 's' : '') : '') + '</span>' +
-      '<h2>' + (assez ? 'Vous votez le plus souvent comme ' + (top.length > 1 ? top.map(function (g) { return esc(g.n) + ' (' + g.pct + '\u00a0%)'; }).join(' et ') + ', presque à égalité' : 'le groupe ' + esc(top[0].n)) : 'Votre hémicycle se remplit à partir de ' + MIN + ' votes') + '</h2>' +
+      '<h2>' + (assez ? 'Vous votez le plus souvent comme ' + (top.length > 1 ? top.map(function (g) { return esc(g.n) + ' (' + g.pct + '\u00a0%)'; }).join(' et ') + (top[0].pct === top[1].pct ? ', à égalité' : ', presque à égalité') : 'le groupe ' + esc(top[0].n)) : 'Votre hémicycle se remplit à partir de ' + MIN + ' votes') + '</h2>' +
       hemicycle(D, assez ? R : null) +
       '<p class="vz-lire">Chaque groupe est à sa place dans l\'hémicycle, de la gauche à la droite. ' + (assez ? 'Plus sa part est colorée, plus vous votez comme lui. Touchez un groupe pour voir son nom.' : 'Encore ' + (MIN - R.nb) + ' vote' + (MIN - R.nb > 1 ? 's' : '') + ' : avant, le résultat dépendrait d\'un ou deux textes seulement.') + '</p>' +
       (assez ? '<ul class="vz-bars">' + liste + '</ul>' + (R.groupes.length > 3 ? '<button type="button" class="vz-plus">Voir les ' + R.groupes.length + ' groupes</button>' : '') +
-        '<div class="vz-th"><h3>Par thème</h3><ul>' + parTheme(D) + '</ul><p class="vz-lire">Le groupe dont vos votes sont le plus proches sur chaque thème. « 2 sur 4 textes » : vous avez voté 2 des 4 textes du thème ; un texte voté plusieurs fois à l\'Assemblée est une seule question, avec son dernier vote. Le thème d\'un texte vient des mots de son titre (règle de la page La vie politique).</p></div>' +
+        '<details class="vz-th"' + (thOuvert ? ' open' : '') + '><summary><span>Par thème<small>' + prets(D) + ' thème' + (prets(D) > 1 ? 's' : '') + ' sur ' + THEMES.length + ' avec un résultat</small></span></summary><ul>' + parTheme(D) + '</ul><p class="vz-lire">Le groupe dont vos votes sont le plus proches sur chaque thème. « 2 sur 4 textes » : vous avez voté 2 des 4 textes du thème ; un texte voté plusieurs fois à l\'Assemblée est une seule question, avec son dernier vote. Le thème d\'un texte vient des mots de son titre (règle de la page La vie politique).</p></details>' +
         '<button type="button" class="vz-suite vz-partage">Partager mon résultat</button><p class="vz-lire vz-copie" hidden></p>' : '') +
       '<details class="vz-off"><summary>En détail : les groupes et le calcul</summary>' +
       '<p>' + D.groupes.filter(function (g) { return g.a != null; }).slice().sort(function (p, q) { return q.a - p.a; }).map(function (g) { return '<b>' + esc(g.c) + '</b> : ' + esc(g.n) + ' (' + g.m + ' députés)'; }).join(' · ') + '.</p>' +
-      '<p>Le calcul : sur chaque texte, votre choix est comparé à celui de la majorité du groupe. Même choix : 1 point. Choix opposés (pour d\'un côté, contre de l\'autre) : 0 point. Un seul des deux s\'est abstenu : ½ point. Le pourcentage est la moyenne de ces points sur vos votes où le groupe a pris position (par exemple 1 + 1 + ½ + 0 sur 4 textes = 63 %).' +
+      '<p>Le calcul : sur chaque texte, votre choix est comparé à celui de la majorité du groupe. Même choix : 1 point. Vous pour et le groupe contre, ou l\'inverse : 0 point. Vous vous abstenez et le groupe vote pour ou contre, ou l\'inverse : ½ point. Le pourcentage est la moyenne de ces points sur vos votes où le groupe a pris position (par exemple 1 + 1 + ½ + 0 sur 4 textes = 63 %).' +
       (assez ? ' Accord avec le résultat de l\'Assemblée : ' + R.assemblee + ' % de vos votes.' : '') + '</p>' +
       '<p>Place, couleur et nombre de députés de chaque groupe : plan officiel de l\'hémicycle et données ouvertes de l\'Assemblée nationale. Les ' + ((D.G.NI || {}).m || '') + ' députés non inscrits ne forment pas un groupe : ils ne sont pas dessinés. Vos votes restent sur cet appareil.</p></details>';
     var tip = el.querySelector('.vz-tip'), box = el.querySelector('.vz-hemi');
@@ -365,14 +412,26 @@
       g.addEventListener('focus', function () { montre(g); });
     });
     box.addEventListener('pointerleave', function () { montre(null); });
-    // Partager : une ligne de texte, seulement si la personne le demande (rien n'est envoyé au site).
+    // Partager : l'image de l'hémicycle et une ligne, seulement si la personne le demande (rien n'est envoyé au site).
     var pa = el.querySelector('.vz-partage');
     if (pa) pa.addEventListener('click', function () {
-      var g = R.groupes[0], txt = 'Sur ' + R.nb + ' vrais votes de l\'Assemblée, je vote comme le groupe ' + g.n + ' à ' + g.pct + ' %. Et vous ?', url = 'https://concret2027.fr/votez/';
-      var dit = el.querySelector('.vz-copie');
-      if (navigator.share) navigator.share({ text: txt, url: url }).catch(function () {});
-      else if (navigator.clipboard) navigator.clipboard.writeText(txt + ' ' + url).then(function () { dit.textContent = 'Copié : collez-le où vous voulez.'; dit.hidden = false; }, function () {});
+      var g = R.groupes[0], txt = 'Je vote à ' + g.pct + ' % comme le groupe ' + g.n + ' à l\'Assemblée. Et vous ?', url = 'https://concret2027.fr/votez/';
+      var dit = el.querySelector('.vz-copie'), montrer = function (m) { dit.textContent = m; dit.hidden = false; };
+      var texte = function () {
+        if (navigator.share) return navigator.share({ text: txt, url: url }).catch(function () {});
+        if (navigator.clipboard) navigator.clipboard.writeText(txt + ' ' + url).then(function () { montrer('Copié : collez-le où vous voulez.'); }, function () {});
+      };
+      image(el.querySelector('.vz-hemi svg'), g, function (blob) {
+        if (!blob) return texte();
+        var f = new File([blob], 'mon-hemicycle-concret.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [f] })) return navigator.share({ files: [f], text: txt + ' ' + url }).catch(function () {});
+        // Ordinateur : l'image est enregistrée et la phrase copiée.
+        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+        if (navigator.clipboard) navigator.clipboard.writeText(txt + ' ' + url).then(function () { montrer('Image enregistrée, phrase copiée : collez-les où vous voulez.'); }, function () { montrer('Image enregistrée.'); });
+        else montrer('Image enregistrée.');
+      });
     });
+    var th = el.querySelector('.vz-th'); if (th) th.addEventListener('toggle', function () { thOuvert = th.open; });
     var plus = el.querySelector('.vz-plus');
     if (plus) plus.addEventListener('click', function () { Array.prototype.forEach.call(el.querySelectorAll('.vz-plus3'), function (li) { li.hidden = false; }); plus.remove(); });
     return R;

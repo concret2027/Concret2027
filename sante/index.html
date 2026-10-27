@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="6759c97a9025">
+<meta name="concret-version" content="8dd074dad030">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -236,6 +236,13 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .how[open] > summary::after { content: '▴'; }
 .how-body { padding: 0 12px 12px; display: grid; gap: 8px; font-size: 13.5px; }
 .how-body p { margin: 0; }
+.gov-pli { border: 1px solid var(--line); border-radius: 10px; }
+.gov-pli > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; padding: 12px 14px; font-weight: 700; font-size: 15px; }
+.gov-pli > summary::-webkit-details-marker { display: none; }
+.gov-pli > summary small { display: block; font-weight: 500; font-size: 13px; color: var(--muted); }
+.gov-pli > summary::after { content: 'Voir ▾'; margin-left: auto; color: var(--fr); font-size: 14px; white-space: nowrap; }
+.gov-pli[open] > summary::after { content: 'Masquer ▴'; }
+.gov-pli-body { padding: 0 14px 14px; display: grid; gap: 8px; }
 .ex { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; }
 .seuils { min-width: 0; font-size: 12.5px; }
 .seuils td { text-align: left; padding: 5px 6px 5px 0; color: var(--muted); }
@@ -400,7 +407,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><h1>Santé</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#annees">Année par année</a><a href="#actualite">Actualité</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#actualite">Actualité</a><a href="#courbes">Thèmes</a><a href="#annees">Année par année</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
   <section class="card" id="toile" hidden></section>
@@ -422,28 +429,18 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="chart" id="rank-pres"></div>
     <div class="pres-detail" id="pres-detail" hidden></div>
     <p class="note" id="rank-pres-note"></p>
-    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
-    <div class="chart" id="rank-gov"></div>
-    <p class="note" id="rank-gov-note"></p>
-    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
-    <p class="note pt-hors">Une note par thème. <b>Touchez un thème</b>, puis un indicateur, pour voir les chiffres année par année.</p>
-    <div class="gov-list" id="gov-list"></div>
-    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+    <details class="gov-pli" id="gov-pli">
+      <summary><span>Les gouvernements<small>La note de chaque Premier ministre, et son détail année par année</small></span></summary>
+      <div class="gov-pli-body">
+      <div class="chart" id="rank-gov"></div>
+      <p class="note" id="rank-gov-note"></p>
+      <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
+      <p class="note pt-hors">Une note par thème. <b>Touchez un thème</b>, puis un indicateur, pour voir les chiffres année par année.</p>
+      <div class="gov-list" id="gov-list"></div>
+      <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+      </div>
+    </details>
   </section>
-
-  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
-    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>Les cinq thèmes, la France face à ses voisins</h2>
-  </section>
-
-  <div class="themes" id="questions"></div>
-
-  <section class="card" id="annees" aria-labelledby="yr-title">
-    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
-    <p class="note"><i class="pt p1"></i> la France a fait mieux que ses voisins sur ce thème cette année-là, <i class="pt p0"></i> moins bien, <i class="pt ph"></i> autant, – pas de chiffre comparable (la raison est sous la ligne).</p>
-    <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
-    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 2005</button>
-  </section>
-
 
   <h2 class="grp-t" id="actualite">L'actualité</h2>
 
@@ -495,6 +492,19 @@ footer p { margin: 0; } footer a { color: inherit; }
     <summary><span class="acc-h">L'actualité de la santé</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body card"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-list"></ul></div>
   </details>
+
+  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
+    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>Les cinq thèmes, la France face à ses voisins</h2>
+  </section>
+
+  <div class="themes" id="questions"></div>
+
+  <section class="card" id="annees" aria-labelledby="yr-title">
+    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
+    <p class="note"><i class="pt p1"></i> la France a fait mieux que ses voisins sur ce thème cette année-là, <i class="pt p0"></i> moins bien, <i class="pt ph"></i> autant, – pas de chiffre comparable (la raison est sous la ligne).</p>
+    <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
+    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 2005</button>
+  </section>
 
 
   <section class="card quiz" id="quiz" aria-labelledby="quiz-q">
@@ -742,13 +752,15 @@ function main(FEED) {
   function openDetail(mode, g) {
     if (mode === 'gov') {
       if (!showAll) { showAll = true; var b = document.getElementById('gov-more'); b.setAttribute('aria-expanded', 'true'); b.textContent = 'Masquer le détail des autres gouvernements'; renderGov(); }
-      var row = document.getElementById('gov-' + g.y0); if (row) { row.scrollIntoView({ block: 'center' }); row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash'); } return;
+      var row = document.getElementById('gov-' + g.y0); if (row) { document.getElementById('gov-pli').open = true; row.scrollIntoView({ block: 'center' }); row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash'); } return;
     }
     var box = document.getElementById('pres-detail'); box.textContent = ''; box.hidden = false;
     var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span class="note"></span>';
     who.firstChild.textContent = g.n + ' · ' + nfmt(noteOf(g)) + '/20'; who.lastChild.textContent = ' ' + g.y0 + '-' + g.y1 + '. ' + countOf(g) + ' comparaisons. Note de chaque thème (touchez-en un pour le détail) :';
     box.appendChild(who); box.appendChild(themeChips(g));
   }
+  // Les gouvernements sont repliés : leur classement est dessiné à l'ouverture, à la largeur réelle.
+  document.getElementById('gov-pli').addEventListener('toggle', function () { if (this.open) rankOne('gov'); });
   function rankOne(mode) {
     var list = (mode === 'gov' ? GOVS : PRES).map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
     var box = document.getElementById('rank-' + mode); box.textContent = '';
