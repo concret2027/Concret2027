@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="6c62a6ea75cb">
+<meta name="concret-version" content="71deac05c484">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -38,7 +38,7 @@
 :root {
   --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
   --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a; --es: #d0632a;
-  --bad: #c43d3d; --ok: #1a7a43; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
+  --bad: #c43d3d; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06);
   --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
   --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
   --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
@@ -494,7 +494,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       var m = M[(idx + t) % M.length], P = cg.pres.slice().sort(function (a, b) { return a.y0 - b.y0; }).map(function (x) { return { n: court(x.n), v: note(x, m.k) }; });
       if (P.some(function (x) { return x.v == null; }) || !seule(P)) continue;
       var best = P.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = P.slice().sort(function (a, b) { return b.v - a.v; });
-      out.push({ page: 'notes', l: 'Les présidents', q: 'Sur la page ' + m.l + ', quel président a la meilleure note ?', o: P.map(function (x) { return x.n; }), a: P.indexOf(best),
+      out.push({ page: 'notes', l: 'Les présidents', q: 'Sur la page ' + m.l + ', quel président a la note la plus haute ?', o: P.map(function (x) { return x.n; }), a: P.indexOf(best),
         e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(m) + '/#bulletin', src: m.l });
       break;
     }
@@ -507,7 +507,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       for (var essai = 0; essai < 12 && !four; essai++) { var c = melange(G, r).slice(0, 4); if (seule(c)) four = c; }
       if (!four) continue;
       best = four.reduce(function (a, b) { return b.v > a.v ? b : a; }); tri = four.slice().sort(function (a, b) { return b.v - a.v; });
-      out.push({ page: 'notes', l: 'Les gouvernements', q: 'Sur la page ' + m.l + ', lequel de ces gouvernements a la meilleure note ?', o: four.map(function (x) { return x.n; }), a: four.indexOf(best),
+      out.push({ page: 'notes', l: 'Les gouvernements', q: 'Sur la page ' + m.l + ', lequel de ces gouvernements a la note la plus haute ?', o: four.map(function (x) { return x.n; }), a: four.indexOf(best),
         e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20).', lien: '/' + slug(m) + '/#bulletin', src: m.l });
       break;
     }
@@ -517,7 +517,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   function main(feed) {
     var S = feed.series, Qs = [];
     PAGES.forEach(function (pg) { var B = (S[pg.p] || {}).QUIZ; if (B && B.length) { var Q = pick(B); Qs.push({ page: pg.p, l: pg.l, q: Q.q, o: Q.o, a: Q.a, e: Q.e, cle: pg.cle + idx, lien: Q.v ? '/' + pg.p + '/#' + Q.v : '/' + pg.p + '/#quiz', src: pg.l, Q: Q }); } });
-    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz-' + i + '-' + idx; g.Q = { q: g.q, o: g.o, d: 'La note de Concret, sur 20 : 10 = la France a fait aussi bien que la moyenne de l\'UE pendant le mandat, au-dessus mieux, en dessous moins bien.' }; Qs.push(g); });
+    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz-' + i + '-' + idx; g.Q = { q: g.q, o: g.o, d: 'Note sur 20, calculée avec la règle affichée sur chaque page : 10 = la France a fait aussi bien que la moyenne de l\'UE pendant le mandat.' }; Qs.push(g); });
     var total = Qs.length, rep = Qs.map(function () { return null; });
     document.getElementById('qz-titre').textContent = total + ' questions sur la France face à ses voisins';
     var prog = document.getElementById('qz-prog'); prog.innerHTML = Qs.map(function () { return '<i></i>'; }).join('');
@@ -532,7 +532,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       function reveal(p, nouveau) {
         rep[n] = p === x.a;
         Array.prototype.forEach.call(opts.children, function (b, i) { b.disabled = true; if (i === x.a) b.classList.add('right'); else if (i === p) b.classList.add('wrong'); });
-        ans.innerHTML = esc((p === x.a ? 'Bonne réponse. ' : 'Raté. ') + x.e) + ' <a class="qz-src" href="' + esc(x.lien) + '">Vérifier sur la page ' + esc(x.src) + ' →</a>'; ans.hidden = false;
+        ans.innerHTML = esc((p === x.a ? 'Bonne réponse. ' : 'Pas tout à fait. ') + x.e) + ' <a class="qz-src" href="' + esc(x.lien) + '">Vérifier sur la page ' + esc(x.src) + ' →</a>'; ans.hidden = false;
         try { localStorage.setItem(x.cle, String(p)); } catch (e) {}
         prog.children[n].className = p === x.a ? 'g' : 'b';
         document.getElementById('qz-n').textContent = rep.filter(function (v) { return v != null; }).length + ' / ' + total;

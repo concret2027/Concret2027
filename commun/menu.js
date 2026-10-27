@@ -75,6 +75,10 @@
     // Pastilles des tableaux « Année par année » : point marqué, pas de point, demi-point (égalité).
     '.pt{display:inline-block;width:.8em;height:.8em;border-radius:50%;border:2px solid currentColor;box-sizing:border-box;vertical-align:-.08em}.pt.p1{background:currentColor}.pt.ph{background:linear-gradient(90deg,currentColor 50%,transparent 50%)}' +
     '.rech-b{min-width:44px;min-height:44px;justify-content:center}button.share,.bx-share{min-height:40px}' +
+    // Boutons pleins (bleu) en mode sombre : texte foncé, lisible sur le bleu clair du thème sombre.
+    '@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ct-envoyer,:root:not([data-theme="light"]) .qz-btn,:root:not([data-theme="light"]) .vz-suite{color:#0b1530}}:root[data-theme="dark"] .ct-envoyer,:root[data-theme="dark"] .qz-btn,:root[data-theme="dark"] .vz-suite{color:#0b1530}' +
+    // Lignes de texte pas trop longues sur grand écran.
+    '.card>p,.card .note{max-width:72ch}' +
     // Long texte sous une courbe : deux lignes, puis « Détail du graphe » pour lire la suite.
     // Titre d'une courbe : ce qui est mesuré en titre, la conclusion chiffrée dessous, en plus petit.
     'h2.inv,h3.inv{font-size:14.5px;font-weight:400;line-height:1.4;color:' + V.muted + '}h2.inv .eyebrow,h3.inv .eyebrow{font-size:18px;font-weight:700;line-height:1.25;letter-spacing:0;text-transform:none;color:' + V.fg + ';margin-bottom:3px}' +
