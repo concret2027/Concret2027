@@ -5,6 +5,13 @@ Dépenses par fonction (COFOG, gov_10a_exp), recettes par type (gov_10a_taxag, g
 PIB et population (nama_10_gdp, nama_10_pe) ; administrations publiques (État, Sécurité sociale, collectivités), en % du PIB,
 dernière année publiée pour la France. Rien n'est estimé : un pays sans chiffre pour l'année est laissé de côté.
 
+Pour la France, en plus :
+- des repères concrets, en euros (Eurostat) : dépense de retraite par retraité, d'enseignement par élève, de police par policier
+  ou gendarme, de prison par détenu, de chômage par chômeur ; ce que les ménages et leurs complémentaires paient pour se soigner ;
+- la dette dans cinq ans : prévision du FMI (Perspectives de l'économie mondiale et Moniteur des finances publiques), croissance,
+  inflation, solde primaire, intérêts ; la page y ajoute l'effet des choix de la personne, et deux scénarios de croissance ;
+- les défis du jour, chacun avec la source de son chiffre.
+
   python3 outils/budget.py            compare avec donnees/budget.json
   python3 outils/budget.py --ecrire   écrit donnees/budget.json
 """
@@ -26,6 +33,32 @@ NOMS = {'BE': 'la Belgique', 'BG': 'la Bulgarie', 'CZ': 'la Tchéquie', 'DK': 'l
 HORS_UE_EUROSTAT = ['NO', 'IS', 'CH']
 OCDE = {'UK': 'GBR', 'JP': 'JPN', 'US': 'USA'}
 OCDE_API = 'https://sdmx.oecd.org/public/rest/data/'
+FMI_API = 'https://www.imf.org/external/datamapper/api/v1/'
+# Prévision du FMI : croissance réelle, inflation, solde, dette (Perspectives de l'économie mondiale), solde primaire (Moniteur des finances publiques).
+FMI = {'croissance': 'NGDP_RPCH', 'inflation': 'PCPIPCH', 'solde': 'GGXCNL_NGDP', 'dette': 'GGXWDG_NGDP', 'primaire': 'GGXONLB_G01_GDP_PT'}
+HORIZON = 5        # la dette dans cinq ans (cinq ans après l'année en cours)
+ECART_CROISSANCE = 1.0   # scénarios : croissance plus forte ou plus faible d'un point chaque année (hypothèse de Concret, écrite sur la page)
+
+# Défis du jour : un par jour, le même pour tous, tiré dans l'ordre de la liste. Chaque chiffre a sa source.
+# Conditions : solde_min (déficit au plus), solde_reel (pas plus de déficit qu'aujourd'hui), dep_min (un poste au moins à),
+# pas_baisse / pas_hausse / fixe (un poste, ou 'rec:*' pour tous les impôts), dette_baisse (dette dans cinq ans sous celle
+# d'aujourd'hui, scénario central), rembourser (tous les soins remboursés), proche (le pays le plus proche).
+GLOSSAIRE_EDP = {'source': "Eurostat, glossaire « Procédure concernant les déficits excessifs » : selon le protocole annexé au traité de Maastricht, le déficit ne doit pas dépasser 3 % du PIB", 'url': 'https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Excessive_deficit_procedure_(EDP)'}
+OTAN_2035 = {'source': "OTAN, déclaration du sommet de La Haye (25 juin 2025) : au moins 3,5 % du PIB d'ici 2035 pour la défense, selon la définition de l'OTAN", 'url': 'https://www.nato.int/cps/en/natohq/official_texts_236705.htm'}
+DEFIS = [
+    {'id': 'deficit3', 't': 'Ramenez le déficit à 3 % du PIB ou moins.', 'c': [{'type': 'solde_min', 'v': -3}], 'src': GLOSSAIRE_EDP},
+    {'id': 'defense', 't': "Portez la défense à 3,5 % du PIB, l'objectif de l'OTAN pour 2035, sans plus de déficit qu'aujourd'hui.", 'c': [{'type': 'dep_min', 'k': 'defense', 'v': 3.5}, {'type': 'solde_reel'}], 'src': OTAN_2035},
+    {'id': 'retraites3', 't': 'Ramenez le déficit à 3 % du PIB sans baisser les retraites.', 'c': [{'type': 'solde_min', 'v': -3}, {'type': 'pas_baisse', 'k': 'retraites'}], 'src': GLOSSAIRE_EDP},
+    {'id': 'dette', 't': "Faites baisser la dette d'ici cinq ans.", 'c': [{'type': 'dette_baisse'}]},
+    {'id': 'impots3', 't': "Ramenez le déficit à 3 % du PIB sans augmenter aucun impôt ni cotisation.", 'c': [{'type': 'solde_min', 'v': -3}, {'type': 'pas_hausse', 'k': 'rec:*'}], 'src': GLOSSAIRE_EDP},
+    {'id': 'allemagne', 't': "Faites un budget qui ressemble le plus à celui de l'Allemagne.", 'c': [{'type': 'proche', 'g': 'DE'}]},
+    {'id': 'soins', 't': "Remboursez tous les soins, sans plus de déficit qu'aujourd'hui.", 'c': [{'type': 'rembourser'}, {'type': 'solde_reel'}]},
+    {'id': 'equilibre', 't': "Votez un budget à l'équilibre : autant de recettes que de dépenses.", 'c': [{'type': 'solde_min', 'v': 0}]},
+    {'id': 'ecole_sante', 't': "Ramenez le déficit à 3 % du PIB sans toucher à l'école ni à la santé.", 'c': [{'type': 'solde_min', 'v': -3}, {'type': 'fixe', 'k': 'ecole'}, {'type': 'fixe', 'k': 'sante'}], 'src': GLOSSAIRE_EDP},
+    {'id': 'suede', 't': 'Faites un budget qui ressemble le plus à celui de la Suède.', 'c': [{'type': 'proche', 'g': 'SE'}]},
+    {'id': 'dette_impots', 't': "Faites baisser la dette d'ici cinq ans sans augmenter aucun impôt ni cotisation.", 'c': [{'type': 'dette_baisse'}, {'type': 'pas_hausse', 'k': 'rec:*'}]},
+    {'id': 'suisse', 't': 'Faites un budget qui ressemble le plus à celui de la Suisse.', 'c': [{'type': 'proche', 'g': 'CH'}]},
+]
 
 # Dépenses : les postes de la page, chacun une somme de fonctions COFOG. Les intérêts de la dette ne se choisissent pas :
 # ils suivent la dette (affichés à part).
@@ -109,6 +142,91 @@ def somme(table, geo, an, codes):
     return round(t, 2)
 
 
+def fmi():
+    """Prévision du FMI pour la France, de la dernière année connue à cinq ans plus tard."""
+    V = {}
+    for k, code in FMI.items():
+        # Le FMI refuse certains navigateurs déclarés : la requête part avec l'en-tête par défaut de Python.
+        d = json.load(urllib.request.urlopen(FMI_API + code + '/FRA', timeout=120))
+        V[k] = d['values'][code]['FRA']
+    # L'édition de chaque série, telle que le FMI la nomme (par exemple « World Economic Outlook (October 2026) »).
+    ind = json.load(urllib.request.urlopen(FMI_API + 'indicators', timeout=120))['indicators']
+    V['editions'] = sorted({ind[c].get('source', '') for c in FMI.values() if c in ind})
+    return V
+
+
+def repere(table, an_max, codes, ans):
+    """Dernière année (au plus an_max) où toutes les valeurs existent."""
+    for a in ans:
+        if int(a) <= an_max and all(table.get(c + (a,)) is not None for c in codes):
+            return a
+    return None
+
+
+def concret(an):
+    """Repères en euros pour la France : chaque dépense rapportée au nombre de personnes concernées, la même année."""
+    ans = [str(an - k) for k in range(0, 5)]
+    eur = lire('gov_10a_exp', geo='FR', sector='S13', na_item='TE', unit='MIO_EUR', cofog99=['GF1002', 'GF1003', 'GF09', 'GF0301', 'GF0304', 'GF1005'], time=ans)
+    def dep(c, a): return eur.get(('FR', a, c))
+    ret = lire('spr_pns_ben', geo='FR', spdepm='TOTAL', sex='T', spscheme='TOTAL', unit='PER', spdepb='OLD_SRV', time=ans)
+    ele = lire('educ_uoe_enra01', geo='FR', isced11='ED0-8', sector='TOT_SEC', sex='T', worktime='TOTAL', time=ans)
+    pol = lire('crim_just_job', geo='FR', isco08='OC5412', unit='NR', sex='T', time=ans)
+    pri = lire('crim_pris_cap', geo='FR', unit='NR', indic_cr=['PRIS_ACT_CAP', 'PRIS_OFF_CAP'], time=ans)
+    cho = lire('une_rt_a', geo='FR', age='Y15-74', unit='THS_PER', sex='T', time=ans)
+    soi = lire('hlth_sha11_hf', geo='FR', icha11_hf=['HF2', 'HF3'], unit='MIO_EUR', time=ans)
+    out = {}
+    def ajoute(cle, poste, l, unite, montant, nombre, a, src, par=1, plus=None):
+        out[cle] = {'poste': poste, 'l': l, 'unite': unite, 'annee': int(a), 'depense_meur': round(montant, 1), 'nombre': nombre,
+                    'v': round(montant * 1e6 / nombre / par), 'source': src}
+        if plus: out[cle].update(plus)
+    for a in ans:
+        if dep('GF1002', a) and dep('GF1003', a) and ret.get(('FR', a)):
+            ajoute('retraite', 'retraites', 'Dépense publique de vieillesse et de réversion, par retraité', '€ par mois', dep('GF1002', a) + dep('GF1003', a), ret[('FR', a)], a,
+                   "Eurostat : dépenses de vieillesse et de survie (COFOG, gov_10a_exp) ; retraités, pensions de vieillesse et de réversion (spr_pns_ben)", 12); break
+    for a in ans:
+        if dep('GF09', a) and ele.get(('FR', a)):
+            ajoute('eleve', 'ecole', "Dépense publique d'enseignement par élève ou étudiant", '€ par an', dep('GF09', a), ele[('FR', a)], a,
+                   "Eurostat : dépense d'enseignement (COFOG, gov_10a_exp) ; élèves et étudiants, de la maternelle au doctorat, public et privé (educ_uoe_enra01)"); break
+    for a in ans:
+        if dep('GF0301', a) and pol.get(('FR', a)):
+            ajoute('policier', 'securite', 'Dépense de police (salaires, matériel, bâtiments) par policier ou gendarme', '€ par an', dep('GF0301', a), pol[('FR', a)], a,
+                   "Eurostat : services de police (COFOG, gov_10a_exp) ; policiers et gendarmes (crim_just_job)"); break
+    for a in ans:
+        if dep('GF0304', a) and pri.get(('FR', a, 'PRIS_ACT_CAP')) and pri.get(('FR', a, 'PRIS_OFF_CAP')):
+            ajoute('detenu', 'securite', 'Dépense de prison par détenu', '€ par an', dep('GF0304', a), pri[('FR', a, 'PRIS_ACT_CAP')], a,
+                   "Eurostat : prisons (COFOG, gov_10a_exp) ; personnes détenues et places de prison (crim_pris_cap)", 1, {'places': pri[('FR', a, 'PRIS_OFF_CAP')]}); break
+    for a in ans:
+        if dep('GF1005', a) and cho.get(('FR', a)):
+            ajoute('chomeur', 'chomage', 'Dépense publique de chômage par chômeur', '€ par an', dep('GF1005', a), cho[('FR', a)] * 1000, a,
+                   "Eurostat : dépenses de chômage (COFOG, gov_10a_exp) ; chômeurs de 15 à 74 ans, au sens du BIT (une_rt_a)"); break
+    # Rembourser tous les soins : ce que paient les complémentaires (mutuelles, assurances) et les ménages eux-mêmes, l'année du budget.
+    a = str(an)
+    if soi.get(('FR', a, 'HF2')) and soi.get(('FR', a, 'HF3')):
+        out['soins'] = {'poste': 'sante', 'annee': an, 'complementaires_meur': soi[('FR', a, 'HF2')], 'menages_meur': soi[('FR', a, 'HF3')],
+                        'source': "Eurostat, dépense de santé par financeur (hlth_sha11_hf) : régimes facultatifs (mutuelles, assurances) et paiements directs des ménages"}
+    return out
+
+
+def projection(V, d0, an0):
+    """Chaque année : croissance du PIB en valeur, taux d'intérêt moyen de la dette et solde primaire du FMI, et le reste
+    (achats et ventes d'actifs, écarts de calcul) tel que le FMI le prévoit implicitement. Dette de départ : Eurostat."""
+    fin = min(date.today().year + HORIZON, max(int(a) for a in V['dette']))
+    ans = [str(a) for a in range(an0 + 1, fin + 1)]
+    L = []
+    dprec = V['dette'][str(an0)]
+    for a in ans:
+        p = str(int(a) - 1)
+        g = (1 + V['croissance'][a] / 100) * (1 + V['inflation'][a] / 100) - 1
+        interets = V['primaire'][a] - V['solde'][a]
+        i = interets / V['dette'][p] * (1 + g)
+        calc = dprec * (1 + i) / (1 + g) - V['primaire'][a]
+        L.append({'an': int(a), 'croissance': V['croissance'][a], 'inflation': V['inflation'][a], 'g': round(g, 5), 'i': round(i, 5),
+                  'primaire': round(V['primaire'][a], 2), 'interets': round(interets, 2), 'reste': round(V['dette'][a] - calc, 3), 'dette_fmi': V['dette'][a]})
+        dprec = V['dette'][a]
+    return {'depart': {'an': an0, 'dette': d0, 'dette_fmi': V['dette'][str(an0)]}, 'ans': L, 'ecart_croissance': ECART_CROISSANCE,
+            'premier_budget': date.today().year + 1, 'editions': V['editions']}
+
+
 def construire():
     geos = PAYS + ['EU27_2020'] + HORS_UE_EUROSTAT
     ans = [str(date.today().year - k) for k in range(1, 4)]
@@ -177,8 +295,14 @@ def construire():
                     'autres_recettes': None, 'depenses': pct.get((z, a, '_T')), 'recettes': pct.get((z, a, 'OTR')),
                     'solde': round(pct[(z, a, 'OTR')] - pct[(z, a, '_T')], 2), 'dette': None, 'pib_meur': None, 'pop_milliers': None}
             break
+    # La dette dans cinq ans : départ à la dernière dette publiée par Eurostat, prévision du FMI ensuite.
+    dfin = lire('gov_10dd_edpt1', geo='FR', sector='S13', unit='PC_GDP', na_item='GD', time=[str(date.today().year - k) for k in range(1, 3)])
+    an0 = max(int(a) for (g, a) in dfin)
+    V = fmi()
+    proj = projection(V, dfin[('FR', str(an0))], an0)
     return {
         'maj': date.today().isoformat(), 'annee': int(an), 'ocde_ecartees': sorted(set(ecartees)),
+        'concret': concret(int(an)), 'projection': proj, 'defis': DEFIS,
         'hors_ue': HORS_UE_EUROSTAT + list(OCDE),
         'sources': {
             'depenses': {'source': 'Eurostat, dépenses des administrations publiques par fonction (COFOG), gov_10a_exp', 'url': 'https://ec.europa.eu/eurostat/databrowser/view/gov_10a_exp/default/table'},
@@ -187,6 +311,8 @@ def construire():
             'dette': {'source': 'Eurostat, dette publique (critère de Maastricht), gov_10dd_edpt1', 'url': 'https://ec.europa.eu/eurostat/databrowser/view/gov_10dd_edpt1/default/table'},
             'pib': {'source': 'Eurostat, PIB à prix courants, nama_10_gdp ; population, nama_10_pe', 'url': 'https://ec.europa.eu/eurostat/databrowser/view/nama_10_gdp/default/table'},
             'ocde': {'source': "OCDE, comptes des administrations publiques : dépenses par fonction (tableau 11), recettes (tableau 12), PIB (tableau 1)", 'url': 'https://data-explorer.oecd.org/'},
+            'concret': {'source': 'Eurostat (tableaux nommés à chaque ligne)', 'url': 'https://ec.europa.eu/eurostat/data/database'},
+            'fmi': {'source': "FMI, Perspectives de l'économie mondiale (croissance, inflation, solde, dette) et Moniteur des finances publiques (solde primaire), dernière édition", 'url': 'https://www.imf.org/external/datamapper/datasets/WEO'},
         },
         'DEP': [{'k': k, 'l': l, 'cofog': c} for k, l, c in DEP],
         'REC': [{'k': k, 'l': l, 'codes': c} for k, l, c in REC],
@@ -204,6 +330,11 @@ def main():
     print('  somme des postes + intérêts :', round(sum(fr['dep'].values()) + fr['interets'], 2), '; total par fonction', fr['depenses_fonctions'], '; total des comptes', fr['depenses'], '; PIB', fr['pib_meur'], 'M€ ; population', fr['pop_milliers'], 'milliers')
     print('Hors UE :', ', '.join(f"{o['pays'][g]['nom']} {o['pays'][g]['annee']} (lignes vides : {sum(1 for v in list(o['pays'][g]['dep'].values()) + list(o['pays'][g]['rec'].values()) if v is None)})" for g in o['hors_ue'] if g in o['pays']))
     print('Lignes OCDE écartées (la France relue à l\'OCDE ne redonne pas le chiffre d\'Eurostat) :', o['ocde_ecartees'] or 'aucune')
+    print('Repères :', ', '.join(f"{k} {v.get('v', round((v.get('complementaires_meur') or 0) + (v.get('menages_meur') or 0)))} {v.get('unite', 'M€')} ({v['annee']})" for k, v in o['concret'].items()))
+    pj = o['projection']
+    print('Dette fin', pj['depart']['an'], ':', pj['depart']['dette'], '(Eurostat) ;', pj['depart']['dette_fmi'], '(FMI) ; FMI', pj['ans'][-1]['an'], ':', pj['ans'][-1]['dette_fmi'])
+    if abs(pj['depart']['dette'] - pj['depart']['dette_fmi']) > 1:
+        print('⚠ La dette de départ du FMI et celle d\'Eurostat diffèrent de plus d\'un point.')
     if '--ecrire' in sys.argv:
         json.dump(o, open(SORTIE, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
         print('Écrit :', SORTIE)
