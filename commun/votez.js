@@ -59,6 +59,10 @@
     '.vz-hemi{position:relative}.vz-hemi svg{display:block;width:100%;height:auto;font-family:var(--sans)}.vz-hs{cursor:pointer;outline:none}.vz-hs:hover path,.vz-hs:focus path{filter:brightness(1.08)}' +
     '.vz-tip{position:absolute;top:0;z-index:3;max-width:260px;padding:7px 10px;border-radius:9px;background:var(--fg);color:var(--bg);font-size:12.5px;line-height:1.35;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
     '.vz-lire{margin:0;font-size:13.5px;color:var(--muted)}' +
+    '.vz-th{display:grid;gap:8px;padding-top:6px;border-top:1px solid var(--line)}.vz-th h3{margin:0;font-size:16px;font-weight:700}.vz-th ul{list-style:none;margin:0;padding:0;display:grid}' +
+    '.vz-th li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}.vz-th li:first-child{border-top:0}' +
+    '.vz-th .t{font-weight:700}.vz-th .n{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}.vz-th .g{grid-column:1/-1;color:var(--muted);font-size:13.5px}' +
+    '.vz-th .g i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:0}.vz-th .g b{color:var(--fg);font-weight:700}' +
     '.vz-plus{font:inherit;font-size:13.5px;font-weight:600;color:var(--fr);background:none;border:0;padding:4px 0;cursor:pointer;justify-self:start}' +
     '.vz-bars li.top .n{color:var(--fr)}';
 
@@ -87,7 +91,7 @@
   function pm(J, d) { var n = ''; (J.PM || []).forEach(function (p) { if (p.d < d) n = p.n; }); return n; }
 
   function question(v, J) {
-    var q = { id: String(v.n), v: v, k: v.k, d: v.d, choix: ['pour', 'contre', 'abstention'], pos: {} };
+    var q = { id: String(v.n), v: v, k: v.k, d: v.d, choix: ['pour', 'contre', 'abstention'], pos: {}, pg: v.pg || [] };
     var s = sujet(v.t), st = stade(v.t), par = (v.t.match(/\bpar ((M\.|Mme|MM\.|Mmes) .+?)(,? (du|de la|de l'|des) (projet|proposition)|$)/) || [])[1];
     var gouv = pm(J, v.d), dg = gouv ? 'le Gouvernement de ' + gouv : 'le Gouvernement';
     if (v.k === 'texte' || v.k === 'partie') {
@@ -180,8 +184,8 @@
   }
 
   var accord = function (a, b) { return a === b ? 1 : (a === 'abstention' || b === 'abstention') ? 0.5 : 0; };
-  function resultat(D) {
-    var mes = lireMes(), faits = D.Q.filter(function (q) { return CHOIX[mes[q.id]]; });
+  function resultat(D, filtre) {
+    var mes = lireMes(), faits = D.Q.filter(function (q) { return CHOIX[mes[q.id]] && (!filtre || filtre(q)); });
     var L = D.groupes.map(function (g) {
       var s = 0, n = 0;
       faits.forEach(function (q) { var p = q.pos[g.c]; if (p) { n++; s += accord(mes[q.id], p); } });
@@ -281,6 +285,17 @@
       (top ? '<text class="vz-c1" x="' + cx + '" y="' + (cy - 14) + '" text-anchor="middle" font-family="var(--serif)" font-size="30" fill="var(--fg)" data-def="' + top.pct + ' %">' + top.pct + ' %</text><text class="vz-c2" x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)" data-def="d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '">d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '</text>' : '') +
       '</svg><div class="vz-tip" hidden></div></div>';
   }
+  // Par thème : les textes rattachés à une page de Concret par les mots de leur titre (même règle que la page La vie politique).
+  var THEMES = [['finances', 'Finances publiques'], ['vie', 'Vie des Français'], ['sante', 'Santé'], ['education', 'Éducation'], ['securite', 'Sécurité et justice'], ['defense', 'Défense'], ['demographie', 'Démographie et migrations']], MIN_THEME = 3;
+  function parTheme(D) {
+    return THEMES.map(function (t) {
+      var R = resultat(D, function (q) { return q.pg.indexOf(t[0]) >= 0; }), dispo = D.Q.filter(function (q) { return q.pg.indexOf(t[0]) >= 0; }).length;
+      var top = R.groupes.filter(function (g, i) { return i < 2 && (R.groupes[0] || {}).pct - g.pct < 3; });
+      var tete = R.nb >= MIN_THEME && top.length ? top.map(function (g) { return '<i style="background:' + ((D.G[g.c] || {}).coul || 'var(--fr)') + '"></i>' + esc(g.n) + ' <b>' + g.pct + '\u00a0%</b>'; }).join(' · ') : '';
+      return '<li><span class="t">' + t[1] + '</span><span class="n">' + R.nb + ' / ' + dispo + ' vote' + (dispo > 1 ? 's' : '') + '</span>' +
+        '<span class="g">' + (tete || (dispo ? 'Encore ' + Math.max(1, MIN_THEME - R.nb) + ' vote' + (MIN_THEME - R.nb > 1 ? 's' : '') + ' sur ce thème pour un résultat' : 'Pas encore de texte sur ce thème')) + '</span></li>';
+    }).join('');
+  }
   function bilan(el, D) {
     style();
     var R = resultat(D), assez = R.nb >= MIN;
@@ -295,6 +310,7 @@
       hemicycle(D, assez ? R : null) +
       '<p class="vz-lire">Chaque groupe est à sa place dans l\'hémicycle, de la gauche à la droite. ' + (assez ? 'Plus sa part est colorée, plus vous votez comme lui. Touchez un groupe pour voir son nom.' : 'Encore ' + (MIN - R.nb) + ' vote' + (MIN - R.nb > 1 ? 's' : '') + ' : avant, le résultat dépendrait d\'un ou deux textes seulement.') + '</p>' +
       (assez ? '<ul class="vz-bars">' + liste + '</ul>' + (R.groupes.length > 3 ? '<button type="button" class="vz-plus">Voir les ' + R.groupes.length + ' groupes</button>' : '') +
+        '<div class="vz-th"><h3>Par thème</h3><ul>' + parTheme(D) + '</ul><p class="vz-lire">Le groupe dont vos votes sont le plus proches sur chaque thème. Un texte est rattaché à un thème par les mots de son titre (règle de la page La vie politique) : il peut compter pour plusieurs thèmes, ou pour aucun.</p></div>' +
         '<button type="button" class="vz-suite vz-partage">Partager mon résultat</button><p class="vz-lire vz-copie" hidden></p>' : '') +
       '<details class="vz-off"><summary>En détail : les groupes et le calcul</summary>' +
       '<p>' + D.groupes.filter(function (g) { return g.a != null; }).slice().sort(function (p, q) { return q.a - p.a; }).map(function (g) { return '<b>' + esc(g.c) + '</b> : ' + esc(g.n) + ' (' + g.m + ' députés)'; }).join(' · ') + '.</p>' +
