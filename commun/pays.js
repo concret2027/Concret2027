@@ -54,10 +54,16 @@
       return '<span class="cp-chip"><i style="border-top-color:' + couleur(id, g) + '"></i>' + nom(g) + '<button type="button" data-retirer="' + g + '" aria-label="Retirer ' + nom(g) + '">✕</button></span>';
     }).join('');
     var hors = (index && index.hors_ue) || [], tri = function (a, c) { return nom(a).localeCompare(nom(c), 'fr'); };
-    var liste = Object.keys(index ? index.noms : NOMS).filter(function (g) { return ch.indexOf(g) < 0; });
+    // Seulement les pays qui ont un chiffre pour cette courbe (index.dispo), quand l'index le dit.
+    var dispo = index && index.dispo && k && index.dispo[k];
+    var liste = Object.keys(index ? index.noms : NOMS).filter(function (g) { return ch.indexOf(g) < 0 && (!dispo || dispo.indexOf(g) >= 0); });
     var opt = function (l) { return l.map(function (g) { return '<option value="' + g + '">' + nom(g) + '</option>'; }).join(''); };
     var ue = liste.filter(function (g) { return hors.indexOf(g) < 0; }).sort(tri), hu = liste.filter(function (g) { return hors.indexOf(g) >= 0; }).sort(tri);
-    b.innerHTML = h + '<select aria-label="Ajouter un pays"><option value="">+ Ajouter un pays</option><optgroup label="Union européenne">' + opt(ue) + '</optgroup>' + (hu.length ? '<optgroup label="Hors UE">' + opt(hu) + '</optgroup>' : '') + '</select>' +
+    // Hors UE : un groupe par région (Europe hors UE, Amériques, Asie et Océanie).
+    var reg = (index && index.regions) || {}, groupes = [];
+    hu.forEach(function (g) { var r = reg[g] || 'Hors UE', x = groupes.filter(function (y) { return y.r === r; })[0]; if (!x) groupes.push(x = { r: r, l: [] }); x.l.push(g); });
+    var ordre = ['Europe hors UE', 'Amériques', 'Asie et Océanie', 'Hors UE']; groupes.sort(function (a, c) { return ordre.indexOf(a.r) - ordre.indexOf(c.r); });
+    b.innerHTML = h + '<select aria-label="Ajouter un pays"><option value="">+ Ajouter un pays</option>' + (ue.length ? '<optgroup label="Union européenne">' + opt(ue) + '</optgroup>' : '') + groupes.map(function (x) { return '<optgroup label="' + x.r + '">' + opt(x.l) + '</optgroup>'; }).join('') + '</select>' +
       (sans.length ? '<span class="cp-msg">' + sans.join(', ') + ' : pas de chiffre publié pour cet indicateur.</span>' : '') +
       (ch.length ? '<span class="cp-msg">' + (ch.length > 1 ? 'Pays ajoutés' : 'Pays ajouté') + ' en pointillé sur ce graphique seulement, comme repère : aucune note ne change.</span>' : '');
   }
