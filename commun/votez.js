@@ -300,6 +300,35 @@
       (top ? '<text class="vz-c1" x="' + cx + '" y="' + (cy - 14) + '" text-anchor="middle" font-family="var(--serif)" font-size="30" fill="var(--fg)" data-def="' + top.pct + ' %">' + top.pct + ' %</text><text class="vz-c2" x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)" data-def="d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '">d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '</text>' : '') +
       '</svg><div class="vz-tip" hidden></div></div>';
   }
+  // Image à partager (1080 × 1080) : la phrase, l'hémicycle de la personne tel qu'affiché, et l'adresse de la page.
+  function image(svg, g, fin) {
+    try {
+      var cs = getComputedStyle(document.documentElement), v = function (n) { return cs.getPropertyValue(n).trim(); };
+      var sans = getComputedStyle(document.body).fontFamily, serif = v('--serif') || 'Georgia, serif';
+      var copie = svg.cloneNode(true);
+      Array.prototype.forEach.call(copie.querySelectorAll('.vz-c1, .vz-c2'), function (t) { t.remove(); });
+      copie.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); copie.setAttribute('font-family', 'Helvetica Neue, Helvetica, Arial, sans-serif'); copie.setAttribute('width', '960'); copie.setAttribute('height', '535');
+      var src = new XMLSerializer().serializeToString(copie).replace(/var\((--[\w-]+)\)/g, function (m, n) { return v(n) || '#888'; });
+      var img = new Image();
+      img.onload = function () {
+        var c = document.createElement('canvas'); c.width = 1080; c.height = 1080;
+        var x = c.getContext('2d'), fg = v('--fg') || '#0b1530', mu = v('--muted') || '#5b6275';
+        var ajuste = function (t, taille, poids, police, larg) { do { x.font = poids + ' ' + taille + 'px ' + police; taille -= 2; } while (x.measureText(t).width > larg && taille > 20); };
+        x.fillStyle = v('--panel') || v('--bg') || '#fff'; x.fillRect(0, 0, 1080, 1080);
+        x.textAlign = 'center'; x.fillStyle = mu; x.font = '600 26px ' + sans; x.fillText('MON HÉMICYCLE', 540, 92);
+        x.fillStyle = fg; x.font = '400 66px ' + serif; x.fillText('Je vote à ' + g.pct + ' % comme', 540, 178);
+        ajuste(g.n, 50, 700, sans, 980); x.fillText(g.n, 540, 248);
+        x.drawImage(img, 60, 300, 960, 535);
+        x.font = '400 72px ' + serif; x.fillText(g.pct + ' %', 540, 790);
+        x.fillStyle = mu; x.font = '400 26px ' + sans; x.fillText('d\'accord avec ' + g.c.replace('-NFP', ''), 540, 826);
+        x.font = '400 28px ' + sans; x.fillText('De vrais votes de l\'Assemblée nationale. Et vous ?', 540, 930);
+        x.fillStyle = v('--fr') || '#2f5bd3'; x.font = '700 34px ' + sans; x.fillText('concret2027.fr/votez', 540, 986);
+        c.toBlob(function (b) { fin(b); }, 'image/png');
+      };
+      img.onerror = function () { fin(null); };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(src);
+    } catch (e) { fin(null); }
+  }
   // Par thème : les textes rattachés à une page de Concret par les mots de leur titre (même règle que la page La vie politique).
   var THEMES = [['finances', 'Finances publiques'], ['vie', 'Vie des Français'], ['sante', 'Santé'], ['education', 'Éducation'], ['securite', 'Sécurité et justice'], ['defense', 'Défense'], ['demographie', 'Démographie et migrations']], MIN_THEME = 3;
   // Mêmes icônes que le menu du site (commun/menu.js).
@@ -347,7 +376,7 @@
         '<button type="button" class="vz-suite vz-partage">Partager mon résultat</button><p class="vz-lire vz-copie" hidden></p>' : '') +
       '<details class="vz-off"><summary>En détail : les groupes et le calcul</summary>' +
       '<p>' + D.groupes.filter(function (g) { return g.a != null; }).slice().sort(function (p, q) { return q.a - p.a; }).map(function (g) { return '<b>' + esc(g.c) + '</b> : ' + esc(g.n) + ' (' + g.m + ' députés)'; }).join(' · ') + '.</p>' +
-      '<p>Le calcul : sur chaque texte, votre choix est comparé à celui de la majorité du groupe. Même choix : 1 point. Choix opposés (pour d\'un côté, contre de l\'autre) : 0 point. Un seul des deux s\'est abstenu : ½ point. Le pourcentage est la moyenne de ces points sur vos votes où le groupe a pris position (par exemple 1 + 1 + ½ + 0 sur 4 textes = 63 %).' +
+      '<p>Le calcul : sur chaque texte, votre choix est comparé à celui de la majorité du groupe. Même choix : 1 point. Vous pour et le groupe contre, ou l\'inverse : 0 point. Vous vous abstenez et le groupe vote pour ou contre, ou l\'inverse : ½ point. Le pourcentage est la moyenne de ces points sur vos votes où le groupe a pris position (par exemple 1 + 1 + ½ + 0 sur 4 textes = 63 %).' +
       (assez ? ' Accord avec le résultat de l\'Assemblée : ' + R.assemblee + ' % de vos votes.' : '') + '</p>' +
       '<p>Place, couleur et nombre de députés de chaque groupe : plan officiel de l\'hémicycle et données ouvertes de l\'Assemblée nationale. Les ' + ((D.G.NI || {}).m || '') + ' députés non inscrits ne forment pas un groupe : ils ne sont pas dessinés. Vos votes restent sur cet appareil.</p></details>';
     var tip = el.querySelector('.vz-tip'), box = el.querySelector('.vz-hemi');
@@ -365,13 +394,24 @@
       g.addEventListener('focus', function () { montre(g); });
     });
     box.addEventListener('pointerleave', function () { montre(null); });
-    // Partager : une ligne de texte, seulement si la personne le demande (rien n'est envoyé au site).
+    // Partager : l'image de l'hémicycle et une ligne, seulement si la personne le demande (rien n'est envoyé au site).
     var pa = el.querySelector('.vz-partage');
     if (pa) pa.addEventListener('click', function () {
-      var g = R.groupes[0], txt = 'Sur ' + R.nb + ' vrais votes de l\'Assemblée, je vote comme le groupe ' + g.n + ' à ' + g.pct + ' %. Et vous ?', url = 'https://concret2027.fr/votez/';
-      var dit = el.querySelector('.vz-copie');
-      if (navigator.share) navigator.share({ text: txt, url: url }).catch(function () {});
-      else if (navigator.clipboard) navigator.clipboard.writeText(txt + ' ' + url).then(function () { dit.textContent = 'Copié : collez-le où vous voulez.'; dit.hidden = false; }, function () {});
+      var g = R.groupes[0], txt = 'Je vote à ' + g.pct + ' % comme le groupe ' + g.n + ' à l\'Assemblée. Et vous ?', url = 'https://concret2027.fr/votez/';
+      var dit = el.querySelector('.vz-copie'), montrer = function (m) { dit.textContent = m; dit.hidden = false; };
+      var texte = function () {
+        if (navigator.share) return navigator.share({ text: txt, url: url }).catch(function () {});
+        if (navigator.clipboard) navigator.clipboard.writeText(txt + ' ' + url).then(function () { montrer('Copié : collez-le où vous voulez.'); }, function () {});
+      };
+      image(el.querySelector('.vz-hemi svg'), g, function (blob) {
+        if (!blob) return texte();
+        var f = new File([blob], 'mon-hemicycle-concret.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [f] })) return navigator.share({ files: [f], text: txt + ' ' + url }).catch(function () {});
+        // Ordinateur : l'image est enregistrée et la phrase copiée.
+        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+        if (navigator.clipboard) navigator.clipboard.writeText(txt + ' ' + url).then(function () { montrer('Image enregistrée, phrase copiée : collez-les où vous voulez.'); }, function () { montrer('Image enregistrée.'); });
+        else montrer('Image enregistrée.');
+      });
     });
     var plus = el.querySelector('.vz-plus');
     if (plus) plus.addEventListener('click', function () { Array.prototype.forEach.call(el.querySelectorAll('.vz-plus3'), function (li) { li.hidden = false; }); plus.remove(); });
