@@ -85,10 +85,27 @@ details.bx-method { background: var(--color-panel); border: 1px solid var(--colo
 details.bx-method summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--color-fg); }
 details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-title { font-family: var(--font-anthropic-serif); font-weight: 500; font-size: 28px; margin: 0; line-height: 1.1; }
-.bx-take { font-family: var(--font-anthropic-serif); font-size: 20px; line-height: 1.35; color: var(--color-fg); max-width: 60ch; margin: 0; text-wrap: pretty; }
+.bx-take { font-size: 14px; line-height: 1.45; color: var(--color-fg-muted); max-width: 70ch; margin: 0; text-wrap: pretty; }
+.bx-hero-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.bx-hero-h b { font-size: 18px; font-weight: 700; color: var(--color-fg); }
+.bx-hero-h span { font-size: 13px; color: var(--color-fg-muted); }
+.bx-bars { display: grid; gap: 7px; }
+.bx-bar { display: grid; grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr) 3.4rem; align-items: center; gap: 10px; font-size: 14.5px; }
+.bx-bar .n { display: flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bx-bar .n i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.bx-bar .court { display: none; }
+@media (max-width: 560px) { .bx-bar { grid-template-columns: minmax(0, 6.6rem) minmax(0, 1fr) 3.4rem; } .bx-bar .full { display: none; } .bx-bar .court { display: inline; } }
+.bx-bar .t { height: 14px; border-radius: 7px; background: var(--color-border-line); overflow: hidden; }
+.bx-bar .t b { display: block; height: 100%; border-radius: 7px; }
+.bx-bar .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.bx-bar.top { font-size: 16px; } .bx-bar.top .t { height: 18px; } .bx-bar.top .t b { border-radius: 9px; } .bx-bar.top .v { font-size: 17px; }
+.bx-fav { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--color-bg); color: var(--color-fg); text-decoration: none; font-size: 14px; }
+.bx-fav .e { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); grid-column: 1 / -1; }
+.bx-fav .n { font-weight: 600; } .bx-fav .v { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bx-fav i { width: 9px; height: 9px; border-radius: 50%; }
 .bx-take b { font-weight: 500; color: var(--bx-accent, #2f5bd3); }
 .bx-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: var(--cds-gap-md); }
-@media (max-width: 560px) { .bx-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .bx-tiles .bx-tile:last-child { grid-column: 1 / -1; } .bx-tile { padding: 10px 12px; } .bx-tile .val { font-size: 26px; } .bx-hero { padding: 14px; } .bx-take { font-size: 18px; } }
+@media (max-width: 560px) { .bx-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .bx-tiles .bx-tile:last-child { grid-column: 1 / -1; } .bx-tile { padding: 10px 12px; } .bx-tile .val { font-size: 26px; } .bx-hero { padding: 14px; } }
 .bx-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: grid; gap: var(--cds-gap-xs); align-content: start; }
 .bx-tile .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; align-items: center; gap: 6px; }
 .bx-tile .sw { width: 10px; height: 10px; border-radius: 50%; flex: none; }
@@ -252,14 +269,10 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
   </nav>
 
   <section class="bx-hero" aria-label="La course en un coup d'œil">
+  <div class="bx-hero-h"><b>Premier tour</b><span>moyenne des sondages des 30 derniers jours</span></div>
+  <div class="bx-bars" id="tiles" data-source="moyenne_t1 polymarket"><div class="dash-skeleton" style="height:180px"></div></div>
+  <a class="bx-fav" id="fav" href="#parieurs" hidden></a>
   <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
-  <div class="bx-tiles" id="tiles" data-source="moyenne_t1 polymarket">
-    <div class="bx-tile"><div class="lab">1er des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
-    <div class="bx-tile"><div class="lab">2e des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
-    <div class="bx-tile"><div class="lab">3e des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
-    <div class="bx-tile"><div class="lab">4e des sondages</div><div class="val dash-skeleton">—</div><div class="sub">moyenne des sondages, 30 derniers jours</div></div>
-    <div class="bx-tile"><div class="lab">Favori des parieurs</div><div class="val dash-skeleton">—</div><div class="sub">chances de victoire au 2nd tour selon Polymarket</div></div>
-  </div>
   </section>
 
 
@@ -624,18 +637,25 @@ dash.calc('duels_recents', {
     CANDS.forEach(function (c) { var s = document.createElement('span'); var i = document.createElement('i'); i.style.background = c.col; s.appendChild(i); s.appendChild(document.createTextNode(c.name)); lg.appendChild(s); });
   }
   function drawTiles(rank, pmr) {
+    // Les résultats d'abord : une barre par candidat (moyenne des sondages sur 30 jours), puis le favori des parieurs.
     var box = document.getElementById('tiles'); box.textContent = '';
-    var mk = function (lab, col, val, sub) {
-      var t = document.createElement('div'); t.className = 'bx-tile';
-      var l = document.createElement('div'); l.className = 'lab';
-      if (col) { var i = document.createElement('i'); i.className = 'sw'; i.style.background = col; l.appendChild(i); }
-      l.appendChild(document.createTextNode(lab)); t.appendChild(l);
-      var v = document.createElement('div'); v.className = 'val'; v.textContent = val; t.appendChild(v);
-      var s = document.createElement('div'); s.className = 'sub'; s.textContent = sub; t.appendChild(s);
-      box.appendChild(t);
-    };
-    rank.slice(0, BX.TOP_TILES).forEach(function (c, i) { mk(c.name.replace(' (RN)', ''), BX.col(c.colKey), BX.pct(c.moyenne), (i + 1) + (i ? 'e' : 'er') + ' des sondages · moyenne sur 30 jours'); });
-    if (pmr[0]) mk(pmr[0].name + ', favori des parieurs', null, BX.pct(pmr[0].v), 'chances de victoire au 2nd tour selon Polymarket');
+    var top = rank.slice(0, BX.TOP_CURVES), mx = Math.max.apply(null, top.map(function (c) { return c.moyenne; })) || 1;
+    top.forEach(function (c, i) {
+      var r = document.createElement('div'); r.className = 'bx-bar' + (i < 2 ? ' top' : '');
+      var n = document.createElement('div'); n.className = 'n'; var sw = document.createElement('i'); sw.style.background = BX.col(c.colKey); n.appendChild(sw); var fl = document.createElement('span'); fl.className = 'full'; fl.textContent = c.name.replace(' (RN)', ''); n.appendChild(fl); var ct = document.createElement('span'); ct.className = 'court'; ct.textContent = c.short || c.name.split(' ').slice(-1)[0]; n.appendChild(ct); r.appendChild(n);
+      var t = document.createElement('div'); t.className = 't'; var b = document.createElement('b'); b.style.width = (100 * c.moyenne / mx).toFixed(1) + '%'; b.style.background = BX.col(c.colKey); t.appendChild(b); r.appendChild(t);
+      var v = document.createElement('div'); v.className = 'v'; v.textContent = BX.pct(c.moyenne); r.appendChild(v);
+      box.appendChild(r);
+    });
+    var f = document.getElementById('fav');
+    if (pmr[0]) {
+      f.textContent = '';
+      var e = document.createElement('span'); e.className = 'e'; e.textContent = 'Favori des parieurs · chances de victoire au 2nd tour (Polymarket)'; f.appendChild(e);
+      var sw = document.createElement('i'); sw.style.background = colorOf(pmr[0].name); f.appendChild(sw);
+      var n = document.createElement('span'); n.className = 'n'; n.textContent = pmr[0].name; f.appendChild(n);
+      var v = document.createElement('span'); v.className = 'v'; v.textContent = BX.pct(pmr[0].v); f.appendChild(v);
+      f.hidden = false;
+    }
   }
   var lg2 = document.getElementById('legend-t2');
   [['contre Philippe', 1], ['contre Mélenchon', 2], ['contre Glucksmann', 3], ['contre Attal', 5]].forEach(function (p) { var s = document.createElement('span'); var i = document.createElement('i'); i.style.background = dash.colors[p[1]]; s.appendChild(i); s.appendChild(document.createTextNode(p[0])); lg2.appendChild(s); });
