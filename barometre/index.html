@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="8dd074dad030">
+<meta name="concret-version" content="35cda2628f32">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1267,14 +1267,17 @@ window.addEventListener('baro:data', function () {
     var ph = ds.polymarket_hist || [], dates = Array.from(new Set(ph.map(function (r) { return r.date; }))).sort();
     if (dates.length >= 2) {
       var d1 = dates[dates.length - 1], d0 = dates[dates.length - 2], at = function (c, d) { var r = ph.filter(function (q) { return q.candidat === c && q.date === d; })[0]; return r ? +r.probabilite : null; };
-      var mv = ph.filter(function (r) { return r.date === d1; }).map(function (r) { var a = at(r.candidat, d0); return a == null ? null : { c: r.candidat, v: +r.probabilite, d: +r.probabilite - a }; }).filter(Boolean)
+      // Chiffre affiché : celui de la carte des parieurs (datasets.polymarket) quand il est du même relevé, pour que les deux blocs disent le même nombre.
+      var aff = {}; (ds.polymarket || []).forEach(function (r) { if (r.releve === d1) aff[window.BX.short(r.candidat)] = +r.probabilite; });
+      var vu = function (c, v) { return aff[c] != null ? aff[c] : v; };
+      var mv = ph.filter(function (r) { return r.date === d1; }).map(function (r) { var a = at(r.candidat, d0); return a == null ? null : { c: r.candidat, v: vu(r.candidat, +r.probabilite), d: +r.probabilite - a }; }).filter(Boolean)
         .sort(function (a, b) { return Math.abs(b.d) - Math.abs(a.d); }).slice(0, 3);
       if (mv.length) {
         var lead = ph.filter(function (r) { return r.date === d1; }).sort(function (a, b) { return b.probabilite - a.probabilite; })[0];
         items.push('<b>Parieurs (Polymarket), depuis le ' + fd(d0) + ' :</b> ' + mv.map(function (m) {
           var s = Math.abs(m.d) < 0.05 ? 'stable' : (m.d > 0 ? '▲ +' : '▼ −') + nf(Math.abs(m.d), 1) + ' pt';
           return esc(m.c) + ' <b>' + s + '</b> (' + nf(m.v, 1) + ' %)';
-        }).join(', ') + '. Favori des parieurs pour le second tour : ' + esc(lead.candidat) + ' (' + nf(+lead.probabilite, 1) + ' %).');
+        }).join(', ') + '. Favori des parieurs pour le second tour : ' + esc(lead.candidat) + ' (' + nf(vu(lead.candidat, +lead.probabilite), 1) + ' %).');
       }
     }
     // Sondages : dernier sondage publié
@@ -1359,7 +1362,7 @@ window.addEventListener('baro:data', function () {
 </script>
 <script src="/commun/partage.js?v=20261027b"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261028b"></script>
+<script src="/commun/menu.js?v=20261028c"></script>
 <script>
 // Longues listes du Baromètre (duels, sondages de premier tour, notices) : les 6 premières lignes, puis « Voir les N autres »
 // qui déplie dans la page (pas de zone qui défile à l'intérieur de la page). Refait à chaque mise à jour du tableau.

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="8dd074dad030">
+<meta name="concret-version" content="35cda2628f32">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -41,6 +41,8 @@
 .sous > summary::after { content: '▾'; font-size: 14px; } .sous[open] > summary::after { content: '▴'; }
 .sous > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 6px; }
 .sous > div { display: grid; gap: 8px; padding: 0 0 12px; }
+.pied-src > summary { cursor: pointer; font-weight: 600; color: var(--fr); padding: 6px 0; }
+.pied-src[open] > summary { margin-bottom: 6px; }
 </style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -336,7 +338,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card" id="toile" hidden></section>
   <section class="card" id="bulletin" aria-labelledby="gov-title">
     <h2 id="gov-title"><span class="eyebrow">Les notes de l'éducation</span>Président par président : la France face à la moyenne de l'UE</h2>
-    <button class="share" id="share-rank" type="button" style="justify-self:start;margin:0">Partager le classement</button>
+    <button class="share pt-share" id="share-rank" type="button" style="justify-self:start;margin:0">Partager le classement</button>
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
@@ -391,6 +393,29 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <h2 class="grp-t" id="actualite">L'actualité</h2>
 
+  <details class="acc" id="acc-actu">
+    <summary><span class="acc-h">L'actualité de l'éducation</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-edu"></ul></div>
+  </details>
+
+  <details class="acc" id="acc-month">
+    <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card">
+      <div class="month" style="grid-template-columns:minmax(0,1fr)">
+        <div class="mo">
+          <span class="mo-lab" id="u-lab">Chômage des moins de 25 ans</span>
+          <span class="mo-num" id="u-num">—</span>
+          <span class="delta" id="u-delta"></span>
+          <span class="mo-t" id="u-t"></span>
+          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span></div>
+          <div class="chart" id="mo-u"></div>
+          <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
+        </div>
+      </div>
+      <p class="note">Le chômage des jeunes dit si l'école mène à un emploi. En juin et juillet, les chiffres de Parcoursup prendront le relais : candidats encore sans proposition, formations demandées.</p>
+    </div>
+  </details>
+
   <details class="acc" id="acc-today">
     <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-actions"><span class="acc-cta"></span><button class="share" id="share-fact-top" type="button" aria-label="Partager le chiffre du jour">Partager</button></span></summary>
     <div class="acc-body">
@@ -412,29 +437,6 @@ footer p { margin: 0; } footer a { color: inherit; }
         </div>
       </section>
     </div>
-  </details>
-
-  <details class="acc" id="acc-month">
-    <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card">
-      <div class="month" style="grid-template-columns:minmax(0,1fr)">
-        <div class="mo">
-          <span class="mo-lab" id="u-lab">Chômage des moins de 25 ans</span>
-          <span class="mo-num" id="u-num">—</span>
-          <span class="delta" id="u-delta"></span>
-          <span class="mo-t" id="u-t"></span>
-          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span></div>
-          <div class="chart" id="mo-u"></div>
-          <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
-        </div>
-      </div>
-      <p class="note">Le chômage des jeunes dit si l'école mène à un emploi. En juin et juillet, les chiffres de Parcoursup prendront le relais : candidats encore sans proposition, formations demandées.</p>
-    </div>
-  </details>
-
-  <details class="acc" id="acc-actu">
-    <summary><span class="acc-h">L'actualité de l'éducation</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-edu"></ul></div>
   </details>
 
   <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
@@ -528,7 +530,9 @@ footer p { margin: 0; } footer a { color: inherit; }
   </details>
 
   <footer>
-    <p><b>Sources.</b> PISA 2025 : <a href="https://www.education.gouv.fr/sites/default/files/document/pisa-2025-une-baisse-des-r-sultats-commune-l-ocde-un-rel-vement-poursuivre-520338.pdf">ministère de l'Éducation nationale</a>, <a href="https://www.education.gouv.fr/sites/default/files/document/depp-ni-2026-40pisa-mathspdf-520231.pdf">DEPP</a> ; scores et rangs depuis 2000 : <a href="https://www.ifrap.org/education-et-culture/les-evolutions-du-classement-francais-au-test-pisa-depuis-25-ans">iFRAP, d'après l'OCDE</a>. Lecture à 17 ans : <a href="https://www.education.gouv.fr/depp/journee-defense-et-citoyennete-2025-14-des-jeunes-rencontrent-des-difficultes-de-lecture-506086">DEPP, JDC 2025</a>. Décrochage, jeunes sans emploi ni formation, diplômés du supérieur, dépense d'éducation, chômage mensuel des moins de 25 ans : Eurostat (edat_lfse_14, edat_lfse_20, edat_lfse_03, gov_10a_exp, une_rt_m). Chômage annuel des 15-24 ans : Banque mondiale (SL.UEM.1524.ZS, estimations OIT). Scores PISA de l'Allemagne, des États-Unis et de la moyenne OCDE : OCDE, d'après les tableaux du ministère américain de l'Éducation (NCES : <a href="https://nces.ed.gov/surveys/international/tables/B_1_06.asp">lecture 2000-2006</a>, <a href="https://nces.ed.gov/programs/digest/d05/tables/dt05_392.asp">maths 2003</a>, <a href="https://nces.ed.gov/programs/digest/d09/tables/dt09_402.asp">2006</a>, <a href="https://nces.ed.gov/programs/digest/d17/tables/dt17_602.40.asp">2009-2015</a>), <a href="https://en.wikipedia.org/wiki/Programme_for_International_Student_Assessment">2015-2025</a> ; Allemagne 2025 : <a href="https://www.bildungsserver.de/bildung+innovation/pressedossier-zu-pisa-2025-ergebnisse-deutscher-jugendlicher-auf-historischem-tiefstand-nur-auf-oecd-durchschnittsniveau-1493.html">Bildungsserver</a> ; États-Unis 2025 : <a href="https://voz.us/en/society/260908/38946/the-u-s-slows-the-global-decline-in-pisa-but-the-setback-in-reading-sounds-the-alarm.html">Voz</a>, participation incomplète selon l'OCDE, à lire avec prudence. Écarts sociaux : <a href="https://www.insee.fr/fr/statistiques/8612522?sommaire=8612596">Insee, France, portrait social 2025</a>, et DEPP. Élèves à la rentrée 2025 et budget : <a href="https://www.senat.fr/rap/l25-139-313/l25-139-313_mono.html">Sénat, rapport sur le PLF 2026</a>. Dépense d'éducation des États-Unis : Unesco (Banque mondiale, SE.XPD.TOTL.GD.ZS). Budget 2026 de l'Éducation nationale : projet de loi de finances.</p>
+    <details class="pied-src"><summary>Sources et méthode</summary>
+      <p><b>Sources.</b> PISA 2025 : <a href="https://www.education.gouv.fr/sites/default/files/document/pisa-2025-une-baisse-des-r-sultats-commune-l-ocde-un-rel-vement-poursuivre-520338.pdf">ministère de l'Éducation nationale</a>, <a href="https://www.education.gouv.fr/sites/default/files/document/depp-ni-2026-40pisa-mathspdf-520231.pdf">DEPP</a> ; scores et rangs depuis 2000 : <a href="https://www.ifrap.org/education-et-culture/les-evolutions-du-classement-francais-au-test-pisa-depuis-25-ans">iFRAP, d'après l'OCDE</a>. Lecture à 17 ans : <a href="https://www.education.gouv.fr/depp/journee-defense-et-citoyennete-2025-14-des-jeunes-rencontrent-des-difficultes-de-lecture-506086">DEPP, JDC 2025</a>. Décrochage, jeunes sans emploi ni formation, diplômés du supérieur, dépense d'éducation, chômage mensuel des moins de 25 ans : Eurostat (edat_lfse_14, edat_lfse_20, edat_lfse_03, gov_10a_exp, une_rt_m). Chômage annuel des 15-24 ans : Banque mondiale (SL.UEM.1524.ZS, estimations OIT). Scores PISA de l'Allemagne, des États-Unis et de la moyenne OCDE : OCDE, d'après les tableaux du ministère américain de l'Éducation (NCES : <a href="https://nces.ed.gov/surveys/international/tables/B_1_06.asp">lecture 2000-2006</a>, <a href="https://nces.ed.gov/programs/digest/d05/tables/dt05_392.asp">maths 2003</a>, <a href="https://nces.ed.gov/programs/digest/d09/tables/dt09_402.asp">2006</a>, <a href="https://nces.ed.gov/programs/digest/d17/tables/dt17_602.40.asp">2009-2015</a>), <a href="https://en.wikipedia.org/wiki/Programme_for_International_Student_Assessment">2015-2025</a> ; Allemagne 2025 : <a href="https://www.bildungsserver.de/bildung+innovation/pressedossier-zu-pisa-2025-ergebnisse-deutscher-jugendlicher-auf-historischem-tiefstand-nur-auf-oecd-durchschnittsniveau-1493.html">Bildungsserver</a> ; États-Unis 2025 : <a href="https://voz.us/en/society/260908/38946/the-u-s-slows-the-global-decline-in-pisa-but-the-setback-in-reading-sounds-the-alarm.html">Voz</a>, participation incomplète selon l'OCDE, à lire avec prudence. Écarts sociaux : <a href="https://www.insee.fr/fr/statistiques/8612522?sommaire=8612596">Insee, France, portrait social 2025</a>, et DEPP. Élèves à la rentrée 2025 et budget : <a href="https://www.senat.fr/rap/l25-139-313/l25-139-313_mono.html">Sénat, rapport sur le PLF 2026</a>. Dépense d'éducation des États-Unis : Unesco (Banque mondiale, SE.XPD.TOTL.GD.ZS). Budget 2026 de l'Éducation nationale : projet de loi de finances.</p>
+    </details>
     <p><a href="/mentions-legales/">Mentions légales</a></p>
   </footer>
 </div>
@@ -1214,6 +1218,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261027b"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028b"></script>
+<script src="/commun/menu.js?v=20261028c"></script>
 </body>
 </html>

@@ -59,7 +59,8 @@
     // Dans le Menu : une colonne, une ligne par page. En bas de page : deux colonnes sur téléphone (nom seul), quatre sur grand écran.
     '.mn-panneau .mn-liste{grid-template-columns:minmax(0,1fr);gap:6px}.mn-panneau .mn-liste a{padding:9px 12px}.mn-panneau .mn-liste a[aria-current]{padding:8px 11px}' +
     '.mn-autres .mn-liste a.mn-large{grid-column:auto}' +
-    '@media (max-width:600px){.mn-autres .mn-liste a span{display:none}.mn-autres .mn-ic{grid-row:auto;width:30px;height:30px}.mn-autres .mn-liste a{padding:10px}.mn-autres .mn-liste a b{font-size:14.5px}.mn-autres .mn-liste a.mn-large{grid-column:1/-1}}' +
+    // Sur téléphone, en bas de page : des pastilles (icône et nom) qui se suivent, sans intitulés de groupe, pour tenir en peu de place.
+    '@media (max-width:600px){.mn-autres .mn-liste{display:flex;flex-wrap:wrap;gap:6px}.mn-autres .mn-g{display:none}.mn-autres .mn-liste a{display:inline-flex;gap:6px;padding:6px 12px 6px 6px;border-radius:999px;min-height:40px}.mn-autres .mn-liste a span{display:none}.mn-autres .mn-ic{width:28px;height:28px;border-radius:50%}.mn-autres .mn-ic svg{width:16px;height:16px}.mn-autres .mn-liste a b{font-size:14px;font-weight:600}}' +
     '.mn-contact{margin:2px 0 0;font-size:14px;color:' + V.muted + '}.mn-contact a{color:' + V.fr + ';font-weight:600}' +
     '.mn-autres{display:grid;gap:10px;margin:8px 0 4px}.mn-autres h2{font-size:19px;font-weight:600;margin:0;color:' + V.fg + '}' +
     '@media (min-width:760px){.mn-autres .mn-liste{grid-template-columns:repeat(4,minmax(0,1fr))}}' +

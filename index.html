@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="8dd074dad030">
+<meta name="concret-version" content="35cda2628f32">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -393,12 +393,14 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="note">Touchez une ligne pour voir la note par mission.</p>
   </section>
 
-  <section class="card" id="gouvernements" aria-labelledby="cl-g">
-    <h2 id="cl-g"><span class="eyebrow">Le classement général</span>Les gouvernements</h2>
-    <div class="bars" id="t-gov"></div>
-    <p class="note">Sébastien Lecornu sera noté quand les chiffres de 2026 seront publiés. Michel Barnier n'est pas noté à part : chaque année compte pour un seul gouvernement, et 2024 pour Gabriel Attal.</p>
-    <details class="sous"><summary>Notes provisoires ou sur peu d'années, missions non notées</summary><div><p class="note">Une note « provisoire » repose sur moins d'une année complète de chiffres et changera à leur publication ; une note « sur peu d'années » aussi, parce que les séries commencent pendant le mandat. Dans la moyenne, ces notes (marquées *) pèsent selon leurs comparaisons : 3 comparaisons sur les 10 d'une année complète comptent pour 0,3 mission. Quand une mission n'a pas encore de chiffres pour un mandat (les séries de l'éducation commencent en 2002, la plupart de celles de la santé entre 2000 et 2011), elle n'entre pas dans la moyenne : touchez une ligne pour voir pourquoi. Éducation : résultats PISA répartis sur les dix années de scolarité des élèves (choix modifiable sur la page Éducation). Classement établi le 22 octobre 2026.</p></div></details>
-  </section>
+  <details class="acc" id="gouvernements">
+    <summary><span class="eyebrow" style="margin:0">Le classement général</span><span class="acc-h">Les gouvernements</span><span class="acc-t" id="gov-teaser">La note de chaque Premier ministre depuis 1995, toutes missions confondues</span><span class="acc-cta"></span></summary>
+    <div class="acc-body">
+      <div class="bars" id="t-gov"></div>
+      <p class="note">Sébastien Lecornu sera noté quand les chiffres de 2026 seront publiés. Michel Barnier n'est pas noté à part : chaque année compte pour un seul gouvernement, et 2024 pour Gabriel Attal.</p>
+      <details class="sous"><summary>Notes provisoires ou sur peu d'années, missions non notées</summary><div><p class="note">Une note « provisoire » repose sur moins d'une année complète de chiffres et changera à leur publication ; une note « sur peu d'années » aussi, parce que les séries commencent pendant le mandat. Dans la moyenne, ces notes (marquées *) pèsent selon leurs comparaisons : 3 comparaisons sur les 10 d'une année complète comptent pour 0,3 mission. Quand une mission n'a pas encore de chiffres pour un mandat (les séries de l'éducation commencent en 2002, la plupart de celles de la santé entre 2000 et 2011), elle n'entre pas dans la moyenne : touchez une ligne pour voir pourquoi. Éducation : résultats PISA répartis sur les dix années de scolarité des élèves (choix modifiable sur la page Éducation). Classement établi le 22 octobre 2026.</p></div></details>
+    </div>
+  </details>
 
   <section class="card" id="pouls" aria-labelledby="po-t">
     <h2 id="po-t"><span class="eyebrow">Le pouls de la France</span>Toutes les pages en une</h2>
@@ -727,10 +729,15 @@ footer p { margin: 0; } footer a { color: inherit; }
     });
   }
   function fail() { ['t-pres', 't-gov'].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = 'Le classement n\'a pas pu être chargé. Rechargez la page.'; }); }
+  // Raccourci vers un bloc replié : il s'ouvre.
+  document.querySelectorAll('.jump a[href^="#"]').forEach(function (a) { a.addEventListener('click', function () { var el = document.querySelector(a.getAttribute('href')); if (el && el.tagName === 'DETAILS') el.open = true; }); });
   window.CONCRET_DATA.then(function (d) {
     if (!d.series) return fail();
     var c = ConcretNotes.classement(d.series);
     table('t-pres', c.pres, d.series); table('t-gov', c.gov, d.series);
+    // Bloc replié : la ligne d'appel donne le premier du classement.
+    var g1 = c.gov.filter(function (r) { return r.m != null; })[0];
+    if (g1) document.getElementById('gov-teaser').textContent = 'En tête : ' + g1.n + ' (' + fmt(g1.m) + '/20) · la note de chaque Premier ministre depuis 1995';
     // Les gouvernements : les 5 premiers et le gouvernement le plus récent, les autres derrière un bouton.
     var box = document.getElementById('t-gov'), lignes = Array.prototype.slice.call(box.querySelectorAll('button.br'));
     var noteG = c.gov.filter(function (r) { return r.m != null; }), der = noteG.reduce(function (a, r, i) { return r.y1 > noteG[a].y1 ? i : a; }, 0);
@@ -768,6 +775,6 @@ footer p { margin: 0; } footer a { color: inherit; }
 <script src="/commun/partage.js?v=20261027b"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/contact.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028b"></script>
+<script src="/commun/menu.js?v=20261028c"></script>
 </body>
 </html>
