@@ -60,10 +60,10 @@
     '.vz-tip{position:absolute;top:0;z-index:3;max-width:260px;padding:7px 10px;border-radius:9px;background:var(--fg);color:var(--bg);font-size:12.5px;line-height:1.35;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
     '.vz-lire{margin:0;font-size:13.5px;color:var(--muted)}' +
     '.vz-th{display:grid;gap:8px;padding-top:6px;border-top:1px solid var(--line)}.vz-th h3{margin:0;font-size:16px;font-weight:700}.vz-th ul{list-style:none;margin:0;padding:0;display:grid}' +
-    '.vz-th li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}.vz-th li:first-child{border-top:0}' +
-    '.vz-th .t{font-weight:700}.vz-th .n{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}.vz-th .g{grid-column:1/-1;color:var(--muted);font-size:13.5px}' +
-    '.vz-th .g i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:0}.vz-th .g b{color:var(--fg);font-weight:700}' +
-    '.vz-plus{font:inherit;font-size:13.5px;font-weight:600;color:var(--fr);background:none;border:0;padding:4px 0;cursor:pointer;justify-self:start}' +
+    '.vz-th li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 12px;margin-top:8px;border:1px solid var(--line);border-left:5px solid var(--line);border-radius:10px;font-size:14px;align-items:baseline}' +
+    '.vz-th .t{font-weight:700;margin-bottom:2px}.vz-th .n{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}' +
+    '.vz-th .b{grid-column:1/-1;height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:2px}.vz-th .b i{display:block;height:100%;border-radius:5px}.vz-th .b.vide i{background:var(--muted);opacity:.45}' +
+    '.vz-th .g{font-size:13.5px;line-height:1.3}.vz-th .g small{color:var(--muted);font-size:11.5px;font-weight:500}.vz-th .g.att{grid-column:1/-1;color:var(--muted)}.vz-th .v{font-weight:700;font-variant-numeric:tabular-nums}' +
     '.vz-bars li.top .n{color:var(--fr)}';
 
   var donnees = null;
@@ -296,13 +296,19 @@
   }
   // Par thème : les textes rattachés à une page de Concret par les mots de leur titre (même règle que la page La vie politique).
   var THEMES = [['finances', 'Finances publiques'], ['vie', 'Vie des Français'], ['sante', 'Santé'], ['education', 'Éducation'], ['securite', 'Sécurité et justice'], ['defense', 'Défense'], ['demographie', 'Démographie et migrations']], MIN_THEME = 3;
+  // Chaque thème : une barre à la couleur du groupe le plus proche, remplie à sa part d'accord (deux barres si presque à égalité) ;
+  // avant trois votes, une barre grise qui avance vers le résultat.
   function parTheme(D) {
     return THEMES.map(function (t) {
       var R = resultat(D, function (q) { return q.pg.indexOf(t[0]) >= 0; }), dispo = D.Q.filter(function (q) { return q.pg.indexOf(t[0]) >= 0; }).length;
       var top = R.groupes.filter(function (g, i) { return i < 2 && (R.groupes[0] || {}).pct - g.pct < 3; });
-      var tete = R.nb >= MIN_THEME && top.length ? top.map(function (g) { return '<i style="background:' + ((D.G[g.c] || {}).coul || 'var(--fr)') + '"></i>' + esc(g.n) + ' <b>' + g.pct + '\u00a0%</b>'; }).join(' · ') : '';
-      return '<li><span class="t">' + t[1] + '</span><span class="n">' + R.nb + ' / ' + dispo + ' vote' + (dispo > 1 ? 's' : '') + '</span>' +
-        '<span class="g">' + (tete || (dispo ? 'Encore ' + Math.max(1, MIN_THEME - R.nb) + ' vote' + (MIN_THEME - R.nb > 1 ? 's' : '') + ' sur ce thème pour un résultat' : 'Pas encore de texte sur ce thème')) + '</span></li>';
+      var pret = R.nb >= MIN_THEME && top.length, c0 = pret ? (D.G[top[0].c] || {}).coul || 'var(--fr)' : 'var(--line)';
+      var corps = pret ? top.map(function (g) {
+        var c = (D.G[g.c] || {}).coul || 'var(--fr)';
+        return '<span class="g">' + esc(g.n) + ' <small>' + esc(g.c) + '</small></span><span class="v">' + g.pct + '\u00a0%</span><span class="b"><i style="width:' + g.pct + '%;background:' + c + '"></i></span>';
+      }).join('') : '<span class="b vide"><i style="width:' + Math.round(100 * Math.min(R.nb, MIN_THEME) / MIN_THEME) + '%"></i></span>' +
+        '<span class="g att">' + (dispo ? 'Encore ' + Math.max(1, MIN_THEME - R.nb) + ' vote' + (MIN_THEME - R.nb > 1 ? 's' : '') + ' sur ce thème pour un résultat' : 'Pas encore de texte sur ce thème') + '</span>';
+      return '<li style="border-left-color:' + c0 + '"><span class="t">' + t[1] + '</span><span class="n">' + R.nb + ' / ' + dispo + ' vote' + (dispo > 1 ? 's' : '') + '</span>' + corps + '</li>';
     }).join('');
   }
   function bilan(el, D) {
