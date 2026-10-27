@@ -60,14 +60,14 @@
     '.vz-tip{position:absolute;top:0;z-index:3;max-width:260px;padding:7px 10px;border-radius:9px;background:var(--fg);color:var(--bg);font-size:12.5px;line-height:1.35;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
     '.vz-lire{margin:0;font-size:13.5px;color:var(--muted)}' +
     '.vz-th{display:grid;gap:8px;padding-top:6px;border-top:1px solid var(--line)}.vz-th h3{margin:0;font-size:16px;font-weight:700}.vz-th ul{list-style:none;margin:0;padding:0;display:grid}' +
-    '.vz-th li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 12px 12px;margin-top:8px;border:1px solid color-mix(in srgb,var(--fr) 22%,var(--line));background:color-mix(in srgb,var(--fr) 6%,transparent);border-radius:12px;font-size:14px;align-items:center}' +
+    '.vz-th li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 12px 12px;margin-top:8px;border:1px solid var(--line);border-radius:12px;font-size:14px;align-items:center}' +
     '.vz-th .t{font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:8px;color:var(--fg);text-decoration:none}.vz-th a.t:hover{color:var(--fr)}' +
-    '.vz-th .t i{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,var(--fr) 14%,transparent);color:var(--fr);flex:none}.vz-th .n{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}' +
+    '.vz-th .t i{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,var(--line) 70%,transparent);color:var(--fg);flex:none}.vz-th .n{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}' +
     '.vz-th .b{grid-column:1/-1;height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:2px}.vz-th .b i{display:block;height:100%;border-radius:5px}.vz-th .b.vide i{background:var(--muted);opacity:.45}' +
-    '.vz-th .bb{grid-column:1/-1;position:relative;display:block;height:30px;border-radius:8px;background:color-mix(in srgb,var(--line) 70%,transparent);overflow:hidden}' +
-    '.vz-th .fi{position:absolute;inset:0 auto 0 0;overflow:hidden;border-radius:8px;background:var(--fr)}.vz-th .fi .lb{color:var(--bg)}' +
-    '.vz-th .lb i{flex:none;width:10px;height:10px;border-radius:3px;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--bg) 85%,transparent)}' +
-    '.vz-th .lb{position:absolute;inset:0 auto 0 0;width:100%;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 10px;font-size:13.5px;color:var(--fg);white-space:nowrap}' +
+    '.vz-th .bb{grid-column:1/-1;position:relative;display:block;height:30px;border-radius:8px;background:color-mix(in srgb,var(--line) 45%,transparent);overflow:hidden}' +
+    '.vz-th .fi{position:absolute;inset:0 auto 0 0;border-radius:8px;background:color-mix(in srgb,var(--c) 38%,var(--bg))}' +
+    '@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .vz-th .fi{background:color-mix(in srgb,var(--c) 50%,#5d6372)}}:root[data-theme="dark"] .vz-th .fi{background:color-mix(in srgb,var(--c) 50%,#5d6372)}' +
+    '.vz-th .lb{position:relative;height:100%;display:flex;align-items:center;gap:8px;padding:0 10px;font-size:13.5px;color:var(--fg);white-space:nowrap}' +
     '.vz-th .lb .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.vz-th .lb b{font-variant-numeric:tabular-nums}' +
     '.vz-th .g{font-size:13.5px;line-height:1.3}.vz-th .g.att{grid-column:1/-1;color:var(--muted)}' +
     '.vz-bars li.top .n{color:var(--fr)}';
@@ -321,13 +321,12 @@
       var pret = R.nb >= MIN_THEME && top.length;
       var corps = pret ? top.map(function (g) {
         var c = (D.G[g.c] || {}).coul || 'var(--fr)';
-        // Le nom du groupe (avec sa couleur dans l'hémicycle) et sa part dans la barre, remplie dans la couleur du site.
-        var txt = '<i style="background:' + c + '"></i><span class="nm">' + esc(g.n) + '</span><b>' + g.pct + '\u00a0%</b>';
-        return '<span class="bb" title="' + esc(g.n) + ' (' + esc(g.c) + ') : ' + g.pct + ' %"><span class="lb">' + txt + '</span>' +
-          (g.pct ? '<span class="fi" style="width:' + g.pct + '%"><span class="lb" style="width:' + (10000 / g.pct) + '%">' + txt + '</span></span>' : '') + '</span>';
+        // Le nom du groupe et sa part, dans une barre remplie d'une teinte pâle de sa couleur dans l'hémicycle.
+        return '<span class="bb" title="' + esc(g.n) + ' (' + esc(g.c) + ') : ' + g.pct + ' %"><span class="fi" style="width:' + g.pct + '%;--c:' + c + '"></span>' +
+          '<span class="lb"><span class="nm">' + esc(g.n) + '</span><b>' + g.pct + '\u00a0%</b></span></span>';
       }).join('') : '<span class="b vide"><i style="width:' + Math.round(100 * Math.min(R.nb, MIN_THEME) / MIN_THEME) + '%"></i></span>' +
         '<span class="g att">' + (dispo ? 'Encore ' + Math.max(1, MIN_THEME - R.nb) + ' vote' + (MIN_THEME - R.nb > 1 ? 's' : '') + ' sur ce thème pour un résultat' : 'Pas encore de texte sur ce thème') + '</span>';
-      return '<li><a class="t" href="/' + t[0] + '/"><i aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + IC_TH[t[0]] + '</svg></i>' + t[1] + '</a><span class="n">' + R.nb + ' / ' + dispo + ' texte' + (dispo > 1 ? 's' : '') + '</span>' + corps + '</li>';
+      return '<li><a class="t" href="/' + t[0] + '/"><i aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + IC_TH[t[0]] + '</svg></i>' + t[1] + '</a><span class="n">' + R.nb + ' sur ' + dispo + ' texte' + (dispo > 1 ? 's' : '') + '</span>' + corps + '</li>';
     }).join('');
   }
   function bilan(el, D) {
@@ -344,11 +343,11 @@
       hemicycle(D, assez ? R : null) +
       '<p class="vz-lire">Chaque groupe est à sa place dans l\'hémicycle, de la gauche à la droite. ' + (assez ? 'Plus sa part est colorée, plus vous votez comme lui. Touchez un groupe pour voir son nom.' : 'Encore ' + (MIN - R.nb) + ' vote' + (MIN - R.nb > 1 ? 's' : '') + ' : avant, le résultat dépendrait d\'un ou deux textes seulement.') + '</p>' +
       (assez ? '<ul class="vz-bars">' + liste + '</ul>' + (R.groupes.length > 3 ? '<button type="button" class="vz-plus">Voir les ' + R.groupes.length + ' groupes</button>' : '') +
-        '<div class="vz-th"><h3>Par thème</h3><ul>' + parTheme(D) + '</ul><p class="vz-lire">Le groupe dont vos votes sont le plus proches sur chaque thème. « 2 / 4 textes » : vous avez voté 2 des 4 textes de ce thème. Un texte est rattaché à un thème par les mots de son titre (règle de la page La vie politique) : il peut compter pour plusieurs thèmes, ou pour aucun ; tous comptent dans votre résultat général.</p></div>' +
+        '<div class="vz-th"><h3>Par thème</h3><ul>' + parTheme(D) + '</ul><p class="vz-lire">Le groupe dont vos votes sont le plus proches sur chaque thème. « 2 sur 4 textes » : vous avez voté 2 des 4 textes du thème ; un texte voté plusieurs fois à l\'Assemblée est une seule question, avec son dernier vote. Le thème d\'un texte vient des mots de son titre (règle de la page La vie politique).</p></div>' +
         '<button type="button" class="vz-suite vz-partage">Partager mon résultat</button><p class="vz-lire vz-copie" hidden></p>' : '') +
       '<details class="vz-off"><summary>En détail : les groupes et le calcul</summary>' +
       '<p>' + D.groupes.filter(function (g) { return g.a != null; }).slice().sort(function (p, q) { return q.a - p.a; }).map(function (g) { return '<b>' + esc(g.c) + '</b> : ' + esc(g.n) + ' (' + g.m + ' députés)'; }).join(' · ') + '.</p>' +
-      '<p>Accord avec un groupe : 1 si vous avez voté comme la majorité de ses députés, ½ si l\'un des deux s\'est abstenu et pas l\'autre, 0 sinon ; le pourcentage est la moyenne sur vos votes où le groupe avait une position.' +
+      '<p>Le calcul : sur chaque texte, votre choix est comparé à celui de la majorité du groupe. Même choix : 1 point. Choix opposés (pour d\'un côté, contre de l\'autre) : 0 point. Un seul des deux s\'est abstenu : ½ point. Le pourcentage est la moyenne de ces points sur vos votes où le groupe a pris position (par exemple 1 + 1 + ½ + 0 sur 4 textes = 63 %).' +
       (assez ? ' Accord avec le résultat de l\'Assemblée : ' + R.assemblee + ' % de vos votes.' : '') + '</p>' +
       '<p>Place, couleur et nombre de députés de chaque groupe : plan officiel de l\'hémicycle et données ouvertes de l\'Assemblée nationale. Les ' + ((D.G.NI || {}).m || '') + ' députés non inscrits ne forment pas un groupe : ils ne sont pas dessinés. Vos votes restent sur cet appareil.</p></details>';
     var tip = el.querySelector('.vz-tip'), box = el.querySelector('.vz-hemi');
