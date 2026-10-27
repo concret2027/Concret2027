@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="d251f09ee9d6">
+<meta name="concret-version" content="b42d3b5f0f4e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -223,6 +223,13 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .how[open] > summary::after { content: '▴'; }
 .how-body { padding: 0 12px 12px; display: grid; gap: 8px; font-size: 13.5px; }
 .how-body p { margin: 0; }
+.gov-pli { border: 1px solid var(--line); border-radius: 10px; }
+.gov-pli > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; padding: 12px 14px; font-weight: 700; font-size: 15px; }
+.gov-pli > summary::-webkit-details-marker { display: none; }
+.gov-pli > summary small { display: block; font-weight: 500; font-size: 13px; color: var(--muted); }
+.gov-pli > summary::after { content: 'Voir ▾'; margin-left: auto; color: var(--fr); font-size: 14px; white-space: nowrap; }
+.gov-pli[open] > summary::after { content: 'Masquer ▴'; }
+.gov-pli-body { padding: 0 14px 14px; display: grid; gap: 8px; }
 .ex { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; }
 .seuils { min-width: 0; font-size: 12.5px; }
 .seuils td { text-align: left; padding: 5px 6px 5px 0; color: var(--muted); }
@@ -368,14 +375,18 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="chart" id="rank-pres"></div>
     <div class="pres-detail" id="pres-detail" hidden></div>
     <p class="note" id="rank-pres-note"></p>
-    <span class="eyebrow" style="margin:8px 0 0">Les gouvernements</span>
-    <div class="chart" id="rank-gov"></div>
-    <p class="note" id="rank-gov-note"></p>
-    <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
-    <p class="note" data-t="ruptures">« Non compté » : certaines années, la France ou la moyenne européenne a changé sa façon de mesurer le décrochage, les jeunes sans emploi ni études ou les diplômés (Eurostat le signale en 2003, 2006, 2013, 2014, 2021 et 2024). Le chiffre n'est alors pas comparable à l'année d'avant : l'année ne rapporte ni ne coûte de point, et la raison est écrite sous chaque tableau. C'est pour cela que Gabriel Attal (2024) n'est jugé que sur trois critères.</p>
-    <p class="note pt-hors">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que ses voisins. <b>Touchez un critère</b> pour voir les chiffres. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
-    <div class="gov-list" id="gov-list"></div>
-    <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+    <details class="gov-pli" id="gov-pli">
+      <summary><span>Les gouvernements<small>La note de chaque Premier ministre, et son détail année par année</small></span></summary>
+      <div class="gov-pli-body">
+      <div class="chart" id="rank-gov"></div>
+      <p class="note" id="rank-gov-note"></p>
+      <span class="eyebrow pt-hors" style="margin:6px 0 0">Le détail, du plus récent au plus ancien</span>
+      <p class="note" data-t="ruptures">« Non compté » : certaines années, la France ou la moyenne européenne a changé sa façon de mesurer le décrochage, les jeunes sans emploi ni études ou les diplômés (Eurostat le signale en 2003, 2006, 2013, 2014, 2021 et 2024). Le chiffre n'est alors pas comparable à l'année d'avant : l'année ne rapporte ni ne coûte de point, et la raison est écrite sous chaque tableau. C'est pour cela que Gabriel Attal (2024) n'est jugé que sur trois critères.</p>
+      <p class="note pt-hors">Pour chaque critère : points marqués, c'est-à-dire nombre d'années où la France a fait mieux que ses voisins. <b>Touchez un critère</b> pour voir les chiffres. <span style="color:var(--ok);font-weight:600">En vert</span> : au moins un point sur deux · <span style="color:var(--bad);font-weight:600">en rouge</span> : moins d'un point sur deux.</p>
+      <div class="gov-list" id="gov-list"></div>
+      <button class="more" id="gov-more" aria-expanded="false">Voir le détail des autres gouvernements</button>
+      </div>
+    </details>
   </section>
 
   <h2 class="grp-t" id="actualite">L'actualité</h2>
@@ -721,7 +732,7 @@ function main(FEED) {
   function openDetail(mode, g) {
     if (mode === 'gov') {
       if (!showAll) { showAll = true; var b = document.getElementById('gov-more'); b.setAttribute('aria-expanded', 'true'); b.textContent = 'Masquer le détail des autres gouvernements'; renderGov(); }
-      var row = document.getElementById('gov-' + g.y0); if (row) { row.scrollIntoView({ block: 'center' }); row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash'); } return;
+      var row = document.getElementById('gov-' + g.y0); if (row) { document.getElementById('gov-pli').open = true; row.scrollIntoView({ block: 'center' }); row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash'); } return;
     }
     var box = document.getElementById('pres-detail'); box.textContent = ''; box.hidden = false;
     var who = document.createElement('div'); who.className = 'who'; who.innerHTML = '<b></b> <span class="note"></span>';
@@ -729,6 +740,8 @@ function main(FEED) {
     box.appendChild(who); box.appendChild(chipsFor(g));
     box.classList.remove('flash'); void box.offsetWidth; box.classList.add('flash');
   }
+  // Les gouvernements sont repliés : leur classement est dessiné à l'ouverture, à la largeur réelle.
+  document.getElementById('gov-pli').addEventListener('toggle', function () { if (this.open) rankOne('gov'); });
   function rankOne(mode) {
     var list = (mode === 'gov' ? GOVS : PRES).map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
     var box = document.getElementById('rank-' + mode); box.textContent = '';

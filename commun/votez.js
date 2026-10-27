@@ -180,11 +180,23 @@
       return { id: 'av:' + a.cle, avenir: true, cle: a.cle, dos: a.dos, k: a.k, d: a.d, titre: a.o, type: 'Vote prévu à l\'Assemblée', expl: X['avenir:' + a.cle],
         q: a.k === 'partie' ? 'Adopter cette partie du texte ?' : 'Adopter ce texte ?', choix: ['pour', 'contre', 'abstention'] };
     });
-    // Ordre de la page : les dix votes qui ont le plus partagé l'Assemblée (une seule motion de censure parmi eux), puis de quoi
-    // donner un résultat à chaque thème (trois votes par thème, les plus partagés d'abord, un thème après l'autre), puis tous les
-    // autres, du plus récent au plus ancien.
+    // Ordre de la page : d'abord dix votes variés (pour la censure et pour chaque thème, le vote qui a le plus partagé l'Assemblée,
+    // complétés par les plus partagés des textes sans thème), du plus partagé au moins partagé ; puis de quoi donner un résultat à
+    // chaque thème (trois votes par thème, les plus partagés d'abord, un thème après l'autre) ; puis tous les autres, du plus
+    // récent au plus ancien.
     var parPartage = Q.slice().sort(function (a, b) { return b.partage - a.partage || (a.d < b.d ? 1 : -1); });
-    var censure = 0, premiers = parPartage.filter(function (q) { return q.k !== 'censure' || !censure++; }).slice(0, SERIE);
+    var premiers = [], libre = function (q) { return premiers.indexOf(q) < 0; };
+    var censure = parPartage.filter(function (q) { return q.k === 'censure'; })[0]; if (censure) premiers.push(censure);
+    THEMES.forEach(function (t) {
+      // Un thème déjà présent n'en reprend pas ; de préférence un texte de ce seul thème.
+      if (premiers.some(function (p) { return p.pg.indexOf(t[0]) >= 0; })) return;
+      var L = parPartage.filter(function (x) { return libre(x) && x.pg.indexOf(t[0]) >= 0; });
+      var q = L.filter(function (x) { return x.pg.length === 1; })[0] || L[0];
+      if (q) premiers.push(q);
+    });
+    parPartage.forEach(function (q) { if (premiers.length < SERIE && libre(q) && q.k !== 'censure' && !q.pg.length) premiers.push(q); });
+    parPartage.forEach(function (q) { if (premiers.length < SERIE && libre(q) && q.k !== 'censure') premiers.push(q); });
+    premiers = premiers.slice(0, SERIE).sort(function (a, b) { return b.partage - a.partage; });
     var pris = premiers.slice(), nbTh = {};
     var compter = function (q) { q.pg.forEach(function (t) { nbTh[t] = (nbTh[t] || 0) + 1; }); };
     premiers.forEach(compter);

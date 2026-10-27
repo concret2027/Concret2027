@@ -45,16 +45,16 @@ MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août
 
 # Rattachement prudent d'un texte à une page de mission, sur les mots de son intitulé (affiché comme un renvoi, sans plus).
 PAGES = {
-    'finances': r'loi de finances|finances publiques|programmation des finances|comptes publics|budg|fiscal|impôt|dette publique',
+    'finances': r'loi de finances|finances publiques|programmation des finances|comptes publics|budg|fiscal|impôt|dette publique|résultats de la gestion|approbation des comptes|fin de gestion',
     'sante': r'sécurité sociale|santé|sanitaire|hôpita|médic|soins|maladie|pharmac|fin de vie|aide à mourir|bioéthique|vaccin|perte d.autonomie|grand âge|dépendance|handicap',
     'vie': r'logement|pouvoir d.achat|salaire|emploi|chômage|retraite|titre-restaurant|travail|revenu|pauvreté|précarité',
     'education': r'école|enseignement|éducation|élèves|scolaire|université|étudiant|programmation de la recherche|recherche publique|apprentissage|formation professionnelle',
     'securite': r'sécurité intérieure|sécurité globale|ordre public|police|gendarmerie|justice|judiciaire|pénal|narcotrafic|criminalité|délinquance|violences|victimes|prison|pénitentiaire|terroris|renseignement|surveillance|procureur|douane|état d.urgence',
-    'defense': r'défense(?!\w)|militaire|armées',
+    'defense': r'(?<!légitime )défense(?!\w)|militaire|armées',
     'demographie': r'immigration|asile|étrangers|nationalité|intégration|natalité|naissance|politique familiale|allocations familiales|congé parental|adoption d.enfant|adoption plénière|réforme de l.adoption|rétention administrative|titre de séjour|titres de séjour|droit du sol',
 }
 # Les mots affichés sur les pages, pour que la règle se lise (les mêmes que ci-dessus, sans les troncatures).
-MOTS = {k: [m.replace('.', '\'').replace('hôpita', 'hôpital').replace('budg', 'budget').replace('médic', 'médicament').replace('pharmac', 'pharmacie').replace('terroris', 'terrorisme').replace('défense(?!\\w)', 'défense') for m in v.split('|')] for k, v in PAGES.items()}
+MOTS = {k: [m.replace('.', '\'').replace('hôpita', 'hôpital').replace('budg', 'budget').replace('médic', 'médicament').replace('pharmac', 'pharmacie').replace('terroris', 'terrorisme').replace('(?<!légitime )', '').replace('défense(?!\\w)', 'défense') for m in v.split('|')] for k, v in PAGES.items()}
 
 # Frise : événements avant la 17e législature, lus à leur source officielle ; v = textes à retrouver tels quels dans la source.
 CC = 'https://www.conseil-constitutionnel.fr/decision/'
