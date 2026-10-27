@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="f966248eeebf">
+<meta name="concret-version" content="a4ef4a206490">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -305,13 +305,14 @@ footer p { margin: 0; } footer a { color: inherit; }
 .vz-suivi { position: sticky; top: var(--navh, 56px); z-index: 8; display: flex; gap: 12px; align-items: center; padding: 8px 2px; margin: -8px 0; background: var(--bg); font-size: 14px; font-variant-numeric: tabular-nums; }
 .vz-prog { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; } .vz-prog i { display: block; height: 100%; background: var(--fr); border-radius: 3px; transition: width .3s; }
 .vz-carte { border-color: var(--fr); }
-.vz-avenir { border: 1.5px dashed var(--fr); }
-.vz-av-l { display: grid; gap: 18px; } .vz-av-l > div + div { border-top: 1px solid var(--line); padding-top: 16px; }
+.vz-avenir { display: grid; gap: 12px; }
+.vz-av-h h2 { font-family: var(--serif); font-weight: 400; font-size: 24px; margin: 0; } .vz-av-h .note { margin-top: 4px; }
+.vz-av-l { display: grid; gap: 14px; } .vz-av-l > .card { border: 1.5px dashed var(--fr); }
 .vz-pause { text-align: center; justify-items: center; }
 .vz-pause h2 { font-family: var(--serif); font-weight: 400; font-size: 26px; }
 .vz-pause .vz-suite { justify-self: center; }
 .vz-top { margin: 0; font-size: 16px; } .vz-top b { color: var(--fr); }
-.vz-res h2, .vz-plan h2 { font-family: var(--serif); font-weight: 400; font-size: 23px; line-height: 1.25; }
+.vz-res h2 { font-family: var(--serif); font-weight: 400; font-size: 23px; line-height: 1.25; }
 .vz-mes { list-style: none; margin: 0; padding: 0; display: grid; }
 .vz-mes li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 13.5px; align-items: center; }
 .vz-mes li:first-child { border-top: 0; }
@@ -335,10 +336,9 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="vz-prive">Vos votes restent sur cet appareil : rien n'est envoyé, ni à Concret ni à personne.</p>
   </section>
 
-  <section class="card vz-avenir" id="vz-avenir" data-partage="non" hidden aria-labelledby="vz-av-t">
-    <span class="eyebrow">Bientôt à l'Assemblée</span>
-    <h2 id="vz-av-t">Votez avant les députés</h2>
-    <p class="note">Votes déjà fixés à l'ordre du jour de l'Assemblée. Le jour du vote, vous verrez comment chaque groupe a voté par rapport à vous.</p>
+  <section class="vz-avenir" id="vz-avenir" hidden aria-labelledby="vz-av-t">
+    <div class="vz-av-h"><span class="eyebrow">Bientôt à l'Assemblée</span><h2 id="vz-av-t">Votez avant les députés</h2>
+    <p class="note">Votes déjà fixés à l'ordre du jour. Le jour du vote, vous verrez comment chaque groupe a voté par rapport à vous.</p></div>
     <div id="vz-av-l" class="vz-av-l"></div>
   </section>
 
@@ -347,8 +347,6 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card vz-carte" id="vz-carte" data-partage="non" aria-live="polite"><p class="note">Chargement des votes…</p></section>
 
   <section class="card vz-res" id="vz-res" data-src="Source : Assemblée nationale, scrutins de la 17e législature ; calcul de Concret à partir de vos votes."></section>
-
-  <section class="card vz-plan" id="vz-plan" data-src="Source : Assemblée nationale, scrutins de la 17e législature ; calcul de Concret."></section>
 
   <details class="how" id="vz-mes-d" hidden>
     <summary id="vz-mes-s">Vos votes</summary>
@@ -389,7 +387,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     }).join('');
     $('vz-mes-plus').hidden = tous || L.length <= 10;
   }
-  function tout() { suivi(); V.bilan($('vz-res'), D); V.dessinerPlan($('vz-plan'), D); mesVotes(); }
+  function tout() { suivi(); V.bilan($('vz-res'), D); mesVotes(); }
   function afficher(defiler) {
     var m = V.mes(), n = compte(), el = $('vz-carte');
     var q = force ? D.ordre.filter(function (x) { return x.id === force; })[0] : D.ordre.filter(function (x) { return !m[x.id]; })[0];
@@ -418,7 +416,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     tout(); afficher(false);
     if (D.avenir.length) {
       $('vz-avenir').hidden = false;
-      D.avenir.forEach(function (q) { var d = document.createElement('div'); $('vz-av-l').appendChild(d); V.carte(d, q, D, {}); });
+      D.avenir.forEach(function (q) { var d = document.createElement('section'); d.className = 'card'; d.setAttribute('data-partage', 'non'); $('vz-av-l').appendChild(d); V.carte(d, q, D, {}); });
     }
   }).catch(function () { $('vz-carte').innerHTML = '<p class="note">Les votes n\'ont pas pu être chargés. Rechargez la page.</p>'; });
   $('vz-mes').addEventListener('click', function (e) {

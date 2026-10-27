@@ -343,6 +343,45 @@ def agenda(reunions, de, a):
     return [{'d': d, 'o': jours[d]} for d in sorted(jours)]
 
 
+HEMICYCLE = 'https://www.assemblee-nationale.fr/dyn/vos-deputes/hemicycle'
+
+
+def hemicycle(gp):
+    """Plan officiel de l'hémicycle : pour chaque groupe, l'angle moyen de ses sièges (180 à gauche, 0 à droite, vu de la
+    présidence) et sa couleur sur le plan de l'Assemblée. Siège → député lu sur la page du plan ; député → groupe lu dans les
+    mandats en cours (données ouvertes)."""
+    import html as H, math
+    s = get(HEMICYCLE).decode('utf-8', 'replace')
+    m = re.search(r'data-siegeData="([^"]+)"', s)
+    if not m:
+        raise ValueError('plan de l\'hémicycle introuvable')
+    sieges = json.loads(H.unescape(m.group(1)))
+    pos = {}
+    for a in re.findall(r'<path([^>]*)>', s):
+        i, d = re.search(r'id="p(\d+)"', a), re.search(r'd="M([\d.]+)[ ,]([\d.]+)', a)
+        if i and d:
+            pos[i.group(1)] = (float(d.group(1)), float(d.group(2)))
+    xs, ys = [p[0] for p in pos.values()], [p[1] for p in pos.values()]
+    cx, cy = (min(xs) + max(xs)) / 2, max(ys)
+    dep = {}
+    for a in lire_zip(SRC['organes'], 'json/acteur/'):
+        a = a.get('acteur') or {}
+        uid = a.get('uid')
+        uid = uid.get('#text') if isinstance(uid, dict) else uid
+        for md in liste((a.get('mandats') or {}).get('mandat')):
+            ref = (md.get('organes') or {}).get('organeRef')
+            if md.get('typeOrgane') == 'GP' and not md.get('dateFin') and ref in gp:
+                dep[uid] = gp[ref]['c']
+    ang, coul = {}, {}
+    for siege, v in sieges.items():
+        g = dep.get((v.get('tooltipUrl') or '').rsplit('/', 1)[-1])
+        if g and siege in pos:
+            x, y = pos[siege]
+            ang.setdefault(g, []).append(math.degrees(math.atan2(cy - y, x - cx)))
+            coul.setdefault(g, v.get('couleur'))
+    return {g: {'a': round(sum(l) / len(l), 1), 'coul': coul[g]} for g, l in ang.items()}
+
+
 def votes_a_venir(reunions, de, a, dossiers):
     """Votes solennels confirmés à l'ordre du jour de la séance (page Votez les lois) : date, objet, dossier, vote sur une partie
     ou sur l'ensemble. Le dossier manquant est retrouvé par l'intitulé du texte (dossiers : intitulé en minuscules → dossier)."""
@@ -537,9 +576,15 @@ def construire(auj):
             e['pg'] = rattacher(e['t'])
     P['mots'] = MOTS
     P['grandes'] = {'source': 'Assemblée nationale, données ouvertes : dossiers législatifs et scrutins des 14e à 17e législatures (depuis juin 2012)', 'url': REPO, 'date': auj.isoformat()}
-    VZ = {'maj': auj.isoformat(), 'GROUPES': [{k: g[k] for k in ('c', 'n', 'm')} for g in G],
+    try:
+        HM = hemicycle(gp)
+    except (IOError, ValueError, KeyError) as x:
+        print('Plan de l\'hémicycle : lecture impossible :', x)
+        HM = {}
+    VZ = {'maj': auj.isoformat(), 'GROUPES': [dict({k: g[k] for k in ('c', 'n', 'm')}, **HM.get(g['c'], {})) for g in G],
           'VOTES': [{k: e[k] for k in ('d', 'n', 'k', 's', 't', 'v', 'req', 'p', 'c', 'a', 'g', 'dos', 'dl') if k in e} for e in tous if e['k'] in VOTEZ],
-          'P': {'votes': P['votes'], 'groupes': P['groupes'], 'agenda': P['agenda']},
+          'P': {'votes': P['votes'], 'groupes': P['groupes'], 'agenda': P['agenda'],
+                'hemicycle': {'source': 'Assemblée nationale, plan de l\'hémicycle (place et couleur de chaque groupe)', 'url': HEMICYCLE, 'date': auj.isoformat()}},
           'AVENIR': AV,
           # Le Premier ministre en fonction à chaque date (nominations de la frise, chacune avec sa source) : nomme le Gouvernement visé par une censure.
           'PM': [{'d': e['d'], 'n': re.match(r'^(.*?) nommée? Premi', e['t']).group(1), 'src': e['src'], 'url': e['url']}

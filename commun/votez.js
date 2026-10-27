@@ -24,10 +24,14 @@
   };
   var CHOIX = { pour: 'Pour', contre: 'Contre', abstention: 'Abstention' };
 
-  var css = '.vz{display:grid;gap:10px}' +
+  var css = '.vz{display:grid;gap:12px}' +
     '.vz-titre{font-family:var(--serif);font-weight:500;font-size:21px;line-height:1.25;margin:0;text-wrap:balance}' +
+    '.vz-tete{display:flex;flex-wrap:wrap;gap:6px;align-items:center}' +
+    '.vz-chip{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fr);background:var(--band);border-radius:999px;padding:4px 10px}' +
+    '.vz-date{font-size:12.5px;font-weight:600;color:var(--muted)}' +
+    '.vz-boite{display:grid;gap:6px;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}.vz-boite .eyebrow{margin:0}' +
     '.vz-expl{margin:0;font-size:15px;line-height:1.5}' +
-    '.vz-lu{margin:-4px 0 0;font-size:12px;color:var(--muted)}.vz-lu a{color:var(--muted)}' +
+    '.vz-lu{margin:0;font-size:12px;color:var(--muted)}.vz-lu a{color:var(--muted)}' +
     '.vz-q{margin:4px 0 0;font-size:17px;font-weight:700}' +
     '.vz-aide{margin:-4px 0 0;font-size:13.5px;color:var(--muted)}' +
     '.vz-choix{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:8px}' +
@@ -51,7 +55,11 @@
     '.vz-bars li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;font-size:14px;align-items:baseline}' +
     '.vz-bars .n{font-weight:600;line-height:1.3}.vz-bars .v{font-weight:700;font-variant-numeric:tabular-nums}' +
     '.vz-bars .b{grid-column:1/-1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}.vz-bars .b i{display:block;height:100%;background:var(--fr);border-radius:4px}' +
-    '.vz-bars .v small{font-weight:400;font-size:12px;color:var(--muted);margin-right:6px}' +
+    '.vz-bars>li>i{width:10px;height:10px;border-radius:3px;grid-row:1;align-self:center}.vz-bars li{grid-template-columns:10px minmax(0,1fr) auto!important}.vz-bars .n small{color:var(--muted);font-weight:500;font-size:11.5px}.vz-bars .b{grid-column:2/-1!important}' +
+    '.vz-hemi{position:relative}.vz-hemi svg{display:block;width:100%;height:auto;font-family:var(--sans)}.vz-hs{cursor:pointer;outline:none}.vz-hs:hover path,.vz-hs:focus path{filter:brightness(1.08)}' +
+    '.vz-tip{position:absolute;top:0;z-index:3;max-width:260px;padding:7px 10px;border-radius:9px;background:var(--fg);color:var(--bg);font-size:12.5px;line-height:1.35;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
+    '.vz-lire{margin:0;font-size:13.5px;color:var(--muted)}' +
+    '.vz-plus{font:inherit;font-size:13.5px;font-weight:600;color:var(--fr);background:none;border:0;padding:4px 0;cursor:pointer;justify-self:start}' +
     '.vz-bars li.top .n{color:var(--fr)}';
 
   var donnees = null;
@@ -168,46 +176,7 @@
       .filter(function (q) { return q.k !== 'censure' || !censure++; }).slice(0, SERIE);
     var ordre = premiers.concat(Q.filter(function (q) { return premiers.indexOf(q) < 0; }));
     var G = {}; J.GROUPES.forEach(function (g) { G[g.c] = g; });
-    // Carte des groupes : calculée sur tous les votes importants de la législature, expliqués ou non.
-    var tousPos = J.VOTES.map(function (v) { var o = {}; J.GROUPES.forEach(function (g) { if (g.c !== 'NI') { var p = position(v, g.c); if (p) o[g.c] = p; } }); return o; });
-    return { Q: Q, ordre: ordre, avenir: A, nbVotes: J.VOTES.length, plan: plan(J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), tousPos), tous: tous, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: J.VOTES.length ? J.VOTES[J.VOTES.length - 1].d : '' };
-  }
-
-  // Plan des groupes (positionnement multidimensionnel classique) : la distance entre deux groupes est 1 − leur accord moyen
-  // sur les votes où les deux avaient une position ; on garde les deux directions qui expliquent le plus ces distances.
-  function plan(groupes, tousPos) {
-    var n = groupes.length, D2 = [], i, j;
-    for (i = 0; i < n; i++) { D2.push([]); for (j = 0; j < n; j++) {
-      var s = 0, k = 0; tousPos.forEach(function (o) { var a = o[groupes[i].c], b = o[groupes[j].c]; if (a && b) { k++; s += accord(a, b); } });
-      var d = k ? 1 - s / k : 1; D2[i].push(d * d);
-    } }
-    var lig = D2.map(function (r) { return r.reduce(function (a, b) { return a + b; }, 0) / n; }), tot = lig.reduce(function (a, b) { return a + b; }, 0) / n;
-    var B = D2.map(function (r, i) { return r.map(function (x, j) { return -0.5 * (x - lig[i] - lig[j] + tot); }); });
-    var axes = [], M = B.map(function (r) { return r.slice(); });
-    for (var a = 0; a < 2; a++) {
-      var v = groupes.map(function (g, i) { return 1 + i / n; }), l = 0;
-      for (var it = 0; it < 300; it++) {
-        var w = M.map(function (r) { return r.reduce(function (s, x, j) { return s + x * v[j]; }, 0); });
-        l = Math.sqrt(w.reduce(function (s, x) { return s + x * x; }, 0)); if (!l) break;
-        v = w.map(function (x) { return x / l; });
-      }
-      axes.push({ l: l, v: v });
-      M = M.map(function (r, i) { return r.map(function (x, j) { return x - l * v[i] * v[j]; }); });
-    }
-    // Sens des axes fixé une fois pour toutes : le plus grand groupe du côté positif (le sens n'a pas de signification).
-    var grand = 0; groupes.forEach(function (g, i) { if ((g.m || 0) > (groupes[grand].m || 0)) grand = i; });
-    axes.forEach(function (ax) { if (ax.v[grand] < 0) ax.v = ax.v.map(function (x) { return -x; }); });
-    var X = groupes.map(function (g, i) { return axes.map(function (ax) { return ax.v[i] * Math.sqrt(Math.max(ax.l, 0)); }); });
-    var tr = B.reduce(function (s, r, i) { return s + Math.max(r[i], 0); }, 0);
-    return { groupes: groupes, X: X, axes: axes, lig: lig, part: axes.map(function (ax) { return tr ? ax.l / tr : 0; }) };
-  }
-  // Place la personne entre les groupes : moyenne de leurs positions, chacune pesée par son accord avec le groupe à la
-  // puissance 8 (le groupe avec qui elle vote le plus souvent l'attire le plus ; voter toujours comme un groupe place sur lui).
-  function placer(P, R) {
-    var acc = {}; R.groupes.forEach(function (g) { acc[g.c] = g.pct / 100; });
-    var w = P.groupes.map(function (g) { return Math.pow(acc[g.c] || 0, 8); }), t = w.reduce(function (a, b) { return a + b; }, 0);
-    if (!t) return null;
-    return [0, 1].map(function (a) { return P.X.reduce(function (s, x, i) { return s + w[i] * x[a]; }, 0) / t; });
+    return { Q: Q, ordre: ordre, avenir: A, nbVotes: J.VOTES.length,  tous: tous, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: J.VOTES.length ? J.VOTES[J.VOTES.length - 1].d : '' };
   }
 
   var accord = function (a, b) { return a === b ? 1 : (a === 'abstention' || b === 'abstention') ? 0.5 : 0; };
@@ -233,9 +202,7 @@
       (q.v.dos ? '<a href="https://www.assemblee-nationale.fr/dyn/17/dossiers/' + esc(q.v.dos) + '">Le dossier du texte</a> · ' : '') +
       '<a href="https://www.assemblee-nationale.fr/dyn/17/scrutins/' + q.v.n + '">Le scrutin n° ' + q.v.n + '</a></p></details>';
     el.innerHTML = '<div class="vz">' + (o.entete || '') +
-      '<span class="eyebrow">' + esc(q.type) + ' · ' + dateFr(q.d) + '</span>' +
-      '<h2 class="vz-titre">' + esc(q.titre) + '</h2>' +
-      expl(q) +
+      tete(q) + '<h2 class="vz-titre">' + esc(q.titre) + '</h2>' + expl(q) +
       '<p class="vz-q">' + esc(q.q) + '</p>' + (q.aide ? '<p class="vz-aide">' + esc(q.aide) + '</p>' : '') +
       '<div class="vz-choix" style="--n:' + q.choix.length + '">' + q.choix.map(function (c) { return '<button type="button" data-c="' + c + '" aria-pressed="false">' + CHOIX[c] + '</button>'; }).join('') + '</div>' +
       '<button type="button" class="vz-passe">Je ne sais pas : passer</button>' + off + '<div class="vz-rev" hidden></div></div>';
@@ -260,14 +227,17 @@
     if (CHOIX[deja]) montrer(deja);
   }
 
+  // En-tête d'une carte : le genre de vote et sa date, en pastilles.
+  function tete(q) { return '<div class="vz-tete"><span class="vz-chip">' + esc(q.type) + '</span><span class="vz-date">' + dateFr(q.d) + '</span></div>'; }
+  // L'explication, dans son propre encadré.
   function expl(q) {
-    return q.expl ? '<p class="vz-expl">' + esc(q.expl.e) + '</p><p class="vz-lu">Lu dans : <a href="' + esc(q.expl.url) + '">' + esc(q.expl.src) + '</a>' +
-      (q.explAvant || q.avenir ? ' (le texte tel qu\'il arrivait en séance : les députés peuvent le modifier pendant le débat)' : '') + '</p>' : '';
+    return q.expl ? '<div class="vz-boite"><span class="eyebrow">' + (q.k === 'censure' || q.k === 'confiance' ? 'Ce qui est en jeu' : 'Ce que prévoit le texte') + '</span><p class="vz-expl">' + esc(q.expl.e) + '</p><p class="vz-lu">Lu dans : <a href="' + esc(q.expl.url) + '">' + esc(q.expl.src) + '</a>' +
+      (q.explAvant || q.avenir ? ' (le texte tel qu\'il arrivait en séance : les députés peuvent le modifier pendant le débat)' : '') + '</p></div>' : '';
   }
   // Un vote à venir : on vote avant l'Assemblée ; le jour du vote, la carte montre ce qu'ont fait les groupes.
   function carteAvenir(el, q, D, o) {
     var deja = lireAv()[q.cle];
-    el.innerHTML = '<div class="vz">' + (o.entete || '') + '<span class="eyebrow">' + esc(q.type) + ' · ' + dateFr(q.d) + '</span>' +
+    el.innerHTML = '<div class="vz">' + (o.entete || '') + tete(q) +
       '<h2 class="vz-titre">' + esc(q.titre) + '</h2>' + expl(q) + '<p class="vz-q">' + esc(q.q) + '</p>' +
       '<div class="vz-choix" style="--n:3">' + q.choix.map(function (c) { return '<button type="button" data-c="' + c + '" aria-pressed="false">' + CHOIX[c] + '</button>'; }).join('') + '</div>' +
       '<details class="vz-off"><summary>Sources</summary><p><a href="https://www.assemblee-nationale.fr/dyn/17/dossiers/' + esc(q.dos) + '">Le dossier du texte</a> · ordre du jour de l\'Assemblée nationale</p></details>' +
@@ -286,60 +256,61 @@
     if (deja && CHOIX[deja.c]) montrer(deja.c, deja.le);
   }
 
-  // Le résultat : de quels groupes les votes de la personne sont le plus proches.
+  // Le résultat, en hémicycle : chaque groupe à sa place et dans sa couleur sur le plan officiel de l'Assemblée, sa part
+  // proportionnelle à ses sièges ; la partie colorée va du centre vers le bord selon l'accord de la personne avec lui.
+  function hemicycle(D, R) {
+    var acc = {}; (R ? R.groupes : []).forEach(function (g) { acc[g.c] = g; });
+    var G = D.groupes.filter(function (g) { return g.a != null; }).slice().sort(function (p, q) { return q.a - p.a; });
+    var tot = G.reduce(function (s, g) { return s + g.m; }, 0), W = 360, H = 200, cx = 180, cy = 186, r0 = 54, R1 = 168, t = Math.PI, ecart = 0.012;
+    var pt = function (r, a) { return (cx + r * Math.cos(a)).toFixed(1) + ' ' + (cy - r * Math.sin(a)).toFixed(1); };
+    var secteur = function (a0, a1, ra, rb) { var g = a0 - a1 > Math.PI ? 1 : 0; return 'M' + pt(ra, a0) + ' L' + pt(rb, a0) + ' A' + rb + ' ' + rb + ' 0 ' + g + ' 1 ' + pt(rb, a1) + ' L' + pt(ra, a1) + ' A' + ra + ' ' + ra + ' 0 ' + g + ' 0 ' + pt(ra, a0) + ' Z'; };
+    var parts = G.map(function (g) {
+      var a0 = t, a1 = t - Math.PI * g.m / tot; t = a1;
+      var x = acc[g.c], rb = x ? r0 + (R1 - r0) * x.pct / 100 : r0;
+      var info = esc(g.n) + ' (' + esc(g.c) + ') · ' + g.m + ' députés' + (x ? ' · vous : ' + x.pct + ' % d\'accord, sur ' + x.nb + ' vote' + (x.nb > 1 ? 's' : '') : '');
+      var mid = (a0 + a1) / 2, lab = a0 - a1 > 0.2 ? '<text x="' + (cx + (R1 + 13) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 + 13) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--muted)">' + esc(g.c.replace('-NFP', '')) + '</text>' : '';
+      return '<g class="vz-hs" tabindex="0" data-info="' + info + '"><path d="' + secteur(a0 - ecart, a1 + ecart, r0, R1) + '" fill="' + g.coul + '" opacity=".16"/>' +
+        (x ? '<path d="' + secteur(a0 - ecart, a1 + ecart, r0, rb) + '" fill="' + g.coul + '"/>' : '') + lab + '</g>';
+    }).join('');
+    var top = R && R.groupes[0];
+    return '<div class="vz-hemi"><svg viewBox="-12 -14 ' + (W + 24) + ' ' + (H + 14) + '" role="img" aria-label="Hémicycle : votre accord avec chaque groupe">' + parts +
+      (top ? '<text x="' + cx + '" y="' + (cy - 14) + '" text-anchor="middle" font-family="var(--serif)" font-size="30" fill="var(--fg)">' + top.pct + ' %</text><text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">au plus proche</text>' : '') +
+      '</svg><div class="vz-tip" hidden></div></div>';
+  }
   function bilan(el, D) {
     style();
-    var R = resultat(D);
-    if (R.nb < MIN) {
-      el.innerHTML = '<span class="eyebrow">Votre résultat</span><h2>Votre résultat s\'affiche à partir de ' + MIN + ' votes</h2><p class="note">Encore ' + (MIN - R.nb) + ' vote' + (MIN - R.nb > 1 ? 's' : '') + '. Avant, il dépendrait d\'un ou deux textes seulement.</p>';
-      return R;
-    }
-    var top = R.groupes.filter(function (g) { return g.pct === R.groupes[0].pct; });
-    el.innerHTML = '<span class="eyebrow">Votre résultat · ' + R.nb + ' votes</span>' +
-      '<h2>Vos votes ressemblent le plus à ceux ' + (top.length > 1 ? 'des groupes ' + top.map(function (g) { return esc(g.n); }).join(' et ') + ' (à égalité)' : 'du groupe ' + esc(top[0].n)) + '</h2>' +
-      '<ul class="vz-bars">' + R.groupes.map(function (g) {
-        return '<li' + (g.pct === R.groupes[0].pct ? ' class="top"' : '') + '><span class="n">' + esc(g.n) + '</span><span class="v">' + (g.nb < R.nb ? '<small>sur ' + g.nb + ' votes</small>' : '') + g.pct + ' %</span><span class="b"><i style="width:' + g.pct + '%"></i></span></li>';
-      }).join('') + '</ul>' +
-      '<p class="note">Accord avec le résultat de l\'Assemblée : <b>' + R.assemblee + ' %</b> de vos votes. Accord : 1 si vous avez voté comme la majorité du groupe, ½ si l\'un des deux s\'est abstenu et pas l\'autre, 0 sinon.' +
-      (R.groupes.some(function (g) { return g.nb < R.nb; }) ? ' « Sur … votes » : le groupe n\'avait pas de position sur vos autres votes (aucun de ses députés n\'a voté, ou il n\'existait pas encore) ; ils ne comptent pas pour lui.' : '') +
-      ' Source : Assemblée nationale, scrutins de la 17e législature ; calcul de Concret à partir de vos votes, faits sur cet appareil.</p>';
+    var R = resultat(D), assez = R.nb >= MIN;
+    var liste = R.groupes.map(function (g, i) {
+      var c = (D.G[g.c] || {}).coul || 'var(--fr)';
+      return '<li' + (i >= 3 ? ' class="vz-plus3" hidden' : '') + '><i style="background:' + c + '"></i><span class="n">' + esc(g.n) + ' <small>' + esc(g.c) + '</small></span><span class="v">' + g.pct + ' %</span><span class="b"><i style="width:' + g.pct + '%;background:' + c + '"></i></span></li>';
+    }).join('');
+    var top = R.groupes.filter(function (g) { return g.pct === (R.groupes[0] || {}).pct; });
+    el.innerHTML = '<span class="eyebrow">Votre hémicycle' + (R.nb ? ' · ' + R.nb + ' vote' + (R.nb > 1 ? 's' : '') : '') + '</span>' +
+      '<h2>' + (assez ? 'Vous votez le plus souvent comme ' + (top.length > 1 ? 'les groupes ' + top.map(function (g) { return esc(g.n); }).join(' et ') : 'le groupe ' + esc(top[0].n)) : 'Votre hémicycle se remplit à partir de ' + MIN + ' votes') + '</h2>' +
+      hemicycle(D, assez ? R : null) +
+      '<p class="vz-lire">Chaque groupe est à sa place dans l\'hémicycle, de la gauche à la droite. ' + (assez ? 'Plus sa part est colorée, plus vous votez comme lui. Touchez un groupe pour voir son nom.' : 'Encore ' + (MIN - R.nb) + ' vote' + (MIN - R.nb > 1 ? 's' : '') + ' : avant, le résultat dépendrait d\'un ou deux textes seulement.') + '</p>' +
+      (assez ? '<ul class="vz-bars">' + liste + '</ul>' + (R.groupes.length > 3 ? '<button type="button" class="vz-plus">Voir les ' + R.groupes.length + ' groupes</button>' : '') : '') +
+      '<details class="vz-off"><summary>En détail : les groupes et le calcul</summary>' +
+      '<p>' + D.groupes.filter(function (g) { return g.a != null; }).slice().sort(function (p, q) { return q.a - p.a; }).map(function (g) { return '<b>' + esc(g.c) + '</b> : ' + esc(g.n) + ' (' + g.m + ' députés)'; }).join(' · ') + '.</p>' +
+      '<p>Accord avec un groupe : 1 si vous avez voté comme la majorité de ses députés, ½ si l\'un des deux s\'est abstenu et pas l\'autre, 0 sinon ; le pourcentage est la moyenne sur vos votes où le groupe avait une position.' +
+      (assez ? ' Accord avec le résultat de l\'Assemblée : ' + R.assemblee + ' % de vos votes.' : '') + '</p>' +
+      '<p>Place, couleur et nombre de députés de chaque groupe : plan officiel de l\'hémicycle et données ouvertes de l\'Assemblée nationale. Les ' + ((D.G.NI || {}).m || '') + ' députés non inscrits ne forment pas un groupe : ils ne sont pas dessinés. Vos votes restent sur cet appareil.</p></details>';
+    var tip = el.querySelector('.vz-tip'), box = el.querySelector('.vz-hemi');
+    var montre = function (g, e) {
+      if (!g) { tip.hidden = true; return; }
+      tip.innerHTML = g.getAttribute('data-info'); tip.hidden = false;
+      var r = box.getBoundingClientRect(), x = (e && e.clientX != null ? e.clientX : g.getBoundingClientRect().left + g.getBoundingClientRect().width / 2) - r.left;
+      tip.style.left = Math.max(4, Math.min(r.width - tip.offsetWidth - 4, x - tip.offsetWidth / 2)) + 'px';
+    };
+    Array.prototype.forEach.call(el.querySelectorAll('.vz-hs'), function (g) {
+      g.addEventListener('pointerenter', function (e) { montre(g, e); });
+      g.addEventListener('click', function (e) { montre(g, e); });
+      g.addEventListener('focus', function () { montre(g); });
+    });
+    box.addEventListener('pointerleave', function () { montre(null); });
+    var plus = el.querySelector('.vz-plus');
+    if (plus) plus.addEventListener('click', function () { Array.prototype.forEach.call(el.querySelectorAll('.vz-plus3'), function (li) { li.hidden = false; }); plus.remove(); });
     return R;
-  }
-
-  // La carte : les groupes placés selon leurs votes, et la personne selon les siens (à partir de MIN_PLAN votes).
-  var MIN_PLAN = 10;
-  function dessinerPlan(el, D) {
-    style();
-    var P = D.plan, R = resultat(D), moi = R.nb >= MIN_PLAN ? placer(P, R) : null;
-    var pts = P.X.map(function (x, i) { return { x: x[0], y: x[1], c: P.groupes[i].c, n: P.groupes[i].n }; });
-    if (moi) pts.push({ x: moi[0], y: moi[1], c: 'Vous', moi: 1 });
-    var xs = pts.map(function (p) { return p.x; }), ys = pts.map(function (p) { return p.y; });
-    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
-    var W = 340, H = 260, m = 34;
-    var sx = function (x) { return m + (x - x0) / ((x1 - x0) || 1) * (W - 2 * m); }, sy = function (y) { return H - m - (y - y0) / ((y1 - y0) || 1) * (H - 2 * m); };
-    // Étiquettes : au-dessus du point, sinon dessous, à droite ou à gauche, la première place libre (ni étiquette ni point).
-    var pris = [], larg = function (t) { return t.length * 7 + 4; };
-    var libre = function (x, y, w) { return !pris.some(function (q) { return Math.abs(q.x - x) < (q.w + w) / 2 && Math.abs(q.y - y) < 12; }) && !pts.some(function (p) { return Math.abs(sx(p.x) - x) < w / 2 && y - 10 < sy(p.y) + 5 && sy(p.y) - 5 < y + 2; }); };
-    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Carte des groupes de l\'Assemblée selon leurs votes" style="display:block;width:100%;height:auto;font-family:var(--sans)">' +
-      '<line x1="' + m / 2 + '" y1="' + H / 2 + '" x2="' + (W - m / 2) + '" y2="' + H / 2 + '" stroke="var(--line)" stroke-dasharray="3 3"/><line x1="' + W / 2 + '" y1="' + m / 2 + '" x2="' + W / 2 + '" y2="' + (H - m / 2) + '" stroke="var(--line)" stroke-dasharray="3 3"/>' +
-      // « Vous » choisit sa place en premier et se dessine en dernier (au-dessus des groupes).
-      (pts.slice().sort(function (p, q) { return (q.moi || 0) - (p.moi || 0); }).forEach(function (p) {
-        var X = sx(p.x), Y = sy(p.y), w = larg(p.c); p.lx = X; p.ly = Y - 9;
-        var essais = [[0, -9], [0, 17], [w / 2 + 8, 4], [-w / 2 - 8, 4], [0, -21], [0, 29], [w / 2 + 8, -8], [-w / 2 - 8, -8]];
-        for (var t = 0; t < essais.length; t++) { if (libre(X + essais[t][0], Y + essais[t][1], w)) { p.lx = X + essais[t][0]; p.ly = Y + essais[t][1]; break; } }
-        pris.push({ x: p.lx, y: p.ly, w: w });
-      }), '') +
-      pts.map(function (p) {
-        var X = sx(p.x), Y = sy(p.y), lx = p.lx, ly = p.ly;
-        return '<circle cx="' + X.toFixed(1) + '" cy="' + Y.toFixed(1) + '" r="' + (p.moi ? 7 : 5) + '" fill="' + (p.moi ? 'var(--fr)' : 'var(--muted)') + '"' + (p.moi ? ' stroke="var(--panel)" stroke-width="2"' : '') + '><title>' + esc(p.n || 'Vous') + '</title></circle>' +
-          '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="middle" font-size="' + (p.moi ? 13 : 11) + '" font-weight="' + (p.moi ? 700 : 600) + '" fill="' + (p.moi ? 'var(--fr)' : 'var(--fg)') + '">' + esc(p.c) + '</text>';
-      }).join('') + '</svg>';
-    var bouts = function (a) { var o = P.groupes.map(function (g, i) { return { c: g.c, v: P.X[i][a] }; }).sort(function (p, q) { return p.v - q.v; }); return [o.slice(0, 2), o.slice(-2).reverse()].map(function (l) { return l.map(function (g) { return g.c; }).join(', '); }); };
-    var bx = bouts(0), by = bouts(1), part = Math.round(100 * (P.part[0] + P.part[1]));
-    el.innerHTML = '<span class="eyebrow">La carte des votes</span><h2>' + (moi ? 'Où vous placent vos votes' : 'Les groupes de l\'Assemblée selon leurs votes') + '</h2>' + svg +
-      '<p class="note">Deux groupes sont d\'autant plus proches qu\'ils ont souvent voté pareil sur les ' + D.nbVotes + ' votes importants depuis ' + moisFr(D.debut) + '. Les axes n\'ont pas de nom : à gauche du dessin, ' + bx[0] + ' ; à droite, ' + bx[1] + ' ; en bas, ' + by[0] + ' ; en haut, ' + by[1] + '. Ces deux directions résument ' + part + ' % des écarts entre groupes. ' +
-      (moi ? 'Votre point se place entre les groupes, d\'autant plus près de chacun que vous votez souvent comme lui (sur vos ' + R.nb + ' votes).' : 'Votre point apparaît à partir de ' + MIN_PLAN + ' votes (vous en avez ' + R.nb + ').') + '</p>' +
-      '<p class="note">' + P.groupes.map(function (g) { return '<b>' + esc(g.c) + '</b> ' + esc(g.n); }).join(' · ') + '</p>';
   }
 
   window.ConcretVotez = {
@@ -353,7 +324,7 @@
     oublier: function (id) { var m = lireMes(); delete m[id]; ecrireMes(m); },
     effacer: function () { try { localStorage.removeItem(CLE); localStorage.removeItem(CLE_AV); } catch (e) {} },
     avant: lireAv,
-    resultat: resultat, carte: carte, bilan: bilan, dessinerPlan: dessinerPlan,
+    resultat: resultat, carte: carte, bilan: bilan,
     // Bloc du quiz : un vote pas encore voté sur cet appareil.
     duJour: function (el) {
       if (!el || !window.fetch) return;
