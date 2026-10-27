@@ -51,7 +51,7 @@ PAGES = {
     'education': r'école|enseignement|éducation|élèves|scolaire|université|étudiant|programmation de la recherche|recherche publique|apprentissage|formation professionnelle',
     'securite': r'sécurité intérieure|sécurité globale|ordre public|police|gendarmerie|justice|judiciaire|pénal|narcotrafic|criminalité|délinquance|violences|victimes|prison|pénitentiaire|terroris|renseignement|surveillance|procureur|douane|état d.urgence',
     'defense': r'défense(?!\w)|militaire|armées',
-    'demographie': r'immigration|asile|étrangers|nationalité|intégration|natalité|naissance|politique familiale|allocations familiales|congé parental|adoption|rétention administrative',
+    'demographie': r'immigration|asile|étrangers|nationalité|intégration|natalité|naissance|politique familiale|allocations familiales|congé parental|adoption d.enfant|adoption plénière|réforme de l.adoption|rétention administrative|titre de séjour|titres de séjour|droit du sol',
 }
 # Les mots affichés sur les pages, pour que la règle se lise (les mêmes que ci-dessus, sans les troncatures).
 MOTS = {k: [m.replace('.', '\'').replace('hôpita', 'hôpital').replace('budg', 'budget').replace('médic', 'médicament').replace('pharmac', 'pharmacie').replace('terroris', 'terrorisme').replace('défense(?!\\w)', 'défense') for m in v.split('|')] for k, v in PAGES.items()}
