@@ -174,13 +174,22 @@
       return { id: 'av:' + a.cle, avenir: true, cle: a.cle, dos: a.dos, k: a.k, d: a.d, titre: a.o, type: 'Vote prévu à l\'Assemblée', expl: X['avenir:' + a.cle],
         q: a.k === 'partie' ? 'Adopter cette partie du texte ?' : 'Adopter ce texte ?', choix: ['pour', 'contre', 'abstention'] };
     });
-    // Ordre de la page : les dix votes qui ont le plus partagé l'Assemblée (une seule motion de censure parmi eux), puis tous les
+    // Ordre de la page : les dix votes qui ont le plus partagé l'Assemblée (une seule motion de censure parmi eux), puis de quoi
+    // donner un résultat à chaque thème (trois votes par thème, les plus partagés d'abord, un thème après l'autre), puis tous les
     // autres, du plus récent au plus ancien.
-    var censure = 0, premiers = Q.slice().sort(function (a, b) { return b.partage - a.partage || (a.d < b.d ? 1 : -1); })
-      .filter(function (q) { return q.k !== 'censure' || !censure++; }).slice(0, SERIE);
-    var ordre = premiers.concat(Q.filter(function (q) { return premiers.indexOf(q) < 0; }));
+    var parPartage = Q.slice().sort(function (a, b) { return b.partage - a.partage || (a.d < b.d ? 1 : -1); });
+    var censure = 0, premiers = parPartage.filter(function (q) { return q.k !== 'censure' || !censure++; }).slice(0, SERIE);
+    var pris = premiers.slice(), nbTh = {};
+    var compter = function (q) { q.pg.forEach(function (t) { nbTh[t] = (nbTh[t] || 0) + 1; }); };
+    premiers.forEach(compter);
+    for (var tour = 0; tour < MIN_THEME; tour++) THEMES.forEach(function (t) {
+      if ((nbTh[t[0]] || 0) >= MIN_THEME) return;
+      var q = parPartage.filter(function (x) { return pris.indexOf(x) < 0 && x.pg.indexOf(t[0]) >= 0; })[0];
+      if (q) { pris.push(q); compter(q); }
+    });
+    var ordre = pris.concat(Q.filter(function (q) { return pris.indexOf(q) < 0; }));
     var G = {}; J.GROUPES.forEach(function (g) { G[g.c] = g; });
-    return { Q: Q, ordre: ordre, avenir: A, nbVotes: J.VOTES.length,  tous: tous, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: J.VOTES.length ? J.VOTES[J.VOTES.length - 1].d : '' };
+    return { Q: Q, ordre: ordre, finThemes: pris.length, avenir: A, nbVotes: J.VOTES.length,  tous: tous, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: J.VOTES.length ? J.VOTES[J.VOTES.length - 1].d : '' };
   }
 
   var accord = function (a, b) { return a === b ? 1 : (a === 'abstention' || b === 'abstention') ? 0.5 : 0; };
@@ -346,7 +355,7 @@
   }
 
   window.ConcretVotez = {
-    MIN: MIN, SERIE: SERIE, dateFr: dateFr, moisFr: moisFr, nf: nf, esc: esc, CHOIX: CHOIX,
+    MIN: MIN, SERIE: SERIE, THEMES: THEMES, MIN_THEME: MIN_THEME, dateFr: dateFr, moisFr: moisFr, nf: nf, esc: esc, CHOIX: CHOIX,
     charger: function () {
       var lire = function (u) { return fetch(u, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); };
       if (!donnees) donnees = Promise.all([lire('/donnees/votes.json'), lire('/donnees/votez_explications.json')]).then(function (r) { return construire(r[0], r[1].explications || {}); });
