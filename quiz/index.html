@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="23154cbebacf">
+<meta name="concret-version" content="50d7dcd5848f">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,6 +31,7 @@
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261026c"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
+<script src="/commun/votez.js?v=20261027a"></script>
 <style>html, body { margin: 0; }
 
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -419,7 +420,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 </head>
 <body data-sources="Sources : les pages de Concret (données Eurostat, OCDE, OTAN, Insee, PNUD et autres, détail sur chaque page).">
 <div class="wrap">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/" aria-current="page">Quiz<span class="lg"> du jour</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/" aria-current="page">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
   <div class="brand"><b>Quiz du jour</b><span id="today"></span></div>
 
   <section class="card qz-intro" data-partage="non" aria-labelledby="qz-titre">
@@ -440,6 +441,8 @@ footer p { margin: 0; } footer a { color: inherit; }
     <button class="qz-btn" id="qz-partager" type="button">Partager mon score</button>
     <p class="qz-copie" id="qz-copie"></p>
   </section>
+
+  <section class="card" id="qz-loi" data-partage="non" aria-live="polite" hidden></section>
 
   <section class="card qz-cl" id="qz-cl" data-partage="non" aria-labelledby="qz-cl-t" hidden>
     <h2 id="qz-cl-t">Le classement</h2>
@@ -754,11 +757,12 @@ footer p { margin: 0; } footer a { color: inherit; }
     });
   }
 
+  if (window.ConcretVotez) ConcretVotez.duJour(document.getElementById('qz-loi'));
   try { fetch('../data.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(main, function () { document.getElementById('qz-liste').innerHTML = '<p class="note">Les questions n\'ont pas pu être chargées. Rechargez la page.</p>'; }); } catch (e) {}
 })();
 </script>
 <script src="/commun/partage.js?v=20261027b"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261027l"></script>
+<script src="/commun/menu.js?v=20261027m"></script>
 </body>
 </html>

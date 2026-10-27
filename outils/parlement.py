@@ -38,6 +38,8 @@ MAX_VOTES = 80
 JOURS_LOIS = 365
 MAX_LOIS = 200
 JOURS_AGENDA = 14
+# Page Votez les lois (donnees/votes.json) : tous les votes importants de la législature qui portent sur un choix à faire.
+VOTEZ = ('texte', 'partie', 'rejet', 'censure', 'confiance', 'declaration')
 MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
 
 # Rattachement prudent d'un texte à une page de mission, sur les mots de son intitulé (affiché comme un renvoi, sans plus).
@@ -497,7 +499,13 @@ def construire(auj):
             e['pg'] = rattacher(e['t'])
     P['mots'] = MOTS
     P['grandes'] = {'source': 'Assemblée nationale, données ouvertes : dossiers législatifs et scrutins des 14e à 17e législatures (depuis juin 2012)', 'url': REPO, 'date': auj.isoformat()}
-    return {'maj': auj.isoformat(), 'GROUPES': G, 'VOTES': V + VL, 'LOIS': L, 'AGENDA': A, 'FRISE': frise, 'GRANDES': GL, 'P': P}
+    VZ = {'maj': auj.isoformat(), 'GROUPES': [{k: g[k] for k in ('c', 'n', 'm')} for g in G],
+          'VOTES': [{k: e[k] for k in ('d', 'n', 'k', 's', 't', 'v', 'req', 'p', 'c', 'a', 'g', 'dos', 'dl') if k in e} for e in tous if e['k'] in VOTEZ],
+          'P': {'votes': P['votes'], 'groupes': P['groupes']},
+          # Le Premier ministre en fonction à chaque date (nominations de la frise, chacune avec sa source) : nomme le Gouvernement visé par une censure.
+          'PM': [{'d': e['d'], 'n': re.match(r'^(.*?) nommée? Premi', e['t']).group(1), 'src': e['src'], 'url': e['url']}
+                 for e in frise if e['k'] == 'gouvernement' and e['d'] >= '2024-01-01' and re.match(r'^(.*?) nommée? Premi', e['t'])]}
+    return {'maj': auj.isoformat(), 'GROUPES': G, 'VOTES': V + VL, 'LOIS': L, 'AGENDA': A, 'FRISE': frise, 'GRANDES': GL, 'P': P, '_votez': VZ}
 
 
 def verifier_frise():
@@ -567,6 +575,7 @@ def main():
     except (IOError, zipfile.BadZipFile, KeyError, ValueError) as x:
         print('Assemblée nationale : lecture impossible :', x)
         sys.exit(1)
+    VZ = S.pop('_votez')
     o = json.load(open(os.path.join(ROOT, 'data.json'), encoding='utf-8'))
     avant = o.get('series', {}).get('politique') or {}
     nv = {e['n'] for e in S['VOTES']} - {e['n'] for e in avant.get('VOTES', [])}
@@ -594,7 +603,8 @@ def main():
                                          'pol_agenda': (S['AGENDA'] or [{}])[-1].get('d')}[it['id']] or it.get('derniere_donnee')
                 it['prochaine_verification'] = (auj + timedelta(days=1)).isoformat()
         open(cp, 'w', encoding='utf-8').write(json.dumps(cal, indent=1, ensure_ascii=False) + '\n')
-        print('Écrit : series.politique.')
+        open(os.path.join(ROOT, 'donnees/votes.json'), 'w', encoding='utf-8').write(json.dumps(VZ, separators=(',', ':'), ensure_ascii=False) + '\n')
+        print('Écrit : series.politique et donnees/votes.json (%d votes pour la page Votez les lois).' % len(VZ['VOTES']))
 
 
 if __name__ == '__main__':
