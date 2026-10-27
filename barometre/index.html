@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="72f8fe5b8f43">
+<meta name="concret-version" content="5636c96a2e94">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -91,10 +91,9 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-hero-h b { font-size: 18px; font-weight: 700; color: var(--color-fg); }
 .bx-hero-h span { font-size: 13px; color: var(--color-fg-muted); }
 .bx-bars { display: grid; gap: 7px; }
-.bx-bar { display: grid; grid-template-columns: minmax(0, 1fr) 3.6rem 4.6rem 6.4rem; align-items: center; gap: 4px 10px; font-size: 14.5px; }
-.bx-bar .g { display: grid; grid-template-columns: minmax(0, 11.5rem) minmax(0, 1fr); align-items: center; gap: 10px; min-width: 0; }
+.bx-bar { display: grid; grid-template-columns: minmax(0, 11.5rem) minmax(0, 1fr) 3.6rem 4.6rem 6.4rem; align-items: center; gap: 4px 10px; font-size: 14.5px; }
 .bx-bar.h { font-size: 12px; font-weight: 600; line-height: 1.25; color: var(--color-fg-muted); align-items: end; }
-.bx-bar.h div:not(:first-child) { text-align: right; }
+.bx-bar.h div:nth-child(n+3) { text-align: right; }
 .bx-bar .e, .bx-bar .q { text-align: right; font-variant-numeric: tabular-nums; font-size: 13.5px; }
 .bx-bar .q { font-weight: 600; color: var(--color-fg-muted); }
 .bx-bar .v, .bx-bar .e, .bx-bar .q { white-space: nowrap; }
@@ -102,7 +101,7 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-bar .n { display: flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bx-bar .n i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
 .bx-bar .court { display: none; }
-@media (max-width: 560px) { .bx-bar { grid-template-columns: minmax(0, 1fr) 3.3rem 3.5rem 4.6rem; gap: 3px 8px; } .bx-bar .g { grid-template-columns: minmax(0, 1fr); gap: 3px; } .bx-bar .full { display: none; } .bx-bar .court { display: inline; } .bx-bar.h { font-size: 11px; } .bx-bar.top .v { font-size: 15.5px; } .bx-bar .e, .bx-bar .q { font-size: 13px; } .bx-bar .t { height: 9px; } .bx-bar.top .t { height: 11px; } }
+@media (max-width: 560px) { .bx-bar { grid-template-columns: minmax(0, 1fr) 3.3rem 3.5rem 4.6rem; grid-template-areas: 'n . . .' 't v e q'; gap: 2px 8px; } .bx-bar .n { grid-area: n; } .bx-bar .t { grid-area: t; } .bx-bar .v { grid-area: v; } .bx-bar .e { grid-area: e; } .bx-bar .q { grid-area: q; } .bx-bar.h { grid-template-areas: none; } .bx-bar.h div:first-child { display: none; } .bx-bar.h div:nth-child(2) { grid-column: 1; } .bx-bar .full { display: none; } .bx-bar .court { display: inline; } .bx-bar.h { font-size: 11px; } .bx-bar.top .v { font-size: 15.5px; } .bx-bar .e, .bx-bar .q { font-size: 13px; } .bx-bar .t { height: 9px; } .bx-bar.top .t { height: 11px; } }
 .bx-bar .t { height: 14px; border-radius: 7px; background: var(--color-border-line); overflow: hidden; }
 .bx-bar .t b { display: block; height: 100%; border-radius: 7px; }
 .bx-bar .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
@@ -648,16 +647,14 @@ dash.calc('duels_recents', {
     var Q = {}; (pmr1 || []).forEach(function (r) { Q[r.key] = r; });
     var nb = function (v) { return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(v) + '\u00a0%'; };
     var hd = document.createElement('div'); hd.className = 'bx-bar h';
-    ['', 'Sondages', 'En 14 jours', 'Chances de qualif. au 2nd tour*'].forEach(function (t) { var d = document.createElement('div'); d.textContent = t; hd.appendChild(d); });
+    ['', '', 'Sondages', 'En 14 jours', 'Chances de qualif. au 2nd tour*'].forEach(function (t) { var d = document.createElement('div'); d.textContent = t; hd.appendChild(d); });
     box.appendChild(hd);
     var why = {};
     top.forEach(function (c, i) {
       var r = document.createElement('div'); r.className = 'bx-bar' + (i < 2 ? ' top' : '');
-      var g = document.createElement('div'); g.className = 'g';
       var n = document.createElement('div'); n.className = 'n'; var sw = document.createElement('i'); sw.style.background = BX.col(c.colKey); n.appendChild(sw);
-      var fl = document.createElement('span'); fl.className = 'full'; fl.textContent = c.name.replace(' (RN)', ''); n.appendChild(fl); var ct = document.createElement('span'); ct.className = 'court'; ct.textContent = c.short || c.name.split(' ').slice(-1)[0]; n.appendChild(ct); g.appendChild(n);
-      var t = document.createElement('div'); t.className = 't'; var b = document.createElement('b'); b.style.width = (100 * c.moyenne / mx).toFixed(1) + '%'; b.style.background = BX.col(c.colKey); t.appendChild(b); g.appendChild(t);
-      r.appendChild(g);
+      var fl = document.createElement('span'); fl.className = 'full'; fl.textContent = c.name.replace(' (RN)', ''); n.appendChild(fl); var ct = document.createElement('span'); ct.className = 'court'; ct.textContent = c.short || c.name.split(' ').slice(-1)[0]; n.appendChild(ct); r.appendChild(n);
+      var t = document.createElement('div'); t.className = 't'; var b = document.createElement('b'); b.style.width = (100 * c.moyenne / mx).toFixed(1) + '%'; b.style.background = BX.col(c.colKey); t.appendChild(b); r.appendChild(t);
       var v = document.createElement('div'); v.className = 'v'; v.textContent = BX.pct(c.moyenne); r.appendChild(v);
       var m = MV[c.short], ev = document.createElement('div'); ev.className = 'e';
       if (m && m.sondages_variation != null) { var x = m.sondages_variation; ev.className += ' ' + cls(x); ev.textContent = (Math.abs(x) < 0.5 ? '' : x > 0 ? '▲ ' : '▼ ') + signed(x, 'pt').replace(' pt', ''); }
