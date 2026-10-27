@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="13ed295ad7d1">
+<meta name="concret-version" content="508a9a5d1d3a">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -647,12 +647,12 @@ footer p { margin: 0; } footer a { color: inherit; }
       if (!CL) return;
       var P = CL[periode], nf = function (v) { return v.toLocaleString('fr-FR'); }, quand = { semaine: 'cette semaine', mois: 'ce mois-ci', total: 'depuis le début' }[periode];
       document.querySelectorAll('.qz-onglets button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-p') === periode); });
-      document.getElementById('qz-cl-moi').innerHTML = P.moi ? 'Vous êtes à la <b>' + (P.moi.rang === 1 ? '1re' : P.moi.rang + 'e') + ' place</b> sur <b>' + nf(P.joueurs) + (P.joueurs > 1 ? ' joueurs' : ' joueur') + '</b> ' + quand + ', avec ' + nf(P.moi.points) + ' point' + (P.moi.points > 1 ? 's' : '') + ' en ' + P.moi.jours + ' jour' + (P.moi.jours > 1 ? 's' : '') + '.' : 'Vous n\'avez pas encore de points ' + quand + '.';
+      document.getElementById('qz-cl-moi').innerHTML = P.moi ? 'Vous êtes à la <b>' + (P.moi.rang === 1 ? '1re' : P.moi.rang + 'e') + ' place</b> sur <b>' + nf(P.joueurs) + (P.joueurs > 1 ? ' joueurs' : ' joueur') + '</b> ' + quand + ', avec ' + nf(P.moi.points) + ' point' + (P.moi.points > 1 ? 's' : '') + '.' : 'Vous n\'avez pas encore de points ' + quand + '.';
       document.getElementById('qz-cl-top').innerHTML = P.top.map(function (r) {
-        return '<li' + (r.moi ? ' class="moi"' : '') + '><span class="r">' + r.rang + '</span><span class="p">' + (r.pseudo ? esc(r.pseudo) : '<i>Sans pseudo</i>') + (r.moi ? ' (vous)' : '') + '</span><span>' + nf(r.points) + (r.points > 1 ? ' pts' : ' pt') + ' <span class="s">· ' + r.jours + ' j</span></span></li>';
+        return '<li' + (r.moi ? ' class="moi"' : '') + '><span class="r">' + r.rang + '</span><span class="p">' + (r.pseudo ? esc(r.pseudo) : '<i>Sans pseudo</i>') + (r.moi ? ' (vous)' : '') + '</span><span>' + nf(r.points) + (r.points > 1 ? ' pts' : ' pt') + '</span></li>';
       }).join('') +
         // Hors du top 10 : la ligne du joueur sous le tableau, avec sa place.
-        (P.moi && !P.top.some(function (r) { return r.moi; }) ? '<li class="sep" aria-hidden="true">…</li><li class="moi"><span class="r">' + P.moi.rang + '</span><span class="p">' + (CL.pseudo ? esc(CL.pseudo) : '<i>Sans pseudo</i>') + ' (vous)</span><span>' + nf(P.moi.points) + (P.moi.points > 1 ? ' pts' : ' pt') + ' <span class="s">· ' + P.moi.jours + ' j</span></span></li>' : '');
+        (P.moi && !P.top.some(function (r) { return r.moi; }) ? '<li class="sep" aria-hidden="true">…</li><li class="moi"><span class="r">' + P.moi.rang + '</span><span class="p">' + (CL.pseudo ? esc(CL.pseudo) : '<i>Sans pseudo</i>') + ' (vous)</span><span>' + nf(P.moi.points) + (P.moi.points > 1 ? ' pts' : ' pt') + '</span></li>' : '');
       var inp = document.getElementById('qz-pseudo-in');
       if (document.activeElement !== inp) inp.value = CL.pseudo || '';
       document.getElementById('qz-pseudo-l').textContent = CL.pseudo ? 'Votre pseudo (videz la case pour le retirer)' : 'Choisissez un pseudo pour apparaître dans le classement (facultatif)';
