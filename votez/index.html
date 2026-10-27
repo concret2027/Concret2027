@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="41681b9a6659">
+<meta name="concret-version" content="8e5d2646fec9">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -379,16 +379,17 @@ footer p { margin: 0; } footer a { color: inherit; }
 (function () {
   var V = window.ConcretVotez, $ = function (id) { return document.getElementById(id); }, D = null, cible = 0, force = null, tous = false;
   function compte() { var m = V.mes(); return D.ordre.filter(function (q) { return m[q.id]; }).length; }
-  // Étapes : 5 votes (l'hémicycle apparaît), 10 (les dix votes qui ont le plus partagé l'Assemblée), la fin des votes qui donnent
-  // un résultat à chaque thème (D.finThemes), puis 50, 100…
+  // Étapes : 5 votes (l'hémicycle apparaît), puis tous les 10 votes jusqu'au dernier texte. L'étape qui suit la fin des votes
+  // qui donnent un résultat à chaque thème (D.finThemes) le dit.
   // Le compteur et la barre vont jusqu'à la prochaine étape, pas jusqu'au total.
-  var ETAPES = [5, 10, 50, 100, 150, 200];
+  function estEtape(n) { return n === 5 || (n > 0 && n % 10 === 0); }
+  function etape(n) { var t = D.ordre.length, e = n < 5 ? 5 : 10 * Math.floor(n / 10) + 10; return e < t ? e : t; }
+  function etapeThemes() { return etape(D.finThemes - 1); }
   // Chaque thème a au moins trois votes : son résultat s'affiche.
   function themesPrets() { return V.THEMES.every(function (t) { var f = function (q) { return q.pg.indexOf(t[0]) >= 0; }; return !D.Q.some(f) || V.resultat(D, f).nb >= V.MIN_THEME; }); }
-  function etape(n) { var t = D.ordre.length, e = ETAPES.filter(function (x) { return x > n && x < t; })[0]; return e || t; }
   function suivi() {
     var n = compte(), e = etape(n), t = D.ordre.length;
-    $('vz-n').textContent = n >= t ? 'Les ' + t + ' textes sont votés' : n + ' / ' + e + ' · ' + (e === 5 ? 'votre hémicycle apparaît' : e === 10 ? 'les dix votes clés' : e === D.finThemes ? 'un résultat par thème' : e === t ? 'tous les textes' : 'prochaine étape');
+    $('vz-n').textContent = n >= t ? 'Les ' + t + ' textes sont votés' : n + ' / ' + e + ' · ' + (e === 5 ? 'votre hémicycle apparaît' : e === 10 ? 'les dix votes clés' : e === etapeThemes() ? 'un résultat par thème' : e === t ? 'tous les textes' : 'prochaine étape');
     $('vz-barre').style.width = (n >= t ? 100 : 100 * n / e) + '%';
   }
   function mesVotes() {
@@ -408,7 +409,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       el.innerHTML = '<span class="eyebrow">C\'est fait</span><h2>Vous avez voté les ' + D.ordre.length + ' textes</h2><p class="note">Un nouveau vote s\'ajoute ici dès que l\'Assemblée en tient un.</p><p class="vz-suite-l"><a href="/quiz/">Le quiz du jour →</a><a href="/politique/">Comment chaque groupe a voté, sur La vie politique →</a></p>';
     } else if (!force && n >= cible) {
       el.className = 'card vz-carte vz-pause';
-      el.innerHTML = '<span class="eyebrow">Étape franchie · ' + n + ' votes</span><h2>' + (n === V.SERIE ? 'Les dix votes qui ont le plus partagé l\'Assemblée sont faits' : n === D.finThemes && themesPrets() ? 'Chaque thème a maintenant son résultat' : n + ' votes : votre résultat s\'affine') + '</h2>' +
+      el.innerHTML = '<span class="eyebrow">Étape franchie · ' + n + ' votes</span><h2>' + (n === V.SERIE ? 'Les dix votes qui ont le plus partagé l\'Assemblée sont faits' : n === etapeThemes() && themesPrets() ? 'Chaque thème a maintenant son résultat' : n + ' votes : votre résultat s\'affine') + '</h2>' +
         (function () { var R = V.resultat(D), g = R.groupes[0]; return R.nb >= V.MIN && g ? '<p class="vz-top">Pour l\'instant, vos votes ressemblent le plus à ceux du groupe <b>' + V.esc(g.n) + '</b> (' + g.pct + ' %).</p>' : ''; })() +
         '<p class="note">Votre hémicycle se met à jour à chaque vote. Plus vous votez, plus le résultat est solide.</p><button type="button" class="vz-suite" id="vz-continuer">Prochaine étape : ' + etape(n) + ' votes</button>';
       $('vz-continuer').addEventListener('click', function () { cible = etape(n); afficher(true); });
@@ -420,9 +421,8 @@ footer p { margin: 0; } footer a { color: inherit; }
   }
   V.charger().then(function (J) {
     D = J; var n = compte();
-    ETAPES = ETAPES.concat(D.finThemes > 10 && D.finThemes < 50 ? D.finThemes : 25).sort(function (a, b) { return a - b; });
     // Une pause à chaque étape à partir de 10 (si la personne revient pile sur une étape, elle voit d'abord son résultat).
-    cible = ETAPES.indexOf(n) > 0 ? n : Math.max(V.SERIE, etape(n));
+    cible = n >= V.SERIE && estEtape(n) ? n : Math.max(V.SERIE, etape(n));
     $('vz-nb').textContent = D.ordre.length + ' textes · ';
     // Visiteur qui revient (résultat déjà affiché) : son hémicycle d'abord, puis le vote suivant.
     if (V.resultat(D).nb >= V.MIN) $('vz-suivi').parentNode.insertBefore($('vz-res'), $('vz-suivi'));
