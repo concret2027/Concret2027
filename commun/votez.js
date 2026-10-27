@@ -11,7 +11,7 @@
   var dateFr = function (d) { var p = d.split('-'); return (+p[2] === 1 ? '1er' : +p[2]) + ' ' + MOIS[p[1] - 1] + ' ' + p[0]; };
   var moisFr = function (d) { var p = d.split('-'); return MOIS[p[1] - 1] + ' ' + p[0]; };
   // Espace insécable avant « : ; ? ! », dans les nombres et avant € et % (pas de ponctuation ni de chiffre seul en début de ligne).
-  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }).replace(/ ([:;?!])/g, '\u00a0$1').replace(/(\d) (?=\d{3}\b)/g, '$1\u202f').replace(/(\d) (€|%)/g, '$1\u00a0$2'); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }).replace(/ ([:;?!»])/g, '\u00a0$1').replace(/« /g, '«\u00a0').replace(/(\d) (?=\d{3}\b)/g, '$1\u202f').replace(/(\d) (€|%)/g, '$1\u00a0$2'); };
   var nf = function (n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); };
   var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
   // Les étapes d'un texte, dites sans jargon.

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="bb4cf1411874">
+<meta name="concret-version" content="2122e397a585">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -334,7 +334,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card vz-intro" data-partage="non" aria-labelledby="vz-titre">
     <span class="eyebrow">Votez les lois</span>
-    <h1 id="vz-titre">Et vous, qu'auriez-vous voté ?</h1>
+    <h1 id="vz-titre">Et vous, qu'auriez-vous voté&nbsp;?</h1>
     <p class="note" style="font-size:14.5px" id="vz-lead">De vrais votes de l'Assemblée, expliqués en deux phrases. Au bout de 5 votes, voyez de quels groupes de députés vous êtes le plus proche.</p>
     <p class="vz-prive"><span id="vz-nb"></span>vos votes restent sur cet appareil.</p>
   </section>
@@ -374,13 +374,19 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <footer><p>concret2027.fr · Page indépendante de tout parti. Un groupe n'est pas un candidat : le résultat dit seulement de quels groupes de députés vos votes sont proches. <a href="/mentions-legales/">Mentions légales</a></p></footer>
 </div>
-<script src="/commun/votez.js?v=20261028a"></script>
+<script src="/commun/votez.js?v=20261028b"></script>
 <script>
 (function () {
   var V = window.ConcretVotez, $ = function (id) { return document.getElementById(id); }, D = null, cible = 0, force = null, tous = false;
   function compte() { var m = V.mes(); return D.ordre.filter(function (q) { return m[q.id]; }).length; }
+  // Étapes : 5 votes (l'hémicycle apparaît), 10 (les dix votes qui ont le plus partagé l'Assemblée), puis 25, 50, 100…
+  // Le compteur et la barre vont jusqu'à la prochaine étape, pas jusqu'au total.
+  var ETAPES = [5, 10, 25, 50, 100, 150, 200];
+  function etape(n) { var t = D.ordre.length, e = ETAPES.filter(function (x) { return x > n && x < t; })[0]; return e || t; }
   function suivi() {
-    var n = compte(); $('vz-n').textContent = n + ' / ' + D.ordre.length; $('vz-barre').style.width = (100 * n / D.ordre.length) + '%';
+    var n = compte(), e = etape(n), t = D.ordre.length;
+    $('vz-n').textContent = n >= t ? 'Les ' + t + ' textes sont votés' : n + ' / ' + e + ' · ' + (e === 5 ? 'votre hémicycle apparaît' : e === 10 ? 'les dix votes clés' : e === t ? 'tous les textes' : 'prochaine étape');
+    $('vz-barre').style.width = (n >= t ? 100 : 100 * n / e) + '%';
   }
   function mesVotes() {
     var m = V.mes(), L = D.Q.filter(function (q) { return m[q.id]; });
@@ -399,10 +405,10 @@ footer p { margin: 0; } footer a { color: inherit; }
       el.innerHTML = '<span class="eyebrow">C\'est fait</span><h2>Vous avez voté les ' + D.ordre.length + ' textes</h2><p class="note">Un nouveau vote s\'ajoute ici dès que l\'Assemblée en tient un.</p><p class="vz-suite-l"><a href="/quiz/">Le quiz du jour →</a><a href="/politique/">Comment chaque groupe a voté, sur La vie politique →</a></p>';
     } else if (!force && n >= cible) {
       el.className = 'card vz-carte vz-pause';
-      el.innerHTML = '<span class="eyebrow">' + n + ' votes faits</span><h2>' + (n === V.SERIE ? 'Les dix votes qui ont le plus partagé l\'Assemblée sont faits' : 'Encore ' + (D.ordre.length - n) + ' votes à faire') + '</h2>' +
+      el.innerHTML = '<span class="eyebrow">Étape franchie · ' + n + ' votes</span><h2>' + (n === V.SERIE ? 'Les dix votes qui ont le plus partagé l\'Assemblée sont faits' : n + ' votes : votre résultat s\'affine') + '</h2>' +
         (function () { var R = V.resultat(D), g = R.groupes[0]; return R.nb >= V.MIN && g ? '<p class="vz-top">Pour l\'instant, vos votes ressemblent le plus à ceux du groupe <b>' + V.esc(g.n) + '</b> (' + g.pct + ' %).</p>' : ''; })() +
-        '<p class="note">Le détail est juste en dessous. Plus vous votez, plus le résultat est solide.</p><button type="button" class="vz-suite" id="vz-continuer">Continuer : ' + Math.min(V.SERIE, D.ordre.length - n) + ' votes de plus</button>';
-      $('vz-continuer').addEventListener('click', function () { cible = n + V.SERIE; afficher(true); });
+        '<p class="note">Votre hémicycle se met à jour à chaque vote. Plus vous votez, plus le résultat est solide.</p><button type="button" class="vz-suite" id="vz-continuer">Prochaine étape : ' + etape(n) + ' votes</button>';
+      $('vz-continuer').addEventListener('click', function () { cible = etape(n); afficher(true); });
     } else {
       el.className = 'card vz-carte';
       V.carte(el, q, D, { apres: function () { force = null; tout(); }, suivant: function () { afficher(true); }, suivantLabel: compte() + 1 >= cible && !force ? 'Voir où j\'en suis →' : 'Vote suivant →' });
@@ -411,7 +417,8 @@ footer p { margin: 0; } footer a { color: inherit; }
   }
   V.charger().then(function (J) {
     D = J; var n = compte();
-    cible = n < V.SERIE ? V.SERIE : (n % V.SERIE === 0 ? n : Math.ceil(n / V.SERIE) * V.SERIE);
+    // Une pause à chaque étape à partir de 10 (si la personne revient pile sur une étape, elle voit d'abord son résultat).
+    cible = ETAPES.indexOf(n) > 0 ? n : Math.max(V.SERIE, etape(n));
     $('vz-nb').textContent = D.ordre.length + ' textes · ';
     // Visiteur qui revient (résultat déjà affiché) : son hémicycle d'abord, puis le vote suivant.
     if (V.resultat(D).nb >= V.MIN) $('vz-suivi').parentNode.insertBefore($('vz-res'), $('vz-suivi'));
