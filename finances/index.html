@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="917cc4ebee4d">
+<meta name="concret-version" content="8a474b4669b1">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261026c"></script>
-<script src="/commun/toile.js?v=20261027a"></script>
+<script src="/commun/toile.js?v=20261027d"></script>
+<script src="/commun/pays.js?v=20261027b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
@@ -841,17 +842,17 @@ function main(FEED) {
   var noteOf = function (g) { return NOTES.note(g, on); };
   // Toile : la France et ses voisins au dernier chiffre connu (commun/toile.js).
   (function () {
-    var ax = function (l, arr, y0, u, dec) {
+    var ax = function (l, arr, y0, u, dec, cle) {
       for (var i = arr.fr.length - 1; i >= 0; i--) if (arr.fr[i] != null && arr.eu[i] != null) {
         var v = {}; [['fr', 'fr'], ['eu', 'ue'], ['de', 'de'], ['es', 'es'], ['us', 'us']].forEach(function (p) { if (arr[p[0]] && arr[p[0]][i] != null) v[p[1]] = arr[p[0]][i]; });
-        return { l: l, y: y0 + i, u: u, dec: dec, v: v };
+        return { cle: cle, l: l, y: y0 + i, u: u, dec: dec, v: v };
       }
       return null;
     };
     var X94 = SER.X94, X95 = SER.X95, cov = function (w) { return X95['x' + w].map(function (x, i) { var m = X95['m' + w][i]; return x == null || !m ? null : 100 * x / m; }); };
-    var axes = [ax('Dette publique', D.dette, Y0, ' % du PIB'), ax('Solde public', D.deficit, Y0, ' % du PIB'), ax('Dépenses publiques', D.dep, Y0, ' % du PIB'), ax('Prélèvements obligatoires', D.po, Y0, ' % du PIB'), ax('Richesse par habitant', PIB, 1990, ' $', 0),
-      ax('Chômage', { fr: X94.uFr, eu: X94.uEu, es: X94.uEs }, 1994, ' %'), ax('Exportations / importations', { fr: cov('Fr'), eu: cov('Eu'), es: cov('Es') }, 1995, ' %', 0), ax('Intérêts de la dette', { fr: X95.iFr, eu: X95.iEu, es: X95.iEs }, 1995, ' % du PIB')].filter(Boolean);
-    ConcretToile.dessiner('toile', { titre: 'La France et ses voisins', axes: axes, series: ConcretToile.SERIES });
+    var axes = [ax('Dette publique', D.dette, Y0, ' % du PIB', null, 'finances.D.dette'), ax('Solde public', D.deficit, Y0, ' % du PIB', null, 'finances.D.deficit'), ax('Dépenses publiques', D.dep, Y0, ' % du PIB', null, 'finances.D.dep'), ax('Prélèvements obligatoires', D.po, Y0, ' % du PIB', null, 'finances.D.po'), ax('Richesse par habitant', PIB, 1990, ' $', 0, 'finances.PIB'),
+      ax('Chômage', { fr: X94.uFr, eu: X94.uEu, es: X94.uEs }, 1994, ' %', null, 'finances.X94.u'), ax('Exportations / importations', { fr: cov('Fr'), eu: cov('Eu'), es: cov('Es') }, 1995, ' %', 0, 'finances.X95.cov'), ax('Intérêts de la dette', { fr: X95.iFr, eu: X95.iEu, es: X95.iEs }, 1995, ' % du PIB', null, 'finances.X95.i')].filter(Boolean);
+    ConcretPays.init({ page: 'finances', carte: {} }); ConcretPays.toile('toile', ConcretToile.dessiner, { titre: 'La France et ses voisins', axes: axes, series: ConcretToile.SERIES });
   })();
   // En bref (premier écran) : le dernier chiffre de chaque critère face à la moyenne de l'UE, chacun menant à sa courbe.
   (function () {
@@ -974,6 +975,8 @@ function main(FEED) {
   // ===== Graphe générique =====
   var BANDS = GOVS.concat([{ n: 'Lecornu', y0: 2026, y1: 2026 }]);
   function lineChart(id, series, o) {
+    // Pays ajoutés par le visiteur (commun/pays.js) : en pointillé, repères seulement.
+    if (window.ConcretPays) { var s0 = series; ConcretPays.retenir(id, function () { lineChart(id, s0, o); }); series = ConcretPays.ajouter(id, series); }
     var box = document.getElementById(id); box.textContent = '';
     // Petite légende au-dessus de chaque courbe dont le bloc n'en a pas déjà une : en bas de page, on sait toujours qui est qui.
     (function () {
@@ -1440,7 +1443,7 @@ function main(FEED) {
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261027a"></script>
+<script src="/commun/partage.js?v=20261027b"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/menu.js?v=20261027k"></script>

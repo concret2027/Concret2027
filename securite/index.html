@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="917cc4ebee4d">
+<meta name="concret-version" content="8a474b4669b1">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261026c"></script>
-<script src="/commun/toile.js?v=20261027a"></script>
+<script src="/commun/toile.js?v=20261027d"></script>
+<script src="/commun/pays.js?v=20261027b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
@@ -621,9 +622,9 @@ function main(FEED) {
   // Toile : la France et ses voisins sur tous les indicateurs notés, au dernier chiffre connu (commun/toile.js).
   (function () {
     var simples = KEYS.filter(function (k) { return C[k] && C[k].regle !== 'composite' && C[k].regle !== 'propre'; });
-    var T = ConcretToile.depuisC(C, simples);
+    var T = ConcretToile.depuisC(C, simples, { page: 'securite' });
     var prog = KEYS.filter(function (k) { return C[k] && C[k].regle === 'composite'; }).map(function (k) { return C[k].lc || C[k].l; });
-    ConcretToile.dessiner('toile', { titre: 'La France et ses voisins', axes: T.axes, notes: T.notes.concat(prog.length ? [prog.join(', ') + ' : plusieurs programmes à la fois, détaillés plus bas'] : []), omis: T.omis, series: ConcretToile.SERIES });
+    ConcretPays.init({ page: 'securite', carte: {} }); ConcretPays.toile('toile', ConcretToile.dessiner, { titre: 'La France et ses voisins', axes: T.axes, notes: T.notes.concat(prog.length ? [prog.join(', ') + ' : plusieurs programmes à la fois, détaillés plus bas'] : []), omis: T.omis, series: ConcretToile.SERIES });
   })();
   var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
@@ -835,6 +836,8 @@ function main(FEED) {
     document.addEventListener('pointerdown', function (ev) { if (!node.contains(ev.target)) hide(); });
   }
   function lineChart(id, series, o) {
+    // Pays ajoutés par le visiteur (commun/pays.js) : en pointillé, repères seulement.
+    if (window.ConcretPays) { var s0 = series; ConcretPays.retenir(id, function () { lineChart(id, s0, o); }); series = ConcretPays.ajouter(id, series); }
     var box = document.getElementById(id); box.textContent = '';
     // Petite légende au-dessus de chaque courbe dont le bloc n'en a pas déjà une : en bas de page, on sait toujours qui est qui.
     (function () {
@@ -1244,7 +1247,7 @@ function main(FEED) {
 })();
 })();
 </script>
-<script src="/commun/partage.js?v=20261027a"></script>
+<script src="/commun/partage.js?v=20261027b"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/menu.js?v=20261027k"></script>

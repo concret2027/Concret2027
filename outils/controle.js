@@ -141,6 +141,14 @@ if (S.politique) {
   if (PO.maj && (Date.parse(today) - Date.parse(PO.maj)) / 864e5 > 3) alertes.push('La vie politique : données de l\'Assemblée lues le ' + PO.maj + ', plus de trois jours : relancer python3 outils/parlement.py --ecrire');
   (PO.GRANDES || []).forEach(function (l) { if (!/^\d{4}-\d+$/.test(l.code || '') || !jo.test(l.d) || ['sol', '493', 'cc', 'budget'].indexOf(l.motif) < 0) err('politique.GRANDES : loi mal formée ' + JSON.stringify(l).slice(0, 80)); });
 }
+// Pays à ajouter (outils/pays.py) : le fichier existe, l'index le décrit, et il a moins de 45 jours.
+(function () {
+  try {
+    var pj = JSON.parse(fs.readFileSync(path.join(ROOT, 'donnees', 'pays.json'), 'utf8')), pi = JSON.parse(fs.readFileSync(path.join(ROOT, 'donnees', 'pays_index.json'), 'utf8'));
+    if (Object.keys(pj.series).sort().join() !== pi.cles.join()) err('donnees/pays_index.json ne décrit pas donnees/pays.json (relancer python3 outils/pays.py --ecrire)');
+    if ((Date.now() - Date.parse(pj.maj)) / 864e5 > 45) alertes.push('pays à ajouter : chiffres relus il y a plus de 45 jours (relancer python3 outils/pays.py --ecrire)');
+  } catch (e) { err('donnees/pays.json illisible (relancer python3 outils/pays.py --ecrire)'); }
+})();
 // L'évolution démographique (outils/demographie.py, Eurostat et Insee) : plages plausibles ; page sans note.
 if (S.demographie) {
   var PQ = S.demographie, PR = { nes: [0, 40], nes_hue: [0, 40], fec: [0.8, 3], nat: [4, 20], solnat: [-10, 10], solmig: [-20, 40], p65: [5, 40], med: [25, 60], etr: [0, 40] }, PM = { titres: [0, 40], asile: [0, 30], irreg: [0, 30], oqtf: [0, 20], natu: [0, 20], departs: [0, 10] };

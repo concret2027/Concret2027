@@ -14,7 +14,7 @@
     '.toile-tab{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;margin-top:6px}' +
     '.toile-tab th,.toile-tab td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}' +
     '.toile-tab th:first-child,.toile-tab td:first-child{text-align:left;white-space:normal}.toile-tab th{font-size:11.5px;color:var(--muted);font-weight:600}' +
-    '.toile-det{margin-top:6px}.toile-det>summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--fr);padding:4px 0}';
+    '.toile-tw{overflow-x:auto;-webkit-overflow-scrolling:touch}.toile-det{margin-top:6px}.toile-det>summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--fr);padding:4px 0}';
   var esc = function (t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); };
   var fmt = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: d == null ? 1 : d }).format(v).replace(/ /g, ' '); };
   var el = function (n, a) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); return e; };
@@ -33,7 +33,7 @@
       if (i < c.y.length - 1 && c.est && c.est[c.y[c.y.length - 1]]) notes.push((c.lc || c.l) + ' : dernier chiffre définitif (' + c.y[i] + '), les années suivantes ne sont que des estimations');
       if (i < 0) { omis.push(c.lc || c.l); return; }
       var v = { ue: ue[i] }; ['fr', 'de', 'es', 'us'].forEach(function (w) { if (c[w] && c[w][i] != null) v[w] = c[w][i]; });
-      axes.push({ l: c.lc || c.l, y: c.y[i], u: c.uc != null ? c.uc : (/%/.test(c.unite || '') ? ' %' : ''), dec: c.dec, v: v, cible: (opts.cible || function (k) { return 'ch-' + k; })(k) });
+      axes.push({ cle: opts.page ? opts.page + '.' + k : null, l: c.lc || c.l, y: c.y[i], u: c.uc != null ? c.uc : (/%/.test(c.unite || '') ? ' %' : ''), dec: c.dec, v: v, cible: (opts.cible || function (k) { return 'ch-' + k; })(k) });
     });
     return { axes: axes, omis: omis, notes: notes };
   }
@@ -81,7 +81,7 @@
     S.slice().reverse().forEach(function (s) {
       var P = axes.map(function (a, i) { var v = a.v[s.k]; if (v == null) return null; var f = 0.1 + 0.9 * (v - a.lo) / (a.hi - a.lo); return [cx + R * f * Math.cos(ang(i)), cy + R * f * Math.sin(ang(i))]; });
       var nb = P.filter(Boolean).length; if (nb < 2) return;
-      var st = { fill: 'none', stroke: s.c, 'stroke-width': s.main ? 2.6 : 2, 'stroke-dasharray': s.dash ? '5 4' : 'none', 'stroke-linejoin': 'round', 'stroke-linecap': 'round' };
+      var st = { fill: 'none', stroke: s.c, 'stroke-width': s.main ? 2.6 : 2, 'stroke-dasharray': s.dash ? '5 4' : s.pointille ? '1.5 4' : 'none', 'stroke-linejoin': 'round', 'stroke-linecap': 'round' };
       if (nb === n) {
         var poly = el('polygon', Object.assign({}, st, { points: P.map(function (p) { return p.join(','); }).join(' ') }));
         if (s.main) { poly.setAttribute('fill', s.c); poly.setAttribute('fill-opacity', '0.08'); }
@@ -96,18 +96,19 @@
     var ys = {}; axes.forEach(function (a) { ys[a.y] = 1; });
     var annees = Object.keys(ys).sort(), an = annees.length === 1 ? annees[0] : annees[0] + ' à ' + annees[annees.length - 1];
     var manque = S.filter(function (s) { return axes.some(function (a) { return a.v[s.k] == null; }); }).map(function (s) {
-      return s.n + ' : pas de chiffre pour ' + axes.filter(function (a) { return a.v[s.k] == null; }).map(function (a) { return a.l; }).join(', ');
+      var m = axes.filter(function (a) { return a.v[s.k] == null; });
+      return s.pointille ? s.n + ' : pas de chiffre publié pour ' + m.length + ' indicateur' + (m.length > 1 ? 's' : '') + ' sur ' + n : s.n + ' : pas de chiffre pour ' + m.map(function (a) { return a.l; }).join(', ');
     });
     box.innerHTML = '<h2 class="inv"><span class="eyebrow">' + esc(o.titre || 'La France et ses voisins') + '</span>Dernier chiffre connu de chaque indicateur (' + esc(an) + ')</h2>' +
-      '<div class="toile-l">' + S.map(function (s) { return '<span><i class="' + (s.dash ? 'd' : '') + '" style="border-top-color:' + s.c + '"></i>' + esc(s.n) + '</span>'; }).join('') + '</div>';
+      '<div class="toile-l">' + S.map(function (s) { return '<span><i class="' + (s.dash ? 'd' : '') + '" style="border-top-color:' + s.c + (s.pointille ? ';border-top-style:dotted' : '') + '"></i>' + esc(s.n) + '</span>'; }).join('') + '</div>';
     box.appendChild(svg);
     var note = document.createElement('p'); note.className = 'note';
     note.textContent = 'Chaque axe va du plus bas (0, ou moins pour un chiffre négatif) au plus haut des pays affichés : plus loin du centre veut dire plus élevé, pas forcément mieux (une dette plus élevée s\'éloigne aussi du centre). Aucune note ici : elles sont calculées année par année, plus bas.' +
       (manque.length ? ' ' + manque.join(' ; ') + ' (la forme est coupée à cet endroit).' : '') + (o.notes && o.notes.length ? ' ' + o.notes.join(' ; ') + '.' : '') + (o.omis && o.omis.length ? ' Pas sur la toile, faute de chiffre comparable au même moment : ' + o.omis.join(', ') + '.' : '');
     box.appendChild(note);
     var det = document.createElement('details'); det.className = 'toile-det';
-    det.innerHTML = '<summary>Les chiffres</summary><table class="toile-tab"><thead><tr><th></th>' + S.map(function (s) { return '<th>' + esc(s.court || s.n) + '</th>'; }).join('') + '</tr></thead><tbody>' +
-      axes.map(function (a) { return '<tr><td>' + esc(a.l) + ' <small>(' + a.y + ')</small></td>' + S.map(function (s) { var v = a.v[s.k]; return '<td>' + (v == null ? '—' : fmt(v, a.dec) + (a.u || '')) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
+    det.innerHTML = '<summary>Les chiffres</summary><div class="toile-tw"><table class="toile-tab"><thead><tr><th></th>' + S.map(function (s) { return '<th>' + esc(s.court || s.n) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      axes.map(function (a) { return '<tr><td>' + esc(a.l) + ' <small>(' + a.y + (a.u ? ',' + esc(a.u) : '') + ')</small></td>' + S.map(function (s) { var v = a.v[s.k]; return '<td>' + (v == null ? '—' : fmt(v, a.dec)) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
     box.appendChild(det);
     box.hidden = false;
   }

@@ -88,7 +88,7 @@
       var h = card.querySelector('h1, h2, .acc-h, .lab, .eyebrow'); if (h) h.setAttribute('data-pt-titre', ''); card.setAttribute('data-pt-bloc', '');
       var lg = legende(card); if (lg) lg.setAttribute('data-pt-legende', '');
       return h2c(card, { backgroundColor: getComputedStyle(document.body).backgroundColor, scale: 2, useCORS: true, logging: false,
-        ignoreElements: function (el) { return el.classList && (el.classList.contains('share') || el.classList.contains('pt-share') || el.classList.contains('nt-btn')); },
+        ignoreElements: function (el) { return el.classList && (el.classList.contains('share') || el.classList.contains('pt-share') || el.classList.contains('nt-btn') || el.classList.contains('cp-bar')); },
         // La capture ne sait pas ce qu'est un bloc replié : elle dessinerait son contenu par-dessus le reste.
         // Dans la copie capturée, on ne garde que ce qui est visible à l'écran.
         onclone: function (doc) {

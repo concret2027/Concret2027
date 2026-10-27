@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="917cc4ebee4d">
+<meta name="concret-version" content="8a474b4669b1">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261026c"></script>
-<script src="/commun/toile.js?v=20261027a"></script>
+<script src="/commun/toile.js?v=20261027d"></script>
+<script src="/commun/pays.js?v=20261027b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
@@ -660,16 +661,16 @@ function main(FEED) {
       var c = SER.S[k];
       for (var i = Math.min(c.fr.length, c.eu.length) - 1; i >= 0; i--) if (c.fr[i] != null && c.eu[i] != null) {
         var v = { fr: c.fr[i], ue: c.eu[i] }; ['de', 'es', 'us'].forEach(function (w) { if (c[w] && c[w][i] != null) v[w] = c[w][i]; });
-        return { l: c.l, y: 2002 + i, u: ' %', v: v };
+        return { cle: 'education.S.' + k, l: c.l, y: 2002 + i, u: ' %', v: v };
       }
       return null;
     }).filter(Boolean);
     [['m', 'PISA, maths'], ['r', 'PISA, lecture'], ['s', 'PISA, sciences']].forEach(function (p) {
       var c = SER.PI[p[0]], i = c.y.length - 1, v = { fr: c.fr[i], ue: c.ue_calc[i] };
       ['de', 'es', 'us'].forEach(function (w) { if (c[w] && c[w][i] != null) v[w] = c[w][i]; });
-      axes.push({ l: p[1], y: c.y[i], u: '', dec: 0, v: v });
+      axes.push({ cle: 'education.PI.' + p[0], l: p[1], y: c.y[i], u: '', dec: 0, v: v });
     });
-    ConcretToile.dessiner('toile', { titre: 'La France et ses voisins', axes: axes, omis: ['origine sociale (comparée à l\'OCDE)'], series: ConcretToile.SERIES });
+    ConcretPays.init({ page: 'education', carte: { 'ch-pisa-m': 'education.PI.m', 'ch-pisa-r': 'education.PI.r', 'ch-pisa-s': 'education.PI.s' } }); ConcretPays.toile('toile', ConcretToile.dessiner, { titre: 'La France et ses voisins', axes: axes, omis: ['origine sociale (comparée à l\'OCDE)'], series: ConcretToile.SERIES });
   })();
   var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
@@ -860,6 +861,8 @@ function main(FEED) {
     document.addEventListener('pointerdown', function (ev) { if (!node.contains(ev.target)) hide(); });
   }
   function lineChart(id, series, o) {
+    // Pays ajoutés par le visiteur (commun/pays.js) : en pointillé, repères seulement.
+    if (window.ConcretPays) { var s0 = series; ConcretPays.retenir(id, function () { lineChart(id, s0, o); }); series = ConcretPays.ajouter(id, series); }
     var box = document.getElementById(id); box.textContent = '';
     // Petite légende au-dessus de chaque courbe dont le bloc n'en a pas déjà une : en bas de page, on sait toujours qui est qui.
     (function () {
@@ -1196,7 +1199,7 @@ function main(FEED) {
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261027a"></script>
+<script src="/commun/partage.js?v=20261027b"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/menu.js?v=20261027k"></script>
