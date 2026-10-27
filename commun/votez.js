@@ -268,13 +268,17 @@
       var a0 = t, a1 = t - Math.PI * g.m / tot; t = a1;
       var x = acc[g.c], rb = x ? r0 + (R1 - r0) * x.pct / 100 : r0;
       var info = esc(g.n) + ' (' + esc(g.c) + ') · ' + g.m + ' députés' + (x ? ' · vous : ' + x.pct + ' % d\'accord, sur ' + x.nb + ' vote' + (x.nb > 1 ? 's' : '') : '');
-      var mid = (a0 + a1) / 2, lab = a0 - a1 > 0.2 ? '<text x="' + (cx + (R1 + 13) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 + 13) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--muted)">' + esc(g.c.replace('-NFP', '')) + '</text>' : '';
-      return '<g class="vz-hs" tabindex="0" data-info="' + info + '"><path d="' + secteur(a0 - ecart, a1 + ecart, r0, R1) + '" fill="' + g.coul + '" opacity=".16"/>' +
-        (x ? '<path d="' + secteur(a0 - ecart, a1 + ecart, r0, rb) + '" fill="' + g.coul + '"/>' : '') + lab + '</g>';
+      var mid = (a0 + a1) / 2, court = g.c.replace('-NFP', ''), large = a0 - a1 > 0.2;
+      // Le pourcentage d'accord écrit dans chaque part assez large (les autres : au toucher).
+      var pc = x && large ? '<text x="' + (cx + (R1 - 15) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 - 15) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="var(--fg)" style="paint-order:stroke;stroke:var(--panel);stroke-width:3px">' + x.pct + '</text>' : '';
+      var lab = large ? '<text x="' + (cx + (R1 + 13) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 + 13) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--muted)">' + esc(court) + '</text>' : '';
+      return '<g class="vz-hs" tabindex="0" data-info="' + info + '"' + (x ? ' data-pct="' + x.pct + '" data-c="' + esc(court) + '"' : '') + '><path d="' + secteur(a0 - ecart, a1 + ecart, r0, R1) + '" fill="' + g.coul + '" opacity=".16"/>' +
+        (x ? '<path d="' + secteur(a0 - ecart, a1 + ecart, r0, rb) + '" fill="' + g.coul + '"/>' : '') + lab + pc + '</g>';
     }).join('');
     var top = R && R.groupes[0];
     return '<div class="vz-hemi"><svg viewBox="-12 -14 ' + (W + 24) + ' ' + (H + 14) + '" role="img" aria-label="Hémicycle : votre accord avec chaque groupe">' + parts +
-      (top ? '<text x="' + cx + '" y="' + (cy - 14) + '" text-anchor="middle" font-family="var(--serif)" font-size="30" fill="var(--fg)">' + top.pct + ' %</text><text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">au plus proche</text>' : '') +
+      // Au centre : l'accord avec le groupe le plus proche, ou avec le groupe touché.
+      (top ? '<text class="vz-c1" x="' + cx + '" y="' + (cy - 14) + '" text-anchor="middle" font-family="var(--serif)" font-size="30" fill="var(--fg)" data-def="' + top.pct + ' %">' + top.pct + ' %</text><text class="vz-c2" x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)" data-def="d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '">d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '</text>' : '') +
       '</svg><div class="vz-tip" hidden></div></div>';
   }
   function bilan(el, D) {
@@ -297,6 +301,8 @@
       '<p>Place, couleur et nombre de députés de chaque groupe : plan officiel de l\'hémicycle et données ouvertes de l\'Assemblée nationale. Les ' + ((D.G.NI || {}).m || '') + ' députés non inscrits ne forment pas un groupe : ils ne sont pas dessinés. Vos votes restent sur cet appareil.</p></details>';
     var tip = el.querySelector('.vz-tip'), box = el.querySelector('.vz-hemi');
     var montre = function (g, e) {
+      var c1 = el.querySelector('.vz-c1'), c2 = el.querySelector('.vz-c2');
+      if (c1) { c1.textContent = g && g.dataset.pct ? g.dataset.pct + ' %' : c1.dataset.def; c2.textContent = g && g.dataset.pct ? 'd\'accord avec ' + g.dataset.c : c2.dataset.def; }
       if (!g) { tip.hidden = true; return; }
       tip.innerHTML = g.getAttribute('data-info'); tip.hidden = false;
       var r = box.getBoundingClientRect(), x = (e && e.clientX != null ? e.clientX : g.getBoundingClientRect().left + g.getBoundingClientRect().width / 2) - r.left;
