@@ -90,11 +90,18 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-hero-h b { font-size: 18px; font-weight: 700; color: var(--color-fg); }
 .bx-hero-h span { font-size: 13px; color: var(--color-fg-muted); }
 .bx-bars { display: grid; gap: 7px; }
-.bx-bar { display: grid; grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr) 3.4rem; align-items: center; gap: 10px; font-size: 14.5px; }
+.bx-bar { display: grid; grid-template-columns: minmax(0, 1fr) 3.6rem 4.6rem 4.4rem; align-items: center; gap: 4px 10px; font-size: 14.5px; }
+.bx-bar .g { display: grid; grid-template-columns: minmax(0, 11.5rem) minmax(0, 1fr); align-items: center; gap: 10px; min-width: 0; }
+.bx-bar.h { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--color-fg-muted); }
+.bx-bar.h div:not(:first-child) { text-align: right; }
+.bx-bar .e, .bx-bar .q { text-align: right; font-variant-numeric: tabular-nums; font-size: 13.5px; }
+.bx-bar .q { font-weight: 600; color: var(--color-fg-muted); }
+.bx-bar .v, .bx-bar .e, .bx-bar .q { white-space: nowrap; }
+.bx-bar .e { color: var(--color-fg); } .bx-bar .e.bx-flat { color: var(--color-fg-muted); }
 .bx-bar .n { display: flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bx-bar .n i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
 .bx-bar .court { display: none; }
-@media (max-width: 560px) { .bx-bar { grid-template-columns: minmax(0, 6.6rem) minmax(0, 1fr) 3.4rem; } .bx-bar .full { display: none; } .bx-bar .court { display: inline; } }
+@media (max-width: 560px) { .bx-bar { grid-template-columns: minmax(0, 1fr) 3.3rem 3.6rem 3.3rem; gap: 3px 8px; } .bx-bar .g { grid-template-columns: minmax(0, 1fr); gap: 3px; } .bx-bar .full { display: none; } .bx-bar .court { display: inline; } .bx-bar.h { font-size: 10.5px; letter-spacing: .02em; } .bx-bar.top .v { font-size: 15.5px; } .bx-bar .e, .bx-bar .q { font-size: 13px; } .bx-bar .t { height: 9px; } .bx-bar.top .t { height: 11px; } }
 .bx-bar .t { height: 14px; border-radius: 7px; background: var(--color-border-line); overflow: hidden; }
 .bx-bar .t b { display: block; height: 100%; border-radius: 7px; }
 .bx-bar .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
@@ -282,11 +289,6 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
   </details>
 
   <div class="bx-grid">
-    <section class="bx-card" id="mouvements">
-      <h2>Ce qui a bougé</h2>
-      <p class="bx-note">Classés selon leur niveau dans les sondages. Sondages : évolution de la tendance sur les 14 derniers jours. Parieurs : évolution des chances de victoire au second tour (Polymarket) sur 30 jours.</p>
-      <div class="bx-movers" id="movers" data-source="mouvements"></div>
-    </section>
 
     <details class="bx-card bx-fold" id="agenda">
       <summary><h2>Actualité et agenda</h2><span class="bx-fold-hint" id="ag-hint"></span></summary>
@@ -636,17 +638,39 @@ dash.calc('duels_recents', {
     var lg = document.getElementById('legend-t1'); lg.textContent = '';
     CANDS.forEach(function (c) { var s = document.createElement('span'); var i = document.createElement('i'); i.style.background = c.col; s.appendChild(i); s.appendChild(document.createTextNode(c.name)); lg.appendChild(s); });
   }
-  function drawTiles(rank, pmr) {
-    // Les résultats d'abord : une barre par candidat (moyenne des sondages sur 30 jours), puis le favori des parieurs.
+  function drawTiles(rank, pmr, mvRows, pmr1) {
+    // La course en un coup d'œil : pour chaque candidat, sa moyenne dans les sondages (barre), son évolution sur 14 jours,
+    // et, dans une colonne à part, ses chances d'aller au second tour selon les parieurs (jamais sur la même barre).
     var box = document.getElementById('tiles'); box.textContent = '';
     var top = rank.slice(0, BX.TOP_CURVES), mx = Math.max.apply(null, top.map(function (c) { return c.moyenne; })) || 1;
+    var MV = {}; (mvRows || []).forEach(function (r) { MV[r.court] = r; });
+    var Q = {}; (pmr1 || []).forEach(function (r) { Q[r.key] = r; });
+    var nb = function (v) { return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(v) + '\u00a0%'; };
+    var hd = document.createElement('div'); hd.className = 'bx-bar h';
+    ['', 'Sondages', 'En 14 jours', 'Au 2nd tour*'].forEach(function (t) { var d = document.createElement('div'); d.textContent = t; hd.appendChild(d); });
+    box.appendChild(hd);
+    var why = {};
     top.forEach(function (c, i) {
       var r = document.createElement('div'); r.className = 'bx-bar' + (i < 2 ? ' top' : '');
-      var n = document.createElement('div'); n.className = 'n'; var sw = document.createElement('i'); sw.style.background = BX.col(c.colKey); n.appendChild(sw); var fl = document.createElement('span'); fl.className = 'full'; fl.textContent = c.name.replace(' (RN)', ''); n.appendChild(fl); var ct = document.createElement('span'); ct.className = 'court'; ct.textContent = c.short || c.name.split(' ').slice(-1)[0]; n.appendChild(ct); r.appendChild(n);
-      var t = document.createElement('div'); t.className = 't'; var b = document.createElement('b'); b.style.width = (100 * c.moyenne / mx).toFixed(1) + '%'; b.style.background = BX.col(c.colKey); t.appendChild(b); r.appendChild(t);
+      var g = document.createElement('div'); g.className = 'g';
+      var n = document.createElement('div'); n.className = 'n'; var sw = document.createElement('i'); sw.style.background = BX.col(c.colKey); n.appendChild(sw);
+      var fl = document.createElement('span'); fl.className = 'full'; fl.textContent = c.name.replace(' (RN)', ''); n.appendChild(fl); var ct = document.createElement('span'); ct.className = 'court'; ct.textContent = c.short || c.name.split(' ').slice(-1)[0]; n.appendChild(ct); g.appendChild(n);
+      var t = document.createElement('div'); t.className = 't'; var b = document.createElement('b'); b.style.width = (100 * c.moyenne / mx).toFixed(1) + '%'; b.style.background = BX.col(c.colKey); t.appendChild(b); g.appendChild(t);
+      r.appendChild(g);
       var v = document.createElement('div'); v.className = 'v'; v.textContent = BX.pct(c.moyenne); r.appendChild(v);
+      var m = MV[c.short], ev = document.createElement('div'); ev.className = 'e';
+      if (m && m.sondages_variation != null) { var x = m.sondages_variation; ev.className += ' ' + cls(x); ev.textContent = (Math.abs(x) < 0.5 ? '' : x > 0 ? '▲ ' : '▼ ') + signed(x, 'pt').replace(' pt', ''); }
+      else { ev.textContent = mvRows ? '—' : ''; if (m && m.sondages_raison) (why[m.sondages_raison] = why[m.sondages_raison] || []).push(c.short); }
+      r.appendChild(ev);
+      var q = Q[c.key], qv = document.createElement('div'); qv.className = 'q'; qv.textContent = q ? nb(q.v) : pmr1 ? '—' : '';
+      if (!q && pmr1) (why['pas de cote chez les parieurs pour le second tour'] = why['pas de cote chez les parieurs pour le second tour'] || []).push(c.short);
+      r.appendChild(qv);
       box.appendChild(r);
     });
+    var ft = document.createElement('p'); ft.className = 'bx-note bx-why';
+    ft.textContent = '* Chances d\'être au second tour selon les parieurs de Polymarket : une colonne à part, jamais mêlée aux sondages. « En 14 jours » : évolution de la tendance des sondages, en points.' +
+      Object.keys(why).map(function (w) { return ' — ' + why[w].join(', ') + ' : ' + w + '.'; }).join('');
+    box.appendChild(ft);
     var f = document.getElementById('fav');
     if (pmr[0]) {
       f.textContent = '';
@@ -991,10 +1015,10 @@ dash.calc('duels_recents', {
       var li = document.createElement('li'); var n = document.createElement('span'); n.className = 'num'; n.textContent = e.n; li.appendChild(n);
       var t = document.createElement('span'); t.textContent = BX.fmtDay(BX.day(e.date)) + ' · ' + e.evenement; li.appendChild(t); el.appendChild(li);
     });
-    chart('movers', mv.status === 'ok', mv.status === 'error', function () { drawMovers(mv.data); });
     chart('last', ls.status === 'ok', ls.status === 'error', function () { drawLast(ls.data); });
     var l2 = dash.data('dernier_sondage_t2'), p1 = dash.data('polymarket_t1'), h1 = dash.data('polymarket_t1_hist');
     var pmr1 = p1.status === 'ok' ? BX.pmRank(p1.data) : [];
+    if (moy.status === 'ok' && pm.status === 'ok' && mv.status === 'ok' && p1.status === 'ok') drawTiles(rank, pmr, mv.data, pmr1);
     chart('last2', l2.status === 'ok', l2.status === 'error', function () { drawLast2(l2.data); });
     chart('chart-pm1', p1.status === 'ok', p1.status === 'error', function () { drawPM('chart-pm1', p1.data, 'Chances d\'être qualifié pour le second tour selon Polymarket'); });
     chart('chart-pmh1', h1.status === 'ok' && p1.status === 'ok', false, function () { drawPMLines('chart-pmh1', h1.data, pmr1, 'Chances d\'être au second tour'); });
