@@ -15,15 +15,16 @@
     return loading;
   }
   var txt = function (el) { return el ? el.textContent.replace(/\s+/g, ' ').replace(/\bexemple\b/i, '').trim() : ''; };
-  function titre(card) {
+  // Titre d'un h2 avec sur-titre : { sur: « Dette, % du PIB », main: la phrase }.
+  function parties(card) {
     var h = card.querySelector('h1, h2, .acc-h, .lab, .eyebrow');
-    if (!h) return document.title.replace(' · Concret', '');
-    // Titre d'un h2 avec sur-titre : « Sur-titre : titre », sans les coller.
+    if (!h) return { sur: '', main: document.title.replace(' · Concret', '') };
     var eb = h.querySelector('.eyebrow'), clone = h.cloneNode(true);
     Array.prototype.forEach.call(clone.querySelectorAll('.eyebrow, .ex'), function (e) { e.remove(); });
-    var main = txt(clone), sur = txt(eb);
-    return main && sur ? sur + ' : ' + main : main || sur;
+    return { sur: txt(eb), main: txt(clone) };
   }
+  // En une ligne (texte du partage) : « Sur-titre : titre », sans les coller.
+  function titre(card) { var p = parties(card); return p.main && p.sur ? p.sur + ' : ' + p.main : p.main || p.sur; }
   function source(card) {
     if (card.dataset.src) return card.dataset.src;
     var notes = card.querySelectorAll('.note, .bx-note, small, footer p');
@@ -38,16 +39,21 @@
   function compose(shot, card) {
     var W = 1080, pad = 56, bg = getComputedStyle(document.body).backgroundColor || '#f6f5f1', fg = getComputedStyle(document.body).color || '#1a1a1a';
     var c = document.createElement('canvas'), x = c.getContext('2d');
+    // Seul le titre est en gras ; la phrase qui le suit (quand il y a un sur-titre) est en maigre, dessous.
+    var pt = parties(card), gras = pt.sur && pt.main ? pt.sur : (pt.main || pt.sur), suite = pt.sur && pt.main ? pt.main : '';
     x.font = '700 44px "Inter Tight", system-ui, sans-serif';
-    var tl = wrapLines(x, titre(card), W - 2 * pad).slice(0, 3);
+    var tl = wrapLines(x, gras, W - 2 * pad).slice(0, 2);
+    x.font = '400 36px "Inter Tight", system-ui, sans-serif';
+    var ml = suite ? wrapLines(x, suite, W - 2 * pad).slice(0, 3) : [];
     x.font = '400 26px "Inter Tight", system-ui, sans-serif';
     var sl = wrapLines(x, source(card), W - 2 * pad).slice(0, 4);
     var k = Math.min((W - 2 * pad) / shot.width, 2200 / shot.height), sw = shot.width * k, sh = shot.height * k;
-    c.width = W; c.height = pad + 40 + tl.length * 54 + 24 + sh + 30 + sl.length * 34 + 90;
+    c.width = W; c.height = pad + 40 + tl.length * 54 + ml.length * 46 + 24 + sh + 30 + sl.length * 34 + 90;
     x.fillStyle = bg; x.fillRect(0, 0, c.width, c.height);
     var y = pad;
     x.fillStyle = '#2f5bd3'; x.font = '700 28px "Inter Tight", system-ui, sans-serif'; x.fillText('Concret', pad, y + 10); y += 50;
-    x.fillStyle = fg; x.font = '700 44px "Inter Tight", system-ui, sans-serif'; tl.forEach(function (l) { x.fillText(l, pad, y + 30); y += 54; }); y += 24;
+    x.fillStyle = fg; x.font = '700 44px "Inter Tight", system-ui, sans-serif'; tl.forEach(function (l) { x.fillText(l, pad, y + 30); y += 54; });
+    x.font = '400 36px "Inter Tight", system-ui, sans-serif'; ml.forEach(function (l) { x.fillText(l, pad, y + 28); y += 46; }); y += 24;
     x.drawImage(shot, 0, 0, shot.width, shot.height, (W - sw) / 2, y, sw, sh); y += sh + 30;
     x.fillStyle = '#6b6b6b'; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; sl.forEach(function (l) { x.fillText(l, pad, y + 20); y += 34; });
     x.fillStyle = '#2f5bd3'; x.font = '700 34px "Inter Tight", system-ui, sans-serif'; x.fillText(adresse, pad, c.height - pad + 6);
