@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="925533ca2245">
+<meta name="concret-version" content="251932eca02f">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -43,6 +43,17 @@
 .sous > div { display: grid; gap: 8px; padding: 0 0 12px; }
 .pied-src > summary { cursor: pointer; font-weight: 600; color: var(--fr); padding: 6px 0; }
 .pied-src[open] > summary { margin-bottom: 6px; }
+.fold { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.fold > summary { cursor: pointer; padding: 12px 14px; font-weight: 600; font-size: 14px; color: var(--fr); background: rgba(47, 91, 211, .08); border-radius: 12px; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary::after { content: '▾'; font-size: 16px; line-height: 1; transition: transform .2s; }
+.fold[open] > summary::after { transform: rotate(180deg); }
+.fold[open] > summary .ouvrir, .fold:not([open]) > summary .fermer { display: none; }
+.fold > summary:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; border-radius: 12px; }
+.fold > .charts4 { padding: 0 10px 10px; }
+.fold .card { border-color: var(--grid); }
+.fold-in { display: grid; gap: 12px; padding: 0 10px 10px; } .defs { font-size: 12px; }
+.fold.pli-courbe { margin-top: 2px; }
 </style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -1422,6 +1433,16 @@ function main(FEED) {
 
   function drawAll() { drawMonth(); spark(); four(); manque(); pibChart(); retraitesChart(); spreadChart(); rankChart(); }
   renderGov(); drawAll();
+  // Chaque carte de courbe : son titre reste visible ; la courbe, sa lecture et ses sources passent dans un dépliant, redessinées à l'ouverture.
+  document.querySelectorAll('.charts4 > section.card, #richesse, #retraites, #marches').forEach(function (card) {
+    var h = card.querySelector('h2'); if (!h || !card.querySelector('.chart')) return;
+    var d = document.createElement('details'); d.className = 'fold pli-courbe';
+    d.innerHTML = '<summary><span class="ouvrir">Voir la courbe et les sources</span><span class="fermer">Masquer la courbe</span></summary>';
+    var inner = document.createElement('div'); inner.className = 'fold-in';
+    for (var n = h.nextSibling; n;) { var nx = n.nextSibling; if (!(n.classList && n.classList.contains('share'))) inner.appendChild(n); n = nx; }
+    d.appendChild(inner); h.parentNode.insertBefore(d, h.nextSibling);
+    d.addEventListener('toggle', function () { if (d.open) drawAll(); });
+  });
   // Un bloc qui s'ouvre : on ne redessine que ses propres graphiques (ils n'avaient pas de largeur tant qu'il était fermé).
   window.addEventListener('acc-open', function (e) { var f = { 'acc-today': spark, 'acc-month': drawMonth }[e.detail]; if (f) setTimeout(f, 30); });
   var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });
@@ -1460,7 +1481,7 @@ function main(FEED) {
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261027b"></script>
+<script src="/commun/partage.js?v=20261028d"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/menu.js?v=20261028c"></script>

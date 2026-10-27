@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="925533ca2245">
+<meta name="concret-version" content="251932eca02f">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -604,14 +604,15 @@ function main(FEED) {
   }
   var themeEtat = function (t) { var l = t.crit.map(etat); return { l: l, ok: l.filter(function (x) { return x.cl === 'g'; }).length, n: l.length }; };
   var unitOf = function (c) { return c.uu || c.unite; };
-  function rowHtml(x, sub) {
+  // court : sans la ligne de définition et de source (elles sont dans le dépliant du thème) ; l'année passe sous le chiffre.
+  function rowHtml(x, sub, court) {
     var h = sub ? ' data-sub="' + sub + '" hidden' : '';
-    return '<tr class="nm' + (sub ? ' sub' : '') + '"' + h + '><td>' + esc(x.c.lc || x.c.l) + '</td><td>' + x.fr + (x.fe ? '<small>' + x.fe + '</small>' : '') + '</td><td>' + x.ref + '<small>' + x.re + '</small></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>' +
-      '<tr class="xp' + (sub ? ' sub' : '') + '"' + h + '><td colspan="4">' + esc(x.c.ex || unitOf(x.c)) + ' · ' + x.y + (x.c.sc ? ' · Source : ' + lien(x.c, x.c.sc) : '') + '</td></tr>';
+    return '<tr class="nm' + (sub ? ' sub' : '') + '"' + h + '><td>' + esc(x.c.lc || x.c.l) + '</td><td>' + x.fr + (x.fe || court ? '<small>' + [court ? x.y : '', x.fe].filter(Boolean).join(' · ') + '</small>' : '') + '</td><td>' + x.ref + '<small>' + x.re + '</small></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>' +
+      (court ? '' : '<tr class="xp' + (sub ? ' sub' : '') + '"' + h + '><td colspan="4">' + esc(x.c.ex || unitOf(x.c)) + ' · ' + x.y + (x.c.sc ? ' · Source : ' + lien(x.c, x.c.sc) : '') + '</td></tr>');
   }
-  function tableEtat(e) {
+  function tableEtat(e, court) {
     return '<table class="cmp"><thead><tr><th></th><th>France</th><th>Voisins</th><th></th></tr></thead><tbody>' + e.l.map(function (x) {
-      if (!x.sous) return rowHtml(x);
+      if (!x.sous) return rowHtml(x, null, court);
       // Un programme (vaccins, dépistages) : une ligne, dépliable pour voir chaque élément.
       var id = x.c.lc.replace(/\W/g, '');
       return '<tr class="grp nm"><td colspan="3"><button type="button" class="grp-b" data-grp="' + id + '" aria-expanded="false">' + esc(x.c.lc) + '</button></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr><tr class="xp grp"><td colspan="4">' + esc(x.c.ex || '') + ' : la France fait mieux sur ' + x.ok + ' sur ' + x.sous.length + ' (touchez pour le détail)</td></tr>' + x.sous.map(function (s) { return rowHtml(s, id); }).join('');
@@ -991,22 +992,24 @@ function main(FEED) {
       var defs = [];
       t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || esc(x.ex || '')) + (x.source ? ' Source : ' + lien(x, x.source) + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + esc(q.l) + ' (' + esc(q.unite) + '). Source : ' + lien(q, q.source) + '.'); }); });
       sec.innerHTML = '<h2></h2><p class="t-sum"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>La France fait mieux que ses voisins sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n + ' (dernier chiffre connu).</p>' +
-        '<span class="eyebrow" style="margin:4px 0 0">' + esc(c.l) + ', ' + esc(c.unite) + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p>' +
+        tableEtat(e, true) +
         '<p class="tnotes">Note de ce thème, sur 20 (10 = aussi bien que la moyenne de l\'UE) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>';
       sec.querySelector('h2').textContent = t.q;
       root.appendChild(sec);
-      MAIN.push(function () { sec.querySelector('.note').innerHTML = [serieChart('ch-' + m0.id, c), srcNote(c)].filter(Boolean).join(' '); });
+      // Le tableau du thème reste visible, toutes ses courbes passent dans le dépliant (dessinées à l'ouverture).
+      var principale = function () { inner.querySelector('.note-principale').innerHTML = [serieChart('ch-' + m0.id, c), srcNote(c)].filter(Boolean).join(' '); };
       var autres = cs.slice(1), grid = document.createElement('div'); grid.className = 'charts4';
       var more = autres.map(function (o) { return serieCard(grid, 'ch-' + o.id, o.c, o.tag, null); });
       if (EN_PLUS[t.k]) more = more.concat(EN_PLUS[t.k](grid));
       var fold = document.createElement('details'); fold.className = 'fold';
       // Bouton bien visible : on comprend qu'il y a d'autres courbes dessous.
-      var nb = grid.children.length, quoi = (nb ? nb + ' autre' + (nb > 1 ? 's' : '') + ' courbe' + (nb > 1 ? 's' : '') + ', ' : '') + 'le tableau et les sources';
+      var nb = grid.children.length + 1, quoi = 'les ' + (nb > 1 ? nb + ' courbes' : 'la courbe') + ' et les sources';
       fold.innerHTML = '<summary><span class="ouvrir">Voir ' + quoi + '</span><span class="fermer">Masquer ' + quoi + '</span></summary>';
       var inner = document.createElement('div'); inner.className = 'fold-in';
-      inner.innerHTML = tableEtat(e) + '<p class="note defs">' + defs.join('<br>') + '</p>';
+      inner.innerHTML = '<span class="eyebrow" style="margin:4px 0 0">' + esc(c.l) + ', ' + esc(c.unite) + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note note-principale"></p>' +
+        '<p class="note defs">' + defs.join('<br>') + '</p>';
       inner.appendChild(grid); fold.appendChild(inner); sec.appendChild(fold);
-      var f = { el: fold, draw: function () { more.forEach(function (d) { d(); }); } };
+      var f = { el: fold, draw: function () { principale(); more.forEach(function (d) { d(); }); } };
       fold.addEventListener('toggle', function () { if (fold.open) f.draw(); });
       FOLDS.push(f);
     });
@@ -1260,7 +1263,7 @@ function main(FEED) {
 })();
 })();
 </script>
-<script src="/commun/partage.js?v=20261027b"></script>
+<script src="/commun/partage.js?v=20261028d"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/menu.js?v=20261028c"></script>

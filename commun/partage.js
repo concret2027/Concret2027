@@ -92,6 +92,8 @@
         // La capture ne sait pas ce qu'est un bloc replié : elle dessinerait son contenu par-dessus le reste.
         // Dans la copie capturée, on ne garde que ce qui est visible à l'écran.
         onclone: function (doc) {
+          // Courbe repliée sous son titre : dans l'image, elle est montrée, sans le bouton du dépliant.
+          Array.prototype.forEach.call(doc.querySelectorAll('details.pli-courbe'), function (d) { d.open = true; var su = d.querySelector('summary'); if (su) su.remove(); });
           Array.prototype.forEach.call(doc.querySelectorAll('details'), function (d) {
             if (!d.open) Array.prototype.forEach.call(d.children, function (c) { if (c.tagName !== 'SUMMARY') c.remove(); });
           });
