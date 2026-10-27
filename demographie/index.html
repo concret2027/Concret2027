@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="e5da85461da1">
+<meta name="concret-version" content="917cc4ebee4d">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -183,6 +183,8 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
     <div class="chiffres" id="chiffres"></div>
     <p class="sansnote"><b>Pas de note sur cette page</b> : les chiffres sont montrés sans dire s'ils vont dans le bon ou le mauvais sens. La page n'entre pas dans le classement des présidents.</p>
   </section>
+
+  <section class="card" id="toile" hidden></section>
 
   <nav class="jump" aria-label="Aller à">
     <a href="#actualite">Actualité</a><a href="#naissances">Naissances</a><a href="#ages">Âges</a><a href="#nes">Nés à l'étranger</a><a href="#titres">Titres de séjour</a><a href="#asile">Asile</a><a href="#lois">Les lois</a><a href="#regle">Sources</a>
@@ -470,6 +472,11 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
     $('nes-t').innerHTML = '<b>' + fmt(e1.v, 1) + ' % des habitants de la France sont nés à l\'étranger</b> (' + e1.y + '), ' + compare(e1.v, e2.v) + ' la moyenne de l\'UE (' + fmt(e2.v, 1) + ' %), moins qu\'en Allemagne (' + fmt(eDe.v, 1) + ' %) et en Espagne (' + fmt(eEs.v, 1) + ' %) ; dont ' + fmt(eh.v, 1) + ' % nés hors de l\'UE. ' +
       (sn.v <= 0 ? 'En ' + sm.y + ', la population augmente par le solde migratoire (' + signe(sm.v, 0) + '), le solde naturel étant de ' + signe(sn.v, 0) + '.' : 'En ' + sm.y + ', solde migratoire : ' + signe(sm.v, 0) + '.');
     serie('ch-nes', ne, 'n-nes');
+    // Toile : la France et ses voisins au dernier chiffre connu, sans note (commun/toile.js).
+    if (window.ConcretToile) {
+      var T = ConcretToile.depuisC(P.C, ['fec', 'nat', 'solnat', 'solmig', 'p65', 'med', 'nes', 'etr'], { cible: function (k) { return 'ch-' + k; } });
+      ConcretToile.dessiner('toile', { titre: 'La France et ses voisins', axes: T.axes, omis: T.omis, series: ConcretToile.SERIES });
+    }
 
     quand('plus-nes', function () { serie('ch-etr', P.C.etr, 'n-etr'); serie('ch-natu', P.M.natu, 'n-natu'); serie('ch-neshue', P.C.nes_hue, 'n-neshue'); serie('ch-solmig', P.C.solmig, 'n-solmig'); });
 
@@ -571,6 +578,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
   }).catch(function (e) { $('chiffres').innerHTML = '<p class="note">Les données n\'ont pas pu être chargées. Rechargez la page.</p>'; if (window.console) console.error(e); });
 })();
 </script>
+<script src="/commun/toile.js?v=20261027a"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/partage.js?v=20261027a"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
