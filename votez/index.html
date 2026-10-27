@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="50d7dcd5848f">
+<meta name="concret-version" content="654e0435573b">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -329,6 +329,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <span class="eyebrow">Votez les lois</span>
     <h1 id="vz-titre">Et vous, qu'auriez-vous voté ?</h1>
     <p class="note" style="font-size:14.5px" id="vz-lead">Les vrais votes de l'Assemblée nationale, tels qu'ils ont eu lieu. Votez à votre tour : Concret calcule de quels groupes de députés vos votes sont le plus proches.</p>
+    <p class="note" id="vz-nb"></p>
     <p class="vz-prive">Vos votes restent sur cet appareil : rien n'est envoyé, ni à Concret ni à personne.</p>
   </section>
 
@@ -348,6 +349,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="how-body">
       <ol>
         <li><b>Les votes proposés</b> : tous les votes importants de l'Assemblée nationale depuis le début de la législature (<span id="vz-debut"></span>) : vote sur l'ensemble d'un texte ou sur une partie d'un budget, motion de rejet, motion de censure, vote de confiance, déclaration du Gouvernement suivie d'un vote. Un texte voté plusieurs fois n'est proposé qu'une fois : son dernier vote sur l'ensemble.</li>
+        <li><b>L'explication de chaque texte</b> : une ou deux phrases écrites par Concret à partir du texte voté, dont le lien est donné juste en dessous : ce que le texte change, sans son but ni jugement. Un texte n'est proposé qu'une fois son explication relue.</li>
         <li><b>L'ordre</b> : d'abord les dix votes où les groupes se sont le plus partagés (sièges des groupes pour et contre les plus proches ; une seule motion de censure parmi eux), puis tous les autres, du plus récent au plus ancien.</li>
         <li><b>La position d'un groupe</b> : celle de la majorité de ses députés qui ont voté, publiée par l'Assemblée. Pour une motion de censure, seuls les votes pour sont comptés : un groupe est compté pour si la majorité de ses membres l'a votée, contre sinon. Un groupe dont aucun député n'a voté n'est pas compté pour ce vote. Les députés non inscrits ne forment pas un groupe : ils ne sont pas comptés.</li>
         <li><b>L'accord</b> : 1 si vous avez voté comme la majorité du groupe, ½ si l'un des deux s'est abstenu et pas l'autre, 0 si vous avez voté à l'opposé. Le pourcentage est la moyenne sur vos votes. « Je ne sais pas » n'est pas compté.</li>
@@ -398,7 +400,8 @@ footer p { margin: 0; } footer a { color: inherit; }
   V.charger().then(function (J) {
     D = J; var n = compte();
     cible = n < V.SERIE ? V.SERIE : (n % V.SERIE === 0 ? n : Math.ceil(n / V.SERIE) * V.SERIE);
-    $('vz-lead').textContent = D.ordre.length + ' votes de l\'Assemblée nationale depuis ' + V.moisFr(D.debut) + ', tels qu\'ils ont eu lieu. Votez à votre tour : Concret calcule de quels groupes de députés vos votes sont le plus proches. Premier résultat au bout de ' + V.MIN + ' votes.';
+    $('vz-lead').textContent = 'De vrais votes de l\'Assemblée nationale, chacun expliqué en une ou deux phrases. Votez à votre tour : Concret calcule de quels groupes de députés vos votes sont le plus proches. Premier résultat au bout de ' + V.MIN + ' votes.';
+    $('vz-nb').textContent = D.ordre.length + ' textes à voter pour l\'instant, sur les ' + D.tous + ' votes importants depuis ' + V.moisFr(D.debut) + ' : chaque texte arrive dès que son explication est relue.';
     $('vz-debut').textContent = 'premier vote le ' + V.dateFr(D.debut);
     $('vz-src').innerHTML = 'Source : <a href="' + D.P.votes.url + '">' + V.esc(D.P.votes.source) + '</a>, relue chaque jour (dernière lecture le ' + V.dateFr(D.maj) + ').';
     tout(); afficher(false);

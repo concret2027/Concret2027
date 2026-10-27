@@ -25,7 +25,8 @@
 
   var css = '.vz{display:grid;gap:10px}' +
     '.vz-titre{font-family:var(--serif);font-weight:500;font-size:21px;line-height:1.25;margin:0;text-wrap:balance}' +
-    '.vz-stade{margin:-4px 0 0;font-size:13px;color:var(--muted)}' +
+    '.vz-expl{margin:0;font-size:15px;line-height:1.5}' +
+    '.vz-lu{margin:-4px 0 0;font-size:12px;color:var(--muted)}.vz-lu a{color:var(--muted)}' +
     '.vz-q{margin:4px 0 0;font-size:17px;font-weight:700}' +
     '.vz-aide{margin:-4px 0 0;font-size:13.5px;color:var(--muted)}' +
     '.vz-choix{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:8px}' +
@@ -116,7 +117,7 @@
     return q;
   }
 
-  function construire(J) {
+  function construire(J, X) {
     var rang = { texte: 3, partie: 2, rejet: 1 }, par = {}, Q = [], dos = {};
     // Un même texte : même dossier de l'Assemblée, sinon même intitulé (le dossier n'est pas indiqué pour les votes les plus anciens).
     var cle = function (v) { return sujet(v.t).toLowerCase().replace(/[’']/g, '\'').replace(/\s+/g, ' '); };
@@ -130,13 +131,16 @@
     });
     Object.keys(par).forEach(function (k) { Q.push(par[k]); });
     Q = Q.map(function (v) { return question(v, J); }).sort(function (a, b) { return a.d < b.d ? 1 : a.d > b.d ? -1 : b.v.n - a.v.n; });
+    // Un vote n'est proposé qu'avec son explication, écrite à partir du texte voté et validée (donnees/votez_explications.json).
+    var tous = Q.length;
+    Q = Q.filter(function (q) { var x = X && X[q.id]; if (x && x.valide && x.e && x.url) { q.expl = x; return true; } return false; });
     // Ordre de la page : les dix votes qui ont le plus partagé l'Assemblée (une seule motion de censure parmi eux), puis tous les
     // autres, du plus récent au plus ancien.
     var censure = 0, premiers = Q.slice().sort(function (a, b) { return b.partage - a.partage || (a.d < b.d ? 1 : -1); })
       .filter(function (q) { return q.k !== 'censure' || !censure++; }).slice(0, SERIE);
     var ordre = premiers.concat(Q.filter(function (q) { return premiers.indexOf(q) < 0; }));
     var G = {}; J.GROUPES.forEach(function (g) { G[g.c] = g; });
-    return { Q: Q, ordre: ordre, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: Q.length ? Q[Q.length - 1].d : '' };
+    return { Q: Q, ordre: ordre, tous: tous, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: J.VOTES.length ? J.VOTES[J.VOTES.length - 1].d : '' };
   }
 
   var accord = function (a, b) { return a === b ? 1 : (a === 'abstention' || b === 'abstention') ? 0.5 : 0; };
@@ -157,12 +161,13 @@
   function carte(el, q, D, o) {
     o = o || {}; style();
     var mes = lireMes(), deja = mes[q.id];
-    var off = '<details class="vz-off"><summary>Intitulé officiel et sources</summary><p>« ' + esc(cap(q.v.t)) + ' » (Assemblée nationale, ' + dateFr(q.d) + ').</p><p>' +
+    var off = '<details class="vz-off"><summary>Intitulé officiel et sources</summary><p>« ' + esc(cap(q.v.t)) + ' » (Assemblée nationale, ' + dateFr(q.d) + ').' + (q.stade ? ' Étape : ' + esc(q.stade.replace(/\.$/, '').toLowerCase()) + '.' : '') + '</p><p>' +
       (q.v.dos ? '<a href="https://www.assemblee-nationale.fr/dyn/17/dossiers/' + esc(q.v.dos) + '">Le dossier du texte</a> · ' : '') +
       '<a href="https://www.assemblee-nationale.fr/dyn/17/scrutins/' + q.v.n + '">Le scrutin n° ' + q.v.n + '</a></p></details>';
     el.innerHTML = '<div class="vz">' + (o.entete || '') +
       '<span class="eyebrow">' + esc(q.type) + ' · ' + dateFr(q.d) + '</span>' +
-      '<h2 class="vz-titre">' + esc(q.titre) + '</h2>' + (q.stade ? '<p class="vz-stade">' + esc(q.stade) + '</p>' : '') +
+      '<h2 class="vz-titre">' + esc(q.titre) + '</h2>' +
+      (q.expl ? '<p class="vz-expl">' + esc(q.expl.e) + '</p><p class="vz-lu">Lu dans : <a href="' + esc(q.expl.url) + '">' + esc(q.expl.src) + '</a></p>' : '') +
       '<p class="vz-q">' + esc(q.q) + '</p>' + (q.aide ? '<p class="vz-aide">' + esc(q.aide) + '</p>' : '') +
       '<div class="vz-choix" style="--n:' + q.choix.length + '">' + q.choix.map(function (c) { return '<button type="button" data-c="' + c + '" aria-pressed="false">' + CHOIX[c] + '</button>'; }).join('') + '</div>' +
       '<button type="button" class="vz-passe">Je ne sais pas : passer</button>' + off + '<div class="vz-rev" hidden></div></div>';
@@ -209,7 +214,8 @@
   window.ConcretVotez = {
     MIN: MIN, SERIE: SERIE, dateFr: dateFr, moisFr: moisFr, nf: nf, esc: esc, CHOIX: CHOIX,
     charger: function () {
-      if (!donnees) donnees = fetch('/donnees/votes.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(construire);
+      var lire = function (u) { return fetch(u, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); };
+      if (!donnees) donnees = Promise.all([lire('/donnees/votes.json'), lire('/donnees/votez_explications.json')]).then(function (r) { return construire(r[0], r[1].explications || {}); });
       return donnees;
     },
     mes: lireMes,
