@@ -100,7 +100,8 @@
 
   // Textes sous les courbes : au-delà de trois lignes, on n'en montre que deux, avec un lien « Détail du graphe » qui déplie
   // le reste. Les pages réécrivent ces textes quand elles redessinent une courbe : on les revoit à chaque changement.
-  var NT = '.chart ~ p.note';
+  // Sur le Baromètre, les explications en tête de chaque bloc aussi (« Lire la suite »).
+  var NT = '.chart ~ p.note, .bx-card > p.bx-note, .bx-group > p.bx-note';
   function plier() {
     Array.prototype.forEach.call(document.querySelectorAll(NT), function (n) {
       if (n.classList.contains('pt-hors') || n.classList.contains('defs')) return;
@@ -114,7 +115,7 @@
       if (deja) n.classList.remove('nt-pli');
       var lh = parseFloat(getComputedStyle(n).lineHeight) || 20, long = n.offsetHeight > lh * 3.4;
       if (long && !ouvert) n.classList.add('nt-pli');
-      var t = !long ? '' : ouvert ? 'Masquer le détail ▴' : 'Détail du graphe ▾';
+      var bx = n.classList.contains('bx-note'), t = !long ? '' : ouvert ? (bx ? 'Masquer ▴' : 'Masquer le détail ▴') : (bx ? 'Lire la suite ▾' : 'Détail du graphe ▾');
       if (b.textContent !== t) b.textContent = t;
       if (b.hidden === !!t) b.hidden = !t;
       b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
