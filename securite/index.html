@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="23154cbebacf">
+<meta name="concret-version" content="16fb28dd7b2c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261026c"></script>
-<script src="/commun/toile.js?v=20261027f"></script>
+<script src="/commun/toile.js?v=20261028a"></script>
 <script src="/commun/pays.js?v=20261027d"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
@@ -60,7 +60,7 @@
 :root {
   --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
   --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a; --es: #d0632a;
-  --bad: #c43d3d; --ok: #1a7a43; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
+  --bad: #c43d3d; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06);
   --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
   --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
   --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
@@ -396,7 +396,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 </head>
 <body data-sources="Sources : Eurostat, SSMSI (ministère de l'Intérieur) (détail en bas de page).">
 <div class="wrap">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/" aria-current="page">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/" aria-current="page">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><h1>Sécurité et justice</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
@@ -467,7 +467,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
 
   <section class="card" id="bulletin" aria-labelledby="gov-title">
-    <h2 id="gov-title"><span class="eyebrow">Le bulletin de la sécurité et de la justice</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <h2 id="gov-title"><span class="eyebrow">Les notes de la sécurité et de la justice</span>Président par président : la France face à la moyenne de l'UE</h2>
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
@@ -774,9 +774,9 @@ function main(FEED) {
       svg.append('rect').attr('x', 0).attr('y', y).attr('width', W).attr('height', rh).attr('fill', 'transparent').style('cursor', 'pointer').on('click', function () { openDetail(mode, r.g); });
       svg.append('text').attr('x', lw - 8).attr('y', y + 16).attr('text-anchor', 'end').text(name).style('fill', 'var(--fg)').style('font-size', '12px').style('pointer-events', 'none');
       svg.append('rect').attr('x', x(0)).attr('y', y + 5).attr('width', Math.max(2, x(r.n) - x(0))).attr('height', 17).attr('rx', 3).attr('fill', few ? 'var(--axis)' : col(r.n)).style('pointer-events', 'none');
-      svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' (note fragile)' : '')).style('fill', few ? 'var(--fg)' : inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
+      svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' (peu d\'années)' : '')).style('fill', few ? 'var(--fg)' : inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
     });
-    setHtml('rank-' + mode + '-note', 'En gris, « note fragile » : moins de ' + MIN_N + ' comparaisons, soit moins d\'une année complète de chiffres (mandat court, ou séries européennes qui commencent après), donc peu fiable. Une note ne couvre que les thèmes qui ont des chiffres pendant le mandat. Touchez une barre pour voir le détail.');
+    setHtml('rank-' + mode + '-note', 'En gris, « peu d\'années » : moins de ' + MIN_N + ' comparaisons, soit moins d\'une année complète de chiffres (mandat court, ou séries européennes qui commencent après). Une note ne couvre que les thèmes qui ont des chiffres pendant le mandat. Touchez une barre pour voir le détail.');
   }
   document.getElementById('gov-more').addEventListener('click', function () {
     showAll = !showAll; this.setAttribute('aria-expanded', showAll); this.textContent = showAll ? 'Masquer le détail des autres gouvernements' : 'Voir le détail des autres gouvernements'; renderGov();
@@ -1170,7 +1170,7 @@ function main(FEED) {
       return '<b>' + esc(t.q) + '.</b> ' + (parts.length ? parts.join(' ') : 'Pas assez d\'années comparables pour mesurer une évolution.');
     });
     var pr = PRES.map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
-    items.push('<b>Au bulletin</b>, ' + pr.map(function (r) { return esc(r.g.n) + ' ' + nfmt(r.n) + '/20'; }).join(', ') + '. La note mesure si la France a progressé plus vite que ses voisins, ou a tenu son avance.');
+    items.push('<b>Les notes</b> : ' + pr.map(function (r) { return esc(r.g.n) + ' ' + nfmt(r.n) + '/20'; }).join(', ') + '. La note mesure si la France a progressé plus vite que ses voisins, ou a tenu son avance.');
     setHtml('sum-list', items.map(function (t) { return '<li>' + t + '</li>'; }).join(''));
   })();
 
@@ -1200,7 +1200,8 @@ function main(FEED) {
         if (n == null) nc.push(t.q.toLowerCase()); tr.appendChild(td);
       });
       var nn = noteOf(g), tdn = document.createElement('td');
-      tdn.innerHTML = nn == null ? '–' : '<span class="yr-note ' + cls(nn) + '">' + nfmt(nn) + '</span>';
+      // Note calculée sur une partie des thèmes seulement : on le dit à côté (même règle sur toutes les pages).
+      tdn.innerHTML = nn == null ? '–' : '<span class="yr-note ' + cls(nn) + '">' + nfmt(nn) + '</span>' + (nc.length ? '<small> sur ' + (THEMES.length - nc.length) + ' thème' + (THEMES.length - nc.length > 1 ? 's' : '') + '</small>' : '');
       tr.appendChild(tdn); tr.hidden = hide; tb.appendChild(tr);
       if (nc.length) {
         var wr = document.createElement('tr'); wr.className = 'yr-why'; var wd = document.createElement('td'); wd.colSpan = ncol;
@@ -1250,6 +1251,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261027b"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261027l"></script>
+<script src="/commun/menu.js?v=20261028a"></script>
 </body>
 </html>

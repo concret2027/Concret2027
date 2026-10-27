@@ -6,6 +6,7 @@
     { u: '/', l: 'Accueil', t: 'Le classement des présidents et le pouls de la France', ic: 'accueil', large: 1 },
     { u: '/barometre/', l: 'Baromètre 2027', t: 'Sondages et parieurs', ic: 'barometre', g: 'Chaque jour' },
     { u: '/quiz/', l: 'Quiz du jour', t: 'Huit questions sourcées', ic: 'quiz', g: 'Chaque jour' },
+    { u: '/votez/', l: 'Votez les lois', t: 'Les vrais votes de l\'Assemblée, à votre tour', ic: 'votez', g: 'Chaque jour' },
     { u: '/vie/', l: 'Vie des Français', t: 'Pouvoir d\'achat, logement, travail', ic: 'vie', g: 'Les missions notées' },
     { u: '/finances/', l: 'Finances publiques', t: 'Dette, déficit, impôts', ic: 'finances', g: 'Les missions notées' },
     { u: '/sante/', l: 'Santé', t: 'Espérance de vie, soins, prévention', ic: 'sante', g: 'Les missions notées' },
@@ -26,6 +27,7 @@
     education: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/>',
     securite: '<path d="M12 4v16"/><path d="M8 20h8"/><path d="M5 7h14"/><path d="M5 7l-3 6a3 3 0 0 0 6 0z"/><path d="M19 7l-3 6a3 3 0 0 0 6 0z"/>',
     defense: '<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/>',
+    votez: '<path d="M4 12h16v8H4z"/><path d="M7 12V4h10v8"/><path d="M9.5 8l2 2 3.5-3.5"/>',
     politique: '<path d="M3 9l9-5 9 5"/><path d="M5 9v8"/><path d="M10 9v8"/><path d="M14 9v8"/><path d="M19 9v8"/><path d="M3 20h18"/>',
     demographie: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.8.2 5 2.6 5 5.8"/>',
     cherche: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
@@ -39,7 +41,7 @@
       'background:linear-gradient(to right,transparent,' + V.bg + ' 26px);box-shadow:24px 0 0 0 ' + V.bg + ';border:0;padding:4px 2px 4px 34px;cursor:pointer}' +
     '.mn-btn span{display:inline-flex;align-items:center;gap:6px;border:1.5px solid ' + V.fg + ';border-radius:999px;padding:4px 11px;background:' + V.panel + '}' +
     '.mn-btn:focus-visible span{outline:2px solid ' + V.fr + ';outline-offset:2px}' +
-    '@media (max-width:900px){.mn-btn{display:inline-flex}}' +
+    '.mn-btn{display:inline-flex}' +
     '.mn-voile{position:fixed;inset:0;z-index:50;background:rgba(10,12,18,.5);display:flex;justify-content:flex-end}' +
     '.mn-panneau{background:' + V.bg + ';width:min(100%,420px);height:100%;overflow:auto;padding:max(14px,env(safe-area-inset-top,0px)) 16px max(20px,env(safe-area-inset-bottom,0px));display:grid;align-content:start;gap:10px;box-sizing:border-box}' +
     '.mn-haut{display:flex;justify-content:space-between;align-items:center;padding:4px 2px 6px}.mn-haut b{font-family:"Newsreader",Georgia,serif;font-weight:500;font-size:24px;color:' + V.fg + '}' +
@@ -61,15 +63,22 @@
     '.mn-contact{margin:2px 0 0;font-size:14px;color:' + V.muted + '}.mn-contact a{color:' + V.fr + ';font-weight:600}' +
     '.mn-autres{display:grid;gap:10px;margin:8px 0 4px}.mn-autres h2{font-size:19px;font-weight:600;margin:0;color:' + V.fg + '}' +
     '@media (min-width:760px){.mn-autres .mn-liste{grid-template-columns:repeat(4,minmax(0,1fr))}}' +
-    // Sur téléphone, le bandeau garde le logo, le Baromètre, le Quiz, la loupe et le Menu ; les autres pages sont dans le Menu.
-    '@media (max-width:520px){nav.site>a:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]){display:none}nav.site>a{padding-block:8px}nav.site{gap:12px!important}.mn-btn{padding-left:12px}}' +
-    // Le Baromètre et le Quiz, les deux rendez-vous quotidiens, ressortent dans le bandeau.
-    'nav.site>a[href="/barometre/"],nav.site>a[href="/quiz/"]{color:' + V.fg + ';font-weight:600}' +
+    // Le bandeau tient toujours en entier : le logo, les rendez-vous quotidiens (Baromètre, Quiz, Votez), la vie politique et la page
+    // en cours ; toutes les pages sont dans le Menu, visible à toutes les largeurs. Sur téléphone : logo, rendez-vous, loupe et Menu.
+    'nav.site>a:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]):not([href="/politique/"]):not([aria-current]){display:none}' +
+    '@media (max-width:520px){nav.site>a[href="/politique/"]:not([aria-current]),nav.site>a[aria-current]:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]){display:none}nav.site>a{padding-block:8px}nav.site{gap:11px!important}.mn-btn{padding-left:8px}nav.site .rech-b{display:none}}' +
+    '@media (max-width:380px){nav.site{gap:8px!important}nav.site a.logo{font-size:17px!important}.mn-btn span{padding:4px 9px}}' +
+    // Les trois rendez-vous quotidiens ressortent dans le bandeau.
+    'nav.site>a[href="/barometre/"],nav.site>a[href="/quiz/"],nav.site>a[href="/votez/"]{color:' + V.fg + ';font-weight:600}' +
     // Lisibilité commune à toutes les pages : textes d'appoint pas trop petits, graduations des graphiques lisibles, zones à toucher assez grandes.
     '.note{font-size:14px;line-height:1.45}.bx-note{font-size:13.5px}.eyebrow{font-size:12.5px}svg .tick text{font-size:12px}' +
     // Pastilles des tableaux « Année par année » : point marqué, pas de point, demi-point (égalité).
     '.pt{display:inline-block;width:.8em;height:.8em;border-radius:50%;border:2px solid currentColor;box-sizing:border-box;vertical-align:-.08em}.pt.p1{background:currentColor}.pt.ph{background:linear-gradient(90deg,currentColor 50%,transparent 50%)}' +
     '.rech-b{min-width:44px;min-height:44px;justify-content:center}button.share,.bx-share{min-height:40px}' +
+    // Boutons pleins (bleu) en mode sombre : texte foncé, lisible sur le bleu clair du thème sombre.
+    '@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ct-envoyer,:root:not([data-theme="light"]) .qz-btn,:root:not([data-theme="light"]) .vz-suite{color:#0b1530}}:root[data-theme="dark"] .ct-envoyer,:root[data-theme="dark"] .qz-btn,:root[data-theme="dark"] .vz-suite{color:#0b1530}' +
+    // Lignes de texte pas trop longues sur grand écran.
+    '.card>p,.card .note{max-width:72ch}' +
     // Long texte sous une courbe : deux lignes, puis « Détail du graphe » pour lire la suite.
     // Titre d'une courbe : ce qui est mesuré en titre, la conclusion chiffrée dessous, en plus petit.
     'h2.inv,h3.inv{font-size:14.5px;font-weight:400;line-height:1.4;color:' + V.muted + '}h2.inv .eyebrow,h3.inv .eyebrow{font-size:18px;font-weight:700;line-height:1.25;letter-spacing:0;text-transform:none;color:' + V.fg + ';margin-bottom:3px}' +
@@ -159,10 +168,6 @@
     if (nav && !nav.querySelector('.mn-btn')) {
       var b = document.createElement('button'); b.type = 'button'; b.className = 'mn-btn'; b.setAttribute('aria-haspopup', 'dialog');
       b.innerHTML = '<span>☰ Menu</span>'; b.addEventListener('click', function () { ouvrir(b); }); nav.appendChild(b);
-      // Le bandeau défile jusqu'à la page en cours, pour qu'elle ne soit pas cachée derrière le bouton.
-      var cur = nav.querySelector('a[aria-current]:not(.logo)');
-      // (Sur téléphone, le bandeau tient en entier : il reste calé à gauche, logo visible.)
-      if (cur && nav.scrollWidth > nav.clientWidth + 8 && !(window.matchMedia && matchMedia('(max-width: 520px)').matches)) nav.scrollLeft = Math.max(0, cur.offsetLeft - nav.offsetLeft - 110);
     }
     // Sur l'accueil : la même icône devant chaque page de la liste des missions, des repères, du Baromètre et du Quiz.
     Array.prototype.forEach.call(document.querySelectorAll('#missions a.pg, #reperes a.pg, #rendez-vous a.pg'), function (a) {

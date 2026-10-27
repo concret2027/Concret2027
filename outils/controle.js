@@ -149,6 +149,37 @@ if (S.politique) {
     if ((Date.now() - Date.parse(pj.maj)) / 864e5 > 45) alertes.push('pays à ajouter : chiffres relus il y a plus de 45 jours (relancer python3 outils/pays.py --ecrire)');
   } catch (e) { err('donnees/pays.json illisible (relancer python3 outils/pays.py --ecrire)'); }
 })();
+// Votez les lois (outils/parlement.py → donnees/votes.json) : chaque vote a sa date, son numéro, son résultat et la position
+// d'au moins un groupe ; chaque position et chaque décompte sont lisibles ; relu depuis moins de trois jours.
+(function () {
+  try {
+    var VZ = JSON.parse(fs.readFileSync(path.join(ROOT, 'donnees', 'votes.json'), 'utf8')), jo = /^\d{4}-\d{2}-\d{2}$/, POS = ['pour', 'contre', 'abstention', 'nv'];
+    if (!VZ.VOTES || VZ.VOTES.length < 50) err('donnees/votes.json : moins de 50 votes (relancer python3 outils/parlement.py --ecrire)');
+    if (!VZ.P || !VZ.P.votes || !/^https:\/\//.test(VZ.P.votes.url || '')) err('donnees/votes.json : source manquante');
+    (VZ.VOTES || []).forEach(function (v) {
+      var g = Object.keys(v.g || {});
+      if (!jo.test(v.d) || !(v.n > 0) || ['adopté', 'rejeté'].indexOf(v.s) < 0 || !g.length || !v.t) return err('donnees/votes.json : vote mal formé ' + JSON.stringify(v).slice(0, 80));
+      g.forEach(function (c) { var x = v.g[c]; if (POS.indexOf(x[0]) < 0 || x.length !== 5 || x.slice(1).some(function (n) { return !(n >= 0 && n <= 600); })) err('donnees/votes.json : scrutin ' + v.n + ', position du groupe ' + c + ' illisible'); });
+      if (v.p + v.c + v.a > 577) err('donnees/votes.json : scrutin ' + v.n + ', plus de voix que de députés');
+    });
+    if (VZ.maj && (Date.parse(today) - Date.parse(VZ.maj)) / 864e5 > 3) alertes.push('Votez les lois : votes de l\'Assemblée lus le ' + VZ.maj + ', plus de trois jours : relancer python3 outils/parlement.py --ecrire');
+    // Explications des textes (donnees/votez_explications.json) : un vote connu, une ou deux phrases sans but ni jugement, une source officielle lue.
+    var VX = JSON.parse(fs.readFileSync(path.join(ROOT, 'donnees', 'votez_explications.json'), 'utf8')).explications || {}, nums = {};
+    (VZ.VOTES || []).forEach(function (v) { nums[v.n] = 1; if (v.dos) nums['dos:' + v.dos] = 1; });
+    (VZ.AVENIR || []).forEach(function (a) { nums['dos:' + a.dos] = 1; });
+    Object.keys(VX).forEach(function (n) {
+      var x = VX[n], id = 'votez_explications ' + n;
+      // Clé : numéro de scrutin, ou « avenir:<dossier>:texte » / « avenir:<dossier>:partie:<première…> » pour un vote à venir.
+      var av = /^avenir:([A-Z0-9]+):(texte|partie:\S+)$/.exec(n);
+      if (av ? !nums['dos:' + av[1]] : !nums[n]) err(id + ' : ' + (av ? 'ce dossier' : 'ce scrutin') + ' n\'est pas dans donnees/votes.json');
+      if (!x.e || x.e.length > 320) err(id + ' : explication absente ou trop longue (320 signes au plus)');
+      if (/\b(afin de|afin que|vis(e|ant) à|dans le but|pour que)\b/i.test(x.e || '')) err(id + ' : l\'explication prête un but au texte (« afin de », « visant à »…) : dire seulement ce qu\'il change');
+      if (!/^https:\/\/(www\.)?(assemblee-nationale\.fr|senat\.fr|legifrance\.gouv\.fr)\//.test(x.url || '') || !x.src || !jo.test(x.lu || '')) err(id + ' : source officielle, lien ou date de lecture manquant');
+      if (typeof x.valide !== 'boolean') err(id + ' : « valide » doit être vrai ou faux');
+      else if (!x.valide) alertes.push('Votez les lois : explication du scrutin ' + n + ' à valider');
+    });
+  } catch (e) { err('donnees/votes.json illisible (relancer python3 outils/parlement.py --ecrire)'); }
+})();
 // L'évolution démographique (outils/demographie.py, Eurostat et Insee) : plages plausibles ; page sans note.
 if (S.demographie) {
   var PQ = S.demographie, PR = { nes: [0, 40], nes_hue: [0, 40], fec: [0.8, 3], nat: [4, 20], solnat: [-10, 10], solmig: [-20, 40], p65: [5, 40], med: [25, 60], etr: [0, 40] }, PM = { titres: [0, 40], asile: [0, 30], irreg: [0, 30], oqtf: [0, 20], natu: [0, 20], departs: [0, 10] };

@@ -10,7 +10,7 @@ var fr = function (v, d) { return String(d ? r1(v) : Math.round(v)).replace('.',
 module.exports = [
   // ===== Finances publiques =====
   { id: 'fin_bilan', page: 'finances', ou: 'meta og:description et résumé « Le bilan depuis 1995 »',
-    texte: 'Aucun président depuis 1995 n\'a la moyenne en économie',
+    texte: 'Depuis 1995, aucune note de président n\'atteint 10/20 en finances publiques',
     verifier: function (c) { var best = c.notes.finances.pres.slice().sort(function (a, b) { return b.v - a.v; })[0]; return { ok: best.v < 10, constat: 'meilleure note de président : ' + best.n + ', ' + fr(best.v, 1) + '/20' }; } },
   { id: 'fin_bilan_ue', page: 'finances', ou: 'résumé « Le bilan depuis 1995 »',
     texte: 'dette, dépenses et impôts au-dessus de la moyenne de l\'UE',
@@ -31,7 +31,7 @@ module.exports = [
     verifier: function (c) { var sp = c.pouls.filter(function (r) { return r.indicateur === 'ecart_allemagne'; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }).pop(), it = c.fin.P.spread_italie; return { ok: +sp.valeur > it.v, constat: 'écart France ' + fr(+sp.valeur) + ' pb (' + sp.date + '), Italie ' + fr(it.v) + ' pb (' + it.date + ')' }; } },
   // ===== Éducation =====
   { id: 'edu_bilan', page: 'education', ou: 'meta og:description et résumé « Le bilan »',
-    texte: 'On diplôme plus que nos voisins, mais les élèves apprennent moins, et les jeunes trouvent moins vite un emploi',
+    texte: 'Plus de diplômés que la moyenne de l\'UE, mais des scores PISA plus bas et plus de jeunes au chômage',
     verifier: function (c) {
       var S = c.edu.S, t = lastBoth(S.te.fr, S.te.eu), y = lastBoth(S.yu.fr, S.yu.eu), m = c.edu.PI.m, r = c.edu.PI.r, im = m.fr.length - 1, ir = r.fr.length - 1;
       var ok = S.te.fr[t] > S.te.eu[t] && m.fr[im] < m.oe[im] && r.fr[ir] < r.oe[ir] && S.yu.fr[y] > S.yu.eu[y];

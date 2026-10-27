@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="23154cbebacf">
+<meta name="concret-version" content="16fb28dd7b2c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -16,7 +16,7 @@
 <title>Éducation · Concret</title>
 <meta name="description" content="PISA, décrochage, diplômés, chômage des jeunes : l'école française comparée à ses voisins, et la note de chaque président et gouvernement, année par année.">
 <meta property="og:title" content="Éducation · Concret">
-<meta property="og:description" content="On diplôme plus que nos voisins, mais les élèves apprennent moins. Le bulletin de l'éducation, président par président.">
+<meta property="og:description" content="Plus de diplômés que la moyenne de l'UE, mais des scores PISA plus bas et plus de jeunes au chômage. Les notes de l'éducation, président par président.">
 <meta property="og:url" content="https://concret2027.fr/education/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://concret2027.fr/donnees/apercu/education.png">
@@ -31,7 +31,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261026c"></script>
-<script src="/commun/toile.js?v=20261027f"></script>
+<script src="/commun/toile.js?v=20261028a"></script>
 <script src="/commun/pays.js?v=20261027d"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
@@ -47,7 +47,7 @@
 :root {
   --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
   --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a; --es: #d0632a;
-  --bad: #c43d3d; --ok: #1a7a43; --mid: #b0812a; --band: rgba(47, 91, 211, .06);
+  --bad: #c43d3d; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06);
   --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
   --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
   --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
@@ -318,7 +318,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 </head>
 <body data-sources="Sources : Eurostat, OCDE (PISA), DEPP, Insee, Banque mondiale (détail en bas de page).">
 <div class="wrap">
-  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/" aria-current="page">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
+  <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/" aria-current="page">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><h1>Éducation</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
@@ -378,7 +378,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
 
   <section class="card" id="bulletin" aria-labelledby="gov-title">
-    <h2 id="gov-title"><span class="eyebrow">Le bulletin de l'éducation</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <h2 id="gov-title"><span class="eyebrow">Les notes de l'éducation</span>Président par président : la France face à la moyenne de l'UE</h2>
     <button class="share" id="share-rank" type="button" style="justify-self:start;margin:0">Partager le classement</button>
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
@@ -513,7 +513,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   </details>
 
   <details class="acc" id="acc-bilan">
-    <summary><span class="acc-h">Le bilan</span><span class="acc-t">On diplôme plus que nos voisins, mais les élèves apprennent moins, et les jeunes trouvent moins vite un emploi</span><span class="acc-cta"></span></summary>
+    <summary><span class="acc-h">Le bilan</span><span class="acc-t">Plus de diplômés que la moyenne de l'UE, mais des scores PISA plus bas et plus de jeunes au chômage</span><span class="acc-cta"></span></summary>
     <div class="acc-body card summary"><ol id="sum-list"></ol></div>
   </details>
 
@@ -1072,11 +1072,11 @@ function main(FEED) {
     var noteAll = function (g) { var r = KEYS.filter(function (k) { return g.w[k].length; }).map(function (k) { return [d3.mean(g.w[k]), WT[k]]; }); return 20 * wmean(r); };
     var pres = PRES.map(function (g) { return { g: g, n: noteAll(g) }; }).sort(function (a, b) { return b.n - a.n; });
     var items = [
-      '<b>On diplôme plus que nos voisins.</b> ' + fmt(at(S.te.fr, 2025), 1) + ' % des 25-34 ans sont diplômés du supérieur, contre ' + fmt(at(S.te.eu, 2025), 1) + ' % dans l\'UE, et le décrochage est plus bas (' + fmt(at(S.el.fr, 2025), 1) + ' % contre ' + fmt(at(S.el.eu, 2025), 1) + ' %).',
-      '<b>Mais les élèves apprennent moins.</b> À PISA, la France est passée de la 11<sup>e</sup> à la 30<sup>e</sup> place en maths depuis 2000, et se situe désormais sous la moyenne de l\'OCDE dans les trois domaines. À 17 ans, 14 % des jeunes lisent mal.',
-      '<b>Et l\'école corrige peu les inégalités.</b> En maths, 95 points séparent les élèves favorisés des élèves défavorisés, contre 83 en moyenne dans l\'OCDE.',
-      '<b>Les jeunes trouvent moins vite un emploi.</b> Le chômage des moins de 25 ans est à ' + fmt(MO.fr[nU], 1) + ' %, contre ' + fmt(MO.eu[MO.eu.length - 1], 1) + ' % dans l\'UE, alors que la France dépense plus que l\'UE pour l\'éducation (5,1 % du PIB contre 4,7 %).',
-      '<b>Au bulletin, ' + pres.filter(function (r) { return nfmt(r.n) === nfmt(pres[0].n); }).map(function (r) { return r.g.n; }).join(' et ') + (nfmt(pres[1].n) === nfmt(pres[0].n) ? ' font' : ' fait') + ' le mieux (' + nfmt(pres[0].n) + '/20)</b>, ' + pres[pres.length - 1].g.n + ' le moins bien (' + nfmt(pres[pres.length - 1].n) + '/20). La note mesure si la France progresse plus vite que ses voisins, ou tient son avance, année après année.'
+      '<b>Plus de diplômés que la moyenne de l\'UE.</b> ' + fmt(at(S.te.fr, 2025), 1) + ' % des 25-34 ans sont diplômés du supérieur, contre ' + fmt(at(S.te.eu, 2025), 1) + ' % dans l\'UE, et le décrochage est plus bas (' + fmt(at(S.el.fr, 2025), 1) + ' % contre ' + fmt(at(S.el.eu, 2025), 1) + ' %).',
+      '<b>Des scores PISA plus bas.</b> À PISA, la France est passée de la 11<sup>e</sup> à la 30<sup>e</sup> place en maths depuis 2000, et se situe désormais sous la moyenne de l\'OCDE dans les trois domaines. À 17 ans, 14 % des jeunes lisent mal.',
+      '<b>Un écart social plus grand.</b> En maths, 95 points séparent les élèves favorisés des élèves défavorisés, contre 83 en moyenne dans l\'OCDE.',
+      '<b>Plus de jeunes au chômage.</b> Le chômage des moins de 25 ans est à ' + fmt(MO.fr[nU], 1) + ' %, contre ' + fmt(MO.eu[MO.eu.length - 1], 1) + ' % dans l\'UE, alors que la France dépense plus que l\'UE pour l\'éducation (5,1 % du PIB contre 4,7 %).',
+      '<b>Les notes : ' + pres.filter(function (r) { return nfmt(r.n) === nfmt(pres[0].n); }).map(function (r) { return r.g.n; }).join(' et ') + (nfmt(pres[1].n) === nfmt(pres[0].n) ? ' font' : ' fait') + ' le mieux (' + nfmt(pres[0].n) + '/20)</b>, ' + pres[pres.length - 1].g.n + ' le moins bien (' + nfmt(pres[pres.length - 1].n) + '/20). La note mesure si la France progresse plus vite que ses voisins, ou tient son avance, année après année.'
     ];
     document.getElementById('sum-list').innerHTML = items.map(function (t) { return '<li>' + t + '</li>'; }).join('');
   })();
@@ -1124,7 +1124,7 @@ function main(FEED) {
       f = frame('Un chiffre à retenir'); f.x.fillStyle = '#1c1d22'; f.x.font = '400 78px Newsreader, Georgia, serif';
       wrapText(f.x, document.getElementById('daily-text').textContent.replace(/(\d) (?=(M€|Md€|€|%|points|salariés))/g, '$1 '), 80, 420, f.W - 160, 100); foot(f, 'DEPP, OCDE, Eurostat');
     } else if (kind === 'rank') {
-      f = frame('Le bulletin de l\'éducation · ' + day2); var x = f.x;
+      f = frame('Les notes de l\'éducation · ' + day2); var x = f.x;
       x.fillStyle = '#1c1d22'; x.font = '400 58px Newsreader, Georgia, serif'; wrapText(x, 'Quel président a fait progresser l\'école plus vite que nos voisins ?', 80, 270, f.W - 160, 70);
       var rows = PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; }).sort(function (a, b) { return b.v - a.v; }), y0 = 520, x0 = 470, bw = f.W - x0 - 110;
       rows.forEach(function (r, i) {
@@ -1202,6 +1202,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261027b"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261027l"></script>
+<script src="/commun/menu.js?v=20261028a"></script>
 </body>
 </html>

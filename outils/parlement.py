@@ -38,6 +38,9 @@ MAX_VOTES = 80
 JOURS_LOIS = 365
 MAX_LOIS = 200
 JOURS_AGENDA = 14
+JOURS_AVENIR = 30       # votes solennels déjà fixés, pour la page Votez les lois
+# Page Votez les lois (donnees/votes.json) : tous les votes importants de la législature qui portent sur un choix à faire.
+VOTEZ = ('texte', 'partie', 'rejet', 'censure', 'confiance', 'declaration')
 MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
 
 # Rattachement prudent d'un texte à une page de mission, sur les mots de son intitulé (affiché comme un renvoi, sans plus).
@@ -340,6 +343,74 @@ def agenda(reunions, de, a):
     return [{'d': d, 'o': jours[d]} for d in sorted(jours)]
 
 
+HEMICYCLE = 'https://www.assemblee-nationale.fr/dyn/vos-deputes/hemicycle'
+
+
+def hemicycle(gp):
+    """Plan officiel de l'hémicycle : pour chaque groupe, l'angle moyen de ses sièges (180 à gauche, 0 à droite, vu de la
+    présidence) et sa couleur sur le plan de l'Assemblée. Siège → député lu sur la page du plan ; député → groupe lu dans les
+    mandats en cours (données ouvertes)."""
+    import html as H, math
+    s = get(HEMICYCLE).decode('utf-8', 'replace')
+    m = re.search(r'data-siegeData="([^"]+)"', s)
+    if not m:
+        raise ValueError('plan de l\'hémicycle introuvable')
+    sieges = json.loads(H.unescape(m.group(1)))
+    pos = {}
+    for a in re.findall(r'<path([^>]*)>', s):
+        i, d = re.search(r'id="p(\d+)"', a), re.search(r'd="M([\d.]+)[ ,]([\d.]+)', a)
+        if i and d:
+            pos[i.group(1)] = (float(d.group(1)), float(d.group(2)))
+    xs, ys = [p[0] for p in pos.values()], [p[1] for p in pos.values()]
+    cx, cy = (min(xs) + max(xs)) / 2, max(ys)
+    dep = {}
+    for a in lire_zip(SRC['organes'], 'json/acteur/'):
+        a = a.get('acteur') or {}
+        uid = a.get('uid')
+        uid = uid.get('#text') if isinstance(uid, dict) else uid
+        for md in liste((a.get('mandats') or {}).get('mandat')):
+            ref = (md.get('organes') or {}).get('organeRef')
+            if md.get('typeOrgane') == 'GP' and not md.get('dateFin') and ref in gp:
+                dep[uid] = gp[ref]['c']
+    ang, coul = {}, {}
+    for siege, v in sieges.items():
+        g = dep.get((v.get('tooltipUrl') or '').rsplit('/', 1)[-1])
+        if g and siege in pos:
+            x, y = pos[siege]
+            ang.setdefault(g, []).append(math.degrees(math.atan2(cy - y, x - cx)))
+            coul.setdefault(g, v.get('couleur'))
+    return {g: {'a': round(sum(l) / len(l), 1), 'coul': coul[g]} for g, l in ang.items()}
+
+
+def votes_a_venir(reunions, de, a, dossiers):
+    """Votes solennels confirmés à l'ordre du jour de la séance (page Votez les lois) : date, objet, dossier, vote sur une partie
+    ou sur l'ensemble. Le dossier manquant est retrouvé par l'intitulé du texte (dossiers : intitulé en minuscules → dossier)."""
+    out = {}
+    for r in reunions:
+        r = r.get('reunion') or {}
+        if r.get('organeReuniRef') != AN or (r.get('cycleDeVie') or {}).get('etat') != 'Confirmé':
+            continue
+        d = jour(r.get('timeStampDebut'))
+        if not (de <= d <= a):
+            continue
+        for p in liste(((r.get('ODJ') or {}).get('pointsODJ') or {}).get('pointODJ')):
+            if p.get('typePointODJ') != 'Vote solennel' or (p.get('cycleDeVie') or {}).get('etat') != 'Confirmé' or not p.get('objet'):
+                continue
+            o = re.sub(r"^Vote solennel (sur |de )?(l'ensemble (du |de la |de l')|le |la |l')?", '', p['objet']).strip()
+            partie = re.search(r'\((première|deuxième|seconde) partie\)', o)
+            sujet = re.sub(r'\s*\([^()]*\)\s*$', '', o).strip()
+            dos = ((p.get('dossiersLegislatifsRefs') or {}).get('dossierRef')) or dossiers.get(sujet.lower())
+            if isinstance(dos, list):
+                dos = dos[0]
+            if not dos:
+                continue
+            k = 'partie' if partie else 'texte'
+            cle = dos + ':' + k + (':' + partie.group(1) if partie else '')
+            if cle not in out or d < out[cle]['d']:
+                out[cle] = {'d': d, 'cle': cle, 'dos': dos, 'k': k, 'o': o[:1].upper() + o[1:]}
+    return sorted(out.values(), key=lambda e: e['d'])
+
+
 # Grandes lois : chaque loi promulguée depuis juin 2012 (14e législature, début des données ouvertes de l'Assemblée)
 # qui a eu un scrutin public solennel à l'Assemblée, ou a été adoptée par l'article 49, alinéa 3 (sans vote), ou a été
 # soumise au Conseil constitutionnel par des parlementaires ou l'exécutif, ou est un budget (loi de finances de l'année ou rectificative, loi de financement de la sécurité sociale). Rattachée à une mission
@@ -465,7 +536,15 @@ def construire(auj):
     # Les votes cités par une loi mais plus anciens que la fenêtre des votes sont ajoutés, marqués « loi » (non listés dans les votes de la semaine).
     deja = {e['n'] for e in V}
     VL = [dict(e, loi=True) for e in tous if e['n'] in utiles and e['n'] not in deja and any(l.get('sc') == e['n'] for l in L)]
-    A = agenda(lire_zip(SRC['agenda'], 'json/reunion/'), auj.isoformat(), (auj + timedelta(days=JOURS_AGENDA)).isoformat())
+    reunions = list(lire_zip(SRC['agenda'], 'json/reunion/'))
+    A = agenda(reunions, auj.isoformat(), (auj + timedelta(days=JOURS_AGENDA)).isoformat())
+    intitules = {}
+    for e in tous:
+        if e.get('dos'):
+            intitules[re.sub(r'\s*\([^()]*\)\s*$', '', e['t'][e['t'].lower().find('projet') if 'projet' in e['t'].lower() else 0:]).strip().lower()] = e['dos']
+            if e.get('dl'):
+                intitules[e['dl'].lower()] = e['dos']
+    AV = votes_a_venir(reunions, auj.isoformat(), (auj + timedelta(days=JOURS_AVENIR)).isoformat(), intitules)
     F = sorted(FRISE + evenements_17(scr), key=lambda e: e['d'])
     G = [dict(v, ref=k) for k, v in gp.items()]
     tailles = {}
@@ -497,7 +576,20 @@ def construire(auj):
             e['pg'] = rattacher(e['t'])
     P['mots'] = MOTS
     P['grandes'] = {'source': 'Assemblée nationale, données ouvertes : dossiers législatifs et scrutins des 14e à 17e législatures (depuis juin 2012)', 'url': REPO, 'date': auj.isoformat()}
-    return {'maj': auj.isoformat(), 'GROUPES': G, 'VOTES': V + VL, 'LOIS': L, 'AGENDA': A, 'FRISE': frise, 'GRANDES': GL, 'P': P}
+    try:
+        HM = hemicycle(gp)
+    except (IOError, ValueError, KeyError) as x:
+        print('Plan de l\'hémicycle : lecture impossible :', x)
+        HM = {}
+    VZ = {'maj': auj.isoformat(), 'GROUPES': [dict({k: g[k] for k in ('c', 'n', 'm')}, **HM.get(g['c'], {})) for g in G],
+          'VOTES': [{k: e[k] for k in ('d', 'n', 'k', 's', 't', 'v', 'req', 'p', 'c', 'a', 'g', 'dos', 'dl') if k in e} for e in tous if e['k'] in VOTEZ],
+          'P': {'votes': P['votes'], 'groupes': P['groupes'], 'agenda': P['agenda'],
+                'hemicycle': {'source': 'Assemblée nationale, plan de l\'hémicycle (place et couleur de chaque groupe)', 'url': HEMICYCLE, 'date': auj.isoformat()}},
+          'AVENIR': AV,
+          # Le Premier ministre en fonction à chaque date (nominations de la frise, chacune avec sa source) : nomme le Gouvernement visé par une censure.
+          'PM': [{'d': e['d'], 'n': re.match(r'^(.*?) nommée? Premi', e['t']).group(1), 'src': e['src'], 'url': e['url']}
+                 for e in frise if e['k'] == 'gouvernement' and e['d'] >= '2024-01-01' and re.match(r'^(.*?) nommée? Premi', e['t'])]}
+    return {'maj': auj.isoformat(), 'GROUPES': G, 'VOTES': V + VL, 'LOIS': L, 'AGENDA': A, 'FRISE': frise, 'GRANDES': GL, 'P': P, '_votez': VZ}
 
 
 def verifier_frise():
@@ -567,6 +659,7 @@ def main():
     except (IOError, zipfile.BadZipFile, KeyError, ValueError) as x:
         print('Assemblée nationale : lecture impossible :', x)
         sys.exit(1)
+    VZ = S.pop('_votez')
     o = json.load(open(os.path.join(ROOT, 'data.json'), encoding='utf-8'))
     avant = o.get('series', {}).get('politique') or {}
     nv = {e['n'] for e in S['VOTES']} - {e['n'] for e in avant.get('VOTES', [])}
@@ -594,7 +687,8 @@ def main():
                                          'pol_agenda': (S['AGENDA'] or [{}])[-1].get('d')}[it['id']] or it.get('derniere_donnee')
                 it['prochaine_verification'] = (auj + timedelta(days=1)).isoformat()
         open(cp, 'w', encoding='utf-8').write(json.dumps(cal, indent=1, ensure_ascii=False) + '\n')
-        print('Écrit : series.politique.')
+        open(os.path.join(ROOT, 'donnees/votes.json'), 'w', encoding='utf-8').write(json.dumps(VZ, separators=(',', ':'), ensure_ascii=False) + '\n')
+        print('Écrit : series.politique et donnees/votes.json (%d votes pour la page Votez les lois).' % len(VZ['VOTES']))
 
 
 if __name__ == '__main__':
