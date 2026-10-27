@@ -30,6 +30,12 @@ function doc(u) {
   var t = '';
   try {
     var b = cp.execFileSync('curl', ['-sSL', '-m', '120', '-A', 'Mozilla/5.0', u], { maxBuffer: 1 << 28 });
+    // Gros PDF coupé en route : on le relit par morceaux de 2 Mo.
+    if (b.slice(0, 4).toString() === '%PDF' && b.slice(-1024).toString('latin1').indexOf('%%EOF') < 0) {
+      var parts = [], debut = 0, m;
+      do { m = cp.execFileSync('curl', ['-sSL', '-m', '120', '-A', 'Mozilla/5.0', '-r', debut + '-' + (debut + 2097151), u], { maxBuffer: 1 << 28 }); parts.push(m); debut += m.length; } while (m.length === 2097152 && parts.length < 40);
+      b = Buffer.concat(parts);
+    }
     if (b.slice(0, 4).toString() === '%PDF') t = cp.execFileSync('pdftotext', ['-layout', '-', '-'], { input: b, maxBuffer: 1 << 28 }).toString('utf8');
     else t = b.toString('utf8').replace(/<[^>]+>/g, ' ');
   } catch (e) { t = ''; }
