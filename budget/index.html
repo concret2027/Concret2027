@@ -323,14 +323,14 @@ footer p { margin: 0; } footer a { color: inherit; }
 </style>
 <style>
 /* Votre budget de la France : le défi du jour en tête, le résultat collé en haut, la dette dans cinq ans, puis chaque poste. */
-.bu-res { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 8; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+.bu-res { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 8; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px 6px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: 0 6px 18px rgba(0,0,0,.06); }
 .bu-res div { display: grid; gap: 1px; }
-.bu-res small { font-size: 11.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-.bu-res b { font-family: var(--serif); font-weight: 400; font-size: 22px; font-variant-numeric: tabular-nums; }
+.bu-res small { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.bu-res b { font-family: var(--serif); font-weight: 400; font-size: 20px; line-height: 1.15; font-variant-numeric: tabular-nums; }
 .bu-res span { font-size: 12px; color: var(--muted); }
-.bu-res .pays { grid-column: 1 / -1; margin: 0; font-size: 13.5px; color: var(--fg); padding-top: 5px; border-top: 1px solid var(--line); }
+.bu-res .pays { grid-column: 1 / -1; margin: 2px 0 0; font-size: 13px; line-height: 1.35; color: var(--fg); padding-top: 4px; border-top: 1px solid var(--line); }
 .bu-res .pays b { font-family: inherit; font-size: inherit; font-weight: 700; color: var(--fr); }
-.bu-res .defi { grid-column: 1 / -1; margin: 0; font-size: 13px; font-weight: 600; }
+.bu-res .defi { grid-column: 1 / -1; margin: 0; font-size: 12.5px; font-weight: 600; color: var(--muted); }
 .bu-res .defi.ok { color: var(--ok); }
 .bu-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .bu-l li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; padding: 12px 0; border-top: 1px solid var(--line); }
@@ -338,7 +338,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .bu-l .n { font-weight: 600; font-size: 15px; }
 .bu-l .v { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; text-align: right; }
 .bu-l .e, .bu-l .cc, .bu-l .hors, .bu-l .autres { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); margin: 0; }
-.bu-l .cc { color: var(--fg); }
+.bu-l .cx { grid-column: 1 / -1; display: grid; gap: 3px; }
+.bu-l .cc { display: block; color: var(--fg); }
 .bu-l .e b { color: var(--fg); }
 .bu-l .e .plus { color: var(--fr); font-weight: 700; }
 .bu-l .hors { color: var(--mid); font-weight: 600; }
@@ -468,8 +469,9 @@ footer p { margin: 0; } footer a { color: inherit; }
   }
   var cle = function (x) { return x.type + ':' + x.k; };
   var delta = function (x) { return S.d[cle(x)] || 0; };
-  var val = function (x) { return Math.max(0, r1(x.fr + delta(x))); };
-  function poser(x, v) { v = Math.max(0, Math.min(x.haut, r1(v))); var d = r1(v - x.fr); if (Math.abs(d) < 0.05) delete S.d[cle(x)]; else S.d[cle(x)] = d; garder(); maj(); }
+  var val = function (x) { return Math.max(0, Math.round((x.fr + delta(x)) * 100) / 100); };
+  // exact : le remboursement de tous les soins garde son montant au centième de point, sans l'arrondir au pas du curseur.
+  function poser(x, v, exact) { v = Math.max(0, Math.min(x.haut, exact ? v : r1(v))); var d = exact ? Math.round((v - x.fr) * 100) / 100 : r1(v - x.fr); if (Math.abs(d) < 0.05) delete S.d[cle(x)]; else S.d[cle(x)] = d; garder(); maj(); }
   var change = function (x) { return Math.abs(val(x) - x.fr) >= 0.05; };
 
   // Repères concrets de la France : chaque montant suit le poste (à nombre de personnes égal).
@@ -482,10 +484,10 @@ footer p { margin: 0; } footer a { color: inherit; }
     if (x.k === 'securite') {
       var d = md(v - x.fr) * 1e9;
       if (C.policier) t.push('Police : <b>' + nf(C.policier.v, 0) + ' € par an</b> par policier ou gendarme (' + C.policier.annee + ', salaires, matériel et bâtiments compris)' +
-        (Math.abs(d) >= 1e8 ? ' ; ' + sg(d / 1e9, 1) + ' Md€, c\'est le coût moyen de <b>' + nf(Math.abs(d) / C.policier.v, 0) + ' policiers ou gendarmes</b> ' + (d > 0 ? 'de plus' : 'de moins') : ''));
+        (Math.abs(d) >= 1e8 ? ' ; ' + sg(d / 1e9, 1) + ' Md€, si tout allait à la police, c\'est le coût moyen de <b>' + nf(Math.abs(d) / C.policier.v, 0) + ' policiers ou gendarmes</b> ' + (d > 0 ? 'de plus' : 'de moins') : ''));
       if (C.detenu) t.push('Prison : <b>' + nf(C.detenu.v, 0) + ' € par an</b> par détenu ; ' + nf(C.detenu.nombre, 0) + ' détenus pour ' + nf(C.detenu.places, 0) + ' places (' + C.detenu.annee + ')');
     }
-    if (x.k === 'sante' && C.soins) t.push('Ce que paient encore les patients pour leurs soins : <b>' + nf(C.soins.menages_meur / 1000, 1) + ' Md€</b> eux-mêmes et <b>' + nf(C.soins.complementaires_meur / 1000, 1) + ' Md€</b> par leurs mutuelles et assurances (' + C.soins.annee + ')');
+    if (x.k === 'sante' && C.soins) t.push('Ce que paient encore les patients pour leurs soins : <b>' + nf(C.soins.menages_meur / 1000, 1) + ' Md€</b> eux-mêmes et <b>' + nf(C.soins.complementaires_meur / 1000, 1) + ' Md€</b> par leurs mutuelles et assurances (' + C.soins.annee + ')' + (rembourse() ? ' ; dans votre budget, l\'argent public les prend en charge' : ''));
     if (x.k === 'defense') t.push('Objectif de l\'OTAN : ' + nf(objectifOtan(), 1) + ' % du PIB d\'ici 2035, selon sa définition, qui compte aussi les pensions des militaires (ici, la mesure d\'Eurostat)');
     return t.map(function (s) { return '<span class="cc">' + s + '</span>'; }).join('');
   }
@@ -508,7 +510,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       li.querySelector('.m').addEventListener('click', function () { poser(x, val(x) - 0.1); });
       li.querySelector('.p').addEventListener('click', function () { poser(x, val(x) + 0.1); });
       var rb = li.querySelector('.remb');
-      if (rb) rb.addEventListener('click', function () { poser(x, rembourse() ? x.fr : val(x) + SOINS); });
+      if (rb) rb.addEventListener('click', function () { poser(x, rembourse() ? x.fr : x.fr + SOINS, true); });
     });
   }
   var posteSante = function () { return DEP.filter(function (x) { return x.k === 'sante'; })[0]; };
@@ -517,14 +519,14 @@ footer p { margin: 0; } footer a { color: inherit; }
   function majListe(id, L) {
     L.forEach(function (x) {
       var li = $(id).querySelector('li[data-k="' + x.k + '"]'), v = val(x), d = v - x.fr;
-      li.querySelector('.v').textContent = nf(v, 1) + ' %';
+      li.querySelector('.v').textContent = nf(r1(v), 1) + ' %';
       li.querySelector('.e').innerHTML = '<b>' + nf(md(v), 0) + ' Md€</b> par an, soit ' + nf(hab(v), 0) + ' € par habitant' +
         (Math.abs(d) >= 0.05 ? ' · <span class="plus">' + sg(md(d), 1) + ' Md€</span> par rapport au budget réel' : ' · budget réel') +
         (x.ue != null ? ' · moyenne de l\'UE : ' + nf(x.ue, 1) + ' %' : '');
       li.querySelector('.cx').innerHTML = concret(x, v);
       var h = li.querySelector('.hors'), dehors = v < x.min.v - 0.05 ? 'peu' : v > x.max.v + 0.05 ? 'haut' : '';
       h.hidden = !dehors;
-      if (dehors) h.textContent = 'Aucun des ' + x.n + ' pays ne ' + (x.type === 'dep' ? 'dépense' : 'prélève') + ' ' + (dehors === 'peu' ? 'si peu' : 'autant') + ' pour ce poste (' + (dehors === 'peu' ? 'le plus bas' : 'le plus haut') + ' : ' + (dehors === 'peu' ? x.min : x.max).v.toLocaleString('fr-FR') + ' %, ' + B.pays[(dehors === 'peu' ? x.min : x.max).g].nom + ').';
+      if (dehors) h.textContent = 'Aucun des ' + x.n + ' pays ne ' + (x.type === 'dep' ? 'dépense' : 'prélève') + ' ' + (dehors === 'peu' ? 'si peu' : 'autant') + ' pour ce poste (' + (dehors === 'peu' ? 'le plus bas' : 'le plus haut') + ' : ' + nf((dehors === 'peu' ? x.min : x.max).v, 1) + ' %, ' + B.pays[(dehors === 'peu' ? x.min : x.max).g].nom + ').';
       var rb = li.querySelector('.remb');
       if (rb) rb.textContent = rembourse() ? 'Tous les soins sont remboursés · annuler' : 'Rembourser tous les soins par l\'argent public : +' + nf(md(SOINS), 1) + ' Md€';
       var inp = li.querySelector('input'); if (+inp.value !== v) inp.value = v;
@@ -579,7 +581,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       '<p class="note">Entre ' + nf(bas[bas.length - 1].d, 0) + ' % si la croissance est plus forte d\'' + (e === 1 ? 'un point' : nf(e, 1) + ' point') + ' chaque année, et ' + nf(haut[haut.length - 1].d, 0) + ' % si elle est plus faible d\'autant. Fin ' + PJ.depart.an + ' : ' + nf(PJ.depart.dette, 1) + ' %.' +
       (bouge ? ' Sans vos changements, la prévision du FMI : ' + nf(vf, 0) + ' %.' : '') + '</p>' +
       courbe(fmi, moi, haut, bas) +
-      '<p class="bu-leg"><span><i style="background:var(--fr)"></i>' + (bouge ? 'Avec votre budget' : 'Budget réel') + '</span><span><i style="background:var(--bandc)"></i>Croissance plus ou moins forte</span><span><i style="background:repeating-linear-gradient(90deg,var(--muted) 0 5px,transparent 5px 9px)"></i>Prévision du FMI</span></p>';
+      '<p class="bu-leg"><span><i style="background:var(--fr)"></i>' + (bouge ? 'Avec votre budget' : 'Budget réel') + '</span><span><i style="background:var(--bandc)"></i>Croissance plus ou moins forte</span><span><i style="height:0;border-top:2px dashed var(--muted);border-radius:0"></i>Prévision du FMI</span></p>';
     return { fin: v, an: an };
   }
 
@@ -695,7 +697,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     $('bu-res').innerHTML = '<div><small>Dépenses</small><b>' + nf(T.dep, 1) + ' %</b><span>' + nf(md(T.dep), 0) + ' Md€</span></div>' +
       '<div><small>Recettes</small><b>' + nf(T.rec, 1) + ' %</b><span>' + nf(md(T.rec), 0) + ' Md€</span></div>' +
       '<div><small>' + (r1(T.solde) < 0 ? 'Déficit' : 'Excédent') + '</small><b>' + nf(Math.abs(T.solde), 1) + ' %</b><span>' + nf(md(Math.abs(T.solde)), 0) + ' Md€</span></div>' +
-      '<p class="pays">Dette en ' + D.an + ' : <b>' + nf(D.fin, 0) + ' %</b> · budget le plus proche : <b>' + deNom(pr[0].nom) + '</b></p>' +
+      '<p class="pays">Dette en ' + D.an + ' : <b>' + nf(D.fin, 0) + ' %</b> · proche du budget <b>' + deNom(pr[0].nom) + '</b></p>' +
       '<p class="defi' + (ok ? ' ok' : '') + '">' + (ok ? '✓ Défi du jour réussi' : 'Défi du jour : ' + cond.filter(function (c) { return c.ok; }).length + ' condition' + (cond.length > 1 ? 's' : '') + ' sur ' + cond.length) + ' · ' + nbChanges() + ' changement' + (nbChanges() > 1 ? 's' : '') + '</p>';
     $('bu-proches').innerHTML = pr.slice(0, 3).map(function (p) { return '<li><span>' + cap(p.nom) + (p.annee < B.annee ? ' (' + p.annee + ')' : '') + (p.hue ? ' · hors UE' : '') + '</span><span>écart moyen ' + nf(p.d, 1) + ' point</span></li>'; }).join('');
     rendreDefi(cond);
@@ -704,7 +706,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   fetch('/donnees/budget.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (j) {
     B = j; var F = B.pays.FR; PJ = B.projection; C = B.concret || {};
     MD = F.pib_meur / 100 / 1000; PAR_HAB = F.pib_meur * 1e6 / 100 / (F.pop_milliers * 1000);
-    if (C.soins) SOINS = r1(pts((C.soins.complementaires_meur + C.soins.menages_meur) / 1000));
+    if (C.soins) SOINS = Math.round(pts((C.soins.complementaires_meur + C.soins.menages_meur) / 1000) * 100) / 100;
     DEP = lignes('dep'); REC = lignes('rec'); DEFI = defiDuJour();
     var nb = Object.keys(B.pays).length - 1;
     $('bu-lead').textContent = 'Le vrai budget public de la France en ' + B.annee + ' (État, Sécurité sociale, collectivités) : ' + nf(F.depenses, 1) + ' € dépensés et ' + nf(F.recettes, 1) + ' € encaissés pour 100 € de richesse produite. Changez chaque poste : voyez le déficit, la dette dans cinq ans, et le pays qui vous ressemble. Un nouveau défi chaque jour.';
