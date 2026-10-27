@@ -37,7 +37,8 @@
     '.vz-choix{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:8px}' +
     '.vz-choix button{font:inherit;font-weight:700;font-size:15.5px;min-height:52px;border-radius:12px;border:1.5px solid var(--fg);background:var(--panel);color:var(--fg);cursor:pointer}' +
     '.vz-choix button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}' +
-    '.vz-choix button:disabled{cursor:default}.vz-choix button:disabled:not([aria-pressed="true"]){opacity:.45}' +
+    '.vz-choix button:disabled{cursor:default}.vz-choix.fait button:not([aria-pressed="true"]){opacity:.6}' +
+    '.vz-change{margin:0;font-size:12.5px;color:var(--muted)}' +
     '.vz-choix button:focus-visible,.vz-passe:focus-visible,.vz-suite:focus-visible{outline:2px solid var(--fr);outline-offset:2px}' +
     '.vz-passe{font:inherit;font-size:13.5px;color:var(--muted);background:none;border:0;padding:4px 0;min-height:40px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;justify-self:start}' +
     '.vz-off{font-size:12.5px;color:var(--muted)}.vz-off summary{cursor:pointer;font-weight:600;min-height:40px;display:flex;align-items:center}.vz-off p{margin:6px 0 0}.vz-off a{color:var(--fr)}' +
@@ -239,26 +240,30 @@
       tete(q) + '<h2 class="vz-titre">' + esc(q.titre) + '</h2>' + expl(q) +
       '<p class="vz-q">' + esc(q.q) + '</p>' + (q.aide ? '<p class="vz-aide">' + esc(q.aide) + '</p>' : '') +
       '<div class="vz-choix" style="--n:' + q.choix.length + '">' + q.choix.map(function (c) { return '<button type="button" data-c="' + c + '" aria-pressed="false">' + CHOIX[c] + '</button>'; }).join('') + '</div>' +
-      '<button type="button" class="vz-passe">Je ne sais pas : passer</button>' + off + '<div class="vz-rev" hidden></div></div>';
+      '<button type="button" class="vz-passe">Je ne sais pas : passer</button><div class="vz-rev" hidden></div>' + off + '</div>';
     var rev = el.querySelector('.vz-rev'), bs = el.querySelectorAll('.vz-choix button');
-    function montrer(c) {
-      Array.prototype.forEach.call(bs, function (b) { b.disabled = true; b.setAttribute('aria-pressed', b.dataset.c === c ? 'true' : 'false'); });
-      el.querySelector('.vz-passe').hidden = true;
+    // Les boutons restent actifs : toucher une autre réponse change le vote.
+    function montrer(c, calme) {
+      Array.prototype.forEach.call(bs, function (b) { b.setAttribute('aria-pressed', b.dataset.c === c ? 'true' : 'false'); });
+      el.querySelector('.vz-choix').classList.add('fait'); el.querySelector('.vz-passe').hidden = true;
       var par = { pour: [], contre: [], abstention: [] }, comme = 0, n = 0;
       D.groupes.forEach(function (g) { var p = q.pos[g.c]; if (!p) return; n++; if (p === c) comme++; par[p].push('<span' + (p === c ? ' class="moi"' : '') + '>' + esc(g.n) + '</span>'); });
+      // D'abord le résultat et le bouton du vote suivant (visibles sans descendre), puis le détail groupe par groupe.
       rev.innerHTML = '<p class="vz-sort">À l\'Assemblée : <b>' + esc(q.sort) + '</b><small>' + q.compte + '</small></p>' +
-        '<div class="vz-gr">' + ['pour', 'contre', 'abstention'].filter(function (p) { return par[p].length; }).map(function (p) { return '<b>' + CHOIX[p] + '</b><div>' + par[p].join('') + '</div>'; }).join('') + '</div>' +
+        '<p class="vz-comme">Vous avez voté comme <b>' + comme + ' groupe' + (comme > 1 ? 's' : '') + ' sur ' + n + '</b> (encadrés ci-dessous).' + (q.k === 'censure' ? ' Un groupe est compté pour si la majorité de ses membres a voté la censure.' : '') + '</p>' +
+        '<p class="vz-change">Pour changer votre vote, touchez une autre réponse.</p>' +
         (q.avant ? '<p class="vz-comme">Vous aviez voté le ' + dateFr(q.avant.le) + ', avant l\'Assemblée. Les députés ont pu modifier le texte pendant le débat.</p>' : '') +
-        '<p class="vz-comme">Vous avez voté comme <b>' + comme + ' groupe' + (comme > 1 ? 's' : '') + ' sur ' + n + '</b> (encadrés).' + (q.k === 'censure' ? ' Un groupe est compté pour si la majorité de ses membres a voté la censure.' : '') + '</p>' +
-        (o.suivant ? '<button type="button" class="vz-suite">' + esc(o.suivantLabel || 'Vote suivant →') + '</button>' : '');
+        (o.suivant ? '<button type="button" class="vz-suite">' + esc(o.suivantLabel || 'Vote suivant →') + '</button>' : '') +
+        '<div class="vz-gr">' + ['pour', 'contre', 'abstention'].filter(function (p) { return par[p].length; }).map(function (p) { return '<b>' + CHOIX[p] + '</b><div>' + par[p].join('') + '</div>'; }).join('') + '</div>';
       rev.hidden = false;
+      if (!calme && rev.scrollIntoView) rev.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       var s = rev.querySelector('.vz-suite'); if (s) s.addEventListener('click', o.suivant);
     }
     Array.prototype.forEach.call(bs, function (b) {
-      b.addEventListener('click', function () { var m = lireMes(); m[q.id] = b.dataset.c; ecrireMes(m); montrer(b.dataset.c); if (o.apres) o.apres(q, b.dataset.c); });
+      b.addEventListener('click', function () { var m = lireMes(), change = CHOIX[m[q.id]]; if (m[q.id] === b.dataset.c) return; m[q.id] = b.dataset.c; ecrireMes(m); montrer(b.dataset.c, change); if (o.apres) o.apres(q, b.dataset.c); });
     });
     el.querySelector('.vz-passe').addEventListener('click', function () { var m = lireMes(); m[q.id] = 'passe'; ecrireMes(m); if (o.apres) o.apres(q, 'passe'); if (o.suivant) o.suivant(); });
-    if (CHOIX[deja]) montrer(deja);
+    if (CHOIX[deja]) montrer(deja, true);
   }
 
   // En-tête d'une carte : le genre de vote et sa date, en pastilles.
@@ -274,18 +279,20 @@
     el.innerHTML = '<div class="vz">' + (o.entete || '') + tete(q) +
       '<h2 class="vz-titre">' + esc(q.titre) + '</h2>' + expl(q) + '<p class="vz-q">' + esc(q.q) + '</p>' +
       '<div class="vz-choix" style="--n:3">' + q.choix.map(function (c) { return '<button type="button" data-c="' + c + '" aria-pressed="false">' + CHOIX[c] + '</button>'; }).join('') + '</div>' +
-      '<details class="vz-off"><summary>Sources</summary><p><a href="https://www.assemblee-nationale.fr/dyn/17/dossiers/' + esc(q.dos) + '">Le dossier du texte</a> · ordre du jour de l\'Assemblée nationale</p></details>' +
-      '<div class="vz-rev" hidden></div></div>';
+      '<div class="vz-rev" hidden></div>' +
+      '<details class="vz-off"><summary>Sources</summary><p><a href="https://www.assemblee-nationale.fr/dyn/17/dossiers/' + esc(q.dos) + '">Le dossier du texte</a> · ordre du jour de l\'Assemblée nationale</p></details></div>';
     var rev = el.querySelector('.vz-rev'), bs = el.querySelectorAll('.vz-choix button');
     function montrer(c, le) {
-      Array.prototype.forEach.call(bs, function (b) { b.disabled = true; b.setAttribute('aria-pressed', b.dataset.c === c ? 'true' : 'false'); });
+      Array.prototype.forEach.call(bs, function (b) { b.setAttribute('aria-pressed', b.dataset.c === c ? 'true' : 'false'); });
+      el.querySelector('.vz-choix').classList.add('fait');
       rev.innerHTML = '<p class="vz-sort">Vote de l\'Assemblée prévu le <b>' + dateFr(q.d) + '</b><small>Votre vote du ' + dateFr(le) + ' est gardé sur cet appareil. Revenez après le vote : vous verrez comment chaque groupe a voté, et ce vote comptera dans votre résultat.</small></p>' +
+        '<p class="vz-change">Vous pouvez changer votre vote jusqu\'au vote de l\'Assemblée : touchez une autre réponse.</p>' +
         (o.suivant ? '<button type="button" class="vz-suite">' + esc(o.suivantLabel || 'Vote suivant →') + '</button>' : '');
       rev.hidden = false;
       var s = rev.querySelector('.vz-suite'); if (s) s.addEventListener('click', o.suivant);
     }
     Array.prototype.forEach.call(bs, function (b) {
-      b.addEventListener('click', function () { var a = lireAv(), le = aujourdhui(); a[q.cle] = { c: b.dataset.c, le: le }; ecrireAv(a); montrer(b.dataset.c, le); if (o.apres) o.apres(q, b.dataset.c); });
+      b.addEventListener('click', function () { var a = lireAv(), le = aujourdhui(); if (a[q.cle] && a[q.cle].c === b.dataset.c) return; a[q.cle] = { c: b.dataset.c, le: le }; ecrireAv(a); montrer(b.dataset.c, le); if (o.apres) o.apres(q, b.dataset.c); });
     });
     if (deja && CHOIX[deja.c]) montrer(deja.c, deja.le);
   }
