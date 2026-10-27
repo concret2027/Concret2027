@@ -53,7 +53,7 @@ if (ordre === 'a-ecrire') {
     var n = 0;
     D.Q.forEach(function (q) {
       if (X[q.id] || (q.cav && X['avenir:' + q.cav])) return;
-      n++; console.log(JSON.stringify({ cle: q.id, d: q.d, k: q.k, t: q.v.t, dos: q.v.dos || null, s: q.v.s }));
+      n++; console.log(JSON.stringify({ cle: q.id, d: q.d, k: q.k, t: q.v.t, dos: q.v.dos || null, s: q.v.s, themes: q.pg }));
     });
     (J.AVENIR || []).forEach(function (a) {
       if (X['avenir:' + a.cle]) return;
