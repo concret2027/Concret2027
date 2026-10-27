@@ -390,6 +390,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 (function () {
   var $ = function (id) { return document.getElementById(id); }, B = null, CLE = 'concret-budget', choix = {};
   var nf = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }).format(v); };
+  // « de » + nom avec article : du Royaume-Uni, des États-Unis, de la Suède, de l'Autriche, de Malte.
+  var deNom = function (n) { return /^le /.test(n) ? 'du ' + n.slice(3) : /^les /.test(n) ? 'des ' + n.slice(4) : 'de ' + n; };
   var sg = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + nf(Math.abs(v), d); };
   try { choix = JSON.parse(localStorage.getItem(CLE) || '{}') || {}; } catch (e) { choix = {}; }
   function garder() { try { localStorage.setItem(CLE, JSON.stringify(choix)); } catch (e) {} }
@@ -442,7 +444,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     $('bu-res').innerHTML = '<div><small>Dépenses</small><b>' + nf(dep, 1) + ' %</b><span>' + nf(md(dep), 0) + ' Md€</span></div>' +
       '<div><small>Recettes</small><b>' + nf(rec, 1) + ' %</b><span>' + nf(md(rec), 0) + ' Md€</span></div>' +
       '<div><small>' + (solde < 0 ? 'Déficit' : 'Excédent') + '</small><b>' + nf(Math.abs(solde), 1) + ' %</b><span>' + nf(md(Math.abs(solde)), 0) + ' Md€</span></div>' +
-      '<p class="pays">Votre budget ressemble à celui de <b>' + pr[0].nom + '</b>' + (pr[0].annee < B.annee ? ' (' + pr[0].annee + ')' : '') + '</p>';
+      '<p class="pays">Votre budget ressemble à celui <b>' + deNom(pr[0].nom) + '</b>' + (pr[0].annee < B.annee ? ' (' + pr[0].annee + ')' : '') + '</p>';
     $('bu-proches').innerHTML = pr.slice(0, 3).map(function (p) { return '<li><span>' + p.nom.charAt(0).toUpperCase() + p.nom.slice(1) + (p.annee < B.annee ? ' (' + p.annee + ')' : '') + (p.hue ? ' · hors UE' : '') + '</span><span>écart moyen ' + nf(p.d, 1) + ' point</span></li>'; }).join('');
   }
   // Pays le plus proche : écart moyen (en points de PIB) sur les lignes publiées des deux côtés ; l'impôt sur le revenu et celui
