@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="e5da85461da1">
+<meta name="concret-version" content="917cc4ebee4d">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,6 +31,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261026c"></script>
+<script src="/commun/toile.js?v=20261027a"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
@@ -307,6 +308,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <nav class="jump" aria-label="Aller à"><a href="#actualite">Actualité</a><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
+  <section class="card" id="toile" hidden></section>
 
   <h2 class="grp-t" id="actualite">L'actualité</h2>
 
@@ -837,6 +839,20 @@ function main(FEED) {
     critBox.appendChild(b);
   });
   var noteOf = function (g) { return NOTES.note(g, on); };
+  // Toile : la France et ses voisins au dernier chiffre connu (commun/toile.js).
+  (function () {
+    var ax = function (l, arr, y0, u, dec) {
+      for (var i = arr.fr.length - 1; i >= 0; i--) if (arr.fr[i] != null && arr.eu[i] != null) {
+        var v = {}; [['fr', 'fr'], ['eu', 'ue'], ['de', 'de'], ['es', 'es'], ['us', 'us']].forEach(function (p) { if (arr[p[0]] && arr[p[0]][i] != null) v[p[1]] = arr[p[0]][i]; });
+        return { l: l, y: y0 + i, u: u, dec: dec, v: v };
+      }
+      return null;
+    };
+    var X94 = SER.X94, X95 = SER.X95, cov = function (w) { return X95['x' + w].map(function (x, i) { var m = X95['m' + w][i]; return x == null || !m ? null : 100 * x / m; }); };
+    var axes = [ax('Dette publique', D.dette, Y0, ' % du PIB'), ax('Solde public', D.deficit, Y0, ' % du PIB'), ax('Dépenses publiques', D.dep, Y0, ' % du PIB'), ax('Prélèvements obligatoires', D.po, Y0, ' % du PIB'), ax('Richesse par habitant', PIB, 1990, ' $', 0),
+      ax('Chômage', { fr: X94.uFr, eu: X94.uEu, es: X94.uEs }, 1994, ' %'), ax('Exportations / importations', { fr: cov('Fr'), eu: cov('Eu'), es: cov('Es') }, 1995, ' %', 0), ax('Intérêts de la dette', { fr: X95.iFr, eu: X95.iEu, es: X95.iEs }, 1995, ' % du PIB')].filter(Boolean);
+    ConcretToile.dessiner('toile', { titre: 'La France et ses voisins', axes: axes, series: ConcretToile.SERIES });
+  })();
   // En bref (premier écran) : le dernier chiffre de chaque critère face à la moyenne de l'UE, chacun menant à sa courbe.
   (function () {
     var CIBLE = { dette: 'ch-dette', deficit: 'ch-deficit', dep: 'ch-dep', po: 'ch-po', pib: 'pib-chart', emploi: 'mo-u', com: 'bulletin', int: 'bulletin' }, Y = new Date().getFullYear();

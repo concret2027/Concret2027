@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="e5da85461da1">
+<meta name="concret-version" content="917cc4ebee4d">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,6 +31,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261026c"></script>
+<script src="/commun/toile.js?v=20261027a"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
@@ -409,6 +410,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <nav class="jump" aria-label="Aller à"><a href="#actualite">Actualité</a><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#annees">Année par année</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
+  <section class="card" id="toile" hidden></section>
 
   <h2 class="grp-t" id="actualite">L'actualité</h2>
 
@@ -629,6 +631,13 @@ function main(FEED) {
   GOVS.forEach(evaluate); PRES.forEach(evaluate);
   // En bref (premier écran) : le dernier chiffre de chaque indicateur face à la moyenne de l'UE, chacun menant à sa courbe.
   ConcretBref.render({ items: KEYS.map(function (k) { var x = etat(k), c = C[k]; return x && c.regle !== 'propre' && { l: c.lc || c.l, cl: x.cl, cible: 'ch-' + (c.regle === 'composite' ? k + '-' + Object.keys(c.sous)[0] : k) }; }), pres: PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; }) });
+  // Toile : la France et ses voisins sur tous les indicateurs notés, au dernier chiffre connu (commun/toile.js).
+  (function () {
+    var simples = KEYS.filter(function (k) { return C[k] && C[k].regle !== 'composite' && C[k].regle !== 'propre'; });
+    var T = ConcretToile.depuisC(C, simples);
+    var prog = KEYS.filter(function (k) { return C[k] && C[k].regle === 'composite'; }).map(function (k) { return C[k].lc || C[k].l; });
+    ConcretToile.dessiner('toile', { titre: 'La France et ses voisins', axes: T.axes, notes: T.notes.concat(prog.length ? [prog.join(', ') + ' : plusieurs programmes à la fois, détaillés plus bas'] : []), omis: T.omis, series: ConcretToile.SERIES });
+  })();
   var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
   var nomCourt = function (n) { return n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin'); };
