@@ -1029,10 +1029,12 @@ window.addEventListener('baro:data', function () {
   if (d && !isNaN(d)) {
     var tz = { timeZone: 'Europe/Paris' };
     var dayOf = function (t) { return new Date(t).toLocaleDateString('fr-CA', tz); };
-    var now = Date.now(), hNow = +new Date(now).toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23' });
-    var todayDone = dayOf(d.getTime()) === dayOf(now) && +d.toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', hourCycle: 'h23' }) >= 11;
-    var nextTxt = (hNow < 13 && !todayDone) ? 'aujourd’hui vers midi' : new Date(now + 86400000).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' }) + ' vers midi';
-    el.textContent = 'Dernière mise à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ') + ' · prochaine : ' + nextTxt + ' (une par jour)';
+    var now = Date.now();
+    // Trois passages par jour (heure de Paris) : 7 h 47 et 8 h 47 (Baromètre seul), puis 11 h 47 (tout le site) ; chacun prend quelques minutes.
+    var hm = new Date(now).toLocaleString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).split(':'), mNow = +hm[0] * 60 + +hm[1];
+    var PASS = [[467, 'vers 8 h'], [527, 'vers 9 h'], [707, 'vers midi']], suiv = PASS.filter(function (p) { return p[0] > mNow; })[0];
+    var nextTxt = suiv ? 'aujourd’hui ' + suiv[1] : new Date(now + 86400000).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' }) + ' vers 8 h';
+    el.textContent = 'Dernière mise à jour le ' + d.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).replace(':', ' h ') + ' · prochaine : ' + nextTxt + ' (trois par jour : vers 8 h, 9 h et midi)';
     if (Date.now() - d.getTime() > 30 * 3600 * 1000) { var b = document.getElementById('bx-stale'); b.hidden = false; }
   } else { el.textContent = 'Mis à jour le ' + window.BARO_UPDATED; }
 });
