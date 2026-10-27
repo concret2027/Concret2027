@@ -59,7 +59,10 @@
     '.vz-hemi{position:relative}.vz-hemi svg{display:block;width:100%;height:auto;font-family:var(--sans)}.vz-hs{cursor:pointer;outline:none}.vz-hs:hover path,.vz-hs:focus path{filter:brightness(1.08)}' +
     '.vz-tip{position:absolute;top:0;z-index:3;max-width:260px;padding:7px 10px;border-radius:9px;background:var(--fg);color:var(--bg);font-size:12.5px;line-height:1.35;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
     '.vz-lire{margin:0;font-size:13.5px;color:var(--muted)}' +
-    '.vz-th{display:grid;gap:8px;padding-top:6px;border-top:1px solid var(--line)}.vz-th h3{margin:0;font-size:16px;font-weight:700}.vz-th ul{list-style:none;margin:0;padding:0;display:grid}' +
+    '.vz-th{display:grid;gap:8px;border:1px solid var(--line);border-radius:12px;padding:0 12px}.vz-th[open]{padding-bottom:12px}' +
+    '.vz-th>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:12px 0;font-size:16px;font-weight:700}.vz-th>summary::-webkit-details-marker{display:none}' +
+    '.vz-th>summary small{display:block;font-size:13px;font-weight:500;color:var(--muted)}.vz-th>summary::after{content:"Voir ▾";margin-left:auto;color:var(--fr);font-size:14px;white-space:nowrap}.vz-th[open]>summary::after{content:"Masquer ▴"}' +
+    '.vz-th ul{list-style:none;margin:0;padding:0;display:grid}' +
     '.vz-th li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 12px 12px;margin-top:8px;border:1px solid var(--line);border-radius:12px;font-size:14px;align-items:center}' +
     '.vz-th .t{font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:8px;color:var(--fg);text-decoration:none}.vz-th a.t:hover{color:var(--fr)}' +
     '.vz-th .t i{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,var(--line) 70%,transparent);color:var(--fg);flex:none}.vz-th .n{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}' +
@@ -355,6 +358,9 @@
   };
   // Chaque thème : une barre à la couleur du groupe le plus proche, remplie à sa part d'accord (deux barres si presque à égalité) ;
   // avant trois votes, une barre grise qui avance vers le résultat.
+  // Thèmes qui ont déjà un résultat (au moins trois votes) ; le bloc replié le dit, et reste ouvert d'un vote à l'autre s'il l'a été.
+  var thOuvert = false;
+  function prets(D) { return THEMES.filter(function (t) { var R = resultat(D, function (q) { return q.pg.indexOf(t[0]) >= 0; }); return R.nb >= MIN_THEME && R.groupes.length; }).length; }
   function parTheme(D) {
     return THEMES.map(function (t) {
       var R = resultat(D, function (q) { return q.pg.indexOf(t[0]) >= 0; }), dispo = D.Q.filter(function (q) { return q.pg.indexOf(t[0]) >= 0; }).length;
@@ -384,7 +390,7 @@
       hemicycle(D, assez ? R : null) +
       '<p class="vz-lire">Chaque groupe est à sa place dans l\'hémicycle, de la gauche à la droite. ' + (assez ? 'Plus sa part est colorée, plus vous votez comme lui. Touchez un groupe pour voir son nom.' : 'Encore ' + (MIN - R.nb) + ' vote' + (MIN - R.nb > 1 ? 's' : '') + ' : avant, le résultat dépendrait d\'un ou deux textes seulement.') + '</p>' +
       (assez ? '<ul class="vz-bars">' + liste + '</ul>' + (R.groupes.length > 3 ? '<button type="button" class="vz-plus">Voir les ' + R.groupes.length + ' groupes</button>' : '') +
-        '<div class="vz-th"><h3>Par thème</h3><ul>' + parTheme(D) + '</ul><p class="vz-lire">Le groupe dont vos votes sont le plus proches sur chaque thème. « 2 sur 4 textes » : vous avez voté 2 des 4 textes du thème ; un texte voté plusieurs fois à l\'Assemblée est une seule question, avec son dernier vote. Le thème d\'un texte vient des mots de son titre (règle de la page La vie politique).</p></div>' +
+        '<details class="vz-th"' + (thOuvert ? ' open' : '') + '><summary><span>Par thème<small>' + prets(D) + ' thème' + (prets(D) > 1 ? 's' : '') + ' sur ' + THEMES.length + ' avec un résultat</small></span></summary><ul>' + parTheme(D) + '</ul><p class="vz-lire">Le groupe dont vos votes sont le plus proches sur chaque thème. « 2 sur 4 textes » : vous avez voté 2 des 4 textes du thème ; un texte voté plusieurs fois à l\'Assemblée est une seule question, avec son dernier vote. Le thème d\'un texte vient des mots de son titre (règle de la page La vie politique).</p></details>' +
         '<button type="button" class="vz-suite vz-partage">Partager mon résultat</button><p class="vz-lire vz-copie" hidden></p>' : '') +
       '<details class="vz-off"><summary>En détail : les groupes et le calcul</summary>' +
       '<p>' + D.groupes.filter(function (g) { return g.a != null; }).slice().sort(function (p, q) { return q.a - p.a; }).map(function (g) { return '<b>' + esc(g.c) + '</b> : ' + esc(g.n) + ' (' + g.m + ' députés)'; }).join(' · ') + '.</p>' +
@@ -425,6 +431,7 @@
         else montrer('Image enregistrée.');
       });
     });
+    var th = el.querySelector('.vz-th'); if (th) th.addEventListener('toggle', function () { thOuvert = th.open; });
     var plus = el.querySelector('.vz-plus');
     if (plus) plus.addEventListener('click', function () { Array.prototype.forEach.call(el.querySelectorAll('.vz-plus3'), function (li) { li.hidden = false; }); plus.remove(); });
     return R;
