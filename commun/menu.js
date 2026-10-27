@@ -73,6 +73,8 @@
     // Long texte sous une courbe : deux lignes, puis « Détail du graphe » pour lire la suite.
     // Titre d'une courbe : ce qui est mesuré en titre, la conclusion chiffrée dessous, en plus petit.
     'h2.inv,h3.inv{font-size:14.5px;font-weight:400;line-height:1.4;color:' + V.muted + '}h2.inv .eyebrow,h3.inv .eyebrow{font-size:18px;font-weight:700;line-height:1.25;letter-spacing:0;text-transform:none;color:' + V.fg + ';margin-bottom:3px}' +
+    '.mn-maj{position:fixed;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:60;display:flex;align-items:center;gap:12px;width:min(calc(100% - 24px),480px);box-sizing:border-box;padding:12px 14px;border:0;border-radius:14px;background:' + V.fg + ';color:' + V.bg + ';font:inherit;font-size:14px;text-align:left;box-shadow:0 6px 24px rgba(0,0,0,.25);cursor:pointer}' +
+    '.mn-maj span{flex:1}.mn-maj b{flex:none;padding:6px 12px;border-radius:999px;background:' + V.fr + ';color:#fff;font-weight:700}' +
     '.nt-pli{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}' +
     '.nt-btn{font:inherit;font-size:13.5px;font-weight:600;color:' + V.fr + ';background:none;border:0;padding:6px 0;margin-top:-6px;min-height:36px;cursor:pointer;justify-self:start;align-self:start;text-align:left}' +
     '.nt-btn:focus-visible{outline:2px solid ' + V.fr + ';outline-offset:2px}';
@@ -124,7 +126,27 @@
   var plierPrevu = 0;
   function plierBientot() { if (!plierPrevu) plierPrevu = setTimeout(function () { plierPrevu = 0; plier(); }, 120); }
 
+  // Nouvelle version du site : la page connaît sa version (<meta name="concret-version">, écrite par outils/version.js) et la compare
+  // à celle en ligne (donnees/version.json), à l'ouverture et à chaque retour au premier plan (la web app reste ouverte en arrière-plan).
+  // Si elles diffèrent, un bandeau propose de recharger la page, sans attendre que le téléphone oublie l'ancienne.
+  var vPage = (document.querySelector('meta[name="concret-version"]') || {}).content, vVu = 0;
+  function verifierVersion() {
+    if (!vPage || !window.fetch || Date.now() - vVu < 60000 || document.getElementById('mn-maj')) return;
+    vVu = Date.now();
+    fetch('/donnees/version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (o) {
+      if (!o || !o.v || o.v === vPage || document.getElementById('mn-maj')) return;
+      var b = document.createElement('button'); b.type = 'button'; b.id = 'mn-maj'; b.className = 'mn-maj';
+      b.innerHTML = '<span>Une nouvelle version de Concret est en ligne.</span><b>Mettre à jour</b>';
+      b.addEventListener('click', function () { b.disabled = true; location.replace(location.pathname + '?maj=' + Date.now() + location.hash); });
+      document.body.appendChild(b);
+    }).catch(function () {});
+  }
   function init() {
+    // Après une mise à jour, l'adresse perd son « ?maj=… ».
+    if (/[?&]maj=/.test(location.search) && history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
+    verifierVersion();
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') verifierVersion(); });
+    addEventListener('pageshow', function (e) { if (e.persisted) verifierVersion(); });
     hauteur();
     plier();
     if (window.MutationObserver) new MutationObserver(function (ms) {
