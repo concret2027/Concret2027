@@ -109,7 +109,12 @@
     box.appendChild(note);
     var det = document.createElement('details'); det.className = 'toile-det';
     det.innerHTML = '<summary>Les chiffres</summary><div class="toile-tw"><table class="toile-tab"><thead><tr><th></th>' + S.map(function (s) { return '<th>' + esc(s.court || s.n) + '</th>'; }).join('') + '</tr></thead><tbody>' +
-      axes.map(function (a) { return '<tr><td>' + esc(a.l) + ' <small>(' + a.y + (a.u ? ',' + esc(a.u) : '') + ')</small></td>' + S.map(function (s) { var v = a.v[s.k]; return '<td>' + (v == null ? '—' : fmt(v, a.dec)) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
+      axes.map(function (a) { return '<tr><td>' + esc(a.l) + ' <small>(' + a.y + (a.u ? ',' + esc(a.u) : '') + ')</small></td>' + S.map(function (s) { var v = a.v[s.k]; return '<td>' + (v == null ? '—' : fmt(v, a.dec)) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
+      // Chaque case vide dit pourquoi, sous le tableau (règle : toute donnée absente s'explique là où on la voit).
+      (function () {
+        var vides = S.map(function (s) { var l = axes.filter(function (a) { return a.v[s.k] == null; }); return l.length ? s.n + ' : ' + l.map(function (a) { return a.l + ' (' + a.y + ')'; }).join(', ') : ''; }).filter(Boolean);
+        return vides.length ? '<p class="note">« — » : pas de chiffre publié par la source pour cette année. ' + esc(vides.join(' ; ')) + '.</p>' : '';
+      })();
     box.appendChild(det);
     box.hidden = false;
     // Le bouton « Partager » (commun/partage.js) a été effacé avec l'ancien contenu : on le laisse le reposer.
