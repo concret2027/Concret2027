@@ -38,6 +38,7 @@ MAX_VOTES = 80
 JOURS_LOIS = 365
 MAX_LOIS = 200
 JOURS_AGENDA = 14
+JOURS_AVENIR = 30       # votes solennels déjà fixés, pour la page Votez les lois
 # Page Votez les lois (donnees/votes.json) : tous les votes importants de la législature qui portent sur un choix à faire.
 VOTEZ = ('texte', 'partie', 'rejet', 'censure', 'confiance', 'declaration')
 MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
@@ -342,6 +343,35 @@ def agenda(reunions, de, a):
     return [{'d': d, 'o': jours[d]} for d in sorted(jours)]
 
 
+def votes_a_venir(reunions, de, a, dossiers):
+    """Votes solennels confirmés à l'ordre du jour de la séance (page Votez les lois) : date, objet, dossier, vote sur une partie
+    ou sur l'ensemble. Le dossier manquant est retrouvé par l'intitulé du texte (dossiers : intitulé en minuscules → dossier)."""
+    out = {}
+    for r in reunions:
+        r = r.get('reunion') or {}
+        if r.get('organeReuniRef') != AN or (r.get('cycleDeVie') or {}).get('etat') != 'Confirmé':
+            continue
+        d = jour(r.get('timeStampDebut'))
+        if not (de <= d <= a):
+            continue
+        for p in liste(((r.get('ODJ') or {}).get('pointsODJ') or {}).get('pointODJ')):
+            if p.get('typePointODJ') != 'Vote solennel' or (p.get('cycleDeVie') or {}).get('etat') != 'Confirmé' or not p.get('objet'):
+                continue
+            o = re.sub(r"^Vote solennel (sur |de )?(l'ensemble (du |de la |de l')|le |la |l')?", '', p['objet']).strip()
+            partie = re.search(r'\((première|deuxième|seconde) partie\)', o)
+            sujet = re.sub(r'\s*\([^()]*\)\s*$', '', o).strip()
+            dos = ((p.get('dossiersLegislatifsRefs') or {}).get('dossierRef')) or dossiers.get(sujet.lower())
+            if isinstance(dos, list):
+                dos = dos[0]
+            if not dos:
+                continue
+            k = 'partie' if partie else 'texte'
+            cle = dos + ':' + k + (':' + partie.group(1) if partie else '')
+            if cle not in out or d < out[cle]['d']:
+                out[cle] = {'d': d, 'cle': cle, 'dos': dos, 'k': k, 'o': o[:1].upper() + o[1:]}
+    return sorted(out.values(), key=lambda e: e['d'])
+
+
 # Grandes lois : chaque loi promulguée depuis juin 2012 (14e législature, début des données ouvertes de l'Assemblée)
 # qui a eu un scrutin public solennel à l'Assemblée, ou a été adoptée par l'article 49, alinéa 3 (sans vote), ou a été
 # soumise au Conseil constitutionnel par des parlementaires ou l'exécutif, ou est un budget (loi de finances de l'année ou rectificative, loi de financement de la sécurité sociale). Rattachée à une mission
@@ -467,7 +497,15 @@ def construire(auj):
     # Les votes cités par une loi mais plus anciens que la fenêtre des votes sont ajoutés, marqués « loi » (non listés dans les votes de la semaine).
     deja = {e['n'] for e in V}
     VL = [dict(e, loi=True) for e in tous if e['n'] in utiles and e['n'] not in deja and any(l.get('sc') == e['n'] for l in L)]
-    A = agenda(lire_zip(SRC['agenda'], 'json/reunion/'), auj.isoformat(), (auj + timedelta(days=JOURS_AGENDA)).isoformat())
+    reunions = list(lire_zip(SRC['agenda'], 'json/reunion/'))
+    A = agenda(reunions, auj.isoformat(), (auj + timedelta(days=JOURS_AGENDA)).isoformat())
+    intitules = {}
+    for e in tous:
+        if e.get('dos'):
+            intitules[re.sub(r'\s*\([^()]*\)\s*$', '', e['t'][e['t'].lower().find('projet') if 'projet' in e['t'].lower() else 0:]).strip().lower()] = e['dos']
+            if e.get('dl'):
+                intitules[e['dl'].lower()] = e['dos']
+    AV = votes_a_venir(reunions, auj.isoformat(), (auj + timedelta(days=JOURS_AVENIR)).isoformat(), intitules)
     F = sorted(FRISE + evenements_17(scr), key=lambda e: e['d'])
     G = [dict(v, ref=k) for k, v in gp.items()]
     tailles = {}
@@ -501,7 +539,8 @@ def construire(auj):
     P['grandes'] = {'source': 'Assemblée nationale, données ouvertes : dossiers législatifs et scrutins des 14e à 17e législatures (depuis juin 2012)', 'url': REPO, 'date': auj.isoformat()}
     VZ = {'maj': auj.isoformat(), 'GROUPES': [{k: g[k] for k in ('c', 'n', 'm')} for g in G],
           'VOTES': [{k: e[k] for k in ('d', 'n', 'k', 's', 't', 'v', 'req', 'p', 'c', 'a', 'g', 'dos', 'dl') if k in e} for e in tous if e['k'] in VOTEZ],
-          'P': {'votes': P['votes'], 'groupes': P['groupes']},
+          'P': {'votes': P['votes'], 'groupes': P['groupes'], 'agenda': P['agenda']},
+          'AVENIR': AV,
           # Le Premier ministre en fonction à chaque date (nominations de la frise, chacune avec sa source) : nomme le Gouvernement visé par une censure.
           'PM': [{'d': e['d'], 'n': re.match(r'^(.*?) nommée? Premi', e['t']).group(1), 'src': e['src'], 'url': e['url']}
                  for e in frise if e['k'] == 'gouvernement' and e['d'] >= '2024-01-01' and re.match(r'^(.*?) nommée? Premi', e['t'])]}

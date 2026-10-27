@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="12c7b7e12ad6">
+<meta name="concret-version" content="d8e302463b60">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -305,6 +305,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .vz-suivi { position: sticky; top: var(--navh, 56px); z-index: 8; display: flex; gap: 12px; align-items: center; padding: 8px 2px; margin: -8px 0; background: var(--bg); font-size: 14px; font-variant-numeric: tabular-nums; }
 .vz-prog { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; } .vz-prog i { display: block; height: 100%; background: var(--fr); border-radius: 3px; transition: width .3s; }
 .vz-carte { border-color: var(--fr); }
+.vz-avenir { border: 1.5px dashed var(--fr); }
+.vz-av-l { display: grid; gap: 18px; } .vz-av-l > div + div { border-top: 1px solid var(--line); padding-top: 16px; }
 .vz-pause { text-align: center; justify-items: center; }
 .vz-pause h2 { font-family: var(--serif); font-weight: 400; font-size: 26px; }
 .vz-pause .vz-suite { justify-self: center; }
@@ -331,6 +333,13 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="note" style="font-size:14.5px" id="vz-lead">Les vrais votes de l'Assemblée nationale, tels qu'ils ont eu lieu. Votez à votre tour : Concret calcule de quels groupes de députés vos votes sont le plus proches.</p>
     <p class="note" id="vz-nb"></p>
     <p class="vz-prive">Vos votes restent sur cet appareil : rien n'est envoyé, ni à Concret ni à personne.</p>
+  </section>
+
+  <section class="card vz-avenir" id="vz-avenir" data-partage="non" hidden aria-labelledby="vz-av-t">
+    <span class="eyebrow">Bientôt à l'Assemblée</span>
+    <h2 id="vz-av-t">Votez avant les députés</h2>
+    <p class="note">Votes déjà fixés à l'ordre du jour de l'Assemblée. Le jour du vote, vous verrez comment chaque groupe a voté par rapport à vous.</p>
+    <div id="vz-av-l" class="vz-av-l"></div>
   </section>
 
   <div class="vz-suivi" id="vz-suivi"><b id="vz-n"></b><div class="vz-prog" aria-hidden="true"><i id="vz-barre" style="width:0"></i></div></div>
@@ -405,6 +414,10 @@ footer p { margin: 0; } footer a { color: inherit; }
     $('vz-debut').textContent = 'premier vote le ' + V.dateFr(D.debut);
     $('vz-src').innerHTML = 'Source : <a href="' + D.P.votes.url + '">' + V.esc(D.P.votes.source) + '</a>, relue chaque jour (dernière lecture le ' + V.dateFr(D.maj) + ').';
     tout(); afficher(false);
+    if (D.avenir.length) {
+      $('vz-avenir').hidden = false;
+      D.avenir.forEach(function (q) { var d = document.createElement('div'); $('vz-av-l').appendChild(d); V.carte(d, q, D, {}); });
+    }
   }).catch(function () { $('vz-carte').innerHTML = '<p class="note">Les votes n\'ont pas pu être chargés. Rechargez la page.</p>'; });
   $('vz-mes').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-id]'); if (!b) return;

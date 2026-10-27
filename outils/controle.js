@@ -165,10 +165,13 @@ if (S.politique) {
     if (VZ.maj && (Date.parse(today) - Date.parse(VZ.maj)) / 864e5 > 3) alertes.push('Votez les lois : votes de l\'Assemblée lus le ' + VZ.maj + ', plus de trois jours : relancer python3 outils/parlement.py --ecrire');
     // Explications des textes (donnees/votez_explications.json) : un vote connu, une ou deux phrases sans but ni jugement, une source officielle lue.
     var VX = JSON.parse(fs.readFileSync(path.join(ROOT, 'donnees', 'votez_explications.json'), 'utf8')).explications || {}, nums = {};
-    (VZ.VOTES || []).forEach(function (v) { nums[v.n] = 1; });
+    (VZ.VOTES || []).forEach(function (v) { nums[v.n] = 1; if (v.dos) nums['dos:' + v.dos] = 1; });
+    (VZ.AVENIR || []).forEach(function (a) { nums['dos:' + a.dos] = 1; });
     Object.keys(VX).forEach(function (n) {
       var x = VX[n], id = 'votez_explications ' + n;
-      if (!nums[n]) err(id + ' : ce scrutin n\'est pas dans donnees/votes.json');
+      // Clé : numéro de scrutin, ou « avenir:<dossier>:texte » / « avenir:<dossier>:partie:<première…> » pour un vote à venir.
+      var av = /^avenir:([A-Z0-9]+):(texte|partie:\S+)$/.exec(n);
+      if (av ? !nums['dos:' + av[1]] : !nums[n]) err(id + ' : ' + (av ? 'ce dossier' : 'ce scrutin') + ' n\'est pas dans donnees/votes.json');
       if (!x.e || x.e.length > 320) err(id + ' : explication absente ou trop longue (320 signes au plus)');
       if (/\b(afin de|afin que|vis(e|ant) à|dans le but|pour que)\b/i.test(x.e || '')) err(id + ' : l\'explication prête un but au texte (« afin de », « visant à »…) : dire seulement ce qu\'il change');
       if (!/^https:\/\/(www\.)?(assemblee-nationale\.fr|senat\.fr|legifrance\.gouv\.fr)\//.test(x.url || '') || !x.src || !jo.test(x.lu || '')) err(id + ' : source officielle, lien ou date de lecture manquant');
