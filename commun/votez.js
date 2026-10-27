@@ -270,7 +270,7 @@
       var info = esc(g.n) + ' (' + esc(g.c) + ') · ' + g.m + ' députés' + (x ? ' · vous : ' + x.pct + ' % d\'accord, sur ' + x.nb + ' vote' + (x.nb > 1 ? 's' : '') : '');
       var mid = (a0 + a1) / 2, court = g.c.replace('-NFP', ''), large = a0 - a1 > 0.2;
       // Le pourcentage d'accord écrit dans chaque part assez large (les autres : au toucher).
-      var pc = x && large ? '<text x="' + (cx + (R1 - 15) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 - 15) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="var(--fg)" style="paint-order:stroke;stroke:var(--panel);stroke-width:3px">' + x.pct + '</text>' : '';
+      var pc = x && large ? '<text x="' + (cx + (R1 - 15) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 - 15) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="var(--fg)" style="paint-order:stroke;stroke:var(--panel);stroke-width:3px">' + x.pct + '\u00a0%</text>' : '';
       var lab = large ? '<text x="' + (cx + (R1 + 13) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 + 13) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--muted)">' + esc(court) + '</text>' : '';
       return '<g class="vz-hs" tabindex="0" data-info="' + info + '"' + (x ? ' data-pct="' + x.pct + '" data-c="' + esc(court) + '"' : '') + '><path d="' + secteur(a0 - ecart, a1 + ecart, r0, R1) + '" fill="' + g.coul + '" opacity=".16"/>' +
         (x ? '<path d="' + secteur(a0 - ecart, a1 + ecart, r0, rb) + '" fill="' + g.coul + '"/>' : '') + lab + pc + '</g>';
