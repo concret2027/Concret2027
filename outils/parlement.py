@@ -582,7 +582,7 @@ def construire(auj):
         print('Plan de l\'hémicycle : lecture impossible :', x)
         HM = {}
     VZ = {'maj': auj.isoformat(), 'GROUPES': [dict({k: g[k] for k in ('c', 'n', 'm')}, **HM.get(g['c'], {})) for g in G],
-          'VOTES': [{k: e[k] for k in ('d', 'n', 'k', 's', 't', 'v', 'req', 'p', 'c', 'a', 'g', 'dos', 'dl') if k in e} for e in tous if e['k'] in VOTEZ],
+          'VOTES': [{k: e[k] for k in ('d', 'n', 'k', 's', 't', 'v', 'req', 'p', 'c', 'a', 'g', 'dos', 'dl', 'pg') if k in e} for e in tous if e['k'] in VOTEZ],
           'P': {'votes': P['votes'], 'groupes': P['groupes'], 'agenda': P['agenda'],
                 'hemicycle': {'source': 'Assemblée nationale, plan de l\'hémicycle (place et couleur de chaque groupe)', 'url': HEMICYCLE, 'date': auj.isoformat()}},
           'AVENIR': AV,

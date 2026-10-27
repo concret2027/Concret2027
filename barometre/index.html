@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="16fb28dd7b2c">
+<meta name="concret-version" content="59ae7da39446">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -25,7 +25,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://concret2027.fr/donnees/apercu/barometre.png">
 <script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-<style>html, body { margin: 0; } img { max-width: 100%; } [hidden] { display: none !important; }.bx-notices { list-style: none; margin: 8px 0 0; padding: 0; max-height: 420px; overflow: auto; border-top: 1px solid var(--line, #e2e2dc); }
+<style>html, body { margin: 0; } img { max-width: 100%; } [hidden] { display: none !important; }.bx-notices { list-style: none; margin: 8px 0 0; padding: 0; border-top: 1px solid var(--line, #e2e2dc); }
 .bx-notices li { display: grid; grid-template-columns: 6.5em 1fr; gap: 8px; padding: 8px 2px; border-bottom: 1px solid var(--line, #e2e2dc); font-size: 13px; line-height: 1.4; }
 .bx-notices .d { color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
 .bx-sharing { overflow: hidden; } .bx-sharing .bx-chart { width: 740px !important; max-width: none !important; } .bx-sharing .bx-multi { width: 620px !important; max-width: none !important; }
@@ -174,7 +174,8 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 .bx-tip .r em i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
 .bx-tip .r b { font-weight: 600; }
 .bx-tip .n { white-space: normal; max-width: 220px; margin-top: 3px; }
-.bx-tablebox { max-height: 440px; overflow: auto; }
+.bx-tablebox { overflow-x: auto; }
+.bx-voir { font: inherit; font-size: 14px; font-weight: 600; color: var(--fr); background: none; border: 1px solid var(--color-border-line); border-radius: 999px; padding: 8px 16px; min-height: 44px; cursor: pointer; justify-self: start; margin-top: 8px; }
 .bx-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
 .bx-table th, .bx-table td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
 .bx-table th.l, .bx-table td.l { text-align: left; position: sticky; left: 0; background: var(--color-panel); z-index: 1; }
@@ -1358,6 +1359,26 @@ window.addEventListener('baro:data', function () {
 </script>
 <script src="/commun/partage.js?v=20261027b"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261028a"></script>
+<script src="/commun/menu.js?v=20261028b"></script>
+<script>
+// Longues listes du Baromètre (duels, sondages de premier tour, notices) : les 6 premières lignes, puis « Voir les N autres »
+// qui déplie dans la page (pas de zone qui défile à l'intérieur de la page). Refait à chaque mise à jour du tableau.
+(function () {
+  var N = 6;
+  [['tbody-duels', 'tr'], ['tbody-t1', 'tr'], ['notices-list', 'li']].forEach(function (c) {
+    var el = document.getElementById(c[0]); if (!el) return;
+    var ouvert = false, bt = document.createElement('button'); bt.type = 'button'; bt.className = 'bx-voir'; bt.hidden = true;
+    var bloc = el.closest('.bx-tablebox') || el; bloc.parentNode.insertBefore(bt, bloc.nextSibling);
+    var plier = function () {
+      var L = el.querySelectorAll(':scope > ' + c[1]);
+      Array.prototype.forEach.call(L, function (r, i) { r.hidden = !ouvert && i >= N; });
+      bt.hidden = L.length <= N; bt.textContent = ouvert ? 'Masquer ▴' : 'Voir les ' + (L.length - N) + ' autres ▾';
+    };
+    bt.addEventListener('click', function () { ouvert = !ouvert; plier(); });
+    new MutationObserver(plier).observe(el, { childList: true });
+    plier();
+  });
+})();
+</script>
 </body>
 </html>

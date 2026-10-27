@@ -11,7 +11,7 @@
   var dateFr = function (d) { var p = d.split('-'); return (+p[2] === 1 ? '1er' : +p[2]) + ' ' + MOIS[p[1] - 1] + ' ' + p[0]; };
   var moisFr = function (d) { var p = d.split('-'); return MOIS[p[1] - 1] + ' ' + p[0]; };
   // Espace insécable avant « : ; ? ! », dans les nombres et avant € et % (pas de ponctuation ni de chiffre seul en début de ligne).
-  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }).replace(/ ([:;?!])/g, '\u00a0$1').replace(/(\d) (?=\d{3}\b)/g, '$1\u202f').replace(/(\d) (€|%)/g, '$1\u00a0$2'); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }).replace(/ ([:;?!»])/g, '\u00a0$1').replace(/« /g, '«\u00a0').replace(/(\d) (?=\d{3}\b)/g, '$1\u202f').replace(/(\d) (€|%)/g, '$1\u00a0$2'); };
   var nf = function (n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); };
   var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
   // Les étapes d'un texte, dites sans jargon.
@@ -59,7 +59,11 @@
     '.vz-hemi{position:relative}.vz-hemi svg{display:block;width:100%;height:auto;font-family:var(--sans)}.vz-hs{cursor:pointer;outline:none}.vz-hs:hover path,.vz-hs:focus path{filter:brightness(1.08)}' +
     '.vz-tip{position:absolute;top:0;z-index:3;max-width:260px;padding:7px 10px;border-radius:9px;background:var(--fg);color:var(--bg);font-size:12.5px;line-height:1.35;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
     '.vz-lire{margin:0;font-size:13.5px;color:var(--muted)}' +
-    '.vz-plus{font:inherit;font-size:13.5px;font-weight:600;color:var(--fr);background:none;border:0;padding:4px 0;cursor:pointer;justify-self:start}' +
+    '.vz-th{display:grid;gap:8px;padding-top:6px;border-top:1px solid var(--line)}.vz-th h3{margin:0;font-size:16px;font-weight:700}.vz-th ul{list-style:none;margin:0;padding:0;display:grid}' +
+    '.vz-th li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 12px;margin-top:8px;border:1px solid var(--line);border-left:5px solid var(--line);border-radius:10px;font-size:14px;align-items:baseline}' +
+    '.vz-th .t{font-weight:700;margin-bottom:2px}.vz-th .n{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}' +
+    '.vz-th .b{grid-column:1/-1;height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:2px}.vz-th .b i{display:block;height:100%;border-radius:5px}.vz-th .b.vide i{background:var(--muted);opacity:.45}' +
+    '.vz-th .g{font-size:13.5px;line-height:1.3}.vz-th .g small{color:var(--muted);font-size:11.5px;font-weight:500}.vz-th .g.att{grid-column:1/-1;color:var(--muted)}.vz-th .v{font-weight:700;font-variant-numeric:tabular-nums}' +
     '.vz-bars li.top .n{color:var(--fr)}';
 
   var donnees = null;
@@ -87,7 +91,7 @@
   function pm(J, d) { var n = ''; (J.PM || []).forEach(function (p) { if (p.d < d) n = p.n; }); return n; }
 
   function question(v, J) {
-    var q = { id: String(v.n), v: v, k: v.k, d: v.d, choix: ['pour', 'contre', 'abstention'], pos: {} };
+    var q = { id: String(v.n), v: v, k: v.k, d: v.d, choix: ['pour', 'contre', 'abstention'], pos: {}, pg: v.pg || [] };
     var s = sujet(v.t), st = stade(v.t), par = (v.t.match(/\bpar ((M\.|Mme|MM\.|Mmes) .+?)(,? (du|de la|de l'|des) (projet|proposition)|$)/) || [])[1];
     var gouv = pm(J, v.d), dg = gouv ? 'le Gouvernement de ' + gouv : 'le Gouvernement';
     if (v.k === 'texte' || v.k === 'partie') {
@@ -170,18 +174,27 @@
       return { id: 'av:' + a.cle, avenir: true, cle: a.cle, dos: a.dos, k: a.k, d: a.d, titre: a.o, type: 'Vote prévu à l\'Assemblée', expl: X['avenir:' + a.cle],
         q: a.k === 'partie' ? 'Adopter cette partie du texte ?' : 'Adopter ce texte ?', choix: ['pour', 'contre', 'abstention'] };
     });
-    // Ordre de la page : les dix votes qui ont le plus partagé l'Assemblée (une seule motion de censure parmi eux), puis tous les
+    // Ordre de la page : les dix votes qui ont le plus partagé l'Assemblée (une seule motion de censure parmi eux), puis de quoi
+    // donner un résultat à chaque thème (trois votes par thème, les plus partagés d'abord, un thème après l'autre), puis tous les
     // autres, du plus récent au plus ancien.
-    var censure = 0, premiers = Q.slice().sort(function (a, b) { return b.partage - a.partage || (a.d < b.d ? 1 : -1); })
-      .filter(function (q) { return q.k !== 'censure' || !censure++; }).slice(0, SERIE);
-    var ordre = premiers.concat(Q.filter(function (q) { return premiers.indexOf(q) < 0; }));
+    var parPartage = Q.slice().sort(function (a, b) { return b.partage - a.partage || (a.d < b.d ? 1 : -1); });
+    var censure = 0, premiers = parPartage.filter(function (q) { return q.k !== 'censure' || !censure++; }).slice(0, SERIE);
+    var pris = premiers.slice(), nbTh = {};
+    var compter = function (q) { q.pg.forEach(function (t) { nbTh[t] = (nbTh[t] || 0) + 1; }); };
+    premiers.forEach(compter);
+    for (var tour = 0; tour < MIN_THEME; tour++) THEMES.forEach(function (t) {
+      if ((nbTh[t[0]] || 0) >= MIN_THEME) return;
+      var q = parPartage.filter(function (x) { return pris.indexOf(x) < 0 && x.pg.indexOf(t[0]) >= 0; })[0];
+      if (q) { pris.push(q); compter(q); }
+    });
+    var ordre = pris.concat(Q.filter(function (q) { return pris.indexOf(q) < 0; }));
     var G = {}; J.GROUPES.forEach(function (g) { G[g.c] = g; });
-    return { Q: Q, ordre: ordre, avenir: A, nbVotes: J.VOTES.length,  tous: tous, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: J.VOTES.length ? J.VOTES[J.VOTES.length - 1].d : '' };
+    return { Q: Q, ordre: ordre, finThemes: pris.length, avenir: A, nbVotes: J.VOTES.length,  tous: tous, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: J.VOTES.length ? J.VOTES[J.VOTES.length - 1].d : '' };
   }
 
   var accord = function (a, b) { return a === b ? 1 : (a === 'abstention' || b === 'abstention') ? 0.5 : 0; };
-  function resultat(D) {
-    var mes = lireMes(), faits = D.Q.filter(function (q) { return CHOIX[mes[q.id]]; });
+  function resultat(D, filtre) {
+    var mes = lireMes(), faits = D.Q.filter(function (q) { return CHOIX[mes[q.id]] && (!filtre || filtre(q)); });
     var L = D.groupes.map(function (g) {
       var s = 0, n = 0;
       faits.forEach(function (q) { var p = q.pos[g.c]; if (p) { n++; s += accord(mes[q.id], p); } });
@@ -281,6 +294,23 @@
       (top ? '<text class="vz-c1" x="' + cx + '" y="' + (cy - 14) + '" text-anchor="middle" font-family="var(--serif)" font-size="30" fill="var(--fg)" data-def="' + top.pct + ' %">' + top.pct + ' %</text><text class="vz-c2" x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)" data-def="d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '">d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '</text>' : '') +
       '</svg><div class="vz-tip" hidden></div></div>';
   }
+  // Par thème : les textes rattachés à une page de Concret par les mots de leur titre (même règle que la page La vie politique).
+  var THEMES = [['finances', 'Finances publiques'], ['vie', 'Vie des Français'], ['sante', 'Santé'], ['education', 'Éducation'], ['securite', 'Sécurité et justice'], ['defense', 'Défense'], ['demographie', 'Démographie et migrations']], MIN_THEME = 3;
+  // Chaque thème : une barre à la couleur du groupe le plus proche, remplie à sa part d'accord (deux barres si presque à égalité) ;
+  // avant trois votes, une barre grise qui avance vers le résultat.
+  function parTheme(D) {
+    return THEMES.map(function (t) {
+      var R = resultat(D, function (q) { return q.pg.indexOf(t[0]) >= 0; }), dispo = D.Q.filter(function (q) { return q.pg.indexOf(t[0]) >= 0; }).length;
+      var top = R.groupes.filter(function (g, i) { return i < 2 && (R.groupes[0] || {}).pct - g.pct < 3; });
+      var pret = R.nb >= MIN_THEME && top.length, c0 = pret ? (D.G[top[0].c] || {}).coul || 'var(--fr)' : 'var(--line)';
+      var corps = pret ? top.map(function (g) {
+        var c = (D.G[g.c] || {}).coul || 'var(--fr)';
+        return '<span class="g">' + esc(g.n) + ' <small>' + esc(g.c) + '</small></span><span class="v">' + g.pct + '\u00a0%</span><span class="b"><i style="width:' + g.pct + '%;background:' + c + '"></i></span>';
+      }).join('') : '<span class="b vide"><i style="width:' + Math.round(100 * Math.min(R.nb, MIN_THEME) / MIN_THEME) + '%"></i></span>' +
+        '<span class="g att">' + (dispo ? 'Encore ' + Math.max(1, MIN_THEME - R.nb) + ' vote' + (MIN_THEME - R.nb > 1 ? 's' : '') + ' sur ce thème pour un résultat' : 'Pas encore de texte sur ce thème') + '</span>';
+      return '<li style="border-left-color:' + c0 + '"><span class="t">' + t[1] + '</span><span class="n">' + R.nb + ' / ' + dispo + ' vote' + (dispo > 1 ? 's' : '') + '</span>' + corps + '</li>';
+    }).join('');
+  }
   function bilan(el, D) {
     style();
     var R = resultat(D), assez = R.nb >= MIN;
@@ -295,6 +325,7 @@
       hemicycle(D, assez ? R : null) +
       '<p class="vz-lire">Chaque groupe est à sa place dans l\'hémicycle, de la gauche à la droite. ' + (assez ? 'Plus sa part est colorée, plus vous votez comme lui. Touchez un groupe pour voir son nom.' : 'Encore ' + (MIN - R.nb) + ' vote' + (MIN - R.nb > 1 ? 's' : '') + ' : avant, le résultat dépendrait d\'un ou deux textes seulement.') + '</p>' +
       (assez ? '<ul class="vz-bars">' + liste + '</ul>' + (R.groupes.length > 3 ? '<button type="button" class="vz-plus">Voir les ' + R.groupes.length + ' groupes</button>' : '') +
+        '<div class="vz-th"><h3>Par thème</h3><ul>' + parTheme(D) + '</ul><p class="vz-lire">Le groupe dont vos votes sont le plus proches sur chaque thème. Un texte est rattaché à un thème par les mots de son titre (règle de la page La vie politique) : il peut compter pour plusieurs thèmes, ou pour aucun.</p></div>' +
         '<button type="button" class="vz-suite vz-partage">Partager mon résultat</button><p class="vz-lire vz-copie" hidden></p>' : '') +
       '<details class="vz-off"><summary>En détail : les groupes et le calcul</summary>' +
       '<p>' + D.groupes.filter(function (g) { return g.a != null; }).slice().sort(function (p, q) { return q.a - p.a; }).map(function (g) { return '<b>' + esc(g.c) + '</b> : ' + esc(g.n) + ' (' + g.m + ' députés)'; }).join(' · ') + '.</p>' +
@@ -330,7 +361,7 @@
   }
 
   window.ConcretVotez = {
-    MIN: MIN, SERIE: SERIE, dateFr: dateFr, moisFr: moisFr, nf: nf, esc: esc, CHOIX: CHOIX,
+    MIN: MIN, SERIE: SERIE, THEMES: THEMES, MIN_THEME: MIN_THEME, dateFr: dateFr, moisFr: moisFr, nf: nf, esc: esc, CHOIX: CHOIX,
     charger: function () {
       var lire = function (u) { return fetch(u, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); };
       if (!donnees) donnees = Promise.all([lire('/donnees/votes.json'), lire('/donnees/votez_explications.json')]).then(function (r) { return construire(r[0], r[1].explications || {}); });

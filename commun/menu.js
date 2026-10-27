@@ -77,6 +77,8 @@
     '.rech-b{min-width:44px;min-height:44px;justify-content:center}button.share,.bx-share{min-height:40px}' +
     // Boutons pleins (bleu) en mode sombre : texte foncé, lisible sur le bleu clair du thème sombre.
     '@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ct-envoyer,:root:not([data-theme="light"]) .qz-btn,:root:not([data-theme="light"]) .vz-suite{color:#0b1530}}:root[data-theme="dark"] .ct-envoyer,:root[data-theme="dark"] .qz-btn,:root[data-theme="dark"] .vz-suite{color:#0b1530}' +
+    // Un seul style pour « Voir plus de lignes » sur tout le site : bouton contour, texte bleu.
+    'button.more,button.plus,.bx-voir{font:inherit;font-size:14px;font-weight:600;color:' + V.fr + '!important;background:' + V.panel + '!important;border:1px solid ' + V.line + '!important;border-radius:999px!important;min-height:44px;padding:8px 16px;cursor:pointer}' +
     // Lignes de texte pas trop longues sur grand écran.
     '.card>p,.card .note{max-width:72ch}' +
     // Long texte sous une courbe : deux lignes, puis « Détail du graphe » pour lire la suite.
@@ -112,7 +114,8 @@
   // Textes sous les courbes : au-delà de trois lignes, on n'en montre que deux, avec un lien « Détail du graphe » qui déplie
   // le reste. Les pages réécrivent ces textes quand elles redessinent une courbe : on les revoit à chaque changement.
   // Sur le Baromètre, les explications en tête de chaque bloc aussi (« Lire la suite »).
-  var NT = '.chart ~ p.note, .toile-svg ~ p.note, .bx-card > p.bx-note, .bx-group > p.bx-note';
+  // Sur la page Démographie, les paragraphes « À retenir » et les introductions longues aussi.
+  var NT = '.chart ~ p.note, .toile-svg ~ p.note, .bx-card > p.bx-note, .bx-group > p.bx-note, p.retenir, p.dernier';
   function plier() {
     Array.prototype.forEach.call(document.querySelectorAll(NT), function (n) {
       if (n.classList.contains('pt-hors') || n.classList.contains('defs')) return;
@@ -126,7 +129,7 @@
       if (deja) n.classList.remove('nt-pli');
       var lh = parseFloat(getComputedStyle(n).lineHeight) || 20, long = n.offsetHeight > lh * 3.4;
       if (long && !ouvert) n.classList.add('nt-pli');
-      var bx = n.classList.contains('bx-note'), t = !long ? '' : ouvert ? (bx ? 'Masquer ▴' : 'Masquer le détail ▴') : (bx ? 'Lire la suite ▾' : 'Détail du graphe ▾');
+      var bx = n.classList.contains('bx-note') || n.classList.contains('retenir') || n.classList.contains('dernier'), t = !long ? '' : ouvert ? (bx ? 'Masquer ▴' : 'Masquer le détail ▴') : (bx ? 'Lire la suite ▾' : 'Détail du graphe ▾');
       if (b.textContent !== t) b.textContent = t;
       if (b.hidden === !!t) b.hidden = !t;
       b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
