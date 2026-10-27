@@ -83,6 +83,8 @@
   function partager(card, btn) {
     var label = btn.textContent; btn.textContent = 'Préparation…'; btn.disabled = true;
     var wasClosed = card.tagName === 'DETAILS' && !card.open; if (wasClosed) card.open = true;
+    // Courbe repliée sous son titre (pages de mission) : ouverte le temps de la capture, puis refermée.
+    var plis = Array.prototype.filter.call(card.querySelectorAll('details.pli-courbe'), function (d) { return !d.open; }); plis.forEach(function (d) { d.open = true; });
     lib().then(function (h2c) {
       // Le titre est déjà écrit en haut de l'image : on le retire de la capture pour ne pas le répéter.
       var h = card.querySelector('h1, h2, .acc-h, .lab, .eyebrow'); if (h) h.setAttribute('data-pt-titre', ''); card.setAttribute('data-pt-bloc', '');
@@ -92,8 +94,8 @@
         // La capture ne sait pas ce qu'est un bloc replié : elle dessinerait son contenu par-dessus le reste.
         // Dans la copie capturée, on ne garde que ce qui est visible à l'écran.
         onclone: function (doc) {
-          // Courbe repliée sous son titre : dans l'image, elle est montrée, sans le bouton du dépliant.
-          Array.prototype.forEach.call(doc.querySelectorAll('details.pli-courbe'), function (d) { d.open = true; var su = d.querySelector('summary'); if (su) su.remove(); });
+          // Courbe ouverte le temps de la capture : sans le bouton du dépliant dans l'image.
+          Array.prototype.forEach.call(doc.querySelectorAll('details.pli-courbe'), function (d) { var su = d.querySelector('summary'); if (su) su.remove(); d.style.border = '0'; d.style.background = 'none'; var fi = d.querySelector('.fold-in'); if (fi) fi.style.padding = '0'; });
           Array.prototype.forEach.call(doc.querySelectorAll('details'), function (d) {
             if (!d.open) Array.prototype.forEach.call(d.children, function (c) { if (c.tagName !== 'SUMMARY') c.remove(); });
           });
@@ -130,7 +132,7 @@
       if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: t, text: t + ' · ' + adresse }).catch(function (e) { if (!e || e.name !== 'AbortError') montrer(r.url, file, t); });
       montrer(r.url, file, t);
     }).catch(function () { alert('Le partage n\'a pas pu être préparé.'); })
-      .then(function () { if (wasClosed) card.open = false; btn.textContent = label; btn.disabled = false; });
+      .then(function () { if (wasClosed) card.open = false; plis.forEach(function (d) { d.open = false; }); btn.textContent = label; btn.disabled = false; });
   }
   function equiper(root) {
     Array.prototype.forEach.call((root || document).querySelectorAll(SEL), function (card) {
