@@ -99,7 +99,8 @@
       var m = axes.filter(function (a) { return a.v[s.k] == null; });
       return s.pointille ? s.n + ' : pas de chiffre publié pour ' + m.length + ' indicateur' + (m.length > 1 ? 's' : '') + ' sur ' + n : s.n + ' : pas de chiffre pour ' + m.map(function (a) { return a.l; }).join(', ');
     });
-    box.innerHTML = '<h2 class="inv"><span class="eyebrow">' + esc(o.titre || 'La France et ses voisins') + '</span>Dernier chiffre connu de chaque indicateur (' + esc(an) + ')</h2>' +
+    var pg = document.querySelector('.brand h1, .brand b, .crumb b, h1'), nomPage = pg ? pg.textContent.trim().split('\n')[0] : '';
+    box.innerHTML = '<h2 class="inv"><span class="eyebrow">' + esc((nomPage && nomPage.length < 40 ? nomPage + ' : ' : '') + (o.titre || 'La France et ses voisins')).replace(/ : La France/, ' : la France') + '</span>Dernier chiffre connu de chaque indicateur (' + esc(an) + ')</h2>' +
       '<div class="toile-l">' + S.map(function (s) { return '<span><i class="' + (s.dash ? 'd' : '') + '" style="border-top-color:' + s.c + (s.pointille ? ';border-top-style:dotted' : '') + '"></i>' + esc(s.n) + '</span>'; }).join('') + '</div>';
     box.appendChild(svg);
     var note = document.createElement('p'); note.className = 'note';
@@ -111,6 +112,8 @@
       axes.map(function (a) { return '<tr><td>' + esc(a.l) + ' <small>(' + a.y + (a.u ? ',' + esc(a.u) : '') + ')</small></td>' + S.map(function (s) { var v = a.v[s.k]; return '<td>' + (v == null ? '—' : fmt(v, a.dec)) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
     box.appendChild(det);
     box.hidden = false;
+    // Le bouton « Partager » (commun/partage.js) a été effacé avec l'ancien contenu : on le laisse le reposer.
+    box.removeAttribute('data-partage');
   }
   // Les séries affichées par défaut, dans les couleurs des courbes du site.
   var SERIES = [

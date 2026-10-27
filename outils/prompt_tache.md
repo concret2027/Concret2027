@@ -38,6 +38,8 @@ Phrases d'actualité, d'agenda et d'événements : une phrase neutre et factuell
   - mets à jour actu_demographie et agenda_demographie comme les autres pages (prochaine publication de l'Insee sur les naissances et décès, bilan démographique de janvier, lois et décrets sur la natalité, la famille, l'immigration, l'asile) ;
   - si l'un des deux outils sort en erreur, garde les valeurs de la veille et signale-le dans la notification.
 
+- Pays à ajouter (menu « + Ajouter un pays » de la toile et des courbes) : dès qu'un chiffre nouveau a été écrit ce jour dans une série annuelle d'une page (Eurostat, OCDE, OTAN, Banque mondiale, PISA ; outils vie.py, defense.py, demographie.py, ue_calc.py compris), lance `python3 outils/pays.py --ecrire` après eux : il relit les mêmes séries pour les autres pays et ne garde que celles qui redonnent les chiffres publiés de la France, de l'Allemagne et de l'Espagne. Recopie dans le compte rendu toute série « Écartée » qu'il affiche (la toile et les courbes restent justes, seul le pays ajouté manque pour cette série). Sinon, il passe chaque mois (indicateur pays_ajout).
+
 ## 3. Textes
 - Quand une cible change, mets à jour ses textes liés (textes_lies du calendrier → data.json textes.<page>.<clé>.html) et les entrées de series.<page>.FACTS, QUIZ ou EVENTS qui citent ce chiffre : ce qui a changé, de combien, selon quelle source, sans adjectif ni jugement. Garde le style et le balisage existants.
 - Ne modifie jamais aucun fichier HTML, ni CNAME, ni README.md, ni CLAUDE.md, ni commun/, ni outils/. Les notes et le classement de l'accueil se recalculent seuls.
