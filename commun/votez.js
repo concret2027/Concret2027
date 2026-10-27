@@ -65,7 +65,8 @@
     '.vz-th .t i{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,var(--fr) 14%,transparent);color:var(--fr);flex:none}.vz-th .n{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}' +
     '.vz-th .b{grid-column:1/-1;height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:2px}.vz-th .b i{display:block;height:100%;border-radius:5px}.vz-th .b.vide i{background:var(--muted);opacity:.45}' +
     '.vz-th .bb{grid-column:1/-1;position:relative;display:block;height:30px;border-radius:8px;background:color-mix(in srgb,var(--line) 70%,transparent);overflow:hidden}' +
-    '.vz-th .fi{position:absolute;inset:0 auto 0 0;overflow:hidden;border-radius:8px}' +
+    '.vz-th .fi{position:absolute;inset:0 auto 0 0;overflow:hidden;border-radius:8px;background:var(--fr)}.vz-th .fi .lb{color:var(--bg)}' +
+    '.vz-th .lb i{flex:none;width:10px;height:10px;border-radius:3px;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--bg) 85%,transparent)}' +
     '.vz-th .lb{position:absolute;inset:0 auto 0 0;width:100%;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 10px;font-size:13.5px;color:var(--fg);white-space:nowrap}' +
     '.vz-th .lb .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.vz-th .lb b{font-variant-numeric:tabular-nums}' +
     '.vz-th .g{font-size:13.5px;line-height:1.3}.vz-th .g.att{grid-column:1/-1;color:var(--muted)}' +
@@ -313,12 +314,6 @@
   };
   // Chaque thème : une barre à la couleur du groupe le plus proche, remplie à sa part d'accord (deux barres si presque à égalité) ;
   // avant trois votes, une barre grise qui avance vers le résultat.
-  // Texte lisible sur une couleur de groupe : sombre sur les couleurs claires, blanc sur les foncées.
-  function surCouleur(c) {
-    var m = /^#([0-9a-f]{6})$/i.exec(c || ''); if (!m) return '#fff';
-    var n = parseInt(m[1], 16), l = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
-    return l > 0.6 ? '#0b1530' : '#fff';
-  }
   function parTheme(D) {
     return THEMES.map(function (t) {
       var R = resultat(D, function (q) { return q.pg.indexOf(t[0]) >= 0; }), dispo = D.Q.filter(function (q) { return q.pg.indexOf(t[0]) >= 0; }).length;
@@ -326,10 +321,10 @@
       var pret = R.nb >= MIN_THEME && top.length;
       var corps = pret ? top.map(function (g) {
         var c = (D.G[g.c] || {}).coul || 'var(--fr)';
-        // Le nom du groupe et sa part dans la barre : écrit en couleur du texte sur le fond, en blanc ou en sombre sur la partie remplie.
-        var txt = '<span class="nm">' + esc(g.n) + '</span><b>' + g.pct + '\u00a0%</b>';
+        // Le nom du groupe (avec sa couleur dans l'hémicycle) et sa part dans la barre, remplie dans la couleur du site.
+        var txt = '<i style="background:' + c + '"></i><span class="nm">' + esc(g.n) + '</span><b>' + g.pct + '\u00a0%</b>';
         return '<span class="bb" title="' + esc(g.n) + ' (' + esc(g.c) + ') : ' + g.pct + ' %"><span class="lb">' + txt + '</span>' +
-          (g.pct ? '<span class="fi" style="width:' + g.pct + '%;background:' + c + '"><span class="lb" style="width:' + (10000 / g.pct) + '%;color:' + surCouleur(c) + '">' + txt + '</span></span>' : '') + '</span>';
+          (g.pct ? '<span class="fi" style="width:' + g.pct + '%"><span class="lb" style="width:' + (10000 / g.pct) + '%">' + txt + '</span></span>' : '') + '</span>';
       }).join('') : '<span class="b vide"><i style="width:' + Math.round(100 * Math.min(R.nb, MIN_THEME) / MIN_THEME) + '%"></i></span>' +
         '<span class="g att">' + (dispo ? 'Encore ' + Math.max(1, MIN_THEME - R.nb) + ' vote' + (MIN_THEME - R.nb > 1 ? 's' : '') + ' sur ce thème pour un résultat' : 'Pas encore de texte sur ce thème') + '</span>';
       return '<li><a class="t" href="/' + t[0] + '/"><i aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + IC_TH[t[0]] + '</svg></i>' + t[1] + '</a><span class="n">' + R.nb + ' / ' + dispo + ' texte' + (dispo > 1 ? 's' : '') + '</span>' + corps + '</li>';
