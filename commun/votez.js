@@ -368,7 +368,7 @@
     // Écart de moins de 3 points avec le suivant : les deux groupes sont nommés, « presque à égalité ».
     var top = R.groupes.filter(function (g, i) { return i < 2 && (R.groupes[0] || {}).pct - g.pct < 3; });
     el.innerHTML = '<span class="eyebrow">Votre hémicycle' + (R.nb ? ' · ' + R.nb + ' vote' + (R.nb > 1 ? 's' : '') : '') + '</span>' +
-      '<h2>' + (assez ? 'Vous votez le plus souvent comme ' + (top.length > 1 ? top.map(function (g) { return esc(g.n) + ' (' + g.pct + '\u00a0%)'; }).join(' et ') + ', presque à égalité' : 'le groupe ' + esc(top[0].n)) : 'Votre hémicycle se remplit à partir de ' + MIN + ' votes') + '</h2>' +
+      '<h2>' + (assez ? 'Vous votez le plus souvent comme ' + (top.length > 1 ? top.map(function (g) { return esc(g.n) + ' (' + g.pct + '\u00a0%)'; }).join(' et ') + (top[0].pct === top[1].pct ? ', à égalité' : ', presque à égalité') : 'le groupe ' + esc(top[0].n)) : 'Votre hémicycle se remplit à partir de ' + MIN + ' votes') + '</h2>' +
       hemicycle(D, assez ? R : null) +
       '<p class="vz-lire">Chaque groupe est à sa place dans l\'hémicycle, de la gauche à la droite. ' + (assez ? 'Plus sa part est colorée, plus vous votez comme lui. Touchez un groupe pour voir son nom.' : 'Encore ' + (MIN - R.nb) + ' vote' + (MIN - R.nb > 1 ? 's' : '') + ' : avant, le résultat dépendrait d\'un ou deux textes seulement.') + '</p>' +
       (assez ? '<ul class="vz-bars">' + liste + '</ul>' + (R.groupes.length > 3 ? '<button type="button" class="vz-plus">Voir les ' + R.groupes.length + ' groupes</button>' : '') +
