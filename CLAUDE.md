@@ -72,7 +72,7 @@ Santé, Sécurité et justice, Défense, Vie des Français, ou tout indicateur a
 7. Lisible par tous, sans se noyer dans les chiffres :
    - le premier écran donne la réponse : où en est la France face à ses voisins, et la note des présidents ;
    - au plus 5 thèmes notés par page, chacun avec au plus 5 indicateurs, mesurés chaque année de la même façon en France et chez ses voisins ; chaque thème a sa note, la note de la page est leur moyenne ;
-   - peu de texte : un intitulé neutre par thème et son tableau France / voisin / ✓ ✗ visibles (l'année sous chaque chiffre) ; les courbes, définitions et sources dans un dépliant « Voir les courbes et les sources », dessinées à l'ouverture (Finances et Éducation : le titre de chaque courbe visible, la courbe repliée dessous ; dans l'image partagée, la courbe est montrée) ;
+   - peu de texte : un intitulé neutre par thème, son tableau France / voisin / ✓ ✗ (l'année sous chaque chiffre) et sa courbe principale, visibles ; les autres courbes, les définitions et les sources dans un dépliant, dessinées à l'ouverture (Finances et Éducation : les grandes courbes ouvertes, les courbes secondaires repliées sous leur titre ; dans l'image partagée, la courbe est montrée) ;
    - ce qui est seulement affiché (pas de comparaison annuelle possible, source industrielle, indicateur secondaire) est replié, avec la raison écrite dessous ;
    - les leviers (dépense, accès, prévention) sont jugés année par année, les résultats (espérance de vie, mortalité) sur le temps long (l'année et les quatre suivantes), comme PISA en Éducation ;
    - juger la France seule est réservé aux cas sans comparaison possible, et c'est écrit en clair là où on le voit.
