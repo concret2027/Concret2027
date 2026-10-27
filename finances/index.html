@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="bebbcb5a348b">
+<meta name="concret-version" content="59bf22f73049">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -851,8 +851,13 @@ function main(FEED) {
     };
     var X94 = SER.X94, X95 = SER.X95, cov = function (w) { return X95['x' + w].map(function (x, i) { var m = X95['m' + w][i]; return x == null || !m ? null : 100 * x / m; }); };
     var axes = [ax('Dette publique', D.dette, Y0, ' % du PIB', null, 'finances.D.dette'), ax('Solde public', D.deficit, Y0, ' % du PIB', null, 'finances.D.deficit'), ax('Dépenses publiques', D.dep, Y0, ' % du PIB', null, 'finances.D.dep'), ax('Prélèvements obligatoires', D.po, Y0, ' % du PIB', null, 'finances.D.po'), ax('Richesse par habitant', PIB, 1990, ' $', 0, 'finances.PIB'),
-      ax('Chômage', { fr: X94.uFr, eu: X94.uEu, es: X94.uEs }, 1994, ' %', null, 'finances.X94.u'), ax('Exportations / importations', { fr: cov('Fr'), eu: cov('Eu'), es: cov('Es') }, 1995, ' %', 0, 'finances.X95.cov'), ax('Intérêts de la dette', { fr: X95.iFr, eu: X95.iEu, es: X95.iEs }, 1995, ' % du PIB', null, 'finances.X95.i')].filter(Boolean);
-    ConcretPays.init({ page: 'finances', carte: {} }); ConcretPays.toile('toile', ConcretToile.dessiner, { titre: 'La France et ses voisins', axes: axes, series: ConcretToile.SERIES });
+      ax('Chômage, moyenne annuelle', { fr: X94.uFr, eu: X94.uEu, es: X94.uEs }, 1994, ' %', null, 'finances.X94.u'), ax('Exportations / importations', { fr: cov('Fr'), eu: cov('Eu'), es: cov('Es') }, 1995, ' %', 0, 'finances.X95.cov'), ax('Intérêts de la dette', { fr: X95.iFr, eu: X95.iEu, es: X95.iEs }, 1995, ' % du PIB', null, 'finances.X95.i')].filter(Boolean);
+    ConcretPays.init({ page: 'finances', carte: {} }); ConcretPays.toile('toile', ConcretToile.dessiner, { titre: 'La France et ses voisins', axes: axes, notes: (function () {
+      // Le chômage de la toile est une moyenne annuelle (même mesure pour tous les pays) ; le dernier chiffre du mois est dit à côté.
+      var fm = (FEED && FEED.datasets && FEED.datasets.finances_mois) || [], der = function (k) { return fm.filter(function (r) { return r.indicateur === k; }).sort(function (a, b) { return a.periode < b.periode ? 1 : -1; })[0]; };
+      var f = der('chomage_fr'), u = der('chomage_ue'), M = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+      return f ? ['Chômage : moyenne de l\'année (estimations de l\'OIT, Banque mondiale), la même mesure pour tous les pays ; dernier chiffre du mois, ' + M[+f.periode.slice(5) - 1] + ' ' + f.periode.slice(0, 4) + ' : ' + String(f.valeur).replace('.', ',') + ' % en France' + (u ? ', ' + String(u.valeur).replace('.', ',') + ' % dans l\'UE' : '') + ' (' + f.source + ')'] : [];
+    })(), series: ConcretToile.SERIES });
   })();
   // En bref (premier écran) : le dernier chiffre de chaque critère face à la moyenne de l'UE, chacun menant à sa courbe.
   (function () {
