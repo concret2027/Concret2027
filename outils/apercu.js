@@ -98,6 +98,13 @@ function carte(o) {
   var SQ = (S.vie || {}).QUIZ || [], jq = new Date(); jq.setHours(0, 0, 0, 0);
   var iq = Math.round((jq - new Date(2026, 0, 1)) / 864e5), Q1 = SQ.length ? SQ[((iq % SQ.length) + SQ.length) % SQ.length] : null;
   if (Q1 && fs.existsSync(path.join(ROOT, 'quiz', 'index.html'))) cartes.push({ f: 'quiz', titre: 'Quiz du jour', sous: jq.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) + ' · la France face à ses voisins, la note des présidents', quiz: Q1, pied: 'Chaque réponse renvoie à la courbe qui la prouve', adresse: 'concret2027.fr/quiz' });
+  // Votez les lois : le nombre de textes expliqués, prêts à voter, et le prochain vote fixé à l'ordre du jour.
+  var FV = path.join(ROOT, 'donnees', 'votes.json'), FX = path.join(ROOT, 'donnees', 'votez_explications.json');
+  if (fs.existsSync(FV) && fs.existsSync(FX) && fs.existsSync(path.join(ROOT, 'votez', 'index.html'))) {
+    var VZ = JSON.parse(fs.readFileSync(FV, 'utf8')), XV = JSON.parse(fs.readFileSync(FX, 'utf8')).explications || {};
+    var nx = Object.keys(XV).filter(function (k) { return XV[k].valide && !/^avenir:/.test(k); }).length, av = (VZ.AVENIR || [])[0];
+    cartes.push({ f: 'votez', titre: 'Votez les lois', sous: 'Les vrais votes de l\'Assemblée nationale, expliqués, à voter à votre tour', n: [String(nx), ' textes'], nt: 'à voter : voyez de quels groupes de députés vous êtes le plus proche', dates: av ? [['Prochain vote à l\'Assemblée', jl(av.d)]] : [], pied: 'Source : Assemblée nationale, données ouvertes · vos votes restent sur votre appareil', adresse: 'concret2027.fr/votez' });
+  }
   // Une image n'est refaite que si son contenu a changé (empreinte du texte de la carte) : le dépôt ne grossit pas chaque jour.
   var EMP = path.join(OUT, 'empreintes.json'), emp = fs.existsSync(EMP) ? JSON.parse(fs.readFileSync(EMP, 'utf8')) : {}, faites = [];
   for (var j = 0; j < cartes.length; j++) {

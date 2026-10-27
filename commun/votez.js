@@ -39,8 +39,8 @@
     '.vz-choix button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}' +
     '.vz-choix button:disabled{cursor:default}.vz-choix button:disabled:not([aria-pressed="true"]){opacity:.45}' +
     '.vz-choix button:focus-visible,.vz-passe:focus-visible,.vz-suite:focus-visible{outline:2px solid var(--fr);outline-offset:2px}' +
-    '.vz-passe{font:inherit;font-size:13px;color:var(--muted);background:none;border:0;padding:4px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;justify-self:start}' +
-    '.vz-off{font-size:12.5px;color:var(--muted)}.vz-off summary{cursor:pointer;font-weight:600}.vz-off p{margin:6px 0 0}.vz-off a{color:var(--fr)}' +
+    '.vz-passe{font:inherit;font-size:13.5px;color:var(--muted);background:none;border:0;padding:4px 0;min-height:40px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;justify-self:start}' +
+    '.vz-off{font-size:12.5px;color:var(--muted)}.vz-off summary{cursor:pointer;font-weight:600;min-height:40px;display:flex;align-items:center}.vz-off p{margin:6px 0 0}.vz-off a{color:var(--fr)}' +
     '.vz-rev{display:grid;gap:10px;padding:12px;border-radius:12px;background:var(--band);border:1px solid var(--line)}' +
     '.vz-sort{margin:0;font-size:15px}.vz-sort b{font-weight:700}.vz-sort small{display:block;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}' +
     '.vz-gr{display:grid;grid-template-columns:6.2em minmax(0,1fr);gap:6px 10px;align-items:start;font-size:13px}' +
@@ -232,7 +232,7 @@
   // L'explication, dans son propre encadré.
   function expl(q) {
     return q.expl ? '<div class="vz-boite"><span class="eyebrow">' + (q.k === 'censure' || q.k === 'confiance' ? 'Ce qui est en jeu' : 'Ce que prévoit le texte') + '</span><p class="vz-expl">' + esc(q.expl.e) + '</p><p class="vz-lu">Lu dans : <a href="' + esc(q.expl.url) + '">' + esc(q.expl.src) + '</a>' +
-      (q.explAvant || q.avenir ? ' (le texte tel qu\'il arrivait en séance : les députés peuvent le modifier pendant le débat)' : '') + '</p></div>' : '';
+      (q.explAvant || q.avenir ? ', avant le débat' : '') + '</p></div>' : '';
   }
   // Un vote à venir : on vote avant l'Assemblée ; le jour du vote, la carte montre ce qu'ont fait les groupes.
   function carteAvenir(el, q, D, o) {
@@ -270,8 +270,8 @@
       var info = esc(g.n) + ' (' + esc(g.c) + ') · ' + g.m + ' députés' + (x ? ' · vous : ' + x.pct + ' % d\'accord, sur ' + x.nb + ' vote' + (x.nb > 1 ? 's' : '') : '');
       var mid = (a0 + a1) / 2, court = g.c.replace('-NFP', ''), large = a0 - a1 > 0.2;
       // Le pourcentage d'accord écrit dans chaque part assez large (les autres : au toucher).
-      var pc = x && large ? '<text x="' + (cx + (R1 - 15) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 - 15) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="var(--fg)" style="paint-order:stroke;stroke:var(--panel);stroke-width:3px">' + x.pct + '\u00a0%</text>' : '';
-      var lab = large ? '<text x="' + (cx + (R1 + 13) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 + 13) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--muted)">' + esc(court) + '</text>' : '';
+      var pc = x && large ? '<text x="' + (cx + (R1 - 15) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 - 15) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--fg)" style="paint-order:stroke;stroke:var(--panel);stroke-width:3px">' + x.pct + '\u00a0%</text>' : '';
+      var lab = large ? '<text x="' + (cx + (R1 + 13) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 + 13) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--muted)">' + esc(court) + '</text>' : '';
       return '<g class="vz-hs" tabindex="0" data-info="' + info + '"' + (x ? ' data-pct="' + x.pct + '" data-c="' + esc(court) + '"' : '') + '><path d="' + secteur(a0 - ecart, a1 + ecart, r0, R1) + '" fill="' + g.coul + '" opacity=".16"/>' +
         (x ? '<path d="' + secteur(a0 - ecart, a1 + ecart, r0, rb) + '" fill="' + g.coul + '"/>' : '') + lab + pc + '</g>';
     }).join('');
@@ -288,12 +288,14 @@
       var c = (D.G[g.c] || {}).coul || 'var(--fr)';
       return '<li' + (i >= 3 ? ' class="vz-plus3" hidden' : '') + '><i style="background:' + c + '"></i><span class="n">' + esc(g.n) + ' <small>' + esc(g.c) + '</small></span><span class="v">' + g.pct + ' %</span><span class="b"><i style="width:' + g.pct + '%;background:' + c + '"></i></span></li>';
     }).join('');
-    var top = R.groupes.filter(function (g) { return g.pct === (R.groupes[0] || {}).pct; });
+    // Écart de moins de 3 points avec le suivant : les deux groupes sont nommés, « presque à égalité ».
+    var top = R.groupes.filter(function (g, i) { return i < 2 && (R.groupes[0] || {}).pct - g.pct < 3; });
     el.innerHTML = '<span class="eyebrow">Votre hémicycle' + (R.nb ? ' · ' + R.nb + ' vote' + (R.nb > 1 ? 's' : '') : '') + '</span>' +
-      '<h2>' + (assez ? 'Vous votez le plus souvent comme ' + (top.length > 1 ? 'les groupes ' + top.map(function (g) { return esc(g.n); }).join(' et ') : 'le groupe ' + esc(top[0].n)) : 'Votre hémicycle se remplit à partir de ' + MIN + ' votes') + '</h2>' +
+      '<h2>' + (assez ? 'Vous votez le plus souvent comme ' + (top.length > 1 ? top.map(function (g) { return esc(g.n) + ' (' + g.pct + '\u00a0%)'; }).join(' et ') + ', presque à égalité' : 'le groupe ' + esc(top[0].n)) : 'Votre hémicycle se remplit à partir de ' + MIN + ' votes') + '</h2>' +
       hemicycle(D, assez ? R : null) +
       '<p class="vz-lire">Chaque groupe est à sa place dans l\'hémicycle, de la gauche à la droite. ' + (assez ? 'Plus sa part est colorée, plus vous votez comme lui. Touchez un groupe pour voir son nom.' : 'Encore ' + (MIN - R.nb) + ' vote' + (MIN - R.nb > 1 ? 's' : '') + ' : avant, le résultat dépendrait d\'un ou deux textes seulement.') + '</p>' +
-      (assez ? '<ul class="vz-bars">' + liste + '</ul>' + (R.groupes.length > 3 ? '<button type="button" class="vz-plus">Voir les ' + R.groupes.length + ' groupes</button>' : '') : '') +
+      (assez ? '<ul class="vz-bars">' + liste + '</ul>' + (R.groupes.length > 3 ? '<button type="button" class="vz-plus">Voir les ' + R.groupes.length + ' groupes</button>' : '') +
+        '<button type="button" class="vz-suite vz-partage">Partager mon résultat</button><p class="vz-lire vz-copie" hidden></p>' : '') +
       '<details class="vz-off"><summary>En détail : les groupes et le calcul</summary>' +
       '<p>' + D.groupes.filter(function (g) { return g.a != null; }).slice().sort(function (p, q) { return q.a - p.a; }).map(function (g) { return '<b>' + esc(g.c) + '</b> : ' + esc(g.n) + ' (' + g.m + ' députés)'; }).join(' · ') + '.</p>' +
       '<p>Accord avec un groupe : 1 si vous avez voté comme la majorité de ses députés, ½ si l\'un des deux s\'est abstenu et pas l\'autre, 0 sinon ; le pourcentage est la moyenne sur vos votes où le groupe avait une position.' +
@@ -314,6 +316,14 @@
       g.addEventListener('focus', function () { montre(g); });
     });
     box.addEventListener('pointerleave', function () { montre(null); });
+    // Partager : une ligne de texte, seulement si la personne le demande (rien n'est envoyé au site).
+    var pa = el.querySelector('.vz-partage');
+    if (pa) pa.addEventListener('click', function () {
+      var g = R.groupes[0], txt = 'Sur ' + R.nb + ' vrais votes de l\'Assemblée, je vote comme le groupe ' + g.n + ' à ' + g.pct + ' %. Et vous ?', url = 'https://concret2027.fr/votez/';
+      var dit = el.querySelector('.vz-copie');
+      if (navigator.share) navigator.share({ text: txt, url: url }).catch(function () {});
+      else if (navigator.clipboard) navigator.clipboard.writeText(txt + ' ' + url).then(function () { dit.textContent = 'Copié : collez-le où vous voulez.'; dit.hidden = false; }, function () {});
+    });
     var plus = el.querySelector('.vz-plus');
     if (plus) plus.addEventListener('click', function () { Array.prototype.forEach.call(el.querySelectorAll('.vz-plus3'), function (li) { li.hidden = false; }); plus.remove(); });
     return R;

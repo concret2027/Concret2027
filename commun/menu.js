@@ -41,7 +41,7 @@
       'background:linear-gradient(to right,transparent,' + V.bg + ' 26px);box-shadow:24px 0 0 0 ' + V.bg + ';border:0;padding:4px 2px 4px 34px;cursor:pointer}' +
     '.mn-btn span{display:inline-flex;align-items:center;gap:6px;border:1.5px solid ' + V.fg + ';border-radius:999px;padding:4px 11px;background:' + V.panel + '}' +
     '.mn-btn:focus-visible span{outline:2px solid ' + V.fr + ';outline-offset:2px}' +
-    '@media (max-width:900px){.mn-btn{display:inline-flex}}' +
+    '.mn-btn{display:inline-flex}' +
     '.mn-voile{position:fixed;inset:0;z-index:50;background:rgba(10,12,18,.5);display:flex;justify-content:flex-end}' +
     '.mn-panneau{background:' + V.bg + ';width:min(100%,420px);height:100%;overflow:auto;padding:max(14px,env(safe-area-inset-top,0px)) 16px max(20px,env(safe-area-inset-bottom,0px));display:grid;align-content:start;gap:10px;box-sizing:border-box}' +
     '.mn-haut{display:flex;justify-content:space-between;align-items:center;padding:4px 2px 6px}.mn-haut b{font-family:"Newsreader",Georgia,serif;font-weight:500;font-size:24px;color:' + V.fg + '}' +
@@ -63,10 +63,13 @@
     '.mn-contact{margin:2px 0 0;font-size:14px;color:' + V.muted + '}.mn-contact a{color:' + V.fr + ';font-weight:600}' +
     '.mn-autres{display:grid;gap:10px;margin:8px 0 4px}.mn-autres h2{font-size:19px;font-weight:600;margin:0;color:' + V.fg + '}' +
     '@media (min-width:760px){.mn-autres .mn-liste{grid-template-columns:repeat(4,minmax(0,1fr))}}' +
-    // Sur téléphone, le bandeau garde le logo, le Baromètre, le Quiz, la loupe et le Menu ; les autres pages sont dans le Menu.
-    '@media (max-width:520px){nav.site>a:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]){display:none}nav.site>a{padding-block:8px}nav.site{gap:12px!important}.mn-btn{padding-left:12px}}' +
-    // Le Baromètre et le Quiz, les deux rendez-vous quotidiens, ressortent dans le bandeau.
-    'nav.site>a[href="/barometre/"],nav.site>a[href="/quiz/"]{color:' + V.fg + ';font-weight:600}' +
+    // Le bandeau tient toujours en entier : le logo, les rendez-vous quotidiens (Baromètre, Quiz, Votez), la vie politique et la page
+    // en cours ; toutes les pages sont dans le Menu, visible à toutes les largeurs. Sur téléphone : logo, rendez-vous, loupe et Menu.
+    'nav.site>a:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]):not([href="/politique/"]):not([aria-current]){display:none}' +
+    '@media (max-width:520px){nav.site>a[href="/politique/"]:not([aria-current]),nav.site>a[aria-current]:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]){display:none}nav.site>a{padding-block:8px}nav.site{gap:11px!important}.mn-btn{padding-left:8px}nav.site .rech-b{display:none}}' +
+    '@media (max-width:380px){nav.site{gap:8px!important}nav.site a.logo{font-size:17px!important}.mn-btn span{padding:4px 9px}}' +
+    // Les trois rendez-vous quotidiens ressortent dans le bandeau.
+    'nav.site>a[href="/barometre/"],nav.site>a[href="/quiz/"],nav.site>a[href="/votez/"]{color:' + V.fg + ';font-weight:600}' +
     // Lisibilité commune à toutes les pages : textes d'appoint pas trop petits, graduations des graphiques lisibles, zones à toucher assez grandes.
     '.note{font-size:14px;line-height:1.45}.bx-note{font-size:13.5px}.eyebrow{font-size:12.5px}svg .tick text{font-size:12px}' +
     // Pastilles des tableaux « Année par année » : point marqué, pas de point, demi-point (égalité).
@@ -161,10 +164,6 @@
     if (nav && !nav.querySelector('.mn-btn')) {
       var b = document.createElement('button'); b.type = 'button'; b.className = 'mn-btn'; b.setAttribute('aria-haspopup', 'dialog');
       b.innerHTML = '<span>☰ Menu</span>'; b.addEventListener('click', function () { ouvrir(b); }); nav.appendChild(b);
-      // Le bandeau défile jusqu'à la page en cours, pour qu'elle ne soit pas cachée derrière le bouton.
-      var cur = nav.querySelector('a[aria-current]:not(.logo)');
-      // (Sur téléphone, le bandeau tient en entier : il reste calé à gauche, logo visible.)
-      if (cur && nav.scrollWidth > nav.clientWidth + 8 && !(window.matchMedia && matchMedia('(max-width: 520px)').matches)) nav.scrollLeft = Math.max(0, cur.offsetLeft - nav.offsetLeft - 110);
     }
     // Sur l'accueil : la même icône devant chaque page de la liste des missions, des repères, du Baromètre et du Quiz.
     Array.prototype.forEach.call(document.querySelectorAll('#missions a.pg, #reperes a.pg, #rendez-vous a.pg'), function (a) {
