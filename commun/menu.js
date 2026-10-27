@@ -103,7 +103,7 @@
   // Textes sous les courbes : au-delà de trois lignes, on n'en montre que deux, avec un lien « Détail du graphe » qui déplie
   // le reste. Les pages réécrivent ces textes quand elles redessinent une courbe : on les revoit à chaque changement.
   // Sur le Baromètre, les explications en tête de chaque bloc aussi (« Lire la suite »).
-  var NT = '.chart ~ p.note, .bx-card > p.bx-note, .bx-group > p.bx-note';
+  var NT = '.chart ~ p.note, .toile-svg ~ p.note, .bx-card > p.bx-note, .bx-group > p.bx-note';
   function plier() {
     Array.prototype.forEach.call(document.querySelectorAll(NT), function (n) {
       if (n.classList.contains('pt-hors') || n.classList.contains('defs')) return;
