@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="71deac05c484">
+<meta name="concret-version" content="16fb28dd7b2c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -397,7 +397,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <h2 id="cl-g"><span class="eyebrow">Le classement général</span>Les gouvernements</h2>
     <div class="bars" id="t-gov"></div>
     <p class="note">Sébastien Lecornu sera noté quand les chiffres de 2026 seront publiés. Michel Barnier n'est pas noté à part : chaque année compte pour un seul gouvernement, et 2024 pour Gabriel Attal.</p>
-    <details class="sous"><summary>Notes provisoires ou fragiles, missions non notées</summary><div><p class="note">Une note « provisoire » repose sur moins d'une année complète de chiffres et changera à leur publication ; une note « fragile » aussi, parce que les séries commencent pendant le mandat. Dans la moyenne, ces notes (marquées *) pèsent selon leurs comparaisons : 3 comparaisons sur les 10 d'une année complète comptent pour 0,3 mission. Quand une mission n'a pas encore de chiffres pour un mandat (les séries de l'éducation commencent en 2002, la plupart de celles de la santé entre 2000 et 2011), elle n'entre pas dans la moyenne : touchez une ligne pour voir pourquoi. Éducation : résultats PISA répartis sur les dix années de scolarité des élèves (choix modifiable sur la page Éducation). Classement établi le 22 octobre 2026.</p></div></details>
+    <details class="sous"><summary>Notes provisoires ou sur peu d'années, missions non notées</summary><div><p class="note">Une note « provisoire » repose sur moins d'une année complète de chiffres et changera à leur publication ; une note « sur peu d'années » aussi, parce que les séries commencent pendant le mandat. Dans la moyenne, ces notes (marquées *) pèsent selon leurs comparaisons : 3 comparaisons sur les 10 d'une année complète comptent pour 0,3 mission. Quand une mission n'a pas encore de chiffres pour un mandat (les séries de l'éducation commencent en 2002, la plupart de celles de la santé entre 2000 et 2011), elle n'entre pas dans la moyenne : touchez une ligne pour voir pourquoi. Éducation : résultats PISA répartis sur les dix années de scolarité des élèves (choix modifiable sur la page Éducation). Classement établi le 22 octobre 2026.</p></div></details>
   </section>
 
   <section class="card" id="pouls" aria-labelledby="po-t">
@@ -699,7 +699,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   var MISS = ConcretNotes.MISSIONS;
   // Peu de comparaisons : « provisoire » si le mandat est récent (chiffres pas encore publiés), « fragile » sinon (les séries commencent pendant ou après le mandat).
   var recent = function (r) { return r.y1 >= new Date().getFullYear() - 3; };
-  var mot = function (r) { return recent(r) ? 'provisoire' : 'fragile'; };
+  var mot = function (r) { return recent(r) ? 'provisoire' : 'sur peu d\'années'; };
   function period(r, series) {
     var y = r.y0 === r.y1 ? String(r.y0) : r.y0 + '-' + r.y1, cur = (series.finances.PRES.concat(series.finances.GOVS)).filter(function (g) { return g.n === r.n && /en cours/.test(g.p || ''); })[0];
     return y + (cur ? ', en exercice' : '');

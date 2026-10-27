@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="71deac05c484">
+<meta name="concret-version" content="16fb28dd7b2c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -467,7 +467,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
 
   <section class="card" id="bulletin" aria-labelledby="gov-title">
-    <h2 id="gov-title"><span class="eyebrow">Le bulletin de la sécurité et de la justice</span>Présidents et gouvernements : qui a fait mieux que nos voisins ?</h2>
+    <h2 id="gov-title"><span class="eyebrow">Les notes de la sécurité et de la justice</span>Président par président : la France face à la moyenne de l'UE</h2>
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
@@ -774,9 +774,9 @@ function main(FEED) {
       svg.append('rect').attr('x', 0).attr('y', y).attr('width', W).attr('height', rh).attr('fill', 'transparent').style('cursor', 'pointer').on('click', function () { openDetail(mode, r.g); });
       svg.append('text').attr('x', lw - 8).attr('y', y + 16).attr('text-anchor', 'end').text(name).style('fill', 'var(--fg)').style('font-size', '12px').style('pointer-events', 'none');
       svg.append('rect').attr('x', x(0)).attr('y', y + 5).attr('width', Math.max(2, x(r.n) - x(0))).attr('height', 17).attr('rx', 3).attr('fill', few ? 'var(--axis)' : col(r.n)).style('pointer-events', 'none');
-      svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' (note fragile)' : '')).style('fill', few ? 'var(--fg)' : inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
+      svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' (peu d\'années)' : '')).style('fill', few ? 'var(--fg)' : inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
     });
-    setHtml('rank-' + mode + '-note', 'En gris, « note fragile » : moins de ' + MIN_N + ' comparaisons, soit moins d\'une année complète de chiffres (mandat court, ou séries européennes qui commencent après), donc peu fiable. Une note ne couvre que les thèmes qui ont des chiffres pendant le mandat. Touchez une barre pour voir le détail.');
+    setHtml('rank-' + mode + '-note', 'En gris, « peu d\'années » : moins de ' + MIN_N + ' comparaisons, soit moins d\'une année complète de chiffres (mandat court, ou séries européennes qui commencent après). Une note ne couvre que les thèmes qui ont des chiffres pendant le mandat. Touchez une barre pour voir le détail.');
   }
   document.getElementById('gov-more').addEventListener('click', function () {
     showAll = !showAll; this.setAttribute('aria-expanded', showAll); this.textContent = showAll ? 'Masquer le détail des autres gouvernements' : 'Voir le détail des autres gouvernements'; renderGov();
@@ -1170,7 +1170,7 @@ function main(FEED) {
       return '<b>' + esc(t.q) + '.</b> ' + (parts.length ? parts.join(' ') : 'Pas assez d\'années comparables pour mesurer une évolution.');
     });
     var pr = PRES.map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
-    items.push('<b>Au bulletin</b>, ' + pr.map(function (r) { return esc(r.g.n) + ' ' + nfmt(r.n) + '/20'; }).join(', ') + '. La note mesure si la France a progressé plus vite que ses voisins, ou a tenu son avance.');
+    items.push('<b>Les notes</b> : ' + pr.map(function (r) { return esc(r.g.n) + ' ' + nfmt(r.n) + '/20'; }).join(', ') + '. La note mesure si la France a progressé plus vite que ses voisins, ou a tenu son avance.');
     setHtml('sum-list', items.map(function (t) { return '<li>' + t + '</li>'; }).join(''));
   })();
 
