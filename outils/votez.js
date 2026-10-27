@@ -22,7 +22,7 @@ function norm(s) {
   s = s.replace(/&nbsp;/g, ' ').replace(/&#x?([0-9a-f]+);/gi, function (m, n) { return String.fromCharCode(/^x/i.test(m.slice(2)) ? parseInt(n, 16) : parseInt(n, 10)); })
     .replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&rsquo;/g, '’').replace(/&laquo;/g, '«').replace(/&raquo;/g, '»');
   return s.normalize('NFC').replace(/[‐‑–]/g, '-').replace(/[   ]/g, ' ').replace(/[’‘]/g, '\'').replace(/œ/g, 'oe')
-    .replace(/\b1\s*er\b/g, '1er').replace(/\s+/g, ' ').replace(/ ?- ?/g, '-').replace(/ ([,.;:)])/g, '$1').replace(/([('«]) /g, '$1').replace(/ »/g, '»').trim().toLowerCase();
+    .replace(/\b1\s*er\b/g, '1er').replace(/\bn\s+o(s?)\s*(?=\d)/g, 'no$1 ').replace(/\s+/g, ' ').replace(/ ?- ?/g, '-').replace(/ ([,.;:)])/g, '$1').replace(/([('«]) /g, '$1').replace(/ »/g, '»').trim().toLowerCase();
 }
 var cache = {};
 function doc(u) {
