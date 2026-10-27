@@ -84,7 +84,14 @@
       var el = document.getElementById(id), k = cle(id), dejaUS = series.some(function (x) { return x && x.c === 'var(--us)'; });
       if (el && k) { poserBarre(el, k); var bb = el.nextElementSibling; if (bb && bb.classList.contains('cp-bar')) { if (dejaUS) bb.dataset.us = '1'; else delete bb.dataset.us; barre(bb); } }
       if (!data || !k || !choisis.length) return series;
-      return series.concat(choisis.map(function (g) { if (g === 'US' && dejaUS) return null; var v = valeurs(k, g); return v && { c: couleur(g), n: nom(g), dash: 1, data: v, pays: g }; }).filter(Boolean));
+      // Les années du pays ajouté restent dans celles de la courbe (pas de trait qui déborde à gauche ou à droite).
+      var xs = []; series.forEach(function (x) { (x && x.data || []).forEach(function (d) { if (d && typeof d.x === 'number' && d.v != null) xs.push(d.x); }); });
+      var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+      return series.concat(choisis.map(function (g) {
+        if (g === 'US' && dejaUS) return null;
+        var v = valeurs(k, g); if (v && xs.length) v = v.filter(function (d) { return d.x >= x0 && d.x <= x1; });
+        return v && v.length && { c: couleur(g), n: nom(g), dash: 1, data: v, pays: g };
+      }).filter(Boolean));
     },
     // La toile : ses axes reçoivent la valeur du pays à l'année de l'axe (sinon rien : la forme est coupée).
     toile: function (id, dessiner, o) {
