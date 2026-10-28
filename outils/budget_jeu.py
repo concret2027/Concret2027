@@ -452,7 +452,7 @@ def construire():
             cartes.append({'id': 'smic-%d' % pc, 'origine': 'levier', 'exclusif': 'smic',
                            'l': "Augmenter le SMIC de %d %% en %s, en plus de sa revalorisation automatique" % (pc, date.today().year + 1),
                            'quoi': "Le SMIC brut passe de %s € à %s € par mois." % (fr_nb(E['smic_mensuel_brut']['valeurs']['brut']), fr_nb(E['smic_mensuel_brut']['valeurs']['brut'] * (1 + pc / 100))),
-                           'theme': 'travail', 'qui': ['smic', 'entreprises'], 'qui_titre': 'Qui reçoit et qui paie', 'qui_texte': 'Salariés au SMIC (plus de salaire) ; employeurs (coût du travail)',
+                           'theme': 'travail', 'qui': ['smic', 'entreprises'], 'qui_bilan': ['smic'], 'qui_titre': 'Qui reçoit et qui paie', 'qui_texte': 'Salariés au SMIC (plus de salaire) ; employeurs (coût du travail)',
                            'macro': None, 'sens': 'depense', 'effet': {str(date.today().year + 1): round(pc * x['valeurs']['total'] / 1000, 3)},
                            'note': "Chiffrage de la DG Trésor pour une hausse de 1 %% (coût des allègements de cotisations, salaires publics, prestations, impôts), sans effet sur l'emploi ; Concret le multiplie par %d. Effet sur l'emploi : le groupe d'experts sur le SMIC retient qu'une hausse de 1 %% du coût du travail au niveau du SMIC réduit la demande de travail à ce niveau de %s à %s %% ; aucune source officielle ne donne un nombre d'emplois, il n'est pas compté ici." % (pc, fr_nb(-el['valeurs']['basse']), fr_nb(-el['valeurs']['haute'])) if el else '',
                            'src': {'doc': x['l'], 'page': x.get('page'), 'url': x['url'], 'citation': x['citation']}})
@@ -515,9 +515,13 @@ def construire():
         an2 = date.today().year + 1
         ass('ir', "Impôt sur le revenu", 'recette', AE['ir_net']['valeurs']['2027_plf'], an2, ['menages_imposables'], 'ir', asx('ir_net'), "Recette nette prévue pour l'État en " + str(an2) + " (projet de loi de finances).", ['ir-indexation-bareme'])
         ass('is', "Impôt sur les sociétés", 'recette', AE['is_net']['valeurs']['2027_plf'], an2, ['entreprises'], None, asx('is_net'), "Recette nette prévue pour l'État en " + str(an2) + " (projet de loi de finances). Le modèle Mésange (direction du Trésor et Insee) ne donne pas l'effet de cet impôt sur l'activité.")
-        ass('tva', "TVA (part de l'État)", 'recette', AE['tva_nette_etat']['valeurs']['2027_plf'], an2, ['consommateurs'], 'tva', asx('tva_nette_etat'), "Recette nette de l'État ; une autre part de la TVA va à la Sécurité sociale et aux collectivités.")
+        # Toute la TVA des administrations publiques (Eurostat) : un changement de taux touche aussi les parts de la Sécurité sociale et des collectivités.
+        if 'tva_apu' in AE:
+            ass('tva', "TVA", 'recette', AE['tva_apu']['valeurs']['2025_eurostat'], 2025, ['consommateurs'], 'tva', asx('tva_apu'), "Toute la TVA des administrations publiques (État, Sécurité sociale, collectivités) : un changement de taux touche chacune de ces parts. Montant de 2025, qui suit ensuite la croissance de l'économie.")
+        else:
+            ass('tva', "TVA (part de l'État)", 'recette', AE['tva_nette_etat']['valeurs']['2027_plf'], an2, ['consommateurs'], 'tva', asx('tva_nette_etat'), "Recette nette de l'État ; une autre part de la TVA va à la Sécurité sociale et aux collectivités.")
         ass('csg', "CSG (contribution sociale généralisée)", 'recette', AE['csg_produit']['valeurs']['2027_p'] / 1000, an2, ['salaries', 'retraites'], 'csg', asx('csg_produit'), "Produit prévu (Commission des comptes de la Sécurité sociale) ; un point de CSG rapporte environ 18,4 Md€.")
-        ass('carburants', "Taxes sur les carburants (accise, ex-TICPE)", 'recette', AE['accise_energies_nette']['valeurs']['2027_plf_euros_carburants'] / 1e9, an2, ['automobilistes', 'consommateurs'], None, asx('accise_energies_nette'), "Part de l'État. Le modèle Mésange (direction du Trésor et Insee) ne donne pas l'effet de cette taxe sur l'activité.")
+        ass('carburants', "Taxes sur les carburants (accise, ex-TICPE)", 'recette', AE['accise_energies_nette']['valeurs']['2027_plf_euros_carburants'] / 1e9, an2, ['automobilistes', 'consommateurs'], None, asx('accise_energies_nette'), "Part de l'État seulement : les régions et départements reçoivent aussi une part de cette taxe, que la source ne chiffre pas ici. Le montant d'un changement de tarif est donc un minimum. Le modèle Mésange (direction du Trésor et Insee) ne donne pas l'effet de cette taxe sur l'activité.")
         ass('ame', "Aide médicale de l'État (AME)", 'depense', AE['ame_credits_2027']['valeurs']['2027_plf_CP'] / 1e9, an2, ['etrangers'], 'depense', asx('ame_credits_2027'),
             "Crédits prévus. En 2025, la dépense réelle a été de 1,47 Md€ pour 1,21 Md€ de crédits ; " + '{:,}'.format(AE['ame_beneficiaires']['valeurs']['31_12_2025']).replace(',', ' ') + " bénéficiaires fin 2025.")
         ass('c2s', "Complémentaire santé solidaire (C2S, ex-CMU complémentaire)", 'depense', AE['c2s_depense']['valeurs']['2024_depense_nette'], 2024, ['assures'], 'depense', asx('c2s_depense'), "Dépense nette 2024, dernier chiffre publié ; 7,79 millions de bénéficiaires fin 2024.")
@@ -568,21 +572,32 @@ def construire():
         debat('franchises-x2', "Doubler les franchises médicales et les participations forfaitaires", "Ce qui reste à payer par le patient sur les médicaments, consultations et transports (franchises et participations) double, plafonds compris.", 'sante', ['assures'], 'depense', 'depense',
               {str(a1): MD['franchises_doublement']['valeurs']['doublement des montants et plafonds, année pleine (Md€)']}, 'franchises_doublement', "Chiffrage en année pleine (Cour des comptes, 2026) ; ce doublement avait été annoncé puis abandonné.")
         ra = MD['retraite_age_cour_comptes_2025']['valeurs']
-        def rampe(v35):
-            # Le chiffrage porte sur 2035 : Concret le fait monter en ligne droite depuis 2027 (hypothèse écrite sur la carte).
-            return {str(a): round(v35 * (a - a1 + 1) / (2035 - a1 + 1), 3) for a in range(a1, 2032)}
+        def rampe(v35, debut):
+            # Le chiffrage porte sur 2035. L'effet commence l'année où l'âge change vraiment pour quelqu'un (d'après le calendrier
+            # écrit sur la carte), puis Concret le fait monter en ligne droite jusqu'en 2035 (hypothèse écrite sur la carte).
+            # Pas d'effet avant 2032 : 0 chaque année du jeu.
+            if debut > 2031: return {str(a1): 0.0}
+            return {str(a): (round(v35 * (a - debut + 1) / (2035 - debut + 1), 3) if a >= debut else 0.0) for a in range(a1, 2032)}
         age = ['retraite-62', 'retraite-63', 'retraite-65', 'retraites-fin-suspension']
-        noteR = "Chiffrage de la Cour des comptes pour 2035 (système de retraite) ; Concret le fait monter en ligne droite de %d à 2035 (hypothèse). " % a1
+        noteR = "Chiffrage de la Cour des comptes pour 2035 (système de retraite). "
+        cal = "D'après ce calendrier, l'âge minimum passe 63 ans pour les personnes nées en 1966 (en 2029) et atteint 64 ans pour celles nées en 1969 (en 2033). "
+        n62 = noteR + "L'âge de 62 ans change les départs dès %d (aujourd'hui, 62 ans et 9 mois) ; Concret fait monter l'effet en ligne droite de %d à 2035 (hypothèse). " % (a1, a1)
+        n63 = noteR + cal + "S'arrêter à 63 ans change donc les départs à partir de 2029 environ ; Concret fait monter l'effet en ligne droite de 2029 à 2035 (hypothèse). "
+        n65 = noteR + cal + "Passer à 65 ans ne change donc les départs qu'après 2031 : rien n'est compté dans les cinq ans du jeu. "
+
         debat('retraite-63', "Ramener l'âge légal de départ à la retraite à 63 ans", "L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026). La hausse s'arrête à 63 ans au lieu de 64 ans. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], 'depense', 'depense',
-              rampe(-ra['âge ramené de 64 à 63 ans : dépense supplémentaire en 2035 (Md€)']), 'retraite_age_cour_comptes_2025', noteR + "Dépense en plus en 2035 : 5,8 Md€.", [x for x in age if x != 'retraite-63'], 'Qui reçoit')
+              rampe(-ra['âge ramené de 64 à 63 ans : dépense supplémentaire en 2035 (Md€)'], 2029), 'retraite_age_cour_comptes_2025', n63 + "Dépense en plus en 2035 : 5,8 Md€.", [x for x in age if x != 'retraite-63'], 'Qui reçoit')
         debat('retraite-62', "Revenir à la retraite à 62 ans", "L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026). L'âge minimum est ramené à 62 ans pour tous, au lieu de 64 ans à terme. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], 'depense', 'depense',
-              rampe(-ra['retour à 62 ans : « en gros, deux fois plus » (Md€, ordre de grandeur)']), 'retraite_age_cour_comptes_2025', noteR + "Pour 62 ans, la Cour dit « en gros, deux fois plus » que pour 63 ans : 11,6 Md€ en 2035 (ordre de grandeur).", [x for x in age if x != 'retraite-62'], 'Qui reçoit')
+              rampe(-ra['retour à 62 ans : « en gros, deux fois plus » (Md€, ordre de grandeur)'], a1), 'retraite_age_cour_comptes_2025', n62 + "Pour 62 ans, la Cour dit « en gros, deux fois plus » que pour 63 ans : 11,6 Md€ en 2035 (ordre de grandeur).", [x for x in age if x != 'retraite-62'], 'Qui reçoit')
         debat('retraite-65', "Porter l'âge légal de départ à la retraite à 65 ans", "L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026). L'âge minimum est porté à 65 ans à terme, au lieu de 64 ans. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], 'depense', 'depense',
-              rampe(ra['âge porté à 65 ans : gain en 2035 (Md€)']), 'retraite_age_cour_comptes_2025', noteR + "Économie en 2035 : 8,4 Md€.", [x for x in age if x != 'retraite-65'])
+              rampe(ra['âge porté à 65 ans : gain en 2035 (Md€)'], 2032), 'retraite_age_cour_comptes_2025', n65 + "Économie en 2035 : 8,4 Md€, après les cinq ans du jeu. Se vote avec « Revenir à la réforme des retraites », qui accélère la hausse jusqu'à 64 ans.", ['retraite-62', 'retraite-63'])
+        cartes[-1]['hors_jeu'] = {'an': 2035, 'md': ra['âge porté à 65 ans : gain en 2035 (Md€)']}
         f = MD['fonctionnaires_non_remplacement_un_sur_deux']['valeurs']
         debat('fonctionnaires-1-sur-2', "Ne remplacer qu'un fonctionnaire de l'État sur deux partant à la retraite", "La moitié des agents de l'État qui partent à la retraite ne sont pas remplacés.", 'etat', ['agents_publics'], 'depense', 'depense',
-              {str(a1): f["économie brute immédiate, budget de l'État (M€ par an)"] / 1000, str(a1 + 1): f['économie à moyen terme, au coût moyen sur la carrière (M€ par an)'] / 1000}, 'fonctionnaires_non_remplacement_un_sur_deux',
-              "Chiffrage de la Cour des comptes (2015), le plus récent : montants de 2015, sans la hausse des salaires depuis.")
+              # Chaque année, une nouvelle vague de départs n'est pas remplacée : les économies s'ajoutent (0,75 Md€ la première année
+              # pour chaque vague, 0,98 Md€ les années suivantes).
+              {str(a): round((f["économie brute immédiate, budget de l'État (M€ par an)"] + f['économie à moyen terme, au coût moyen sur la carrière (M€ par an)'] * (a - a1)) / 1000, 3) for a in range(a1, 2032)}, 'fonctionnaires_non_remplacement_un_sur_deux',
+              "Chiffrage de la Cour des comptes (2015), le plus récent : montants de 2015, sans la hausse des salaires depuis. Chaque année, la moitié des départs de l'année n'est pas remplacée : les économies s'ajoutent. Concret compte, pour chaque vague de départs, 0,75 Md€ la première année et 0,98 Md€ les années suivantes (« à moyen terme », selon la Cour). De 2008 à 2012, la même règle a économisé 4,2 Md€ en cinq ans.")
         ass('audiovisuel', 'Audiovisuel public (France Télévisions, Radio France, Arte…)', 'depense', MD['audiovisuel_public_2027']['valeurs']["TVA affectée au compte « Avances à l'audiovisuel public », 2027 (€)"] / 1e9, a1, ['culture'], 'depense',
             {'l': MD['audiovisuel_public_2027']['l'], 'page': MD['audiovisuel_public_2027'].get('page'), 'url': MD['audiovisuel_public_2027']['url'], 'citation': MD['audiovisuel_public_2027']['citation']}, "Part de TVA affectée à l'audiovisuel public en " + str(a1) + ".")
     # Budget de l'État : chaque mission et chaque programme du projet de loi de finances (crédits de paiement de l'année à venir,
@@ -689,7 +704,7 @@ def construire():
         if c['id'] in QUI_CLAIR: c['qui_texte'] = QUI_CLAIR[c['id']]
         if c['id'] in QUI_TITRE: c['qui_titre'] = QUI_TITRE[c['id']]
         ks = sorted(c['effet'])
-        c['duree'] = 'une seule année' if c.get('ponctuelle') and len(ks) == 1 else 'par an'
+        c['duree'] = 'une seule année' if c.get('ponctuelle') else 'par an'
     # Paramètres du modèle.
     var = {}
     for t, cle in MACRO.items():
