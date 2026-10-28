@@ -131,6 +131,8 @@
     '.mn-btn span{display:inline-flex;align-items:center;gap:6px;border:1.5px solid ' + V.fg + ';border-radius:999px;padding:9px 14px;background:' + V.panel + '}' +
     // Zones à toucher de 44 px au moins (pages du bandeau, raccourcis « Aller à »), pour tous les doigts.
     'nav.site>a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;justify-content:center;padding:0 4px;box-sizing:border-box}' +
+    // En flex, l'espace en tête de « 2027 », « du jour », « les lois » disparaît : on le remet (sinon « Baromètre2027 » sur ordinateur).
+    'nav.site>a .lg{margin-left:.28em}' +
     'nav.jump a,.jump-l1>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}' +
     '.mn-btn:focus-visible span{outline:2px solid ' + V.fr + ';outline-offset:2px}' +
     '.mn-btn{display:inline-flex}' +
@@ -224,6 +226,28 @@
     }
     return b;
   }
+  // Ce qui n'est pas compté s'explique là où on le voit, jamais replié : dans une note qui va être repliée, les phrases
+  // « Non compté… », « … ne sont pas comptées », « Affiché, pas compté… », « France seule… » passent dans une ligne à part,
+  // toujours visible, juste sous la note et son bouton (p.note.nt-garde) ; le reste (méthode, sources) peut se replier.
+  var GARDE = /non compt|pas compté|ces années ne sont pas comptées|ne sont pas comptées|pas encore publi|France seule/i, REGLE = /sous 70 %/;
+  function phrases(html) {
+    // Coupe après « . » ou « ; » suivi d'une majuscule, sans couper au milieu d'un lien (sans lookbehind : vieux Safari).
+    var L = [], cur = '', re = /([.;])(\s+)(?=[A-ZÀ-ÖØ-Ý«(])/g, i = 0, m, ouvert = function (t) { return (t.match(/<a\b/g) || []).length > (t.match(/<\/a>/g) || []).length; };
+    while ((m = re.exec(html))) { cur += html.slice(i, m.index + 1); i = m.index + m[0].length; if (!ouvert(cur)) { L.push(cur); cur = ''; } else cur += m[2]; }
+    cur += html.slice(i); if (cur) L.push(cur); return L;
+  }
+  function garder(n) {
+    if (n.dataset.ntVide) { n.hidden = false; delete n.dataset.ntVide; }
+    var g = [], r = [];
+    phrases(n.innerHTML).forEach(function (x) { var tx = x.replace(/<[^>]+>/g, ''); (GARDE.test(tx) && !REGLE.test(tx) ? g : r).push(x); });
+    if (!g.length) return;
+    // La ligne gardée va sous la note et son bouton (la page cherche sa note avec querySelector('.note') : elle doit rester la première).
+    var sib = n._garde && n._garde.parentNode ? n._garde : null;
+    if (!sib) { sib = document.createElement('p'); sib.className = 'note nt-garde'; n._garde = sib; var b = bouton(n); b.parentNode.insertBefore(sib, b.nextSibling); }
+    if (sib.innerHTML !== g.join(' ')) sib.innerHTML = g.join(' ');
+    n.innerHTML = r.join(' ');
+    if (!r.length) { n.hidden = true; n.dataset.ntVide = '1'; }
+  }
   function plier() {
     Array.prototype.forEach.call(document.querySelectorAll('ul.replie, ol.replie'), function (n) {
       var b = bouton(n), ouvert = !!n.dataset.ntOuvert, k = n.dataset.n ? +n.dataset.n : 2, L = n.children, reste = L.length - k;
@@ -234,7 +258,8 @@
       b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
     });
     Array.prototype.forEach.call(document.querySelectorAll(NT), function (n) {
-      if (n.classList.contains('pt-hors') || n.classList.contains('defs') || n.classList.contains('mentions')) return; // mentions légales d'un sondage : jamais repliées
+      if (n.classList.contains('pt-hors') || n.classList.contains('defs') || n.classList.contains('mentions') || n.classList.contains('nt-garde')) return; // mentions légales d'un sondage : jamais repliées
+      garder(n);
       var b = bouton(n);
       var ouvert = !!n.dataset.ntOuvert, deja = n.classList.contains('nt-pli');
       if (deja) n.classList.remove('nt-pli');
