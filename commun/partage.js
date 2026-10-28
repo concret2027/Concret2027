@@ -145,7 +145,7 @@
       if (card.dataset.partage || card.querySelector('.share, .pt-share')) return; // data-partage="non" : bloc d'en-tête, rien à partager
       // Un bloc dans un autre n'a pas son propre bouton, sauf une courbe d'un dépliant (« Voir les autres courbes ») ou la courbe principale
       // d'un thème (.courbe-p) : on peut la partager seule. data-partage-l : le libellé du bouton (« Partager la courbe », « Partager le thème »).
-      if (card.parentElement && card.parentElement.closest(SEL) && !card.matches('.today .metric') && !card.parentElement.closest('.fold') && !card.classList.contains('courbe-p')) return;
+      if (card.parentElement && card.parentElement.closest(SEL) && !card.matches('.today .metric') && !card.parentElement.closest('.fold') && !card.classList.contains('courbe-p') && !card.classList.contains('courbe-s')) return;
       card.dataset.partage = '1';
       var b = document.createElement('button'); b.type = 'button'; b.className = 'share pt-share'; b.textContent = card.dataset.partageL || 'Partager';
       b.setAttribute('aria-label', 'Partager ce bloc en image');

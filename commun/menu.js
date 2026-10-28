@@ -299,7 +299,27 @@
       document.body.appendChild(b);
     }).catch(function () {});
   }
+  // Ce que les visiteurs ouvrent, pour savoir ce qu'il faut montrer d'emblée : le compteur de Concret reçoit seulement des totaux par page
+  // (pages vues, petites courbes agrandies, « Voir les chiffres », « Définitions et sources », dépliants de courbes, « Détail du graphe »),
+  // chacun compté une fois par visite de la page, sans rien qui identifie la personne. Seulement sur concret2027.fr (pas les essais).
+  // Compte rendu pour l'éditeur : node outils/vues_stats.js (rien n'est affiché sur le site).
+  var VUES = 'https://compteur.square-brook-9d65.workers.dev/hit?n=1&i=0&k=', vuesFaites = {};
+  var pageNom = (location.pathname.replace(/index\.html$/, '').replace(/^\/|\/$/g, '') || 'accueil').replace(/[^a-z0-9-]+/g, '-');
+  function compter(quoi) {
+    if (location.hostname !== 'concret2027.fr' || vuesFaites[quoi] || !window.fetch) return; vuesFaites[quoi] = 1;
+    try { fetch(VUES + encodeURIComponent('quiz-vue-' + pageNom + (quoi === 'page' ? '' : '-' + quoi)), { method: 'POST', cache: 'no-store', keepalive: true }).catch(function () {}); } catch (e) {}
+  }
+  function compterOuvertures() {
+    compter('page');
+    document.addEventListener('toggle', function (e) {
+      var d = e.target; if (!d || !d.open || !d.classList) return;
+      compter(d.classList.contains('tab-pli') ? 'chiffres' : d.classList.contains('defs-pli') ? 'defs' : d.classList.contains('fold') || d.classList.contains('plus') ? 'replis' : 'autres');
+    }, true);
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.nt-btn')) compter('detail'); }, true);
+    document.addEventListener('concret:vue', function (e) { compter(e.detail || 'courbe'); });
+  }
   function init() {
+    compterOuvertures();
     // Après une mise à jour, l'adresse perd son « ?maj=… ».
     if (/[?&]maj=/.test(location.search) && history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
     verifierVersion();
