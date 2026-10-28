@@ -50,14 +50,15 @@ MACRO = {'depense': 'mult_mesange2017_depense_publique', 'tva': 'mult_mesange201
 M2027 = {
     'ir-indexation-bareme': {'l': "Geler le barème de l'impôt sur le revenu en 2027 (ne pas le relever de l'inflation)", 'theme': 'impots', 'qui': ['menages_imposables'], 'macro': 'ir', 'inverse': True,
                              'quoi': "Les tranches de l'impôt sur le revenu restent celles de 2026 au lieu d'être relevées comme les prix : avec un même revenu, les ménages imposables paient plus. Le Gouvernement propose au contraire de les relever (l'entrée dans la tranche à 11 % passerait de 11 600 € à 11 844 €).",
-                             'statut': "L'Assemblée a adopté le relèvement du barème (article 2, scrutin n° 8737, 15 octobre 2026) : elle n'a pas retenu ce gel."},
+                             'statut': "L'Assemblée a adopté le relèvement du barème (article 2, scrutin n° 8737, 15 octobre 2026) : elle n'a pas retenu ce gel.",
+                             'note': "Le document chiffre ce que rapporterait le fait de ne pas relever les tranches : « environ 4,2 Md€ en 2027 »."},
     'ir-indemnites-rupture': {'theme': 'travail', 'qui': ['salaries'], 'macro': 'ir'},
     'secu-indemnites-rupture': {'theme': 'travail', 'qui': ['salaries', 'entreprises'], 'macro': 'cotis_sal'},
     'ir-indemnites-journalieres': {'theme': 'sante', 'qui': ['malades'], 'macro': 'ir'},
     'csg-indemnites-journalieres': {'theme': 'sante', 'qui': ['malades'], 'macro': 'csg'},
     'ir-abattement-retraites': {'theme': 'retraites', 'qui': ['retraites'], 'macro': 'ir', 'exclusif': 'abattement-retraites'},
     'apport-cession': {'theme': 'patrimoine', 'qui': ['patrimoine'], 'macro': None},
-    'contribution-grandes-entreprises': {'theme': 'entreprises', 'qui': ['grandes_entreprises'], 'macro': None},
+    'contribution-grandes-entreprises': {'theme': 'entreprises', 'qui': ['grandes_entreprises'], 'macro': None, 'note_plus': "Ce que les taux visent : « L’assiette de la contribution est égale à la moyenne de l’IS dû au titre de l’exercice au titre duquel la contribution est due et au titre de l’exercice précédent » (même document, article 15)."},
     'contribution-transport-maritime': {'theme': 'entreprises', 'qui': ['grandes_entreprises'], 'macro': None},
     'tva-television': {'theme': 'impots', 'qui': ['consommateurs'], 'macro': 'tva'},
     'taxe-infrastructures-transport': {'theme': 'entreprises', 'qui': ['grandes_entreprises'], 'macro': None},
@@ -74,7 +75,7 @@ M2027 = {
     'prestations-familiales-gel': {'theme': 'solidarite', 'qui': ['familles'], 'macro': 'depense'},
     'allocation-rentree-scolaire': {'theme': 'solidarite', 'qui': ['familles'], 'macro': 'depense'},
 }
-EXCLUES = {'fctva-taux': "versement de l'État aux collectivités : le document chiffre la moindre dépense de l'État, pas l'effet sur le déficit public total",
+EXCLUES = {'fctva-taux': "versement de l'État aux collectivités : le document ne chiffre que l'économie de l'État, pas l'effet sur l'ensemble du déficit public",
            'tva-collectivites': "part de TVA conservée par l'État au lieu d'être versée aux collectivités : transfert entre administrations publiques",
 }
 # Votes de l'Assemblée qui portent sur la mesure elle-même : (scrutin, sens) ; sens -1 quand le vote est sur sa suppression.
@@ -123,124 +124,124 @@ DEFIS = [
 # Chaque carte en deux phrases simples : ce qui se passe aujourd'hui, ce qui est proposé (repris des textes cités sur la carte).
 # {licence}, {master}, {doctorat}, {boite}, {consultation}, {transport}, {plafond} : remplacés par les montants en vigueur (parametres_cas.json).
 CLAIR = {
-    "ir-indexation-bareme": ("D'habitude, la loi de finances relève chaque année les tranches de l'impôt sur le revenu comme les prix. Le Gouvernement propose de le faire en 2027 (entrée dans la tranche à 11 % : de 11 600 € à 11 844 €).", "Les laisser au niveau de 2026 : avec le même revenu, les ménages imposables paient plus, et certains qui ne payaient pas d'impôt en paient."),
-    "ir-indemnites-rupture": ("Les indemnités de licenciement, de rupture conventionnelle ou de mise à la retraite échappent en partie à l'impôt sur le revenu.", "Ne les exonérer que jusqu'à 48 060 € (un plafond annuel de la Sécurité sociale) ; au-delà, elles sont imposées."),
-    "ir-indemnites-journalieres": ("Les indemnités versées pendant un arrêt pour affection de longue durée ne sont pas imposées ; celles des accidents du travail et maladies professionnelles le sont à moitié.", "Imposer la moitié des premières et la totalité des secondes."),
-    "csg-indemnites-journalieres": ("Les indemnités d'arrêt de travail (maladie, accident du travail) paient une CSG réduite de 6,2 %.", "Leur appliquer le taux de 9,2 %, celui des salaires."),
-    "ir-abattement-retraites": ("Les retraités déduisent 10 % de leurs pensions de leur revenu imposable, au plus 4 439 € par foyer.", "Limiter cette déduction à 3 000 € : les foyers imposables qui touchent plus d'environ 30 000 € de retraites par an paient plus d'impôt."),
-    "apport-cession": ("Une personne qui apporte ses titres à une holding peut reporter l'impôt sur sa plus-value ; si elle donne ou transmet ensuite par héritage les titres reçus, cet impôt est effacé.", "Rendre l'impôt dû dans ce cas (impôt sur le revenu et prélèvements sociaux)."),
-    "contribution-grandes-entreprises": ("Depuis 2025, les plus grandes entreprises paient, en plus de l'impôt sur les sociétés, une contribution exceptionnelle sur leurs bénéfices : deux années sont prévues, pour celles qui font au moins 1 Md€ de chiffre d'affaires la première année et 1,5 Md€ la deuxième.", "La prolonger une troisième année, à des taux plus bas : 15,7 % ou 31,4 % selon le chiffre d'affaires, pour les entreprises qui font au moins 1,5 Md€ de chiffre d'affaires."),
-    "contribution-transport-maritime": ("Les grandes entreprises de transport maritime imposées au tonnage ont dû une contribution exceptionnelle de 12 % sur leur résultat d'exploitation, pour une seule année.", "La rétablir une deuxième année, au taux de 8 % ; l'argent va à l'Agence de financement des infrastructures de transport de France."),
+    "ir-indexation-bareme": ("L'impôt sur le revenu se calcule par tranches : chaque taux s'applique à la part du revenu qui dépasse un seuil. D'habitude, ces seuils sont relevés chaque année comme les prix. Le Gouvernement propose de le faire en 2027 : le taux de 11 % s'appliquerait à partir de 11 844 € au lieu de 11 600 €.", "Les laisser au niveau de 2026 : par rapport à des seuils relevés, les ménages imposables paient plus, et certains qui ne payaient pas d'impôt en paient."),
+    "ir-indemnites-rupture": ("Quand un contrat de travail prend fin par un licenciement, une rupture conventionnelle (fin du contrat décidée d'un commun accord) ou une mise à la retraite, le salarié reçoit une indemnité. Une partie échappe à l'impôt sur le revenu.", "N'exonérer d'impôt que les premiers 48 060 € (le « plafond annuel de la Sécurité sociale » de 2026, un montant de référence fixé chaque année). Au-delà, l'indemnité est soumise à l'impôt sur le revenu."),
+    "ir-indemnites-journalieres": ("Pendant un arrêt de travail, la Sécurité sociale verse des indemnités journalières. Pour une affection de longue durée (ALD : maladie grave ou chronique reconnue par l'Assurance maladie), elles ne sont pas soumises à l'impôt sur le revenu. Après un accident du travail ou une maladie professionnelle, la moitié est soumise à l'impôt.", "Soumettre à l'impôt la moitié des indemnités d'ALD, et la totalité de celles des accidents du travail et des maladies professionnelles."),
+    "csg-indemnites-journalieres": ("Les indemnités d'arrêt de travail (maladie, accident du travail) paient la CSG (contribution sociale généralisée, un prélèvement sur les revenus qui finance la Sécurité sociale) à un taux réduit de 6,2 %.", "Leur appliquer le taux de 9,2 %, celui des salaires."),
+    "ir-abattement-retraites": ("Les retraités déduisent 10 % de leurs pensions du revenu sur lequel est calculé leur impôt, au plus 4 439 € par foyer.", "Limiter cette déduction à 3 000 € : les foyers imposables qui touchent plus d'environ 30 000 € de retraites par an paient plus d'impôt."),
+    "apport-cession": ("Une personne peut apporter ses titres (actions ou parts d'une société) à une holding (une société qui détient des parts d'autres sociétés). L'impôt sur son gain (la plus-value) est alors mis en attente. Si elle donne ensuite les titres reçus en échange, ou s'ils sont transmis par héritage, cet impôt est effacé.", "Dans ce cas, faire payer l'impôt mis en attente (impôt sur le revenu et prélèvements sociaux, qui financent la protection sociale)."),
+    "contribution-grandes-entreprises": ("Depuis 2025, les plus grandes entreprises paient une contribution exceptionnelle sur leurs bénéfices, en plus de l'impôt sur les sociétés. Elle est prévue pour deux années : pour les entreprises qui font au moins 1 milliard d'euros de chiffre d'affaires (leurs ventes de l'année) la première année, et au moins 1,5 milliard la deuxième.", "La faire payer une troisième année (versements attendus en 2027), à des taux plus bas : 15,7 % ou 31,4 % de leur impôt sur les sociétés (moyenne de deux années), selon le chiffre d'affaires, pour les entreprises qui font au moins 1,5 milliard d'euros de chiffre d'affaires."),
+    "contribution-transport-maritime": ("Les grandes entreprises de transport maritime dont l'impôt est calculé d'après le tonnage de leurs navires, et non d'après leurs bénéfices, ont payé une contribution exceptionnelle pour une seule année. Elle était de 12 % de leur résultat d'exploitation (ce que leur activité rapporte une fois ses frais payés).", "La faire payer une deuxième année, au taux de 8 % (le projet de budget compte cette recette en 2027). L'argent va à l'Agence de financement des infrastructures de transport de France."),
     "tva-television": ("Les abonnements de télévision paient une TVA de 10 %.", "Leur appliquer le taux normal de 20 %."),
-    "taxe-infrastructures-transport": ("Les exploitants d'infrastructures de transport de longue distance dont les revenus dépassent 120 M€ et la rentabilité 10 % paient une taxe de 4,6 %.", "Garder 4,6 % jusqu'à 20 % de rentabilité et passer à 12,2 % au-delà de 30 %, avec un passage progressif entre les deux."),
+    "taxe-infrastructures-transport": ("Les sociétés qui exploitent des infrastructures de transport de longue distance paient une taxe de 4,6 % quand leurs revenus dépassent 120 millions d'euros et leur rentabilité 10 %.", "Garder 4,6 % tant que la rentabilité ne dépasse pas 20 %. Entre 20 % et 30 %, le taux monte peu à peu. Au-delà de 30 %, il est de 12,2 %."),
     "avoirs-desherence": ("L'argent des comptes bancaires et des assurances-vie oubliés est gardé par la Caisse des dépôts, en attendant que les titulaires ou leurs héritiers le réclament.", "En prélever 17 % en 2027 ; une personne qui se manifeste ensuite est remboursée en totalité."),
-    "cpeb": (None, "En 2027, 40 % des communes, 60 % des départements et les intercommunalités (hors outre-mer) versent une contribution au budget de l'État, prise sur les impôts locaux que l'État leur reverse ; son taux dépend des moyens de chacune."),
-    "cufpa-plafond": ("Une contribution payée par les employeurs (taxe d'apprentissage et contribution à la formation professionnelle) va à France compétences, qui finance la formation professionnelle et l'apprentissage.", "La plafonner à 10 279 M€ : ce qui dépasse va au budget de l'État."),
-    "prime-activite-gel": ("La prime d'activité, versée en complément de revenus d'activité modestes, augmente chaque 1er avril avec les prix (2,3 % prévus en 2027).", "Ne pas l'augmenter en 2027 ; le Gouvernement peut y renoncer par décret. Le RSA, l'AAH, le minimum vieillesse et l'ASS restent augmentés avec les prix."),
-    "formation-pric-cfa": ("Des programmes de formation sont financés avec les régions (pactes régionaux d'investissement dans les compétences), et les régions reçoivent des enveloppes pour aider les centres de formation d'apprentis.", "Arrêter ces financements ; créer un fonds national de 25 M€ pour les centres de formation d'apprentis."),
-    "cpf-participation": ("Le compte personnel de formation (CPF) paie des formations choisies par chacun ; le titulaire en paie une partie.", "Pour une formation sans lien démontré avec un projet professionnel, le titulaire paie une part plus grande, ou le CPF ne la paie plus ; le CPF paie moins de frais de jury de validation des acquis de l'expérience."),
-    "secu-indemnites-rupture": ("Les indemnités de licenciement, de rupture conventionnelle ou de mise à la retraite échappent en partie aux cotisations sociales.", "Ne les exonérer que jusqu'à 48 060 € (un plafond annuel de la Sécurité sociale) ; au-delà, les cotisations sont dues."),
-    "allegements-complements-salaire": ("Les employeurs ont une baisse de cotisations sur les bas salaires. Les primes liées au partage de la valeur (dont la prime de partage de la valeur) ne comptent pas dans le salaire qui sert à la calculer.", "Les compter : les employeurs qui versent ces primes ont une baisse plus petite et paient plus de cotisations. Les exonérations de cotisations de la prime de partage de la valeur, qui devaient s'arrêter fin 2026, deviennent permanentes."),
-    "taxe-produits-sucres": ("Les boissons sucrées paient une taxe (la « taxe soda »).", "Taxer aussi les produits emballés sucrés qui contiennent des additifs (confiseries, chocolats, biscuits, céréales, pâtisseries, glaces) : de 4,07 € à 22 € par 100 kg, selon la quantité de sucre, à partir de 10 kg de sucre par 100 kg."),
-    "contribution-complementaires-sante": ("Les mutuelles et assurances santé ont déjà payé une contribution de 2,05 % sur les cotisations santé qu'elles reçoivent.", "La leur faire payer de nouveau en 2027."),
-    "pensions-revalorisation-2027": ("Les retraites de base augmentent chaque année avec les prix.", "En 2027, ne les augmenter avec les prix que si la pension totale (base et complémentaire) est inférieure à 1 260 € par mois ; au-delà, une hausse entre zéro et les prix, fixée par décret, et sans décret pas de hausse."),
+    "cpeb": (None, "En 2027, 40 % des communes, 60 % des départements et les intercommunalités (groupements de communes qui ont leurs propres impôts), hors outre-mer, versent une contribution au budget de l'État. L'État la prend sur les impôts locaux qu'il leur reverse. Son taux dépend des moyens de chacune."),
+    "cufpa-plafond": ("Les employeurs paient une contribution pour la formation professionnelle et l'apprentissage. Elle va à France compétences, l'organisme public qui finance la formation professionnelle et l'apprentissage.", "Limiter ce que reçoit France compétences à 10 279 millions d'euros (environ 10,3 milliards) : ce qui dépasse va au budget de l'État."),
+    "prime-activite-gel": ("La prime d'activité est versée en plus de leurs revenus du travail aux personnes qui gagnent peu. Elle augmente chaque 1er avril comme les prix (2,3 % prévus en 2027).", "Ne pas l'augmenter en 2027 (le Gouvernement peut décider de l'augmenter quand même). Le RSA (revenu de solidarité active), l'allocation aux adultes handicapés, le minimum vieillesse et l'allocation de solidarité spécifique continuent, eux, d'augmenter comme les prix."),
+    "formation-pric-cfa": ("L'État paie, avec les régions, des programmes de formation (les « pactes régionaux d'investissement dans les compétences »). Il verse aussi aux régions de l'argent pour aider les centres de formation d'apprentis (CFA, les écoles où les apprentis suivent leurs cours).", "Arrêter ces financements. Créer un fonds national de 25 millions d'euros pour les centres de formation d'apprentis."),
+    "cpf-participation": ("Le compte personnel de formation (CPF) paie des formations choisies par chacun ; le titulaire en paie une partie.", "Pour une formation sans lien démontré avec un projet professionnel, le titulaire paie une part plus grande, ou le CPF ne la paie plus. Le CPF paie aussi moins de frais de jury pour la VAE (validation des acquis de l'expérience : obtenir un diplôme grâce à son expérience)."),
+    "secu-indemnites-rupture": ("Quand un contrat de travail prend fin par un licenciement, une rupture conventionnelle (fin du contrat décidée d'un commun accord) ou une mise à la retraite, le salarié reçoit une indemnité. Une partie échappe aux cotisations sociales.", "N'exonérer de cotisations que les premiers 48 060 € (le « plafond annuel de la Sécurité sociale » de 2026, un montant de référence fixé chaque année). Au-delà, le salarié et l'employeur paient les cotisations."),
+    "allegements-complements-salaire": ("Les employeurs paient moins de cotisations sur les bas salaires. Pour savoir si un salaire y donne droit, et pour combien, on ne compte pas certaines primes versées en plus du salaire, comme la prime de partage de la valeur.", "Compter ces primes dans le salaire : les employeurs qui les versent ont une baisse de cotisations plus petite, donc paient plus de cotisations. La prime de partage de la valeur devait perdre fin 2026 ses exonérations de cotisations : elles deviennent permanentes."),
+    "taxe-produits-sucres": ("Les boissons sucrées paient une taxe (la « taxe soda »).", "Taxer aussi les produits sucrés vendus emballés qui contiennent des additifs (confiseries, chocolats, biscuits, céréales, pâtisseries, glaces), dès 10 kg de sucre pour 100 kg de produit. La taxe va de 4,07 € à 22 € pour 100 kg de produit, selon la quantité de sucre."),
+    "contribution-complementaires-sante": ("Les mutuelles et assurances santé ont déjà payé une contribution exceptionnelle de 2,05 % sur les cotisations santé que leur versent leurs clients.", "La leur faire payer de nouveau en 2027."),
+    "pensions-revalorisation-2027": ("Chaque année, les retraites de base augmentent comme les prix (cette règle ne concerne pas les retraites complémentaires).", "En 2027, la retraite de base n'augmente comme les prix que si la retraite totale (base et complémentaire) est inférieure à 1 260 € par mois. Au-dessus, le Gouvernement peut décider par décret une hausse plus petite, ou aucune ; s'il n'a rien décidé au 31 octobre 2027, ces retraites restent au montant de 2026."),
     "prestations-familiales-gel": ("Les prestations familiales augmentent chaque 1er avril avec les prix.", "Ne pas les augmenter en 2027 : elles restent au montant de 2026."),
-    "allocation-rentree-scolaire": (None, "Réduire la dépense d'allocation de rentrée scolaire en changeant ses montants selon l'âge des enfants ; les nouveaux montants seront fixés après concertation et ne sont pas encore connus."),
-    "niche-200302": ("Les entreprises qui font de la recherche reçoivent un crédit d'impôt (17 593 entreprises).", "Le supprimer."),
-    "niche-110246": ("Les ménages qui emploient un salarié à domicile reçoivent un crédit d'impôt (4,9 millions de ménages).", "Le supprimer."),
-    "niche-120401": ("Les retraités et les personnes qui reçoivent une pension (dont une pension alimentaire) déduisent 10 % de ces sommes de leur revenu imposable (15,1 millions de ménages).", "Supprimer cette déduction : l'impôt est calculé sur toute la somme reçue."),
-    "niche-520110": ("Quand une entreprise est donnée ou transmise par héritage, les droits de donation ou de succession sont réduits, sous conditions.", "Appliquer les droits normaux."),
-    "niche-120108": ("Les sommes de participation et d'intéressement, et certaines primes, placées sur un plan d'épargne salariale ou de retraite d'entreprise ne sont pas soumises à l'impôt sur le revenu.", "Les soumettre à l'impôt sur le revenu."),
+    "allocation-rentree-scolaire": (None, "Changer les montants de l'allocation de rentrée scolaire selon l'âge des enfants, pour dépenser moins. Les nouveaux montants ne sont pas encore connus : ils seront fixés après une concertation."),
+    "niche-200302": ("Les entreprises qui font de la recherche reçoivent un crédit d'impôt (une somme retirée de leur impôt ; la part qui dépasse l'impôt dû peut être remboursée) : 17 593 entreprises.", "Le supprimer."),
+    "niche-110246": ("Les ménages qui emploient un salarié à domicile reçoivent un crédit d'impôt (une somme retirée de l'impôt, ou versée si elle dépasse l'impôt dû) : 4,9 millions de ménages.", "Le supprimer."),
+    "niche-120401": ("Les retraités et les personnes qui reçoivent une pension (dont une pension alimentaire) déduisent 10 % de ces sommes du revenu sur lequel est calculé leur impôt (15,1 millions de ménages).", "Supprimer cette déduction : l'impôt est calculé sur toute la somme reçue."),
+    "niche-520110": ("Quand une entreprise est donnée ou transmise par héritage, l'impôt payé par celui qui la reçoit (droits de donation ou de succession) est réduit, sous conditions.", "Faire payer cet impôt en entier."),
+    "niche-120108": ("Certaines sommes que l'entreprise verse à ses salariés (participation et intéressement, liés aux résultats de l'entreprise, et certaines primes) ne sont pas soumises à l'impôt sur le revenu quand elles sont placées sur un plan d'épargne salariale ou de retraite d'entreprise.", "Les soumettre à l'impôt sur le revenu."),
     "niche-730213": ("Les travaux d'amélioration, de transformation, d'aménagement et d'entretien des logements de plus de 2 ans ont une TVA de 10 % (5,5 % pour la rénovation énergétique).", "Leur appliquer le taux normal de 20 %."),
     "niche-730221": ("Les repas au restaurant, sur place ou à emporter, ont une TVA de 10 %.", "Leur appliquer le taux normal de 20 %."),
     "niche-120146": ("Les heures supplémentaires ne sont pas soumises à l'impôt sur le revenu, dans certaines limites.", "Les soumettre à l'impôt sur le revenu."),
-    "niche-110201": ("Les dons donnent droit à une réduction d'impôt sur le revenu (5,6 millions de ménages).", "La supprimer."),
-    "niche-110203": ("Les frais de garde des enfants de moins de 6 ans donnent droit à un crédit d'impôt (1,9 million de ménages).", "Le supprimer."),
-    "niche-210309": ("Les dons des entreprises aux œuvres et organismes d'intérêt général donnent droit à une réduction d'impôt (157 399 entreprises).", "La supprimer."),
+    "niche-110201": ("Les dons donnent droit à une réduction d'impôt sur le revenu (une somme retirée de l'impôt dû) : 5,6 millions de ménages.", "La supprimer."),
+    "niche-110203": ("Les frais de garde des enfants de moins de 6 ans donnent droit à un crédit d'impôt (une somme retirée de l'impôt, ou versée si elle dépasse l'impôt dû) : 1,9 million de ménages.", "Le supprimer."),
+    "niche-210309": ("Les dons des entreprises aux œuvres et organismes d'intérêt général donnent droit à une réduction d'impôt (une somme retirée de l'impôt dû) : 157 399 entreprises.", "La supprimer."),
     "niche-800229": ("Le gazole et les autres carburants utilisés pour les travaux agricoles et forestiers paient une taxe réduite.", "Leur appliquer la taxe normale."),
     "niche-120202": ("Les prestations familiales et l'allocation aux adultes handicapés ne sont pas soumises à l'impôt sur le revenu.", "Les soumettre à l'impôt sur le revenu."),
-    "niche-800401": ("En Guadeloupe, en Martinique, en Guyane, à La Réunion et à Mayotte, seuls l'essence et le gazole paient la taxe sur les carburants, et ces collectivités peuvent baisser ses tarifs.", "Taxer les carburants comme en métropole."),
+    "niche-800401": ("En Guadeloupe, en Martinique, en Guyane, à La Réunion et à Mayotte, seuls l'essence et le gazole sont soumis à la taxe sur les carburants, et ces territoires peuvent baisser le montant de cette taxe.", "Taxer les carburants comme en métropole."),
     "niche-940102": ("Les voitures à hydrogène et les voitures électriques à faible empreinte carbone ne paient pas le malus au poids (exonération réduite par la loi de finances pour 2025).", "Le leur faire payer."),
-    "niche-710103": ("En Guadeloupe, en Martinique et à La Réunion, la TVA est de 8,5 % (taux normal) et de 2,1 % (taux réduit).", "Appliquer les taux de métropole."),
-    "niche-210326": ("Les revenus de certains brevets et droits de propriété industrielle sont imposés à 10 %.", "Les imposer au taux normal de l'impôt sur les sociétés."),
+    "niche-710103": ("En Guadeloupe, en Martinique et à La Réunion, la TVA est de 8,5 % (taux normal) et de 2,1 % (taux réduit).", "Appliquer les taux de métropole (le taux normal y est de 20 %)."),
+    "niche-210326": ("Les revenus que des entreprises tirent de certains brevets (droits sur une invention) et autres droits de propriété industrielle sont imposés à 10 %.", "Les imposer au taux normal de l'impôt sur les sociétés."),
     "niche-800221": ("Le gazole des camions de 7,5 tonnes et plus paie une taxe réduite (une partie est remboursée).", "Leur appliquer la taxe normale."),
     "niche-730223": ("Les travaux de rénovation énergétique des logements de plus de 2 ans ont une TVA de 5,5 %.", "Leur appliquer le taux normal de 20 %."),
-    "retraites-fin-suspension": ("La hausse de l'âge minimum de départ prévue par la réforme de 2023 est suspendue depuis 2026 : il est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis monte jusqu'à 64 ans pour celles nées à partir de 1969.", "Revenir au calendrier de 2023 : l'âge minimum monte plus vite et atteint 64 ans pour les personnes nées en 1968."),
-    "smic-2": ("Le SMIC est de 1 867,02 € bruts par mois pour 35 heures par semaine.", "En 2027, lui donner un coup de pouce de 2 % en plus de sa hausse automatique : appliqué au SMIC actuel, cela fait 1 904,36 € bruts par mois."),
-    "smic-5": ("Le SMIC est de 1 867,02 € bruts par mois pour 35 heures par semaine.", "En 2027, lui donner un coup de pouce de 5 % en plus de sa hausse automatique : appliqué au SMIC actuel, cela fait 1 960,37 € bruts par mois."),
-    "ondam-moins-1": ("Chaque année, le Parlement fixe un objectif de dépenses d'assurance maladie (soins de ville, hôpitaux, établissements médico-sociaux) ; pour 2027, une hausse de 2,0 % est proposée.", "Les faire augmenter de 1 % de moins que l'objectif prévu."),
-    "ondam-plus-1": ("Chaque année, le Parlement fixe un objectif de dépenses d'assurance maladie (soins de ville, hôpitaux, établissements médico-sociaux) ; pour 2027, une hausse de 2,0 % est proposée.", "Les faire augmenter de 1 % de plus que l'objectif prévu."),
-    "revalo-moins-1": ("Les retraites de base, les prestations familiales et d'autres prestations sociales augmentent chaque année avec les prix.", "Les augmenter d'un point de moins que les prix."),
-    "revalo-plus-1": ("Les retraites de base, les prestations familiales et d'autres prestations sociales augmentent chaque année avec les prix.", "Les augmenter d'un point de plus que les prix."),
-    "allegements-moins-10": ("Les employeurs paient moins de cotisations sur les bas salaires (réduction générale de cotisations patronales).", "Réduire ces baisses de 10 % : les employeurs paient plus de cotisations."),
+    "retraites-fin-suspension": ("La hausse de l'âge minimum de départ prévue par la réforme de 2023 a été mise en pause en 2026. L'âge minimum est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965. Il monte ensuite jusqu'à 64 ans pour celles nées à partir de 1969.", "Revenir au calendrier de 2023 : l'âge minimum monte plus vite et atteint 64 ans pour les personnes nées en 1968."),
+    "smic-2": ("Le SMIC (salaire minimum) est de 1 867,02 € bruts par mois pour 35 heures par semaine. Il augmente déjà automatiquement.", "En 2027, l'augmenter de 2 % en plus de sa hausse automatique : appliqué au SMIC actuel, cela fait 1 904,36 € bruts par mois."),
+    "smic-5": ("Le SMIC (salaire minimum) est de 1 867,02 € bruts par mois pour 35 heures par semaine. Il augmente déjà automatiquement.", "En 2027, l'augmenter de 5 % en plus de sa hausse automatique : appliqué au SMIC actuel, cela fait 1 960,37 € bruts par mois."),
+    "ondam-moins-1": ("Chaque année, le Parlement fixe un objectif : de combien peuvent augmenter les dépenses de l'assurance maladie (soins de ville, comme les médecins et les pharmacies, hôpitaux, établissements pour personnes âgées ou handicapées). Pour 2027, une hausse de 2,0 % est proposée.", "En 2027, dépenser 1 % de moins que l'objectif prévu (1 % du total de ces dépenses)."),
+    "ondam-plus-1": ("Chaque année, le Parlement fixe un objectif : de combien peuvent augmenter les dépenses de l'assurance maladie (soins de ville, comme les médecins et les pharmacies, hôpitaux, établissements pour personnes âgées ou handicapées). Pour 2027, une hausse de 2,0 % est proposée.", "En 2027, dépenser 1 % de plus que l'objectif prévu (1 % du total de ces dépenses)."),
+    "revalo-moins-1": ("Les retraites de base (pas les retraites complémentaires), les prestations familiales et d'autres prestations sociales augmentent chaque année comme les prix.", "Les augmenter d'un point de moins que les prix : par exemple de 1 % si les prix montent de 2 %."),
+    "revalo-plus-1": ("Les retraites de base (pas les retraites complémentaires), les prestations familiales et d'autres prestations sociales augmentent chaque année comme les prix.", "Les augmenter d'un point de plus que les prix : par exemple de 3 % si les prix montent de 2 %."),
+    "allegements-moins-10": ("Les employeurs paient moins de cotisations sur les bas salaires.", "Rendre ces baisses de cotisations 10 % plus petites (un dixième de moins) : les employeurs paient plus de cotisations."),
     "point-indice-plus-1": ("Le salaire de base des fonctionnaires dépend du point d'indice ; le projet de budget 2027 prévoit de ne pas l'augmenter.", "L'augmenter de 1 %."),
     "etrangers-residence-prestations": (None, "Exiger des étrangers venus d'un pays hors de l'Union européenne qu'ils résident en France depuis au moins un an pour toucher les prestations familiales et les aides au logement."),
     "univ-master-doctorat": ("Les droits d'inscription à l'université sont de {licence} par an en licence, {master} en master et {doctorat} en doctorat ; les boursiers ne paient pas.", "Les porter à 965 € en master et 781 € en doctorat ; la licence ne change pas, les boursiers restent exonérés."),
     "univ-30": ("Les droits d'inscription à l'université sont de {licence} par an en licence, {master} en master et {doctorat} en doctorat ; les boursiers ne paient pas.", "Les augmenter de 30 % ; les boursiers restent exonérés."),
     "carence-3-jours": ("Les agents de l'État ne sont pas payés le premier jour d'un arrêt maladie.", "Ne pas les payer les trois premiers jours."),
     "isf": ("Depuis 2018, l'impôt sur la fortune ne porte que sur l'immobilier : l'impôt sur la fortune immobilière (IFI) a remplacé l'ISF.", "Rétablir un impôt sur la fortune qui porte sur tout le patrimoine, placements financiers compris."),
-    "taxe-zucman": (None, "Les foyers dont le patrimoine dépasse 100 M€ paient chaque année au moins 2 % de ce patrimoine, en comptant les impôts qu'ils paient déjà."),
+    "taxe-zucman": (None, "Les foyers dont le patrimoine dépasse 100 millions d'euros doivent payer chaque année, en tout, des impôts égaux à au moins 2 % de ce patrimoine : s'ils paient déjà moins, ils paient la différence."),
     "franchises-x2": ("Le patient paie {boite} par boîte de médicament, {consultation} par consultation et {transport} par transport, au plus {plafond} par an et par personne.", "Doubler ces montants et leurs plafonds."),
-    "retraite-63": ("L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis il monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026).", "Arrêter la hausse à 63 ans au lieu de 64 ans."),
-    "retraite-62": ("L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis il monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026).", "Ramener l'âge minimum à 62 ans pour tous, au lieu de 64 ans à terme."),
-    "retraite-65": ("L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis il monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026).", "Porter l'âge minimum à 65 ans à terme, au lieu de 64 ans."),
+    "retraite-63": ("La réforme de 2023 fait monter l'âge minimum de départ jusqu'à 64 ans. Cette hausse a été mise en pause en 2026 : l'âge minimum est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis il monte jusqu'à 64 ans pour celles nées à partir de 1969.", "Arrêter la hausse à 63 ans au lieu de 64 ans. Le montant est calculé par rapport à 64 ans, pas par rapport à l'âge d'aujourd'hui."),
+    "retraite-62": ("La réforme de 2023 fait monter l'âge minimum de départ jusqu'à 64 ans. Cette hausse a été mise en pause en 2026 : l'âge minimum est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis il monte jusqu'à 64 ans pour celles nées à partir de 1969.", "Ramener l'âge minimum à 62 ans pour tous, au lieu de 64 ans à terme. Le montant est calculé par rapport à 64 ans, pas par rapport à l'âge d'aujourd'hui."),
+    "retraite-65": ("La réforme de 2023 fait monter l'âge minimum de départ jusqu'à 64 ans. Cette hausse a été mise en pause en 2026 : l'âge minimum est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis il monte jusqu'à 64 ans pour celles nées à partir de 1969.", "Porter l'âge minimum à 65 ans à terme, au lieu de 64 ans. Le montant est calculé par rapport à 64 ans, pas par rapport à l'âge d'aujourd'hui."),
     "fonctionnaires-1-sur-2": (None, "Ne remplacer que la moitié des agents de l'État qui partent à la retraite."),
 }
 
 COURT = {
-    'ir-indexation-bareme': "Geler le barème de l'impôt sur le revenu",
-    'ir-indemnites-rupture': "Imposer les indemnités de rupture au-delà de 48 060 €",
-    'secu-indemnites-rupture': "Cotisations sur les indemnités de rupture au-delà de 48 060 €",
+    'ir-indexation-bareme': "Ne pas relever les tranches de l'impôt sur le revenu en 2027",
+    'ir-indemnites-rupture': "Impôt sur les indemnités de départ au-delà de 48 060 €",
+    'secu-indemnites-rupture': "Cotisations sur les indemnités de départ au-delà de 48 060 €",
     'ir-indemnites-journalieres': "Imposer une partie des indemnités d'arrêt de travail",
     'csg-indemnites-journalieres': "Relever la CSG sur les indemnités d'arrêt de travail",
-    'ir-abattement-retraites': "Plafonner à 3 000 € l'abattement de 10 % des retraités",
-    'apport-cession': "Taxer des plus-values transmises par une holding",
+    'ir-abattement-retraites': "Limiter à 3 000 € la déduction de 10 % sur les retraites",
+    'apport-cession': "Imposer le gain en attente quand on donne des titres d'une holding",
     'contribution-grandes-entreprises': "Prolonger la surtaxe sur les bénéfices des grandes entreprises",
-    'contribution-transport-maritime': "Prolonger la surtaxe sur les grands armateurs",
+    'contribution-transport-maritime': "Rétablir la surtaxe sur les grandes compagnies maritimes",
     'tva-television': "TVA au taux normal sur les abonnements télé",
-    'taxe-infrastructures-transport': "Taxer plus les exploitants de transport les plus rentables",
+    'taxe-infrastructures-transport': "Taxer plus les infrastructures de transport les plus rentables",
     'avoirs-desherence': "Prélever 17 % sur l'argent des comptes oubliés",
-    'cpeb': "Faire contribuer les collectivités à l'effort budgétaire",
-    'cufpa-plafond': "Plafonner l'argent versé à France compétences",
+    'cpeb': "Faire contribuer communes, départements et intercommunalités",
+    'cufpa-plafond': "Limiter l'argent de la formation versé à France compétences",
     'prime-activite-gel': "Geler la prime d'activité en 2027",
-    'formation-pric-cfa': "Arrêter des aides régionales à la formation et aux CFA",
-    'cpf-participation': "Faire payer plus les formations du CPF sans projet",
-    'allegements-complements-salaire': "Compter les primes dans les baisses de cotisations des employeurs",
+    'formation-pric-cfa': "Arrêter des aides de l'État à la formation et aux écoles d'apprentis",
+    'cpf-participation': "Faire payer plus les formations du CPF sans projet professionnel",
+    'allegements-complements-salaire': "Compter certaines primes dans le salaire qui donne droit à des baisses de cotisations",
     'taxe-produits-sucres': "Étendre la « taxe soda » aux produits sucrés",
     'contribution-complementaires-sante': "Prolonger la taxe sur les mutuelles",
-    'pensions-revalorisation-2027': "Ne revaloriser que les retraites sous 1 260 € par mois",
+    'pensions-revalorisation-2027': "N'augmenter comme les prix que les retraites sous 1 260 € par mois",
     'prestations-familiales-gel': "Geler les prestations familiales en 2027",
     'allocation-rentree-scolaire': "Réduire l'allocation de rentrée scolaire",
     'etrangers-residence-prestations': "Un an de résidence pour les aides des étrangers hors UE",
     'niche-200302': "Supprimer le crédit d'impôt recherche",
     'niche-110246': "Supprimer le crédit d'impôt pour l'emploi à domicile",
-    'niche-120401': "Supprimer l'abattement de 10 % des retraités",
-    'niche-520110': "Taxer normalement les transmissions d'entreprises",
-    'niche-120108': "Imposer la participation et l'intéressement",
+    'niche-120401': "Supprimer la déduction de 10 % sur les retraites et pensions",
+    'niche-520110': "Supprimer la baisse d'impôt sur les entreprises données ou héritées",
+    'niche-120108': "Imposer l'épargne salariale (participation, intéressement)",
     'niche-730213': "TVA au taux normal sur les travaux dans les logements",
     'niche-730221': "TVA au taux normal dans les restaurants",
     'niche-120146': "Imposer les heures supplémentaires",
     'niche-110201': "Supprimer la réduction d'impôt pour les dons",
     'niche-110203': "Supprimer le crédit d'impôt pour la garde des jeunes enfants",
     'niche-210309': "Supprimer la réduction d'impôt des dons d'entreprises",
-    'niche-800229': "Taxer normalement le gazole agricole et forestier",
-    'niche-120202': "Imposer les allocations familiales et l'AAH",
+    'niche-800229': "Supprimer le tarif réduit de taxe sur le carburant agricole et forestier",
+    'niche-120202': "Imposer les prestations familiales et l'allocation aux adultes handicapés",
     'niche-800401': "Taxer les carburants outre-mer comme en métropole",
     'niche-940102': "Malus au poids pour les voitures électriques",
     'niche-710103': "TVA de métropole aux Antilles et à La Réunion",
     'niche-210326': "Supprimer le taux d'impôt réduit sur les brevets",
-    'niche-800221': "Taxer normalement le gazole des camions",
+    'niche-800221': "Supprimer le tarif réduit de taxe sur le gazole des camions",
     'niche-730223': "TVA au taux normal sur la rénovation énergétique",
     'retraites-fin-suspension': "Revenir à la réforme des retraites (64 ans)",
-    'smic-2': "Coup de pouce de 2 % au SMIC", 'smic-5': "Coup de pouce de 5 % au SMIC",
+    'smic-2': "SMIC : 2 % de hausse en plus de la hausse automatique", 'smic-5': "SMIC : 5 % de hausse en plus de la hausse automatique",
     'ondam-moins-1': "Dépenses d'assurance maladie : 1 % de moins", 'ondam-plus-1': "Dépenses d'assurance maladie : 1 % de plus",
-    'revalo-moins-1': "Prestations sociales : 1 point sous l'inflation", 'revalo-plus-1': "Prestations sociales : 1 point au-dessus de l'inflation",
-    'allegements-moins-10': "Réduire de 10 % les baisses de cotisations des employeurs",
+    'revalo-moins-1': "Prestations sociales : hausse de 1 point de moins que les prix", 'revalo-plus-1': "Prestations sociales : hausse de 1 point de plus que les prix",
+    'allegements-moins-10': "Baisses de cotisations des employeurs : 10 % de moins",
     'point-indice-plus-1': "Point d'indice des fonctionnaires : +1 %",
     'univ-master-doctorat': "Université : master à 965 €, doctorat à 781 €", 'univ-30': "Université : droits d'inscription +30 %",
-    'carence-3-jours': "3 jours de carence pour les fonctionnaires de l'État",
+    'carence-3-jours': "Arrêt maladie : 3 jours non payés au lieu d'1 pour les agents de l'État",
     'isf': "Rétablir l'impôt sur la fortune (ISF)",
-    'taxe-zucman': "Taxe Zucman : 2 % sur les patrimoines de plus de 100 M€",
+    'taxe-zucman': "Impôt minimum de 2 % sur les patrimoines de plus de 100 M€ (« taxe Zucman »)",
     'franchises-x2': "Doubler les franchises médicales",
     'retraite-63': "Retraite à 63 ans", 'retraite-62': "Retraite à 62 ans", 'retraite-65': "Retraite à 65 ans",
     'fonctionnaires-1-sur-2': "Ne remplacer qu'un fonctionnaire de l'État sur deux",
@@ -252,18 +253,92 @@ PAR_QUI = {'univ-master-doctorat': "chiffrage de la Cour des comptes", 'univ-30'
            'fonctionnaires-1-sur-2': "chiffrage de la Cour des comptes (2015)"}
 
 
-def statut_court(t):
-    """Le sort de la mesure à l'Assemblée, en mots courants."""
+# Ce que les députés ont fait de la mesure, quand une phrase plus précise est utile (lue dans le statut de la carte).
+# « (1re lecture) » reste en fin de phrase : la page y insère le décompte des voix.
+STATUT_CLAIR = {
+    'ir-indemnites-rupture': "Les députés ont adopté cette mesure en la modifiant : les indemnités de licenciement ne sont plus concernées, et la règle vaut pour les indemnités reçues à partir du 1er janvier 2027 (1re lecture)",
+    'apport-cession': "Les députés ont adopté cette mesure en la modifiant : la transmission par héritage n'est plus concernée, le don est imposé sous conditions, et la règle ne vaut que pour les apports faits à partir du 7 octobre 2026 (1re lecture)",
+    'secu-indemnites-rupture': "Les députés ont adopté cette mesure en excluant les ruptures prévues par un plan social (plan de sauvegarde de l'emploi) validé avant le 31 décembre 2026, puis ont rejeté tout le budget de la Sécurité sociale (1re lecture)",
+}
+# Mesures retirées par un même vote : l'autre mesure retirée en même temps.
+MEME_VOTE = {'ir-indemnites-journalieres': "la hausse de la CSG sur ces indemnités", 'csg-indemnites-journalieres': "l'impôt sur le revenu sur ces indemnités",
+             'contribution-grandes-entreprises': "la surtaxe sur les grandes compagnies maritimes", 'contribution-transport-maritime': "la surtaxe sur les bénéfices des grandes entreprises"}
+
+
+# Qui paie ou qui reçoit, dit en clair sur la carte (remplace le texte du document ; les étiquettes de QUI restent les groupes du bilan).
+# Seulement ce que disent les textes de la carte ; nombre de bénéficiaires : Évaluation des voies et moyens.
+QUI_CLAIR = {
+    'ir-indemnites-rupture': "Salariés qui reçoivent une indemnité de départ de plus de 48 060 €",
+    'secu-indemnites-rupture': "Salariés qui reçoivent une indemnité de départ de plus de 48 060 €, et leurs employeurs",
+    'ir-indemnites-journalieres': "Personnes en arrêt de travail pour une affection de longue durée, un accident du travail ou une maladie professionnelle",
+    'csg-indemnites-journalieres': "Personnes en arrêt maladie, ou en arrêt après un accident du travail ou une maladie professionnelle",
+    'ir-abattement-retraites': "Foyers imposables qui touchent une retraite (4,6 millions de foyers, selon l'étude du Gouvernement jointe au projet de loi)",
+    'apport-cession': "Personnes qui ont apporté leurs titres à une holding sans payer tout de suite l'impôt sur leur gain, puis donnent les titres reçus ou les transmettent par héritage",
+    'contribution-grandes-entreprises': "Entreprises qui font au moins 1,5 milliard d'euros de chiffre d'affaires (ventes de l'année)",
+    'taxe-infrastructures-transport': "Sociétés les plus rentables qui exploitent des infrastructures de transport de longue distance",
+    'avoirs-desherence': "Titulaires des comptes et assurances-vie oubliés, ou leurs héritiers (remboursés en totalité s'ils se manifestent)",
+    'cpeb': "Communes, départements et intercommunalités (groupements de communes)",
+    'cufpa-plafond': "France compétences (organisme public qui finance la formation professionnelle et l'apprentissage)",
+    'prime-activite-gel': "Personnes qui touchent la prime d'activité",
+    'cpf-participation': "Personnes qui utilisent leur compte personnel de formation (CPF)",
+    'allegements-complements-salaire': "Employeurs qui ont des baisses de cotisations sur les bas salaires et versent ces primes",
+    'taxe-produits-sucres': "Entreprises qui doivent payer cette taxe sur les produits sucrés",
+    'contribution-complementaires-sante': "Mutuelles et assurances santé",
+    'pensions-revalorisation-2027': "Retraités dont la retraite totale dépasse 1 260 € par mois (5,2 millions entre 1 260 € et 2 000 €, 7,0 millions au-dessus, selon l'étude du Gouvernement jointe au projet de loi)",
+    'prestations-familiales-gel': "Familles qui touchent des prestations familiales",
+    'allocation-rentree-scolaire': "Familles qui touchent l'allocation de rentrée scolaire",
+    'niche-200302': "17 593 entreprises qui font de la recherche",
+    'niche-110246': "4,9 millions de ménages qui emploient un salarié à domicile",
+    'niche-120401': "15,1 millions de ménages qui touchent une retraite ou une pension",
+    'niche-520110': "Personnes qui reçoivent une entreprise par donation ou par héritage",
+    'niche-120108': "Salariés qui placent de la participation, de l'intéressement ou certaines primes sur un plan d'épargne d'entreprise",
+    'niche-730213': "303 850 entreprises qui font des travaux dans les logements",
+    'niche-730221': "Restaurants et leurs clients",
+    'niche-120146': "Salariés qui font des heures supplémentaires",
+    'niche-110201': "5,6 millions de ménages qui font des dons",
+    'niche-110203': "1,9 million de ménages qui font garder un enfant de moins de 6 ans",
+    'niche-210309': "157 399 entreprises qui font des dons",
+    'niche-800229': "240 000 entreprises qui utilisent du carburant pour des travaux agricoles ou forestiers",
+    'niche-120202': "Foyers qui touchent des prestations familiales ou l'allocation aux adultes handicapés",
+    'niche-800401': "Les cinq territoires concernés : Guadeloupe, Guyane, Martinique, La Réunion, Mayotte",
+    'niche-710103': "90 911 entreprises de Guadeloupe, de Martinique et de La Réunion",
+    'niche-210326': "1 065 entreprises qui ont des revenus de brevets ou d'autres droits de propriété industrielle",
+    'niche-800221': "33 271 entreprises de transport de marchandises par camions de 7,5 tonnes et plus",
+    'niche-730223': "100 601 entreprises qui font des travaux de rénovation énergétique des logements",
+    'ondam-moins-1': "Patients, hôpitaux et soignants", 'ondam-plus-1': "Patients, hôpitaux et soignants",
+    'revalo-moins-1': "Retraités et familles qui touchent des prestations de la Sécurité sociale", 'revalo-plus-1': "Retraités et familles qui touchent des prestations de la Sécurité sociale",
+    'allegements-moins-10': "Employeurs de salariés payés près du SMIC",
+    'point-indice-plus-1': "Agents publics : 5,85 millions fin 2024 (direction générale de l'administration et de la fonction publique, DGAFP)",
+    'etrangers-residence-prestations': "Étrangers venus d'un pays hors de l'Union européenne, en France depuis moins d'un an",
+    'univ-master-doctorat': "Étudiants non boursiers en master et en doctorat", 'univ-30': "Étudiants non boursiers",
+    'carence-3-jours': "Agents de l'État en arrêt maladie",
+    'isf': "Foyers qui paieraient l'impôt sur la fortune rétabli",
+    'taxe-zucman': "Foyers dont le patrimoine dépasse 100 millions d'euros",
+    'franchises-x2': "Patients (moins bien remboursés)",
+    'retraite-62': "Futurs retraités", 'retraite-63': "Futurs retraités", 'retraite-65': "Futurs retraités",
+    'fonctionnaires-1-sur-2': "Services de l'État : la moitié des agents qui partent à la retraite ne sont pas remplacés",
+}
+# Intitulé de la ligne « qui », quand « Paient plus » ou « Reçoivent moins » ne dit pas ce qui change.
+QUI_TITRE = {'cufpa-plafond': 'Reçoit moins', 'franchises-x2': 'Paient plus', 'point-indice-plus-1': 'Reçoivent plus', 'fonctionnaires-1-sur-2': 'Qui est concerné',
+             'retraite-62': 'Peuvent partir plus tôt', 'retraite-63': 'Peuvent partir plus tôt', 'retraite-65': 'Ne peuvent plus partir aussi tôt',
+             'retraites-fin-suspension': 'Ne peuvent plus partir aussi tôt'}
+
+
+def statut_court(t, i=None):
+    """Ce que les députés ont fait de la mesure, en mots courants."""
     t = t or ''
     if not t: return ''
-    if t.startswith('Supprimée'): return "Les députés l'ont supprimée (1re lecture)"
-    if t.startswith('Adoptée'): return "Les députés l'ont adoptée (1re lecture)"
-    if t.startswith('Modifiée'): return "Les députés l'ont modifiée (1re lecture)"
-    if t.startswith('Article adopté'): return "Les députés l'ont adoptée, puis ont rejeté le budget de la Sécurité sociale (1re lecture)"
-    if t.startswith('Article rejeté'): return "Les députés l'ont rejetée (1re lecture)"
-    if t.startswith('Non examinée'): return "Pas examinée : les députés ont rejeté le budget de la Sécurité sociale avant (1re lecture)"
-    if t.startswith('Rapport annexé') or t.startswith('Projet de loi rejeté'): return "Les députés ont rejeté le budget de la Sécurité sociale qui la contenait (1re lecture)"
-    if t.startswith("L'Assemblée a adopté le relèvement"): return "Les députés ont adopté le relèvement du barème, pas ce gel (1re lecture)"
+    if i in STATUT_CLAIR: return STATUT_CLAIR[i]
+    if t.startswith('Supprimée'):
+        return "Les députés ont retiré du texte cette mesure et %s (1re lecture)" % MEME_VOTE[i] if i in MEME_VOTE else "Les députés ont retiré cette mesure du texte (1re lecture)"
+    if t.startswith('Adoptée'): return "Les députés ont adopté cette mesure (1re lecture)"
+    if t.startswith('Modifiée'): return "Les députés ont adopté cette mesure en la modifiant (1re lecture)"
+    if t.startswith('Article adopté'): return "Les députés ont adopté cette mesure, puis ont rejeté tout le budget de la Sécurité sociale (1re lecture)"
+    if t.startswith('Article rejeté'): return "Les députés ont rejeté cette mesure (1re lecture)"
+    if t.startswith('Non examinée'): return "Les députés n'ont pas voté sur cette mesure : ils ont rejeté le budget de la Sécurité sociale avant d'y arriver (1re lecture)"
+    if t.startswith('Rapport annexé'): return "Les députés ont supprimé le rapport joint au texte qui décrivait cette mesure, puis ont rejeté tout le budget de la Sécurité sociale (1re lecture)"
+    if t.startswith('Projet de loi rejeté'): return "Les députés ont rejeté tout le budget de la Sécurité sociale, qui contenait cette mesure (1re lecture)"
+    if t.startswith("L'Assemblée a adopté le relèvement"): return "Les députés ont voté le relèvement des tranches proposé par le Gouvernement, pas ce gel (1re lecture)"
     return t.split(' (')[0].split(' ; ')[0]
 
 
@@ -335,7 +410,7 @@ def construire():
         inv = -1 if c.get('inverse') else 1
         k = {'id': x['id'], 'origine': 'plf' if x['texte'].startswith('PLF ') else 'plfss', 'texte': x['texte'], 'l': c.get('l', x['l']),
              'quoi': c.get('quoi', x['quoi']), 'theme': c['theme'], 'qui': c['qui'], 'qui_texte': x['qui'], 'macro': c['macro'], 'sens': x['type'],
-             'effet': effet_md(x['effet_meur'], inv), 'note': x.get('note') or '', 'statut': c.get('statut', x.get('statut') or ''),
+             'effet': effet_md(x['effet_meur'], inv), 'note': (c.get('note', x.get('note') or '') + (' ' + c['note_plus'] if c.get('note_plus') else '')).strip(), 'statut': c.get('statut', x.get('statut') or ''),
              'src': {'doc': x.get('document') or x['texte'], 'page': x.get('page'), 'url': x['url'], 'citation': x['citation']}}
         if c.get('exclusif'): k['exclusif'] = c['exclusif']
         if x['id'] in PONCTUELLES: k['ponctuelle'] = True
@@ -418,7 +493,7 @@ def construire():
     if LV:
         ass('retraites', 'Retraites (toutes les pensions)', 'depense', LV['retraites-depense']['montant']['2025, ensemble du système de retraite (Md€)'], 2025, ['retraites'], 'depense', LV['retraites-depense'],
             "Ensemble du système de retraite, régimes de base et complémentaires (Conseil d'orientation des retraites).", ['pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'])
-        ass('ondam', "Assurance maladie (soins remboursés, hôpitaux)", 'depense', 278.7, 2027, ['assures', 'soignants'], 'depense', LV['sante-ondam'], "Objectif national de dépenses d'assurance maladie proposé pour 2027.", ['ondam-moins-1', 'ondam-plus-1'])
+        ass('ondam', "Assurance maladie (soins remboursés, hôpitaux)", 'depense', 278.7, 2027, ['assures', 'soignants'], 'depense', LV['sante-ondam'], "Objectif de dépenses de l'assurance maladie (ONDAM) proposé par le Gouvernement pour 2027.", ['ondam-moins-1', 'ondam-plus-1'])
         ass('remunerations', 'Salaires des agents publics (État, collectivités, hôpitaux, sécurité sociale)', 'depense', LV['fp-masse-salariale-apu']['montant']['2025 (Md€, toutes administrations publiques)'], 2025, ['agents_publics'], 'depense', LV['fp-masse-salariale-apu'], "Rémunérations versées par l'ensemble des administrations publiques (Insee), enseignants et militaires compris.", ['point-indice-plus-1', 'enseignement', 'defense'])
         ass('enseignement', "Enseignement scolaire (écoles, collèges, lycées)", 'depense', LV['education-enseignement-scolaire']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['ecoles'], 'depense', LV['education-enseignement-scolaire'], "Crédits de la mission Enseignement scolaire du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
         ass('defense', 'Défense', 'depense', LV['defense-credits']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['defense'], 'depense', LV['defense-credits'], "Crédits de la mission Défense du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
@@ -426,7 +501,7 @@ def construire():
         ass('apl', 'Aides au logement (APL)', 'depense', LV['prestations-apl']['montant']["dépense d'aides personnelles au logement (Md€)"]['2025'], 2025, ['familles'], 'depense', LV['prestations-apl'], '')
         ass('alloc-familiales', 'Allocations familiales', 'depense', LV['prestations-allocations-familiales']['montant']['allocations familiales (M€)']['2027 prévision'] / 1000, 2027, ['familles'], 'depense', LV['prestations-allocations-familiales'], '', ['prestations-familiales-gel'])
         ass('aah', "Allocation aux adultes handicapés (AAH)", 'depense', LV['prestations-aah']['montant']['2027, PLF 2027 (Md€)'], 2027, ['handicap'], 'depense', LV['prestations-aah'], '')
-        ass('allegements', "Allègements de cotisations patronales (baisser = les employeurs paient plus)", 'depense', LV['entreprises-allegements-generaux']['montant']['coût des allègements généraux, champ régimes de base, Unédic, Agirc-Arrco et FNAL (M€)']['2027 prévision'] / 1000, 2027, ['entreprises'], 'cotis_emp', LV['entreprises-allegements-generaux'],
+        ass('allegements', "Baisses de cotisations accordées aux employeurs (les réduire = les employeurs paient plus)", 'depense', LV['entreprises-allegements-generaux']['montant']['coût des allègements généraux, champ régimes de base, Unédic, Agirc-Arrco et FNAL (M€)']['2027 prévision'] / 1000, 2027, ['entreprises'], 'cotis_emp', LV['entreprises-allegements-generaux'],
             "Réductions de cotisations sur les salaires : les réduire, c'est faire payer plus de cotisations aux employeurs.", ['allegements-moins-10'])
     if LV:
         ij = LV['sante-indemnites-journalieres']
@@ -439,14 +514,14 @@ def construire():
     if AE:
         an2 = date.today().year + 1
         ass('ir', "Impôt sur le revenu", 'recette', AE['ir_net']['valeurs']['2027_plf'], an2, ['menages_imposables'], 'ir', asx('ir_net'), "Recette nette prévue pour l'État en " + str(an2) + " (projet de loi de finances).", ['ir-indexation-bareme'])
-        ass('is', "Impôt sur les sociétés", 'recette', AE['is_net']['valeurs']['2027_plf'], an2, ['entreprises'], None, asx('is_net'), "Recette nette prévue pour l'État en " + str(an2) + " (projet de loi de finances). Le modèle Mésange ne publie pas l'effet de cet impôt sur l'activité.")
+        ass('is', "Impôt sur les sociétés", 'recette', AE['is_net']['valeurs']['2027_plf'], an2, ['entreprises'], None, asx('is_net'), "Recette nette prévue pour l'État en " + str(an2) + " (projet de loi de finances). Le modèle Mésange (direction du Trésor et Insee) ne donne pas l'effet de cet impôt sur l'activité.")
         ass('tva', "TVA (part de l'État)", 'recette', AE['tva_nette_etat']['valeurs']['2027_plf'], an2, ['consommateurs'], 'tva', asx('tva_nette_etat'), "Recette nette de l'État ; une autre part de la TVA va à la Sécurité sociale et aux collectivités.")
         ass('csg', "CSG (contribution sociale généralisée)", 'recette', AE['csg_produit']['valeurs']['2027_p'] / 1000, an2, ['salaries', 'retraites'], 'csg', asx('csg_produit'), "Produit prévu (Commission des comptes de la Sécurité sociale) ; un point de CSG rapporte environ 18,4 Md€.")
-        ass('carburants', "Taxes sur les carburants (accise, ex-TICPE)", 'recette', AE['accise_energies_nette']['valeurs']['2027_plf_euros_carburants'] / 1e9, an2, ['automobilistes', 'consommateurs'], None, asx('accise_energies_nette'), "Part de l'État. Le modèle Mésange ne publie pas l'effet de cette taxe sur l'activité.")
+        ass('carburants', "Taxes sur les carburants (accise, ex-TICPE)", 'recette', AE['accise_energies_nette']['valeurs']['2027_plf_euros_carburants'] / 1e9, an2, ['automobilistes', 'consommateurs'], None, asx('accise_energies_nette'), "Part de l'État. Le modèle Mésange (direction du Trésor et Insee) ne donne pas l'effet de cette taxe sur l'activité.")
         ass('ame', "Aide médicale de l'État (AME)", 'depense', AE['ame_credits_2027']['valeurs']['2027_plf_CP'] / 1e9, an2, ['etrangers'], 'depense', asx('ame_credits_2027'),
             "Crédits prévus. En 2025, la dépense réelle a été de 1,47 Md€ pour 1,21 Md€ de crédits ; " + '{:,}'.format(AE['ame_beneficiaires']['valeurs']['31_12_2025']).replace(',', ' ') + " bénéficiaires fin 2025.")
         ass('c2s', "Complémentaire santé solidaire (C2S, ex-CMU complémentaire)", 'depense', AE['c2s_depense']['valeurs']['2024_depense_nette'], 2024, ['assures'], 'depense', asx('c2s_depense'), "Dépense nette 2024, dernier chiffre publié ; 7,79 millions de bénéficiaires fin 2024.")
-        ass('rsa', "RSA (versé par les départements)", 'depense', AE['rsa_departements']['valeurs']['2025'] / 1000, 2025, ['solidarite'], 'depense', asx('rsa_departements'), "Dépense des départements en 2025 ; le RSA versé par l'État dans les départements où il est recentralisé n'est pas compté.")
+        ass('rsa', "RSA (versé par les départements)", 'depense', AE['rsa_departements']['valeurs']['2025'] / 1000, 2025, ['solidarite'], 'depense', asx('rsa_departements'), "Dépense des départements en 2025. Dans certains départements, c'est l'État qui verse le RSA : cette part n'est pas comptée.")
         ass('prime-activite', "Prime d'activité", 'depense', AE['prime_activite']['valeurs']['2027_plf'], an2, ['prime_activite'], 'depense', asx('prime_activite'), "Dépense prévue de l'État.", ['prime-activite-gel'])
         ass('aspa', "Minimum vieillesse (ASPA, régime général)", 'depense', AE['aspa_minimum_vieillesse']['valeurs']['2027_p_cnav'] / 1000, an2, ['retraites'], 'depense', asx('aspa_minimum_vieillesse'), "Dépense prévue de la caisse nationale d'assurance vieillesse seule (pas tous les régimes).")
         # l'APL du projet de loi de finances remplace le chiffre de 2025
@@ -533,7 +608,7 @@ def construire():
         kids = [r for r in m['programmes'] if r['cp27']]
         mk = 'mi:' + re.sub(r'\W+', '-', m['nom'].lower())[:40]
         assiettes.append({'k': mk, 'l': m['nom'], 'groupe': 'depense', 'etat': True, 'md': round(m['cp27'] / 1e9, 3), 'an': an_plf, 'qui': qui, 'macro': 'depense',
-                          'exclut': [], 'note': "Mission du budget de l'État : crédits de paiement prévus, salaires et pensions des agents compris.", 'src': src(m)})
+                          'exclut': [], 'note': "Mission du budget de l'État : ce que l'État prévoit de dépenser (crédits de paiement), salaires et retraites des agents compris.", 'src': src(m)})
         for r in kids:
             if len(kids) < 2: break
             k = 'pr:' + re.sub(r'\W+', '-', r['nom'].lower())[:40]
@@ -610,7 +685,9 @@ def construire():
         if c['id'] in CLAIR:
             c['clair'] = {'a': CLAIR[c['id']][0], 'p': CLAIR[c['id']][1]}
         if c['id'] in PAR_QUI: c['par'] = PAR_QUI[c['id']]
-        c['statut_court'] = statut_court(c.get('statut'))
+        c['statut_court'] = statut_court(c.get('statut'), c['id'])
+        if c['id'] in QUI_CLAIR: c['qui_texte'] = QUI_CLAIR[c['id']]
+        if c['id'] in QUI_TITRE: c['qui_titre'] = QUI_TITRE[c['id']]
         ks = sorted(c['effet'])
         c['duree'] = 'une seule année' if c.get('ponctuelle') and len(ks) == 1 else 'par an'
     # Paramètres du modèle.

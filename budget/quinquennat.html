@@ -803,6 +803,7 @@ body.q-vote { padding-bottom: 92px; }
     return L.filter(function (c) { return S.v[c.id] == null; })[0] || L[0];
   }
   function phrase(m, c) {
+    if (/^smic-/.test(c.id || '')) return m >= 0 ? 'de gain pour les finances publiques' : 'de coût pour les finances publiques (allègements de cotisations, salaires publics, prestations)';
     var ret = c.sens !== 'recette';
     return m >= 0 ? (ret ? 'de dépenses en moins' : 'de recettes en plus') : (ret ? 'de dépenses en plus' : 'de recettes en moins');
   }
@@ -811,6 +812,7 @@ body.q-vote { padding-bottom: 92px; }
     if (!c.statut_court) return '';
     var t = c.statut_court.charAt(0).toLowerCase() + c.statut_court.slice(1);
     if (c.an) t = t.replace(' (1re lecture)', ' par ' + Math.max(c.an.pour, c.an.contre) + ' voix contre ' + Math.min(c.an.pour, c.an.contre) + ' (1re lecture)');
+    t = t.replace('(1re lecture)', '(1re lecture : le texte n\'est pas encore définitif)');
     return '<p class="q-ligne m"><b>À l\'Assemblée :</b> ' + esc(t) + '.</p>';
   }
   function anneesTexte(c) {
@@ -1095,7 +1097,7 @@ body.q-vote { padding-bottom: 92px; }
     var o = coll(), add = o.add, sm = CAS('smic_brut_mensuel'), sn = CAS('smic_net_mensuel'), t5 = traitement500(), di = CAS('droits_inscription'), m;
     if ((c.id === 'smic-2' || c.id === 'smic-5') && sm) { var p = c.id === 'smic-2' ? 2 : 5; add('Un salarié au SMIC : <b>' + deu(sm * p / 100, 2) + ' bruts par mois</b> (' + eu(sm, 2) + ' aujourd\'hui)' + (sn ? ', soit environ ' + deu(sn * p / 100, 0) + ' nets, avec la même part de cotisations qu\'aujourd\'hui' : '') + '.', ['smic_brut_mensuel', 'smic_net_mensuel']); }
     if (c.id === 'point-indice-plus-1' && t5) add('Un agent payé à l\'indice majoré 500 (exemple) : <b>' + deu(t5 / 100, 2) + ' bruts par mois</b> sur un traitement de base de ' + eu(t5, 2) + ' ; les primes ne changent pas.', ['point_indice']);
-    if (c.id === 'carence-3-jours' && t5) add('À chaque arrêt de plus de 3 jours, 2 jours de plus ne sont pas payés : environ <b>' + eu(t5 / 30 * 2, 0) + ' bruts</b> pour un agent à l\'indice majoré 500 (exemple, traitement de base).', ['point_indice']);
+    if (c.id === 'carence-3-jours' && t5) add('Pour un arrêt de 3 jours ou plus, 2 jours de plus ne sont pas payés : environ <b>' + eu(t5 / 30 * 2, 0) + ' bruts</b> pour un agent à l\'indice majoré 500 (exemple, traitement de base).', ['point_indice']);
     if (c.id === 'revalo-moins-1' || c.id === 'revalo-plus-1') { var s = c.id === 'revalo-moins-1' ? -1 : 1, pm = AS.retraites && AS.retraites.pp && AS.retraites.pp.moyenne, M = CAS('minima_avril_2026');
       if (M) add('Allocations familiales pour 2 enfants : ' + deu(s * M.af_2_enfants_eur / 100, 2) + ' par mois.', ['minima_avril_2026']); }
     if (c.id === 'prime-activite-gel' && (m = /revalorisation prévue de ([\d,]+) %/.exec(c.quoi || '')) && AS['prime-activite'] && AS['prime-activite'].pp && AS['prime-activite'].pp.moyenne) { var pa = AS['prime-activite'].pp.moyenne.v, r = +m[1].replace(',', '.'); add('En moyenne <b>' + eu(pa * r / 100, 2) + ' de moins par mois</b> qu\'avec la revalorisation prévue (' + pcx(r) + ' de ' + eu(pa) + ', montant moyen).'); }
@@ -1103,7 +1105,7 @@ body.q-vote { padding-bottom: 92px; }
       var supp = c.id === 'niche-120401';
       (supp ? [20000, 35000] : [35000, 45000, 20000]).forEach(function (P) { var a0 = abattPension(P); if (a0 == null) return; var a1 = supp ? 0 : Math.min(a0, 3000), i0 = impotSeul(P - a0), i1 = impotSeul(P - a1); if (i1 !== i0) add('Retraité seul, ' + eu(P) + ' de pensions par an : impôt de ' + eu(i0) + ' → <b>' + eu(i1) + '</b>.', ['ir_abattement_10', 'ir_bareme_2026', 'ir_decote']); else add('Retraité seul, ' + eu(P) + ' de pensions par an : impôt inchangé (' + eu(i0) + ').', ['ir_abattement_10']); });
     }
-    if (c.id === 'franchises-x2') { var fr = CAS('franchises'); if (fr) add('Par boîte de médicament : ' + eu(fr.franchise_par_boite_medicament_eur) + ' → <b>' + eu(2 * fr.franchise_par_boite_medicament_eur) + '</b> ; par consultation : ' + eu(fr.participation_forfaitaire_par_consultation_ou_acte_eur) + ' → <b>' + eu(2 * fr.participation_forfaitaire_par_consultation_ou_acte_eur) + '</b> ; au plus ' + eu(fr.plafond_annuel_total_eur) + ' → <b>' + eu(2 * fr.plafond_annuel_total_eur) + ' par an</b>.', ['franchises']); }
+    if (c.id === 'franchises-x2') { var fr = CAS('franchises'); if (fr) add('Par boîte de médicament : ' + eu(fr.franchise_par_boite_medicament_eur) + ' → <b>' + eu(2 * fr.franchise_par_boite_medicament_eur) + '</b> ; par consultation : ' + eu(fr.participation_forfaitaire_par_consultation_ou_acte_eur) + ' → <b>' + eu(2 * fr.participation_forfaitaire_par_consultation_ou_acte_eur) + '</b> ; par transport : ' + eu(fr.franchise_par_transport_sanitaire_eur) + ' → <b>' + eu(2 * fr.franchise_par_transport_sanitaire_eur) + '</b> ; au plus ' + eu(fr.plafond_annuel_total_eur) + ' → <b>' + eu(2 * fr.plafond_annuel_total_eur) + ' par an</b>.', ['franchises']); }
     if (c.id === 'univ-30' && di) add('Par an : licence ' + eu(di.licence_eur) + ' → <b>' + eu(di.licence_eur * 1.3, 2) + '</b>, master ' + eu(di.master_eur) + ' → <b>' + eu(di.master_eur * 1.3, 2) + '</b>, doctorat ' + eu(di.doctorat_eur) + ' → <b>' + eu(di.doctorat_eur * 1.3, 2) + '</b> ; les boursiers ne paient pas.', ['droits_inscription']);
     if (c.id === 'univ-master-doctorat' && di && (m = /master à ([\d ]+) €, doctorat à ([\d ]+) €/.exec(c.titre || ''))) add('Par an : master ' + eu(di.master_eur) + ' → <b>' + m[1] + '\u00a0€</b>, doctorat ' + eu(di.doctorat_eur) + ' → <b>' + m[2] + '\u00a0€</b> ; licence inchangée (' + eu(di.licence_eur) + ') ; les boursiers ne paient pas.', ['droits_inscription']);
     var T = CAS('tva_taux'), ttc = function (ht, t) { return ht * (1 + t / 100); };
