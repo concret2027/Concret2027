@@ -476,6 +476,10 @@ body.q-vote { padding-bottom: 92px; }
 .q-choisi { display: grid; gap: 10px; padding: 12px; border-radius: 14px; background: var(--band); }
 .q-choisi[hidden] { display: none; }
 .q-cc { display: grid; gap: 6px; }
+.q-clair { display: grid; gap: 6px; font-size: 15px; line-height: 1.45; }
+.q-clair p { margin: 0; }
+.q-clair p:last-child { padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--fr); background: var(--band); }
+.q-question { margin: 0; text-align: center; font-weight: 700; font-size: 15px; }
 .q-cc h4 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .q-cc ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
 .q-cc + h4 { padding-top: 8px; border-top: 1px solid var(--line); }
@@ -810,7 +814,7 @@ body.q-vote { padding-bottom: 92px; }
     $('q-deck').innerHTML = (filtrees().filter(function (o) { return o !== c && (S.v[o.id] == null || S.v[o.id] === 0); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card' + (entree ? ' in' : '') + '" id="q-card">' +
       '<span class="q-stamp p" id="q-sp">✓ POUR</span><span class="q-stamp c" id="q-sc">✗ CONTRE</span>' +
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span><span class="q-org">' + esc(origine(c)) + '</span></div>' +
-      '<h2>' + nb(c.titre || c.l) + '</h2>' +
+      '<h2>' + nb(c.titre || c.l) + '</h2>' + clair(c) +
       '<div class="q-mt"><b>' + mdt(m) + '</b><span>' + phrase(m, c) + ' en ' + AN0 + '</span><em>' + (c.duree === 'une seule année' ? 'une seule année' : 'chaque année') + '</em></div>' +
       '<p class="q-ligne"><b>' + quiTitre(c, m) + ' :</b> ' + nb(c.qui_texte || c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' +
       deputes(c) + concretCarte(c, m) +
@@ -821,15 +825,24 @@ body.q-vote { padding-bottom: 92px; }
       (c.note ? '<p>' + esc(c.note) + '</p>' : '') + grp +
       '<p>Source : ' + esc(c.src.doc) + (c.src.page ? ', page ' + esc(String(c.src.page).replace(/^p\. ?/, '')) : '') + '. <a href="' + esc(c.src.url) + '">Lire le document</a></p>' +
       '<details class="q-extrait"><summary>Extrait exact du document</summary><p>« ' + esc(c.src.citation) + ' »</p></details>' +
+      (J.population && !exemplesCarte(c).L.length ? '<p>Repère : ' + nf(Math.abs(m) * 1e9 / J.population.v, Math.abs(m) * 1e9 / J.population.v < 10 ? 1 : 0) + '\u00a0€ par habitant et par an (calcul de Concret : ' + mdt(Math.abs(m)) + ' divisés par ' + nf(J.population.v / 1e6, 1) + ' millions d\'habitants, Insee ; pour comparer, ce n\'est pas forcément ce que paie ou reçoit chacun).</p>' : '') +
       '<p>' + (c.macro && J.variantes[c.macro] ? 'Son effet sur l\'activité et l\'emploi est compté, d\'après le modèle de la direction du Trésor et de l\'Insee.' : 'Son effet sur l\'activité n\'est pas compté : le modèle de la direction du Trésor et de l\'Insee ne le publie pas pour ce type de mesure.') + '</p></details>' +
-      (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
+      '<p class="q-question">Êtes-vous pour ce qui est proposé ?</p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
     glisser($('q-card'), c);
+  }
+  // Ce que dit la carte, en deux phrases : aujourd'hui, ce qui est proposé ; les montants en vigueur viennent de parametres_cas.json.
+  function clair(c) {
+    if (!c.clair) return '';
+    var di = CAS('droits_inscription') || {}, fr = CAS('franchises') || {};
+    var T = { licence: di.licence_eur, master: di.master_eur, doctorat: di.doctorat_eur, boite: fr.franchise_par_boite_medicament_eur, consultation: fr.participation_forfaitaire_par_consultation_ou_acte_eur, transport: fr.franchise_par_transport_sanitaire_eur, plafond: fr.plafond_annuel_total_eur };
+    var r = function (t) { return nb(t).replace(/\{(\w+)\}/g, function (m, k) { return T[k] != null ? eu(T[k]) : m; }); };
+    return '<div class="q-clair">' + (c.clair.a ? '<p><b>Aujourd\'hui :</b> ' + r(c.clair.a) + '</p>' : '') + '<p><b>Proposé :</b> ' + r(c.clair.p) + '</p></div>';
   }
   // Sur la carte : le premier cas type, en clair ; les autres et le montant par habitant dans le dépliant « Concrètement ».
   function concretCarte(c, m) {
     var o = exemplesCarte(c), P = J.population, ph = P ? Math.abs(m) * 1e9 / P.v : null;
     var rep = ph != null ? nf(ph, ph < 10 ? 1 : 0) + '\u00a0€ par habitant et par an (calcul de Concret : ' + mdt(Math.abs(m)) + ' divisés par ' + nf(P.v / 1e6, 1) + ' millions d\'habitants, Insee ; pour comparer, ce n\'est pas forcément ce que paie ou reçoit chacun)' : '';
-    if (!o.L.length) return rep ? '<p class="q-ligne q-ccl"><b>Repère :</b> ' + rep + '.</p>' : '';
+    if (!o.L.length) return '';
     if (rep) o.L.push('Repère : ' + rep + '.');
     var premier = o.L.shift();
     return '<p class="q-ligne q-ccl"><b>Concrètement :</b> ' + premier + '</p>' + (o.L.length ? '<details class="q-src q-ccd"><summary>Autres exemples</summary>' + blocConcret(o, ' ') + '</details>' : '');
