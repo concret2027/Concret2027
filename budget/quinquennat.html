@@ -1041,7 +1041,7 @@ body.q-vote { padding-bottom: 92px; }
     if (k === 'chomage') {
       var cj = CAS('chomage_sjr');
       if (cj) { var a = cj.allocation_journaliere_brute;
-        [[2000, 'Un salarié payé 2 000 € bruts par mois'], [CAS('smic_brut_mensuel'), 'Un salarié au SMIC']].forEach(function (y) { if (!y[0]) return; var sjr = y[0] * 24 / cj.jours_max_moins_de_55_ans, aj = Math.min(Math.max(Math.max(a.alternative_pct_sjr / 100 * sjr, a.partie_variable_pct_sjr / 100 * sjr + a.partie_fixe_eur), a.minimum_eur), a.maximum_eur), m = aj * 30;
+        [[2000, 'Un salarié payé 2 000 € bruts par mois'], [CAS('smic_brut_mensuel'), 'Un salarié au SMIC']].forEach(function (y) { if (!y[0]) return; var sjr = y[0] * 24 / cj.jours_max_moins_de_55_ans, aj = Math.min(Math.max(Math.max(a.alternative_pct_sjr / 100 * sjr, a.partie_variable_pct_sjr / 100 * sjr + a.partie_fixe_eur), a.minimum_eur), a.maximum_eur, (a.plafond_pct_sjr || 100) / 100 * sjr), m = aj * 30;
           add(y[1] + ' pendant 2 ans, au chômage avant 55 ans : allocation de ' + eu(Math.round(m)) + ' bruts par mois → <b>' + eu(Math.round(m * (1 + f))) + '</b> si c\'est le montant qui change ; ou 18 mois d\'indemnisation au plus → <b>' + nf(18 * (1 + f), 1) + ' mois</b> si c\'est la durée.', ['chomage_sjr']); });
         add('Allocation de 30 jours ; salaire journalier de référence : 24 mois de salaire divisés par 730 jours.'); }
     }
