@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="e4c961a51960">
+<meta name="concret-version" content="3ac4a31826d6">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -301,7 +301,9 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .minis { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 10px; }
 .mini { font: inherit; text-align: left; display: grid; gap: 4px; align-content: start; padding: 9px 10px 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--fg); cursor: pointer; min-height: 44px; }
 .mini:hover, .mini:focus-visible { border-color: var(--fr); }
-.mini-t { font-size: 13.5px; font-weight: 700; line-height: 1.25; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.mini-h { display: block; min-height: calc(2.5em * 1.08 + 18px); font-size: 13.5px; }
+.autres { margin-top: 6px; }
+.mini-t { font-size: 13.5px; font-weight: 700; line-height: 1.25; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .mini-tag { font-size: 11.5px; color: var(--muted); }
 .mini svg { width: 100%; height: 56px; display: block; }
 .mini-v { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; display: grid; line-height: 1.35; } .mini-v > span { min-height: 1.35em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .mini-v b.f { color: var(--fr); } .mini-v b.e { color: var(--ea-t, var(--ea)); }
@@ -404,7 +406,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .checks .i { font-weight: 700; } .checks li.g .i { color: var(--ok); } .checks li.b .i { color: var(--bad); } .checks li.m .i { color: var(--mid); }
 .checks b { font-weight: 600; }
 .tnotes { margin: 0; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
-.t-pied { display: grid; gap: 0; }
+.t-pied { display: grid; gap: 0; border-top: 1px solid var(--line); padding-top: 4px; }
+.pt-seul { display: none; }
 .tnotes-n { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
 .tnotes b { color: var(--fg); font-weight: 600; } .tnotes a, .pres-line a { color: var(--fr); }
 .fold { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
@@ -1110,7 +1113,7 @@ function main(FEED) {
       if (EN_PLUS[t.k]) { var sc = serieCard; serieCard = function (w, id, c, tag, extra) { autres.push({ id: id, c: c, tag: tag, extra: extra }); return function () {}; }; try { dessins = EN_PLUS[t.k](horsMini) || []; } finally { serieCard = sc; } }
       if (autres.length) {
         var bloc = document.createElement('div'); bloc.className = 'autres';
-        bloc.innerHTML = '<h3 class="minis-t">' + (autres.length > 1 ? 'Les ' + autres.length + ' autres courbes du thème' : 'L\'autre courbe du thème') + '</h3><p class="minis-h">Toucher une courbe pour agrandir et ajouter d\'autres pays</p><p class="minis-k"><span><i class="fr"></i>France</span><span><i class="ue"></i>Moyenne de l\'UE</span><span><i class="de"></i>Allemagne</span><span><i class="es"></i>Espagne</span>' + (autres.some(function (a) { return a.c && a.c.us && a.c.us.some(function (v) { return v != null; }); }) ? '<span><i class="us"></i>États-Unis</span>' : '') + '</p>';
+        bloc.innerHTML = '<p class="minis-h">Toucher une courbe pour agrandir et ajouter d\'autres pays</p><p class="minis-k"><span><i class="fr"></i>France</span><span><i class="ue"></i>Moyenne de l\'UE</span><span><i class="de"></i>Allemagne</span><span><i class="es"></i>Espagne</span>' + (autres.some(function (a) { return a.c && a.c.us && a.c.us.some(function (v) { return v != null; }); }) ? '<span><i class="us"></i>États-Unis</span>' : '') + '</p>';
         var grille = document.createElement('div'); grille.className = 'minis'; bloc.appendChild(grille);
         if (autres.length === 1) {
           // Une seule autre courbe : elle s'affiche directement en grand, avec ses pays, « + Ajouter un pays » et son bouton Partager.
@@ -1133,10 +1136,12 @@ function main(FEED) {
       pied.innerHTML = '<details class="tab-pli"><summary>Voir les chiffres : France et moyenne de l\'UE</summary>' + tableEtat(e, true) + '</details>' +
         '<p class="tnotes">Note de ce thème, sur 20 (10 = aussi bien que la moyenne de l\'UE) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>' + nonNote(pn, t);
       pied.insertBefore(pied.querySelector('.tnotes'), pied.firstChild); var nn = pied.querySelector('.tnotes-n'); if (nn) pied.insertBefore(nn, pied.children[1]);
+      // La note du thème par président : pas sur la page (elle est dans « Les notes » en haut, président par président), seulement dans l'image « Partager le thème ».
+      Array.prototype.forEach.call(pied.querySelectorAll('.tnotes, .tnotes-n'), function (x) { x.classList.add('pt-seul'); });
       sec.appendChild(pied);
       var dp = document.createElement('details'); dp.className = 'defs-pli';
       dp.innerHTML = '<summary>Définitions et sources</summary><p class="note defs">' + defs.join('<br>') + '</p>';
-      sec.appendChild(dp);
+      pied.appendChild(dp); // « Voir les chiffres » et « Définitions et sources » l'un sous l'autre, sans grand écart
     });
   }
   // Une courbe agrandie sans « + Ajouter un pays » (source qui n'est pas encore relue pour les autres pays) : on le dit dessous.
@@ -1154,7 +1159,7 @@ function main(FEED) {
     var trace = function (P) { var seg = [], cur = []; P.forEach(function (p, k) { if (k && p.x !== P[k - 1].x + 1 && cur.length) { seg.push(cur); cur = []; } cur.push(X(p.x).toFixed(1) + ',' + Y(p.v).toFixed(1)); }); if (cur.length) seg.push(cur); return seg.map(function (sg) { return sg.length > 1 ? sg.join(' ') : sg[0] + ' ' + sg[0]; }); };
     var lf = F[F.length - 1], le = E.filter(function (p) { return p.x === lf.x; })[0] || null;
     var b = document.createElement('button'); b.type = 'button'; b.className = 'mini';
-    b.innerHTML = '<span class="mini-t">' + esc(c.lc || c.l) + '</span>' + (c.unite ? '<span class="mini-u">' + esc(c.unite) + '</span>' : '') +
+    b.innerHTML = '<span class="mini-h"><span class="mini-t">' + esc(c.lc || c.l) + '</span>' + (c.unite ? '<span class="mini-u">' + esc(c.unite) + '</span>' : '') + '</span>' +
       '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + [[D, 'var(--de)'], [Es, 'var(--es)'], [Us, 'var(--us)']].map(function (a) { return a[0].length ? trace(a[0]).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="' + a[1] + '" stroke-width="1.2" opacity=".75"/>'; }).join('') : ''; }).join('') + (E.length ? trace(E).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--ea)" stroke-width="1.6" stroke-dasharray="4 3"/>'; }).join('') : '') +
       trace(F).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--fr)" stroke-width="2.4" stroke-linejoin="round"/>'; }).join('') + '<circle cx="' + X(lf.x) + '" cy="' + Y(lf.v) + '" r="3" fill="var(--fr)" class="mini-pt"/></svg>' +
       '<span class="mini-v"><span><b class="f">' + fmt(lf.v, dec) + u + '</b> France · ' + lf.x + ((c.prov || {})[lf.x] ? ' estimé' : '') + '</span><span>' + (le ? '<b class="e">' + fmt(le.v, dec) + u + '</b> moyenne UE' : '') + (/sans note/.test(o.tag || '') ? (le ? ' · ' : '') + 'sans note' : '') + '</span></span>';
@@ -1403,7 +1408,7 @@ function main(FEED) {
 })();
 })();
 </script>
-<script src="/commun/partage.js?v=20261028i"></script>
+<script src="/commun/partage.js?v=20261028j"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/menu.js?v=20261028n"></script>

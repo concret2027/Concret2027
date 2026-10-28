@@ -109,6 +109,8 @@
           Array.prototype.forEach.call(doc.querySelectorAll('[hidden], .pt-overlay, .nt-btn'), function (e) { e.remove(); });
           // Texte sous la courbe replié à l'écran (« Détail du graphe ») : en entier dans l'image.
           Array.prototype.forEach.call(doc.querySelectorAll('.nt-pli'), function (e) { e.classList.remove('nt-pli'); });
+          // Ce qui n'est montré que dans l'image (la note du thème par président) : visible dans la copie.
+          Array.prototype.forEach.call(doc.querySelectorAll('.pt-seul'), function (e) { e.classList.remove('pt-seul'); });
           // Dans l'image, seulement ce qui se lit : pas de bouton, pas de liste de détail à toucher, pas de bloc replié.
           var bl = doc.querySelector('[data-pt-bloc]');
           if (bl) {
