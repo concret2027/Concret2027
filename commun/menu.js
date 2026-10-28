@@ -250,12 +250,21 @@
   // Nouvelle version du site : la page connaît sa version (<meta name="concret-version">, écrite par outils/version.js) et la compare
   // à celle en ligne (donnees/version.json), à l'ouverture et à chaque retour au premier plan (la web app reste ouverte en arrière-plan).
   // Si elles diffèrent, un bandeau propose de recharger la page, sans attendre que le téléphone oublie l'ancienne.
-  var vPage = (document.querySelector('meta[name="concret-version"]') || {}).content, vVu = 0;
+  // Une page qui vient de s'ouvrir (moins de 4 s, rien touché) et qui est en retard — le navigateur la garde jusqu'à 10 minutes —
+  // se recharge seule, sans bandeau, une fois par version et par page ; le bandeau reste pour une page ouverte depuis longtemps.
+  var vPage = (document.querySelector('meta[name="concret-version"]') || {}).content, vVu = 0, vT0 = Date.now(), vTouche = false, vRecharge = /[?&]maj=/.test(location.search);
+  ['pointerdown', 'keydown', 'scroll'].forEach(function (e) { addEventListener(e, function () { vTouche = true; }, { once: true, passive: true }); });
   function verifierVersion() {
     if (!vPage || !window.fetch || Date.now() - vVu < 60000 || document.getElementById('mn-maj')) return;
     vVu = Date.now();
     fetch('/donnees/version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (o) {
       if (!o || !o.v || o.v === vPage || document.getElementById('mn-maj')) return;
+      var cle = o.v + location.pathname, deja = null;
+      try { deja = sessionStorage.getItem('mn-maj-auto'); } catch (e) {}
+      if (!vTouche && !vRecharge && Date.now() - vT0 < 4000 && deja !== cle) {
+        try { sessionStorage.setItem('mn-maj-auto', cle); } catch (e) {}
+        location.replace(location.pathname + '?maj=' + o.v + location.hash); return;
+      }
       var b = document.createElement('button'); b.type = 'button'; b.id = 'mn-maj'; b.className = 'mn-maj';
       b.innerHTML = '<span>Une nouvelle version de Concret est en ligne.</span><b>Mettre à jour</b>';
       b.addEventListener('click', function () { b.disabled = true; location.replace(location.pathname + '?maj=' + Date.now() + location.hash); });
