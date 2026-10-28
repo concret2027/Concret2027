@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="85c5c4e2bf26">
+<meta name="concret-version" content="de8b43bca5ce">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -394,6 +394,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 .qz-grille { font-size: 22px; letter-spacing: 2px; }
 .qz-rang { font-size: 15px; max-width: 46ch; margin: 0; }
 .qz-rang b { font-weight: 600; }
+.qz-rang .qz-rang-e { display: block; font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.qz-rang .qz-place { display: block; font-family: var(--serif); font-size: 34px; line-height: 1.1; font-weight: 400; }
+.qz-suivi a { color: var(--fr); font-weight: 700; text-decoration: none; white-space: nowrap; }
 .qz-btn { font: inherit; font-weight: 600; font-size: 14.5px; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--fr); color: #fff; cursor: pointer; }
 .qz-btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 .qz-perso { display: grid; gap: 8px; justify-items: center; width: 100%; max-width: 46ch; padding-top: 10px; border-top: 1px solid var(--line); font-size: 14.5px; }
@@ -557,7 +560,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     // Le libellé des boutons « Question suivante » : « Voir mon score » quand toutes les questions ont une réponse.
     function suites() {
       var toutes = rep.every(function (v) { return v != null; });
-      document.querySelectorAll('.qz-suite button').forEach(function (b) { b.textContent = toutes ? 'Voir mon score ↓' : 'Question suivante ↓'; });
+      document.querySelectorAll('.qz-suite button').forEach(function (b) { b.textContent = toutes ? 'Voir mon score et mon classement ↓' : 'Question suivante ↓'; });
     }
 
     // Score du jour : un compteur par score possible (0 à total), remis à zéro chaque jour par la date dans son nom.
@@ -574,6 +577,9 @@ footer p { margin: 0; } footer a { color: inherit; }
       // (si l'envoi a échoué, il repart au prochain chargement de la page).
       var cleCompte = 'quiz-score-compte-' + iso, deja = false; try { deja = localStorage.getItem(cleCompte) != null; } catch (e) {}
       var rang = document.getElementById('qz-rang');
+      // En haut de l'écran, toujours visible : le score, puis la place du jour dès qu'elle est connue ; un toucher mène au score.
+      var haut = function (t) { document.getElementById('qz-n').innerHTML = '<a href="#qz-fin">' + t + ' ↓</a>'; };
+      haut('Score ' + ok + ' / ' + total);
       if (!window.ConcretQuiz) return;
       var cle = 'score-' + total + '-' + iso;
       rang.textContent = 'Classement du jour en cours de chargement…';
@@ -587,7 +593,8 @@ footer p { margin: 0; } footer a { color: inherit; }
         var mieux = n.slice(ok + 1).reduce(function (a, b) { return a + b; }, 0), egaux = Math.max(0, n[ok] - 1), place = mieux + 1;
         var ord = place === 1 ? '1re' : place + 'e', T = tous.toLocaleString('fr-FR');
         classe = { tous: tous, place: ord, egaux: egaux };
-        rang.innerHTML = 'Vous êtes à la <b>' + ord + ' place</b> sur <b>' + T + ' personnes</b> qui ont fini le quiz aujourd\'hui' + (egaux ? ', ex aequo avec ' + (egaux === 1 ? 'une autre personne' : egaux.toLocaleString('fr-FR') + ' autres') : '') + '.';
+        rang.innerHTML = '<span class="qz-rang-e">Votre classement du jour</span><span class="qz-place">' + ord + ' place</span>sur <b>' + T + ' personnes</b> qui ont fini le quiz aujourd\'hui' + (egaux ? ', ex aequo avec ' + (egaux === 1 ? 'une autre personne' : egaux.toLocaleString('fr-FR') + ' autres') : '') + '.';
+        haut(ok + ' / ' + total + ' · ' + ord + ' sur ' + T);
       }, function () { rang.textContent = 'Le classement du jour n\'a pas pu être chargé. Rechargez la page pour réessayer.'; });
     }
     // Vos scores jour après jour, gardés sur cet appareil seulement : série de jours de suite, record, moyenne, la semaine.
