@@ -58,6 +58,7 @@ M2027 = {
     'taxe-infrastructures-transport': {'theme': 'entreprises', 'qui': ['grandes_entreprises'], 'macro': None},
     'avoirs-desherence': {'theme': 'patrimoine', 'qui': ['patrimoine'], 'macro': None},
     'cpeb': {'theme': 'collectivites', 'qui': ['collectivites'], 'macro': None},
+    'cufpa-plafond': {'theme': 'travail', 'qui': ['formation'], 'macro': 'depense'},
     'prime-activite-gel': {'theme': 'solidarite', 'qui': ['prime_activite'], 'macro': 'depense'},
     'formation-pric-cfa': {'theme': 'travail', 'qui': ['formation'], 'macro': 'depense'},
     'cpf-participation': {'theme': 'travail', 'qui': ['formation'], 'macro': 'depense'},
@@ -70,14 +71,14 @@ M2027 = {
 }
 EXCLUES = {'fctva-taux': "versement de l'État aux collectivités : le document chiffre la moindre dépense de l'État, pas l'effet sur le déficit public total",
            'tva-collectivites': "part de TVA conservée par l'État au lieu d'être versée aux collectivités : transfert entre administrations publiques",
-           'cufpa-plafond': "recette d'un opérateur public reversée à l'État : transfert entre administrations publiques"}
+}
 # Votes de l'Assemblée qui portent sur la mesure elle-même : (scrutin, sens) ; sens -1 quand le vote est sur sa suppression.
 # Mesures d'un seul exercice : rien après la dernière année chiffrée. Les autres gardent leur dernier montant (aucun chiffrage
 # officiel au-delà : c'est une hypothèse de Concret, écrite sur la carte).
 PONCTUELLES = {'avoirs-desherence', 'contribution-complementaires-sante', 'contribution-transport-maritime', 'contribution-grandes-entreprises'}
 SCRUTINS = {'ir-indemnites-journalieres': (8727, -1), 'csg-indemnites-journalieres': (8727, -1), 'ir-abattement-retraites': (8738, -1),
             'cpeb': (8887, -1), 'allegements-complements-salaire': (8998, 1), 'taxe-produits-sucres': (9033, -1),
-            'contribution-complementaires-sante': (9077, -1)}
+            'contribution-complementaires-sante': (9077, -1), 'contribution-grandes-entreprises': (9123, -1), 'contribution-transport-maritime': (9123, -1)}
 
 # Niches fiscales : titre de carte, thème, étiquettes, type d'effet sur l'activité. Écartées : 130201 (chiffrage contradictoire
 # dans le document) et 110261 (réductions d'impôt d'investissements déjà réalisés).
