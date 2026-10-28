@@ -10,7 +10,7 @@
 // GET  /get?k=<clé>&n=<nombre d'options> : renvoie { v: [...] } sans rien ajouter.
 // POST /partie?id=&jour=AAAA-MM-JJ&c=<page:choix,...>&g=<points des questions sur les notes> : enregistre le premier essai du jour ;
 //      le score des questions des pages est recalculé ici à partir de data.json (même tirage que le site).
-// GET  /classement?id=&jour= : semaine (du lundi au dimanche), mois et depuis le début : les 20 premiers et la place de la personne.
+// GET  /classement?id=&jour= : semaine (du lundi au dimanche), mois et depuis le début : les 10 premiers et la place de la personne.
 // POST /pseudo?id=&pseudo= : choisit, change ou retire (pseudo vide) le pseudo affiché dans le classement.
 // POST /oubli?id= : efface le pseudo et tous les scores de cet identifiant.
 const ORIGINES = ['https://concret2027.fr', 'https://www.concret2027.fr'];
@@ -42,7 +42,7 @@ async function classement(env, id, jour) {
     const { results } = await env.DB.prepare('SELECT p.id, SUM(p.score) AS pts, COUNT(*) AS n, j.pseudo FROM partie p LEFT JOIN joueur j ON j.id = p.id WHERE p.jour BETWEEN ?1 AND ?2 GROUP BY p.id ORDER BY pts DESC, n ASC').bind(de, a).all();
     const rang = (pts) => 1 + results.filter((r) => r.pts > pts).length;
     const moi = results.find((r) => r.id === id);
-    out[nom] = { de, a, joueurs: results.length, top: results.slice(0, 20).map((r) => ({ rang: rang(r.pts), pseudo: r.pseudo || null, points: r.pts, jours: r.n, moi: r.id === id })),
+    out[nom] = { de, a, joueurs: results.length, top: results.slice(0, 10).map((r) => ({ rang: rang(r.pts), pseudo: r.pseudo || null, points: r.pts, jours: r.n, moi: r.id === id })),
       moi: moi ? { rang: rang(moi.pts), points: moi.pts, jours: moi.n } : null };
   }
   const j = await env.DB.prepare('SELECT pseudo FROM joueur WHERE id = ?1').bind(id).first();
