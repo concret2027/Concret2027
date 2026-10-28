@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="39c65a9389e1">
+<meta name="concret-version" content="e3f43286635f">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -291,6 +291,9 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 .seg button:focus-visible { outline: 2px solid var(--fr); outline-offset: -3px; }
 .charts3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
+/* Titre de courbe en lettres normales (les capitales sur trois lignes se lisent mal). */
+.courbe-p > .eyebrow, .fold .card > h2 > .eyebrow { text-transform: none; letter-spacing: 0; font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--fg); }
+.courbe-p { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 12px 12px 10px; box-shadow: none; }
 .charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
 .chart { position: relative; min-width: 0; }
 .chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
@@ -615,7 +618,7 @@ function main(FEED) {
       return '<tr class="grp nm"><td colspan="3"><button type="button" class="grp-b" data-grp="' + id + '" aria-expanded="false">' + esc(x.c.lc) + '</button></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr><tr class="xp grp"><td colspan="4">' + esc(x.c.ex || '') + ' : la France fait mieux sur ' + x.ok + ' sur ' + x.sous.length + ' (touchez pour le détail)</td></tr>' + x.sous.map(function (s) { return rowHtml(s, id); }).join('');
     }).join('') + '</tbody></table>' +
       // Une seule fois sous le tableau : ce que disent les petits chiffres, et l'astérisque des moyennes calculées par Concret.
-      '<p class="cmp-n">Sous chaque chiffre : l\'année, puis l\'évolution en 5 ans' + (e.l.some(function (x) { return x && (x.calc || (x.sous || []).some(function (y) { return y.calc; })); }) ? ' ; * moyenne de l\'UE calculée par Concret, la source n\'en publiant pas' : '') + '.</p>';
+      '<p class="cmp-n">Dessous : l\'année et l\'évolution en 5 ans' + (e.l.some(function (x) { return x && (x.calc || (x.sous || []).some(function (y) { return y.calc; })); }) ? ' · * moyenne calculée par Concret (la source n\'en publie pas)' : '') + '.</p>';
   }
   document.addEventListener('click', function (ev) {
     var b = ev.target.closest && ev.target.closest('.grp-b'); if (!b) return;
@@ -1012,18 +1015,19 @@ function main(FEED) {
     var root = document.getElementById('questions');
     THEMES.forEach(function (t) {
       var e = themeEtat(t), cs = courbes(t), m0 = cs[0], c = m0.c;
-      var sec = document.createElement('section'); sec.className = 'card theme'; sec.id = 'q-' + t.k;
+      var sec = document.createElement('section'); sec.className = 'card theme'; sec.id = 'q-' + t.k; sec.dataset.partageL = 'Partager le thème';
       var pn = PRES.map(function (g) { return { g: g, n: SAN.noteTheme(g, t) }; }).reverse();
       var defs = [];
       t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || esc(x.ex || '')) + (x.source ? ' Source : ' + lien(x, x.source) + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + esc(q.l) + ' (' + esc(q.unite) + '). Source : ' + lien(q, q.source) + '.'); }); });
       sec.innerHTML = '<h2></h2><p class="t-sum"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>La France fait mieux que ses voisins sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n + ' (dernier chiffre connu).</p>' +
         tableEtat(e, true) +
-        '<span class="eyebrow" style="margin:4px 0 0">' + esc(c.l) + ', ' + esc(c.unite) + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p>' +
+        // La courbe principale dans son propre cadre : on peut la partager seule (« Partager la courbe »).
+        '<div class="card courbe-p" data-partage-l="Partager la courbe"><span class="eyebrow">' + esc(c.l) + ', ' + esc(c.unite) + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p></div>' +
         '<p class="tnotes">Note de ce thème, sur 20 (10 = aussi bien que la moyenne de l\'UE) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>';
       sec.querySelector('h2').textContent = t.q;
       root.appendChild(sec);
       // Visibles : le tableau du thème et sa courbe principale ; les autres courbes et les sources dans le dépliant.
-      MAIN.push(function () { sec.querySelector('.note').innerHTML = [serieChart('ch-' + m0.id, c), srcNote(c)].filter(Boolean).join(' '); });
+      MAIN.push(function () { sec.querySelector('.courbe-p .note').innerHTML = [serieChart('ch-' + m0.id, c, innerWidth < 600 ? { h: 250 } : null), srcNote(c)].filter(Boolean).join(' '); });
       var autres = cs.slice(1), grid = document.createElement('div'); grid.className = 'charts4';
       var more = autres.map(function (o) { return serieCard(grid, 'ch-' + o.id, o.c, o.tag, o.id === 'equ' ? { unit: ' pt' } : null); });
       if (EN_PLUS[t.k]) more = more.concat(EN_PLUS[t.k](grid));
@@ -1264,7 +1268,7 @@ function main(FEED) {
 })();
 })();
 </script>
-<script src="/commun/partage.js?v=20261028g"></script>
+<script src="/commun/partage.js?v=20261028h"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/menu.js?v=20261028g"></script>
