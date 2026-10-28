@@ -732,6 +732,8 @@ def construire():
         'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'unites': unites, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
         'variantes': var, 'regle': REGLE, 'defis': DEFIS,
+        'cible': ({'v': -AE['cible_solde_2027']['valeurs']['2027_plf_pct_pib'], 'an': AE['cible_solde_2027']['annee'], 'source': AE['cible_solde_2027']['document'] + ', ' + AE['cible_solde_2027']['page'],
+                   'url': AE['cible_solde_2027']['url'], 'citation': AE['cible_solde_2027']['citation']} if 'cible_solde_2027' in AE else None),
         'variantes_source': P['mesange2017_linearite']['citation'] if 'mesange2017_linearite' in P else '',
         'taux': {**{k: P[k] for k in ('oat10_moyenne_annuelle', 'oat10_dernier_mois', 'dette_etat_duree_vie_moyenne') if k in P},
                  **({'mensuel': E['taux_etat_10ans_dernier_mois']} if 'taux_etat_10ans_dernier_mois' in E else {})},
