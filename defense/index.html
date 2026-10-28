@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="06067f17ada1">
+<meta name="concret-version" content="e26ba382da9e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -354,11 +354,13 @@ footer p { margin: 0; } footer a { color: inherit; }
 .sc i.g, .cmp .i.g { color: var(--ok); } .sc i.b, .cmp .i.b { color: var(--bad); } .sc i.m, .cmp .i.m { color: var(--mid); }
 .cmp { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
 .cmp th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
-.cmp td { padding: 8px 6px 2px; text-align: right; white-space: nowrap; vertical-align: top; }
+.cmp td { padding: 6px 6px 2px; text-align: right; white-space: nowrap; vertical-align: top; }
 .cmp tr.xp td { text-align: left; white-space: normal; font-weight: 400; font-size: 12px; color: var(--muted); padding: 0 6px 8px; border-bottom: 1px solid var(--grid); }
 .cmp tr.grp.nm td { padding-top: 10px; } .cmp tr.xp.grp td { border-bottom: 0; } .cmp tr.xp.sub td { padding-left: 18px; }
+.cmp sup { font-size: 11px; color: var(--muted); margin-left: 1px; }
+.cmp-n { margin: 4px 0 0; font-size: 12.5px; line-height: 1.4; color: var(--muted); }
 .cmp td:first-child { text-align: left; white-space: normal; font-weight: 600; }
-.cmp td small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); white-space: normal; }
+.cmp td small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); white-space: normal; }
 .cmp th:nth-child(1) { width: 36%; } .cmp th:nth-child(2) { width: 27%; } .cmp th:nth-child(3) { width: 29%; } .cmp th:nth-child(4) { width: 8%; }
 .cmp td { overflow-wrap: anywhere; } .cmp td:first-child { overflow-wrap: normal; hyphens: auto; }
 .grp-b { font: inherit; font-weight: 600; color: var(--fg); background: none; border: 0; padding: 0; cursor: pointer; text-align: left; } .grp-b::after { content: " ▾"; color: var(--fr); } .grp-b[aria-expanded="true"]::after { content: " ▴"; }
@@ -601,13 +603,13 @@ function main(FEED) {
     if (i < 0) return null;
     var a = c.fr[i], e = c[r][i], cl = Math.abs(a - e) < 1e-9 ? 'm' : (c.low ? a < e : a > e) ? 'g' : 'b';
     var j = c.y.indexOf(c.y[i] - 5), ok5 = j >= 0 && c.fr[j] != null && c[r][j] != null, ev = function (x, x0) { return sg(x - x0, dec) + (c.uc === ' %' ? ' pt' : ''); };
-    return { cl: cl, c: c, y: c.y[i], fr: val1(c, a, dec), fe: ok5 ? ev(a, c.fr[j]) + ' en 5 ans' : '', ref: val1(c, e, dec), re: refN(c, 1) + (ok5 ? ', ' + ev(e, c[r][j]) : '') };
+    return { cl: cl, c: c, y: c.y[i], fr: val1(c, a, dec), fe: ok5 ? ev(a, c.fr[j]) : '', ref: val1(c, e, dec), re: ok5 ? ev(e, c[r][j]) : '', calc: r === 'ue_calc' };
   }
   function etat(k) {
     var c = C[k];
     if (c.regle === 'propre') {
       var s = lastOf(c, 'fr'), k5 = c.y.indexOf(s.y), md = c.md[k5], md5 = c.md[k5 - 5];
-      return { cl: s.v >= 0 ? 'g' : 'b', c: c, y: s.y, fr: sg(md, 1) + ' Md€', fe: md5 != null ? sg(md - md5, 1) + ' en 5 ans' : '', ref: '—', re: 'France seule' };
+      return { cl: s.v >= 0 ? 'g' : 'b', c: c, y: s.y, fr: sg(md, 1) + ' Md€', fe: md5 != null ? sg(md - md5, 1) : '', ref: '—', re: 'France seule' };
     }
     if (c.regle === 'composite') {
       var l = Object.keys(c.sous).map(function (j) { return ligne(c.sous[j]); }).filter(Boolean), ok = l.filter(function (x) { return x.cl === 'g'; }).length;
@@ -620,16 +622,18 @@ function main(FEED) {
   // court : sans la ligne de définition et de source (elles sont dans le dépliant du thème) ; l'année passe sous le chiffre.
   function rowHtml(x, sub, court) {
     var h = sub ? ' data-sub="' + sub + '" hidden' : '';
-    return '<tr class="nm' + (sub ? ' sub' : '') + '"' + h + '><td>' + esc(x.c.lc || x.c.l) + '</td><td>' + x.fr + (x.fe || court ? '<small>' + [court ? x.y : '', x.fe].filter(Boolean).join(' · ') + '</small>' : '') + '</td><td>' + x.ref + '<small>' + x.re + '</small></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>' +
+    return '<tr class="nm' + (sub ? ' sub' : '') + '"' + h + '><td>' + esc(x.c.lc || x.c.l) + '</td><td>' + x.fr + (x.fe || court ? '<small>' + [court ? x.y : '', x.fe].filter(Boolean).join(' · ') + '</small>' : '') + '</td><td>' + x.ref + (x.calc ? '<sup>*</sup>' : '') + (x.re ? '<small>' + x.re + '</small>' : '') + '</td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr>' +
       (court ? '' : '<tr class="xp' + (sub ? ' sub' : '') + '"' + h + '><td colspan="4">' + esc(x.c.ex || unitOf(x.c)) + ' · ' + x.y + (x.c.sc ? ' · Source : ' + lien(x.c, x.c.sc) : '') + '</td></tr>');
   }
   function tableEtat(e, court) {
-    return '<table class="cmp"><thead><tr><th></th><th>France</th><th>Voisins</th><th></th></tr></thead><tbody>' + e.l.map(function (x) {
+    return '<table class="cmp"><thead><tr><th></th><th>France</th><th>Moyenne UE</th><th></th></tr></thead><tbody>' + e.l.map(function (x) {
       if (!x.sous) return rowHtml(x, null, court);
       // Un programme (vaccins, dépistages) : une ligne, dépliable pour voir chaque élément.
       var id = x.c.lc.replace(/\W/g, '');
       return '<tr class="grp nm"><td colspan="3"><button type="button" class="grp-b" data-grp="' + id + '" aria-expanded="false">' + esc(x.c.lc) + '</button></td><td class="i ' + x.cl + '">' + ICON[x.cl] + '</td></tr><tr class="xp grp"><td colspan="4">' + esc(x.c.ex || '') + ' : la France fait mieux sur ' + x.ok + ' sur ' + x.sous.length + ' (touchez pour le détail)</td></tr>' + x.sous.map(function (s) { return rowHtml(s, id); }).join('');
-    }).join('') + '</tbody></table>';
+    }).join('') + '</tbody></table>' +
+      // Une seule fois sous le tableau : ce que disent les petits chiffres, et l'astérisque des moyennes calculées par Concret.
+      '<p class="cmp-n">Sous chaque chiffre : l\'année, puis l\'évolution en 5 ans' + (e.l.some(function (x) { return x && (x.calc || (x.sous || []).some(function (y) { return y.calc; })); }) ? ' ; * moyenne de l\'UE calculée par Concret, la source n\'en publiant pas' : '') + '.</p>';
   }
   document.addEventListener('click', function (ev) {
     var b = ev.target.closest && ev.target.closest('.grp-b'); if (!b) return;
