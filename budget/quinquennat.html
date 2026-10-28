@@ -458,7 +458,9 @@ body.q-vote { padding-bottom: 92px; }
 .q-liste button { font: inherit; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 0 14px; min-height: 40px; cursor: pointer; }
 /* Créer */
 .q-recherche { font: inherit; font-size: 15px; min-height: 46px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); width: 100%; box-sizing: border-box; }
-.q-tuiles-c { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.q-tuiles-c { display: grid; gap: 8px; }
+.q-tuiles-c > div { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); gap: 8px; }
+.q-tuiles-c h3 { margin: 6px 0 0; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .q-tuiles-c button { font: inherit; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; display: grid; gap: 2px; min-height: 58px; }
 .q-tuiles-c button b { font-size: 14px; }
 .q-tuiles-c button span { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -561,6 +563,7 @@ body.q-vote { padding-bottom: 92px; }
       <div class="q-tuiles-c" id="q-tuiles-c"></div>
       <input type="search" class="q-recherche" id="q-cherche" placeholder="Chercher : RSA, police…" aria-label="Chercher une ligne du budget">
       <ul class="q-resultats" id="q-resultats" hidden></ul>
+      <p class="q-note" id="q-vide" hidden>Aucune ligne du budget de l'État ou de la Sécurité sociale ne porte ce nom. Certaines dépenses, comme la propreté des rues, les cantines ou les transports urbains, sont payées par les communes, les départements ou les régions, qui ont leur propre budget : elles ne sont pas dans ce jeu.</p>
       <div class="q-choisi" id="q-choisi" hidden>
         <h3 id="q-ch-t"></h3>
         <p class="q-note" id="q-ch-n"></p>
@@ -934,7 +937,12 @@ body.q-vote { padding-bottom: 92px; }
   }
 
   // ---------- Créer ----------
-  var TUILES = ['ir', 'is', 'tva', 'csg', 'retraites', 'ondam', 'remunerations', 'enseignement', 'defense', 'chomage', 'apl', 'ame'], choisi = null;
+  // Les tuiles de Créer, en trois familles ; les autres lignes du budget se trouvent par la recherche.
+  var TUILES = [
+    ['Impôts et cotisations', [['ir', 'Impôt sur le revenu'], ['is', 'Impôt sur les sociétés'], ['tva', 'TVA'], ['csg', 'CSG'], ['carburants', 'Taxes sur les carburants'], ['allegements', 'Allègements de cotisations']]],
+    ['Aides et prestations', [['retraites', 'Retraites'], ['chomage', 'Allocations chômage'], ['apl', 'Aides au logement'], ['alloc-familiales', 'Allocations familiales'], ['aah', 'Allocation adultes handicapés'], ['rsa', 'RSA'], ['prime-activite', 'Prime d\'activité'], ['aspa', 'Minimum vieillesse'], ['ij-maladie', 'Arrêts maladie'], ['ame', 'Aide médicale de l\'État']]],
+    ['Services publics', [['ondam', 'Assurance maladie'], ['enseignement', 'Écoles, collèges, lycées'], ['mi:recherche-et-enseignement-supérieur', 'Universités et recherche'], ['remunerations', 'Salaires des agents publics'], ['mi:sécurités', 'Police et gendarmerie'], ['mi:justice', 'Justice et prisons'], ['defense', 'Défense'], ['mi:immigration-asile-et-intégration', 'Immigration et asile'], ['mi:aide-publique-au-développement', 'Aide au développement'], ['mi:écologie-développement-et-mobilité-durab', 'Écologie et transports'], ['mi:culture', 'Culture'], ['audiovisuel', 'Audiovisuel public']]]
+  ], choisi = null;
   function md(v) { return Math.abs(v) >= 10 ? nf(v, 0) : nf(v, 1); }
   function choisir(k) {
     choisi = AS[k]; if (!choisi) return;
@@ -981,7 +989,7 @@ body.q-vote { padding-bottom: 92px; }
     el.innerHTML = t;
   }
   function tuiles() {
-    $('q-tuiles-c').innerHTML = TUILES.filter(function (k) { return AS[k]; }).map(function (k) { var x = AS[k], v = S.perso[k]; return '<button type="button" data-k="' + k + '" aria-pressed="' + (!!choisi && choisi.k === k) + '"><b>' + esc(x.l.split(' (')[0]) + '</b><span>' + md(x.md) + '\u00a0Md€ en ' + x.an + ' · ' + (x.groupe === 'recette' ? 'recette' : 'dépense') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + Math.abs(v) + '\u00a0%</i>' : '') + '</button>'; }).join('');
+    $('q-tuiles-c').innerHTML = TUILES.map(function (f) { return '<h3>' + esc(f[0]) + '</h3><div>' + f[1].filter(function (t) { return AS[t[0]]; }).map(function (t) { var k = t[0], x = AS[k], v = S.perso[k]; return '<button type="button" data-k="' + esc(k) + '" aria-pressed="' + (!!choisi && choisi.k === k) + '"><b>' + esc(t[1]) + '</b><span>' + md(x.md) + '\u00a0Md€ en ' + x.an + ' · ' + (x.groupe === 'recette' ? 'recette' : 'dépense') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + Math.abs(v) + '\u00a0%</i>' : '') + '</button>'; }).join('') + '</div>'; }).join('');
     Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button'), function (b) { b.onclick = function () { choisir(b.dataset.k); }; });
   }
   function creer() {
@@ -989,6 +997,7 @@ body.q-vote { padding-bottom: 92px; }
     var norm = function (t) { return t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
     $('q-cherche').oninput = function () {
       var q = norm($('q-cherche').value.trim()), L = q.length < 2 ? [] : J.assiettes.filter(function (x) { return norm(x.l + ' ' + (x.note || '')).indexOf(q) >= 0; }).slice(0, 40);
+      $('q-vide').hidden = !(q.length >= 2 && !L.length);
       $('q-resultats').hidden = !L.length; if (L.length) $('q-cherche').scrollIntoView({ block: 'start', behavior: 'smooth' });
       $('q-resultats').innerHTML = L.map(function (x) { return '<li><button type="button" data-k="' + esc(x.k) + '">' + esc(x.l) + '<span>' + md(x.md) + '\u00a0Md€</span></button></li>'; }).join('');
       Array.prototype.forEach.call($('q-resultats').querySelectorAll('button'), function (b) { b.onclick = function () { choisir(b.dataset.k); $('q-resultats').hidden = true; $('q-cherche').value = ''; }; });
