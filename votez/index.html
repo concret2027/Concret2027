@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="2698b42feb15">
+<meta name="concret-version" content="61c75ce0db77">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -302,6 +302,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .vz-revoter { display: block; margin-top: 4px; text-align: center; font-weight: 600; }
 .vz-prive::before { content: "🔒 "; }
 .vz-prive span { font-weight: 600; color: var(--fg); }
+.vz-gens { margin: 0; font-size: 14px; font-weight: 600; }
+.vz-gens[hidden] { display: none; }
 .vz-suivi { position: sticky; top: var(--navh, 56px); z-index: 8; display: flex; gap: 12px; align-items: center; padding: 8px 2px; margin: -8px 0; background: var(--bg); font-size: 14px; font-variant-numeric: tabular-nums; }
 .vz-prog { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; } .vz-prog i { display: block; height: 100%; background: var(--fr); border-radius: 3px; transition: width .3s; }
 .vz-carte { border-color: var(--fr); }
@@ -343,7 +345,8 @@ footer p { margin: 0; } footer a { color: inherit; }
     <span class="eyebrow">Votez les lois</span>
     <h1 id="vz-titre">Et vous, qu'auriez-vous voté&nbsp;?</h1>
     <p class="note" style="font-size:14.5px" id="vz-lead">De vrais votes de l'Assemblée, expliqués simplement, par séries de 10. Et ceux qui arrivent, à voter avant les députés. Dès 5 votes, voyez de quels groupes de députés vous êtes le plus proche.</p>
-    <p class="vz-prive">Vos votes restent sur cet appareil.</p>
+    <p class="vz-prive">Vos votes restent sur cet appareil : seul leur nombre est compté, jamais pour ou contre.</p>
+    <p class="vz-gens" id="vz-gens" hidden></p>
     <p class="vz-retour" id="vz-retour" hidden></p>
     <p class="vz-neufs" id="vz-neufs" hidden></p>
     <a class="vz-bientot" id="vz-bientot" href="#vz-avenir" hidden></a>
@@ -376,7 +379,7 @@ footer p { margin: 0; } footer a { color: inherit; }
         <li><b>La position d'un groupe</b> : celle de la majorité de ses députés qui ont voté, publiée par l'Assemblée. Pour une motion de censure, seuls les votes pour sont comptés : un groupe est compté pour si la majorité de ses membres l'a votée, contre sinon. Un groupe dont aucun député n'a voté n'est pas compté pour ce vote. Les députés non inscrits ne forment pas un groupe : ils ne sont pas comptés.</li>
         <li><b>L'accord</b> : pour chaque texte, votre choix est comparé à celui de la majorité du groupe. Même choix (pour et pour, contre et contre) : 1 point. Vous pour et le groupe contre, ou l'inverse : 0 point. Vous vous abstenez et le groupe vote pour ou contre, ou l'inverse : ½ point, à mi-chemin. Le pourcentage est la moyenne de ces points : par exemple 1 + 1 + ½ + 0 sur 4 textes, soit 2,5 sur 4 = 63 %. « Je ne sais pas » n'est pas compté.</li>
         <li><b>Les groupes</b> : les groupes actuels de l'Assemblée. Un groupe qui n'existait pas encore lors d'un vote n'est pas compté pour ce vote.</li>
-        <li><b>Vos votes</b> restent dans le navigateur de cet appareil : ils ne sont envoyés nulle part, et Concret ne peut pas les voir. Ils s'effacent avec les données du navigateur, ou avec le lien « Effacer tous mes votes ».</li>
+        <li><b>Vos votes</b> restent dans le navigateur de cet appareil : ils ne sont envoyés nulle part, et Concret ne peut pas les voir. Seule la participation est comptée, par le compteur de Concret : un vote de plus sur un texte la première fois que vous le votez, une personne de plus au tout premier vote sur cet appareil ; jamais pour, contre ou abstention, ni rien qui vous identifie. Vos votes s'effacent avec les données du navigateur, ou avec le lien « Effacer tous mes votes ».</li>
       </ol>
       <p class="note" id="vz-src"></p>
     </div>
@@ -384,7 +387,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <footer><p>concret2027.fr · Page indépendante de tout parti. Un groupe n'est pas un candidat : le résultat dit seulement de quels groupes de députés vos votes sont proches. <a href="/mentions-legales/">Mentions légales</a></p></footer>
 </div>
-<script src="/commun/votez.js?v=20261028s"></script>
+<script src="/commun/votez.js?v=20261028t"></script>
 <script>
 (function () {
   var V = window.ConcretVotez, $ = function (id) { return document.getElementById(id); }, D = null, cible = 0, force = null, tous = false;
@@ -455,6 +458,8 @@ footer p { margin: 0; } footer a { color: inherit; }
     }
     try { localStorage.setItem('concret-votez-connus', JSON.stringify(D.Q.map(function (q) { return q.id; }))); } catch (e) {}
     var n = compte();
+    // Participation : combien de personnes ont voté au moins un texte (une par appareil) ; jamais le sens des votes.
+    V.nb('personnes', false).then(function (p) { if (p != null && p >= 2) { $('vz-gens').hidden = false; $('vz-gens').textContent = V.nf(p) + ' personnes ont déjà voté sur Concret.'; } });
     // Une pause à chaque étape à partir de 10 (si la personne revient pile sur une étape, elle voit d'abord son résultat).
     cible = n >= V.SERIE && estEtape(n) ? n : Math.max(V.SERIE, etape(n));
     $('vz-debut').textContent = 'premier vote le ' + V.dateFr(D.debut);

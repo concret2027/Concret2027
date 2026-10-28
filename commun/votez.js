@@ -3,10 +3,22 @@
    Une question par texte (son dernier vote sur l'ensemble, sinon sur une partie, sinon la motion de rejet), et une par
    motion de censure, vote de confiance ou déclaration du Gouvernement suivie d'un vote.
    Le résultat (accord avec chaque groupe de députés) est calculé dans le navigateur. Les votes restent sur l'appareil
-   (localStorage « concret-votez ») : rien n'est envoyé, ni au compteur du quiz ni ailleurs.
+   (localStorage « concret-votez ») : le sens du vote n'est jamais envoyé. Seule la participation est comptée par le compteur
+   de Concret (outils/compteur_worker.js) : « un vote de plus sur ce texte » au premier vote d'un texte, et « une personne de
+   plus » au tout premier vote sur l'appareil ; ni pour, ni contre, ni rien qui identifie la personne.
    Utilisé par la page /votez/ et par le bloc « Votez les lois » du quiz. */
 (function () {
   var CLE = 'concret-votez', CLE_AV = 'concret-votez-avant', MIN = 5, SERIE = 10;
+  // Participation (jamais le sens du vote) : une clé du compteur par texte, une option unique.
+  var API = 'https://compteur.square-brook-9d65.workers.dev/', CLE_VU = 'concret-votez-compte';
+  var cleNb = function (id) { return 'quiz-votez-' + String(id).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 69); };
+  function nb(id, ajouter) {
+    var u = API + (ajouter ? 'hit' : 'get') + '?k=' + encodeURIComponent(cleNb(id)) + '&n=1' + (ajouter ? '&i=0' : '');
+    return fetch(u, { method: ajouter ? 'POST' : 'GET', cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { return j && j.v ? j.v[0] : null; }, function () { return null; });
+  }
+  // Au tout premier vote sur cet appareil : une personne de plus (une fois par appareil).
+  function personne() { var f = null; try { f = localStorage.getItem(CLE_VU); } catch (e) { return; } if (f) return; try { localStorage.setItem(CLE_VU, '1'); } catch (e) {} nb('personnes', true); }
+  function afficherNb(p, n) { if (!p) return; p.hidden = n == null; if (n != null) p.textContent = n < 2 ? 'Vous êtes parmi les premiers à voter ce texte sur Concret.' : nf(n) + ' personnes ont voté ce texte sur Concret.'; }
   var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
   var dateFr = function (d) { var p = d.split('-'); return (+p[2] === 1 ? '1er' : +p[2]) + ' ' + MOIS[p[1] - 1] + ' ' + p[0]; };
   var moisFr = function (d) { var p = d.split('-'); return MOIS[p[1] - 1] + ' ' + p[0]; };
@@ -30,6 +42,7 @@
     '.vz-chip{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fr);background:var(--band);border-radius:999px;padding:4px 10px}' +
     '.vz-date{font-size:12.5px;font-weight:600;color:var(--muted)}' +
     '.vz-neuf{background:var(--fr);color:#fff}' +
+    '.vz-nb{margin:0;font-size:13.5px;color:var(--muted)}' +
     '.vz-boite{display:grid;gap:6px;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}.vz-boite .eyebrow{margin:0}' +
     '.vz-expl{margin:0;font-size:15px;line-height:1.5}' +
     '.vz-pts{margin:0;padding-left:20px;display:grid;gap:4px;font-size:15px;line-height:1.45}' +
@@ -252,8 +265,9 @@
       tete(q) + '<h2 class="vz-titre">' + esc(q.titre) + '</h2>' + expl(q) +
       '<p class="vz-q">' + esc(q.q) + '</p>' + (q.aide ? '<p class="vz-aide">' + esc(q.aide) + '</p>' : '') +
       '<div class="vz-choix" style="--n:' + q.choix.length + '">' + q.choix.map(function (c) { return '<button type="button" data-c="' + c + '" aria-pressed="false">' + CHOIX[c] + '</button>'; }).join('') + '</div>' +
-      '<button type="button" class="vz-passe">Je ne sais pas : passer</button><div class="vz-rev" hidden></div>' + off + '</div>';
-    var rev = el.querySelector('.vz-rev'), bs = el.querySelectorAll('.vz-choix button');
+      '<button type="button" class="vz-passe">Je ne sais pas : passer</button><p class="vz-nb" hidden></p><div class="vz-rev" hidden></div>' + off + '</div>';
+    var rev = el.querySelector('.vz-rev'), bs = el.querySelectorAll('.vz-choix button'), pnb = el.querySelector('.vz-nb');
+    nb(q.id, false).then(function (n) { afficherNb(pnb, n); });
     // Les boutons restent actifs : toucher une autre réponse change le vote.
     function montrer(c, calme) {
       Array.prototype.forEach.call(bs, function (b) { b.setAttribute('aria-pressed', b.dataset.c === c ? 'true' : 'false'); });
@@ -272,7 +286,7 @@
       var s = rev.querySelector('.vz-suite'); if (s) s.addEventListener('click', o.suivant);
     }
     Array.prototype.forEach.call(bs, function (b) {
-      b.addEventListener('click', function () { var m = lireMes(), change = CHOIX[m[q.id]]; if (m[q.id] === b.dataset.c) return; m[q.id] = b.dataset.c; ecrireMes(m); montrer(b.dataset.c, change); if (o.apres) o.apres(q, b.dataset.c); });
+      b.addEventListener('click', function () { var m = lireMes(), change = CHOIX[m[q.id]]; if (m[q.id] === b.dataset.c) return; m[q.id] = b.dataset.c; ecrireMes(m); montrer(b.dataset.c, change); if (!change) { personne(); nb(q.id, true).then(function (n) { afficherNb(pnb, n); }); } if (o.apres) o.apres(q, b.dataset.c); });
     });
     el.querySelector('.vz-passe').addEventListener('click', function () { var m = lireMes(); m[q.id] = 'passe'; ecrireMes(m); if (o.apres) o.apres(q, 'passe'); if (o.suivant) o.suivant(); });
     if (CHOIX[deja]) montrer(deja, true);
@@ -291,9 +305,10 @@
     el.innerHTML = '<div class="vz">' + (o.entete || '') + tete(q) +
       '<h2 class="vz-titre">' + esc(q.titre) + '</h2>' + expl(q) + '<p class="vz-q">' + esc(q.q) + '</p>' +
       '<div class="vz-choix" style="--n:3">' + q.choix.map(function (c) { return '<button type="button" data-c="' + c + '" aria-pressed="false">' + CHOIX[c] + '</button>'; }).join('') + '</div>' +
-      '<div class="vz-rev" hidden></div>' +
+      '<p class="vz-nb" hidden></p><div class="vz-rev" hidden></div>' +
       '<details class="vz-off"><summary>Sources</summary><p><a href="https://www.assemblee-nationale.fr/dyn/17/dossiers/' + esc(q.dos) + '">Le dossier du texte</a> · ordre du jour de l\'Assemblée nationale</p></details></div>';
-    var rev = el.querySelector('.vz-rev'), bs = el.querySelectorAll('.vz-choix button');
+    var rev = el.querySelector('.vz-rev'), bs = el.querySelectorAll('.vz-choix button'), pnb = el.querySelector('.vz-nb');
+    nb('avenir-' + q.cle, false).then(function (n) { afficherNb(pnb, n); });
     function montrer(c, le) {
       Array.prototype.forEach.call(bs, function (b) { b.setAttribute('aria-pressed', b.dataset.c === c ? 'true' : 'false'); });
       el.querySelector('.vz-choix').classList.add('fait');
@@ -304,7 +319,7 @@
       var s = rev.querySelector('.vz-suite'); if (s) s.addEventListener('click', o.suivant);
     }
     Array.prototype.forEach.call(bs, function (b) {
-      b.addEventListener('click', function () { var a = lireAv(), le = aujourdhui(); if (a[q.cle] && a[q.cle].c === b.dataset.c) return; a[q.cle] = { c: b.dataset.c, le: le }; ecrireAv(a); montrer(b.dataset.c, le); if (o.apres) o.apres(q, b.dataset.c); });
+      b.addEventListener('click', function () { var a = lireAv(), le = aujourdhui(), premier = !a[q.cle]; if (a[q.cle] && a[q.cle].c === b.dataset.c) return; a[q.cle] = { c: b.dataset.c, le: le }; ecrireAv(a); montrer(b.dataset.c, le); if (premier) { personne(); nb('avenir-' + q.cle, true).then(function (n) { afficherNb(pnb, n); }); } if (o.apres) o.apres(q, b.dataset.c); });
     });
     if (deja && CHOIX[deja.c]) montrer(deja.c, deja.le);
   }
@@ -466,7 +481,7 @@
     mes: lireMes,
     oublier: function (id) { var m = lireMes(); delete m[id]; ecrireMes(m); },
     effacer: function () { try { localStorage.removeItem(CLE); localStorage.removeItem(CLE_AV); } catch (e) {} },
-    avant: lireAv,
+    avant: lireAv, nb: nb,
     resultat: resultat, carte: carte, bilan: bilan,
     // Bloc du quiz : un vote pas encore voté sur cet appareil.
     duJour: function (el) {
