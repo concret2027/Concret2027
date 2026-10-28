@@ -1097,7 +1097,6 @@ body.q-vote { padding-bottom: 92px; }
     if (c.id === 'point-indice-plus-1' && t5) add('Un agent payé à l\'indice majoré 500 (exemple) : <b>' + deu(t5 / 100, 2) + ' bruts par mois</b> sur un traitement de base de ' + eu(t5, 2) + ' ; les primes ne changent pas.', ['point_indice']);
     if (c.id === 'carence-3-jours' && t5) add('À chaque arrêt de plus de 3 jours, 2 jours de plus ne sont pas payés : environ <b>' + eu(t5 / 30 * 2, 0) + ' bruts</b> pour un agent à l\'indice majoré 500 (exemple, traitement de base).', ['point_indice']);
     if (c.id === 'revalo-moins-1' || c.id === 'revalo-plus-1') { var s = c.id === 'revalo-moins-1' ? -1 : 1, pm = AS.retraites && AS.retraites.pp && AS.retraites.pp.moyenne, M = CAS('minima_avril_2026');
-      if (pm) add('Pension moyenne (' + eu(pm.v) + ' bruts par mois) : <b>' + deu(s * pm.v / 100, 2) + ' par mois</b> par rapport à une hausse égale aux prix.');
       if (M) add('Allocations familiales pour 2 enfants : ' + deu(s * M.af_2_enfants_eur / 100, 2) + ' par mois.', ['minima_avril_2026']); }
     if (c.id === 'prime-activite-gel' && (m = /revalorisation prévue de ([\d,]+) %/.exec(c.quoi || '')) && AS['prime-activite'] && AS['prime-activite'].pp && AS['prime-activite'].pp.moyenne) { var pa = AS['prime-activite'].pp.moyenne.v, r = +m[1].replace(',', '.'); add('En moyenne <b>' + eu(pa * r / 100, 2) + ' de moins par mois</b> qu\'avec la revalorisation prévue (' + pcx(r) + ' de ' + eu(pa) + ', montant moyen).'); }
     if (c.id === 'ir-abattement-retraites' || c.id === 'niche-120401') {
@@ -1128,15 +1127,15 @@ body.q-vote { padding-bottom: 92px; }
   function parPersonne(pc) {
     var x = choisi.pp, P = J.population, el = $('q-pp'); el.hidden = false;
     var src = function (o) { return '<a href="' + esc(o.url) + '">' + esc(String(o.source).split(/,| \(/)[0]) + '</a>'; };
-    var court = function (u) { return esc(String(u).replace(/^€\s*/, '').replace(/\s*\(.*\)\s*$/, '')); };
-    var tel = function (v) { if (typeof v === 'string' && /^\d+(\.\d+)?$/.test(v)) v = +v; return typeof v === 'number' ? nf(v, v % 1 ? String(v).split('.')[1].length : 0) : esc(v); };
+    var court = function (u) { return esc(String(u).replace(/^€\s*/, '').replace(/^milliers? de /, 'millions de ').replace(/\s*\(.*\)\s*$/, '')); };
+    var tel = function (v, u) { if (typeof v === 'string' && /^\d+(\.\d+)?$/.test(v)) v = +v; if (typeof v === 'number' && /^milliers? de /.test(u || '')) return nf(Math.round(v / 100) / 10, 1); return typeof v === 'number' ? nf(v, v % 1 ? String(v).split('.')[1].length : 0) : esc(v); };
     var calc = function (v) { return nf(v >= 1000 ? Math.round(v / 10) * 10 : v >= 20 ? Math.round(v) : Math.round(v * 10) / 10, v >= 20 || Math.round(v) === v ? 0 : 1) + '\u00a0€'; };
     var sg = function (v) { return v > 0 ? '+' : '−'; }, t = blocConcret(exemplesLigne(choisi.k, pc)) + '<h4>Pour une personne</h4>';
     if (x && x.moyenne) {
       var m = x.moyenne, b = x.beneficiaires;
-      t += '<p>Aujourd\'hui, en moyenne : <b>' + tel(m.v) + '\u00a0€</b> ' + court(m.unite) + ' (' + esc(m.annee) + ', ' + src(m) + ')' + (b ? ', pour ' + tel(b.v) + ' ' + court(b.unite) + (b.source !== m.source || b.annee !== m.annee ? ' (' + esc(b.annee) + ', ' + src(b) + ')' : '') : '') + '.</p>';
+      t += '<p>Aujourd\'hui, en moyenne : <b>' + tel(m.v) + '\u00a0€</b> ' + court(m.unite) + ' (' + esc(m.annee) + ', ' + src(m) + ')' + (b ? ', pour ' + tel(b.v, b.unite) + ' ' + court(b.unite) + (b.source !== m.source || b.annee !== m.annee ? ' (' + esc(b.annee) + ', ' + src(b) + ')' : '') : '') + '.</p>';
       if (pc && x.proportion) t += '<p class="v">Avec ' + sg(pc) + Math.abs(pc) + '\u00a0% : <b>environ ' + calc(m.v * (1 + pc / 100)) + '</b> ' + court(m.unite) + ' en moyenne, si le changement est le même pour chacun (il peut aussi porter sur la durée, les conditions ou une partie des personnes).</p>';
-    } else if (x && x.beneficiaires) { var b2 = x.beneficiaires; t += '<p>' + tel(b2.v) + ' ' + court(b2.unite) + ' (' + esc(b2.annee) + ', ' + src(b2) + ').</p>'; }
+    } else if (x && x.beneficiaires) { var b2 = x.beneficiaires; t += '<p>' + tel(b2.v, b2.unite) + ' ' + court(b2.unite) + ' (' + esc(b2.annee) + ', ' + src(b2) + ').</p>'; }
     if (P) {
       var ph = choisi.md * 1e9 / P.v;
       t += '<p>Pour chaque habitant : <b>' + calc(ph) + '</b> par an' + (pc ? ', soit ' + calc(Math.abs(ph * pc / 100)) + (pc > 0 ? ' de plus' : ' de moins') + ' avec votre choix' : '') + '. <span class="q-note">Calcul de Concret : ' + md(choisi.md) + '\u00a0Md€ (' + choisi.an + ') divisés par ' + nf(P.v / 1e6, 1) + ' millions d\'habitants (' + esc(P.annee) + ', <a href="' + esc(P.url) + '">Insee</a>).</span></p>';
@@ -1341,7 +1340,7 @@ body.q-vote { padding-bottom: 92px; }
     C.slice().sort(tri).forEach(function (c) { if (montant(c, AN0) <= 0 && Object.keys(c.effet).every(function (k) { return c.effet[k] <= 0; })) return; var g = c.exclusif || ''; if (g && pris[g]) return; if ((c.exclut || []).some(function (o) { return V[o]; })) return; V[c.id] = 1; if (g) pris[g] = 1; });
     var Rb = simuler({ vote: V, macro: true }); BEST = { a: an1(Rb).solde, f: Rb[Rb.length - 1].solde, d: Rb[Rb.length - 1].d };
     R0 = simuler({ rien: true });
-    $('q-lead').innerHTML = 'Sans nouvelle mesure, le déficit public passerait de ' + nf(-D0.solde, 1) + '\u00a0% du PIB en ' + D0.an + ' (Eurostat) à ' + defic(an1(R0).solde) + ' en ' + AN0 + ', parce que les intérêts de la dette augmentent. <b>Votez les mesures du budget 2027 du Gouvernement et d\'autres mesures débattues, toutes chiffrées, ou créez les vôtres : résultat dès 5 votes.</b>';
+    $('q-lead').innerHTML = 'Sans nouvelle mesure, le déficit public (ce que les administrations dépensent de plus qu\'elles ne reçoivent) passerait de ' + nf(-D0.solde, 1) + '\u00a0% du PIB (la richesse produite en un an) en ' + D0.an + ' (Eurostat) à ' + defic(an1(R0).solde) + ' en ' + AN0 + ', parce que les intérêts de la dette augmentent. <b>Votez les mesures du budget 2027 du Gouvernement et d\'autres mesures débattues, toutes chiffrées, ou créez les vôtres : résultat dès 5 votes.</b>';
     $('q-hyp').innerHTML = [
       'Si rien ne change : l\'écart entre recettes et dépenses publiques, intérêts mis à part, de ' + D0.an + ' (' + nf(D0.primaire, 1) + '\u00a0% du PIB, <a href="' + esc(D0.url) + '">' + esc(D0.source) + '</a>) reste le même chaque année, en part du PIB. C\'est une convention de Concret, pas une prévision.',
       'Croissance, inflation et taux d\'intérêt moyen de la dette : prévision du FMI (' + esc(PJ.editions.join(' ; ')) + '). Ce qui ne vient ni du solde ni de la croissance (achats et ventes d\'actifs publics, écarts de calcul) est repris tel que le FMI le prévoit.',
