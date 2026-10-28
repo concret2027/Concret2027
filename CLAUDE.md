@@ -20,6 +20,7 @@ Concret est fact-based et non partisan : aucun titre, aucune phrase ne porte de 
 Chaque fois qu'une donnée n'est pas comptée, manque ou fait exception (changement de méthode de mesure, chiffre pas encore publié, début des séries, égalité à ½ point, candidat non testé, mandat trop court pour une note fiable, etc.), on l'explique en clair, à l'endroit même où le lecteur la voit, en une phrase courte : ce qui se passe, et pourquoi ça ne compte pas.
 
 - Dans les tableaux : on affiche quand même les chiffres et l'écart s'ils existent, on écrit « non compté » dans la colonne du point, et la phrase d'explication juste en dessous.
+- Sous les courbes des thèmes (pages de mission), tout le texte est dans « Détail du graphe » (choix de l'éditeur : pas de texte sous la courbe) ; le bouton dit en quelques mots ce qui n'est pas compté (« Détail · non compté : 2020 et 2022 », « Détail · non compté avant 2010 », « Détail · France seule ») et les phrases complètes sont dedans (`commun/menu.js`).
 - Pas de jargon (« rupture », « n.d. », « n.c. », « non comparable ») et pas de long paragraphe.
 - Les phrases toutes faites sont dans `commun/notes.js` (`POURQUOI` : changement de méthode, pas encore publié, début des séries, absent, égalité) : les réutiliser sur toute page, y compris Santé, Sécurité et justice, Défense, Vie des Français.
 - Un changement de méthode n'est retenu que s'il est signalé à la source (pour Eurostat, le code « b » dans les données), en précisant qui a changé (la France, la moyenne européenne, ou les deux : `br_motif` dans `data.json`).

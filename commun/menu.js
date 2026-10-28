@@ -257,6 +257,23 @@
     var parts = ordre.map(function (k) { var x = G[k]; x.y.sort(); return { y: x.y[0], t: (x.avant ? 'avant ' + x.y[0] : et(x.y)) + ' (' + x.t + ')' }; }).sort(function (a, b) { return a.y - b.y; });
     return ['Non compté : ' + parts.map(function (p) { return p.t; }).join(' ; ') + '.'].concat(reste);
   }
+  // Courbes des thèmes (pages de mission) : tout le texte sous la courbe est dans « Détail du graphe » (choix de l'éditeur) ;
+  // le bouton dit en quelques mots ce qui n'est pas compté (« Détail du graphe · non compté : 2020 et 2022 »).
+  var TOUT = '.courbe-p, .grand .card';
+  function nonComptes(html) {
+    var Y = [], av = null, fs = false;
+    phrases(html).forEach(function (x) {
+      var tx = x.replace(/<[^>]+>/g, ''); if (!GARDE.test(tx) || REGLE.test(tx)) return;
+      if (/France seule/.test(tx)) { fs = true; return; }
+      var m = /ne commence qu'en (\d{4})/.exec(tx); if (m) { av = +m[1]; return; }
+      m = /^Non compté : en (\d{4})/.exec(tx) || /^En (\d{4})/.exec(tx) || /(\d{4})/.exec(tx);
+      if (m && Y.indexOf(+m[1]) < 0) Y.push(+m[1]); else if (!m) Y.push(0);
+    });
+    if (!Y.length && av == null) return fs ? ' · France seule' : '';
+    var L = Y.filter(Boolean).sort(); if (av != null) L.unshift('avant ' + av);
+    if (!L.length || Y.indexOf(0) >= 0 && L.length === 0 || L.length > 3) return ' · années non comptées';
+    return ' · non compté' + (L.length === 1 && /^avant/.test(L[0]) ? ' ' : ' : ') + (L.length > 1 ? L.slice(0, -1).join(', ') + ' et ' + L[L.length - 1] : L[0]);
+  }
   function garder(n) {
     if (n._ntSet != null && n._ntSet === n.innerHTML) return;
     if (n.dataset.ntVide) { n.hidden = false; delete n.dataset.ntVide; }
@@ -286,6 +303,19 @@
     });
     Array.prototype.forEach.call(document.querySelectorAll(NT), function (n) {
       if (n.classList.contains('pt-hors') || n.classList.contains('defs') || n.classList.contains('mentions')) return; // mentions légales d'un sondage : jamais repliées
+      var carte = n.closest && n.closest(TOUT);
+      if (carte) {
+        var notes = Array.prototype.filter.call(carte.querySelectorAll('p.note'), function (x) { return x.matches(NT) && x.closest(TOUT) === carte && x.textContent.trim(); });
+        var tete = notes[0];
+        if (n !== tete) { var o = tete && !!tete.dataset.ntOuvert; n.classList.toggle('nt-pli', !o); var bb = n.nextElementSibling; if (bb && bb.classList.contains('nt-btn')) bb.hidden = true; return; }
+        var b0 = bouton(n), ouv = !!n.dataset.ntOuvert;
+        n.classList.toggle('nt-pli', !ouv);
+        var t0 = ouv ? 'Masquer le détail ▴' : (nonComptes(notes.map(function (x) { return x.innerHTML; }).join(' ')) ? 'Détail' : 'Détail du graphe') + nonComptes(notes.map(function (x) { return x.innerHTML; }).join(' ')) + ' ▾';
+        if (b0.textContent !== t0) b0.textContent = t0;
+        if (b0.hidden) b0.hidden = false;
+        b0.setAttribute('aria-expanded', ouv ? 'true' : 'false');
+        return;
+      }
       garder(n);
       var b = bouton(n);
       var ouvert = !!n.dataset.ntOuvert, deja = n.classList.contains('nt-pli');
