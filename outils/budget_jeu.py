@@ -48,7 +48,9 @@ MACRO = {'depense': 'mult_mesange2017_depense_publique', 'tva': 'mult_mesange201
 # Mesures des projets de loi 2027 : titre de carte (neutre), thème, étiquettes, type d'effet sur l'activité ;
 # exclues : les transferts entre administrations, qui ne changent pas le solde public total selon le document.
 M2027 = {
-    'ir-indexation-bareme': {'l': "Geler le barème de l'impôt sur le revenu en 2027 (ne pas le relever de l'inflation)", 'theme': 'impots', 'qui': ['menages_imposables'], 'macro': 'ir', 'inverse': True},
+    'ir-indexation-bareme': {'l': "Geler le barème de l'impôt sur le revenu en 2027 (ne pas le relever de l'inflation)", 'theme': 'impots', 'qui': ['menages_imposables'], 'macro': 'ir', 'inverse': True,
+                             'quoi': "Les tranches de l'impôt sur le revenu restent celles de 2026 au lieu d'être relevées comme les prix : avec un même revenu, les ménages imposables paient plus. Le Gouvernement propose au contraire de les relever (l'entrée dans la tranche à 11 % passerait de 11 600 € à 11 844 €).",
+                             'statut': "L'Assemblée a adopté le relèvement du barème (article 2, scrutin n° 8737, 15 octobre 2026) : elle n'a pas retenu ce gel."},
     'ir-indemnites-rupture': {'theme': 'travail', 'qui': ['salaries'], 'macro': 'ir'},
     'secu-indemnites-rupture': {'theme': 'travail', 'qui': ['salaries', 'entreprises'], 'macro': 'cotis_sal'},
     'ir-indemnites-journalieres': {'theme': 'sante', 'qui': ['malades'], 'macro': 'ir'},
@@ -182,8 +184,8 @@ def construire():
             ecartees.append({'id': x['id'], 'l': x['l'], 'pourquoi': 'pas encore classée'}); continue
         inv = -1 if c.get('inverse') else 1
         k = {'id': x['id'], 'origine': 'plf' if x['texte'].startswith('PLF ') else 'plfss', 'texte': x['texte'], 'l': c.get('l', x['l']),
-             'quoi': x['quoi'], 'theme': c['theme'], 'qui': c['qui'], 'qui_texte': x['qui'], 'macro': c['macro'], 'sens': x['type'],
-             'effet': effet_md(x['effet_meur'], inv), 'note': x.get('note') or '', 'statut': x.get('statut') or '',
+             'quoi': c.get('quoi', x['quoi']), 'theme': c['theme'], 'qui': c['qui'], 'qui_texte': x['qui'], 'macro': c['macro'], 'sens': x['type'],
+             'effet': effet_md(x['effet_meur'], inv), 'note': x.get('note') or '', 'statut': c.get('statut', x.get('statut') or ''),
              'src': {'doc': x.get('document') or x['texte'], 'page': x.get('page'), 'url': x['url'], 'citation': x['citation']}}
         if c.get('exclusif'): k['exclusif'] = c['exclusif']
         if x['id'] in PONCTUELLES: k['ponctuelle'] = True

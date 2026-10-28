@@ -16,7 +16,7 @@ def texte(url=PLF_URL):
     return open(pdf + '.txt', encoding='utf-8').read()
 
 
-NB = re.compile(r'\d{1,3}(?: \d{3})+|(?<![\d ])\d{1,3}(?![\d])')
+NB = re.compile(r'\d{1,3}(?: \d{3})+|\b\d{1,3}\b')
 def lire(txt):
     pages = txt.split('\f')
     deb = next(i for i, p in enumerate(pages) if 'Tableau de comparaison, par mission et programme du budget général, des crédits proposés pour' in p and 'Missions constituées de dotations' in p)
