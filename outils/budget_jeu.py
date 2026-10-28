@@ -37,7 +37,7 @@ QUI = {
     'agents_publics': 'Agents publics', 'chomeurs': 'Chômeurs', 'smic': 'Salariés au SMIC', 'assures': 'Assurés sociaux', 'soignants': 'Hôpitaux et soignants',
     'pays_aides': 'Pays aidés', 'logement_aide': 'Logement et hébergement', 'ecologie': 'Transports, énergie et environnement', 'etudiants_recherche': 'Étudiants et recherche',
     'solidarite': 'Allocataires des minima et personnes handicapées', 'culture': 'Culture et médias', 'etrangers': 'Étrangers et demandeurs d\'asile', 'justice': 'Justice et prisons',
-    'securite': 'Police, gendarmerie, secours', 'associations': 'Sport et associations', 'etat': 'Services de l\'État', 'anciens_combattants': 'Anciens combattants',
+    'securite': 'Police, gendarmerie, secours', 'etudiants': 'Étudiants', 'associations': 'Sport et associations', 'etat': 'Services de l\'État', 'anciens_combattants': 'Anciens combattants',
 }
 # Effet sur l'activité : la variante du modèle Mésange qui correspond au type de mesure (aucune pour l'impôt sur les sociétés,
 # les droits de succession et les accises : le modèle ne les publie pas).
@@ -117,7 +117,7 @@ DEFIS = [
     {'id': 'equilibre', 't': "Atteignez l'équilibre (aucun déficit) la dernière année.", 'c': [{'type': 'deficit_fin', 'v': 0}]},
     {'id': 'd3-sans-sante', 't': "Ramenez le déficit de la dernière année à 3 % sans mesure sur la santé.", 'c': [{'type': 'deficit_fin', 'v': 3}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': REGLE},
 ]
-THEMES = {'retraites': 'Retraites', 'sante': 'Santé', 'travail': 'Travail et formation', 'solidarite': 'Familles et solidarité', 'impots': 'Impôts des ménages',
+THEMES = {'etudes': 'Études', 'retraites': 'Retraites', 'sante': 'Santé', 'travail': 'Travail et formation', 'solidarite': 'Familles et solidarité', 'impots': 'Impôts des ménages',
           'entreprises': 'Entreprises', 'patrimoine': 'Patrimoine', 'collectivites': 'Collectivités', 'etat': 'État et fonctionnaires', 'economie': 'Économie'}
 
 
@@ -307,6 +307,55 @@ def construire():
                        'statut': "Projet de loi rejeté par l'Assemblée en première lecture le 23 octobre 2026.",
                        'note': "Sous le seuil de 300 M€ des autres cartes du budget de la Sécurité sociale : ajoutée parce que c'est la seule mesure chiffrée officiellement sur l'accès des étrangers aux prestations.",
                        'src': asx('etrangers_carence_prestations_familiales_apl') | {'doc': AE['etrangers_carence_prestations_familiales_apl']['l']}})
+    # Mesures souvent débattues, chacune avec un chiffrage officiel (Cour des comptes, rapports parlementaires, Gouvernement).
+    mdb = charger('mesures_debattues.json')
+    MD = {x['cle']: x for x in mdb['elements']} if mdb else {}
+    def srcd(cle):
+        x = MD[cle]; return {'doc': x['l'], 'page': x.get('page'), 'url': x['url'], 'citation': x['citation']}
+    def debat(i, l, quoi, theme, qui, macro, sens, effet, cle, note, exclut=(), qui_titre=None):
+        c = {'id': i, 'origine': 'debat', 'l': l, 'quoi': quoi, 'theme': theme, 'qui': qui, 'qui_texte': '', 'macro': macro, 'sens': sens,
+             'effet': effet, 'exclut': list(exclut), 'note': note, 'src': srcd(cle)}
+        if qui_titre: c['qui_titre'] = qui_titre
+        cartes.append(c)
+    if MD:
+        a1 = date.today().year + 1
+        u = MD['univ_hausse_droits_cour_2018']['valeurs']
+        debat('univ-master-doctorat', "Porter les droits d'inscription à l'université à %d € en master et %d € en doctorat" % (u['master porté à (€)'], u['doctorat porté à (€)']),
+              "Les droits annuels augmentent en master et en doctorat ; la licence ne change pas. Les étudiants boursiers restent exonérés.", 'etudes', ['etudiants'], None, 'recette',
+              {str(a1): u['recette supplémentaire visée (M€ par an, 2018-2019)'] / 1000}, 'univ_hausse_droits_cour_2018',
+              "Scénario de la Cour des comptes (2018) : la recette va aux universités. Si l'État compense davantage l'exonération des boursiers, il lui en coûterait de %d à %d M€ par an selon la Cour ; non compté ici." % tuple(u["surcoût pour l'État de la compensation des boursiers, scénario central (M€ par an)"]), ['univ-30'])
+        debat('univ-30', "Augmenter de 30 % tous les droits d'inscription à l'université", "Les droits annuels de licence, master et doctorat augmentent de 30 %. Les boursiers restent exonérés.", 'etudes', ['etudiants'], None, 'recette',
+              {str(a1): u['hausse générale de 30 % : recette supplémentaire (M€)'] / 1000}, 'univ_hausse_droits_cour_2018', "Chiffrage de la Cour des comptes pour 2018-2019.", ['univ-master-doctorat'])
+        debat('carence-3-jours', "Passer à 3 jours de carence pour les arrêts maladie des fonctionnaires de l'État", "Les trois premiers jours d'un arrêt maladie ne sont plus payés aux agents de l'État (un seul aujourd'hui).", 'etat', ['agents_publics'], 'depense', 'depense',
+              {str(a1): MD['carence_fonction_publique']['valeurs']["3 jours de carence, fonction publique de l'État (M€ par an, IGF-IGAS 2024)"] / 1000}, 'carence_fonction_publique',
+              "Chiffrage de l'inspection générale des finances et de l'inspection générale des affaires sociales (2024), cité par la commission des finances du Sénat. Fonction publique de l'État seulement.")
+        debat('isf', "Rétablir l'impôt sur la fortune (ISF) à la place de l'impôt sur la fortune immobilière", "L'impôt sur la fortune porte de nouveau sur tout le patrimoine (placements financiers compris), et plus seulement sur l'immobilier.", 'patrimoine', ['patrimoine'], None, 'recette',
+              {str(a1): MD['isf_retablissement']['valeurs']['perte de recettes 2022 (comité de suivi de la réforme de la fiscalité du capital, Md€)']}, 'isf_retablissement',
+              "Montant : ce que le remplacement de l'ISF par l'IFI a fait perdre à l'État en 2022 (comité de suivi, cité par le Sénat). Aucun chiffrage officiel d'un rétablissement, avec ses effets sur les comportements.")
+        z = MD['taxe_zucman_chiffrages']['valeurs']
+        debat('taxe-zucman', "Créer un impôt plancher de 2 % sur les patrimoines de plus de 100 millions d'euros (« taxe Zucman »)", "Les foyers dont le patrimoine dépasse 100 M€ paient au moins 2 % de ce patrimoine par an, impôts déjà payés compris.", 'patrimoine', ['patrimoine'], None, 'recette',
+              {str(a1): z['scénario prudent (40 % des fortunes hors dispositif, Md€)']}, 'taxe_zucman_chiffrages',
+              "Compté : le scénario prudent du rapport de la commission des finances de l'Assemblée (%s Md€). Les économistes auditionnés donnent %d à %d Md€ ; l'administration fiscale dit ne pas pouvoir simuler cet impôt, et le Gouvernement n'a publié aucun montant." % (str(z['scénario prudent (40 % des fortunes hors dispositif, Md€)']).replace('.', ','), z['économistes auditionnés, fourchette (Md€ par an)'][0], z['économistes auditionnés, fourchette (Md€ par an)'][1]))
+        debat('franchises-x2', "Doubler les franchises médicales et les participations forfaitaires", "Ce qui reste à payer par le patient sur les médicaments, consultations et transports (franchises et participations) double, plafonds compris.", 'sante', ['assures'], 'depense', 'depense',
+              {str(a1): MD['franchises_doublement']['valeurs']['doublement des montants et plafonds, année pleine (Md€)']}, 'franchises_doublement', "Chiffrage en année pleine (Cour des comptes, 2026) ; ce doublement avait été annoncé puis abandonné.")
+        ra = MD['retraite_age_cour_comptes_2025']['valeurs']
+        def rampe(v35):
+            # Le chiffrage porte sur 2035 : Concret le fait monter en ligne droite depuis 2027 (hypothèse écrite sur la carte).
+            return {str(a): round(v35 * (a - a1 + 1) / (2035 - a1 + 1), 3) for a in range(a1, 2032)}
+        age = ['retraite-62', 'retraite-63', 'retraite-65', 'retraites-fin-suspension']
+        noteR = "Chiffrage de la Cour des comptes pour 2035 (système de retraite) ; Concret le fait monter en ligne droite de %d à 2035 (hypothèse). " % a1
+        debat('retraite-63', "Ramener l'âge légal de départ à la retraite à 63 ans", "L'âge minimum de départ à la retraite passe de 64 à 63 ans.", 'retraites', ['salaries'], 'depense', 'depense',
+              rampe(-ra['âge ramené de 64 à 63 ans : dépense supplémentaire en 2035 (Md€)']), 'retraite_age_cour_comptes_2025', noteR + "Dépense en plus en 2035 : 5,8 Md€.", [x for x in age if x != 'retraite-63'], 'Qui reçoit')
+        debat('retraite-62', "Revenir à la retraite à 62 ans", "L'âge minimum de départ à la retraite revient de 64 à 62 ans.", 'retraites', ['salaries'], 'depense', 'depense',
+              rampe(-ra['retour à 62 ans : « en gros, deux fois plus » (Md€, ordre de grandeur)']), 'retraite_age_cour_comptes_2025', noteR + "Pour 62 ans, la Cour dit « en gros, deux fois plus » que pour 63 ans : 11,6 Md€ en 2035 (ordre de grandeur).", [x for x in age if x != 'retraite-62'], 'Qui reçoit')
+        debat('retraite-65', "Porter l'âge légal de départ à la retraite à 65 ans", "L'âge minimum de départ à la retraite passe de 64 à 65 ans.", 'retraites', ['salaries'], 'depense', 'depense',
+              rampe(ra['âge porté à 65 ans : gain en 2035 (Md€)']), 'retraite_age_cour_comptes_2025', noteR + "Économie en 2035 : 8,4 Md€.", [x for x in age if x != 'retraite-65'])
+        f = MD['fonctionnaires_non_remplacement_un_sur_deux']['valeurs']
+        debat('fonctionnaires-1-sur-2', "Ne remplacer qu'un fonctionnaire de l'État sur deux partant à la retraite", "La moitié des agents de l'État qui partent à la retraite ne sont pas remplacés.", 'etat', ['agents_publics'], 'depense', 'depense',
+              {str(a1): f["économie brute immédiate, budget de l'État (M€ par an)"] / 1000, str(a1 + 1): f['économie à moyen terme, au coût moyen sur la carrière (M€ par an)'] / 1000}, 'fonctionnaires_non_remplacement_un_sur_deux',
+              "Chiffrage de la Cour des comptes (2015), le plus récent : montants de 2015, sans la hausse des salaires depuis.")
+        ass('audiovisuel', 'Audiovisuel public (France Télévisions, Radio France, Arte…)', 'depense', MD['audiovisuel_public_2027']['valeurs']["TVA affectée au compte « Avances à l'audiovisuel public », 2027 (€)"] / 1e9, a1, ['culture'], 'depense',
+            {'l': MD['audiovisuel_public_2027']['l'], 'page': MD['audiovisuel_public_2027'].get('page'), 'url': MD['audiovisuel_public_2027']['url'], 'citation': MD['audiovisuel_public_2027']['citation']}, "Part de TVA affectée à l'audiovisuel public en " + str(a1) + ".")
     # Budget de l'État : chaque mission et chaque programme du projet de loi de finances (crédits de paiement de l'année à venir,
     # pensions des agents comprises). Écartés : les remboursements d'impôts, la charge de la dette, les dotations non réparties,
     # les subventions aux régimes de retraite (comptées dans les retraites), les concours aux collectivités (transferts),
