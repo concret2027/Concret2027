@@ -37,7 +37,7 @@ QUI = {
     'agents_publics': 'Agents publics', 'chomeurs': 'Chômeurs', 'smic': 'Salariés au SMIC', 'assures': 'Assurés sociaux', 'soignants': 'Hôpitaux et soignants',
     'pays_aides': 'Pays aidés', 'logement_aide': 'Logement et hébergement', 'ecologie': 'Transports, énergie et environnement', 'etudiants_recherche': 'Étudiants et recherche',
     'solidarite': 'Allocataires des minima et personnes handicapées', 'culture': 'Culture et médias', 'etrangers': 'Étrangers et demandeurs d\'asile', 'justice': 'Justice et prisons',
-    'securite': 'Police, gendarmerie, secours', 'etudiants': 'Étudiants', 'associations': 'Sport et associations', 'etat': 'Services de l\'État', 'anciens_combattants': 'Anciens combattants',
+    'securite': 'Police, gendarmerie, secours', 'etudiants': 'Étudiants', 'ecoles': 'Écoles, collèges, lycées', 'defense': 'Défense', 'associations': 'Sport et associations', 'etat': 'Services de l\'État', 'anciens_combattants': 'Anciens combattants',
 }
 # Effet sur l'activité : la variante du modèle Mésange qui correspond au type de mesure (aucune pour l'impôt sur les sociétés,
 # les droits de succession et les accises : le modèle ne les publie pas).
@@ -119,6 +119,87 @@ DEFIS = [
     {'id': 'equilibre', 't': "Atteignez l'équilibre (aucun déficit) la dernière année.", 'c': [{'type': 'deficit_fin', 'v': 0}]},
     {'id': 'd3-sans-sante', 't': "Ramenez le déficit de la dernière année à 3 % sans mesure sur la santé.", 'c': [{'type': 'deficit_fin', 'v': 3}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': REGLE},
 ]
+# Titre court de chaque carte (60 caractères environ) ; l'intitulé complet reste dans les détails.
+COURT = {
+    'ir-indexation-bareme': "Geler le barème de l'impôt sur le revenu",
+    'ir-indemnites-rupture': "Imposer les indemnités de rupture au-delà de 48 060 €",
+    'secu-indemnites-rupture': "Cotisations sur les indemnités de rupture au-delà de 48 060 €",
+    'ir-indemnites-journalieres': "Imposer une partie des indemnités d'arrêt de travail",
+    'csg-indemnites-journalieres': "Relever la CSG sur les indemnités d'arrêt de travail",
+    'ir-abattement-retraites': "Plafonner à 3 000 € l'abattement de 10 % des retraités",
+    'apport-cession': "Taxer des plus-values transmises par une holding",
+    'contribution-grandes-entreprises': "Prolonger la surtaxe sur les bénéfices des grandes entreprises",
+    'contribution-transport-maritime': "Prolonger la surtaxe sur les grands armateurs",
+    'tva-television': "TVA au taux normal sur les abonnements télé",
+    'taxe-infrastructures-transport': "Taxer plus les exploitants de transport les plus rentables",
+    'avoirs-desherence': "Prélever 17 % sur l'argent des comptes oubliés",
+    'cpeb': "Faire contribuer les collectivités à l'effort budgétaire",
+    'cufpa-plafond': "Plafonner l'argent versé à France compétences",
+    'prime-activite-gel': "Geler la prime d'activité en 2027",
+    'formation-pric-cfa': "Arrêter des aides régionales à la formation et aux CFA",
+    'cpf-participation': "Faire payer plus les formations du CPF sans projet",
+    'allegements-complements-salaire': "Moins d'allègements de cotisations sur les primes",
+    'taxe-produits-sucres': "Étendre la « taxe soda » aux produits sucrés",
+    'contribution-complementaires-sante': "Prolonger la taxe sur les mutuelles",
+    'pensions-revalorisation-2027': "Ne revaloriser que les retraites sous 1 260 € par mois",
+    'prestations-familiales-gel': "Geler les prestations familiales en 2027",
+    'allocation-rentree-scolaire': "Réduire l'allocation de rentrée scolaire",
+    'etrangers-residence-prestations': "Un an de résidence pour les aides des étrangers hors UE",
+    'niche-200302': "Supprimer le crédit d'impôt recherche",
+    'niche-110246': "Supprimer le crédit d'impôt pour l'emploi à domicile",
+    'niche-120401': "Supprimer l'abattement de 10 % des retraités",
+    'niche-520110': "Taxer normalement les transmissions d'entreprises",
+    'niche-120108': "Imposer la participation et l'intéressement",
+    'niche-730213': "TVA au taux normal sur les travaux dans les logements",
+    'niche-730221': "TVA au taux normal dans les restaurants",
+    'niche-120146': "Imposer les heures supplémentaires",
+    'niche-110201': "Supprimer la réduction d'impôt pour les dons",
+    'niche-110203': "Supprimer le crédit d'impôt pour la garde des jeunes enfants",
+    'niche-210309': "Supprimer la réduction d'impôt des dons d'entreprises",
+    'niche-800229': "Taxer normalement le gazole agricole et forestier",
+    'niche-120202': "Imposer les allocations familiales et l'AAH",
+    'niche-800401': "Taxer les carburants outre-mer comme en métropole",
+    'niche-940102': "Malus au poids pour les voitures électriques",
+    'niche-710103': "TVA de métropole aux Antilles et à La Réunion",
+    'niche-210326': "Supprimer le taux d'impôt réduit sur les brevets",
+    'niche-800221': "Taxer normalement le gazole des camions",
+    'niche-730223': "TVA au taux normal sur la rénovation énergétique",
+    'retraites-fin-suspension': "Revenir à la réforme des retraites (64 ans)",
+    'smic-2': "Augmenter le SMIC de 2 % de plus", 'smic-5': "Augmenter le SMIC de 5 % de plus",
+    'ondam-moins-1': "Dépenses d'assurance maladie : 1 % de moins", 'ondam-plus-1': "Dépenses d'assurance maladie : 1 % de plus",
+    'revalo-moins-1': "Prestations sociales : 1 point sous l'inflation", 'revalo-plus-1': "Prestations sociales : 1 point au-dessus de l'inflation",
+    'allegements-moins-10': "Allègements de cotisations patronales : −10 %",
+    'point-indice-plus-1': "Point d'indice des fonctionnaires : +1 %",
+    'univ-master-doctorat': "Université : master à 965 €, doctorat à 781 €", 'univ-30': "Université : droits d'inscription +30 %",
+    'carence-3-jours': "3 jours de carence pour les fonctionnaires de l'État",
+    'isf': "Rétablir l'impôt sur la fortune (ISF)",
+    'taxe-zucman': "Taxe Zucman : 2 % sur les patrimoines de plus de 100 M€",
+    'franchises-x2': "Doubler les franchises médicales",
+    'retraite-63': "Retraite à 63 ans", 'retraite-62': "Retraite à 62 ans", 'retraite-65': "Retraite à 65 ans",
+    'fonctionnaires-1-sur-2': "Ne remplacer qu'un fonctionnaire de l'État sur deux",
+}
+# Qui a donné le chiffre, pour les mesures débattues.
+PAR_QUI = {'univ-master-doctorat': "chiffrage de la Cour des comptes", 'univ-30': "chiffrage de la Cour des comptes", 'carence-3-jours': "chiffrage des inspections générales, cité par le Sénat",
+           'isf': "chiffrage cité par le Sénat", 'taxe-zucman': "chiffrage d'un rapport de l'Assemblée", 'franchises-x2': "chiffrage de la Cour des comptes",
+           'retraite-63': "chiffrage de la Cour des comptes", 'retraite-62': "chiffrage de la Cour des comptes", 'retraite-65': "chiffrage de la Cour des comptes",
+           'fonctionnaires-1-sur-2': "chiffrage de la Cour des comptes (2015)"}
+
+
+def statut_court(t):
+    """Le sort de la mesure à l'Assemblée, en mots courants."""
+    t = t or ''
+    if not t: return ''
+    if t.startswith('Supprimée'): return "Les députés l'ont supprimée (1re lecture)"
+    if t.startswith('Adoptée'): return "Les députés l'ont adoptée (1re lecture)"
+    if t.startswith('Modifiée'): return "Les députés l'ont modifiée (1re lecture)"
+    if t.startswith('Article adopté'): return "Les députés l'ont adoptée, puis ont rejeté le budget de la Sécurité sociale (1re lecture)"
+    if t.startswith('Article rejeté'): return "Les députés l'ont rejetée (1re lecture)"
+    if t.startswith('Non examinée'): return "Pas examinée : les députés ont rejeté le budget de la Sécurité sociale avant (1re lecture)"
+    if t.startswith('Rapport annexé') or t.startswith('Projet de loi rejeté'): return "Les députés ont rejeté le budget de la Sécurité sociale qui la contenait (1re lecture)"
+    if t.startswith("L'Assemblée a adopté le relèvement"): return "Les députés ont adopté le relèvement du barème, pas ce gel (1re lecture)"
+    return t.split(' (')[0].split(' ; ')[0]
+
+
 THEMES = {'etudes': 'Études', 'retraites': 'Retraites', 'sante': 'Santé', 'travail': 'Travail et formation', 'solidarite': 'Familles et solidarité', 'impots': 'Impôts des ménages',
           'entreprises': 'Entreprises', 'patrimoine': 'Patrimoine', 'collectivites': 'Collectivités', 'etat': 'État et fonctionnaires', 'economie': 'Économie'}
 
@@ -153,7 +234,9 @@ def positions(nums):
                 v = x['vote']; d = v.get('decompteVoix') or {}
                 tot = parlement.nb(d.get('pour')) + parlement.nb(d.get('contre')) + parlement.nb(d.get('abstentions'))
                 g[gp[x['organeRef']]['c']] = v.get('positionMajoritaire') if tot else 'nv'
-        out[n] = {'d': s['dateScrutin'], 's': s['sort']['code'], 't': s['titre'].rstrip('.'), 'g': g}
+        dec = s['syntheseVote']['decompte']
+        out[n] = {'d': s['dateScrutin'], 's': s['sort']['code'], 't': s['titre'].rstrip('.'), 'g': g,
+                  'pour': parlement.nb(dec.get('pour')), 'contre': parlement.nb(dec.get('contre')), 'abst': parlement.nb(dec.get('abstentions'))}
     return out
 
 
@@ -268,8 +351,8 @@ def construire():
             "Ensemble du système de retraite, régimes de base et complémentaires (Conseil d'orientation des retraites).", ['pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'])
         ass('ondam', "Assurance maladie (soins remboursés, hôpitaux)", 'depense', 278.7, 2027, ['assures', 'soignants'], 'depense', LV['sante-ondam'], "Objectif national de dépenses d'assurance maladie proposé pour 2027.", ['ondam-moins-1', 'ondam-plus-1'])
         ass('remunerations', 'Salaires des agents publics (État, collectivités, hôpitaux, sécurité sociale)', 'depense', LV['fp-masse-salariale-apu']['montant']['2025 (Md€, toutes administrations publiques)'], 2025, ['agents_publics'], 'depense', LV['fp-masse-salariale-apu'], "Rémunérations versées par l'ensemble des administrations publiques (Insee), enseignants et militaires compris.", ['point-indice-plus-1', 'enseignement', 'defense'])
-        ass('enseignement', "Enseignement scolaire (écoles, collèges, lycées)", 'depense', LV['education-enseignement-scolaire']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['agents_publics', 'familles'], 'depense', LV['education-enseignement-scolaire'], "Crédits de la mission Enseignement scolaire du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
-        ass('defense', 'Défense', 'depense', LV['defense-credits']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['agents_publics'], 'depense', LV['defense-credits'], "Crédits de la mission Défense du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
+        ass('enseignement', "Enseignement scolaire (écoles, collèges, lycées)", 'depense', LV['education-enseignement-scolaire']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['ecoles'], 'depense', LV['education-enseignement-scolaire'], "Crédits de la mission Enseignement scolaire du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
+        ass('defense', 'Défense', 'depense', LV['defense-credits']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['defense'], 'depense', LV['defense-credits'], "Crédits de la mission Défense du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
         ass('chomage', "Allocations chômage", 'depense', LV['chomage-depense']['montant']['allocations brutes et aides (Md€)']['2027'], 2027, ['chomeurs'], 'depense', LV['chomage-depense'], "Allocations et aides versées par l'Unédic (prévision).")
         ass('apl', 'Aides au logement (APL)', 'depense', LV['prestations-apl']['montant']["dépense d'aides personnelles au logement (Md€)"]['2025'], 2025, ['familles'], 'depense', LV['prestations-apl'], '')
         ass('alloc-familiales', 'Allocations familiales', 'depense', LV['prestations-allocations-familiales']['montant']['allocations familiales (M€)']['2027 prévision'] / 1000, 2027, ['familles'], 'depense', LV['prestations-allocations-familiales'], '', ['prestations-familiales-gel'])
@@ -403,6 +486,12 @@ def construire():
             a['exclut'] += ['ame']; A.get('ame', {'exclut': []})['exclut'].append(a['k'])
         if a['l'].startswith('Cohésion des territoires'):
             a['exclut'] += ['apl']; A['apl']['exclut'].append(a['k'])
+    for c in cartes:
+        c['titre'] = COURT.get(c['id'], c['l'])
+        if c['id'] in PAR_QUI: c['par'] = PAR_QUI[c['id']]
+        c['statut_court'] = statut_court(c.get('statut'))
+        ks = sorted(c['effet'])
+        c['duree'] = 'une seule année' if c.get('ponctuelle') and len(ks) == 1 else 'par an'
     # Paramètres du modèle.
     var = {}
     for t, cle in MACRO.items():
