@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="e6b2d4230e2c">
+<meta name="concret-version" content="8e164d419544">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1104,7 +1104,7 @@ function main(FEED) {
           bloc.querySelector('.minis-h').remove(); bloc.querySelector('.minis-k').remove();
           var o1 = autres[0], g1 = document.createElement('div'); g1.className = 'grand'; grille.appendChild(g1);
           var d1 = serieCard(g1, o1.id, o1.c, o1.tag, o1.extra), k1 = g1.querySelector('.card'); k1.classList.add('courbe-s'); k1.dataset.partageL = 'Partager la courbe';
-          MAIN.push(d1);
+          MAIN.push(function () { d1(); sansPays(k1); });
         } else {
           autres.forEach(function (o) { grille.appendChild(mini(o)); });
           // Nombre impair : la dernière petite courbe prend toute la largeur, plutôt que de rester seule à moitié.
@@ -1120,6 +1120,8 @@ function main(FEED) {
       sec.appendChild(dp);
     });
   }
+  // Une courbe agrandie sans « + Ajouter un pays » (source qui n'est pas encore relue pour les autres pays) : on le dit dessous.
+  function sansPays(card) { setTimeout(function () { if (!card.querySelector('.cp-bar') && !card.querySelector('.cp-sans')) { var q = document.createElement('p'); q.className = 'note cp-sans'; q.textContent = 'Pas d\'autre pays à ajouter sur cette courbe : sa source n\'est pas encore relue pour les autres pays.'; var n = card.querySelector('.note'); card.insertBefore(q, n || null); } }, 900); }
   // Une petite courbe : titre, France et moyenne de l'UE sur toute la période, dernier chiffre de chacune.
   function mini(o) {
     var c = o.c, r = has(c, 'ue') ? 'ue' : has(c, 'ue_calc') ? 'ue_calc' : null, dec = decOf(c), u = c.uc === ' %' || /^%/.test(c.unite || '') ? ' %' : '';
@@ -1142,7 +1144,7 @@ function main(FEED) {
       var g = document.createElement('div'); g.className = 'grand';
       g.innerHTML = '<button type="button" class="reduire">Réduire ▴</button>';
       b.parentNode.insertBefore(g, b); b.hidden = true;
-      var d = serieCard(g, o.id, c, o.tag, o.extra), card = g.querySelector('.card'); card.classList.add('courbe-s'); card.dataset.partageL = 'Partager la courbe'; d();
+      var d = serieCard(g, o.id, c, o.tag, o.extra), card = g.querySelector('.card'); card.classList.add('courbe-s'); card.dataset.partageL = 'Partager la courbe'; d(); sansPays(card);
       g.querySelector('.reduire').onclick = function () { g.remove(); b.hidden = false; b.focus(); };
       document.dispatchEvent(new CustomEvent('concret:vue', { detail: 'courbe' }));
       g.scrollIntoView({ block: 'nearest' });

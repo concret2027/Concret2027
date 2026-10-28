@@ -121,6 +121,14 @@ DEFS = {
     'securite.dpol': ue_calc('securite.dpol'), 'securite.dtrib': ue_calc('securite.dtrib'), 'securite.dpris': ue_calc('securite.dpris'),
     'securite.quart': est('ilc_mddw03', 'hhcomp=TOTAL&rskpovth=TOTAL&unit=PC'),
     'securite.eloi': ratio(est('migr_eirtn', 'c_dest=TOTAL&citizen=TOTAL&sex=T&age=TOTAL&unit=PER'), est('migr_eiord', 'citizen=TOTAL&sex=T&age=TOTAL&unit=PER'), 100),
+    # Courbes affichées sans note (series.<page>.AFF), clé « <page>.a-<nom de la courbe> » comme leur graphique (« ch-a-hly »)
+    'sante.a-hly': est('hlth_hlye', 'hlth_hle=HLY_Y0&sex=T&unit=YR'),
+    'sante.a-dep': est('hlth_sha11_hf', 'unit=PC_GDP&icha11_hf=TOT_HF'),
+    'securite.a-sex': est('crim_off_cat', 'iccs=ICCS0301&unit=P_HTHAB'),
+    'securite.a-det': est('crim_pris_cap', 'unit=P_HTHAB&indic_cr=PRIS_ACT_CAP'),
+    'securite.a-jug': est('crim_just_job', 'isco08=OC2612A&sex=T&unit=P_HTHAB'),
+    'securite.a-pol': est('crim_just_job', 'isco08=OC5412&sex=T&unit=P_HTHAB'),
+    'securite.a-oqtf': ratio(est('migr_eiord', 'citizen=TOTAL&sex=T&age=TOTAL&unit=PER'), est('demo_gind', 'indic_de=JAN'), 100000),
     # Défense
     'defense.dep': ue_calc('defense.dep'), 'defense.inv': ue_calc('defense.inv'), 'defense.otan': ue_calc('defense.otan'), 'defense.equip': ue_calc('defense.equip'),
     # Vie des Français
@@ -156,6 +164,10 @@ for k, (t, f, *_r) in DM.MIGR.items():
     DEFS['demographie.M.' + k] = ratio(est(t, f), _avg, 1000)
 
 
+# Nom de la courbe affichée sans note dans series.<page>.AFF, d'après son graphique (« ch-a-dep » → « depense »).
+AFFN = {'dep': 'depense', 'det': 'detenus', 'jug': 'juges', 'pol': 'police'}
+
+
 def reference(o, cle):
     """La série publiée dans data.json : {'y': années, 'FR': [...], 'DE': [...], 'ES': [...]} (None si absente)."""
     S = o['series']
@@ -178,6 +190,8 @@ def reference(o, cle):
         return {'y': ys, 'FR': d['fr'], 'DE': d.get('de'), 'ES': d.get('es')}
     if p == 'demographie' and rest.startswith('M.'):
         d = S['demographie']['M'][rest[2:]]
+    elif rest.startswith('a-'):
+        d = S[p]['AFF'][AFFN.get(rest[2:], rest[2:])]
     else:
         d = S[p]['C'][rest]
     return {'y': d['y'], 'FR': d.get('fr'), 'DE': d.get('de'), 'ES': d.get('es')}
