@@ -236,16 +236,41 @@
     while ((m = re.exec(html))) { cur += html.slice(i, m.index + 1); i = m.index + m[0].length; if (!ouvert(cur)) { L.push(cur); cur = ''; } else cur += m[2]; }
     cur += html.slice(i); if (cur) L.push(cur); return L;
   }
+  // Les phrases « Non compté » les plus fréquentes, regroupées en une phrase courte (« Non compté : 2005 (…) ; 2020 et 2022 (…) ») ;
+  // les phrases complètes restent dans le détail replié.
+  var MODELES = [
+    [/^Non compté : en (\d{4}), (la France|la moyenne européenne|la France et la moyenne européenne) (?:a|ont) changé (?:sa|leur) façon de mesurer ce chiffre ; son évolution par rapport à \d{4} ne compte pas\.$/, function (m) { return { k: 'm' + m[2], y: +m[1], t: m[2] + (m[2].indexOf(' et ') > 0 ? ' ont' : ' a') + ' changé sa façon de mesurer ce chiffre' }; }],
+    [/^En (\d{4}) : non compté, les pays de l'UE qui publient ce chiffre cette année-là et la précédente font moins de 70 % de sa population\.$/, function (m) { return { k: 'p', y: +m[1], t: 'trop peu de pays de l\'UE publient ce chiffre' }; }],
+    [/^La moyenne de l'UE ne commence qu'en (\d{4}) : avant, elle n'est pas publiée, ces années ne sont pas comptées\.$/, function (m) { return { k: 'd', y: +m[1], avant: true, t: 'pas de moyenne de l\'UE publiée' }; }]
+  ];
+  function resumer(g) {
+    var G = {}, ordre = [], reste = [];
+    g.forEach(function (x) {
+      var tx = x.replace(/<[^>]+>/g, '').trim(), f = null;
+      MODELES.some(function (M) { var m = M[0].exec(tx); if (m) { f = M[1](m); return true; } return false; });
+      if (!f) { reste.push(x); return; }
+      if (!G[f.k]) { G[f.k] = { t: f.t, y: [], avant: f.avant }; ordre.push(f.k); }
+      if (G[f.k].y.indexOf(f.y) < 0) G[f.k].y.push(f.y);
+    });
+    if (!ordre.length) return null;
+    var et = function (L) { return L.length > 1 ? L.slice(0, -1).join(', ') + ' et ' + L[L.length - 1] : String(L[0]); };
+    var parts = ordre.map(function (k) { var x = G[k]; x.y.sort(); return { y: x.y[0], t: (x.avant ? 'avant ' + x.y[0] : et(x.y)) + ' (' + x.t + ')' }; }).sort(function (a, b) { return a.y - b.y; });
+    return ['Non compté : ' + parts.map(function (p) { return p.t; }).join(' ; ') + '.'].concat(reste);
+  }
   function garder(n) {
+    if (n._ntSet != null && n._ntSet === n.innerHTML) return;
     if (n.dataset.ntVide) { n.hidden = false; delete n.dataset.ntVide; }
     var g = [], r = [];
     phrases(n.innerHTML).forEach(function (x) { var tx = x.replace(/<[^>]+>/g, ''); (GARDE.test(tx) && !REGLE.test(tx) ? g : r).push(x); });
     if (!g.length) return;
+    // Deux phrases regroupables ou plus : la phrase courte reste visible, les phrases complètes passent à la fin du détail replié.
+    var court = g.length > 1 ? resumer(g) : null;
+    if (court) { r = r.concat(g.filter(function (x) { return court.indexOf(x) < 0; })); g = court; }
     // La ligne gardée va sous la note et son bouton (la page cherche sa note avec querySelector('.note') : elle doit rester la première).
     var sib = n._garde && n._garde.parentNode ? n._garde : null;
     if (!sib) { sib = document.createElement('p'); sib.className = 'note nt-garde'; n._garde = sib; var b = bouton(n); b.parentNode.insertBefore(sib, b.nextSibling); }
     if (sib.innerHTML !== g.join(' ')) sib.innerHTML = g.join(' ');
-    n.innerHTML = r.join(' ');
+    n.innerHTML = r.join(' '); n._ntSet = n.innerHTML;
     if (!r.length) { n.hidden = true; n.dataset.ntVide = '1'; }
   }
   function plier() {
