@@ -258,7 +258,7 @@ def construire():
     assiettes = []
     lvd = charger('leviers_depense.json')
     LV = {x['id']: x for x in lvd['leviers']} if lvd else {}
-    def ass(k, l, groupe, md, an, qui, macro, x, note='', exclut=()):
+    def ass(k, l, groupe, md, an, qui, macro, x, note='', exclut=()):  # x : élément de source (l, page, url, citation)
         assiettes.append({'k': k, 'l': l, 'groupe': groupe, 'md': round(md, 3), 'an': an, 'qui': qui, 'macro': macro, 'exclut': list(exclut),
                           'note': note, 'src': {'doc': x.get('l', ''), 'page': x.get('page'), 'url': x['url'], 'citation': x['citation']}})
     if LV:
@@ -278,6 +278,35 @@ def construire():
         ij = LV['sante-indemnites-journalieres']
         ass('ij-maladie', "Indemnités journalières maladie (arrêts maladie)", 'depense', ij['montant']['dont maladie (M€)']['2025'] / 1000, 2025, ['malades'], 'depense', ij, "Régime général (y compris anciens indépendants), Commission des comptes de la Sécurité sociale.")
         ass('ij-atmp', "Indemnités journalières des accidents du travail et maladies professionnelles", 'depense', ij['montant']['dont accidents du travail et maladies professionnelles (M€)']['2025'] / 1000, 2025, ['malades'], 'depense', ij, "Régime général, Commission des comptes de la Sécurité sociale.")
+    asd = charger('assiettes.json')
+    AE = {x['cle']: x for x in asd['elements']} if asd else {}
+    def asx(cle):
+        x = AE[cle]; return {'l': x['l'], 'page': x.get('page'), 'url': x['url'], 'citation': x['citation']}
+    if AE:
+        an2 = date.today().year + 1
+        ass('ir', "Impôt sur le revenu", 'recette', AE['ir_net']['valeurs']['2027_plf'], an2, ['menages_imposables'], 'ir', asx('ir_net'), "Recette nette prévue pour l'État en " + str(an2) + " (projet de loi de finances).", ['ir-indexation-bareme'])
+        ass('is', "Impôt sur les sociétés", 'recette', AE['is_net']['valeurs']['2027_plf'], an2, ['entreprises'], None, asx('is_net'), "Recette nette prévue pour l'État en " + str(an2) + " (projet de loi de finances). Le modèle Mésange ne publie pas l'effet de cet impôt sur l'activité.")
+        ass('tva', "TVA (part de l'État)", 'recette', AE['tva_nette_etat']['valeurs']['2027_plf'], an2, ['consommateurs'], 'tva', asx('tva_nette_etat'), "Recette nette de l'État ; une autre part de la TVA va à la Sécurité sociale et aux collectivités.")
+        ass('csg', "CSG (contribution sociale généralisée)", 'recette', AE['csg_produit']['valeurs']['2027_p'] / 1000, an2, ['salaries', 'retraites'], 'csg', asx('csg_produit'), "Produit prévu (Commission des comptes de la Sécurité sociale) ; un point de CSG rapporte environ 18,4 Md€.")
+        ass('carburants', "Taxes sur les carburants (accise, ex-TICPE)", 'recette', AE['accise_energies_nette']['valeurs']['2027_plf_euros_carburants'] / 1e9, an2, ['automobilistes', 'consommateurs'], None, asx('accise_energies_nette'), "Part de l'État. Le modèle Mésange ne publie pas l'effet de cette taxe sur l'activité.")
+        ass('ame', "Aide médicale de l'État (AME)", 'depense', AE['ame_credits_2027']['valeurs']['2027_plf_CP'] / 1e9, an2, ['etrangers'], 'depense', asx('ame_credits_2027'),
+            "Crédits prévus. En 2025, la dépense réelle a été de 1,47 Md€ pour 1,21 Md€ de crédits ; " + '{:,}'.format(AE['ame_beneficiaires']['valeurs']['31_12_2025']).replace(',', ' ') + " bénéficiaires fin 2025.")
+        ass('c2s', "Complémentaire santé solidaire (C2S, ex-CMU complémentaire)", 'depense', AE['c2s_depense']['valeurs']['2024_depense_nette'], 2024, ['assures'], 'depense', asx('c2s_depense'), "Dépense nette 2024, dernier chiffre publié ; 7,79 millions de bénéficiaires fin 2024.")
+        ass('rsa', "RSA (versé par les départements)", 'depense', AE['rsa_departements']['valeurs']['2025'] / 1000, 2025, ['solidarite'], 'depense', asx('rsa_departements'), "Dépense des départements en 2025 ; le RSA versé par l'État dans les départements où il est recentralisé n'est pas compté.")
+        ass('prime-activite', "Prime d'activité", 'depense', AE['prime_activite']['valeurs']['2027_plf'], an2, ['prime_activite'], 'depense', asx('prime_activite'), "Dépense prévue de l'État.", ['prime-activite-gel'])
+        ass('aspa', "Minimum vieillesse (ASPA, régime général)", 'depense', AE['aspa_minimum_vieillesse']['valeurs']['2027_p_cnav'] / 1000, an2, ['retraites'], 'depense', asx('aspa_minimum_vieillesse'), "Dépense prévue de la caisse nationale d'assurance vieillesse seule (pas tous les régimes).")
+        # l'APL du projet de loi de finances remplace le chiffre de 2025
+        for a in assiettes:
+            if a['k'] == 'apl':
+                a.update({'md': AE['apl']['valeurs']['2027_plf'], 'an': an2, 'note': "Dépense prévue de l'État (contribution au Fonds national des aides au logement).", 'src': {'doc': AE['apl']['l'], 'page': AE['apl'].get('page'), 'url': AE['apl']['url'], 'citation': AE['apl']['citation']}})
+        x = AE['etrangers_carence_prestations_familiales_apl']['valeurs']
+        cartes.append({'id': 'etrangers-residence-prestations', 'origine': 'plfss', 'texte': 'PLFSS 2027, article 37', 'l': "Exiger un an de résidence aux étrangers hors Union européenne pour les prestations familiales et les aides au logement",
+                       'quoi': "Les étrangers venus d'un pays hors de l'Union européenne doivent résider en France depuis au moins un an pour toucher les prestations familiales et les aides au logement.",
+                       'theme': 'solidarite', 'qui': ['etrangers'], 'qui_texte': '', 'macro': 'depense', 'sens': 'depense',
+                       'effet': {str(an2): round((x['famille_2027'] + x['apl_2027']) / 1000, 4), str(an2 + 1): round((x['famille_annee_pleine'] + x['apl_annee_pleine']) / 1000, 4)},
+                       'statut': "Projet de loi rejeté par l'Assemblée en première lecture le 23 octobre 2026.",
+                       'note': "Sous le seuil de 300 M€ des autres cartes du budget de la Sécurité sociale : ajoutée parce que c'est la seule mesure chiffrée officiellement sur l'accès des étrangers aux prestations.",
+                       'src': asx('etrangers_carence_prestations_familiales_apl') | {'doc': AE['etrangers_carence_prestations_familiales_apl']['l']}})
     # Budget de l'État : chaque mission et chaque programme du projet de loi de finances (crédits de paiement de l'année à venir,
     # pensions des agents comprises). Écartés : les remboursements d'impôts, la charge de la dette, les dotations non réparties,
     # les subventions aux régimes de retraite (comptées dans les retraites), les concours aux collectivités (transferts),
@@ -319,6 +348,8 @@ def construire():
             a['exclut'] += ['aah']; A['aah']['exclut'].append(a['k'])
         if a['l'].startswith('Solidarité, insertion'):
             a['exclut'] += ['aah']; A['aah']['exclut'].append(a['k'])
+        if a['l'].startswith('Protection maladie') or a['l'].startswith('Santé'):
+            a['exclut'] += ['ame']; A.get('ame', {'exclut': []})['exclut'].append(a['k'])
         if a['l'].startswith('Cohésion des territoires'):
             a['exclut'] += ['apl']; A['apl']['exclut'].append(a['k'])
     # Paramètres du modèle.
