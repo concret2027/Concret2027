@@ -487,12 +487,24 @@ def construire():
         if a['l'].startswith('Cohésion des territoires'):
             a['exclut'] += ['apl']; A['apl']['exclut'].append(a['k'])
     # Pour une personne : règles en vigueur et montant moyen, lus à la source (budget_sources/par_personne.json).
-    PP_CLES = {'vie-etudiante': 'pr:vie-étudiante', 'aide-developpement': 'mi:aide-publique-au-développement'}
+    # La moyenne n'est recalculée avec le pourcentage choisi que si elle a le même champ que la ligne du budget
+    # (enseignement : dépense de tous les financeurs ; arrêts maladie : moyenne de 2023, avant le plafond actuel).
+    PP_CLES = {'vie-etudiante': 'pr:vie-étudiante'}
+    PP_PROPORTION = {'retraites', 'chomage', 'alloc-familiales', 'rsa', 'prime-activite', 'remunerations'}
     pp = charger('par_personne.json') if os.path.exists(os.path.join(SRC, 'par_personne.json')) else {}
     for k, v in pp.items():
+        if k.startswith('_') or k == 'aide-developpement' or not v:
+            continue
         a = A.get(PP_CLES.get(k, k))
-        if a and v:
+        if a:
             a['pp'] = {x: v.get(x) for x in ('beneficiaires', 'moyenne', 'regles')}
+            a['pp']['proportion'] = k in PP_PROPORTION
+    # Population (Insee), pour ramener chaque ligne à un montant par habitant (calcul de Concret).
+    if pp.get('aide-developpement', {}).get('beneficiaires'):
+        x = pp['aide-developpement']['beneficiaires']
+        population = {'v': x['v'] * 1e6, 'annee': x['annee'], 'source': x['source'], 'url': x['url'], 'citation': x['citation']}
+    else:
+        population = None
     for c in cartes:
         c['sens'] = 'depense' if c['sens'] in ('dépense', 'depense') else c['sens']
         c['titre'] = COURT.get(c['id'], c['l'])
@@ -524,7 +536,7 @@ def construire():
     return {
         'maj': date.today().isoformat(),
         'depart': eurostat_depart(),
-        'cartes': cartes, 'assiettes': assiettes, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
+        'cartes': cartes, 'assiettes': assiettes, 'population': population, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
         'variantes': var, 'regle': REGLE, 'defis': DEFIS,
         'variantes_source': P['mesange2017_linearite']['citation'] if 'mesange2017_linearite' in P else '',

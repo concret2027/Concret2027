@@ -958,16 +958,26 @@ body.q-vote { padding-bottom: 92px; }
     $('q-apercu').textContent = pc !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1) : '';
     $('q-ajout').disabled = !pc || pc === av; $('q-ajout').textContent = S.perso[choisi.k] != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
   }
-  // Pour une personne : les règles en vigueur et le montant moyen, lus à la source ; avec votre choix, le même pourcentage appliqué à la moyenne.
+  // Pour une personne : le montant moyen et les règles en vigueur, lus à la source (chiffres recopiés tels quels) ; avec votre choix,
+  // le même pourcentage appliqué à la moyenne, seulement quand elle a le même champ que la ligne. Pour chaque habitant : la ligne
+  // divisée par la population (calcul de Concret).
   function parPersonne(pc) {
-    var x = choisi.pp, el = $('q-pp'); el.hidden = !x; if (!x) return;
-    var m = x.moyenne, b = x.beneficiaires, lien = function (o, t) { return '<a href="' + esc(o.url) + '">' + esc(t || 'Source') + '</a>'; };
-    var eur = function (v) { return nf(v >= 1000 ? Math.round(v / 10) * 10 : Math.round(v), 0) + '\u00a0€'; }, u = m ? esc(m.unite.replace(/^€\s*/, '')) : '';
-    var t = '<h4>Pour une personne, aujourd\'hui</h4>';
-    if (x.regles && x.regles.length) t += '<ul>' + x.regles.map(function (r) { return '<li>' + esc(r.texte) + ' ' + lien(r) + '</li>'; }).join('') + '</ul>';
-    if (m) t += '<p>En moyenne : <b>' + eur(m.v) + '</b> ' + u + (b ? ', pour ' + nf(b.v, 0) + ' ' + esc(b.unite) : '') + ' (' + m.annee + ', ' + lien(m, m.source) + ').</p>';
-    else if (b) t += '<p>' + nf(b.v, 0) + ' ' + esc(b.unite) + ' (' + b.annee + ', ' + lien(b, b.source) + ').</p>';
-    if (m && pc) t += '<p class="v">Avec ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0% : <b>' + eur(m.v * (1 + pc / 100)) + '</b> ' + u + ' en moyenne, si le changement est le même pour chacun. Il peut aussi porter sur la durée, les conditions ou une partie des personnes seulement : l\'effet serait alors différent selon les cas.</p>';
+    var x = choisi.pp, P = J.population, el = $('q-pp'); el.hidden = !x && !P; if (!x && !P) return;
+    var src = function (o) { return '<a href="' + esc(o.url) + '">' + esc(String(o.source).split(/,| \(/)[0]) + '</a>'; };
+    var court = function (u) { return esc(String(u).replace(/^€\s*/, '').replace(/\s*\(.*\)\s*$/, '')); };
+    var tel = function (v) { if (typeof v === 'string' && /^\d+(\.\d+)?$/.test(v)) v = +v; return typeof v === 'number' ? nf(v, v % 1 ? String(v).split('.')[1].length : 0) : esc(v); };
+    var calc = function (v) { return nf(v >= 1000 ? Math.round(v / 10) * 10 : v >= 20 ? Math.round(v) : Math.round(v * 10) / 10, v >= 20 || Math.round(v) === v ? 0 : 1) + ' €'; };
+    var sg = function (v) { return v > 0 ? '+' : '−'; }, t = '<h4>Pour une personne</h4>';
+    if (x && x.moyenne) {
+      var m = x.moyenne, b = x.beneficiaires;
+      t += '<p>Aujourd\'hui, en moyenne : <b>' + tel(m.v) + ' €</b> ' + court(m.unite) + ' (' + esc(m.annee) + ', ' + src(m) + ')' + (b ? ', pour ' + tel(b.v) + ' ' + court(b.unite) + (b.source !== m.source || b.annee !== m.annee ? ' (' + esc(b.annee) + ', ' + src(b) + ')' : '') : '') + '.</p>';
+      if (pc && x.proportion) t += '<p class="v">Avec ' + sg(pc) + Math.abs(pc) + ' % : <b>environ ' + calc(m.v * (1 + pc / 100)) + '</b> ' + court(m.unite) + ' en moyenne, si le changement est le même pour chacun (il peut aussi porter sur la durée, les conditions ou une partie des personnes).</p>';
+    } else if (x && x.beneficiaires) { var b2 = x.beneficiaires; t += '<p>' + tel(b2.v) + ' ' + court(b2.unite) + ' (' + esc(b2.annee) + ', ' + src(b2) + ').</p>'; }
+    if (P) {
+      var ph = choisi.md * 1e9 / P.v;
+      t += '<p>Pour chaque habitant : <b>' + calc(ph) + '</b> par an' + (pc ? ', ' + sg(pc) + calc(Math.abs(ph * pc / 100)) + ' avec votre choix' : '') + '. <span class="q-note">Calcul de Concret : ' + md(choisi.md) + ' Md€ (' + choisi.an + ') divisés par ' + nf(P.v / 1e6, 1) + ' millions d\'habitants (' + esc(P.annee) + ', <a href="' + esc(P.url) + '">Insee</a>).</span></p>';
+    }
+    if (x && x.regles && x.regles.length) t += '<details class="q-tous"><summary>Les règles aujourd\'hui</summary><ul>' + x.regles.map(function (r) { return '<li>' + nb(r.texte) + ' <a href="' + esc(r.url) + '">Source</a></li>'; }).join('') + '</ul></details>';
     el.innerHTML = t;
   }
   function tuiles() {
