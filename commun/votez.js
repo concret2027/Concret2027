@@ -187,7 +187,7 @@
     // Ordre de la page : d'abord dix votes variés (pour la censure et pour chaque thème, le vote qui a le plus partagé l'Assemblée,
     // complétés par les plus partagés des textes sans thème), du plus partagé au moins partagé ; puis de quoi donner un résultat à
     // chaque thème (trois votes par thème, les plus partagés d'abord, un thème après l'autre) ; puis tous les autres, du plus
-    // récent au plus ancien.
+    // récent au plus ancien ; le tout mélangé (voir melanger).
     var parPartage = Q.slice().sort(function (a, b) { return b.partage - a.partage || (a.d < b.d ? 1 : -1); });
     var premiers = [], libre = function (q) { return premiers.indexOf(q) < 0; };
     var censure = parPartage.filter(function (q) { return q.k === 'censure'; })[0]; if (censure) premiers.push(censure);
@@ -209,9 +209,19 @@
       var q = parPartage.filter(function (x) { return pris.indexOf(x) < 0 && x.pg.indexOf(t[0]) >= 0; })[0];
       if (q) { pris.push(q); compter(q); }
     });
-    var ordre = pris.concat(Q.filter(function (q) { return pris.indexOf(q) < 0; }));
+    // Mélange : jamais deux votes budgétaires de suite (budget de l'État, de la Sécurité sociale, approbation des comptes), ni deux
+    // votes du même thème de suite ; à chaque place, le premier vote de la liste qui respecte ces deux règles (sinon le premier).
+    var budget = function (q) { return /loi de finances|financement de la sécurité sociale|résultats de la gestion|approbation des comptes|programmation des finances/i.test(q.titre || ''); };
+    var voisins = function (a, b) { return !!a && ((budget(a) && budget(b)) || a.pg.some(function (t) { return b.pg.indexOf(t) >= 0; })); };
+    var melanger = function (L, prec) {
+      var R = [], reste = L.slice();
+      while (reste.length) { var i = 0; for (var j = 0; j < reste.length; j++) if (!voisins(prec, reste[j])) { i = j; break; } prec = reste.splice(i, 1)[0]; R.push(prec); }
+      return R;
+    };
+    var ordre = melanger(pris.concat(Q.filter(function (q) { return pris.indexOf(q) < 0; })), null);
+    var finThemes = 1 + Math.max.apply(null, pris.map(function (q) { return ordre.indexOf(q); }));
     var G = {}; J.GROUPES.forEach(function (g) { G[g.c] = g; });
-    return { Q: Q, ordre: ordre, finThemes: pris.length, avenir: A, nbVotes: J.VOTES.length,  tous: tous, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: J.VOTES.length ? J.VOTES[J.VOTES.length - 1].d : '' };
+    return { Q: Q, ordre: ordre, finThemes: finThemes, avenir: A, nbVotes: J.VOTES.length,  tous: tous, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: J.VOTES.length ? J.VOTES[J.VOTES.length - 1].d : '' };
   }
 
   var accord = function (a, b) { return a === b ? 1 : (a === 'abstention' || b === 'abstention') ? 0.5 : 0; };
