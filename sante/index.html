@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="906725ff33d0">
+<meta name="concret-version" content="af1050abb33a">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -402,6 +402,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .checks .i { font-weight: 700; } .checks li.g .i { color: var(--ok); } .checks li.b .i { color: var(--bad); } .checks li.m .i { color: var(--mid); }
 .checks b { font-weight: 600; }
 .tnotes { margin: 0; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+.t-pied { display: grid; gap: 0; }
 .tnotes-n { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
 .tnotes b { color: var(--fg); font-weight: 600; } .tnotes a, .pres-line a { color: var(--fr); }
 .fold { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
@@ -1056,9 +1057,7 @@ function main(FEED) {
       sec.innerHTML = '<h2></h2><p class="t-sum"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>La France fait mieux que la moyenne de l\'UE sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n + ' (dernier chiffre connu).</p>' +
         // La courbe principale dans son propre cadre : on peut la partager seule (« Partager la courbe »).
         '<div class="card courbe-p" data-partage-l="Partager la courbe"><span class="eyebrow">' + esc(c.l) + ', ' + esc(c.unite) + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p></div>' +
-        // Le tableau France / moyenne de l'UE, replié sous la courbe (choix de l'éditeur) ; la ligne ✓ ✗ du haut reste visible.
-        '<details class="tab-pli"><summary>Voir les chiffres : France et moyenne de l\'UE</summary>' + tableEtat(e, true) + '</details>' +
-        '<p class="tnotes">Note de ce thème, sur 20 (10 = aussi bien que la moyenne de l\'UE) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>' + nonNote(pn, t);
+        ''; // le tableau et la note du thème : en bas du bloc, sous toutes les courbes
       sec.querySelector('h2').textContent = t.q;
       root.appendChild(sec);
       // Visibles : le tableau du thème et sa courbe principale ; les autres courbes et les sources dans le dépliant.
@@ -1090,6 +1089,12 @@ function main(FEED) {
       // Ces blocs gardent leur propre bouton « Partager ».
       Array.prototype.forEach.call(horsMini.querySelectorAll('.card'), function (k) { k.classList.add('courbe-s'); k.dataset.partageL = 'Partager'; });
       if (horsMini.children.length) { sec.appendChild(horsMini); MAIN.push(function () { dessins.forEach(function (d) { d(); }); }); }
+      // En bas du bloc, sous toutes les courbes : la note du thème, puis le tableau France / moyenne de l'UE et les définitions, repliés.
+      var pied = document.createElement('div'); pied.className = 't-pied';
+      pied.innerHTML = '<details class="tab-pli"><summary>Voir les chiffres : France et moyenne de l\'UE</summary>' + tableEtat(e, true) + '</details>' +
+        '<p class="tnotes">Note de ce thème, sur 20 (10 = aussi bien que la moyenne de l\'UE) : ' + pn.map(function (r) { return '<b>' + esc(nomCourt(r.g.n)) + '</b> ' + (r.n == null ? 'non noté' : nfmt(r.n)); }).join(' · ') + '</p>' + nonNote(pn, t);
+      pied.insertBefore(pied.querySelector('.tnotes'), pied.firstChild); var nn = pied.querySelector('.tnotes-n'); if (nn) pied.insertBefore(nn, pied.children[1]);
+      sec.appendChild(pied);
       var dp = document.createElement('details'); dp.className = 'defs-pli';
       dp.innerHTML = '<summary>Définitions et sources</summary><p class="note defs">' + defs.join('<br>') + '</p>';
       sec.appendChild(dp);
