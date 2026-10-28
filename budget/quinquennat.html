@@ -340,7 +340,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-chips button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 .q-chips small { font-weight: 400; opacity: .8; }
 /* Le bandeau : une ligne, toujours la même hauteur. */
-.q-hud { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 9; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
+.q-collant { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 9; display: grid; gap: 6px; margin-top: -6px; padding-top: 6px; background: var(--bg); }
+.q-hud { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
 .q-hd { display: grid; line-height: 1.1; }
 .q-hd small { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
 .q-hd b { font-family: var(--serif); font-weight: 400; font-size: 22px; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -361,7 +362,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-flash { animation: q-flash .7s ease; }
 @keyframes q-flash { 0% { color: var(--fr); transform: scale(1.06); } 100% { color: inherit; transform: none; } }
 .q-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: var(--line); }
-.q-tabs button { font: inherit; font-size: 14px; font-weight: 700; min-height: 44px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; }
+.q-tabs button { font: inherit; font-size: 14px; font-weight: 700; min-height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; }
 .q-tabs button[aria-selected="true"] { background: var(--panel); color: var(--fg); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 .q-pane { display: grid; gap: 14px; }
 .q-tabexp { margin: -6px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
@@ -547,6 +548,7 @@ body.q-vote { padding-bottom: 92px; }
     <div class="q-obj"><span>Objectif</span><div class="q-chips" id="q-objs"></div></div>
   </section>
 
+  <div class="q-collant" id="q-collant">
   <div class="q-hud" id="q-hud">
     <div class="q-hd"><small id="h-l1">Déficit</small><b id="h-v1">—</b></div>
     <div class="q-jauge" id="q-jauge" aria-hidden="true"><span></span><em></em></div>
@@ -559,6 +561,7 @@ body.q-vote { padding-bottom: 92px; }
     <button type="button" role="tab" id="t-voter" aria-controls="p-voter" aria-selected="true">Voter</button>
     <button type="button" role="tab" id="t-creer" aria-controls="p-creer" aria-selected="false">Créer</button>
     <button type="button" role="tab" id="t-bilan" aria-controls="p-bilan" aria-selected="false">Bilan</button>
+  </div>
   </div>
   <p class="q-tabexp" id="q-tabexp" aria-live="polite"></p>
 
@@ -876,7 +879,7 @@ body.q-vote { padding-bottom: 92px; }
     x.retirees.forEach(function (id) { S.v[id] = 1; });
     garder(); tout(true, true); pop('Vote annulé');
   }
-  function remonter() { var k = $('q-deck'), h = $('q-hud').getBoundingClientRect().bottom, t = k.getBoundingClientRect().top; if (t < h + 8 || t > innerHeight * 0.55) window.scrollBy({ top: t - h - 12, behavior: 'smooth' }); }
+  function remonter() { var k = $('q-deck'), h = $('q-collant').getBoundingClientRect().bottom, t = k.getBoundingClientRect().top; if (t < h + 8 || t > innerHeight * 0.55) window.scrollBy({ top: t - h - 12, behavior: 'smooth' }); }
   function filtres() {
     var F = [['tout', 'Toutes'], ['recette', 'Recettes'], ['depense', 'Dépenses']].concat(Object.keys(J.themes).filter(function (t) { return C.some(function (c) { return c.theme === t; }); }).map(function (t) { return [t, J.themes[t]]; }));
     $('q-filtres').innerHTML = F.map(function (f) { return '<button type="button" data-f="' + f[0] + '" aria-pressed="' + (S.filtre === f[0]) + '">' + esc(f[1]) + '</button>'; }).join('');
@@ -1248,7 +1251,7 @@ body.q-vote { padding-bottom: 92px; }
     if (POP) { clearTimeout(popT); POP = false; hud(); }
     ['voter', 'creer', 'bilan'].forEach(function (x) { $('t-' + x).setAttribute('aria-selected', x === t); $('p-' + x).hidden = x !== t; });
     barre(); if (t === 'bilan') bilan();
-    var h = $('q-hud').getBoundingClientRect().bottom, p = $('p-' + t).getBoundingClientRect().top; if (p < h) window.scrollBy({ top: p - h - 70 });
+    var h = $('q-collant').getBoundingClientRect().bottom, p = $('p-' + t).getBoundingClientRect().top; if (p < h) window.scrollBy({ top: p - h - 70 });
   }
   function tout(entree, anime) { hud(anime); pile(entree); barre(); }
 
