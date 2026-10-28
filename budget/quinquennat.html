@@ -327,6 +327,18 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-hl { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
 .q-h1 b { font-family: var(--serif); font-weight: 400; font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; }
 .q-hu { font-size: 13px; color: var(--muted); }
+.q-md { display: none; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.q-md b { font-family: inherit; font-size: inherit; font-weight: 700; color: var(--fg); }
+.q-repere { height: 1px; margin-bottom: -1px; }
+/* En descendant, le bandeau se réduit à une ligne : déficit, dette et écart. */
+.q-hud.mini { gap: 4px; padding: 7px 12px; }
+.q-hud.mini .q-h2, .q-hud.mini .q-cumul, .q-hud.mini .q-hu, .q-hud.mini .q-jauge em i { display: none; }
+.q-hud.mini .q-md { display: inline; }
+.q-hud.mini .q-h1 b { font-size: 22px; }
+.q-hud.mini .q-hl { font-size: 10.5px; }
+.q-hud.mini .q-jauge { height: 5px; margin: 0; }
+.q-hud.mini .q-h1 .q-md b { font: 700 14px/1 var(--sans, inherit); font-family: inherit; }
+.q-sl .h b { white-space: nowrap; }
 .q-delta { margin-left: auto; font-size: 12.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--band); color: var(--fr); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .q-h2 { display: flex; flex-wrap: wrap; gap: 3px 16px; font-size: 13px; color: var(--muted); }
 .q-h2 b { color: var(--fg); font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -464,8 +476,9 @@ body.q-mesures { padding-bottom: 92px; }
     <ol class="q-etapes"><li><span><b>Votez</b> de vraies mesures, une par une</span></li><li><span><b>Créez</b> les vôtres sur n'importe quelle ligne du budget</span></li><li><span><b>Voyez</b> votre déficit, votre dette et l'emploi jusqu'en <span id="q-an1">2031</span></span></li></ol>
   </section>
 
+  <div class="q-repere" id="q-repere" aria-hidden="true"></div>
   <div class="q-hud" id="q-hud" aria-live="polite">
-    <div class="q-h1"><span class="q-hl" id="h-l1">Déficit</span><b id="h-v1">—</b><span class="q-hu">du PIB</span><span class="q-delta" id="h-e1" hidden></span></div>
+    <div class="q-h1"><span class="q-hl" id="h-l1">Déficit</span><b id="h-v1">—</b><span class="q-hu">du PIB</span><span class="q-md" id="h-md"></span><span class="q-delta" id="h-e1" hidden></span></div>
     <div class="q-jauge" id="q-jauge" aria-hidden="true"><span></span><em><i></i></em></div>
     <div class="q-h2"><span><span id="h-l2">Dette</span> <b id="h-dt">—</b></span><span><span id="h-l3">Déficit</span> <b id="h-d5">—</b></span><span>Emplois <b id="h-em">—</b></span></div>
     <p class="q-cumul" id="q-cumul"></p>
@@ -656,6 +669,7 @@ body.q-mesures { padding-bottom: 92px; }
     var dd = r5.d - z5.d;
     $('h-dt').innerHTML = nf(r5.d, 0) + ' %' + (Math.abs(dd) >= 0.5 ? ' <small>(' + sg(dd, 1) + ')</small>' : '');
     flash($('h-d5'), pc(r5.solde));
+    $('h-md').innerHTML = '· dette ' + AN1 + ' <b>' + nf(r5.d, 0) + ' %</b>';
     flash($('h-em'), S.macro ? (Math.abs(r5.emploi) < 0.5 ? '0' : sg(Math.round(r5.emploi), 0) + ' 000') : 'non compté');
     // Le total de vos choix, en une phrase : ce qu'ils rapportent la première année, et ce qu'ils changent à la dette de la fin.
     var n = nbChoix(), tot1 = r1.mesures, cu = $('q-cumul');
@@ -972,6 +986,7 @@ body.q-mesures { padding-bottom: 92px; }
     document.addEventListener('keydown', function (e) { if ($('p-mesures').hidden || /input|textarea/i.test((e.target || {}).tagName)) return; var c = suivante(); if (!c) return; if (e.key === 'ArrowRight') voter(c, 1); if (e.key === 'ArrowLeft') voter(c, -1); });
     ['contre', 'passe', 'pour'].forEach(function (k, i) { $('b-' + k).addEventListener('click', function () { var c = suivante(); if (c) voter(c, [-1, 0, 1][i]); }); });
     filtres(); postes(); economie(); creer(); tout(true);
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { $('q-hud').classList.toggle('mini', !e[0].isIntersecting && e[0].boundingClientRect.top < 0); }).observe($('q-repere'));
   }
   if (window.QUINQUENNAT) demarrer(window.QUINQUENNAT.jeu, window.QUINQUENNAT.budget);
   else Promise.all([fetch('/donnees/budget_jeu.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }), fetch('/donnees/budget.json', { cache: 'no-cache' }).then(function (r) { return r.json(); })]).then(function (x) { demarrer(x[0], x[1]); });
