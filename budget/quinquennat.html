@@ -345,13 +345,15 @@ footer p { margin: 0; } footer a { color: inherit; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --c-imp: #7a9cff; --c-eco: #4cc27f; --c-baisse: #d9b25a; --c-dep: #d08ad0; } }
 :root[data-theme="dark"] { --c-imp: #7a9cff; --c-eco: #4cc27f; --c-baisse: #d9b25a; --c-dep: #d08ad0; }
 /* En descendant, le bandeau se réduit à une ligne : déficit, dette et écart. */
-.q-hud.mini { gap: 4px; padding: 7px 12px; }
-.q-hud.mini .q-h2, .q-hud.mini .q-cumul, .q-hud.mini .q-hu, .q-hud.mini .q-jauge em i { display: none; }
-.q-hud.mini .q-md { display: inline; }
-.q-hud.mini .q-h1 b { font-size: 22px; }
-.q-hud.mini .q-hl { font-size: 10.5px; }
+.q-hud.mini, .q-hud.debut { gap: 4px; padding: 7px 12px; }
+.q-hud.mini .q-h2, .q-hud.mini .q-cumul, .q-hud.mini .q-hu, .q-hud.mini .q-jauge em i, .q-hud.debut .q-h2, .q-hud.debut .q-hu, .q-hud.debut .q-spark { display: none; }
+.q-hud.mini .q-md, .q-hud.debut .q-md { display: inline; }
+.q-hud.mini .q-h1 b, .q-hud.debut .q-h1 b { font-size: 22px; }
+.q-hud.mini .q-hl, .q-hud.debut .q-hl { font-size: 10.5px; }
 .q-hud.mini .q-jauge { height: 5px; margin: 0; }
-.q-hud.mini .q-h1 .q-md b { font: 700 14px/1 var(--sans, inherit); font-family: inherit; }
+.q-hud.debut .q-jauge { height: 5px; margin: 0 0 17px; }
+.q-hud.debut .q-cumul { padding-top: 5px; font-size: 13px; }
+.q-hud.debut .q-h1 .q-md b, .q-hud.mini .q-h1 .q-md b { font: 700 14px/1 var(--sans, inherit); font-family: inherit; }
 .q-sl .h b { white-space: nowrap; }
 .q-delta { margin-left: auto; font-size: 12.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--band); color: var(--fr); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .q-h2 { display: flex; flex-wrap: wrap; gap: 3px 16px; font-size: 13px; color: var(--muted); }
@@ -709,6 +711,7 @@ body.q-mesures { padding-bottom: 92px; }
     }
     $('h-spark').innerHTML = spark([{ an: PJ.depart.an, d: PJ.depart.dette }].concat(R0), [{ an: PJ.depart.an, d: PJ.depart.dette }].concat(R));
     $('q-intro').hidden = nbDecisions() > 0;
+    $('q-hud').classList.toggle('debut', nbChoix() === 0);
     // La jauge : le déficit de la première année, de 0 au déficit de départ ; le trait marque la règle des 3 %.
     var max = Math.max(-z1.solde, -r1.solde, PAR.regle + 1) * 1.05, w = Math.max(0, -r1.solde) / max * 100;
     $('q-jauge').querySelector('span').style.width = w + '%'; $('q-jauge').querySelector('em').style.left = (PAR.regle / max * 100) + '%';
