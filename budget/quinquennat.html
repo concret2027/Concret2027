@@ -339,8 +339,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-toast button { font: inherit; font-size: 13px; font-weight: 700; color: var(--bg); background: none; border: 0; text-decoration: underline; cursor: pointer; padding: 0; }
 .q-flash b { animation: q-flash .6s ease; }
 @keyframes q-flash { 0% { color: var(--fr); } 100% { color: inherit; } }
-.q-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: var(--line); }
-.q-tabs button { font: inherit; font-size: 13.5px; font-weight: 700; min-height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; }
+.q-tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: var(--line); }
+.q-tabs button { font: inherit; font-size: 13px; padding: 0 2px; font-weight: 700; min-height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; }
 .q-tabs button[aria-selected="true"] { background: var(--panel); color: var(--fg); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 .q-pane[hidden] { display: none; }
 .q-pane { display: grid; gap: 14px; }
@@ -404,6 +404,7 @@ body.q-mesures { padding-bottom: 92px; }
 .q-sl .h b { font-variant-numeric: tabular-nums; }
 .q-sl input[type=range] { width: 100%; accent-color: var(--fr); height: 30px; margin: 0; }
 .q-sl .b { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); }
+.q-select { font: inherit; font-size: 15px; min-height: 46px; padding: 0 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); width: 100%; }
 .q-presets { display: flex; flex-wrap: wrap; gap: 6px; }
 .q-presets button { font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 34px; }
 .q-big { font-family: var(--serif); font-size: 36px; line-height: 1; }
@@ -456,6 +457,7 @@ body.q-mesures { padding-bottom: 92px; }
 
   <div class="q-tabs" role="tablist" aria-label="Parties du jeu">
     <button type="button" role="tab" id="t-mesures" aria-controls="p-mesures" aria-selected="true">Mesures</button>
+    <button type="button" role="tab" id="t-creer" aria-controls="p-creer" aria-selected="false">Créer</button>
     <button type="button" role="tab" id="t-postes" aria-controls="p-postes" aria-selected="false">Postes</button>
     <button type="button" role="tab" id="t-eco" aria-controls="p-eco" aria-selected="false">Économie</button>
     <button type="button" role="tab" id="t-bilan" aria-controls="p-bilan" aria-selected="false">Bilan</button>
@@ -469,6 +471,22 @@ body.q-mesures { padding-bottom: 92px; }
     <section class="card" aria-labelledby="q-vos-t">
       <h2 id="q-vos-t"><span class="eyebrow">Vos mesures</span><span id="q-vos-n">Aucune mesure adoptée</span></h2>
       <ul class="q-liste" id="q-vos"></ul>
+    </section>
+  </div>
+
+  <div class="q-pane" id="p-creer" role="tabpanel" aria-labelledby="t-creer" hidden>
+    <section class="card" aria-labelledby="q-cr-t">
+      <h2 id="q-cr-t"><span class="eyebrow">Vos propres mesures</span>Baissez ou augmentez un impôt ou une dépense</h2>
+      <label class="q-sl" for="q-as"><span class="h"><span>Ce que vous changez</span></span><select id="q-as" class="q-select"></select></label>
+      <p class="q-note" id="q-as-n"></p>
+      <div class="q-sl"><div class="h"><span id="q-pc-l">De combien</span><b id="q-pc-v"></b></div><input type="range" id="q-pc" min="-100" max="50" step="1" value="-10" aria-label="Pourcentage"><div class="q-presets" id="q-pc-p"></div></div>
+      <div class="q-montant"><b id="q-cr-m"></b><span id="q-cr-s"></span><small id="q-cr-h"></small></div>
+      <button type="button" class="q-go" id="q-cr-add">Ajouter à mon budget</button>
+      <p class="q-note" id="q-cr-info"></p>
+    </section>
+    <section class="card" aria-labelledby="q-mes-t">
+      <h2 id="q-mes-t"><span class="eyebrow">Dans votre budget</span><span id="q-mes-n">Aucune mesure créée</span></h2>
+      <ul class="q-liste" id="q-mes"></ul>
     </section>
   </div>
 
@@ -540,7 +558,7 @@ body.q-mesures { padding-bottom: 92px; }
   var lireLS = function (k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
   var ecrireLS = function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   var CLE = 'concret-quinquennat', J, B, PJ, D0, AN0, AN1, ANS = [], C = [], PAR = {};
-  var S = lireLS(CLE) || {}; S.v = S.v || {}; S.po = S.po || {}; if (S.macro == null) S.macro = true; S.taux = S.taux || 0; S.cr = S.cr || 0; S.filtre = S.filtre || 'tout';
+  var S = lireLS(CLE) || {}; S.v = S.v || {}; S.po = S.po || {}; S.perso = S.perso || {}; var AS = {}, PIBY = {}; if (S.macro == null) S.macro = true; S.taux = S.taux || 0; S.cr = S.cr || 0; S.filtre = S.filtre || 'tout';
   var garder = function () { ecrireLS(CLE, S); };
 
   // ---------- Le modèle ----------
@@ -559,7 +577,7 @@ body.q-mesures { padding-bottom: 92px; }
 
   function simuler(opt) {
     opt = opt || {};
-    var vote = opt.rien ? {} : S.v, po = opt.rien ? {} : S.po, macro = opt.rien ? false : S.macro, dtx = opt.rien ? 0 : S.taux, dcr = (opt.rien ? 0 : S.cr) + (opt.dg || 0);
+    var vote = opt.rien ? {} : S.v, po = opt.rien ? {} : S.po, perso = opt.rien ? {} : S.perso, macro = opt.rien ? false : S.macro, dtx = opt.rien ? 0 : S.taux, dcr = (opt.rien ? 0 : S.cr) + (opt.dg || 0);
     var pib = D0.pib_md, d = PJ.depart.dette, L = 0, out = [], prevA = {}, inc = {}, hist = [];
     ANS.forEach(function (y, idx) {
       var an = y.an, actif = an >= AN0;
@@ -568,6 +586,10 @@ body.q-mesures { padding-bottom: 92px; }
       var A = {}, tot = 0;
       if (actif) {
         C.forEach(function (c) { if (vote[c.id] === 1) { var m = montant(c, an), t = c.macro || 'aucun'; A[t] = (A[t] || 0) + m / pibSans * 100; tot += m; } });
+        Object.keys(perso).forEach(function (k) {
+          var x = AS[k]; if (!x) return; var pts = (x.groupe === 'depense' ? -1 : 1) * perso[k] / 100 * x.md / PIBY[x.an] * 100, t = x.macro || 'aucun';
+          A[t] = (A[t] || 0) + pts; tot += pts * pibSans / 100;
+        });
         Object.keys(po).forEach(function (k) {
           var x = PAR[k]; if (!x) return; var dpt = po[k], t = x.type === 'dep' ? 'depense' : (POSTE_MACRO[x.k] || 'aucun');
           var amelio = x.type === 'dep' ? -dpt : dpt; A[t] = (A[t] || 0) + amelio;
@@ -674,6 +696,7 @@ body.q-mesures { padding-bottom: 92px; }
     var avant = S.v[c.id], r1 = simuler().filter(function (r) { return r.an === AN0; })[0].solde;
     // Mesures qui se recouvrent : en adopter une retire les autres (même groupe, ou liste « exclut » dans un sens ou dans l'autre).
     if (v === 1) C.forEach(function (o) { if (o !== c && S.v[o.id] === 1 && ((c.exclusif && o.exclusif === c.exclusif) || (c.exclut || []).indexOf(o.id) >= 0 || (o.exclut || []).indexOf(c.id) >= 0)) S.v[o.id] = -1; });
+    if (v === 1) Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(c.id) >= 0) delete S.perso[k]; });
     S.v[c.id] = v; garder();
     var el = $('q-card'); if (el) el.classList.add(v === 1 ? 'out-r' : 'out-l');
     var r2 = simuler().filter(function (r) { return r.an === AN0; })[0].solde, e = r2 - r1;
@@ -734,6 +757,41 @@ body.q-mesures { padding-bottom: 92px; }
     $('q-po-reset').onclick = function () { S.po = {}; garder(); postes(); hud(); };
   }
 
+  // Vos propres mesures : un montant officiel, un pourcentage choisi.
+  function md(v) { return Math.abs(v) >= 10 ? nf(v, 0) : nf(v, 1); }
+  function effetPerso(x, pc) { return (x.groupe === 'depense' ? -1 : 1) * pc / 100 * x.md / PIBY[x.an] * PIBY[AN0]; }
+  function creer() {
+    var sel = $('q-as'), L = J.assiettes || [];
+    if (!sel.options.length) {
+      var g = function (gr, t) { return '<optgroup label="' + t + '">' + L.filter(function (x) { return x.groupe === gr; }).map(function (x) { return '<option value="' + x.k + '">' + esc(x.l) + '</option>'; }).join('') + '</optgroup>'; };
+      sel.innerHTML = g('recette', 'Impôts et cotisations') + g('depense', 'Dépenses');
+      sel.onchange = function () { $('q-pc').value = S.perso[sel.value] != null ? S.perso[sel.value] : -10; maj(); };
+      $('q-pc').oninput = maj;
+      $('q-pc-p').innerHTML = [-100, -50, -20, -10, -5, 5, 10, 20].map(function (v) { return '<button type="button" data-v="' + v + '">' + (v > 0 ? '+' : '−') + Math.abs(v) + ' %</button>'; }).join('');
+      Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.onclick = function () { $('q-pc').value = b.dataset.v; maj(); }; });
+      $('q-cr-add').onclick = function () {
+        var x = AS[sel.value], pc = +$('q-pc').value; if (!x || !pc) return;
+        x.exclut.forEach(function (id) { if (S.v[id] === 1) S.v[id] = -1; if (S.perso[id] != null) delete S.perso[id]; });
+        Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(x.k) >= 0) delete S.perso[k]; });
+        S.perso[x.k] = pc; garder(); toast('Ajoutée : ' + x.l.split(' (')[0].toLowerCase() + ' ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + ' %'); tout(); creer();
+      };
+      $('q-cr-info').textContent = (J.creer_info || '');
+    }
+    function maj() {
+      var x = AS[sel.value], pc = +$('q-pc').value, e = effetPerso(x, pc);
+      $('q-as-n').innerHTML = esc(x.l) + ' : <b>' + md(x.md) + ' Md€</b> en ' + x.an + '. ' + esc(x.note) + ' <a href="' + esc(x.src.url) + '">Source</a>' + (x.src.page ? ' (' + esc(String(x.src.page).split(' (')[0]) + ')' : '') + '.';
+      $('q-pc-v').textContent = (pc > 0 ? '+' : pc < 0 ? '−' : '') + Math.abs(pc) + ' %';
+      $('q-cr-m').textContent = sg(e, 1) + ' Md€';
+      $('q-cr-s').textContent = (e >= 0 ? 'en moins de déficit' : 'en plus de déficit') + ' par an à partir de ' + AN0;
+      $('q-cr-h').textContent = 'Calcul de Concret : ' + Math.abs(pc) + ' % du montant, qui suit ensuite la richesse produite. À comportements inchangés' + (x.macro && J.variantes[x.macro] ? ', sauf l\'effet sur l\'activité et l\'emploi (modèle Mésange), si coché.' : ' ; aucun effet sur l\'activité compté pour ce type de mesure.');
+    }
+    maj();
+    var K = Object.keys(S.perso);
+    $('q-mes-n').textContent = K.length ? K.length + ' mesure' + (K.length > 1 ? 's' : '') + ' à vous' : 'Aucune mesure créée';
+    $('q-mes').innerHTML = K.map(function (k) { var x = AS[k], pc = S.perso[k]; return '<li><span>' + esc(x.l) + ' : ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + ' %</span><span class="m">' + sg(effetPerso(x, pc), 1) + ' Md€</span><small><button type="button" data-k="' + k + '">Retirer</button></small></li>'; }).join('');
+    Array.prototype.forEach.call($('q-mes').querySelectorAll('button'), function (b) { b.onclick = function () { delete S.perso[b.dataset.k]; garder(); tout(); creer(); }; });
+  }
+
   function economie() {
     var dm = J.taux.oat10_dernier_mois.valeurs, mois = Object.keys(dm)[0], base = dm[mois], ann = J.taux.oat10_moyenne_annuelle.valeurs;
     $('q-macro').checked = S.macro;
@@ -783,6 +841,7 @@ body.q-mesures { padding-bottom: 92px; }
     $('q-def-n').textContent = 'Le trait marque ' + nf(PAR.regle, 0) + ' % du PIB, la règle européenne (' + PAR.regle_src + '). Intérêts de la dette en ' + f.an + ' : ' + nf(f.interets, 1) + ' % du PIB, soit ' + nf(f.interets * f.pib / 100, 0) + ' Md€.';
     // Qui paie.
     var Q = {}; C.forEach(function (c) { if (S.v[c.id] !== 1) return; c.qui.forEach(function (q) { Q[q] = (Q[q] || 0) + montant(c, AN0); }); });
+    Object.keys(S.perso).forEach(function (k) { var x = AS[k]; if (x) x.qui.forEach(function (q) { Q[q] = (Q[q] || 0) + effetPerso(x, S.perso[k]); }); });
     var L = Object.keys(Q).map(function (q) { return [q, Q[q]]; }).sort(function (a, b) { return b[1] - a[1]; }), m = L.length ? Math.max.apply(null, L.map(function (x) { return Math.abs(x[1]); })) : 1;
     $('q-qui').innerHTML = L.length ? L.map(function (x) { return '<div><span class="t" title="' + esc(J.qui[x[0]]) + '">' + esc(J.qui[x[0]]) + '</span><span class="r"><em style="left:0;width:' + (Math.abs(x[1]) / m * 100) + '%"></em></span><span class="v">' + nf(x[1], 1) + ' Md€</span></div>'; }).join('') : '<p class="q-note">Adoptez des mesures pour voir qui les paie.</p>';
     $('q-qui-n').textContent = 'En ' + AN0 + ', au sens des textes : ce que chaque groupe paie en plus ou reçoit en moins. Une mesure qui concerne deux groupes compte pour chacun. Les changements de grands postes ne sont pas répartis.';
@@ -806,12 +865,12 @@ body.q-mesures { padding-bottom: 92px; }
     var D = J.defis || []; if (!D.length) { $('q-defi').hidden = true; return; }
     var j = new Date(), iso = j.getFullYear() + '-' + ('0' + (j.getMonth() + 1)).slice(-2) + '-' + ('0' + j.getDate()).slice(-2);
     var n = Math.round((new Date(iso + 'T12:00:00') - new Date('2026-01-01T12:00:00')) / 864e5), x = D[((n % D.length) + D.length) % D.length];
-    var r1 = R.filter(function (r) { return r.an === AN0; })[0], f = R[R.length - 1], nb = C.filter(function (c) { return S.v[c.id] === 1; }).length + Object.keys(S.po).length;
+    var r1 = R.filter(function (r) { return r.an === AN0; })[0], f = R[R.length - 1], nb = C.filter(function (c) { return S.v[c.id] === 1; }).length + Object.keys(S.po).length + Object.keys(S.perso).length;
     var cond = x.c.map(function (c) {
       if (c.type === 'deficit_an1') return { ok: -r1.solde <= c.v + 1e-9, t: 'Déficit ' + AN0 + ' au plus ' + nf(c.v, 0) + ' % du PIB', s: 'Le vôtre : ' + nf(Math.max(0, -r1.solde), 1) + ' %' };
       if (c.type === 'deficit_fin') return { ok: -f.solde <= c.v + 1e-9, t: 'Déficit ' + f.an + ' au plus ' + nf(c.v, 0) + ' % du PIB', s: 'Le vôtre : ' + nf(Math.max(0, -f.solde), 1) + ' %' };
       if (c.type === 'dette_baisse') return { ok: f.d <= PJ.depart.dette, t: 'Dette ' + f.an + ' sous celle de fin ' + PJ.depart.an + ' (' + nf(PJ.depart.dette, 1) + ' %)', s: 'La vôtre : ' + nf(f.d, 1) + ' %' };
-      if (c.type === 'sans_impot') { var k = C.some(function (y) { return S.v[y.id] === 1 && y.sens === 'recette'; }) || Object.keys(S.po).some(function (k) { return k.indexOf('rec:') === 0 && S.po[k] > 0; }); return { ok: !k, t: 'Aucune hausse d\'impôt ni de cotisation', s: '' }; }
+      if (c.type === 'sans_impot') { var k = C.some(function (y) { return S.v[y.id] === 1 && y.sens === 'recette'; }) || Object.keys(S.po).some(function (k) { return k.indexOf('rec:') === 0 && S.po[k] > 0; }) || Object.keys(S.perso).some(function (k) { return (AS[k].groupe === 'recette' && S.perso[k] > 0) || (k === 'allegements' && S.perso[k] < 0); }); return { ok: !k, t: 'Aucune hausse d\'impôt ni de cotisation', s: '' }; }
       if (c.type === 'sans_theme') { var u = C.some(function (y) { return S.v[y.id] === 1 && y.theme === c.theme; }); return { ok: !u, t: 'Aucune mesure sur : ' + J.themes[c.theme], s: '' }; }
       return { ok: false, t: c.type, s: '' };
     }), ok = cond.every(function (c) { return c.ok; });
@@ -825,7 +884,7 @@ body.q-mesures { padding-bottom: 92px; }
 
   function barre() { var on = !$('p-mesures').hidden && !!suivante(); $('q-bar').hidden = !on; document.body.classList.toggle('q-mesures', on); }
   function onglet(t) {
-    ['mesures', 'postes', 'eco', 'bilan'].forEach(function (x) { $('t-' + x).setAttribute('aria-selected', x === t); $('p-' + x).hidden = x !== t; });
+    ['mesures', 'creer', 'postes', 'eco', 'bilan'].forEach(function (x) { $('t-' + x).setAttribute('aria-selected', x === t); $('p-' + x).hidden = x !== t; });
     barre();
     if (t === 'bilan') bilan();
   }
@@ -835,7 +894,10 @@ body.q-mesures { padding-bottom: 92px; }
     J = j; B = b; PJ = J.projection; D0 = J.depart; C = J.cartes.slice();
     AN0 = PJ.premier_budget; ANS = PJ.ans; AN1 = ANS[ANS.length - 1].an;
     var duree = J.taux.dette_etat_duree_vie_moyenne.valeurs['fin 2025'], m = /(\d+) ans? et (\d+) jours/.exec(duree);
-    PAR.duree = m ? +m[1] + m[2] / 365 : 8.5; PAR.regle = J.regle.v; PAR.regle_src = J.regle.source;
+    PAR.duree = m ? +m[1] + m[2] / 365 : 8.5;
+    PIBY[D0.an] = D0.pib_md; var pp = D0.pib_md; ANS.forEach(function (y) { pp *= (1 + y.croissance / 100) * (1 + y.inflation / 100); PIBY[y.an] = pp; });
+    (J.assiettes || []).forEach(function (x) { AS[x.k] = x; });
+    if (!PIBY[2024] && B && B.pays) PIBY[2024] = B.pays.FR.pib_meur / 1000; PAR.regle = J.regle.v; PAR.regle_src = J.regle.source;
     // Ordre des cartes : la plus grosse d'abord, en alternant mesures des budgets 2027 et niches fiscales.
     var a = C.filter(function (c) { return c.origine !== 'niche'; }), n = C.filter(function (c) { return c.origine === 'niche'; }), tri = function (x, y) { return Math.abs(montant(y, AN0)) - Math.abs(montant(x, AN0)); };
     a.sort(tri); n.sort(tri); C = []; while (a.length || n.length) { if (a.length) C.push(a.shift()); if (a.length) C.push(a.shift()); if (n.length) C.push(n.shift()); }
@@ -851,10 +913,10 @@ body.q-mesures { padding-bottom: 92px; }
     ].map(function (t) { return '<li>' + t + '</li>'; }).join('');
     Array.prototype.forEach.call(document.querySelectorAll('.q-tabs button'), function (b) { b.addEventListener('click', function () { onglet(b.id.slice(2)); }); });
     $('q-toast').querySelector('button').addEventListener('click', function () { if (dernier) { var f = dernier; dernier = null; $('q-toast').classList.remove('on'); f(); } });
-    $('q-reset').onclick = function () { S.v = {}; S.po = {}; S.taux = 0; S.cr = 0; S.macro = true; garder(); postes(); economie(); tout(true); };
+    $('q-reset').onclick = function () { S.v = {}; S.po = {}; S.perso = {}; S.taux = 0; S.cr = 0; S.macro = true; garder(); postes(); economie(); tout(true); };
     document.addEventListener('keydown', function (e) { if ($('p-mesures').hidden || /input|textarea/i.test((e.target || {}).tagName)) return; var c = suivante(); if (!c) return; if (e.key === 'ArrowRight') voter(c, 1); if (e.key === 'ArrowLeft') voter(c, -1); });
     ['contre', 'passe', 'pour'].forEach(function (k, i) { $('b-' + k).addEventListener('click', function () { var c = suivante(); if (c) voter(c, [-1, 0, 1][i]); }); });
-    filtres(); postes(); economie(); tout(true);
+    filtres(); postes(); economie(); creer(); tout(true);
   }
   if (window.QUINQUENNAT) demarrer(window.QUINQUENNAT.jeu, window.QUINQUENNAT.budget);
   else Promise.all([fetch('/donnees/budget_jeu.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }), fetch('/donnees/budget.json', { cache: 'no-cache' }).then(function (r) { return r.json(); })]).then(function (x) { demarrer(x[0], x[1]); });

@@ -250,6 +250,27 @@ def construire():
                        'theme': 'etat', 'qui': ['agents_publics'], 'qui_titre': 'Qui reçoit', 'qui_texte': '5,85 millions d\'agents publics fin 2024 (DGAFP)', 'macro': 'depense', 'sens': 'depense',
                        'effet': {an1: -round(7.5 / 3.5, 2)}, 'note': "Dernier chiffrage officiel : la hausse de 3,5 % de juillet 2022 a coûté 7,5 Md€ ; Concret divise par 3,5. Montant de 2022, sans tenir compte de la hausse des salaires depuis.",
                        'src': {'doc': pi['l'], 'page': pi.get('page'), 'url': pi['url'], 'citation': pi['citation']}})
+    # Assiettes des « mesures à vous » : le montant officiel d'un impôt ou d'une dépense ; le visiteur choisit un pourcentage,
+    # l'effet est ce pourcentage du montant (calcul de Concret, à comportements inchangés hors effet sur l'activité).
+    assiettes = []
+    lvd = charger('leviers_depense.json')
+    LV = {x['id']: x for x in lvd['leviers']} if lvd else {}
+    def ass(k, l, groupe, md, an, qui, macro, x, note='', exclut=()):
+        assiettes.append({'k': k, 'l': l, 'groupe': groupe, 'md': round(md, 3), 'an': an, 'qui': qui, 'macro': macro, 'exclut': list(exclut),
+                          'note': note, 'src': {'doc': x.get('l', ''), 'page': x.get('page'), 'url': x['url'], 'citation': x['citation']}})
+    if LV:
+        ass('retraites', 'Retraites (toutes les pensions)', 'depense', LV['retraites-depense']['montant']['2025, ensemble du système de retraite (Md€)'], 2025, ['retraites'], 'depense', LV['retraites-depense'],
+            "Ensemble du système de retraite, régimes de base et complémentaires (Conseil d'orientation des retraites).", ['pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'])
+        ass('ondam', "Assurance maladie (soins remboursés, hôpitaux)", 'depense', 278.7, 2027, ['assures', 'soignants'], 'depense', LV['sante-ondam'], "Objectif national de dépenses d'assurance maladie proposé pour 2027.", ['ondam-moins-1', 'ondam-plus-1'])
+        ass('remunerations', 'Salaires des agents publics (État, collectivités, hôpitaux, sécurité sociale)', 'depense', LV['fp-masse-salariale-apu']['montant']['2025 (Md€, toutes administrations publiques)'], 2025, ['agents_publics'], 'depense', LV['fp-masse-salariale-apu'], "Rémunérations versées par l'ensemble des administrations publiques (Insee), enseignants et militaires compris.", ['point-indice-plus-1', 'enseignement', 'defense'])
+        ass('enseignement', "Enseignement scolaire (écoles, collèges, lycées)", 'depense', LV['education-enseignement-scolaire']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['agents_publics', 'familles'], 'depense', LV['education-enseignement-scolaire'], "Crédits de la mission Enseignement scolaire du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
+        ass('defense', 'Défense', 'depense', LV['defense-credits']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['agents_publics'], 'depense', LV['defense-credits'], "Crédits de la mission Défense du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
+        ass('chomage', "Allocations chômage", 'depense', LV['chomage-depense']['montant']['allocations brutes et aides (Md€)']['2027'], 2027, ['chomeurs'], 'depense', LV['chomage-depense'], "Allocations et aides versées par l'Unédic (prévision).")
+        ass('apl', 'Aides au logement (APL)', 'depense', LV['prestations-apl']['montant']["dépense d'aides personnelles au logement (Md€)"]['2025'], 2025, ['familles'], 'depense', LV['prestations-apl'], '')
+        ass('alloc-familiales', 'Allocations familiales', 'depense', LV['prestations-allocations-familiales']['montant']['allocations familiales (M€)']['2027 prévision'] / 1000, 2027, ['familles'], 'depense', LV['prestations-allocations-familiales'], '', ['prestations-familiales-gel'])
+        ass('aah', "Allocation aux adultes handicapés (AAH)", 'depense', LV['prestations-aah']['montant']['2027, PLF 2027 (Md€)'], 2027, ['handicap'], 'depense', LV['prestations-aah'], '')
+        ass('allegements', "Allègements généraux de cotisations patronales", 'depense', LV['entreprises-allegements-generaux']['montant']['coût des allègements généraux, champ régimes de base, Unédic, Agirc-Arrco et FNAL (M€)']['2027 prévision'] / 1000, 2027, ['entreprises'], 'cotis_emp', LV['entreprises-allegements-generaux'],
+            "Réductions de cotisations sur les salaires : les réduire, c'est faire payer plus de cotisations aux employeurs.", ['allegements-moins-10'])
     # Paramètres du modèle.
     var = {}
     for t, cle in MACRO.items():
@@ -274,7 +295,7 @@ def construire():
     return {
         'maj': date.today().isoformat(),
         'depart': eurostat_depart(),
-        'cartes': cartes, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
+        'cartes': cartes, 'assiettes': assiettes, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
         'variantes': var, 'regle': REGLE, 'defis': DEFIS,
         'variantes_source': P['mesange2017_linearite']['citation'] if 'mesange2017_linearite' in P else '',
