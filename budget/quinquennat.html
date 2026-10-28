@@ -441,6 +441,13 @@ body.q-vote { padding-bottom: 92px; }
 .q-resultats span { color: var(--muted); font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .q-choisi { display: grid; gap: 10px; padding: 12px; border-radius: 14px; background: var(--band); }
 .q-choisi[hidden] { display: none; }
+.q-pp { display: grid; gap: 6px; padding: 10px 12px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); font-size: 14px; line-height: 1.45; }
+.q-pp h4 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.q-pp ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.q-pp p { margin: 0; }
+.q-pp a { color: var(--fr); }
+.q-pp .v { padding-top: 6px; border-top: 1px solid var(--line); }
+.q-pp .v b { font-size: 17px; }
 .q-choisi h3 { margin: 0; font-size: 17px; }
 .q-sl { display: grid; gap: 4px; }
 .q-sl .h { display: flex; justify-content: space-between; gap: 10px; font-size: 14.5px; font-weight: 600; }
@@ -518,6 +525,7 @@ body.q-vote { padding-bottom: 92px; }
         <p class="q-note" id="q-ch-n"></p>
         <div class="q-sl"><div class="h"><span>De combien ?</span><b id="q-pc-v">0 %</b></div><input type="range" id="q-pc" min="-100" max="100" step="1" value="0" aria-label="Pourcentage de baisse ou de hausse"><div class="b"><span>−100 %</span><span>0</span><span>+100 %</span></div><div class="q-presets" id="q-pc-p"></div></div>
         <p class="q-effet" id="q-effet"></p>
+        <div class="q-pp" id="q-pp" hidden></div>
         <p class="q-note" id="q-ch-h"></p>
         <button type="button" class="q-go" id="q-ajout" disabled>Ajouter à mon budget</button>
       </div>
@@ -863,7 +871,20 @@ body.q-vote { padding-bottom: 92px; }
     $('q-pc-v').textContent = (pc > 0 ? '+' : pc < 0 ? '−' : '') + Math.abs(pc) + '\u00a0%';
     $('q-effet').innerHTML = pc ? '<b>' + mdt(Math.abs(e)) + '</b> ' + phrase(e, { sens: choisi.groupe === 'depense' ? 'depense' : 'recette' }) + ' par an, à partir de ' + AN0 : 'Choisissez de combien baisser ou augmenter cette ligne.';
     $('q-ch-h').textContent = pc ? 'Calcul de Concret : ' + Math.abs(pc) + '\u00a0% de ' + md(choisi.md) + '\u00a0Md€ ; le montant suit ensuite la croissance de l\'économie. On suppose que les comportements ne changent pas' + (choisi.macro && J.variantes[choisi.macro] ? ', sauf l\'effet sur l\'activité et l\'emploi, qui est compté : ' + (e >= 0 ? 'une partie de ce gain ne réduit pas le déficit, parce que l\'activité ralentit (modèle de la direction du Trésor et de l\'Insee).' : 'une partie de ce coût est compensée, parce que l\'activité accélère (modèle de la direction du Trésor et de l\'Insee).') : ' ; aucun effet sur l\'activité n\'est compté pour ce type de ligne.') : '';
+    parPersonne(pc);
     $('q-ajout').disabled = !pc; $('q-ajout').textContent = S.perso[choisi.k] != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
+  }
+  // Pour une personne : les règles en vigueur et le montant moyen, lus à la source ; avec votre choix, le même pourcentage appliqué à la moyenne.
+  function parPersonne(pc) {
+    var x = choisi.pp, el = $('q-pp'); el.hidden = !x; if (!x) return;
+    var m = x.moyenne, b = x.beneficiaires, lien = function (o, t) { return '<a href="' + esc(o.url) + '">' + esc(t || 'Source') + '</a>'; };
+    var eur = function (v) { return nf(v >= 1000 ? Math.round(v / 10) * 10 : Math.round(v), 0) + '\u00a0€'; }, u = m ? esc(m.unite.replace(/^€\s*/, '')) : '';
+    var t = '<h4>Pour une personne, aujourd\'hui</h4>';
+    if (x.regles && x.regles.length) t += '<ul>' + x.regles.map(function (r) { return '<li>' + esc(r.texte) + ' ' + lien(r) + '</li>'; }).join('') + '</ul>';
+    if (m) t += '<p>En moyenne : <b>' + eur(m.v) + '</b> ' + u + (b ? ', pour ' + nf(b.v, 0) + ' ' + esc(b.unite) : '') + ' (' + m.annee + ', ' + lien(m, m.source) + ').</p>';
+    else if (b) t += '<p>' + nf(b.v, 0) + ' ' + esc(b.unite) + ' (' + b.annee + ', ' + lien(b, b.source) + ').</p>';
+    if (m && pc) t += '<p class="v">Avec ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0% : <b>' + eur(m.v * (1 + pc / 100)) + '</b> ' + u + ' en moyenne, si le changement est le même pour chacun. Il peut aussi porter sur la durée, les conditions ou une partie des personnes seulement : l\'effet serait alors différent selon les cas.</p>';
+    el.innerHTML = t;
   }
   function creer() {
     $('q-tuiles-c').innerHTML = TUILES.filter(function (k) { return AS[k]; }).map(function (k) { var x = AS[k]; return '<button type="button" data-k="' + k + '" aria-pressed="false"><b>' + esc(x.l.split(' (')[0]) + '</b><span>' + md(x.md) + '\u00a0Md€ · ' + (x.groupe === 'recette' ? 'recette' : 'dépense') + '</span></button>'; }).join('');

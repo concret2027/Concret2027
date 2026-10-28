@@ -486,6 +486,13 @@ def construire():
             a['exclut'] += ['ame']; A.get('ame', {'exclut': []})['exclut'].append(a['k'])
         if a['l'].startswith('Cohésion des territoires'):
             a['exclut'] += ['apl']; A['apl']['exclut'].append(a['k'])
+    # Pour une personne : règles en vigueur et montant moyen, lus à la source (budget_sources/par_personne.json).
+    PP_CLES = {'vie-etudiante': 'pr:vie-étudiante', 'aide-developpement': 'mi:aide-publique-au-développement'}
+    pp = charger('par_personne.json') if os.path.exists(os.path.join(SRC, 'par_personne.json')) else {}
+    for k, v in pp.items():
+        a = A.get(PP_CLES.get(k, k))
+        if a and v:
+            a['pp'] = {x: v.get(x) for x in ('beneficiaires', 'moyenne', 'regles')}
     for c in cartes:
         c['titre'] = COURT.get(c['id'], c['l'])
         if c['id'] in PAR_QUI: c['par'] = PAR_QUI[c['id']]
