@@ -18,7 +18,9 @@
   }
   // Au tout premier vote sur cet appareil : une personne de plus (une fois par appareil).
   function personne() { var f = null; try { f = localStorage.getItem(CLE_VU); } catch (e) { return; } if (f) return; try { localStorage.setItem(CLE_VU, '1'); } catch (e) {} nb('personnes', true); }
-  function afficherNb(p, n) { if (!p) return; p.hidden = n == null; if (n != null) p.textContent = n < 2 ? 'Vous êtes parmi les premiers à voter ce texte sur Concret.' : nf(n) + ' personnes ont voté ce texte sur Concret.'; }
+  // Les nombres ne s'affichent qu'à partir de SEUIL_NB.
+  var SEUIL_NB = 10;
+  function afficherNb(p, n) { if (!p) return; p.hidden = n == null || n < SEUIL_NB; if (!p.hidden) p.textContent = nf(n) + ' personnes ont voté ce texte sur Concret.'; }
   var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
   var dateFr = function (d) { var p = d.split('-'); return (+p[2] === 1 ? '1er' : +p[2]) + ' ' + MOIS[p[1] - 1] + ' ' + p[0]; };
   var moisFr = function (d) { var p = d.split('-'); return MOIS[p[1] - 1] + ' ' + p[0]; };
@@ -481,7 +483,7 @@
     mes: lireMes,
     oublier: function (id) { var m = lireMes(); delete m[id]; ecrireMes(m); },
     effacer: function () { try { localStorage.removeItem(CLE); localStorage.removeItem(CLE_AV); } catch (e) {} },
-    avant: lireAv, nb: nb,
+    avant: lireAv, nb: nb, SEUIL_NB: SEUIL_NB,
     resultat: resultat, carte: carte, bilan: bilan,
     // Bloc du quiz : un vote pas encore voté sur cet appareil.
     duJour: function (el) {
