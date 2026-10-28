@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="729d4668d12a">
+<meta name="concret-version" content="e2bb7d5b9346">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -295,6 +295,7 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .courbe-p > .eyebrow, .fold .card > h2 > .eyebrow, .grand .card > h2 > .eyebrow { text-transform: none; letter-spacing: 0; font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--fg); }
 .autres { display: grid; gap: 8px; }
 .minis-t { margin: 4px 0 0; font-size: 15px; font-weight: 700; } .minis-t span { font-weight: 400; font-size: 13px; color: var(--muted); }
+.minis-h { margin: -4px 0 0; font-size: 14px; font-weight: 600; color: var(--fr); }
 .minis-k { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12.5px; color: var(--muted); }
 .minis-k i { display: inline-block; width: 16px; height: 0; border-top: 2.5px solid; vertical-align: middle; margin-right: 5px; }
 .minis-k i.fr { border-color: var(--fr); } .minis-k i.ue { border-top: 2px dashed var(--ea); } .minis-k i.de { border-color: var(--de); border-top-width: 1.5px; } .minis-k i.es { border-color: var(--es); border-top-width: 1.5px; }
@@ -1048,7 +1049,7 @@ function main(FEED) {
       if (EN_PLUS[t.k]) { var sc = serieCard; serieCard = function (w, id, c, tag, extra) { autres.push({ id: id, c: c, tag: tag, extra: extra }); return function () {}; }; try { EN_PLUS[t.k](null); } finally { serieCard = sc; } }
       if (autres.length) {
         var bloc = document.createElement('div'); bloc.className = 'autres';
-        bloc.innerHTML = '<h3 class="minis-t">' + (autres.length > 1 ? 'Les ' + autres.length + ' autres courbes du thème' : 'L\'autre courbe du thème') + ' <span>· touchez une courbe pour l\'agrandir et ajouter d\'autres pays</span></h3><p class="minis-k"><span><i class="fr"></i>France</span><span><i class="ue"></i>Moyenne de l\'UE</span><span><i class="de"></i>Allemagne</span><span><i class="es"></i>Espagne</span></p>';
+        bloc.innerHTML = '<h3 class="minis-t">' + (autres.length > 1 ? 'Les ' + autres.length + ' autres courbes du thème' : 'L\'autre courbe du thème') + '</h3><p class="minis-h">Toucher une courbe pour agrandir et ajouter d\'autres pays</p><p class="minis-k"><span><i class="fr"></i>France</span><span><i class="ue"></i>Moyenne de l\'UE</span><span><i class="de"></i>Allemagne</span><span><i class="es"></i>Espagne</span></p>';
         var grille = document.createElement('div'); grille.className = 'minis'; bloc.appendChild(grille);
         autres.forEach(function (o) { grille.appendChild(mini(o)); });
         sec.appendChild(bloc);
