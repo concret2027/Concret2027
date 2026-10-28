@@ -572,6 +572,29 @@ def construire():
         population = {'v': x['v'] * 1e6, 'annee': x['annee'], 'source': x['source'], 'url': x['url'], 'citation': x['citation']}
     else:
         population = None
+    # Recruter ou construire : coût d'un emploi (coût d'entrée publié, hors contribution au CAS Pensions) ou d'une place de prison.
+    UNITES = [('policier', 'Policiers', 'pr:police-nationale'), ('gendarme', 'Gendarmes', 'pr:gendarmerie-nationale'),
+              ('enseignant_1er_degre', 'Professeurs des écoles', 'enseignement'), ('enseignant_2nd_degre', 'Professeurs de collège et de lycée', 'enseignement'),
+              ('magistrat', 'Magistrats (juges et procureurs)', 'pr:justice-judiciaire'), ('greffier', 'Greffiers', 'pr:justice-judiciaire'),
+              ('surveillant_penitentiaire', 'Surveillants de prison', 'pr:administration-pénitentiaire'), ('militaire', 'Militaires du rang', 'defense'),
+              ('place_prison_construction', 'Places de prison à construire', 'pr:administration-pénitentiaire')]
+    unites = []
+    if os.path.exists(os.path.join(SRC, 'couts_unitaires.json')):
+        CU = charger('couts_unitaires.json')
+        for k, l, ligne in UNITES:
+            x = CU.get(k)
+            if not x:
+                continue
+            m = re.search(r"Coût d'entrée : ([\d\s\u202f\u00a0]+) €", x.get('champ') or '')
+            pc = x.get('par_categorie') or {}
+            entree = int(re.sub(r'\D', '', m.group(1))) if m else next((v['entree'] for v in pc.values() if v.get('global') == x['v']), None)
+            u = {'k': k, 'l': l, 'ligne': ligne if ligne in A else None, 'cout': x['v'], 'entree': entree, 'unite': x['unite'], 'annee': x['annee'],
+                 'effectif': x.get('effectif'), 'source': x['source'], 'url': x['url'], 'page': x.get('page'), 'type': 'construction' if k.startswith('place_') else 'emploi'}
+            if u['type'] == 'construction':
+                for kk in ('journee_detention', 'places_prison_operationnelles'):
+                    if CU.get(kk):
+                        u[kk] = {z: CU[kk].get(z) for z in ('v', 'annee', 'source', 'url', 'effectif')}
+            unites.append(u)
     # Paramètres officiels des cas types (« Concrètement »), lus à la source (budget_sources/parametres_cas.json).
     cas = {}
     if os.path.exists(os.path.join(SRC, 'parametres_cas.json')):
@@ -611,7 +634,7 @@ def construire():
     return {
         'maj': date.today().isoformat(),
         'depart': eurostat_depart(),
-        'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
+        'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'unites': unites, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
         'variantes': var, 'regle': REGLE, 'defis': DEFIS,
         'variantes_source': P['mesange2017_linearite']['citation'] if 'mesange2017_linearite' in P else '',

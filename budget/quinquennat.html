@@ -580,6 +580,15 @@ body.q-vote { padding-bottom: 92px; }
       <input type="search" class="q-recherche" id="q-cherche" placeholder="Chercher : RSA, police…" aria-label="Chercher une ligne du budget">
       <ul class="q-resultats" id="q-resultats" hidden></ul>
       <p class="q-note" id="q-vide" hidden>Aucune ligne du budget de l'État ou de la Sécurité sociale ne porte ce nom. Certaines dépenses, comme la propreté des rues, les cantines ou les transports urbains, sont payées par les communes, les départements ou les régions, qui ont leur propre budget : elles ne sont pas dans ce jeu.</p>
+      <div class="q-choisi" id="q-un" hidden>
+        <h3 id="q-un-t"></h3>
+        <p class="q-note" id="q-un-n"></p>
+        <div class="q-sl"><div class="h"><span>Combien ?</span><b id="q-un-v">0</b></div><input type="number" class="q-recherche" id="q-un-i" step="100" value="0" inputmode="numeric" aria-label="Nombre"><div class="q-presets" id="q-un-p"></div></div>
+        <p class="q-effet" id="q-un-e"></p>
+        <p class="q-apercu" id="q-un-a" aria-live="polite"></p>
+        <p class="q-note" id="q-un-h"></p>
+        <button type="button" class="q-go" id="q-un-ok" disabled>Ajouter à mon budget</button>
+      </div>
       <div class="q-choisi" id="q-choisi" hidden>
         <h3 id="q-ch-t"></h3>
         <p class="q-note" id="q-ch-n"></p>
@@ -660,8 +669,8 @@ body.q-vote { padding-bottom: 92px; }
   var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var lireLS = function (k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
   var ecrireLS = function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-  var CLE = 'concret-quinquennat', J, B, PJ, D0, AN0, AN1, ANS = [], C = [], PAR = {}, AS = {}, PIBY = {};
-  var S = lireLS(CLE) || {}; S.v = S.v || {}; S.perso = S.perso || {}; S.po = {}; if (S.macro == null) S.macro = true; S.taux = S.taux || 0; S.cr = S.cr || 0; S.filtre = S.filtre || 'tout'; S.obj = S.obj || 'trois'; S.pile = S.pile || [];
+  var CLE = 'concret-quinquennat', J, B, PJ, D0, AN0, AN1, ANS = [], C = [], PAR = {}, AS = {}, PIBY = {}, UN = {};
+  var S = lireLS(CLE) || {}; S.v = S.v || {}; S.perso = S.perso || {}; S.po = {}; if (S.macro == null) S.macro = true; S.taux = S.taux || 0; S.cr = S.cr || 0; S.filtre = S.filtre || 'tout'; S.obj = S.obj || 'trois'; S.pile = S.pile || []; S.unites = S.unites || {};
   var garder = function () { ecrireLS(CLE, S); };
 
   // ---------- Le modèle ----------
@@ -676,11 +685,14 @@ body.q-vote { padding-bottom: 92px; }
   }
   // Réponse d'une variante k années après le choc (1, 2, 3, 5 publiés ; 4 = milieu de 3 et 5 ; au-delà de 5 : 5).
   function rep(v, k) { if (!v) return 0; var t = { 1: v['1 an'], 2: v['2 ans'], 3: v['3 ans'], 5: v['5 ans'] }; t[4] = (t[3] + t[5]) / 2; return t[Math.min(Math.max(k, 1), 5)]; }
+  // Recruter ou construire : n emplois au coût d'entrée (en part du PIB, comme le reste), ou n places de prison dont la construction
+  // est répartie également de AN0 à AN1 (hypothèse de Concret). Négatif = plus de dépense.
+  function unMd(u, n, an) { if (u.type === 'construction') return an >= AN0 && an <= AN1 ? -n * u.cout / 1e9 / (AN1 - AN0 + 1) : 0; return -n * (u.entree || u.cout) / 1e9 * (PIBY[an] || PIBY[AN0]) / PIBY[AN0]; }
   function effetPerso(x, pc) { return (x.groupe === 'depense' ? -1 : 1) * pc / 100 * x.md / PIBY[x.an] * PIBY[AN0]; }
 
   function simuler(opt) {
     opt = opt || {};
-    var vote = opt.vote || (opt.rien ? {} : S.v), perso = opt.rien ? {} : S.perso, macro = opt.rien ? false : (opt.macro != null ? opt.macro : S.macro), dtx = opt.rien ? 0 : S.taux, dcr = (opt.rien ? 0 : S.cr) + (opt.dg || 0);
+    var vote = opt.vote || (opt.rien ? {} : S.v), perso = opt.rien ? {} : S.perso, uni = opt.rien ? {} : (opt.unites || S.unites), macro = opt.rien ? false : (opt.macro != null ? opt.macro : S.macro), dtx = opt.rien ? 0 : S.taux, dcr = (opt.rien ? 0 : S.cr) + (opt.dg || 0);
     var pib = D0.pib_md, d = PJ.depart.dette, L = 0, out = [], prevA = {}, inc = {};
     ANS.forEach(function (y) {
       var an = y.an, actif = an >= AN0;
@@ -693,6 +705,7 @@ body.q-vote { padding-bottom: 92px; }
           var x = AS[k]; if (!x) return; var pts = (x.groupe === 'depense' ? -1 : 1) * perso[k] / 100 * x.md / PIBY[x.an] * 100, t = x.macro || 'aucun';
           A[t] = (A[t] || 0) + pts; tot += pts * pibSans / 100;
         });
+        Object.keys(uni).forEach(function (k) { var u = UN[k]; if (!u) return; var m = unMd(u, uni[k], an); A.depense = (A.depense || 0) + m / pibSans * 100; tot += m; });
       }
       // Effet sur l'activité et sur le solde : chaque hausse ou baisse du montant agit selon son ancienneté (modèle linéaire).
       var dL = 0, dpb = 0, dE = 0, dU = 0;
@@ -722,7 +735,7 @@ body.q-vote { padding-bottom: 92px; }
   var defic = function (s) { return s < 0 ? nf(-s, 1) + '\u00a0%' : 'excédent'; };
   var adoptees = function () { return C.filter(function (c) { return S.v[c.id] === 1; }); };
   var nbDecisions = function () { return Object.keys(S.v).filter(function (k) { return S.v[k] === 1 || S.v[k] === -1; }).length; };
-  var nbChoix = function () { return adoptees().length + Object.keys(S.perso).length; };
+  var nbChoix = function () { return adoptees().length + Object.keys(S.perso).length + Object.keys(S.unites).length; };
   var nomGroupe = function (c) { var g = J.groupes.filter(function (x) { return x.c === c; })[0]; return g ? g.n : c; };
   var MINP = 3, ETAPES = [5, 10, 20, 30, 40, 50];
 
@@ -950,6 +963,7 @@ body.q-vote { padding-bottom: 92px; }
     var E = { imp: 0, eco: 0, baisse: 0, dep: 0 };
     adoptees().forEach(function (c) { var m = montant(c, AN0), ret = c.sens !== 'recette'; E[m >= 0 ? (ret ? 'eco' : 'imp') : (ret ? 'dep' : 'baisse')] += Math.abs(m); });
     Object.keys(S.perso).forEach(function (k) { var x = AS[k], m = effetPerso(x, S.perso[k]), ret = x.groupe === 'depense'; E[m >= 0 ? (ret ? 'eco' : 'imp') : (ret ? 'dep' : 'baisse')] += Math.abs(m); });
+    Object.keys(S.unites).forEach(function (k) { var u = UN[k]; if (!u) return; var m = unMd(u, S.unites[k], AN0); E[m >= 0 ? 'eco' : 'dep'] += Math.abs(m); });
     return E;
   }
   // mode : 'etape' (résultat court), 'bilan' (sans les groupes, montrés à part), sinon complet.
@@ -965,7 +979,7 @@ body.q-vote { padding-bottom: 92px; }
     var act = S.macro && nbChoix() && Math.abs(apres - net) >= 0.1 ? '<p class="q-note">Après l\'effet sur l\'activité, le déficit de ' + AN0 + ' ' + (apres >= 0 ? 'baisse' : 'augmente') + ' de ' + mdt(Math.abs(apres)) + ' : ' + (apres < net ? 'une partie est reprise, parce que l\'activité ralentit' : 'une partie est compensée, parce que l\'activité accélère') + ' (modèle de la direction du Trésor et de l\'Insee).</p>' : '';
     var prec = mode === 'etape' && S.hist ? Object.keys(S.hist).map(Number).filter(function (k) { return k < nbDecisions(); }).sort(function (a, b) { return b - a; })[0] : null;
     return '<div class="q-res"><p class="q-gros">' + (nbChoix() ? 'Vos mesures ' + (net >= 0 ? 'rapportent <b>' + mdt(net) + '</b>' : 'coûtent <b>' + mdt(-net) + '</b>') + ' en ' + AN0 + '.' : 'Vous n\'avez encore adopté aucune mesure.') +
-      ' Le déficit de ' + AN0 + ' passe de ' + defic(z1.solde) + ' à <b>' + defic(r1.solde) + '</b> du PIB, la dette de ' + f.an + ' serait de <b>' + nf(f.d, 1) + '\u00a0%</b> au lieu de ' + nf(zf.d, 1) + '\u00a0%.</p>' +
+      ' Le déficit de ' + AN0 + (defic(z1.solde) === defic(r1.solde) ? ' reste à <b>' + defic(r1.solde) + '</b> du PIB (moins de 0,1 point d\'écart),' : ' passe de ' + defic(z1.solde) + ' à <b>' + defic(r1.solde) + '</b> du PIB,') + ' la dette de ' + f.an + ' serait de <b>' + nf(f.d, 1) + '\u00a0%</b> au lieu de ' + nf(zf.d, 1) + '\u00a0%.</p>' +
       (prec ? '<p class="q-depuis">Depuis l\'étape des ' + prec + ' votes : déficit ' + AN0 + ' ' + defic(S.hist[prec].s) + ' → ' + defic(r1.solde) + ', dette ' + AN1 + ' ' + nf(S.hist[prec].d, 1) + '\u00a0% → ' + nf(f.d, 1) + '\u00a0%.</p>' : '') +
       barresE + act + '<p class="q-gros" style="font-size:15px">' + o.t + '</p>' +
       (mode === 'bilan' ? '' : proximite(proches(), MINP, mode === 'etape')) + '</div>';
@@ -980,7 +994,7 @@ body.q-vote { padding-bottom: 92px; }
   ], choisi = null;
   function md(v) { return Math.abs(v) >= 10 ? nf(v, 0) : nf(v, 1); }
   function choisir(k) {
-    choisi = AS[k]; if (!choisi) return;
+    choisi = AS[k]; if (!choisi) return; $('q-un').hidden = true; uchoisi = null;
     Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', b.dataset.k === k); });
     $('q-choisi').hidden = false; $('q-ch-t').textContent = choisi.l;
     $('q-ch-n').innerHTML = 'Montant officiel : <b>' + md(choisi.md) + '\u00a0Md€</b> en ' + choisi.an + '. ' + esc(choisi.note) + ' <a href="' + esc(choisi.src.url) + '">Source</a>.';
@@ -1131,8 +1145,44 @@ body.q-vote { padding-bottom: 92px; }
     el.innerHTML = t;
   }
   function tuiles() {
-    $('q-tuiles-c').innerHTML = TUILES.map(function (f) { return '<h3>' + esc(f[0]) + '</h3><div>' + f[1].filter(function (t) { return AS[t[0]]; }).map(function (t) { var k = t[0], x = AS[k], v = S.perso[k]; return '<button type="button" data-k="' + esc(k) + '" aria-pressed="' + (!!choisi && choisi.k === k) + '"><b>' + esc(t[1]) + '</b><span>' + md(x.md) + '\u00a0Md€ en ' + x.an + ' · ' + (x.groupe === 'recette' ? 'recette' : 'dépense') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + Math.abs(v) + '\u00a0%</i>' : '') + '</button>'; }).join('') + '</div>'; }).join('');
-    Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button'), function (b) { b.onclick = function () { choisir(b.dataset.k); }; });
+    var fu = (J.unites || []).length ? '<h3>Recruter ou construire</h3><div>' + J.unites.map(function (u) { var v = S.unites[u.k]; return '<button type="button" data-u="' + esc(u.k) + '" aria-pressed="' + (!!uchoisi && uchoisi.k === u.k) + '"><b>' + esc(u.l) + '</b><span>' + (u.type === 'construction' ? eu(u.cout) + ' la place' : eu(u.entree || u.cout) + ' par an chacun') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + nf(Math.abs(v), 0) + '</i>' : '') + '</button>'; }).join('') + '</div>' : '';
+    $('q-tuiles-c').innerHTML = fu + TUILES.map(function (f) { return '<h3>' + esc(f[0]) + '</h3><div>' + f[1].filter(function (t) { return AS[t[0]]; }).map(function (t) { var k = t[0], x = AS[k], v = S.perso[k]; return '<button type="button" data-k="' + esc(k) + '" aria-pressed="' + (!!choisi && choisi.k === k) + '"><b>' + esc(t[1]) + '</b><span>' + md(x.md) + '\u00a0Md€ en ' + x.an + ' · ' + (x.groupe === 'recette' ? 'recette' : 'dépense') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + Math.abs(v) + '\u00a0%</i>' : '') + '</button>'; }).join('') + '</div>'; }).join('');
+    Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button'), function (b) { b.onclick = function () { if (b.dataset.u) choisirUnite(b.dataset.u); else choisir(b.dataset.k); }; });
+  }
+  // Recruter ou construire : un nombre, son coût par an, l'effet sur le bandeau.
+  var uchoisi = null;
+  function choisirUnite(k) {
+    uchoisi = UN[k]; if (!uchoisi) return; var u = uchoisi; choisi = null; $('q-choisi').hidden = true; $('q-un').hidden = false; tuiles();
+    $('q-un-t').textContent = u.l;
+    var src = '<a href="' + esc(u.url) + '">' + esc(String(u.source).split(/,| \(/)[0]) + '</a>' + (u.type !== 'construction' && AS[u.ligne] ? ' 2027, ' + esc(AS[u.ligne].l.split(' (')[0]) : '');
+    if (u.type === 'construction') {
+      var pl = u.places_prison_operationnelles;
+      $('q-un-n').innerHTML = 'Une place coûte <b>' + eu(u.cout) + '</b> à construire : coût moyen constaté sur les prisons déjà livrées du plan « 15 000 places » (' + src + ', ' + esc(String(u.annee).replace(/\s*\(.*\)\s*$/, '')) + ').' + (pl ? ' Aujourd\'hui : ' + nf(pl.v, 0) + ' places opérationnelles (' + esc(pl.annee) + ')' + (pl.effectif ? ' pour ' + nf(pl.effectif.v, 0) + ' personnes détenues' : '') + '.' : '');
+    } else {
+      $('q-un-n').innerHTML = 'Coût d\'une recrue : <b>' + eu(u.entree || u.cout) + ' par an</b>' + (u.entree ? ' (coût d\'entrée ; ' + eu(u.cout) + ' en moyenne pour l\'ensemble des agents)' : '') + ', cotisations de l\'employeur comprises, sans la contribution de l\'État au financement des pensions de ses agents (' + src + ').' + (u.effectif ? ' Aujourd\'hui : ' + nf(Math.round(u.effectif.v), 0) + ' emplois.' : '');
+    }
+    var P = u.type === 'construction' ? [1000, 5000, 10000, 15000] : [-10000, -5000, -1000, 1000, 5000, 10000];
+    $('q-un-p').innerHTML = P.map(function (v) { return '<button type="button" data-v="' + v + '">' + (v > 0 ? '+' : '−') + nf(Math.abs(v), 0) + '</button>'; }).join('');
+    Array.prototype.forEach.call($('q-un-p').querySelectorAll('button'), function (b) { b.onclick = function () { $('q-un-i').value = b.dataset.v; majUnite(); }; });
+    $('q-un-i').min = u.type === 'construction' ? 0 : -100000; $('q-un-i').value = S.unites[k] || 0; majUnite();
+    $('q-un').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  var mdp = function (v) { var a = Math.abs(v); return a < 1 ? nf(Math.round(a * 100) * 10, 0) + '\u00a0M€' : nf(a, 2) + '\u00a0Md€'; };
+  function majUnite() {
+    var u = uchoisi; if (!u) return;
+    var n = Math.round(+$('q-un-i').value || 0); if (u.type === 'construction' && n < 0) n = 0;
+    $('q-un-v').textContent = (n > 0 ? '+' : n < 0 ? '−' : '') + nf(Math.abs(n), 0);
+    var m = unMd(u, n, AN0), nb = AN1 - AN0 + 1;
+    if (!n) $('q-un-e').innerHTML = 'Choisissez un nombre.';
+    else if (u.type === 'construction') $('q-un-e').innerHTML = '<b>' + mdp(n * u.cout / 1e9) + '</b> de dépenses en plus, réparties de ' + AN0 + ' à ' + AN1 + ' (' + mdp(m) + ' par an)';
+    else $('q-un-e').innerHTML = '<b>' + mdp(m) + '</b> ' + (m < 0 ? 'de dépenses en plus' : 'de dépenses en moins') + ' par an, à partir de ' + AN0;
+    var av = S.unites[u.k], A1; if (n) S.unites[u.k] = n; else delete S.unites[u.k]; A1 = simuler(); if (av == null) delete S.unites[u.k]; else S.unites[u.k] = av;
+    $('q-un-a').textContent = n !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1) : '';
+    var jd = u.journee_detention;
+    $('q-un-h').innerHTML = !n ? '' : u.type === 'construction'
+      ? 'Calcul de Concret : nombre de places × ' + eu(u.cout) + ', réparti également sur les ' + nb + ' années (hypothèse de Concret, la durée des chantiers n\'étant pas fixée).' + (jd ? ' Une fois ouverte, une place occupée coûte ' + eu(jd.v * 365) + ' par an (' + eu(jd.v, 2) + ' par jour, ' + esc(String(jd.annee)) + ') : ce coût n\'est pas compté ici, faute de date d\'ouverture connue.' : '')
+      : 'Calcul de Concret : nombre × coût d\'entrée, qui suit ensuite la croissance de l\'économie. Le coût d\'un agent augmente avec son ancienneté (' + eu(u.cout) + ' en moyenne) : sur cinq ans, le coût réel serait un peu plus élevé. ' + (n < 0 ? 'Une baisse du nombre d\'emplois se fait en général en ne remplaçant pas des départs.' : '');
+    $('q-un-ok').disabled = !n || n === av; $('q-un-ok').textContent = av != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
   }
   function creer() {
     tuiles();
@@ -1147,6 +1197,8 @@ body.q-vote { padding-bottom: 92px; }
     $('q-pc-p').innerHTML = [-20, -10, -5, 0, 5, 10, 20].map(function (v) { return '<button type="button" data-v="' + v + '">' + (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + '\u00a0%</button>'; }).join('');
     Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.onclick = function () { $('q-pc').value = b.dataset.v; majCreer(); }; });
     $('q-pc').oninput = majCreer;
+    $('q-un-i').oninput = majUnite;
+    $('q-un-ok').onclick = function () { var u = uchoisi, n = Math.round(+$('q-un-i').value || 0); if (!u || !n) return; var A0 = simuler(); S.unites[u.k] = n; garder(); hud(true); pop(esc(u.l) + ' ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0) + ' · ' + avantApres(A0, R)); mesCreer(); majUnite(); pile(); };
     $('q-ajout').onclick = function () {
       var pc = +$('q-pc').value; if (!choisi || !pc) return;
       var A0 = simuler();
@@ -1159,9 +1211,12 @@ body.q-vote { padding-bottom: 92px; }
     mesCreer();
   }
   function mesCreer() {
-    var K = Object.keys(S.perso); tuiles();
-    $('q-mes-n').textContent = K.length ? K.length + ' mesure' + (K.length > 1 ? 's' : '') + ' à vous' : 'Aucune mesure créée';
-    $('q-mes').innerHTML = K.map(function (k) { var x = AS[k], pc = S.perso[k]; return '<li><span>' + esc(x.l) + ' : ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%</span><span class="m">' + mdt(effetPerso(x, pc), true) + '</span><small><button type="button" data-k="' + esc(k) + '">Modifier</button><button type="button" data-r="' + esc(k) + '">Retirer</button></small></li>'; }).join('');
+    var K = Object.keys(S.perso), KU = Object.keys(S.unites).filter(function (k) { return UN[k]; }), N = K.length + KU.length; tuiles();
+    $('q-mes-n').textContent = N ? N + ' mesure' + (N > 1 ? 's' : '') + ' à vous' : 'Aucune mesure créée';
+    $('q-mes').innerHTML = K.map(function (k) { var x = AS[k], pc = S.perso[k]; return '<li><span>' + esc(x.l) + ' : ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%</span><span class="m">' + mdt(effetPerso(x, pc), true) + '</span><small><button type="button" data-k="' + esc(k) + '">Modifier</button><button type="button" data-r="' + esc(k) + '">Retirer</button></small></li>'; }).join('') +
+      KU.map(function (k) { var u = UN[k], n = S.unites[k]; return '<li><span>' + esc(u.l) + ' : ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0) + '</span><span class="m">' + (unMd(u, n, AN0) > 0 ? '+' : '−') + mdp(unMd(u, n, AN0)) + ' par an</span><small><button type="button" data-uk="' + esc(k) + '">Modifier</button><button type="button" data-ur="' + esc(k) + '">Retirer</button></small></li>'; }).join('');
+    Array.prototype.forEach.call($('q-mes').querySelectorAll('button[data-uk]'), function (b) { b.onclick = function () { choisirUnite(b.dataset.uk); }; });
+    Array.prototype.forEach.call($('q-mes').querySelectorAll('button[data-ur]'), function (b) { b.onclick = function () { delete S.unites[b.dataset.ur]; garder(); hud(true); mesCreer(); majUnite(); pile(); }; });
     Array.prototype.forEach.call($('q-mes').querySelectorAll('button[data-k]'), function (b) { b.onclick = function () { choisir(b.dataset.k); }; });
     Array.prototype.forEach.call($('q-mes').querySelectorAll('button[data-r]'), function (b) { b.onclick = function () { delete S.perso[b.dataset.r]; garder(); hud(true); mesCreer(); majCreer(); pile(); }; });
   }
@@ -1214,6 +1269,7 @@ body.q-vote { padding-bottom: 92px; }
     $('q-def-n').textContent = 'Le trait marque ' + nf(PAR.regle, 0) + '\u00a0% du PIB, la règle européenne. Sans mesure, le déficit augmente chaque année parce que les intérêts de la dette augmentent : ' + mdt(f.interets * f.pib / 100) + ' en ' + f.an + ' (' + nf(f.interets, 1) + '\u00a0% du PIB).';
     // Qui est concerné : ceux qui paient plus ou reçoivent moins, et ceux qui paient moins ou reçoivent plus.
     var Q = {}; adoptees().forEach(function (c) { c.qui.forEach(function (q) { Q[q] = (Q[q] || 0) + montant(c, AN0); }); });
+    Object.keys(S.unites).forEach(function (k) { var u = UN[k], x = u && AS[u.ligne]; if (x) x.qui.forEach(function (q) { Q[q] = (Q[q] || 0) + unMd(u, S.unites[k], AN0); }); });
     Object.keys(S.perso).forEach(function (k) { var x = AS[k]; x.qui.forEach(function (q) { Q[q] = (Q[q] || 0) + effetPerso(x, S.perso[k]); }); });
     var mq = Math.max.apply(null, Object.keys(Q).map(function (q) { return Math.abs(Q[q]); }).concat([1e-9]));
     var liste = function (L, titre, cl) { if (!L.length) return ''; var m = mq; return '<p class="q-ligne" style="margin:4px 0"><b>' + titre + '</b></p><div class="q-barres">' + L.map(function (x) { return '<div><span class="t">' + esc(J.qui[x[0]]) + '</span><span class="r"><em class="' + (cl || '') + '" style="left:0;width:' + (Math.abs(x[1]) / m * 100) + '%"></em></span><span class="v">' + mdt(Math.abs(x[1])) + '</span></div>'; }).join('') + '</div>'; };
@@ -1270,7 +1326,7 @@ body.q-vote { padding-bottom: 92px; }
     PAR.duree = m ? +m[1] + m[2] / 365 : 8.5; PAR.regle = J.regle.v;
     PIBY[D0.an] = D0.pib_md; var pp = D0.pib_md; ANS.forEach(function (y) { pp *= (1 + y.croissance / 100) * (1 + y.inflation / 100); PIBY[y.an] = pp; });
     if (B && B.pays) PIBY[2024] = B.pays.FR.pib_meur / 1000;
-    (J.assiettes || []).forEach(function (x) { AS[x.k] = x; });
+    (J.assiettes || []).forEach(function (x) { AS[x.k] = x; }); (J.unites || []).forEach(function (u) { UN[u.k] = u; });
     // Ordre : tiré au hasard une fois par visiteur, puis une recette, une dépense, une recette… tant qu'il y en a des deux.
     // Parmi les recettes, les mesures votées par les députés d'abord, pour que le résultat par groupe arrive dès 5 votes.
     if (!S.graine) { S.graine = 1 + Math.floor(Math.random() * 2147483646); garder(); }
@@ -1293,6 +1349,7 @@ body.q-vote { padding-bottom: 92px; }
       'Effet sur l\'activité et l\'emploi (s\'il est coché) : variantes du modèle Mésange (direction du Trésor et Insee, 2017) ; une hausse de dépense ou une baisse d\'impôt de 1 point de PIB et leur effet, année par année, sur le PIB, le solde public, l\'emploi et le chômage. Le modèle étant linéaire selon le document, une baisse de dépense ou une hausse d\'impôt a l\'effet inverse. Année 4 : milieu des années 3 et 5 ; au-delà de 5 ans : l\'effet de la cinquième année.',
       'Taux d\'intérêt : un écart avec le taux à 10 ans de départ s\'ajoute au taux moyen de la dette à mesure qu\'elle se renouvelle (1 / durée de vie moyenne par an).',
       'Mesures écartées : ' + J.ecartees.map(function (x) { return esc(x.l) + ' (' + esc(x.pourquoi) + ')'; }).join(' ; ') + '.',
+      'Recruter ou construire : chaque emploi compte pour son coût d\'entrée publié dans le projet de budget 2027 (cotisations de l\'employeur comprises, sans la contribution de l\'État aux pensions de ses agents), suivi ensuite de la croissance de l\'économie ; une place de prison compte pour son coût moyen de construction constaté par la Cour des comptes, réparti également de ' + AN0 + ' à ' + AN1 + ' (hypothèse de Concret) ; son coût de fonctionnement n\'est pas compté.',
       'Ordre des cartes : tiré au hasard pour chaque visiteur, en alternant une recette et une dépense tant qu\'il y en a des deux ; le jeu compte ' + C.filter(function (c) { return c.sens === 'recette'; }).length + ' mesures sur les recettes et ' + C.filter(function (c) { return c.sens !== 'recette'; }).length + ' sur les dépenses, d\'après les mesures chiffrées dans les documents officiels. Parmi les recettes, les mesures votées par les députés passent d\'abord.',
       'Ce qui n\'est pas compté : l\'effet de vos choix sur les taux d\'intérêt et sur les comportements autres que l\'activité.'
     ].map(function (t) { return '<li>' + t + '</li>'; }).join('');
@@ -1306,7 +1363,7 @@ body.q-vote { padding-bottom: 92px; }
     var conf = false;
     $('q-reset').onclick = function () {
       if (!conf) { conf = true; $('q-reset').textContent = 'Confirmer : effacer tous vos votes et vos mesures'; setTimeout(function () { conf = false; $('q-reset').textContent = 'Tout recommencer'; }, 5000); return; }
-      conf = false; S = { v: {}, perso: {}, po: {}, macro: true, taux: 0, cr: 0, filtre: 'tout', obj: S.obj, pile: [] }; garder(); hypotheses(); creer(); objectifs(); onglet('voter'); tout(true); window.scrollTo({ top: 0 });
+      conf = false; S = { v: {}, perso: {}, unites: {}, po: {}, macro: true, taux: 0, cr: 0, filtre: 'tout', obj: S.obj, pile: [] }; garder(); hypotheses(); creer(); objectifs(); onglet('voter'); tout(true); window.scrollTo({ top: 0 });
     };
     $('q-partager').onclick = function () {
       var r1 = an1(R), f = R[R.length - 1], t = 'Mon quinquennat sur Concret : déficit ' + AN0 + ' à ' + defic(r1.solde) + ', dette ' + f.an + ' à ' + nf(f.d, 0) + '\u00a0% du PIB, avec ' + nbChoix() + ' mesures. Et vous ?', u = 'https://concret2027.fr/budget/';
