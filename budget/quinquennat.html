@@ -475,6 +475,12 @@ body.q-vote { padding-bottom: 92px; }
 .q-resultats span { color: var(--muted); font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .q-choisi { display: grid; gap: 10px; padding: 12px; border-radius: 14px; background: var(--band); }
 .q-choisi[hidden] { display: none; }
+.q-cc { display: grid; gap: 6px; }
+.q-cc h4 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.q-cc ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.q-cc + h4 { padding-top: 8px; border-top: 1px solid var(--line); }
+.q-ccl { padding: 8px 10px; border-radius: 10px; background: var(--band); }
+.q-ccd .q-cc h4 { display: none; }
 .q-pp { display: grid; gap: 6px; padding: 10px 12px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); font-size: 14px; line-height: 1.45; }
 .q-pp h4 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .q-pp ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
@@ -807,7 +813,7 @@ body.q-vote { padding-bottom: 92px; }
       '<h2>' + nb(c.titre || c.l) + '</h2>' +
       '<div class="q-mt"><b>' + mdt(m) + '</b><span>' + phrase(m, c) + ' en ' + AN0 + '</span><em>' + (c.duree === 'une seule année' ? 'une seule année' : 'chaque année') + '</em></div>' +
       '<p class="q-ligne"><b>' + quiTitre(c, m) + ' :</b> ' + nb(c.qui_texte || c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' +
-      deputes(c) +
+      deputes(c) + concretCarte(c, m) +
       '<details class="q-src"><summary>Ce que ça change, et la source</summary>' +
       (c.quoi ? '<p>' + esc(c.quoi) + '</p>' : '') + (c.officiel ? '<p>Intitulé officiel : « ' + esc(c.officiel) + ' ».</p>' : '') +
       ((!c.officiel && c.titre && c.titre !== c.l) ? '<p>Intitulé complet : ' + nb(c.l) + '.</p>' : '') +
@@ -818,6 +824,15 @@ body.q-vote { padding-bottom: 92px; }
       '<p>' + (c.macro && J.variantes[c.macro] ? 'Son effet sur l\'activité et l\'emploi est compté, d\'après le modèle de la direction du Trésor et de l\'Insee.' : 'Son effet sur l\'activité n\'est pas compté : le modèle de la direction du Trésor et de l\'Insee ne le publie pas pour ce type de mesure.') + '</p></details>' +
       (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
     glisser($('q-card'), c);
+  }
+  // Sur la carte : le premier cas type, en clair ; les autres et le montant par habitant dans le dépliant « Concrètement ».
+  function concretCarte(c, m) {
+    var o = exemplesCarte(c), P = J.population, ph = P ? Math.abs(m) * 1e9 / P.v : null;
+    var rep = ph != null ? nf(ph, ph < 10 ? 1 : 0) + '\u00a0€ par habitant et par an (calcul de Concret : ' + mdt(Math.abs(m)) + ' divisés par ' + nf(P.v / 1e6, 1) + ' millions d\'habitants, Insee ; pour comparer, ce n\'est pas forcément ce que paie ou reçoit chacun)' : '';
+    if (!o.L.length) return rep ? '<p class="q-ligne q-ccl"><b>Repère :</b> ' + rep + '.</p>' : '';
+    if (rep) o.L.push('Repère : ' + rep + '.');
+    var premier = o.L.shift();
+    return '<p class="q-ligne q-ccl"><b>Concrètement :</b> ' + premier + '</p>' + (o.L.length ? '<details class="q-src q-ccd"><summary>Autres exemples</summary>' + blocConcret(o, ' ') + '</details>' : '');
   }
   function glisser(el, c) {
     var x0 = null, y0 = 0, dx = 0, sp = $('q-sp'), sc = $('q-sc');
@@ -970,24 +985,131 @@ body.q-vote { padding-bottom: 92px; }
     $('q-apercu').textContent = pc !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1) : '';
     $('q-ajout').disabled = !pc || pc === av; $('q-ajout').textContent = S.perso[choisi.k] != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
   }
+  // ---------- Concrètement : des cas types calculés par Concret avec les règles officielles en vigueur ----------
+  // Chaque paramètre vient de donnees/budget_sources/parametres_cas.json (lu à la source) ; les montants d'exemple
+  // (2 000 € de salaire, 100 € d'achat…) sont choisis par Concret et dits comme tels.
+  var CAS = function (k) { return J.cas && J.cas[k] ? J.cas[k].v : null; };
+  var eu = function (v, d) { return nf(v, d == null ? (Math.abs(v) >= 100 || Math.round(v) === v ? 0 : 2) : d) + '\u00a0€'; };
+  var deu = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + eu(Math.abs(v), d); };
+  var pcx = function (v) { return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(v) + '\u00a0%'; };
+  // Impôt sur le revenu d'une personne seule (une part) : barème et décote en vigueur.
+  function impotSeul(R) {
+    var B = CAS('ir_bareme_2026'), D = CAS('ir_decote'); if (!B || !D) return null;
+    var t = 0; B.tranches.forEach(function (x) { var de = x.de != null ? Math.max(0, x.de - 1) : x.plus_de, a = x.a != null ? x.a : Infinity; if (R > de) t += (Math.min(R, a) - de) * x.taux_pct / 100; });
+    var s = D.personne_seule, m = s.formule.replace(/[\s\u00a0 ]/g, '').match(/^(\d+)−([\d,]+)%/);
+    if (m && t < s.seuil_impot_brut_eur) t = Math.max(0, t - Math.max(0, +m[1] - (+m[2].replace(',', '.')) / 100 * t));
+    return Math.round(t);
+  }
+  function abattPension(p) { var A = CAS('ir_abattement_10'); if (!A) return null; var a = A.pensions; return Math.min(Math.max(p * a.taux_pct / 100, a.minimum_eur), a.maximum_eur_par_foyer); }
+  var traitement500 = function () { var p = CAS('point_indice'); return p ? p.valeur_annuelle_indice_100_eur * 5 / 12 : null; };
+  function coll() { var L = [], K = []; return { L: L, K: K, add: function (t, ks) { L.push(t); (ks || []).forEach(function (x) { if (K.indexOf(x) < 0) K.push(x); }); } }; }
+  // Pour une ligne de Créer, avec le pourcentage choisi (pc).
+  function exemplesLigne(k, pc) {
+    var f = pc / 100, o = coll(), add = o.add, x = AS[k];
+    if (k === 'ondam') { var fr = CAS('franchises'); if (fr) add('Aujourd\'hui, il reste à payer au patient ' + eu(fr.franchise_par_boite_medicament_eur) + ' par boîte de médicament, ' + eu(fr.participation_forfaitaire_par_consultation_ou_acte_eur) + ' par consultation et ' + eu(fr.franchise_par_transport_sanitaire_eur) + ' par transport, au plus ' + eu(fr.plafond_annuel_total_eur) + ' par an.', ['franchises']); }
+    if (k === 'mi:recherche-et-enseignement-supérieur') { var di = CAS('droits_inscription'); if (di) add('Droits d\'inscription à l\'université aujourd\'hui : ' + eu(di.licence_eur) + ' par an en licence, ' + eu(di.master_eur) + ' en master, ' + eu(di.doctorat_eur) + ' en doctorat ; les boursiers ne paient pas.', ['droits_inscription']); }
+    if (!pc) return o;
+    if (k === 'csg') {
+      var tx = CAS('csg_activite_taux'), as = CAS('csg_assiette'), sm = CAS('smic_brut_mensuel'), cr = CAS('csg_retraite'), pm = AS.retraites && AS.retraites.pp && AS.retraites.pp.moyenne;
+      if (tx && as && sm) add('CSG sur les salaires : ' + pcx(tx) + ' → ' + pcx(tx * (1 + f)) + '. Un salarié au SMIC (' + eu(sm, 2) + ' bruts par mois) : <b>' + deu(-sm * as.part_du_brut_pct / 100 * tx / 100 * f, 2) + ' nets par mois</b>.', ['csg_activite_taux', 'csg_assiette', 'smic_brut_mensuel']);
+      if (cr && pm) add('Un retraité au taux normal (' + pcx(cr.taux_csg_pct.normal) + ' → ' + pcx(cr.taux_csg_pct.normal * (1 + f)) + ') avec la pension moyenne (' + eu(pm.v) + ' bruts par mois) : <b>' + deu(-pm.v * cr.taux_csg_pct.normal / 100 * f, 2) + ' par mois</b>.', ['csg_retraite']);
+      add('Si tous les taux de CSG changent dans la même proportion ; avant impôt sur le revenu.');
+    }
+    if (k === 'ir') {
+      [20000, 30000, 50000, 100000].forEach(function (R) { var i = impotSeul(R); if (i != null) add('Personne seule, revenu imposable de ' + eu(R) + ' par an : impôt de ' + eu(i) + ' → <b>' + eu(Math.round(i * (1 + f))) + '</b>.', ['ir_bareme_2026', 'ir_decote']); });
+      add('Si l\'impôt de chacun change dans la même proportion. Le revenu imposable se compte après l\'abattement de 10 % sur les salaires.');
+    }
+    if (k === 'is') {
+      var tn = CAS('is_taux_normal'), tr = CAS('is_taux_reduit');
+      if (tn && tr) {
+        var i0 = tr.plafond_benefice_eur * tr.taux_pct / 100 + (100000 - tr.plafond_benefice_eur) * tn / 100;
+        add('Une PME qui fait 100 000 € de bénéfice : impôt de ' + eu(i0) + ' → <b>' + eu(Math.round(i0 * (1 + f))) + '</b> (aujourd\'hui ' + pcx(tr.taux_pct) + ' jusqu\'à ' + eu(tr.plafond_benefice_eur) + ', ' + pcx(tn) + ' au-delà).', ['is_taux_normal', 'is_taux_reduit']);
+        add('Une entreprise qui fait 10 millions d\'euros de bénéfice : ' + eu(1e7 * tn / 100) + ' → <b>' + eu(Math.round(1e7 * tn / 100 * (1 + f))) + '</b>, hors contribution exceptionnelle des grandes entreprises.');
+        add('Si les taux changent dans la même proportion.');
+      }
+    }
+    if (k === 'tva') {
+      var T = CAS('tva_taux');
+      if (T) { [['normal', 'Un achat de 100 € hors taxe au taux normal'], ['intermediaire', 'Un repas au restaurant de 100 € hors taxe'], ['reduit', '100 € de courses alimentaires hors taxe']].forEach(function (y) { var t = T[y[0]].taux_pct; add(y[1] + ' (' + pcx(t) + ') : ' + eu(100 + t, 2) + ' → <b>' + eu(100 + t * (1 + f), 2) + '</b>.', ['tva_taux']); });
+        add('Si tous les taux changent dans la même proportion et que le changement passe entièrement dans les prix.'); }
+    }
+    if (k === 'carburants') {
+      var tv = CAS('tva_taux') ? CAS('tva_taux').normal.taux_pct : null, g = CAS('accise_gazole'), e = CAS('accise_sp95');
+      if (tv != null) [[g && g.eur_par_hl, 'gazole', 'accise_gazole'], [e && e.sp95_e10_eur_par_hl, 'SP95-E10', 'accise_sp95']].forEach(function (y) { if (!y[0]) return; var l = y[0] / 100; add('Taxe sur le ' + y[1] + ' : ' + eu(l, 4) + ' par litre → ' + eu(l * (1 + f), 4) + ' ; un plein de 50 litres : <b>' + deu(50 * l * f * (1 + tv / 100), 2) + '</b>, TVA comprise.', [y[2], 'tva_taux']); });
+      add('Si le changement passe entièrement dans les prix. Tarifs publiés par hectolitre, divisés par 100 par Concret.');
+    }
+    if (k === 'chomage') {
+      var cj = CAS('chomage_sjr');
+      if (cj) { var a = cj.allocation_journaliere_brute;
+        [[2000, 'Un salarié payé 2 000 € bruts par mois'], [CAS('smic_brut_mensuel'), 'Un salarié au SMIC']].forEach(function (y) { if (!y[0]) return; var sjr = y[0] * 24 / cj.jours_max_moins_de_55_ans, aj = Math.min(Math.max(Math.max(a.alternative_pct_sjr / 100 * sjr, a.partie_variable_pct_sjr / 100 * sjr + a.partie_fixe_eur), a.minimum_eur), a.maximum_eur), m = aj * 30;
+          add(y[1] + ' pendant 2 ans, au chômage avant 55 ans : allocation de ' + eu(Math.round(m)) + ' bruts par mois → <b>' + eu(Math.round(m * (1 + f))) + '</b> si c\'est le montant qui change ; ou 18 mois d\'indemnisation au plus → <b>' + nf(18 * (1 + f), 1) + ' mois</b> si c\'est la durée.', ['chomage_sjr']); });
+        add('Allocation de 30 jours ; salaire journalier de référence : 24 mois de salaire divisés par 730 jours.'); }
+    }
+    if (k === 'ij-maladie') {
+      var ij = CAS('ij_maladie');
+      if (ij) { var jr = Math.min(ij.taux_pct_salaire_journalier_de_base / 100 * 3 * 2000 / ij.diviseur, ij.ij_max_brute_eur), n = 10 - ij.carence_jours;
+        add('Un salarié payé 2 000 € bruts par mois, arrêté 10 jours : ' + n + ' jours indemnisés après ' + ij.carence_jours + ' jours de carence, ' + eu(jr, 2) + ' par jour, soit ' + eu(jr * n, 2) + ' → <b>' + eu(jr * n * (1 + f), 2) + '</b>.', ['ij_maladie']); }
+    }
+    var M = CAS('minima_avril_2026'), mm = M && { rsa: ['RSA d\'une personne seule (montant forfaitaire)', M.rsa_personne_seule_eur], aah: ['AAH à taux plein', M.aah_taux_plein_eur], 'alloc-familiales': ['Allocations familiales pour 2 enfants', M.af_2_enfants_eur] }[k];
+    if (mm) add(mm[0] + ' : ' + eu(mm[1], 2) + ' par mois → <b>' + eu(mm[1] * (1 + f), 2) + '</b>, si le changement est le même pour chacun.', ['minima_avril_2026']);
+    if (k === 'remunerations') {
+      var t5 = traitement500(); if (t5) add('Un agent payé à l\'indice majoré 500 (exemple) : traitement de base de ' + eu(t5, 2) + ' bruts par mois → <b>' + eu(t5 * (1 + f), 2) + '</b>, si le changement porte sur les salaires.', ['point_indice']);
+      var pb = x.pp && x.pp.beneficiaires; if (pb) add('S\'il porte sur le nombre d\'agents, à salaire moyen égal : <b>' + nf(Math.round(Math.abs(pb.v * 1e6 * f) / 1000) * 1000, 0) + ' agents ' + (f < 0 ? 'en moins' : 'en plus') + '</b>, sur ' + nf(pb.v, 2) + ' millions.');
+    }
+    if (k === 'mi:sécurités' && B && B.concret && B.concret.policier) { var po = B.concret.policier; add('L\'équivalent de <b>' + nf(Math.round(Math.abs(f) * x.md * 1e9 / po.v / 100) * 100, 0) + ' policiers et gendarmes ' + (f < 0 ? 'en moins' : 'en plus') + '</b>, à ' + eu(po.v) + ' par an chacun (salaires, matériel, bâtiments ; ' + po.annee + ', ' + esc(po.source.split(' :')[0]) + '), sur ' + nf(po.nombre, 0) + '.'); }
+    if (k === 'mi:justice') { var dt = CAS('detention'); if (dt) add('Une journée de détention coûte ' + eu(dt.cout_journee_2024_eur, 2) + ' (2024) : ' + (f < 0 ? 'la baisse' : 'la hausse') + ' équivaut au coût de <b>' + nf(Math.round(Math.abs(f) * x.md * 1e9 / (dt.cout_journee_2024_eur * 365) / 100) * 100, 0) + ' détenus pendant un an</b> (' + nf(dt.detenus_2026_10_01_hors_com, 0) + ' détenus au 1er octobre 2026). La mission paie aussi les tribunaux et la protection judiciaire de la jeunesse.', ['detention']); }
+    return o;
+  }
+  // Pour une carte de Voter.
+  function exemplesCarte(c) {
+    var o = coll(), add = o.add, sm = CAS('smic_brut_mensuel'), sn = CAS('smic_net_mensuel'), t5 = traitement500(), di = CAS('droits_inscription'), m;
+    if ((c.id === 'smic-2' || c.id === 'smic-5') && sm) { var p = c.id === 'smic-2' ? 2 : 5; add('Un salarié au SMIC : <b>' + deu(sm * p / 100, 2) + ' bruts par mois</b> (' + eu(sm, 2) + ' aujourd\'hui)' + (sn ? ', soit environ ' + deu(sn * p / 100, 0) + ' nets, avec la même part de cotisations qu\'aujourd\'hui' : '') + '.', ['smic_brut_mensuel', 'smic_net_mensuel']); }
+    if (c.id === 'point-indice-plus-1' && t5) add('Un agent payé à l\'indice majoré 500 (exemple) : <b>' + deu(t5 / 100, 2) + ' bruts par mois</b> sur un traitement de base de ' + eu(t5, 2) + ' ; les primes ne changent pas.', ['point_indice']);
+    if (c.id === 'carence-3-jours' && t5) add('À chaque arrêt de plus de 3 jours, 2 jours de plus ne sont pas payés : environ <b>' + eu(t5 / 30 * 2, 0) + ' bruts</b> pour un agent à l\'indice majoré 500 (exemple, traitement de base).', ['point_indice']);
+    if (c.id === 'revalo-moins-1' || c.id === 'revalo-plus-1') { var s = c.id === 'revalo-moins-1' ? -1 : 1, pm = AS.retraites && AS.retraites.pp && AS.retraites.pp.moyenne, M = CAS('minima_avril_2026');
+      if (pm) add('Pension moyenne (' + eu(pm.v) + ' bruts par mois) : <b>' + deu(s * pm.v / 100, 2) + ' par mois</b> par rapport à une hausse égale aux prix.');
+      if (M) add('Allocations familiales pour 2 enfants : ' + deu(s * M.af_2_enfants_eur / 100, 2) + ' par mois.', ['minima_avril_2026']); }
+    if (c.id === 'prime-activite-gel' && (m = /revalorisation prévue de ([\d,]+) %/.exec(c.quoi || '')) && AS['prime-activite'] && AS['prime-activite'].pp && AS['prime-activite'].pp.moyenne) { var pa = AS['prime-activite'].pp.moyenne.v, r = +m[1].replace(',', '.'); add('En moyenne <b>' + eu(pa * r / 100, 2) + ' de moins par mois</b> qu\'avec la revalorisation prévue (' + pcx(r) + ' de ' + eu(pa) + ', montant moyen).'); }
+    if (c.id === 'ir-abattement-retraites' || c.id === 'niche-120401') {
+      var supp = c.id === 'niche-120401';
+      (supp ? [20000, 35000] : [35000, 45000, 20000]).forEach(function (P) { var a0 = abattPension(P); if (a0 == null) return; var a1 = supp ? 0 : Math.min(a0, 3000), i0 = impotSeul(P - a0), i1 = impotSeul(P - a1); if (i1 !== i0) add('Retraité seul, ' + eu(P) + ' de pensions par an : impôt de ' + eu(i0) + ' → <b>' + eu(i1) + '</b>.', ['ir_abattement_10', 'ir_bareme_2026', 'ir_decote']); else add('Retraité seul, ' + eu(P) + ' de pensions par an : impôt inchangé (' + eu(i0) + ').', ['ir_abattement_10']); });
+    }
+    if (c.id === 'franchises-x2') { var fr = CAS('franchises'); if (fr) add('Par boîte de médicament : ' + eu(fr.franchise_par_boite_medicament_eur) + ' → <b>' + eu(2 * fr.franchise_par_boite_medicament_eur) + '</b> ; par consultation : ' + eu(fr.participation_forfaitaire_par_consultation_ou_acte_eur) + ' → <b>' + eu(2 * fr.participation_forfaitaire_par_consultation_ou_acte_eur) + '</b> ; au plus ' + eu(fr.plafond_annuel_total_eur) + ' → <b>' + eu(2 * fr.plafond_annuel_total_eur) + ' par an</b>.', ['franchises']); }
+    if (c.id === 'univ-30' && di) add('Par an : licence ' + eu(di.licence_eur) + ' → <b>' + eu(di.licence_eur * 1.3, 2) + '</b>, master ' + eu(di.master_eur) + ' → <b>' + eu(di.master_eur * 1.3, 2) + '</b>, doctorat ' + eu(di.doctorat_eur) + ' → <b>' + eu(di.doctorat_eur * 1.3, 2) + '</b> ; les boursiers ne paient pas.', ['droits_inscription']);
+    if (c.id === 'univ-master-doctorat' && di && (m = /master à ([\d ]+) €, doctorat à ([\d ]+) €/.exec(c.titre || ''))) add('Par an : master ' + eu(di.master_eur) + ' → <b>' + m[1] + '\u00a0€</b>, doctorat ' + eu(di.doctorat_eur) + ' → <b>' + m[2] + '\u00a0€</b> ; licence inchangée (' + eu(di.licence_eur) + ') ; les boursiers ne paient pas.', ['droits_inscription']);
+    var T = CAS('tva_taux'), ttc = function (ht, t) { return ht * (1 + t / 100); };
+    if (T) {
+      if (c.id === 'tva-television' || c.id === 'niche-730221') { var ex = c.id === 'tva-television' ? 'Un abonnement de 20 € par mois (exemple)' : 'Un repas de 20 € au restaurant (exemple)'; add(ex + ' : <b>' + eu(20 / (1 + T.intermediaire.taux_pct / 100) * (1 + T.normal.taux_pct / 100), 2) + '</b>, si la hausse passe entièrement dans le prix.', ['tva_taux']); }
+      if (c.id === 'niche-730213') add('Des travaux de 10 000 € hors taxe dans un logement : ' + eu(ttc(10000, T.intermediaire.taux_pct)) + ' → <b>' + eu(ttc(10000, T.normal.taux_pct)) + '</b> TTC.', ['tva_taux']);
+      if (c.id === 'niche-730223') add('Des travaux de rénovation énergétique de 10 000 € hors taxe : ' + eu(ttc(10000, T.reduit.taux_pct)) + ' → <b>' + eu(ttc(10000, T.normal.taux_pct)) + '</b> TTC.', ['tva_taux']);
+    }
+    if (c.id === 'niche-120146') { var Bm = CAS('ir_bareme_2026'); if (Bm) { var t1 = Bm.tranches[1].taux_pct, t2 = Bm.tranches[2].taux_pct; add('1 000 € d\'heures supplémentaires dans l\'année (exemple) : <b>' + deu(10 * t1, 0) + ' d\'impôt</b> dans la tranche à ' + pcx(t1) + ', <b>' + deu(10 * t2, 0) + '</b> dans la tranche à ' + pcx(t2) + '.', ['ir_bareme_2026']); } }
+    return o;
+  }
+  // Le bloc affiché : les exemples, puis les sources des règles utilisées.
+  function blocConcret(o, titre) {
+    if (!o.L.length) return '';
+    var vus = {}, src = o.K.map(function (k) { var s = J.cas[k], n = s && String(s.source).split(/,| \(/)[0]; if (!s || vus[n]) return ''; vus[n] = 1; return '<a href="' + esc(s.url) + '">' + esc(n) + '</a>'; }).filter(Boolean);
+    return '<div class="q-cc"><h4>' + (titre || 'Concrètement') + '</h4><ul>' + o.L.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>' + (src.length ? '<p class="q-note">Exemples calculés par Concret avec les règles en vigueur : ' + src.join(', ') + '.</p>' : '') + '</div>';
+  }
   // Pour une personne : le montant moyen et les règles en vigueur, lus à la source (chiffres recopiés tels quels) ; avec votre choix,
   // le même pourcentage appliqué à la moyenne, seulement quand elle a le même champ que la ligne. Pour chaque habitant : la ligne
   // divisée par la population (calcul de Concret).
   function parPersonne(pc) {
-    var x = choisi.pp, P = J.population, el = $('q-pp'); el.hidden = !x && !P; if (!x && !P) return;
+    var x = choisi.pp, P = J.population, el = $('q-pp'); el.hidden = false;
     var src = function (o) { return '<a href="' + esc(o.url) + '">' + esc(String(o.source).split(/,| \(/)[0]) + '</a>'; };
     var court = function (u) { return esc(String(u).replace(/^€\s*/, '').replace(/\s*\(.*\)\s*$/, '')); };
     var tel = function (v) { if (typeof v === 'string' && /^\d+(\.\d+)?$/.test(v)) v = +v; return typeof v === 'number' ? nf(v, v % 1 ? String(v).split('.')[1].length : 0) : esc(v); };
-    var calc = function (v) { return nf(v >= 1000 ? Math.round(v / 10) * 10 : v >= 20 ? Math.round(v) : Math.round(v * 10) / 10, v >= 20 || Math.round(v) === v ? 0 : 1) + ' €'; };
-    var sg = function (v) { return v > 0 ? '+' : '−'; }, t = '<h4>Pour une personne</h4>';
+    var calc = function (v) { return nf(v >= 1000 ? Math.round(v / 10) * 10 : v >= 20 ? Math.round(v) : Math.round(v * 10) / 10, v >= 20 || Math.round(v) === v ? 0 : 1) + '\u00a0€'; };
+    var sg = function (v) { return v > 0 ? '+' : '−'; }, t = blocConcret(exemplesLigne(choisi.k, pc)) + '<h4>Pour une personne</h4>';
     if (x && x.moyenne) {
       var m = x.moyenne, b = x.beneficiaires;
-      t += '<p>Aujourd\'hui, en moyenne : <b>' + tel(m.v) + ' €</b> ' + court(m.unite) + ' (' + esc(m.annee) + ', ' + src(m) + ')' + (b ? ', pour ' + tel(b.v) + ' ' + court(b.unite) + (b.source !== m.source || b.annee !== m.annee ? ' (' + esc(b.annee) + ', ' + src(b) + ')' : '') : '') + '.</p>';
-      if (pc && x.proportion) t += '<p class="v">Avec ' + sg(pc) + Math.abs(pc) + ' % : <b>environ ' + calc(m.v * (1 + pc / 100)) + '</b> ' + court(m.unite) + ' en moyenne, si le changement est le même pour chacun (il peut aussi porter sur la durée, les conditions ou une partie des personnes).</p>';
+      t += '<p>Aujourd\'hui, en moyenne : <b>' + tel(m.v) + '\u00a0€</b> ' + court(m.unite) + ' (' + esc(m.annee) + ', ' + src(m) + ')' + (b ? ', pour ' + tel(b.v) + ' ' + court(b.unite) + (b.source !== m.source || b.annee !== m.annee ? ' (' + esc(b.annee) + ', ' + src(b) + ')' : '') : '') + '.</p>';
+      if (pc && x.proportion) t += '<p class="v">Avec ' + sg(pc) + Math.abs(pc) + '\u00a0% : <b>environ ' + calc(m.v * (1 + pc / 100)) + '</b> ' + court(m.unite) + ' en moyenne, si le changement est le même pour chacun (il peut aussi porter sur la durée, les conditions ou une partie des personnes).</p>';
     } else if (x && x.beneficiaires) { var b2 = x.beneficiaires; t += '<p>' + tel(b2.v) + ' ' + court(b2.unite) + ' (' + esc(b2.annee) + ', ' + src(b2) + ').</p>'; }
     if (P) {
       var ph = choisi.md * 1e9 / P.v;
-      t += '<p>Pour chaque habitant : <b>' + calc(ph) + '</b> par an' + (pc ? ', ' + sg(pc) + calc(Math.abs(ph * pc / 100)) + ' avec votre choix' : '') + '. <span class="q-note">Calcul de Concret : ' + md(choisi.md) + ' Md€ (' + choisi.an + ') divisés par ' + nf(P.v / 1e6, 1) + ' millions d\'habitants (' + esc(P.annee) + ', <a href="' + esc(P.url) + '">Insee</a>).</span></p>';
+      t += '<p>Pour chaque habitant : <b>' + calc(ph) + '</b> par an' + (pc ? ', soit ' + calc(Math.abs(ph * pc / 100)) + (pc > 0 ? ' de plus' : ' de moins') + ' avec votre choix' : '') + '. <span class="q-note">Calcul de Concret : ' + md(choisi.md) + '\u00a0Md€ (' + choisi.an + ') divisés par ' + nf(P.v / 1e6, 1) + ' millions d\'habitants (' + esc(P.annee) + ', <a href="' + esc(P.url) + '">Insee</a>).</span></p>';
     }
     if (x && x.regles && x.regles.length) t += '<details class="q-tous"><summary>Les règles aujourd\'hui</summary><ul>' + x.regles.map(function (r) { return '<li>' + nb(r.texte) + ' <a href="' + esc(r.url) + '">Source</a></li>'; }).join('') + '</ul></details>';
     el.innerHTML = t;

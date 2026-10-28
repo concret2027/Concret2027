@@ -429,11 +429,11 @@ def construire():
             return {str(a): round(v35 * (a - a1 + 1) / (2035 - a1 + 1), 3) for a in range(a1, 2032)}
         age = ['retraite-62', 'retraite-63', 'retraite-65', 'retraites-fin-suspension']
         noteR = "Chiffrage de la Cour des comptes pour 2035 (système de retraite) ; Concret le fait monter en ligne droite de %d à 2035 (hypothèse). " % a1
-        debat('retraite-63', "Ramener l'âge légal de départ à la retraite à 63 ans", "L'âge minimum de départ à la retraite passe de 64 à 63 ans.", 'retraites', ['salaries'], 'depense', 'depense',
+        debat('retraite-63', "Ramener l'âge légal de départ à la retraite à 63 ans", "L'âge minimum de départ à la retraite, qui doit atteindre 64 ans avec la réforme de 2023 (suspendue depuis 2026 : 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965), est fixé à 63 ans. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], 'depense', 'depense',
               rampe(-ra['âge ramené de 64 à 63 ans : dépense supplémentaire en 2035 (Md€)']), 'retraite_age_cour_comptes_2025', noteR + "Dépense en plus en 2035 : 5,8 Md€.", [x for x in age if x != 'retraite-63'], 'Qui reçoit')
-        debat('retraite-62', "Revenir à la retraite à 62 ans", "L'âge minimum de départ à la retraite revient de 64 à 62 ans.", 'retraites', ['salaries'], 'depense', 'depense',
+        debat('retraite-62', "Revenir à la retraite à 62 ans", "L'âge minimum de départ à la retraite, qui doit atteindre 64 ans avec la réforme de 2023 (suspendue depuis 2026 : 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965), est fixé à 62 ans. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], 'depense', 'depense',
               rampe(-ra['retour à 62 ans : « en gros, deux fois plus » (Md€, ordre de grandeur)']), 'retraite_age_cour_comptes_2025', noteR + "Pour 62 ans, la Cour dit « en gros, deux fois plus » que pour 63 ans : 11,6 Md€ en 2035 (ordre de grandeur).", [x for x in age if x != 'retraite-62'], 'Qui reçoit')
-        debat('retraite-65', "Porter l'âge légal de départ à la retraite à 65 ans", "L'âge minimum de départ à la retraite passe de 64 à 65 ans.", 'retraites', ['salaries'], 'depense', 'depense',
+        debat('retraite-65', "Porter l'âge légal de départ à la retraite à 65 ans", "L'âge minimum de départ à la retraite, qui doit atteindre 64 ans avec la réforme de 2023 (suspendue depuis 2026 : 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965), est fixé à 65 ans. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], 'depense', 'depense',
               rampe(ra['âge porté à 65 ans : gain en 2035 (Md€)']), 'retraite_age_cour_comptes_2025', noteR + "Économie en 2035 : 8,4 Md€.", [x for x in age if x != 'retraite-65'])
         f = MD['fonctionnaires_non_remplacement_un_sur_deux']['valeurs']
         debat('fonctionnaires-1-sur-2', "Ne remplacer qu'un fonctionnaire de l'État sur deux partant à la retraite", "La moitié des agents de l'État qui partent à la retraite ne sont pas remplacés.", 'etat', ['agents_publics'], 'depense', 'depense',
@@ -505,6 +505,12 @@ def construire():
         population = {'v': x['v'] * 1e6, 'annee': x['annee'], 'source': x['source'], 'url': x['url'], 'citation': x['citation']}
     else:
         population = None
+    # Paramètres officiels des cas types (« Concrètement »), lus à la source (budget_sources/parametres_cas.json).
+    cas = {}
+    if os.path.exists(os.path.join(SRC, 'parametres_cas.json')):
+        for k, v in charger('parametres_cas.json').items():
+            if not k.startswith('_') and v:
+                cas[k] = {x: v.get(x) for x in ('v', 'unite', 'date_effet', 'source', 'url')}
     for c in cartes:
         c['sens'] = 'depense' if c['sens'] in ('dépense', 'depense') else c['sens']
         c['titre'] = COURT.get(c['id'], c['l'])
@@ -536,7 +542,7 @@ def construire():
     return {
         'maj': date.today().isoformat(),
         'depart': eurostat_depart(),
-        'cartes': cartes, 'assiettes': assiettes, 'population': population, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
+        'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
         'variantes': var, 'regle': REGLE, 'defis': DEFIS,
         'variantes_source': P['mesange2017_linearite']['citation'] if 'mesange2017_linearite' in P else '',
