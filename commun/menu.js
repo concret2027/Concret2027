@@ -176,7 +176,7 @@
     'h2.inv,h3.inv{font-size:14.5px;font-weight:400;line-height:1.4;color:' + V.muted + '}h2.inv .eyebrow,h3.inv .eyebrow{font-size:18px;font-weight:700;line-height:1.25;letter-spacing:0;text-transform:none;color:' + V.fg + ';margin-bottom:3px}' +
     '.mn-maj{position:fixed;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:60;display:flex;align-items:center;gap:12px;width:min(calc(100% - 24px),480px);box-sizing:border-box;padding:12px 14px;border:0;border-radius:14px;background:' + V.fg + ';color:' + V.bg + ';font:inherit;font-size:14px;text-align:left;box-shadow:0 6px 24px rgba(0,0,0,.25);cursor:pointer}' +
     '.mn-maj span{flex:1}.mn-maj b{flex:none;padding:6px 12px;border-radius:999px;background:' + V.fr + ';color:#fff;font-weight:700}' +
-    '.nt-pli{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}' +
+    '.nt-pli{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--nt-l,2);line-clamp:var(--nt-l,2);overflow:hidden}' +
     '.nt-btn{font:inherit;font-size:13.5px;font-weight:600;color:' + V.fr + ';background:none;border:0;padding:6px 0;margin-top:-6px;min-height:36px;cursor:pointer;justify-self:start;align-self:start;text-align:left}' +
     '.nt-btn:focus-visible{outline:2px solid ' + V.fr + ';outline-offset:2px}';
   var ici = location.pathname.replace(/index\.html$/, '');
@@ -205,21 +205,37 @@
   // le reste. Les pages réécrivent ces textes quand elles redessinent une courbe : on les revoit à chaque changement.
   // Sur le Baromètre, les explications en tête de chaque bloc aussi (« Lire la suite »).
   // Sur la page Démographie, les paragraphes « À retenir » et les introductions longues aussi.
-  var NT = '.chart ~ p.note, .toile-svg ~ p.note, .bx-card > p.bx-note, .bx-group > p.bx-note, p.retenir, p.dernier';
+  // Sur toute page, un texte marqué class="replie" aussi (« Voir le détail », --nt-l : lignes montrées, 2 par défaut), et une liste
+  // marquée ainsi montre ses premiers éléments (data-n, 2 par défaut ; data-voir : le libellé, {n} pour leur nombre).
+  // Une explication de ce qui n'est pas compté, ni les mentions obligatoires d'un sondage (class="mentions"), ne se replient jamais.
+  var NT = '.chart ~ p.note, .toile-svg ~ p.note, .bx-card > p.bx-note, .bx-group > p.bx-note, p.retenir, p.dernier, .replie:not(ul):not(ol)';
+  function bouton(n) {
+    var b = n.nextElementSibling;
+    if (!b || !b.classList.contains('nt-btn')) {
+      b = document.createElement('button'); b.type = 'button'; b.className = 'nt-btn'; b.hidden = true;
+      b.addEventListener('click', function () { n.dataset.ntOuvert = n.dataset.ntOuvert ? '' : '1'; plier(); });
+      n.parentNode.insertBefore(b, n.nextSibling);
+    }
+    return b;
+  }
   function plier() {
+    Array.prototype.forEach.call(document.querySelectorAll('ul.replie, ol.replie'), function (n) {
+      var b = bouton(n), ouvert = !!n.dataset.ntOuvert, k = n.dataset.n ? +n.dataset.n : 2, L = n.children, reste = L.length - k;
+      for (var i = 0; i < L.length; i++) { var h = !ouvert && i >= k; if (L[i].hidden !== h) L[i].hidden = h; }
+      var t = reste <= 0 ? '' : ouvert ? 'Masquer ▴' : (n.dataset.voir ? n.dataset.voir.replace('{n}', reste) : k ? 'Voir les ' + reste + ' autres' : 'Voir le détail') + ' ▾';
+      if (b.textContent !== t) b.textContent = t;
+      if (b.hidden === !!t) b.hidden = !t;
+      b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
+    });
     Array.prototype.forEach.call(document.querySelectorAll(NT), function (n) {
-      if (n.classList.contains('pt-hors') || n.classList.contains('defs')) return;
-      var b = n.nextElementSibling;
-      if (!b || !b.classList.contains('nt-btn')) {
-        b = document.createElement('button'); b.type = 'button'; b.className = 'nt-btn'; b.hidden = true;
-        b.addEventListener('click', function () { n.dataset.ntOuvert = n.dataset.ntOuvert ? '' : '1'; plier(); });
-        n.parentNode.insertBefore(b, n.nextSibling);
-      }
+      if (n.classList.contains('pt-hors') || n.classList.contains('defs') || n.classList.contains('mentions')) return; // mentions légales d'un sondage : jamais repliées
+      var b = bouton(n);
       var ouvert = !!n.dataset.ntOuvert, deja = n.classList.contains('nt-pli');
       if (deja) n.classList.remove('nt-pli');
-      var lh = parseFloat(getComputedStyle(n).lineHeight) || 20, long = n.offsetHeight > lh * 3.4;
+      var cs = getComputedStyle(n), lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.45 || 20, nl = parseFloat(cs.getPropertyValue('--nt-l')) || 2, long = n.offsetHeight > lh * (nl + 1.4);
       if (long && !ouvert) n.classList.add('nt-pli');
-      var bx = n.classList.contains('bx-note') || n.classList.contains('retenir') || n.classList.contains('dernier'), t = !long ? '' : ouvert ? (bx ? 'Masquer ▴' : 'Masquer le détail ▴') : (bx ? 'Lire la suite ▾' : 'Détail du graphe ▾');
+      var rp = n.classList.contains('replie'), bx = !rp && (n.classList.contains('bx-note') || n.classList.contains('retenir') || n.classList.contains('dernier'));
+      var t = !long ? '' : ouvert ? (bx || rp ? 'Masquer ▴' : 'Masquer le détail ▴') : rp ? 'Voir le détail ▾' : bx ? 'Lire la suite ▾' : 'Détail du graphe ▾';
       if (b.textContent !== t) b.textContent = t;
       if (b.hidden === !!t) b.hidden = !t;
       b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
