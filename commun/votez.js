@@ -290,8 +290,8 @@
   function avis(D, R) {
     if (!avisCalcul) return '';
     var A = resultatAncien(D), nv = {}; R.groupes.forEach(function (g) { nv[g.c] = g.pct; });
-    return '<div class="vz-avis" role="status"><p><b>Nouveau calcul, plus précis (depuis le ' + dateFr(DATE_CALCUL) + ').</b> Il compte maintenant chaque député du groupe qui a voté, et plus seulement la majorité du groupe ; les textes que tous les groupes ont votés pareil ne comptent plus, ils ne disent pas de qui vous êtes proche.</p>' +
-      '<p>Vos ' + A.nb + ' votes donnent maintenant : ' + A.groupes.slice(0, 3).map(function (g) { return '<b>' + esc(g.n) + '</b> ' + (nv[g.c] != null ? nv[g.c] + '\u00a0%' : 'pas encore de résultat') + ' (avant\u00a0: ' + g.pct + '\u00a0%)'; }).join(' · ') + '.</p>' +
+    return '<div class="vz-avis" role="status"><p><b>Un calcul plus fin (depuis le ' + dateFr(DATE_CALCUL) + ').</b> Chaque député qui a voté compte désormais, et non plus seulement la position de la majorité de son groupe. Par exemple, un groupe vote à 60 pour, 30 contre et 10 abstentions, et vous votez pour : vous êtes d\'accord avec lui à 65 % sur ce texte, au lieu de 100 %. Les textes que tous les groupes ont votés de la même façon sont comptés à part.</p>' +
+      '<p>Vos ' + A.nb + ' votes : ' + A.groupes.slice(0, 3).map(function (g) { return '<b>' + esc(g.n) + '</b> ' + (nv[g.c] != null ? nv[g.c] + '\u00a0%' : 'pas encore de résultat') + ' (avant\u00a0: ' + g.pct + '\u00a0%)'; }).join(' · ') + '.</p>' +
       '<button type="button" class="vz-avis-ok">Compris</button></div>';
   }
 
