@@ -398,6 +398,31 @@ def eurostat_depart():
             'url': 'https://ec.europa.eu/eurostat/databrowser/view/gov_10a_main/default/table'}
 
 
+
+# Pays placés à côté du budget du joueur (« À quel pays ressemble votre budget ») : l'UE à 27, la Norvège, l'Islande et la Suisse,
+# mêmes données qu'Eurostat publie pour la France (dépenses et recettes publiques, solde, % du PIB).
+PAYS_STRUCT = ['FR', 'DE', 'ES', 'IT', 'BE', 'BG', 'CZ', 'DK', 'EE', 'IE', 'EL', 'HR', 'CY', 'LV', 'LT', 'LU', 'HU', 'MT', 'NL', 'AT',
+               'PL', 'PT', 'RO', 'SI', 'SK', 'FI', 'SE', 'NO', 'IS', 'CH']
+
+
+def eurostat_pays(an):
+    """Dépenses (TE), recettes (TR) et solde (B9) des administrations publiques de chaque pays, l'année du point de départ.
+    Un pays qui n'a pas encore publié les trois chiffres est écarté et nommé (« absents »). Contrôle : recettes − dépenses = solde."""
+    from budget import lire
+    m = lire('gov_10a_main', geo=PAYS_STRUCT + ['EU27_2020'], sector='S13', unit='PC_GDP', na_item=['TE', 'TR', 'B9'], time=[str(an)])
+    noms = dict(json.load(open(os.path.join(RACINE, 'donnees', 'pays.json'), encoding='utf-8'))['noms'], FR='France', DE='Allemagne', ES='Espagne', IT='Italie', EU27_2020='Moyenne de l\'UE')
+    pays, absents = [], []
+    for g in PAYS_STRUCT + ['EU27_2020']:
+        te, tr, b9 = (m.get((g, str(an), k)) for k in ('TE', 'TR', 'B9'))
+        if None in (te, tr, b9):
+            absents.append(noms[g]); continue
+        assert abs(tr - te - b9) <= 0.15, (g, te, tr, b9)
+        pays.append({'code': g, 'nom': noms[g], 'dep': te, 'rec': tr, 'solde': b9})
+    return {'an': an, 'pays': pays, 'absents': absents,
+            'source': "Eurostat, principaux agrégats des administrations publiques (gov_10a_main) : dépenses totales (TE), recettes totales (TR) et solde (B9), % du PIB",
+            'url': 'https://ec.europa.eu/eurostat/databrowser/view/gov_10a_main/default/table'}
+
+
 def construire():
     mes, nic, mac = charger('mesures_2027.json'), charger('depenses_fiscales.json'), charger('parametres_macro.json')
     P = {x['cle']: x for x in mac['parametres']}
@@ -747,7 +772,8 @@ def construire():
     budget = json.load(open(os.path.join(RACINE, 'donnees', 'budget.json'), encoding='utf-8'))
     return {
         'maj': date.today().isoformat(),
-        'depart': eurostat_depart(),
+        'depart': (dep := eurostat_depart()),
+        'pays_eurostat': eurostat_pays(dep['an']),
         'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'unites': unites, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
         'variantes': var, 'regle': REGLE,
@@ -772,6 +798,8 @@ def main():
     for c in o['cartes']:
         print('  %-36s %-6s %-12s %s' % (c['id'], c['origine'], c['macro'] or '—', c['effet']))
     print('Variantes :', ', '.join(o['variantes']))
+    pe = o['pays_eurostat']; print('Pays (Eurostat, %d) :' % pe['an'], len(pe['pays']), '; absents :', ', '.join(pe['absents']) or 'aucun')
+    fr = [x for x in pe['pays'] if x['code'] == 'FR'][0]; assert abs(fr['solde'] - d['solde']) < 0.05, (fr, d)
     if '--ecrire' in sys.argv:
         json.dump(o, open(SORTIE, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
         print('Écrit :', SORTIE)
