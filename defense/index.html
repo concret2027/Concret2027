@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="1514e0bfd4fd">
+<meta name="concret-version" content="55890e7c9ef8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -30,7 +30,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261028a"></script>
+<script src="/commun/bref.js?v=20261028b"></script>
 <script src="/commun/toile.js?v=20261028b"></script>
 <script src="/commun/pays.js?v=20261028b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
@@ -1263,13 +1263,13 @@ function main(FEED) {
       else if (now - st.seen > 3600e3) { st.base = st.cur; st.cur = snap; }
       st.seen = now; localStorage.setItem('defense-visites', JSON.stringify(st));
       var lv = st.base;
-      if (!lv) return; // Première visite : rien à comparer, la ligne reste cachée.
+      if (!lv) { ConcretBref.premiere(vis, { actu: ((FEED && FEED.datasets) || {}).actu_defense }); return; } // Première visite : les dernières nouvelles de la page.
       var dv = Math.round((now - lv.t) / 864e5), when = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h', pv = [];
       if (ey > lv.ey) pv.push('dépense publique de défense ' + ey + ' (Eurostat) : <b>' + fmt(lastReel(C.dep, 'fr').v, 2) + ' % du PIB</b>');
       if (oy > lv.oy) pv.push('nouveaux chiffres de l\'OTAN, jusqu\'à ' + oy);
       if (lv.b != null && PV('budget') !== lv.b) pv.push('budget des armées : <b>' + fmt(PV('budget'), 1) + ' Md€</b>');
       pv = ConcretBref.nouveau({ chiffres: pv, actu: DS.actu_defense, agenda: DS.agenda_defense, depuis: lv.t, jour: dv >= 1, prochains: 'prochains chiffres : Eurostat au printemps, l\'OTAN avant l\'été' });
-      vis.innerHTML = '<b>Depuis votre dernière visite</b> (' + when + ') : ' + pv.join(' ; ') + '.'; ConcretBref.lier(vis);
+      ConcretBref.afficher(vis, 'Depuis votre dernière visite (' + when + ')', pv);
       vis.hidden = false;
     })();
   } catch (e) {}
@@ -1404,6 +1404,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028o"></script>
+<script src="/commun/menu.js?v=20261028p"></script>
 </body>
 </html>

@@ -72,10 +72,36 @@
     if (!ch.length) {
       // Rien de neuf depuis la visite : on le dit, sans repêcher une actualité déjà vue ; puis le prochain rendez-vous.
       var g = (o.agenda || []).filter(function (a) { return a.date && a.date >= auj; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
-      if (!na.length) parts.push('rien de nouveau' + (g ? ' ; prochain rendez-vous, ' + esc(min1(g.quand || dfr(g.date))) + ' : ' + esc(String(g.evenement).replace(/\.$/, '')) : o.prochains ? ' (' + o.prochains + ')' : ''));
+      if (!na.length) { parts.push('rien de nouveau' + (!g && o.prochains ? ' (' + o.prochains + ')' : '')); if (g) parts.push('prochain rendez-vous, ' + esc(min1(g.quand || dfr(g.date))) + ' : ' + esc(String(g.evenement).replace(/\.$/, ''))); }
       else if (g) parts.push('prochain rendez-vous, ' + esc(min1(g.quand || dfr(g.date))) + ' : ' + esc(String(g.evenement).replace(/\.$/, '')));
     }
     return parts;
+  }
+  // Haut de page : au plus deux puces. Après une visite : ce qui a changé depuis (les chiffres nouveaux sur la première,
+  // l'actualité ou le prochain rendez-vous sur la seconde) ; à la première visite : les dernières nouvelles de la page.
+  function afficher(box, titre, parts) {
+    if (!box) return; var L = (parts || []).filter(Boolean);
+    if (L.length > 2) L = [L.slice(0, L.length - 1).join(' ; '), L[L.length - 1]];
+    if (!L.length) return;
+    var maj = function (h) { return h.replace(/^((?:<[^>]+>)*)([a-zà-ÿ])/, function (m, t, c) { return t + c.toUpperCase(); }); };
+    var div = document.createElement('div'); div.className = box.className; div.id = box.id;
+    div.innerHTML = '<b>' + titre + '</b><ul class="vis-l">' + L.map(function (x) { var t = maj(x), fin = t.replace(/<[^>]+>/g, '').trim().slice(-1); return '<li>' + t + (/[.…!?]/.test(fin) ? '' : '.') + '</li>'; }).join('') + '</ul>';
+    box.parentNode.replaceChild(div, box); lier(div);
+  }
+  function premiere(box, o) {
+    o = o || {};
+    // Les accroches des blocs de « L'actualité » sont écrites par la page juste après : on les lit un instant plus tard.
+    setTimeout(function () {
+      var parts = [], lien = function (id, h) { return '<a href="#' + id + '" data-cible="' + id + '">' + h + '</a>'; };
+      var dfr = function (s) { return new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }).replace(/^1 /, '1er '); };
+      var court = function (t) { t = String(t); if (t.length <= 110) return t.replace(/\.$/, ''); var c = t.slice(0, 107); return c.slice(0, c.lastIndexOf(' ')) + '…'; };
+      var acc = Array.prototype.filter.call(document.querySelectorAll('details.acc'), function (d) { return /aujourd'hui|ce mois-ci|du mois/i.test((d.querySelector('.acc-h') || {}).textContent || ''); })[0];
+      var tz = acc && acc.querySelector('.acc-t');
+      if (tz && tz.textContent.trim() && tz.textContent.trim() !== '—') parts.push(lien(acc.id, ((acc.querySelector('.acc-h') || {}).textContent || '').trim() + ' : ' + tz.innerHTML));
+      var A = (o.actu || []).filter(function (a) { return a.texte && a.date; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+      if (A[0]) parts.push(lien('acc-actu', 'Actualité du ' + esc(dfr(A[0].date))) + ' : ' + esc(court(A[0].texte)));
+      afficher(box, 'Les dernières nouvelles', parts);
+    }, 300);
   }
   // Les liens de la ligne mènent au bloc visé (ouvert s'il est replié).
   function lier(box) { box.querySelectorAll('a[data-cible]').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); }); }
@@ -84,5 +110,5 @@
     var vise = decodeURIComponent(location.hash.slice(1)), essais = 0;
     var t = setInterval(function () { var el = document.getElementById(vise); if (el || ++essais > 40) { clearInterval(t); if (el) aller(vise); } }, 250);
   }
-  window.ConcretBref = { render: render, aller: aller, nouveau: nouveau, lier: lier };
+  window.ConcretBref = { render: render, aller: aller, nouveau: nouveau, lier: lier, afficher: afficher, premiere: premiere };
 })();
