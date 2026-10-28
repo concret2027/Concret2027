@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="de8b43bca5ce">
+<meta name="concret-version" content="8696b274d5d1">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -714,6 +714,20 @@ dash.calc('duels_recents', {
   var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); };
   // Mentions obligatoires (loi du 19 juillet 1977) d'un sondage affiché : lues dans sa notice, ou dans le rapport de l'institut en attendant.
   var et = function (l) { return l.length > 1 ? l.slice(0, -1).join(', ') + ' et ' + l[l.length - 1] : l[0]; };
+  // Version courte, pour la liste des sondages moyennés : les mêmes mentions obligatoires, en moins de mots
+  // (la Commission des sondages est nommée une fois, sous la liste).
+  function mentionCourte(p) {
+    var nb = new Intl.NumberFormat('fr-FR'), cle = function (d, i) { return d + '|' + String(i).replace(/ Interactive$/, ''); };
+    var N = (dash.data('sondages_notices').data || []).filter(function (n) { return cle(n.date, n.institut) === cle(p.date, p.institut); })[0];
+    var terrain = p.terrain || (N && N.terrain), ech = p.echantillon || (N && +N.echantillon);
+    var mois = function (t) { return String(t).replace(/janvier/, 'janv.').replace(/février/, 'févr.').replace(/septembre/, 'sept.').replace(/octobre/, 'oct.').replace(/novembre/, 'nov.').replace(/décembre/, 'déc.'); };
+    var L = [];
+    if (terrain) L.push(esc(mois(terrain)));
+    if (ech) L.push(nb.format(ech) + ' personnes interrogées');
+    if (N && N.marge) L.push('marge d\'erreur ± ' + esc(N.marge) + ' pt');
+    if (N) L.push(N.statut === 'rapport' ? '<a href="' + esc(N.url) + '" target="_blank" rel="noopener">rapport de l\'institut</a> (notice pas encore publiée)' : '<a href="' + esc(N.url) + '" target="_blank" rel="noopener">notice n° ' + esc(N.notice) + '</a>');
+    return '<b>' + (N && N.commanditaire ? esc(p.institut) + ' pour ' + esc(N.commanditaire) : esc(p.institut)) + '</b>' + (L.length ? ' · ' + L.join(' · ') : '');
+  }
   function mention(p) {
     var nb = new Intl.NumberFormat('fr-FR'), cle = function (d, i) { return d + '|' + String(i).replace(/ Interactive$/, ''); };
     var N = (dash.data('sondages_notices').data || []).filter(function (n) { return cle(n.date, n.institut) === cle(p.date, p.institut); })[0];
@@ -745,7 +759,7 @@ dash.calc('duels_recents', {
     });
     var part = rows.filter(function (r) { return r.score >= 1 && r.n < P.length; });
     if (part.length) { var w = document.createElement('p'); w.className = 'bx-note'; w.textContent = '* ' + et(part.map(function (r) { return r.candidat + ' (' + r.n + ' sur ' + P.length + ')'; })) + ' : ' + (part.length > 1 ? 'testés' : 'testé') + ' dans une partie de ces sondages seulement ; moyenne des sondages où ' + (part.length > 1 ? 'ils figurent' : 'il figure') + '.'; box.appendChild(w); }
-    if (P.length > 1) { var ul = document.createElement('ul'); ul.className = 'bx-note bx-lastsrc'; ul.innerHTML = P.map(function (p) { return '<li>' + mention(p) + '</li>'; }).join(''); box.appendChild(ul); }
+    if (P.length > 1) { var ul = document.createElement('ul'); ul.className = 'bx-note bx-lastsrc'; ul.innerHTML = P.map(function (p) { return '<li>' + mentionCourte(p) + '</li>'; }).join(''); box.appendChild(ul); var cs = document.createElement('p'); cs.className = 'bx-note mentions'; cs.textContent = 'Notices consultables à la Commission des sondages (marge d\'erreur selon le score).'; box.appendChild(cs); }
   }
 
   // Second tour : les duels du dernier sondage (ou la moyenne des sondages finis le même jour), une barre par duel.
@@ -767,7 +781,7 @@ dash.calc('duels_recents', {
     });
     var part = rows.filter(function (r) { return r.n < P.length; });
     if (part.length) { var w = document.createElement('p'); w.className = 'bx-note'; w.textContent = '* ' + et(part.map(function (r) { return r.candidat_rn + '–' + r.adversaire + ' (' + r.n + ' sur ' + P.length + ')'; })) + ' : duel testé dans une partie de ces sondages seulement ; moyenne des sondages où il figure.'; box.appendChild(w); }
-    if (P.length > 1) { var ul = document.createElement('ul'); ul.className = 'bx-note bx-lastsrc'; ul.innerHTML = P.map(function (p) { return '<li>' + mention(p) + '</li>'; }).join(''); box.appendChild(ul); }
+    if (P.length > 1) { var ul = document.createElement('ul'); ul.className = 'bx-note bx-lastsrc'; ul.innerHTML = P.map(function (p) { return '<li>' + mentionCourte(p) + '</li>'; }).join(''); box.appendChild(ul); var cs = document.createElement('p'); cs.className = 'bx-note mentions'; cs.textContent = 'Notices consultables à la Commission des sondages (marge d\'erreur selon le score).'; box.appendChild(cs); }
   }
 
   function drawSpark(boxId, rows, indic, ref, col) {
