@@ -35,6 +35,9 @@ QUI = {
     'donateurs': 'Donateurs', 'logement': 'Travaux dans les logements', 'restauration': 'Restauration', 'agriculture': 'Agriculture et forêt',
     'transport': 'Transport routier', 'outre_mer': 'Outre-mer', 'handicap': 'Personnes handicapées', 'automobilistes': 'Acheteurs de voitures',
     'agents_publics': 'Agents publics', 'chomeurs': 'Chômeurs', 'smic': 'Salariés au SMIC', 'assures': 'Assurés sociaux', 'soignants': 'Hôpitaux et soignants',
+    'pays_aides': 'Pays aidés', 'logement_aide': 'Logement et hébergement', 'ecologie': 'Transports, énergie et environnement', 'etudiants_recherche': 'Étudiants et recherche',
+    'solidarite': 'Allocataires des minima et personnes handicapées', 'culture': 'Culture et médias', 'etrangers': 'Étrangers et demandeurs d\'asile', 'justice': 'Justice et prisons',
+    'securite': 'Police, gendarmerie, secours', 'associations': 'Sport et associations', 'etat': 'Services de l\'État', 'anciens_combattants': 'Anciens combattants',
 }
 # Effet sur l'activité : la variante du modèle Mésange qui correspond au type de mesure (aucune pour l'impôt sur les sociétés,
 # les droits de succession et les accises : le modèle ne les publie pas).
@@ -271,6 +274,53 @@ def construire():
         ass('aah', "Allocation aux adultes handicapés (AAH)", 'depense', LV['prestations-aah']['montant']['2027, PLF 2027 (Md€)'], 2027, ['handicap'], 'depense', LV['prestations-aah'], '')
         ass('allegements', "Allègements généraux de cotisations patronales", 'depense', LV['entreprises-allegements-generaux']['montant']['coût des allègements généraux, champ régimes de base, Unédic, Agirc-Arrco et FNAL (M€)']['2027 prévision'] / 1000, 2027, ['entreprises'], 'cotis_emp', LV['entreprises-allegements-generaux'],
             "Réductions de cotisations sur les salaires : les réduire, c'est faire payer plus de cotisations aux employeurs.", ['allegements-moins-10'])
+    if LV:
+        ij = LV['sante-indemnites-journalieres']
+        ass('ij-maladie', "Indemnités journalières maladie (arrêts maladie)", 'depense', ij['montant']['dont maladie (M€)']['2025'] / 1000, 2025, ['malades'], 'depense', ij, "Régime général (y compris anciens indépendants), Commission des comptes de la Sécurité sociale.")
+        ass('ij-atmp', "Indemnités journalières des accidents du travail et maladies professionnelles", 'depense', ij['montant']['dont accidents du travail et maladies professionnelles (M€)']['2025'] / 1000, 2025, ['malades'], 'depense', ij, "Régime général, Commission des comptes de la Sécurité sociale.")
+    # Budget de l'État : chaque mission et chaque programme du projet de loi de finances (crédits de paiement de l'année à venir,
+    # pensions des agents comprises). Écartés : les remboursements d'impôts, la charge de la dette, les dotations non réparties,
+    # les subventions aux régimes de retraite (comptées dans les retraites), les concours aux collectivités (transferts),
+    # et l'enseignement scolaire et la défense, déjà proposés hors pensions.
+    import budget_missions
+    HORS = ('Crédits non répartis', 'Régimes sociaux et de retraite', 'Remboursements et dégrèvements', 'Engagements financiers',
+            'Relations avec les collectivités', 'Enseignement scolaire', 'Défense')
+    QUI_M = {'Aide publique au développement': ['pays_aides'], 'Cohésion des territoires': ['logement_aide'], 'Écologie': ['ecologie'],
+             'Recherche et enseignement supérieur': ['etudiants_recherche'], 'Solidarité': ['solidarite'], 'Travail, emploi': ['chomeurs', 'entreprises'],
+             'Agriculture': ['agriculture'], 'Culture': ['culture'], 'Immigration': ['etrangers'], 'Justice': ['justice'], 'Outre-mer': ['outre_mer'],
+             'Sécurités': ['securite'], 'Sport': ['associations'], 'Médias': ['culture'], 'Santé': ['assures'], 'Économie': ['entreprises'],
+             'Investir pour la France': ['entreprises'], 'Monde combattant': ['anciens_combattants']}
+    an_plf = date.today().year + 1
+    for m in budget_missions.missions():
+        if m['nom'].startswith(HORS) or not m['cp27']:
+            continue
+        qui = next((v for k, v in QUI_M.items() if m['nom'].startswith(k)), ['etat'])
+        def src(r):
+            return {'doc': budget_missions.TITRE, 'page': str(r['page']), 'url': budget_missions.PLF_URL,
+                    'citation': "Ligne « %s » : crédits de paiement PLF %d : %s €" % (r['nom'], an_plf, '{:,}'.format(r['cp27']).replace(',', ' '))}
+        kids = [r for r in m['programmes'] if r['cp27']]
+        mk = 'mi:' + re.sub(r'\W+', '-', m['nom'].lower())[:40]
+        assiettes.append({'k': mk, 'l': m['nom'], 'groupe': 'depense', 'etat': True, 'md': round(m['cp27'] / 1e9, 3), 'an': an_plf, 'qui': qui, 'macro': 'depense',
+                          'exclut': [], 'note': "Mission du budget de l'État : crédits de paiement prévus, salaires et pensions des agents compris.", 'src': src(m)})
+        for r in kids:
+            if len(kids) < 2: break
+            k = 'pr:' + re.sub(r'\W+', '-', r['nom'].lower())[:40]
+            assiettes.append({'k': k, 'l': r['nom'], 'groupe': 'depense', 'etat': True, 'parent': mk, 'md': round(r['cp27'] / 1e9, 3), 'an': an_plf, 'qui': qui, 'macro': 'depense',
+                              'exclut': [mk], 'note': "Programme de la mission « " + m['nom'] + " ».", 'src': src(r)})
+        # La mission exclut ses programmes (et inversement).
+        M = next(a for a in assiettes if a['k'] == mk)
+        M['exclut'] = [a['k'] for a in assiettes if a.get('parent') == mk]
+    # Recoupements avec les autres montants : APL = programme « Aide à l'accès au logement » ; AAH dans « Handicap et dépendance ».
+    A = {a['k']: a for a in assiettes}
+    for a in assiettes:
+        if a['l'].startswith('Aide à l’accès au logement') or a['l'].startswith("Aide à l'accès au logement"):
+            a['exclut'] += ['apl']; A['apl']['exclut'].append(a['k'])
+        if a['l'].startswith('Handicap et dépendance'):
+            a['exclut'] += ['aah']; A['aah']['exclut'].append(a['k'])
+        if a['l'].startswith('Solidarité, insertion'):
+            a['exclut'] += ['aah']; A['aah']['exclut'].append(a['k'])
+        if a['l'].startswith('Cohésion des territoires'):
+            a['exclut'] += ['apl']; A['apl']['exclut'].append(a['k'])
     # Paramètres du modèle.
     var = {}
     for t, cle in MACRO.items():

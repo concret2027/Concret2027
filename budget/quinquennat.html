@@ -763,8 +763,8 @@ body.q-mesures { padding-bottom: 92px; }
   function creer() {
     var sel = $('q-as'), L = J.assiettes || [];
     if (!sel.options.length) {
-      var g = function (gr, t) { return '<optgroup label="' + t + '">' + L.filter(function (x) { return x.groupe === gr; }).map(function (x) { return '<option value="' + x.k + '">' + esc(x.l) + '</option>'; }).join('') + '</optgroup>'; };
-      sel.innerHTML = g('recette', 'Impôts et cotisations') + g('depense', 'Dépenses');
+      var g = function (f, t) { var o = L.filter(f); return o.length ? '<optgroup label="' + t + '">' + o.map(function (x) { return '<option value="' + x.k + '">' + (x.parent ? '— ' : '') + esc(x.l) + '</option>'; }).join('') + '</optgroup>' : ''; };
+      sel.innerHTML = g(function (x) { return x.groupe === 'recette'; }, 'Impôts et cotisations') + g(function (x) { return x.groupe === 'depense' && !x.etat; }, 'Sécurité sociale, prestations, salaires publics') + g(function (x) { return x.etat; }, 'Budget de l\'État : missions et programmes');
       sel.onchange = function () { $('q-pc').value = S.perso[sel.value] != null ? S.perso[sel.value] : -10; maj(); };
       $('q-pc').oninput = maj;
       $('q-pc-p').innerHTML = [-100, -50, -20, -10, -5, 5, 10, 20].map(function (v) { return '<button type="button" data-v="' + v + '">' + (v > 0 ? '+' : '−') + Math.abs(v) + ' %</button>'; }).join('');
