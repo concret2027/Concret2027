@@ -228,7 +228,7 @@
   }
   // Ce qui n'est pas compté s'explique là où on le voit, jamais replié : dans une note qui va être repliée, les phrases
   // « Non compté… », « … ne sont pas comptées », « Affiché, pas compté… », « France seule… » passent dans une ligne à part,
-  // toujours visible, juste sous la note et son bouton (p.note.nt-garde) ; le reste (méthode, sources) peut se replier.
+  // toujours visible, juste au-dessus de la note (p.nt-garde) ; le reste (méthode, sources) peut se replier.
   var GARDE = /non compt|pas compté|ces années ne sont pas comptées|ne sont pas comptées|pas encore publi|France seule/i, REGLE = /sous 70 %/;
   function phrases(html) {
     // Coupe après « . » ou « ; » suivi d'une majuscule, sans couper au milieu d'un lien (sans lookbehind : vieux Safari).
@@ -268,7 +268,9 @@
     if (court) { r = r.concat(g.filter(function (x) { return court.indexOf(x) < 0; })); g = court; }
     // La ligne gardée va sous la note et son bouton (la page cherche sa note avec querySelector('.note') : elle doit rester la première).
     var sib = n._garde && n._garde.parentNode ? n._garde : null;
-    if (!sib) { sib = document.createElement('p'); sib.className = 'note nt-garde'; n._garde = sib; var b = bouton(n); b.parentNode.insertBefore(sib, b.nextSibling); }
+    // La ligne gardée va juste au-dessus de la note (sans la classe « note » : la page cherche sa note avec querySelector('.note')),
+    // avec la même apparence que la note.
+    if (!sib) { sib = document.createElement('p'); sib.className = 'nt-garde'; n._garde = sib; var cs = getComputedStyle(n); ['fontSize', 'lineHeight', 'color', 'fontFamily'].forEach(function (k) { sib.style[k] = cs[k]; }); sib.style.margin = '0'; n.parentNode.insertBefore(sib, n); }
     if (sib.innerHTML !== g.join(' ')) sib.innerHTML = g.join(' ');
     n.innerHTML = r.join(' '); n._ntSet = n.innerHTML;
     if (!r.length) { n.hidden = true; n.dataset.ntVide = '1'; }
@@ -283,7 +285,7 @@
       b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
     });
     Array.prototype.forEach.call(document.querySelectorAll(NT), function (n) {
-      if (n.classList.contains('pt-hors') || n.classList.contains('defs') || n.classList.contains('mentions') || n.classList.contains('nt-garde')) return; // mentions légales d'un sondage : jamais repliées
+      if (n.classList.contains('pt-hors') || n.classList.contains('defs') || n.classList.contains('mentions')) return; // mentions légales d'un sondage : jamais repliées
       garder(n);
       var b = bouton(n);
       var ouvert = !!n.dataset.ntOuvert, deja = n.classList.contains('nt-pli');

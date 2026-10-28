@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="8e164d419544">
+<meta name="concret-version" content="ad0dabeae973">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -293,21 +293,26 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .charts3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
 /* Titre de courbe en lettres normales (les capitales sur trois lignes se lisent mal). */
 .courbe-p > .eyebrow, .fold .card > h2 > .eyebrow, .grand .card > h2 > .eyebrow, section.theme > .charts4 .card > h2 > .eyebrow { text-transform: none; letter-spacing: 0; font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--fg); }
-.minis-h { margin: -4px 0 0; font-size: 14px; font-weight: 600; color: var(--fr); }
-.minis-k { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12.5px; color: var(--muted); }
-.minis-k i { display: inline-block; width: 16px; height: 0; border-top: 2.5px solid; vertical-align: middle; margin-right: 5px; }
+.minis-h { margin: -6px 0 0; font-size: 13px; font-weight: 600; color: var(--fr); }
+.minis-k { margin: 0; display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 12px; color: var(--muted); }
+.minis-k i { display: inline-block; width: 12px; height: 0; border-top: 2.5px solid; vertical-align: middle; margin-right: 5px; }
 .minis-k i.fr { border-color: var(--fr); } .minis-k i.ue { border-top: 2px dashed var(--ea); } .minis-k i.de { border-color: var(--de); border-top-width: 1.5px; } .minis-k i.es { border-color: var(--es); border-top-width: 1.5px; }
 .minis { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 10px; }
 .mini { font: inherit; text-align: left; display: grid; gap: 4px; align-content: start; padding: 9px 10px 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--fg); cursor: pointer; min-height: 44px; }
 .mini:hover, .mini:focus-visible { border-color: var(--fr); }
-.mini-t { font-size: 13.5px; font-weight: 700; line-height: 1.25; }
+.mini-t { font-size: 13.5px; font-weight: 700; line-height: 1.25; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .mini-tag { font-size: 11.5px; color: var(--muted); }
-.mini svg { width: 100%; height: auto; display: block; }
-.mini-v { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; } .mini-v b.f { color: var(--fr); } .mini-v b.e { color: var(--ea); }
+.mini svg { width: 100%; height: 56px; display: block; }
+.mini-v { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; display: grid; line-height: 1.35; } .mini-v > span { min-height: 1.35em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .mini-v b.f { color: var(--fr); } .mini-v b.e { color: var(--ea); }
 .mini-o { font-weight: 700; color: var(--fr); }
-@media (max-width: 600px) { .minis .mini.large { grid-column: 1 / -1; } .minis .mini.large .mini-pt { r: 1.8; } }
+@media (max-width: 600px) { .minis .mini.large { grid-column: 1 / -1; } .minis .mini.large svg { height: 64px; } }
 .minis .grand { grid-column: 1 / -1; display: grid; gap: 6px; }
 .grand .reduire { justify-self: end; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--fr); background: none; border: 0; min-height: 44px; padding: 0 4px; cursor: pointer; }
+/* Sous une courbe : « Détail du graphe » et « Partager » côte à côte, le détail tout replié. */
+.courbe-p, .grand .card { display: flex !important; flex-wrap: wrap; align-items: center; column-gap: 16px; row-gap: 8px; --nt-l: 0; }
+.courbe-p > *, .grand .card > * { flex: 1 1 100%; min-width: 0; }
+.courbe-p > .nt-btn, .courbe-p > .pt-share, .grand .card > .nt-btn, .grand .card > .pt-share { flex: 0 0 auto; margin-top: 0; }
+.courbe-p > p.note.nt-pli, .grand .card > p.note.nt-pli { display: none; }
 .courbe-p { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 12px 12px 10px; box-shadow: none; }
 .charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
 .chart { position: relative; min-width: 0; }
@@ -1143,10 +1148,10 @@ function main(FEED) {
     var trace = function (P) { var seg = [], cur = []; P.forEach(function (p, k) { if (k && p.x !== P[k - 1].x + 1 && cur.length) { seg.push(cur); cur = []; } cur.push(X(p.x).toFixed(1) + ',' + Y(p.v).toFixed(1)); }); if (cur.length) seg.push(cur); return seg.map(function (sg) { return sg.length > 1 ? sg.join(' ') : sg[0] + ' ' + sg[0]; }); };
     var lf = F[F.length - 1], le = E.filter(function (p) { return p.x === lf.x; })[0] || null;
     var b = document.createElement('button'); b.type = 'button'; b.className = 'mini';
-    b.innerHTML = '<span class="mini-t">' + esc(c.lc || c.l) + ' <span class="mini-o" aria-hidden="true">›</span></span>' + (/sans note/.test(o.tag || '') ? '<span class="mini-tag">' + esc(o.tag) + '</span>' : '') +
+    b.innerHTML = '<span class="mini-t">' + esc(c.lc || c.l) + '</span>' +
       '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + [[D, 'var(--de)'], [Es, 'var(--es)']].map(function (a) { return a[0].length ? trace(a[0]).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="' + a[1] + '" stroke-width="1.2" opacity=".75"/>'; }).join('') : ''; }).join('') + (E.length ? trace(E).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--ea)" stroke-width="1.6" stroke-dasharray="4 3"/>'; }).join('') : '') +
       trace(F).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--fr)" stroke-width="2.4" stroke-linejoin="round"/>'; }).join('') + '<circle cx="' + X(lf.x) + '" cy="' + Y(lf.v) + '" r="3" fill="var(--fr)" class="mini-pt"/></svg>' +
-      '<span class="mini-v"><b class="f">' + fmt(lf.v, dec) + u + '</b> France' + (le ? ' · <b class="e">' + fmt(le.v, dec) + u + '</b> UE' : '') + ' · ' + lf.x + '</span>';
+      '<span class="mini-v"><span><b class="f">' + fmt(lf.v, dec) + u + '</b> France · ' + lf.x + '</span><span>' + (le ? '<b class="e">' + fmt(le.v, dec) + u + '</b> moyenne UE' : '') + (/sans note/.test(o.tag || '') ? (le ? ' · ' : '') + 'sans note' : '') + '</span></span>';
     b.setAttribute('aria-label', (c.lc || c.l) + ' : France ' + fmt(lf.v, dec) + u + (le ? ', moyenne de l\'UE ' + fmt(le.v, dec) + u : '') + ' en ' + lf.x + '. Voir la courbe en grand');
     b.addEventListener('click', function () {
       var g = document.createElement('div'); g.className = 'grand';
@@ -1395,6 +1400,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028i"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028j"></script>
+<script src="/commun/menu.js?v=20261028k"></script>
 </body>
 </html>
