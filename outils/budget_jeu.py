@@ -81,7 +81,8 @@ EXCLUES = {'fctva-taux': "versement de l'État aux collectivités : le document 
 # Votes de l'Assemblée qui portent sur la mesure elle-même : (scrutin, sens) ; sens -1 quand le vote est sur sa suppression.
 # Mesures d'un seul exercice : rien après la dernière année chiffrée. Les autres gardent leur dernier montant (aucun chiffrage
 # officiel au-delà : c'est une hypothèse de Concret, écrite sur la carte).
-PONCTUELLES = {'avoirs-desherence', 'contribution-complementaires-sante', 'contribution-transport-maritime', 'contribution-grandes-entreprises'}
+# cpeb : « Il est institué, au profit du budget général de l'État, pour l'année 2027, une contribution… » (PLF 2027, article 37, alinéa 1).
+PONCTUELLES = {'avoirs-desherence', 'contribution-complementaires-sante', 'contribution-transport-maritime', 'contribution-grandes-entreprises', 'cpeb'}
 SCRUTINS = {'ir-indemnites-journalieres': (8727, -1), 'csg-indemnites-journalieres': (8727, -1), 'ir-abattement-retraites': (8738, -1),
             'cpeb': (8887, -1), 'allegements-complements-salaire': (8998, 1), 'taxe-produits-sucres': (9033, -1),
             'contribution-complementaires-sante': (9077, -1), 'contribution-grandes-entreprises': (9123, -1), 'contribution-transport-maritime': (9123, -1)}
@@ -113,7 +114,9 @@ NICHES = {
 REGLE = {'v': 3, 'source': "Eurostat, glossaire « Procédure concernant les déficits excessifs » : selon le protocole annexé au traité de Maastricht, le déficit ne doit pas dépasser 3 % du PIB",
          'url': 'https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Excessive_deficit_procedure_(EDP)'}
 DEFIS = [
-    {'id': 'd3-an1', 't': 'Ramenez le déficit de 2027 à 3 % du PIB ou moins.', 'c': [{'type': 'deficit_an1', 'v': 3}], 'src': REGLE},
+    # 3 % : la date fixée à la France par l'Union européenne est 2029 (recommandation du Conseil, janvier 2025), pas 2027.
+    {'id': 'd3-2029', 't': "Ramenez le déficit de 2029 à 3 % du PIB ou moins : c'est la date fixée à la France par l'Union européenne.", 'c': [{'type': 'deficit_an', 'an': 2029, 'v': 3}], 'src': 'UE2029'},
+    {'id': 'gouv-sans-baisse', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) sans baisser aucune dépense.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_baisse_depense'}], 'src': 'CIBLE'},
     {'id': 'dette', 't': "Faites baisser la dette d'ici la fin du quinquennat.", 'c': [{'type': 'dette_baisse'}]},
     {'id': 'd3-sans-impot', 't': "Ramenez le déficit de la dernière année à 3 % sans augmenter aucun impôt ni cotisation.", 'c': [{'type': 'deficit_fin', 'v': 3}, {'type': 'sans_impot'}], 'src': REGLE},
     {'id': 'd3-sans-retraites', 't': "Ramenez le déficit de la dernière année à 3 % sans toucher aux retraites.", 'c': [{'type': 'deficit_fin', 'v': 3}, {'type': 'sans_theme', 'theme': 'retraites'}], 'src': REGLE},
@@ -521,7 +524,7 @@ def construire():
         else:
             ass('tva', "TVA (part de l'État)", 'recette', AE['tva_nette_etat']['valeurs']['2027_plf'], an2, ['consommateurs'], 'tva', asx('tva_nette_etat'), "Recette nette de l'État ; une autre part de la TVA va à la Sécurité sociale et aux collectivités.")
         ass('csg', "CSG (contribution sociale généralisée)", 'recette', AE['csg_produit']['valeurs']['2027_p'] / 1000, an2, ['salaries', 'retraites'], 'csg', asx('csg_produit'), "Produit prévu (Commission des comptes de la Sécurité sociale) ; un point de CSG rapporte environ 18,4 Md€.")
-        ass('carburants', "Taxes sur les carburants (accise, ex-TICPE)", 'recette', AE['accise_energies_nette']['valeurs']['2027_plf_euros_carburants'] / 1e9, an2, ['automobilistes', 'consommateurs'], None, asx('accise_energies_nette'), "Part de l'État seulement : les régions et départements reçoivent aussi une part de cette taxe, que la source ne chiffre pas ici. Le montant d'un changement de tarif est donc un minimum. Le modèle Mésange (direction du Trésor et Insee) ne donne pas l'effet de cette taxe sur l'activité.")
+        ass('carburants', "Taxes sur les carburants (accise, ex-TICPE)", 'recette', AE['accise_energies_nette']['valeurs']['2027_plf_euros_carburants'] / 1e9, an2, ['automobilistes', 'consommateurs'], None, dict(asx('accise_energies_nette'), citation=AE['accise_energies_nette']['citations_complementaires'][1]['citation'], page=AE['accise_energies_nette']['citations_complementaires'][1]['page']), "Part de l'État seulement : les régions et départements reçoivent aussi une part de cette taxe, que la source ne chiffre pas ici. Le montant d'un changement de tarif est donc un minimum. Le modèle Mésange (direction du Trésor et Insee) ne donne pas l'effet de cette taxe sur l'activité.")
         ass('ame', "Aide médicale de l'État (AME)", 'depense', AE['ame_credits_2027']['valeurs']['2027_plf_CP'] / 1e9, an2, ['etrangers'], 'depense', asx('ame_credits_2027'),
             "Crédits prévus. En 2025, la dépense réelle a été de 1,47 Md€ pour 1,21 Md€ de crédits ; " + '{:,}'.format(AE['ame_beneficiaires']['valeurs']['31_12_2025']).replace(',', ' ') + " bénéficiaires fin 2025.")
         ass('c2s', "Complémentaire santé solidaire (C2S, ex-CMU complémentaire)", 'depense', AE['c2s_depense']['valeurs']['2024_depense_nette'], 2024, ['assures'], 'depense', asx('c2s_depense'), "Dépense nette 2024, dernier chiffre publié ; 7,79 millions de bénéficiaires fin 2024.")
@@ -695,6 +698,16 @@ def construire():
             if not k.startswith('_') and v:
                 cas[k] = {x: v.get(x) for x in ('v', 'unite', 'date_effet', 'source', 'url')}
     for c in cartes:
+        # Le gel du barème est chiffré par le Gouvernement, mais il ne le propose pas (il propose de relever les tranches) :
+        # un chiffrage officiel, pas une mesure de son budget.
+        if c['id'] == 'ir-indexation-bareme':
+            c['origine'] = 'levier'
+        # La taxe Zucman (impôt plancher, impôts déjà payés compris) et le retour de l'ISF ne s'additionnent pas.
+        if c['id'] in ('taxe-zucman', 'isf'):
+            c['exclut'] = sorted(set((c.get('exclut') or []) + ['isf' if c['id'] == 'taxe-zucman' else 'taxe-zucman']))
+            c['note'] = (c.get('note') or '') + " Ne s'additionne pas avec " + ("le retour de l'ISF : l'impôt plancher compte les impôts déjà payés, ISF compris." if c['id'] == 'taxe-zucman' else "la taxe Zucman, qui compte les impôts déjà payés, ISF compris.")
+        if c['id'] == 'cpeb' and not c.get('note'):
+            c['note'] = "Pour la seule année 2027 : « Il est institué, au profit du budget général de l'État, pour l'année 2027, une contribution progressive des collectivités territoriales » (PLF 2027, article 37). L'argent que les collectivités versent à l'État améliore le déficit de l'ensemble des administrations du même montant (même document)."
         # Budgets prêts à jouer : le texte du Gouvernement tel que déposé, et ce qu'il en reste après les votes de l'Assemblée
         # en première lecture (mesure supprimée, article ou projet de loi rejeté, ou mesure non examinée : retirée).
         if c.get('origine') in ('plf', 'plfss'):
@@ -737,7 +750,9 @@ def construire():
         'depart': eurostat_depart(),
         'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'unites': unites, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
-        'variantes': var, 'regle': REGLE, 'defis': DEFIS,
+        'variantes': var, 'regle': REGLE,
+        'echeance_ue': ({'an': AE['ue_deficit_excessif_2029']['valeurs']['annee_limite'], 'v': AE['ue_deficit_excessif_2029']['valeurs']['seuil_pct_pib'], 'source': AE['ue_deficit_excessif_2029']['document'] + ', ' + AE['ue_deficit_excessif_2029']['page'], 'url': AE['ue_deficit_excessif_2029']['url'], 'citation': AE['ue_deficit_excessif_2029']['citation']} if 'ue_deficit_excessif_2029' in AE else None),
+        'defis': [dict(d, src=({'v': 3, 'source': AE['ue_deficit_excessif_2029']['document'], 'url': AE['ue_deficit_excessif_2029']['url']} if d.get('src') == 'UE2029' else {'v': -AE['cible_solde_2027']['valeurs']['2027_plf_pct_pib'], 'source': AE['cible_solde_2027']['document'] + ', ' + AE['cible_solde_2027']['page'], 'url': AE['cible_solde_2027']['url']} if d.get('src') == 'CIBLE' else d.get('src'))) for d in DEFIS if (d.get('src') != 'UE2029' or 'ue_deficit_excessif_2029' in AE) and (d.get('src') != 'CIBLE' or 'cible_solde_2027' in AE)],
         'pays_fmi': charger('fmi_pays.json'),
         'cible': ({'v': -AE['cible_solde_2027']['valeurs']['2027_plf_pct_pib'], 'an': AE['cible_solde_2027']['annee'], 'source': AE['cible_solde_2027']['document'] + ', ' + AE['cible_solde_2027']['page'],
                    'url': AE['cible_solde_2027']['url'], 'citation': AE['cible_solde_2027']['citation']} if 'cible_solde_2027' in AE else None),
