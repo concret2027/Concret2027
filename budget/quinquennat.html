@@ -1157,7 +1157,7 @@ body.q-vote { padding-bottom: 92px; }
     var src = '<a href="' + esc(u.url) + '">' + esc(String(u.source).split(/,| \(/)[0]) + '</a>' + (u.type !== 'construction' && AS[u.ligne] ? ' 2027, ' + esc(AS[u.ligne].l.split(' (')[0]) : '');
     if (u.type === 'construction') {
       var pl = u.places_prison_operationnelles;
-      $('q-un-n').innerHTML = 'Une place coûte <b>' + eu(u.cout) + '</b> à construire : coût moyen constaté sur les prisons déjà livrées du plan « 15 000 places » (' + src + ', ' + esc(String(u.annee).replace(/\s*\(.*\)\s*$/, '')) + ').' + (pl ? ' Aujourd\'hui : ' + nf(pl.v, 0) + ' places opérationnelles (' + esc(pl.annee) + ')' + (pl.effectif ? ' pour ' + nf(pl.effectif.v, 0) + ' personnes détenues' : '') + '.' : '');
+      $('q-un-n').innerHTML = 'Une place coûte <b>' + eu(u.cout) + '</b> à construire en moyenne, d\'après la Cour des comptes sur les 22 opérations déjà livrées du plan « 15 000 places »' + (u.cout_cp ? ' ; ' + eu(u.cout_cp) + ' dans un centre pénitentiaire (une prison neuve complète)' : '') + ' (' + src + ', ' + esc(String(u.annee).replace(/\s*\(.*\)\s*$/, '')) + ').' + (pl ? ' Aujourd\'hui : ' + nf(pl.v, 0) + ' places opérationnelles (' + esc(pl.annee) + ')' + (pl.effectif ? ' pour ' + nf(pl.effectif.v, 0) + ' personnes détenues' : '') + '.' : '');
     } else {
       $('q-un-n').innerHTML = 'Coût d\'une recrue : <b>' + eu(u.entree || u.cout) + ' par an</b>' + (u.entree ? ' (coût d\'entrée ; ' + eu(u.cout) + ' en moyenne pour l\'ensemble des agents)' : '') + ', cotisations de l\'employeur comprises, sans la contribution de l\'État au financement des pensions de ses agents (' + src + ').' + (u.effectif ? ' Aujourd\'hui : ' + nf(Math.round(u.effectif.v), 0) + ' emplois.' : '');
     }
