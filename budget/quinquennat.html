@@ -331,10 +331,13 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-hud div:nth-child(4) b { font-size: 17px; white-space: nowrap; }
 .q-jauge { grid-column: 1 / -1; position: relative; height: 5px; border-radius: 3px; background: var(--line); margin-top: 6px; }
 .q-jauge b { position: absolute; top: -15px; transform: translateX(-50%); font: 600 10px/1 var(--sans, inherit); color: var(--fg); white-space: nowrap; }
+.q-hud .q-cumul { grid-column: 1 / -1; display: block; margin: 6px 0 0; font-size: 13px; line-height: 1.35; color: var(--fg); }
+.q-cumul b { font-variant-numeric: tabular-nums; color: var(--fr); }
+.q-hud .q-cumul.vide { color: var(--muted); }
 .q-jauge span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--fr); transition: width .35s ease; }
 .q-jauge em { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); }
 .q-jauge-l { display: none; }
-.q-hud .q-toast { position: absolute; left: 10px; right: 10px; top: calc(100% + 6px); font-size: 13px; font-weight: 600; color: var(--bg); background: var(--fg); border-radius: 10px; padding: 8px 12px; display: flex; justify-content: space-between; gap: 8px; opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity .2s, transform .2s; }
+.q-hud .q-toast { line-height: 1.35; position: absolute; left: 10px; right: 10px; top: calc(100% + 6px); font-size: 13px; font-weight: 600; color: var(--bg); background: var(--fg); border-radius: 10px; padding: 8px 12px; display: flex; justify-content: space-between; gap: 8px; opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity .2s, transform .2s; }
 .q-hud .q-toast.on { opacity: 1; transform: none; pointer-events: auto; }
 .q-toast button { font: inherit; font-size: 13px; font-weight: 700; color: var(--bg); background: none; border: 0; text-decoration: underline; cursor: pointer; padding: 0; }
 .q-flash b { animation: q-flash .6s ease; }
@@ -452,6 +455,7 @@ body.q-mesures { padding-bottom: 92px; }
     <div><small id="h-dt-l">Dette</small><b id="h-dt">—</b><i id="h-dt-e"></i></div>
     <div><small id="h-pib-l">Activité</small><b id="h-pib">—</b><i id="h-pib-e"></i></div>
     <div class="q-jauge" id="q-jauge" aria-hidden="true"><span></span><em></em></div>
+    <p class="q-cumul" id="q-cumul"></p>
     <div class="q-toast" id="q-toast"><span></span><button type="button">Annuler</button></div>
   </div>
 
@@ -592,7 +596,7 @@ body.q-mesures { padding-bottom: 92px; }
         });
         Object.keys(po).forEach(function (k) {
           var x = PAR[k]; if (!x) return; var dpt = po[k], t = x.type === 'dep' ? 'depense' : (POSTE_MACRO[x.k] || 'aucun');
-          var amelio = x.type === 'dep' ? -dpt : dpt; A[t] = (A[t] || 0) + amelio;
+          var amelio = x.type === 'dep' ? -dpt : dpt; A[t] = (A[t] || 0) + amelio; tot += amelio * pibSans / 100;
         });
       }
       // Effet sur l'activité et sur le solde : chaque hausse ou baisse du montant agit selon son ancienneté (modèle linéaire).
@@ -632,11 +636,26 @@ body.q-mesures { padding-bottom: 92px; }
     set('h-pib', S.macro ? (Math.abs(r5.emploi) < 0.5 ? '0' : sg(Math.round(r5.emploi), 0) + ' 000') : '—', S.macro ? 'PIB ' + sg(r5.L, 1) + ' %' : 'non compté', '');
     function s1(s) { return s < 0 ? nf(-s, 1) + ' %' : 'excédent'; }
     function ecart(e) { return Math.abs(e) < 0.05 ? 'départ' : (e > 0 ? '−' : '+') + nf(Math.abs(e), 1) + ' pt'; }
+    // Le total de vos choix : ce qu'ils rapportent ou coûtent la première année, et l'écart de dette à la fin, qui grossit à chaque vote.
+    var tot1 = r1.mesures, dd = r5.d - z5.d, cu = $('q-cumul'), vide = Math.abs(tot1) < 0.05 && Math.abs(dd) < 0.05;
+    cu.className = 'q-cumul' + (vide ? ' vide' : '');
+    if (vide) cu.textContent = 'Vos choix : rien pour l\'instant. Chaque vote s\'ajoute ici.';
+    else { cu.innerHTML = 'Vos choix : <b data-n="' + tot1 + '" data-u="Md€ par an">' + sg(tot1, 1) + ' Md€ par an</b> pour les comptes publics · dette ' + AN1 + ' : <b data-n="' + dd + '" data-u="pts">' + sg(dd, 1) + ' pts</b>'; compter(cu); }
     // La jauge : le déficit de la première année, de 0 au déficit de départ ; le trait marque la règle des 3 %.
     var max = Math.max(-z1.solde, -r1.solde, PAR.regle + 1), w = Math.max(0, -r1.solde) / max * 100;
     $('q-jauge').querySelector('span').style.width = w + '%'; $('q-jauge').querySelector('em').style.left = (PAR.regle / max * 100) + '%';
     $('q-hud').title = 'Barre : déficit ' + AN0 + ', ' + def(r1.solde) + ' du PIB ; trait : ' + nf(PAR.regle, 0) + ' %, règle européenne';
     if (!$('p-bilan').hidden) bilan();
+  }
+  // Les nombres du total défilent de l'ancienne à la nouvelle valeur.
+  var avantN = {};
+  function compter(el) {
+    Array.prototype.forEach.call(el.querySelectorAll('b[data-n]'), function (b, i) {
+      var de = avantN[i] != null ? avantN[i] : 0, a = +b.dataset.n, u = b.dataset.u, t0 = null; avantN[i] = a;
+      if (Math.abs(a - de) < 0.05 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var pas = function (t) { if (!t0) t0 = t; var k = Math.min(1, (t - t0) / 450); b.textContent = sg(de + (a - de) * (1 - Math.pow(1 - k, 3)), 1) + ' ' + u; if (k < 1) requestAnimationFrame(pas); };
+      requestAnimationFrame(pas);
+    });
   }
   var toastT = null, dernier = null;
   function toast(t, annuler) {
@@ -672,7 +691,7 @@ body.q-mesures { padding-bottom: 92px; }
       '<h2>' + esc(c.l) + '</h2>' +
       (c.quoi ? '<p class="quoi">' + esc(c.quoi) + '</p>' : '') +
       (c.officiel ? '<p class="quoi">Intitulé officiel : « ' + esc(c.officiel) + ' ».</p>' : '') +
-      '<div class="q-montant"><b>' + sg(m1, 1) + ' Md€</b><span>' + (m1 >= 0 ? 'en moins de déficit' : 'en plus de déficit') + ' en ' + AN0 + ' (' + (ret ? 'dépense' : 'recette') + ')</span><small>' + esc(anneesTexte(c)) +
+      '<div class="q-montant"><b>' + sg(m1, 1) + ' Md€</b><span>' + (m1 >= 0 ? 'en moins de déficit' : 'en plus de déficit') + ' en ' + AN0 + ' (' + (ret ? (m1 >= 0 ? 'moins de dépense' : 'plus de dépense') : (m1 >= 0 ? 'plus d\'impôts ou de cotisations' : 'moins d\'impôts')) + ')</span><small>' + esc(anneesTexte(c)) +
       (c.origine === 'niche' ? ' Coût de la niche chiffré par le Gouvernement (' + esc(c.cout_annee) + ') : la recette de sa suppression peut être plus faible si les comportements changent.' : '') + '</small></div>' +
       '<p class="q-qui"><b>' + (c.qui_titre || (ret ? (m1 < 0 ? 'Qui reçoit plus' : 'Qui reçoit moins') : (m1 < 0 ? 'Qui paie moins' : 'Qui paie'))) + ' :</b> ' + esc(c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + (c.qui_texte ? ' · <span class="q-org">' + esc(c.qui_texte) + '</span>' : '') + '</p>' +
       (c.statut ? '<p class="q-an">À l\'Assemblée : ' + esc(court(c.statut)) + '</p>' : '') +
@@ -693,14 +712,15 @@ body.q-mesures { padding-bottom: 92px; }
     el.addEventListener('pointerup', fin); el.addEventListener('pointercancel', fin);
   }
   function voter(c, v) {
-    var avant = S.v[c.id], r1 = simuler().filter(function (r) { return r.an === AN0; })[0].solde;
+    var avant = S.v[c.id], A0 = simuler(), r1 = A0.filter(function (r) { return r.an === AN0; })[0].solde, d1 = A0[A0.length - 1].d;
     // Mesures qui se recouvrent : en adopter une retire les autres (même groupe, ou liste « exclut » dans un sens ou dans l'autre).
-    if (v === 1) C.forEach(function (o) { if (o !== c && S.v[o.id] === 1 && ((c.exclusif && o.exclusif === c.exclusif) || (c.exclut || []).indexOf(o.id) >= 0 || (o.exclut || []).indexOf(c.id) >= 0)) S.v[o.id] = -1; });
-    if (v === 1) Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(c.id) >= 0) delete S.perso[k]; });
+    var retirees = [];
+    if (v === 1) C.forEach(function (o) { if (o !== c && S.v[o.id] === 1 && ((c.exclusif && o.exclusif === c.exclusif) || (c.exclut || []).indexOf(o.id) >= 0 || (o.exclut || []).indexOf(c.id) >= 0)) { S.v[o.id] = -1; retirees.push(o.l); } });
+    if (v === 1) Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(c.id) >= 0) { delete S.perso[k]; retirees.push(AS[k].l); } });
     S.v[c.id] = v; garder();
     var el = $('q-card'); if (el) el.classList.add(v === 1 ? 'out-r' : 'out-l');
-    var r2 = simuler().filter(function (r) { return r.an === AN0; })[0].solde, e = r2 - r1;
-    toast(v === 1 ? 'Adoptée · déficit ' + AN0 + ' ' + (Math.abs(e) < 0.005 ? 'inchangé' : (e > 0 ? '−' : '+') + nf(Math.abs(e), 2) + ' pt') : v === -1 ? 'Rejetée' : 'Passée', function () { if (avant == null) delete S.v[c.id]; else S.v[c.id] = avant; garder(); tout(); });
+    var A1 = simuler(), r2 = A1.filter(function (r) { return r.an === AN0; })[0].solde, e = r2 - r1, de = A1[A1.length - 1].d - d1;
+    toast(v === 1 ? 'Adoptée : ' + sg(montant(c, AN0), 1) + ' Md€ · déficit ' + AN0 + ' ' + (Math.abs(e) < 0.005 ? 'inchangé' : (e > 0 ? '−' : '+') + nf(Math.abs(e), 2) + ' pt') + ' · dette ' + AN1 + ' ' + (Math.abs(de) < 0.05 ? 'inchangée' : sg(de, 1) + ' pt') + (retirees.length ? '. Remplace : ' + retirees.join(' ; ') : '') : v === -1 ? 'Rejetée : rien ne change' : 'Passée', function () { if (avant == null) delete S.v[c.id]; else S.v[c.id] = avant; garder(); tout(); });
     setTimeout(function () {
       tout(true);
       var k = $('q-card') || $('q-deck'), h = $('q-hud').getBoundingClientRect().bottom, t = k.getBoundingClientRect().top;
