@@ -145,7 +145,7 @@
     '.mn-liste a b{font-size:15.5px;font-weight:700;line-height:1.2}.mn-liste a span{font-size:12.5px;color:' + V.muted + ';line-height:1.3}' +
     '.mn-liste a:hover{border-color:' + V.fr + '}' +
     '.mn-liste a[aria-current]{border:2px solid ' + V.fr + ';padding:10px 11px}.mn-liste a[aria-current] span::before{content:"Vous êtes ici · ";color:' + V.fr + ';font-weight:600}' +
-    '.mn-pied{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.mn-pied a,.mn-pied button{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:600;color:' + V.fg + ';background:' + V.panel + ';border:1px solid ' + V.line + ';border-radius:999px;padding:6px 14px 6px 8px;text-decoration:none;cursor:pointer;min-height:44px}' +
+    '.mn-pied{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px;margin:0 0 12px}.mn-pied a,.mn-pied button{display:flex;align-items:center;gap:6px;text-align:left;line-height:1.2;font:inherit;font-size:14px;font-weight:600;color:' + V.fg + ';background:' + V.panel + ';border:1px solid ' + V.line + ';border-radius:999px;padding:6px 14px 6px 8px;text-decoration:none;cursor:pointer;min-height:44px}' +
     '.mn-pied .mn-ic{width:28px;height:28px;background:none}' +
     '.pg.mn-avec{grid-template-columns:auto minmax(0,1fr);column-gap:12px}.pg.mn-avec>*{grid-column:2}.pg.mn-avec>.mn-ic{grid-column:1;grid-row:1/span 4;align-self:start;margin-top:2px}' +
     // Dans le Menu : une colonne, une ligne par page. En bas de page : deux colonnes sur téléphone (nom seul), quatre sur grand écran.
@@ -189,7 +189,7 @@
 
   function ouvrir(btn) {
     var v = document.createElement('div'); v.className = 'mn-voile';
-    v.innerHTML = '<div class="mn-panneau" role="dialog" aria-modal="true" aria-label="Les pages de Concret"><div class="mn-haut"><b>Les pages de Concret</b><button type="button" class="mn-ferme">Fermer ✕</button></div><nav class="mn-liste">' + liste(PAGES) + '</nav><div class="mn-pied">' + (document.querySelector('.rech-b') ? '<button type="button" class="mn-cherche">' + icone('cherche') + 'Rechercher un chiffre</button>' : '') + (ici !== '/contact/' ? '<a href="/contact/">' + icone('lettre') + 'Écrire à Concret</a>' : '') + '</div></div>';
+    v.innerHTML = '<div class="mn-panneau" role="dialog" aria-modal="true" aria-label="Les pages de Concret"><div class="mn-haut"><b>Les pages de Concret</b><button type="button" class="mn-ferme">Fermer ✕</button></div><div class="mn-pied">' + (document.querySelector('.rech-b') ? '<button type="button" class="mn-cherche">' + icone('cherche') + 'Rechercher un chiffre</button>' : '') + (ici !== '/contact/' ? '<a href="/contact/">' + icone('lettre') + 'Écrire à Concret</a>' : '') + '</div><nav class="mn-liste">' + liste(PAGES) + '</nav></div>';
     var fermer = function () { v.remove(); document.removeEventListener('keydown', esc); document.documentElement.style.overflow = ''; btn.focus(); };
     var esc = function (e) { if (e.key === 'Escape') fermer(); };
     v.addEventListener('click', function (e) { if (e.target === v || e.target.closest('.mn-ferme')) fermer(); else if (e.target.closest('.mn-cherche')) { fermer(); document.querySelector('.rech-b').click(); } });
