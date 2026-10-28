@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="e2bb7d5b9346">
+<meta name="concret-version" content="e5ec33bb6cd3">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -292,7 +292,7 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .seg button:focus-visible { outline: 2px solid var(--fr); outline-offset: -3px; }
 .charts3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
 /* Titre de courbe en lettres normales (les capitales sur trois lignes se lisent mal). */
-.courbe-p > .eyebrow, .fold .card > h2 > .eyebrow, .grand .card > h2 > .eyebrow { text-transform: none; letter-spacing: 0; font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--fg); }
+.courbe-p > .eyebrow, .fold .card > h2 > .eyebrow, .grand .card > h2 > .eyebrow, section.theme > .charts4 .card > h2 > .eyebrow { text-transform: none; letter-spacing: 0; font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--fg); }
 .autres { display: grid; gap: 8px; }
 .minis-t { margin: 4px 0 0; font-size: 15px; font-weight: 700; } .minis-t span { font-weight: 400; font-size: 13px; color: var(--muted); }
 .minis-h { margin: -4px 0 0; font-size: 14px; font-weight: 600; color: var(--fr); }
@@ -1046,7 +1046,10 @@ function main(FEED) {
       // Les autres courbes du thème : toutes visibles en petit (France et moyenne de l'UE), deux par ligne sur téléphone ;
       // on en touche une pour l'ouvrir en grand, avec tous les pays, ses explications et son bouton « Partager ».
       var autres = cs.slice(1).map(function (o) { return { id: 'ch-' + o.id, c: o.c, tag: o.tag, extra: null }; });
-      if (EN_PLUS[t.k]) { var sc = serieCard; serieCard = function (w, id, c, tag, extra) { autres.push({ id: id, c: c, tag: tag, extra: extra }); return function () {}; }; try { EN_PLUS[t.k](null); } finally { serieCard = sc; } }
+      // Les courbes « en plus » d'un thème deviennent aussi des petites courbes ; un bloc d'un autre genre (texte, nuage de points)
+      // reste en grand sous les petites courbes.
+      var horsMini = document.createElement('div'), dessins = []; horsMini.className = 'charts4';
+      if (EN_PLUS[t.k]) { var sc = serieCard; serieCard = function (w, id, c, tag, extra) { autres.push({ id: id, c: c, tag: tag, extra: extra }); return function () {}; }; try { dessins = EN_PLUS[t.k](horsMini) || []; } finally { serieCard = sc; } }
       if (autres.length) {
         var bloc = document.createElement('div'); bloc.className = 'autres';
         bloc.innerHTML = '<h3 class="minis-t">' + (autres.length > 1 ? 'Les ' + autres.length + ' autres courbes du thème' : 'L\'autre courbe du thème') + '</h3><p class="minis-h">Toucher une courbe pour agrandir et ajouter d\'autres pays</p><p class="minis-k"><span><i class="fr"></i>France</span><span><i class="ue"></i>Moyenne de l\'UE</span><span><i class="de"></i>Allemagne</span><span><i class="es"></i>Espagne</span></p>';
@@ -1054,6 +1057,9 @@ function main(FEED) {
         autres.forEach(function (o) { grille.appendChild(mini(o)); });
         sec.appendChild(bloc);
       }
+      // Ces blocs gardent leur propre bouton « Partager ».
+      Array.prototype.forEach.call(horsMini.querySelectorAll('.card'), function (k) { k.classList.add('courbe-s'); k.dataset.partageL = 'Partager'; });
+      if (horsMini.children.length) { sec.appendChild(horsMini); MAIN.push(function () { dessins.forEach(function (d) { d(); }); }); }
       var dp = document.createElement('details'); dp.className = 'defs-pli';
       dp.innerHTML = '<summary>Définitions et sources</summary><p class="note defs">' + defs.join('<br>') + '</p>';
       sec.appendChild(dp);
@@ -1072,7 +1078,7 @@ function main(FEED) {
     var trace = function (P) { var seg = [], cur = []; P.forEach(function (p, k) { if (k && p.x !== P[k - 1].x + 1 && cur.length) { seg.push(cur); cur = []; } cur.push(X(p.x).toFixed(1) + ',' + Y(p.v).toFixed(1)); }); if (cur.length) seg.push(cur); return seg.map(function (sg) { return sg.length > 1 ? sg.join(' ') : sg[0] + ' ' + sg[0]; }); };
     var lf = F[F.length - 1], le = E.filter(function (p) { return p.x === lf.x; })[0] || null;
     var b = document.createElement('button'); b.type = 'button'; b.className = 'mini';
-    b.innerHTML = '<span class="mini-t">' + esc(c.lc || c.l) + ' <span class="mini-o" aria-hidden="true">›</span></span>' + (/affich/.test(o.tag || '') ? '<span class="mini-tag">affiché, sans note</span>' : '') +
+    b.innerHTML = '<span class="mini-t">' + esc(c.lc || c.l) + ' <span class="mini-o" aria-hidden="true">›</span></span>' + (/sans note/.test(o.tag || '') ? '<span class="mini-tag">' + esc(o.tag) + '</span>' : '') +
       '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + [[D, 'var(--de)'], [Es, 'var(--es)']].map(function (a) { return a[0].length ? trace(a[0]).map(function (q) { return '<polyline points="' + q + '" fill="none" stroke="' + a[1] + '" stroke-width="1.2" opacity=".75"/>'; }).join('') : ''; }).join('') + (E.length ? trace(E).map(function (q) { return '<polyline points="' + q + '" fill="none" stroke="var(--ea)" stroke-width="1.6" stroke-dasharray="4 3"/>'; }).join('') : '') +
       trace(F).map(function (q) { return '<polyline points="' + q + '" fill="none" stroke="var(--fr)" stroke-width="2.4" stroke-linejoin="round"/>'; }).join('') + '<circle cx="' + X(lf.x) + '" cy="' + Y(lf.v) + '" r="3" fill="var(--fr)"/></svg>' +
       '<span class="mini-v"><b class="f">' + fmt(lf.v, dec) + u + '</b> France' + (le ? ' · <b class="e">' + fmt(le.v, dec) + u + '</b> UE' : '') + ' · ' + lf.x + '</span>';

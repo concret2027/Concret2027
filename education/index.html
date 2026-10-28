@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="e2bb7d5b9346">
+<meta name="concret-version" content="e5ec33bb6cd3">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1190,16 +1190,7 @@ function main(FEED) {
 
   function drawAll() { rankChart(); drawCharts(); }
   renderYears(); renderGov(); drawAll();
-  // Courbes secondaires : le titre reste visible ; la courbe, sa lecture et ses sources passent dans un dépliant, redessinées à l'ouverture.
-  document.querySelectorAll('#depense, #origine, #universites').forEach(function (card) {
-    var h = card.querySelector('h2'); if (!h || !card.querySelector('.chart')) return;
-    var d = document.createElement('details'); d.className = 'fold pli-courbe';
-    d.innerHTML = '<summary><span class="ouvrir">Voir la courbe et les sources</span><span class="fermer">Masquer la courbe</span></summary>';
-    var inner = document.createElement('div'); inner.className = 'fold-in';
-    for (var n = h.nextSibling; n;) { var nx = n.nextSibling; if (!(n.classList && n.classList.contains('share'))) inner.appendChild(n); n = nx; }
-    d.appendChild(inner); h.parentNode.insertBefore(d, h.nextSibling);
-    d.addEventListener('toggle', function () { if (d.open) drawAll(); });
-  });
+  // Toutes les courbes sont visibles d'emblée, secondaires comprises (choix de l'éditeur : on ne cache pas les courbes).
   var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });
 }
   var started = false;

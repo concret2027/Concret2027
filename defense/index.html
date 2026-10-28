@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="e2bb7d5b9346">
+<meta name="concret-version" content="e5ec33bb6cd3">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -292,7 +292,21 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .seg button:focus-visible { outline: 2px solid var(--fr); outline-offset: -3px; }
 .charts3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
 /* Titre de courbe en lettres normales (les capitales sur trois lignes se lisent mal). */
-.courbe-p > .eyebrow, .fold .card > h2 > .eyebrow { text-transform: none; letter-spacing: 0; font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--fg); }
+.courbe-p > .eyebrow, .fold .card > h2 > .eyebrow, .grand .card > h2 > .eyebrow, section.theme > .charts4 .card > h2 > .eyebrow { text-transform: none; letter-spacing: 0; font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--fg); }
+.minis-h { margin: -4px 0 0; font-size: 14px; font-weight: 600; color: var(--fr); }
+.minis-k { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12.5px; color: var(--muted); }
+.minis-k i { display: inline-block; width: 16px; height: 0; border-top: 2.5px solid; vertical-align: middle; margin-right: 5px; }
+.minis-k i.fr { border-color: var(--fr); } .minis-k i.ue { border-top: 2px dashed var(--ea); } .minis-k i.de { border-color: var(--de); border-top-width: 1.5px; } .minis-k i.es { border-color: var(--es); border-top-width: 1.5px; }
+.minis { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 10px; }
+.mini { font: inherit; text-align: left; display: grid; gap: 4px; align-content: start; padding: 9px 10px 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--fg); cursor: pointer; min-height: 44px; }
+.mini:hover, .mini:focus-visible { border-color: var(--fr); }
+.mini-t { font-size: 13.5px; font-weight: 700; line-height: 1.25; }
+.mini-tag { font-size: 11.5px; color: var(--muted); }
+.mini svg { width: 100%; height: auto; display: block; }
+.mini-v { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; } .mini-v b.f { color: var(--fr); } .mini-v b.e { color: var(--ea); }
+.mini-o { font-weight: 700; color: var(--fr); }
+.minis .grand { grid-column: 1 / -1; display: grid; gap: 6px; }
+.grand .reduire { justify-self: end; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--fr); background: none; border: 0; min-height: 44px; padding: 0 4px; cursor: pointer; }
 .courbe-p { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 12px 12px 10px; box-shadow: none; }
 .charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
 .chart { position: relative; min-width: 0; }
@@ -1073,23 +1087,56 @@ function main(FEED) {
       root.appendChild(sec);
       // Visibles : le tableau du thème et sa courbe principale ; les autres courbes et les sources dans le dépliant.
       MAIN.push(function () { sec.querySelector('.courbe-p .note').innerHTML = [serieChart('ch-' + m0.id, c, innerWidth < 600 ? { h: 250 } : null), srcNote(c)].filter(Boolean).join(' '); });
-      var autres = cs.slice(1), grid = document.createElement('div'); grid.className = 'charts4';
-      var more = autres.map(function (o) { return serieCard(grid, 'ch-' + o.id, o.c, o.tag, null); });
-      if (EN_PLUS[t.k]) more = more.concat(EN_PLUS[t.k](grid));
-      var fold = document.createElement('details'); fold.className = 'fold';
-      // Bouton bien visible : on comprend qu'il y a d'autres courbes dessous.
-      var nb = grid.children.length, quoi = (nb ? nb + ' autre' + (nb > 1 ? 's' : '') + ' courbe' + (nb > 1 ? 's' : '') + ' et ' : '') + 'les sources';
-      fold.innerHTML = '<summary><span class="ouvrir">Voir ' + quoi + '</span><span class="fermer">Masquer ' + quoi + '</span></summary>';
-      var inner = document.createElement('div'); inner.className = 'fold-in';
-      // Les courbes d'abord ; les définitions et les sources dessous, repliées sous « Définitions et sources ».
-      inner.appendChild(grid);
+      // Les autres courbes du thème : toutes visibles en petit (France et moyenne de l'UE), deux par ligne sur téléphone ;
+      // on en touche une pour l'ouvrir en grand, avec tous les pays, ses explications et son bouton « Partager ».
+      var autres = cs.slice(1).map(function (o) { return { id: 'ch-' + o.id, c: o.c, tag: o.tag, extra: null }; });
+      // Les courbes « en plus » d'un thème deviennent aussi des petites courbes ; un bloc d'un autre genre (texte, nuage de points)
+      // reste en grand sous les petites courbes.
+      var horsMini = document.createElement('div'), dessins = []; horsMini.className = 'charts4';
+      if (EN_PLUS[t.k]) { var sc = serieCard; serieCard = function (w, id, c, tag, extra) { autres.push({ id: id, c: c, tag: tag, extra: extra }); return function () {}; }; try { dessins = EN_PLUS[t.k](horsMini) || []; } finally { serieCard = sc; } }
+      if (autres.length) {
+        var bloc = document.createElement('div'); bloc.className = 'autres';
+        bloc.innerHTML = '<h3 class="minis-t">' + (autres.length > 1 ? 'Les ' + autres.length + ' autres courbes du thème' : 'L\'autre courbe du thème') + '</h3><p class="minis-h">Toucher une courbe pour agrandir et ajouter d\'autres pays</p><p class="minis-k"><span><i class="fr"></i>France</span><span><i class="ue"></i>Moyenne de l\'UE</span><span><i class="de"></i>Allemagne</span><span><i class="es"></i>Espagne</span></p>';
+        var grille = document.createElement('div'); grille.className = 'minis'; bloc.appendChild(grille);
+        autres.forEach(function (o) { grille.appendChild(mini(o)); });
+        sec.appendChild(bloc);
+      }
+      // Ces blocs gardent leur propre bouton « Partager ».
+      Array.prototype.forEach.call(horsMini.querySelectorAll('.card'), function (k) { k.classList.add('courbe-s'); k.dataset.partageL = 'Partager'; });
+      if (horsMini.children.length) { sec.appendChild(horsMini); MAIN.push(function () { dessins.forEach(function (d) { d(); }); }); }
       var dp = document.createElement('details'); dp.className = 'defs-pli';
       dp.innerHTML = '<summary>Définitions et sources</summary><p class="note defs">' + defs.join('<br>') + '</p>';
-      inner.appendChild(dp); fold.appendChild(inner); sec.appendChild(fold);
-      var f = { el: fold, draw: function () { more.forEach(function (d) { d(); }); } };
-      fold.addEventListener('toggle', function () { if (fold.open) f.draw(); });
-      FOLDS.push(f);
+      sec.appendChild(dp);
     });
+  }
+  // Une petite courbe : titre, France et moyenne de l'UE sur toute la période, dernier chiffre de chacune.
+  function mini(o) {
+    var c = o.c, r = has(c, 'ue') ? 'ue' : has(c, 'ue_calc') ? 'ue_calc' : null, dec = decOf(c), u = c.uc === ' %' || /^%/.test(c.unite || '') ? ' %' : '';
+    var pts = function (w) { return c.y.map(function (y, i) { return { x: y, v: (c[w] || [])[i] }; }).filter(function (p) { return p.v != null; }); };
+    // L'Allemagne et l'Espagne en traits fins, pour montrer qu'on peut comparer à d'autres pays en agrandissant.
+    var F = pts('fr'), E = r ? pts(r) : [], D = pts('de'), Es = pts('es'), all = F.concat(E, D, Es); if (!F.length) return document.createElement('span');
+    var x0 = Math.min.apply(null, all.map(function (p) { return p.x; })), x1 = Math.max.apply(null, all.map(function (p) { return p.x; })), v0 = Math.min.apply(null, all.map(function (p) { return p.v; })), v1 = Math.max.apply(null, all.map(function (p) { return p.v; }));
+    if (v1 === v0) { v1 += 1; v0 -= 1; }
+    var W = 160, H = 62, X = function (x) { return 4 + (x - x0) / Math.max(1, x1 - x0) * (W - 12); }, Y = function (v) { return 4 + (1 - (v - v0) / (v1 - v0)) * (H - 8); };
+    // Une ligne par morceau continu (une année manquante coupe la ligne, comme sur la grande courbe).
+    var trace = function (P) { var seg = [], cur = []; P.forEach(function (p, k) { if (k && p.x !== P[k - 1].x + 1 && cur.length) { seg.push(cur); cur = []; } cur.push(X(p.x).toFixed(1) + ',' + Y(p.v).toFixed(1)); }); if (cur.length) seg.push(cur); return seg.map(function (sg) { return sg.length > 1 ? sg.join(' ') : sg[0] + ' ' + sg[0]; }); };
+    var lf = F[F.length - 1], le = E.filter(function (p) { return p.x === lf.x; })[0] || null;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'mini';
+    b.innerHTML = '<span class="mini-t">' + esc(c.lc || c.l) + ' <span class="mini-o" aria-hidden="true">›</span></span>' + (/sans note/.test(o.tag || '') ? '<span class="mini-tag">' + esc(o.tag) + '</span>' : '') +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + [[D, 'var(--de)'], [Es, 'var(--es)']].map(function (a) { return a[0].length ? trace(a[0]).map(function (q) { return '<polyline points="' + q + '" fill="none" stroke="' + a[1] + '" stroke-width="1.2" opacity=".75"/>'; }).join('') : ''; }).join('') + (E.length ? trace(E).map(function (q) { return '<polyline points="' + q + '" fill="none" stroke="var(--ea)" stroke-width="1.6" stroke-dasharray="4 3"/>'; }).join('') : '') +
+      trace(F).map(function (q) { return '<polyline points="' + q + '" fill="none" stroke="var(--fr)" stroke-width="2.4" stroke-linejoin="round"/>'; }).join('') + '<circle cx="' + X(lf.x) + '" cy="' + Y(lf.v) + '" r="3" fill="var(--fr)"/></svg>' +
+      '<span class="mini-v"><b class="f">' + fmt(lf.v, dec) + u + '</b> France' + (le ? ' · <b class="e">' + fmt(le.v, dec) + u + '</b> UE' : '') + ' · ' + lf.x + '</span>';
+    b.setAttribute('aria-label', (c.lc || c.l) + ' : France ' + fmt(lf.v, dec) + u + (le ? ', moyenne de l\'UE ' + fmt(le.v, dec) + u : '') + ' en ' + lf.x + '. Voir la courbe en grand');
+    b.addEventListener('click', function () {
+      var g = document.createElement('div'); g.className = 'grand';
+      g.innerHTML = '<button type="button" class="reduire">Réduire ▴</button>';
+      b.parentNode.insertBefore(g, b); b.hidden = true;
+      var d = serieCard(g, o.id, c, o.tag, o.extra), card = g.querySelector('.card'); card.classList.add('courbe-s'); card.dataset.partageL = 'Partager la courbe'; d();
+      g.querySelector('.reduire').onclick = function () { g.remove(); b.hidden = false; b.focus(); };
+      document.dispatchEvent(new CustomEvent('concret:vue', { detail: 'courbe' }));
+      g.scrollIntoView({ block: 'nearest' });
+    });
+    return b;
   }
   // Mini-courbes du haut de page : dépense de défense (OTAN) et militaires, France et moyenne de l'UE, avec des repères ; sans les estimations.
   var lastReel = function (c, w) { for (var i = c.y.length - 1; i >= 0; i--) if ((c[w] || [])[i] != null && !(c.est || {})[c.y[i]]) return { v: c[w][i], y: c.y[i] }; return null; };
