@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="3ac4a31826d6">
+<meta name="concret-version" content="31db962d5b37">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -30,8 +30,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261026c"></script>
-<script src="/commun/toile.js?v=20261028a"></script>
+<script src="/commun/bref.js?v=20261028a"></script>
+<script src="/commun/toile.js?v=20261028b"></script>
 <script src="/commun/pays.js?v=20261028b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
@@ -1338,7 +1338,7 @@ function main(FEED) {
         var n = SAN.noteTheme(g, t), td = document.createElement('td');
         td.className = 'dot' + (n == null ? '' : n > 10 ? ' g' : n < 10 ? ' b' : '');
         td.innerHTML = n == null ? '–' : '<i class="pt ' + (n > 10 ? 'p1' : n < 10 ? 'p0' : 'ph') + '"></i>'; td.title = t.q + ' : ' + (n == null ? 'pas de chiffre comparable' : nfmt(n) + '/20');
-        if (n == null) { var deb = Math.min.apply(null, t.crit.map(function (k) { return C[k].y[0]; })); nc.push(t.q.toLowerCase() + (y <= deb ? ' (les chiffres commencent en ' + deb + ', la première évolution comptée est celle de ' + (deb + 1) + ')' : '')); } tr.appendChild(td);
+        if (n == null) { var deb = Math.min.apply(null, t.crit.map(function (k) { return C[k].y[0]; })); nc.push(t.q.toLowerCase() + (y <= deb ? ' (les chiffres commencent en ' + deb + ', la première évolution comptée est celle de ' + (deb + 1) + ')' : (function () { var rz = null; t.crit.some(function (k) { var r0 = null; try { r0 = C[k] && C[k].y && SAN.raisonSerie(C[k], y); } catch (e) {} if (r0) rz = String(r0).replace(/^Non compté\s*:\s*/, '').replace(/^(en|pour) \d{4}\s*,\s*/i, '').replace(/\s*;.*$/, '').replace(/\.$/, ''); return !!rz; }); return rz ? ' (' + rz + ')' : ''; })())); } tr.appendChild(td);
       });
       var nn = noteOf(g), tdn = document.createElement('td');
       // Note calculée sur une partie des thèmes seulement : on le dit à côté (même règle sur toutes les pages).

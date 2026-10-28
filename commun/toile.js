@@ -10,7 +10,7 @@
     '.toile-l i.d{border-top-style:dashed}' +
     '.toile-svg{display:block;width:100%;max-width:560px;height:auto;margin:4px auto 0;overflow:visible}' +
     '.toile-svg .ax{stroke:var(--line);stroke-width:1;fill:none}.toile-svg .ri{stroke:var(--line);stroke-width:1;fill:none}' +
-    '.toile-svg .lb{fill:var(--fg);font-size:11.5px;font-weight:600}.toile-svg .rg{fill:var(--muted);font-size:10px}' +
+    '.toile-svg .lb{fill:var(--fg);font-weight:600}.toile-svg .rg{fill:var(--muted);font-size:10px}' +
     '.toile-tab{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;margin-top:6px}' +
     '.toile-tab th,.toile-tab td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}' +
     '.toile-tab th:first-child,.toile-tab td:first-child{text-align:left;white-space:normal}.toile-tab th{font-size:11.5px;color:var(--muted);font-weight:600}' +
@@ -43,7 +43,10 @@
     if (!document.getElementById('toile-css')) { var st = document.createElement('style'); st.id = 'toile-css'; st.textContent = css; document.head.appendChild(st); }
     var axes = o.axes.filter(function (a) { return a.v.fr != null && a.v.ue != null; }), S = o.series;
     var n = axes.length; if (n < 3) { box.hidden = true; return; }
-    var W = 440, R = n > 9 ? 108 : 118, cx = W / 2, cy = 195, H = 400;
+    // Sur téléphone, la toile est réduite à environ 75 % : les libellés sont plus gros dans le dessin (11 px au moins à l'écran),
+    // sans la plage de l'axe (elle est dans « Les chiffres »), et la toile un peu plus petite pour leur laisser la place.
+    var pt = (box.clientWidth || 440) < 500, FS = pt ? 15 : 11.5, LH = pt ? 17 : 13;
+    var W = 440, R = pt ? (n > 9 ? 92 : 100) : (n > 9 ? 108 : 118), cx = W / 2, cy = pt ? 200 : 195, H = 400;
     var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'toile-svg', role: 'img', 'aria-label': o.titre || 'Toile des indicateurs' });
     var ang = function (i) { return -Math.PI / 2 + 2 * Math.PI * i / n; };
     // Échelle de chaque axe : de 0 (ou du plus bas, s'il est négatif) au plus haut des pays affichés.
@@ -58,25 +61,28 @@
     axes.forEach(function (a, i) {
       var x = cx + R * Math.cos(ang(i)), y = cy + R * Math.sin(ang(i));
       svg.appendChild(el('line', { class: 'ax', x1: cx, y1: cy, x2: x, y2: y }));
-      var c = Math.cos(ang(i)), s = Math.sin(ang(i)), lx = cx + (R + 16) * c, ly = cy + (R + 16) * s;
+      var c = Math.cos(ang(i)), s = Math.sin(ang(i)), lx = cx + (R + 14) * c, ly = cy + (R + 14) * s;
       var anc = Math.abs(c) < (n > 9 ? 0.1 : 0.25) ? 'middle' : c > 0 ? 'start' : 'end';
-      var L = lignes(a.l, n > 9 ? 13 : 15), rg = fmt(a.lo, a.dec) + ' à ' + fmt(a.hi, a.dec) + (a.u || '');
-      var RG = lignes(rg, 17), tot = L.length + RG.length, y0 = ly + (s < -0.25 ? -(tot - 1) * 13 : s > 0.25 ? 4 : -(tot - 1) * 6.5 + 4);
-      LB.push({ x: lx, y: y0, anc: anc, L: L, rg: RG, h: tot * 13 });
+      var L = lignes(a.l, pt ? 12 : n > 9 ? 13 : 15), rg = fmt(a.lo, a.dec) + ' à ' + fmt(a.hi, a.dec) + (a.u || '');
+      var RG = pt ? [] : lignes(rg, 17), tot = L.length + RG.length, y0 = ly + (s < -0.25 ? -(tot - 1) * LH : s > 0.25 ? 4 : -(tot - 1) * LH / 2 + 4);
+      LB.push({ x: lx, y: y0, anc: anc, L: L, rg: RG, h: tot * LH });
     });
     // Chevauchements : de chaque côté, de haut en bas, un libellé descend sous le précédent s'il le touche.
     ['start', 'end'].forEach(function (cote) {
       var l = LB.filter(function (b) { return b.anc === cote; }).sort(function (a, b) { return a.y - b.y; }), bas = -Infinity;
-      l.forEach(function (b) { if (b.y < bas + 16) b.y = bas + 16; bas = b.y + b.h - 13; });
+      l.forEach(function (b) { if (b.y < bas + LH + 3) b.y = bas + LH + 3; bas = b.y + b.h - LH; });
     });
     var Hmax = 0;
     LB.forEach(function (b) {
-      var t = el('text', { x: b.x, y: b.y, 'text-anchor': b.anc, class: 'lb' });
-      b.L.forEach(function (m, j) { var ts = el('tspan', { x: b.x, dy: j ? 13 : 0 }); ts.textContent = m; t.appendChild(ts); });
-      b.rg.forEach(function (m) { var r = el('tspan', { x: b.x, dy: 13, class: 'rg' }); r.textContent = m; t.appendChild(r); });
+      var t = el('text', { x: b.x, y: b.y, 'text-anchor': b.anc, class: 'lb', 'font-size': FS });
+      b.L.forEach(function (m, j) { var ts = el('tspan', { x: b.x, dy: j ? LH : 0 }); ts.textContent = m; t.appendChild(ts); });
+      b.rg.forEach(function (m) { var r = el('tspan', { x: b.x, dy: LH, class: 'rg' }); r.textContent = m; t.appendChild(r); });
       svg.appendChild(t); Hmax = Math.max(Hmax, b.y + b.h);
     });
-    if (Hmax + 6 > H) svg.setAttribute('viewBox', '0 0 ' + W + ' ' + (Hmax + 6));
+    // Libellés qui dépassent à gauche ou à droite : la vue s'élargit pour les montrer en entier.
+    var x0 = 0, x1 = W; LB.forEach(function (b) { var w = Math.max.apply(null, b.L.concat(b.rg).map(function (m) { return m.length; })) * FS * 0.56; if (b.anc === 'end') x0 = Math.min(x0, b.x - w - 4); else if (b.anc === 'start') x1 = Math.max(x1, b.x + w + 4); else { x0 = Math.min(x0, b.x - w / 2 - 4); x1 = Math.max(x1, b.x + w / 2 + 4); } });
+    var top = Math.min(0, Math.min.apply(null, LB.map(function (b) { return b.y - LH; })));
+    svg.setAttribute('viewBox', x0 + ' ' + top + ' ' + (x1 - x0) + ' ' + (Math.max(H, Hmax + 6) - top));
     // Les pays : le premier de la liste est dessiné en dernier (la France au-dessus).
     S.slice().reverse().forEach(function (s) {
       var P = axes.map(function (a, i) { var v = a.v[s.k]; if (v == null) return null; var f = 0.1 + 0.9 * (v - a.lo) / (a.hi - a.lo); return [cx + R * f * Math.cos(ang(i)), cy + R * f * Math.sin(ang(i))]; });
@@ -104,12 +110,12 @@
       '<div class="toile-l">' + S.map(function (s) { return '<span><i class="' + (s.dash ? 'd' : '') + '" style="border-top-color:' + s.c + (s.pointille ? ';border-top-style:dotted' : '') + '"></i>' + esc(s.n) + '</span>'; }).join('') + '</div>';
     box.appendChild(svg);
     var note = document.createElement('p'); note.className = 'note';
-    note.textContent = 'Chaque axe va du plus bas (0, ou moins pour un chiffre négatif) au plus haut des pays affichés : plus loin du centre veut dire plus élevé, pas forcément mieux (une dette plus élevée s\'éloigne aussi du centre). Aucune note ici : elles sont calculées année par année, plus bas.' +
+    note.textContent = 'Plus loin du centre : plus élevé, pas forcément mieux (une dette plus élevée s\'éloigne aussi du centre). Chaque axe va du plus bas (0, ou moins pour un chiffre négatif) au plus haut des pays affichés ; la plage de chaque axe est dans « Les chiffres ». Aucune note ici : elles sont calculées année par année, plus bas.' +
       (manque.length ? ' ' + manque.join(' ; ') + ' (la forme est coupée à cet endroit).' : '') + (o.notes && o.notes.length ? ' ' + o.notes.join(' ; ') + '.' : '') + (o.omis && o.omis.length ? ' Pas sur la toile, faute de chiffre comparable au même moment : ' + o.omis.join(', ') + '.' : '');
     box.appendChild(note);
     var det = document.createElement('details'); det.className = 'toile-det';
     det.innerHTML = '<summary>Les chiffres</summary><div class="toile-tw"><table class="toile-tab"><thead><tr><th></th>' + S.map(function (s) { return '<th>' + esc(s.court || s.n) + '</th>'; }).join('') + '</tr></thead><tbody>' +
-      axes.map(function (a) { return '<tr><td>' + esc(a.l) + ' <small>(' + a.y + (a.u ? ',' + esc(a.u) : '') + ')</small></td>' + S.map(function (s) { var v = a.v[s.k]; return '<td>' + (v == null ? '—' : fmt(v, a.dec)) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
+      axes.map(function (a) { return '<tr><td>' + esc(a.l) + ' <small>(' + a.y + (a.u ? ',' + esc(a.u) : '') + ' ; axe de ' + fmt(a.lo, a.dec) + ' à ' + fmt(a.hi, a.dec) + ')</small></td>' + S.map(function (s) { var v = a.v[s.k]; return '<td>' + (v == null ? '—' : fmt(v, a.dec)) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
       // Chaque case vide dit pourquoi, sous le tableau (règle : toute donnée absente s'explique là où on la voit).
       (function () {
         var vides = S.map(function (s) { var l = axes.filter(function (a) { return a.v[s.k] == null; }); return l.length ? s.n + ' : ' + l.map(function (a) { return a.l + ' (' + a.y + ')'; }).join(', ') : ''; }).filter(Boolean);

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="3ac4a31826d6">
+<meta name="concret-version" content="31db962d5b37">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -30,8 +30,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261026c"></script>
-<script src="/commun/toile.js?v=20261028a"></script>
+<script src="/commun/bref.js?v=20261028a"></script>
+<script src="/commun/toile.js?v=20261028b"></script>
 <script src="/commun/pays.js?v=20261028b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
@@ -909,10 +909,16 @@ function main(FEED) {
     var W = Math.max(300, box.clientWidth), small = W < 520, H = o.h || (small ? 220 : 260), m = { t: 10, r: 46, b: 24, l: 40 };
     var all = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null) all.push(d.v); }); });
     var lo = d3.min(all), hi = d3.max(all), pad = (hi - lo) * .1;
+    // États-Unis très au-dessus des autres pays (homicides, détenus) : l'échelle suit les autres, la courbe américaine sort par le haut,
+    // sa dernière valeur écrite en haut avec une flèche.
+    var sansUS = series.filter(function (s) { return s.c !== 'var(--us)'; }), hiA = d3.max(sansUS, function (s) { return d3.max(s.data, function (d) { return d.v; }); });
+    var coupe = sansUS.length < series.length && hiA > 0 && hi > hiA * 1.8;
+    if (coupe) { hi = hiA; lo = d3.min(sansUS, function (s) { return d3.min(s.data, function (d) { return d.v; }); }); pad = (hi - lo) * .1; }
     var x = d3.scaleLinear().domain(o.x).range([m.l, W - m.r]);
     if (o.obj) { lo = Math.min(lo, o.obj.v); hi = Math.max(hi, o.obj.v); pad = (hi - lo) * .1; }
     var y = d3.scaleLinear().domain([o.min != null ? o.min : lo - pad, hi + pad]).nice().range([H - m.b, m.t]);
     var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', o.label);
+    if (coupe) svg.append('clipPath').attr('id', id + '-cp').append('rect').attr('x', 0).attr('y', m.t - 2).attr('width', W).attr('height', H - m.t - m.b + 4);
     if (o.bands) BANDS.forEach(function (g, i) {
       var x0 = x(Math.max(o.x[0], g.y0 - .5)), x1 = x(Math.min(o.x[1], g.y1 + .5));
       if (x1 > x0) svg.append('rect').attr('x', x0).attr('y', m.t).attr('width', x1 - x0).attr('height', H - m.t - m.b).attr('fill', i % 2 ? 'var(--band)' : 'transparent');
@@ -929,11 +935,12 @@ function main(FEED) {
     var line = d3.line().defined(function (d) { return d.v != null; }).x(function (d) { return x(d.x); }).y(function (d) { return y(d.v); });
     var ends = [];
     series.forEach(function (s) {
-      svg.append('path').datum(s.data).attr('d', line).attr('fill', 'none').attr('stroke', s.c).attr('stroke-width', s.main ? 2.6 : 1.8).attr('stroke-dasharray', s.dash ? '5 4' : null);
+      svg.append('path').datum(s.data).attr('d', line).attr('clip-path', coupe ? 'url(#' + id + '-cp)' : null).attr('fill', 'none').attr('stroke', s.c).attr('stroke-width', s.main ? 2.6 : 1.8).attr('stroke-dasharray', s.dash ? '5 4' : null);
       if (s.dots) s.data.forEach(function (d) { if (d.v == null) return; svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
       var l = s.data.filter(function (d) { return d.v != null; }).pop();
-      svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
-      ends.push({ y: y(l.v), t: fmt(l.v, o.dec == null ? 1 : o.dec), c: s.c, x: x(l.x), main: s.main });
+      var dehors = coupe && y(l.v) < m.t;
+      if (!dehors) svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
+      ends.push({ y: dehors ? m.t + 2 : y(l.v), t: (dehors ? '↑ ' : '') + fmt(l.v, o.dec == null ? 1 : o.dec), c: s.c, x: x(l.x), main: s.main });
     });
     ends.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
@@ -943,7 +950,7 @@ function main(FEED) {
     var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); });
     xs.sort(function (a, b) { return a - b; });
     hover(box, svg, H, m, xs.map(function (xv) {
-      return { px: x(xv), t: String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n || SNAME[s.c] || '', py: y(d.v), s: fmt(d.v, o.dec == null ? 1 : o.dec) + (o.unit || '') } : null; }).filter(Boolean) };
+      return { px: x(xv), t: String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n || SNAME[s.c] || '', py: Math.max(m.t, y(d.v)), s: fmt(d.v, o.dec == null ? 1 : o.dec) + (o.unit || '') } : null; }).filter(Boolean) };
     }));
   }
   var serOf = function (c, w) { return c.y.map(function (y, i) { return { x: y, v: (c[w] || [])[i] }; }); };
@@ -1321,7 +1328,9 @@ function main(FEED) {
         var n = SAN.noteTheme(g, t), td = document.createElement('td');
         td.className = 'dot' + (n == null ? '' : n > 10 ? ' g' : n < 10 ? ' b' : '');
         td.innerHTML = n == null ? '–' : '<i class="pt ' + (n > 10 ? 'p1' : n < 10 ? 'p0' : 'ph') + '"></i>'; td.title = t.q + ' : ' + (n == null ? 'pas de chiffre comparable' : nfmt(n) + '/20');
-        if (n == null) nc.push(t.q.toLowerCase()); tr.appendChild(td);
+        // Thème non compté : sa raison, lue dans le premier de ses indicateurs qui en donne une (même phrase que sous la courbe).
+        if (n == null) { var rz = null; t.crit.some(function (k) { var r0 = null; try { r0 = C[k] && C[k].y && SAN.raisonSerie(C[k], y); } catch (e) {} if (r0) rz = String(r0).replace(/^Non compté\s*:\s*/, '').replace(/^(en|pour) \d{4}\s*,\s*/i, '').replace(/\s*;.*$/, '').replace(/\.$/, ''); return !!rz; }); nc.push(t.q.toLowerCase() + (rz ? ' (' + rz + ')' : '')); }
+        tr.appendChild(td);
       });
       var nn = noteOf(g), tdn = document.createElement('td');
       // Note calculée sur une partie des thèmes seulement : on le dit à côté (même règle sur toutes les pages).
@@ -1329,7 +1338,7 @@ function main(FEED) {
       tr.appendChild(tdn); tr.hidden = hide; tb.appendChild(tr);
       if (nc.length) {
         var wr = document.createElement('tr'); wr.className = 'yr-why'; var wd = document.createElement('td'); wd.colSpan = ncol;
-        wd.textContent = 'Non compté en ' + y + ' : ' + nc.join(', ') + ' (' + (y >= 2024 ? 'chiffres pas encore publiés ou pas encore comparables' : 'pas de chiffre comparable pour cette année') + ').';
+        wd.textContent = 'Non compté en ' + y + ' : ' + nc.join(' ; ') + '.';
         wr.appendChild(wd); wr.hidden = hide; tb.appendChild(wr);
       }
     }

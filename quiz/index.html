@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="3ac4a31826d6">
+<meta name="concret-version" content="31db962d5b37">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261026c"></script>
+<script src="/commun/bref.js?v=20261028a"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; }
 
@@ -527,7 +527,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
     Qs.forEach(function (x, n) {
       var sec = document.createElement('section'); sec.className = 'card quiz'; sec.id = 'q' + (n + 1);
-      sec.innerHTML = '<span class="eyebrow">' + (n + 1) + ' / ' + total + ' · ' + esc(x.l) + '</span><p class="q">' + esc(x.q) + '</p><div class="opts"></div><p class="answer" hidden></p>';
+      sec.innerHTML = '<span class="eyebrow">' + (n + 1) + ' / ' + total + ' · ' + esc(x.l) + '</span><p class="q">' + esc(x.q) + '</p><div class="opts"></div><p class="answer" role="status" tabindex="-1" hidden></p>';
       liste.appendChild(sec);
       var opts = sec.querySelector('.opts'), ans = sec.querySelector('.answer');
       if (window.ConcretQuiz && ConcretQuiz.aide) ConcretQuiz.aide(x.Q, sec.querySelector('.q'));
@@ -535,6 +535,8 @@ footer p { margin: 0; } footer a { color: inherit; }
         rep[n] = p === x.a;
         Array.prototype.forEach.call(opts.children, function (b, i) { b.disabled = true; if (i === x.a) b.classList.add('right'); else if (i === p) b.classList.add('wrong'); });
         ans.innerHTML = esc((p === x.a ? 'Bonne réponse. ' : 'Pas tout à fait. ') + x.e) + ' <a class="qz-src" href="' + esc(x.lien) + '">Vérifier sur la page ' + esc(x.src) + ' →</a>'; ans.hidden = false;
+        // Le bouton touché devient inactif : le focus passe à la réponse, lue par le lecteur d'écran (« Bonne réponse… »).
+        if (nouveau) try { ans.focus({ preventScroll: true }); } catch (e) {}
         try { localStorage.setItem(x.cle, String(p)); } catch (e) {}
         prog.children[n].className = p === x.a ? 'g' : 'b';
         document.getElementById('qz-n').textContent = rep.filter(function (v) { return v != null; }).length + ' / ' + total;
