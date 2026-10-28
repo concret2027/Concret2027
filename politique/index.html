@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c33833e1c8a1">
+<meta name="concret-version" content="a1aa94b78440">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <style>html, body { margin: 0; }
 :root {
   --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
-  --fr: #2f5bd3; --bad: #c43d3d; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06); --axis: #c9c9c2;
+  --fr: #2f5bd3; --bad: #a83232; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06); --axis: #c9c9c2;
   --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .16); --s-nv: rgba(98, 100, 109, .12);
   --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
   --serif: "Newsreader", Georgia, "Times New Roman", serif;
@@ -232,6 +232,7 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
     <h2 id="votes-t">Les votes de l'Assemblée</h2>
     <p class="note" id="votes-n"></p>
     <div class="chips" id="votes-f" role="group" aria-label="Filtrer les votes"></div>
+    <p class="note" id="grp-leg"></p>
     <div class="votes" id="votes-l"></div>
     <button class="plus" type="button" id="votes-plus" hidden></button>
     <p class="vers-votez"><a href="/votez/">Et vous, qu'auriez-vous voté ? Votez ces textes →</a></p>
@@ -325,6 +326,8 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
     var S = (D.series || {}).politique;
     if (!S) { $('bref3').innerHTML = '<p class="vide">Données indisponibles pour le moment.</p>'; return; }
     var G = S.GROUPES, GN = {}; G.forEach(function (g) { GN[g.c] = g.n; });
+    // Les sigles des groupes, en clair, une fois au-dessus des votes (sur téléphone, l'infobulle ne s'ouvre pas).
+    try { $('grp-leg').innerHTML = '<b>Les groupes :</b> ' + G.map(function (g) { return '<b>' + esc(g.c) + '</b> ' + esc(g.n); }).join(' · ') + '.'; } catch (e) {}
     var VOTES = S.VOTES.filter(function (v) { return !v.loi; });
     var PAR = {}; S.VOTES.forEach(function (v) { PAR[v.n] = v; });
     $('maj').textContent = 'Mis à jour le ' + dLong(S.maj);
@@ -491,6 +494,6 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261028r"></script>
+<script src="/commun/menu.js?v=20261028t"></script>
 </body>
 </html>

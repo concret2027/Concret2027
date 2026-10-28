@@ -14,7 +14,7 @@
     '.toile-tab{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;margin-top:6px}' +
     '.toile-tab th,.toile-tab td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}' +
     '.toile-tab th:first-child,.toile-tab td:first-child{text-align:left;white-space:normal}.toile-tab th{font-size:11.5px;color:var(--muted);font-weight:600}' +
-    '.toile-tw{overflow-x:auto;-webkit-overflow-scrolling:touch}.toile-det{margin-top:6px}.toile-det>summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--fr);padding:4px 0}';
+    '.toile-tw{overflow-x:auto;-webkit-overflow-scrolling:touch}.toile-det{margin-top:6px}.toile-det>summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--fr);padding:8px 0;list-style:none}.toile-det>summary::-webkit-details-marker{display:none}.toile-det>summary::after{content:"\\00a0▾"}.toile-det[open]>summary::after{content:"\\00a0▴"}';
   var esc = function (t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); };
   var fmt = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: d == null ? 1 : d }).format(v).replace(/ /g, ' '); };
   var el = function (n, a) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); return e; };

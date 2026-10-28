@@ -57,7 +57,7 @@
     '.vz-change{margin:0;font-size:12.5px;color:var(--muted)}' +
     '.vz-choix button:focus-visible,.vz-passe:focus-visible,.vz-suite:focus-visible{outline:2px solid var(--fr);outline-offset:2px}' +
     '.vz-passe{font:inherit;font-size:13.5px;color:var(--muted);background:none;border:0;padding:4px 0;min-height:40px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;justify-self:start}' +
-    '.vz-off{font-size:12.5px;color:var(--muted)}.vz-off summary{cursor:pointer;font-weight:600;min-height:40px;display:flex;align-items:center}.vz-off p{margin:6px 0 0}.vz-off a{color:var(--fr)}' +
+    '.vz-off{font-size:12.5px;color:var(--muted)}.vz-off summary{cursor:pointer;font-weight:600;min-height:40px;display:flex;align-items:center;list-style:none;color:var(--fr)}.vz-off summary::-webkit-details-marker{display:none}.vz-off summary::after{content:"\\00a0▾"}.vz-off[open] summary::after{content:"\\00a0▴"}.vz-off p{margin:6px 0 0}.vz-off a{color:var(--fr)}' +
     '.vz-rev{display:grid;gap:10px;padding:12px;border-radius:12px;background:var(--band);border:1px solid var(--line)}' +
     '.vz-sort{margin:0;font-size:15px}.vz-sort b{font-weight:700}.vz-sort small{display:block;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}' +
     '.vz-gr{display:grid;grid-template-columns:6.2em minmax(0,1fr);gap:6px 10px;align-items:start;font-size:13px}' +

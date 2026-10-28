@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c33833e1c8a1">
+<meta name="concret-version" content="a1aa94b78440">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261028b"></script>
-<script src="/commun/toile.js?v=20261028b"></script>
+<script src="/commun/toile.js?v=20261029a"></script>
 <script src="/commun/pays.js?v=20261028b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
@@ -60,7 +60,7 @@
 :root {
   --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
   --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a; --es: #d0632a;
-  --bad: #c43d3d; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06);
+  --bad: #a83232; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06);
   --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
   --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
   --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
@@ -899,7 +899,7 @@ function main(FEED) {
         return '<span><i' + (s.dash ? ' class="dash" data-c="' + s.c + '" style="background:repeating-linear-gradient(90deg,' + s.c + ' 0 4px,transparent 4px 6px) !important"' : ' style="background:' + s.c + '"') + '></i>' + String(n).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>';
       }).filter(Boolean).reverse();
       if (!items.length) return;
-      if (o.bands) items.push('<span><i class="bd"></i>Bandes : Premiers ministres successifs</span>');
+      if (o.bands) items.push('<span><i class="bd"></i>Bandes : Premiers ministres successifs (touchez la courbe pour le nom)</span>');
       var k = document.createElement('div'); k.className = 'key mini'; k.id = id + '-mini'; k.innerHTML = items.join('');
       box.parentNode.insertBefore(k, box);
     })();
@@ -937,7 +937,9 @@ function main(FEED) {
     var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); });
     xs.sort(function (a, b) { return a - b; });
     hover(box, svg, H, m, xs.map(function (xv) {
-      return { px: x(xv), t: String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n || SNAME[s.c] || '', py: y(d.v), s: fmt(d.v, o.dec == null ? 1 : o.dec) + (o.unit || '') } : null; }).filter(Boolean) };
+      // Au toucher, l'année et le Premier ministre de la bande (« Bandes : Premiers ministres successifs »).
+      var pmx = o.bands ? BANDS.filter(function (g) { return xv >= g.y0 && xv <= g.y1; })[0] : null;
+      return { px: x(xv), t: String(xv) + (pmx ? ' · ' + pmx.n : ''), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n || SNAME[s.c] || '', py: y(d.v), s: fmt(d.v, o.dec == null ? 1 : o.dec) + (o.unit || '') } : null; }).filter(Boolean) };
     }));
   }
   var ser = function (arr) { return arr.map(function (v, i) { return { x: Y0 + i, v: v }; }); };
@@ -969,7 +971,7 @@ function main(FEED) {
     })();
     ['m', 'r', 's'].forEach(function (k) {
       var c = PI[k];
-      lineChart('ch-pisa-' + k, [{ c: 'var(--us)', n: 'États-Unis', dots: 1, data: pser(c, 'us') }, { c: 'var(--es)', n: 'Espagne', dots: 1, data: pser(c, 'es') }, { c: 'var(--de)', n: 'Allemagne', dots: 1, data: pser(c, 'de') }, { c: 'var(--axis)', n: 'Moyenne OCDE', dots: 1, data: pser(c, 'oe') }, { c: 'var(--ea)', n: 'Moyenne UE (calcul Concret)', dash: 1, dots: 1, data: pser(c, 'ue_calc') }, { c: 'var(--fr)', n: 'France', main: 1, dots: 1, data: pser(c, 'fr') }],
+      lineChart('ch-pisa-' + k, [{ c: 'var(--us)', n: 'États-Unis', dots: 1, data: pser(c, 'us') }, { c: 'var(--es)', n: 'Espagne', dots: 1, data: pser(c, 'es') }, { c: 'var(--de)', n: 'Allemagne', dots: 1, data: pser(c, 'de') }, { c: 'var(--muted)', n: 'Moyenne OCDE', dots: 1, data: pser(c, 'oe') }, { c: 'var(--ea)', n: 'Moyenne UE (calcul Concret)', dash: 1, dots: 1, data: pser(c, 'ue_calc') }, { c: 'var(--fr)', n: 'France', main: 1, dots: 1, data: pser(c, 'fr') }],
         { x: [c.y[0] - 1, 2026], xt: { m: [2003, 2009, 2015, 2022], r: [2000, 2006, 2012, 2018, 2025], s: [2006, 2012, 2018, 2025] }[k], label: 'PISA ' + c.l + ', ' + c.y[0] + '-2025', dec: 0, unit: ' pts', h: 230 });
     });
     lineChart('ch-eq', [{ c: 'var(--ea)', n: 'Moyenne OCDE', dash: 1, dots: 1, data: pser(EQ, 'oe') }, { c: 'var(--fr)', n: 'France', main: 1, dots: 1, data: pser(EQ, 'fr') }],
@@ -1231,6 +1233,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028r"></script>
+<script src="/commun/menu.js?v=20261028t"></script>
 </body>
 </html>

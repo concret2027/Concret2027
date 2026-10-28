@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c33833e1c8a1">
+<meta name="concret-version" content="a1aa94b78440">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261028b"></script>
-<script src="/commun/toile.js?v=20261028b"></script>
+<script src="/commun/toile.js?v=20261029a"></script>
 <script src="/commun/pays.js?v=20261028b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
@@ -60,7 +60,7 @@
 :root {
   --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
   --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a; --es: #d0632a;
-  --bad: #c43d3d; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06);
+  --bad: #a83232; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06);
   --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
   --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
   --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
@@ -411,7 +411,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .checks b { font-weight: 600; }
 .tnotes { margin: 0; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
 section.theme > h2 { font-size: 21px; font-weight: 700; line-height: 1.2; }
-.t-pills { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 12px; }
+section.theme > *, .autres > * { min-width: 0; }
+.t-pills { display: flex; flex-wrap: wrap !important; white-space: normal; gap: 8px; margin: -4px 0 12px; }
 .t-pills a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--fg); font-size: 14px; font-weight: 600; text-decoration: none; }
 .t-pills a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
 .t-defs-h { margin: 12px 0 2px; font-size: 13px; font-weight: 700; color: var(--muted); }
@@ -934,7 +935,7 @@ function main(FEED) {
       svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)');
       svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(t.toLocaleString('fr-FR'));
     });
-    (small ? o.xt.filter(function (_, i) { return i % 2 === 0; }) : o.xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t); });
+    (small ? o.xt.filter(function (_, i, A) { var L = A.length - 1; return i === L || (i % 2 === 0 && !(L % 2 === 1 && i === L - 1)); }) : o.xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t); });
     if (o.obj) {
       var yo = y(o.obj.v);
       if (yo >= m.t && yo <= H - m.b) { svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', yo).attr('y2', yo).attr('stroke', 'var(--bad)').attr('stroke-width', 1.4).attr('stroke-dasharray', '2 3'); svg.append('text').attr('x', m.l + 4).attr('y', yo - 4).text('objectif ' + fmt(o.obj.v) + ' %').style('fill', 'var(--bad)').style('font-weight', 600); }
@@ -946,6 +947,8 @@ function main(FEED) {
       if (s.dots) s.data.forEach(function (d) { if (d.v == null) return; svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
       // Une année seule entre deux trous (changement de source, année manquante) : un point, sinon elle ne se verrait pas.
       else s.data.forEach(function (d, i) { if (d.v == null) return; var a = s.data[i - 1], b = s.data[i + 1]; if ((!a || a.v == null) && (!b || b.v == null) && y(d.v) >= m.t) svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
+      // Années manquantes au milieu de la série : un pointillé léger relie les deux chiffres qui les entourent (rien n'est inventé entre les deux).
+      (function () { var P = s.data.filter(function (d) { return d.v != null; }); for (var k = 1; k < P.length; k++) if (P[k].x - P[k - 1].x > 1) svg.append('line').attr('x1', x(P[k - 1].x)).attr('y1', y(P[k - 1].v)).attr('x2', x(P[k].x)).attr('y2', y(P[k].v)).attr('stroke', s.c).attr('stroke-width', 1.2).attr('stroke-dasharray', '2 3').attr('opacity', .55).attr('clip-path', typeof coupe !== 'undefined' && coupe ? 'url(#' + id + '-cp)' : null); })();
       var l = s.data.filter(function (d) { return d.v != null; }).pop();
       var dehors = coupe && y(l.v) < m.t;
       if (!dehors) svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
@@ -963,7 +966,8 @@ function main(FEED) {
     }));
   }
   var serOf = function (c, w) { return c.y.map(function (y, i) { return { x: y, v: (c[w] || [])[i] }; }); };
-  var ticks = function (a, b) { var s = Math.max(1, Math.ceil((b - a) / 6)), t = []; for (var y = a; y <= b; y += s) t.push(y); return t; };
+  // La dernière année est toujours écrite sous l'axe.
+  var ticks = function (a, b) { var s = Math.max(1, Math.ceil((b - a) / 6)), t = []; for (var y = a; y <= b; y += s) t.push(y); if (t[t.length - 1] !== b) { if (b - t[t.length - 1] < s / 2) t.pop(); t.push(b); } return t; };
   var NOMS = { fr: ['France', 'var(--fr)'], ue: ['Union européenne', 'var(--ea)'], de: ['Allemagne', 'var(--de)'], es: ['Espagne', 'var(--es)'], us: ['États-Unis', 'var(--us)'] };
   var has = function (c, w) { return c[w] && c[w].some(function (v) { return v != null; }); };
   function keyHtml(c) {
@@ -1064,7 +1068,7 @@ function main(FEED) {
       var pn = PRES.map(function (g) { return { g: g, n: SAN.noteTheme(g, t) }; }).reverse();
       var defs = [];
       t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || esc(x.ex || '')) + (x.source ? ' Source : ' + lien(x, x.source) + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + esc(q.l) + ' (' + esc(q.unite) + '). Source : ' + lien(q, q.source) + '.'); }); });
-      sec.innerHTML = '<h2></h2><p class="t-sum"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>La France fait mieux que la moyenne de l\'UE sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n + ' (dernier chiffre connu).</p>' +
+      sec.innerHTML = '<h2></h2><p class="t-sum"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>' + (e.ok ? 'La France fait mieux que la moyenne de l\'UE sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n : 'La France ne fait mieux que la moyenne de l\'UE sur aucun des ' + e.n + ' indicateurs') + ' (dernier chiffre connu).</p>' +
         // La courbe principale dans son propre cadre : on peut la partager seule (« Partager la courbe »).
         '<div class="card courbe-p" data-partage-l="Partager la courbe"><span class="eyebrow">' + esc(c.l) + ', ' + esc(c.unite) + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p></div>' +
         ''; // le tableau et la note du thème : en bas du bloc, sous toutes les courbes
@@ -1399,6 +1403,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028r"></script>
+<script src="/commun/menu.js?v=20261028t"></script>
 </body>
 </html>
