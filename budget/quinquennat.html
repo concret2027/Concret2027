@@ -323,17 +323,18 @@ footer p { margin: 0; } footer a { color: inherit; }
 <style>
 /* Votre quinquennat : une carte à la fois, comme Votez les lois. En haut, une ligne collée : le déficit, l'objectif, la dette.
    Résultat dès 5 votes (hémicycle des groupes, façon d'agir, dette), puis à chaque étape. Trois onglets : Voter, Créer, Bilan. */
-:root { --band2: rgba(47, 91, 211, .16); --c-imp: #2f5bd3; --c-eco: #55657a; --c-baisse: #8fa8e8; --c-dep: #b9c0cb; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --band2: rgba(122, 156, 255, .2); --c-imp: #7a9cff; --c-eco: #9aa8bb; --c-baisse: #3f5aa8; --c-dep: #565d69; } }
-:root[data-theme="dark"] { --band2: rgba(122, 156, 255, .2); --c-imp: #7a9cff; --c-eco: #9aa8bb; --c-baisse: #3f5aa8; --c-dep: #565d69; }
+:root { --band2: rgba(47, 91, 211, .16); --c-imp: #2f5bd3; --c-eco: #55657a; --c-baisse: #8fa8e8; --c-dep: #b9c0cb; --on-fr: #fff; --piste: #d9dce2; --gmix: 0%; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --band2: rgba(122, 156, 255, .2); --c-imp: #7a9cff; --c-eco: #9aa8bb; --c-baisse: #3f5aa8; --c-dep: #565d69; --on-fr: #0d1430; --piste: #3a3f49; --gmix: 35%; } }
+:root[data-theme="dark"] { --band2: rgba(122, 156, 255, .2); --c-imp: #7a9cff; --c-eco: #9aa8bb; --c-baisse: #3f5aa8; --c-dep: #565d69; --on-fr: #0d1430; --piste: #3a3f49; --gmix: 35%; }
 .q-brouillon { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--draft); color: var(--draft-fg); font-size: 13px; }
 #q-intro { gap: 10px; }
 #q-intro h1 { font-size: 22px; line-height: 1.15; margin: 0; text-wrap: balance; }
 .q-lead { margin: 0; font-size: 14.5px; line-height: 1.45; }
 .q-obj { display: flex; align-items: center; gap: 8px; }
 .q-obj > span { font-size: 13px; font-weight: 700; flex: none; }
-.q-obj .q-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; min-width: 0; }
-.q-obj .q-chips button { flex: none; min-height: 34px; padding: 5px 11px; font-size: 13px; }
+.q-obj .q-chips { min-width: 0; }
+.q-obj .q-chips button { flex: none; min-height: 36px; padding: 5px 10px; font-size: 13px; }
+.q-obj .q-chips { flex-wrap: nowrap; }
 .q-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .q-chips button { font: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 38px; }
 .q-chips button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
@@ -341,21 +342,26 @@ footer p { margin: 0; } footer a { color: inherit; }
 /* Le bandeau : une ligne, toujours la même hauteur. */
 .q-hud { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 9; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
 .q-hd { display: grid; line-height: 1.1; }
-.q-hd small { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.q-hd small { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
 .q-hd b { font-family: var(--serif); font-weight: 400; font-size: 22px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .q-hd.d { text-align: right; }
 .q-jauge { position: relative; height: 8px; border-radius: 4px; background: var(--line); }
 .q-jauge span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--fr); transition: width .45s cubic-bezier(.2,.8,.2,1); }
-.q-jauge em { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--fg); }
+.q-jauge em { position: absolute; top: -4px; bottom: -4px; right: 0; width: 2px; background: var(--fg); }
+.q-jauge.ok span { background: var(--ok); }
+.q-jauge[hidden] { display: block; visibility: hidden; }
 .q-hs { grid-column: 1 / -1; margin: 0; font-size: 13px; line-height: 1.35; color: var(--muted); }
 .q-hs b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.q-hs button { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 0 0 0 4px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.q-hobj { grid-column: 1 / -1; }
+.q-hobj[hidden] { display: none; }
 .q-hs.ok b { color: var(--ok); }
-.q-pop { position: absolute; right: 12px; top: 100%; margin-top: 6px; padding: 6px 12px; border-radius: 999px; background: var(--fg); color: var(--bg); font-size: 13px; font-weight: 700; white-space: nowrap; opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity .2s, transform .2s; font-variant-numeric: tabular-nums; }
+.q-pop { position: absolute; right: 12px; left: 12px; width: fit-content; margin-left: auto; top: 100%; margin-top: 6px; padding: 7px 12px; border-radius: 14px; background: var(--fg); color: var(--bg); font-size: 13px; font-weight: 700; line-height: 1.35; text-align: right; opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity .2s, transform .2s; font-variant-numeric: tabular-nums; }
 .q-pop.on { opacity: 1; transform: none; }
 .q-flash { animation: q-flash .7s ease; }
 @keyframes q-flash { 0% { color: var(--fr); transform: scale(1.06); } 100% { color: inherit; transform: none; } }
 .q-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: var(--line); }
-.q-tabs button { font: inherit; font-size: 14px; font-weight: 700; min-height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; }
+.q-tabs button { font: inherit; font-size: 14px; font-weight: 700; min-height: 44px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; }
 .q-tabs button[aria-selected="true"] { background: var(--panel); color: var(--fg); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 .q-pane { display: grid; gap: 14px; }
 .q-pane[hidden] { display: none; }
@@ -363,7 +369,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-dots { display: inline-flex; gap: 5px; vertical-align: middle; margin-right: 8px; }
 .q-dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
 .q-dots i.on { background: var(--fr); }
-.q-filtrer { font: inherit; font-size: 13px; font-weight: 600; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; min-height: 34px; white-space: nowrap; }
+.q-ptot { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: -8px; }
+.q-ptot span { display: block; height: 100%; background: var(--fr); transition: width .4s ease; }
+.q-filtrer { font: inherit; font-size: 13px; font-weight: 600; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; min-height: 44px; white-space: nowrap; }
 .q-filtres { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
 .q-filtres[hidden] { display: none; }
 .q-filtres button { flex: none; font: inherit; font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 36px; }
@@ -376,10 +384,12 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-card.in { animation: q-in .28s ease; }
 @keyframes q-in { from { transform: translateY(14px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
 .q-stamp { position: absolute; top: 16px; padding: 4px 12px; border: 3px solid var(--fg); border-radius: 8px; font-weight: 800; font-size: 18px; letter-spacing: .06em; color: var(--fg); background: var(--panel); opacity: 0; pointer-events: none; }
-.q-stamp.p { right: 16px; transform: rotate(8deg); }
-.q-stamp.c { left: 16px; transform: rotate(-8deg); }
+.q-stamp.p { left: 16px; transform: rotate(-8deg); }
+.q-stamp.c { right: 16px; transform: rotate(8deg); }
+.q-dessous { position: absolute; inset: 10px 8px auto; height: calc(100% - 10px); border-radius: 18px; border: 1px solid var(--line); background: var(--panel); transform: scale(.96); opacity: .6; z-index: 0; }
+.q-deck > .q-card { z-index: 1; }
 .q-tags { display: flex; gap: 8px; align-items: center; min-width: 0; }
-.q-chip { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fr); background: var(--band); border-radius: 999px; padding: 4px 10px; }
+.q-chip { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fr); background: var(--band); border-radius: 999px; padding: 4px 10px; }
 .q-org { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .q-chip { flex: none; }
 .q-card h2 { margin: 0; font-size: 21px; line-height: 1.25; text-wrap: balance; }
@@ -391,7 +401,12 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-ligne b { font-weight: 700; }
 .q-ligne.m { color: var(--muted); font-size: 13.5px; }
 .q-src { font-size: 13px; color: var(--muted); }
-.q-src summary { cursor: pointer; font-weight: 600; color: var(--fg); padding: 4px 0; }
+.q-src summary { cursor: pointer; font-weight: 600; color: var(--fg); padding: 4px 0; min-height: 44px; display: flex; align-items: center; gap: 6px; }
+.q-src summary::before { content: '▸'; }
+.q-src[open] summary::before { content: '▾'; }
+.q-src summary::-webkit-details-marker { display: none; }
+.q-src summary { list-style: none; }
+.q-src p a { display: inline-block; padding: 6px 0; }
 .q-src p { margin: 8px 0 0; line-height: 1.45; }
 .q-src a, .q-note a, .q-hyp a { color: var(--fr); }
 .q-gr { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
@@ -406,19 +421,32 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-bar button.passe { border: 0; background: none; font-size: 13.5px; font-weight: 600; color: var(--muted); text-decoration: underline; min-height: 44px; padding: 0 4px; }
 .q-bar button.undo { min-height: 44px; border-color: var(--line); font-size: 18px; color: var(--muted); }
 .q-bar button.undo:disabled { opacity: .35; cursor: default; }
+.q-bar div.e { grid-template-columns: 44px minmax(0, 1fr) auto; }
+.q-bar div.e button { padding: 0 16px; }
+.q-bar div.e .q-go { border: 0; }
+.q-hs.q-msg { color: var(--fg); font-weight: 600; animation: q-flash .7s ease; }
+.q-hs.q-msg span { font-weight: 400; color: var(--muted); }
+.q-extrait summary { cursor: pointer; font-weight: 600; color: var(--fr); min-height: 40px; display: flex; align-items: center; }
+.q-extrait p { white-space: pre-line; font-size: 12.5px; }
+.q-partage-t { font-size: 13px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); user-select: all; margin: 0; }
 body.q-vote { padding-bottom: 92px; }
 /* Étape : le résultat */
 .q-etape { border: 1.5px solid var(--fr); }
 .q-etape h2 { font-size: 22px; }
 .q-gros { margin: 0; font-size: 16px; line-height: 1.5; }
 .q-gros b { font-variant-numeric: tabular-nums; }
+.q-res { display: grid; gap: 12px; }
+.q-barres.e1 div { grid-template-columns: minmax(0, 1fr); }
+.q-barres.e1 span.v { display: none; }
+.q-tous summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--fr); min-height: 44px; display: flex; align-items: center; }
+.q-depuis { margin: 0; font-size: 14px; padding: 8px 12px; border-radius: 10px; background: var(--band); }
 .q-effort { display: flex; height: 22px; border-radius: 6px; overflow: hidden; background: var(--line); }
 .q-effort span { height: 100%; min-width: 3px; }
 .q-effort-l { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
 .q-effort-l i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
 .q-hemi svg { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto; }
 .q-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.q-go { font: inherit; font-weight: 700; font-size: 15.5px; min-height: 48px; padding: 0 20px; border-radius: 999px; border: 0; background: var(--fr); color: #fff; cursor: pointer; }
+.q-go { font: inherit; font-weight: 700; font-size: 15.5px; min-height: 48px; padding: 0 20px; border-radius: 999px; border: 0; background: var(--fr); color: var(--on-fr); cursor: pointer; }
 .q-go:disabled { background: var(--line); color: var(--muted); cursor: default; }
 .q-lien { font: inherit; font-size: 14px; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 6px 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .q-liste { list-style: none; margin: 0; padding: 0; display: grid; }
@@ -426,13 +454,15 @@ body.q-vote { padding-bottom: 92px; }
 .q-liste li:first-child { border-top: 0; }
 .q-liste .m { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
 .q-liste small { grid-column: 1 / -1; }
-.q-liste button { font: inherit; font-size: 12.5px; color: var(--fr); background: none; border: 0; padding: 0; cursor: pointer; }
+.q-liste small { display: flex; gap: 8px; margin-top: 4px; }
+.q-liste button { font: inherit; font-size: 13px; font-weight: 600; color: var(--fr); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 0 14px; min-height: 40px; cursor: pointer; }
 /* Créer */
 .q-recherche { font: inherit; font-size: 15px; min-height: 46px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); width: 100%; box-sizing: border-box; }
 .q-tuiles-c { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .q-tuiles-c button { font: inherit; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; display: grid; gap: 2px; min-height: 58px; }
 .q-tuiles-c button b { font-size: 14px; }
 .q-tuiles-c button span { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.q-tuiles-c button i { font-style: normal; font-size: 12px; font-weight: 700; color: var(--fr); }
 .q-tuiles-c button[aria-pressed="true"] { border-color: var(--fr); box-shadow: 0 0 0 2px var(--fr) inset; }
 .q-resultats { list-style: none; margin: 0; padding: 0; display: grid; max-height: 260px; overflow-y: auto; border: 1px solid var(--line); border-radius: 12px; }
 .q-resultats[hidden] { display: none; }
@@ -453,15 +483,16 @@ body.q-vote { padding-bottom: 92px; }
 .q-sl .h { display: flex; justify-content: space-between; gap: 10px; font-size: 14.5px; font-weight: 600; }
 .q-sl .h b { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .q-sl input[type=range] { width: 100%; accent-color: var(--fr); height: 30px; margin: 0; }
-.q-sl .b { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); }
+.q-sl .b { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
 .q-presets { display: flex; flex-wrap: wrap; gap: 6px; }
-.q-presets button { font: inherit; font-size: 13px; font-weight: 600; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 36px; font-variant-numeric: tabular-nums; }
+.q-presets button { font: inherit; font-size: 13px; font-weight: 600; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 40px; font-variant-numeric: tabular-nums; }
 .q-effet { margin: 0; font-size: 15px; }
 .q-effet b { font-family: var(--serif); font-weight: 400; font-size: 26px; color: var(--fr); }
+.q-apercu { margin: 0; font-size: 14.5px; font-weight: 600; }
 /* Bilan */
 .q-tuiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .q-tuile { padding: 10px 12px; border-radius: 12px; background: var(--band); display: grid; gap: 2px; }
-.q-tuile small { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.q-tuile small { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .q-tuile b { font-family: var(--serif); font-weight: 400; font-size: 25px; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .q-tuile span { font-size: 12.5px; color: var(--muted); }
 .q-chart svg { width: 100%; height: auto; display: block; }
@@ -470,8 +501,11 @@ body.q-vote { padding-bottom: 92px; }
 .q-barres { display: grid; gap: 8px; }
 .q-barres div { display: grid; grid-template-columns: minmax(0, 1fr) 76px; gap: 3px 10px; align-items: center; font-size: 13.5px; }
 .q-barres span.t { grid-column: 1 / -1; }
-.q-barres span.r { position: relative; height: 12px; background: var(--line); border-radius: 6px; overflow: hidden; }
+.q-barres span.r { position: relative; height: 12px; background: var(--piste); border-radius: 6px; overflow: hidden; }
 .q-barres span.r em { position: absolute; top: 0; bottom: 0; border-radius: 6px; background: var(--fr); }
+.q-barres span.r em.g, .q-hemi path.g { background: color-mix(in srgb, var(--g), white var(--gmix)); fill: color-mix(in srgb, var(--g), white var(--gmix)); }
+.q-hemi path.g.f { stroke: var(--fg); stroke-opacity: .2; stroke-width: .8; }
+.q-barres em.b2 { background: var(--c-baisse); }
 .q-barres span.v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
 .q-etat { display: inline-block; font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--band); color: var(--fr); }
 .q-etat.ok { color: var(--ok); }
@@ -479,6 +513,12 @@ body.q-vote { padding-bottom: 92px; }
 .q-sw { display: flex; gap: 12px; align-items: flex-start; }
 .q-sw input { width: 22px; height: 22px; margin: 2px 0 0; accent-color: var(--fr); flex: none; }
 .q-danger { font: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 40px; }
+@media (min-width: 760px) {
+  .q-deck, .q-prog, .q-ptot, .q-filtres { width: 100%; max-width: 560px; margin-inline: auto; }
+  .q-bar div { max-width: 560px; }
+}
+@media (pointer: fine) { .q-swipe .t { display: none; } }
+@media (pointer: coarse) { .q-swipe .s { display: none; } }
 @media (max-width: 380px) { .q-hd b { font-size: 19px; } .q-card h2 { font-size: 19px; } }
 @media (prefers-reduced-motion: reduce) { .q-card, .q-card.in, .q-jauge span, .q-pop, .q-flash { transition: none; animation: none; } }
 </style>
@@ -498,7 +538,7 @@ body.q-vote { padding-bottom: 92px; }
     <div class="q-jauge" id="q-jauge" aria-hidden="true"><span></span><em></em></div>
     <div class="q-hd d"><small id="h-l2">Dette</small><b id="h-v2">—</b></div>
     <p class="q-hs" id="q-hs" aria-live="polite"></p>
-    <div class="q-pop" id="q-pop" aria-hidden="true"></div>
+    <div class="q-hobj" id="q-hobj" hidden><div class="q-chips" id="q-objs2"></div></div>
   </div>
 
   <div class="q-tabs" role="tablist" aria-label="Parties du jeu">
@@ -509,6 +549,7 @@ body.q-vote { padding-bottom: 92px; }
 
   <div class="q-pane" id="p-voter" role="tabpanel" aria-labelledby="t-voter">
     <div class="q-prog"><span id="q-prog"></span><button type="button" class="q-filtrer" id="q-filtrer" aria-expanded="false">Filtrer</button></div>
+    <div class="q-ptot" id="q-ptot" aria-hidden="true"><span></span></div>
     <div class="q-filtres" id="q-filtres" hidden aria-label="Filtrer les mesures"></div>
     <div class="q-deck" id="q-deck"></div>
     <details class="card fold"><summary id="q-vos-n">Vos mesures</summary><ul class="q-liste" id="q-vos"></ul></details>
@@ -518,13 +559,14 @@ body.q-vote { padding-bottom: 92px; }
     <section class="card" aria-labelledby="q-cr-t">
       <h2 id="q-cr-t"><span class="eyebrow">Vos propres mesures</span>Baissez ou augmentez n'importe quelle ligne du budget</h2>
       <div class="q-tuiles-c" id="q-tuiles-c"></div>
-      <input type="search" class="q-recherche" id="q-cherche" placeholder="Chercher : RSA, police, aide au développement…" aria-label="Chercher une ligne du budget">
+      <input type="search" class="q-recherche" id="q-cherche" placeholder="Chercher : RSA, police…" aria-label="Chercher une ligne du budget">
       <ul class="q-resultats" id="q-resultats" hidden></ul>
       <div class="q-choisi" id="q-choisi" hidden>
         <h3 id="q-ch-t"></h3>
         <p class="q-note" id="q-ch-n"></p>
         <div class="q-sl"><div class="h"><span>De combien ?</span><b id="q-pc-v">0 %</b></div><input type="range" id="q-pc" min="-100" max="100" step="1" value="0" aria-label="Pourcentage de baisse ou de hausse"><div class="b"><span>−100 %</span><span>0</span><span>+100 %</span></div><div class="q-presets" id="q-pc-p"></div></div>
         <p class="q-effet" id="q-effet"></p>
+        <p class="q-apercu" id="q-apercu" aria-live="polite"></p>
         <div class="q-pp" id="q-pp" hidden></div>
         <p class="q-note" id="q-ch-h"></p>
         <button type="button" class="q-go" id="q-ajout" disabled>Ajouter à mon budget</button>
@@ -540,7 +582,7 @@ body.q-vote { padding-bottom: 92px; }
     <section class="card" aria-labelledby="q-rc-t">
       <h2 id="q-rc-t"><span class="eyebrow">Votre quinquennat</span><span id="q-rc-h"></span></h2>
       <div class="q-tuiles" id="q-tuiles"></div>
-      <p class="q-gros" id="q-rc-p"></p>
+      <div id="q-rc-p"></div>
       <div class="q-actions"><button type="button" class="q-go" id="q-partager">Partager mon budget</button></div>
     </section>
     <section class="card" aria-labelledby="q-df-t" id="q-defi"></section>
@@ -583,7 +625,8 @@ body.q-vote { padding-bottom: 92px; }
     <div class="q-actions"><button type="button" class="q-danger" id="q-reset">Tout recommencer</button></div>
   </div>
 
-  <div class="q-bar" id="q-bar"><div><button type="button" class="undo" id="b-undo" aria-label="Annuler le dernier vote" disabled>↶</button><button type="button" id="b-contre">✗ Contre</button><button type="button" class="passe" id="b-passe">Passer</button><button type="button" id="b-pour">✓ Pour</button></div></div>
+  <div class="q-bar" id="q-bar"><div><button type="button" class="undo" id="b-undo" aria-label="Annuler le dernier vote" title="Annuler le dernier vote" disabled>↶</button><button type="button" id="b-contre">✗ Contre</button><button type="button" class="passe" id="b-passe">Passer</button><button type="button" id="b-pour">✓ Pour</button></div></div>
+  <div class="q-bar" id="q-bar2" hidden><div class="e"><button type="button" class="undo" id="b-undo2" aria-label="Annuler le dernier vote" title="Annuler le dernier vote">↶</button><button type="button" class="q-go" id="b-suite">Continuer</button><button type="button" id="b-bilan">Bilan</button></div></div>
   <footer><p>concret2027.fr · Page indépendante de tout parti. <a href="/mentions-legales/">Mentions légales</a></p></footer>
 </div>
 <script>
@@ -662,15 +705,22 @@ body.q-vote { padding-bottom: 92px; }
   var nbDecisions = function () { return Object.keys(S.v).filter(function (k) { return S.v[k] === 1 || S.v[k] === -1; }).length; };
   var nbChoix = function () { return adoptees().length + Object.keys(S.perso).length; };
   var nomGroupe = function (c) { var g = J.groupes.filter(function (x) { return x.c === c; })[0]; return g ? g.n : c; };
-  var PREMIERS = 5, ETAPES = [5, 10, 20, 30, 40, 50];
+  var MINP = 3, ETAPES = [5, 10, 20, 30, 40, 50];
 
   // Objectif choisi : 3 % de déficit en 2027 (règle européenne), dette stable en 2031, ou aucun.
+  // prog : part du chemin faite depuis « rien ne change » (0 à 1), pour la jauge.
   function objectif() {
-    var r1 = an1(R), f = R[R.length - 1];
-    if (S.obj === 'trois') { var e = -r1.solde - PAR.regle; return { ok: e <= 0, t: e <= 0 ? 'Objectif atteint : déficit ' + AN0 + ' à ' + defic(r1.solde) + ', sous ' + nf(PAR.regle, 0) + '\u00a0%.' : 'Il manque <b>' + mdt(e / 100 * r1.pib) + '</b> pour un déficit ' + AN0 + ' à ' + nf(PAR.regle, 0) + '\u00a0% (règle européenne).' }; }
-    if (S.obj === 'dette') { var x = f.d - PJ.depart.dette; return { ok: x <= 0, t: x <= 0 ? 'Objectif atteint : la dette de ' + AN1 + ' ne dépasse pas celle de fin ' + PJ.depart.an + '.' : 'Il manque <b>' + pt(x) + '</b> de dette en ' + AN1 + ' pour revenir au niveau de fin ' + PJ.depart.an + ' (' + nf(PJ.depart.dette, 1) + '\u00a0%).' }; }
+    var r1 = an1(R), f = R[R.length - 1], z1 = an1(R0), zf = R0[R0.length - 1], cl = function (v) { return Math.max(0, Math.min(1, v)); };
+    if (S.obj === 'trois') {
+      var e = -r1.solde - PAR.regle, e0 = -z1.solde - PAR.regle, m0 = mdt(e0 / 100 * z1.pib), m = mdt(e / 100 * r1.pib);
+      return { ok: e <= 0, prog: e0 > 0 ? cl((e0 - e) / e0) : 1, t: e <= 0 ? 'Objectif atteint : déficit ' + AN0 + ' à ' + defic(r1.solde) + ', sous ' + nf(PAR.regle, 0) + '\u00a0%.' : 'Il manque <b>' + m + '</b>' + (m !== m0 ? ' sur ' + m0 : '') + ' pour un déficit ' + AN0 + ' à ' + nf(PAR.regle, 0) + '\u00a0%' + (m !== m0 ? '.' : ' (règle européenne).') };
+    }
+    if (S.obj === 'dette') {
+      var x = f.d - PJ.depart.dette, x0 = zf.d - PJ.depart.dette;
+      return { ok: x <= 0, prog: x0 > 0 ? cl((x0 - x) / x0) : 1, t: x <= 0 ? 'Objectif atteint : la dette de ' + AN1 + ' ne dépasse pas celle de fin ' + PJ.depart.an + '.' : 'Dette ' + AN1 + ' : <b>' + pt(x) + '</b> au-dessus de fin ' + PJ.depart.an + ' (' + nf(PJ.depart.dette, 1) + '\u00a0%).' };
+    }
     var n = nbChoix(), t = r1.mesures;
-    return { ok: false, t: n ? (n > 1 ? 'Vos ' + n + ' mesures ' : 'Votre mesure ') + (t >= 0 ? 'rapporte' + (n > 1 ? 'nt' : '') + ' <b>' : 'coûte' + (n > 1 ? 'nt' : '') + ' <b>') + mdt(t) + '</b> en ' + AN0 + '.' : 'Votez des mesures : leur effet s\'affiche ici.' };
+    return { ok: false, prog: null, t: n ? (n > 1 ? 'Vos ' + n + ' mesures ' : 'Votre mesure ') + (t >= 0 ? 'rapporte' + (n > 1 ? 'nt' : '') + ' <b>' : 'coûte' + (n > 1 ? 'nt' : '') + ' <b>') + mdt(t) + '</b> en ' + AN0 + '.' : 'Votez des mesures : leur effet s\'affiche ici.' };
   }
 
   // ---------- Le bandeau ----------
@@ -678,29 +728,46 @@ body.q-vote { padding-bottom: 92px; }
     R = simuler(); R0 = simuler({ rien: true });
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1];
     $('h-l1').textContent = 'Déficit ' + AN0; $('h-l2').textContent = 'Dette ' + AN1;
-    var v1 = defic(r1.solde), v2 = nf(f.d, 0) + '\u00a0%';
+    var v1 = defic(r1.solde), v2 = nf(f.d, 1) + '\u00a0%';
     [['h-v1', v1], ['h-v2', v2]].forEach(function (x) { var el = $(x[0]); if (anime && el.textContent !== x[1]) { el.classList.remove('q-flash'); void el.offsetWidth; el.classList.add('q-flash'); } el.textContent = x[1]; });
-    var max = Math.max(-z1.solde, -r1.solde, PAR.regle + 1) * 1.05;
-    $('q-jauge').querySelector('span').style.width = (Math.max(0, -r1.solde) / max * 100) + '%';
-    $('q-jauge').querySelector('em').style.left = (PAR.regle / max * 100) + '%';
-    $('q-jauge').title = 'Trait : ' + nf(PAR.regle, 0) + '\u00a0% du PIB, la règle européenne';
-    var o = objectif(); $('q-hs').innerHTML = o.t; $('q-hs').className = 'q-hs' + (o.ok ? ' ok' : '');
+    // La jauge : le chemin fait vers l'objectif choisi (vide au départ, pleine quand il est atteint).
+    var o = objectif(), jg = $('q-jauge');
+    jg.hidden = o.prog == null; jg.className = 'q-jauge' + (o.ok ? ' ok' : '');
+    if (o.prog != null) { jg.querySelector('span').style.width = (o.prog * 100) + '%'; jg.title = 'Chemin fait vers votre objectif : ' + nf(o.prog * 100, 0) + '\u00a0%'; }
+    if (!POP) {
+      $('q-hs').innerHTML = o.t + ' <button type="button" id="q-chobj" aria-expanded="' + !$('q-hobj').hidden + '">' + (S.obj === 'aucun' ? 'Choisir un objectif' : 'Changer d\'objectif') + '</button>';
+      $('q-hs').className = 'q-hs' + (o.ok ? ' ok' : '');
+      $('q-chobj').onclick = function () { $('q-hobj').hidden = !$('q-hobj').hidden; hud(); };
+    }
     $('q-intro').hidden = nbDecisions() > 0 || nbChoix() > 0;
     if (!$('p-bilan').hidden) bilan();
   }
-  var popT = null;
-  function pop(t) { var el = $('q-pop'); el.textContent = t; el.classList.add('on'); clearTimeout(popT); popT = setTimeout(function () { el.classList.remove('on'); }, 1700); }
+  // Après chaque geste, la ligne du bandeau dit ce qui vient de changer, puis revient à l'objectif.
+  var popT = null, POP = false;
+  function pop(t, long) { clearTimeout(popT); POP = true; var el = $('q-hs'); el.className = 'q-hs'; void el.offsetWidth; el.className = 'q-hs q-msg'; el.innerHTML = t; popT = setTimeout(function () { POP = false; hud(); }, long ? 3600 : 2400); }
+  // Ce que montre le bandeau, avant et après : les mêmes chiffres arrondis, pour que le message et le bandeau disent la même chose.
+  function avantApres(A0, A1) {
+    if (S.obj === 'dette') { var d0 = nf(A0[A0.length - 1].d, 1), d1 = nf(A1[A1.length - 1].d, 1); return 'dette ' + AN1 + ' : ' + (d0 === d1 ? d1 + '\u00a0%, moins de 0,1 point d\'écart' : d0 + '\u00a0% → ' + d1 + '\u00a0%'); }
+    var a = defic(an1(A0).solde), b = defic(an1(A1).solde);
+    return 'déficit ' + AN0 + ' : ' + (a === b ? b + ', moins de 0,1 point d\'écart' : a + ' → ' + b);
+  }
+  // Après une mesure votée par les députés : leur décision et le nombre de groupes qui ont voté comme vous.
+  function echoAssemblee(c, v) {
+    if (!c.an || !c.statut_court) return '';
+    var n = 0, t = 0; J.groupes.forEach(function (g) { if (g.c === 'NI') return; var x = c.an.g[g.c]; if (!x || x === 'nv') return; t++; var pm = x === 'pour' ? c.an.sens : x === 'contre' ? -c.an.sens : 0; if (pm === v) n++; });
+    return '<br><span>À l\'Assemblée : ' + esc((c.statut_court.charAt(0).toLowerCase() + c.statut_court.slice(1)).replace(' (1re lecture)', '')) + ' par ' + Math.max(c.an.pour, c.an.contre) + ' voix contre ' + Math.min(c.an.pour, c.an.contre) + ' · ' + n + ' groupe' + (n > 1 ? 's' : '') + ' sur ' + t + ' ' + (n > 1 ? 'ont' : 'a') + ' voté comme vous.</span>';
+  }
+  // Espaces insécables dans les nombres des textes (« 1 260 € », « 10 % »).
+  var nb = function (t) { return esc(t).replace(/(\d) (?=\d{3}\b)/g, '$1\u00a0').replace(/(\d) (%|€|Md€|M€)/g, '$1\u00a0$2').replace(/(\d\u00a0?\d*) ([A-ZÉ])(?=[a-zé])/g, function (m, a, b) { return a + ' ' + b.toLowerCase(); }); };
 
   // ---------- Les cartes ----------
   var ORIG = { plf: 'Budget 2027 du Gouvernement', plfss: 'Budget 2027 de la Sécurité sociale', niche: 'Avantage fiscal existant', levier: 'Chiffrage officiel', debat: 'Mesure débattue' };
   function origine(c) { var a = /article (\d+)/.exec(c.texte || ''); return (ORIG[c.origine] || '') + (a ? ', art. ' + a[1] : '') + (c.par ? ' · ' + c.par : ''); }
   function filtrees() { return C.filter(function (c) { var f = S.filtre; return f === 'tout' || (f === 'recette' && c.sens === 'recette') || (f === 'depense' && c.sens !== 'recette') || c.theme === f; }); }
-  // La carte suivante : tant que 5 mesures votées par les députés n'ont pas reçu de réponse, d'abord l'une d'elles.
+  // La carte suivante, dans l'ordre fixé au départ (voir demarrer()) ; les cartes passées reviennent à la fin.
   function suivante() {
-    var L = filtrees().filter(function (c) { return S.v[c.id] == null; }); if (!L.length) return null;
-    var nAn = C.filter(function (c) { return c.an && (S.v[c.id] === 1 || S.v[c.id] === -1); }).length;
-    if (S.filtre === 'tout' && nAn < PREMIERS) { var a = L.filter(function (c) { return c.an; })[0]; if (a) return a; }
-    return L[0];
+    var L = filtrees().filter(function (c) { return S.v[c.id] == null || S.v[c.id] === 0; }); if (!L.length) return null;
+    return L.filter(function (c) { return S.v[c.id] == null; })[0] || L[0];
   }
   function phrase(m, c) {
     var ret = c.sens !== 'recette';
@@ -727,21 +794,22 @@ body.q-vote { padding-bottom: 92px; }
       J.groupes.forEach(function (g) { var x = c.an.g[g.c]; if (!x || x === 'nv') return; var pm = x === 'pour' ? c.an.sens : x === 'contre' ? -c.an.sens : 0; (pm > 0 ? p : pm < 0 ? cc : ab).push(g.n); });
       return '<p><b>Pour la mesure :</b> ' + (esc(p.join(', ')) || 'aucun groupe') + '.<br><b>Contre :</b> ' + (esc(cc.join(', ')) || 'aucun groupe') + '.' + (ab.length ? '<br><b>Abstention :</b> ' + esc(ab.join(', ')) + '.' : '') + ' (Position de la majorité de chaque groupe, scrutin public n° ' + c.an.n + '.)</p>';
     })() : '';
-    $('q-deck').innerHTML = '<article class="q-card' + (entree ? ' in' : '') + '" id="q-card">' +
+    $('q-deck').innerHTML = (filtrees().filter(function (o) { return o !== c && (S.v[o.id] == null || S.v[o.id] === 0); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card' + (entree ? ' in' : '') + '" id="q-card">' +
       '<span class="q-stamp p" id="q-sp">✓ POUR</span><span class="q-stamp c" id="q-sc">✗ CONTRE</span>' +
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span><span class="q-org">' + esc(origine(c)) + '</span></div>' +
-      '<h2>' + esc(c.titre || c.l) + '</h2>' +
+      '<h2>' + nb(c.titre || c.l) + '</h2>' +
       '<div class="q-mt"><b>' + mdt(m) + '</b><span>' + phrase(m, c) + ' en ' + AN0 + '</span><em>' + (c.duree === 'une seule année' ? 'une seule année' : 'chaque année') + '</em></div>' +
-      '<p class="q-ligne"><b>' + quiTitre(c, m) + ' :</b> ' + esc(c.qui_texte || c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' +
+      '<p class="q-ligne"><b>' + quiTitre(c, m) + ' :</b> ' + nb(c.qui_texte || c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' +
       deputes(c) +
       '<details class="q-src"><summary>Ce que ça change, et la source</summary>' +
       (c.quoi ? '<p>' + esc(c.quoi) + '</p>' : '') + (c.officiel ? '<p>Intitulé officiel : « ' + esc(c.officiel) + ' ».</p>' : '') +
-      ((c.titre && c.titre !== c.l) ? '<p>Intitulé complet : ' + esc(c.l) + '.</p>' : '') +
+      ((!c.officiel && c.titre && c.titre !== c.l) ? '<p>Intitulé complet : ' + nb(c.l) + '.</p>' : '') +
       '<p>' + esc(anneesTexte(c)) + (c.origine === 'niche' ? ' Le Gouvernement chiffre ce que coûte cet avantage ; la recette de sa suppression peut être plus faible si les comportements changent.' : '') + '</p>' +
       (c.note ? '<p>' + esc(c.note) + '</p>' : '') + grp +
-      '<p>Source : ' + esc(c.src.doc) + (c.src.page ? ', page ' + esc(String(c.src.page).replace(/^p\. ?/, '')) : '') + ' : « ' + esc(c.src.citation) + ' » <a href="' + esc(c.src.url) + '">Lire le document</a></p>' +
+      '<p>Source : ' + esc(c.src.doc) + (c.src.page ? ', page ' + esc(String(c.src.page).replace(/^p\. ?/, '')) : '') + '. <a href="' + esc(c.src.url) + '">Lire le document</a></p>' +
+      '<details class="q-extrait"><summary>Extrait exact du document</summary><p>« ' + esc(c.src.citation) + ' »</p></details>' +
       '<p>' + (c.macro && J.variantes[c.macro] ? 'Son effet sur l\'activité et l\'emploi est compté, d\'après le modèle de la direction du Trésor et de l\'Insee.' : 'Son effet sur l\'activité n\'est pas compté : le modèle de la direction du Trésor et de l\'Insee ne le publie pas pour ce type de mesure.') + '</p></details>' +
-      (S.glisse ? '' : '<p class="q-swipe">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</p>') + '</article>';
+      (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
     glisser($('q-card'), c);
   }
   function glisser(el, c) {
@@ -763,8 +831,8 @@ body.q-vote { padding-bottom: 92px; }
     if (v === 1) Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(c.id) >= 0) { delete S.perso[k]; } });
     S.v[c.id] = v; S.pile.push({ id: c.id, avant: avant == null ? null : avant, retirees: retirees }); garder();
     var el = $('q-card'); if (el) el.classList.add(v === 1 ? 'out-r' : 'out-l');
-    var A1 = simuler(), e = an1(A1).solde - r1;
-    if (v === 1) pop(mdt(montant(c, AN0), true) + ' · déficit ' + AN0 + ' ' + (Math.abs(e) < 0.05 ? 'presque inchangé' : (e > 0 ? '−' : '+') + nf(Math.abs(e), 1) + ' pt') + (retirees.length ? ' · remplace une autre mesure' : ''));
+    var A1 = simuler(), echo = echoAssemblee(c, v);
+    pop((v === 1 ? 'Pour : ' + mdt(montant(c, AN0), true) + ' · ' + avantApres(A0, A1) + (retirees.length ? ' (remplace une autre mesure)' : '') : 'Contre : rien ne change') + echo, !!echo);
     setTimeout(function () { tout(true, true); remonter(); }, 260);
   }
   function annuler() {
@@ -783,15 +851,18 @@ body.q-vote { padding-bottom: 92px; }
   function pile(entree) {
     var n = nbDecisions(), c = suivante(), et = etapeDue(), prochaine = ETAPES.filter(function (e) { return e > n; })[0];
     var dots = '<span class="q-dots">' + [0, 1, 2, 3, 4].map(function (i) { return '<i class="' + (i < Math.min(n, 5) ? 'on' : '') + '"></i>'; }).join('') + '</span>';
-    $('q-prog').innerHTML = n < 5 ? dots + 'Votre résultat dans ' + (5 - n) + ' vote' + (5 - n > 1 ? 's' : '') : n + ' votes · ' + (prochaine ? 'prochain point à ' + prochaine : 'toutes les étapes passées');
+    $('q-prog').innerHTML = n < 5 ? dots + 'Votre résultat dans ' + (5 - n) + ' vote' + (5 - n > 1 ? 's' : '') : n + ' / ' + C.length + ' mesures' + (prochaine ? ' · prochain résultat à ' + prochaine + ' votes' : '');
+    $('q-ptot').querySelector('span').style.width = (100 * n / C.length) + '%';
     if (et && c) {
-      $('q-deck').innerHTML = '<section class="card q-etape' + (entree ? ' in' : '') + '"><span class="eyebrow">Votre budget après ' + et + ' votes</span><h2>' + (et === 5 ? 'Voici déjà votre quinquennat' : 'Votre quinquennat se précise') + '</h2>' + resume(true) +
+      $('q-deck').innerHTML = '<section class="card q-etape' + (entree ? ' in' : '') + '"><span class="eyebrow">Votre budget après ' + et + ' votes</span><h2>' + (et === 5 ? 'Voici déjà votre quinquennat' : 'Votre quinquennat se précise') + '</h2>' + resume('etape') +
         '<div class="q-actions"><button type="button" class="q-go" id="q-suite">Encore ' + ((ETAPES[ETAPES.indexOf(et) + 1] || et + 10) - et) + ' votes</button><button type="button" class="q-lien" id="q-voirb">Voir tout le bilan</button></div></section>';
-      $('q-suite').onclick = function () { S.etape = et; garder(); tout(true); remonter(); };
-      $('q-voirb').onclick = function () { S.etape = et; garder(); onglet('bilan'); };
+      S.hist = S.hist || {}; S.hist[et] = { s: an1(R).solde, d: R[R.length - 1].d }; garder();
+      var suite = function () { S.etape = et; garder(); tout(true); remonter(); }, voirb = function () { S.etape = et; garder(); onglet('bilan'); };
+      $('q-suite').onclick = suite; $('q-voirb').onclick = voirb; $('b-suite').onclick = suite; $('b-bilan').onclick = voirb;
+      $('b-suite').textContent = 'Continuer : ' + $('q-suite').textContent.toLowerCase();
     } else if (c) carte(c, entree);
     else {
-      $('q-deck').innerHTML = '<section class="card q-etape"><span class="eyebrow">Vous avez vu toutes les mesures' + (S.filtre !== 'tout' ? ' de ce filtre' : '') + '</span><h2>Votre quinquennat</h2>' + resume(false) +
+      $('q-deck').innerHTML = '<section class="card q-etape"><span class="eyebrow">Vous avez vu toutes les mesures' + (S.filtre !== 'tout' ? ' de ce filtre' : '') + '</span><h2>Votre quinquennat</h2>' + resume() +
         '<div class="q-actions"><button type="button" class="q-go" id="q-voirb2">Voir tout le bilan</button><button type="button" class="q-lien" id="q-cr2">Créer vos propres mesures</button></div></section>';
       $('q-voirb2').onclick = function () { onglet('bilan'); }; $('q-cr2').onclick = function () { onglet('creer'); };
     }
@@ -800,10 +871,10 @@ body.q-vote { padding-bottom: 92px; }
   function vos() {
     var L = adoptees(), t = L.reduce(function (s, c) { return s + montant(c, AN0); }, 0), n = nbDecisions();
     $('q-vos-n').textContent = L.length ? L.length + ' mesure' + (L.length > 1 ? 's' : '') + ' adoptée' + (L.length > 1 ? 's' : '') + ' sur ' + n + ' vote' + (n > 1 ? 's' : '') + ' : ' + mdt(t, true) + ' en ' + AN0 : 'Vos mesures adoptées apparaîtront ici';
-    $('q-vos').innerHTML = L.map(function (c) { return '<li><span>' + esc(c.titre || c.l) + '</span><span class="m">' + mdt(montant(c, AN0), true) + '</span><small><button type="button" data-id="' + c.id + '">Retirer</button></small></li>'; }).join('');
+    $('q-vos').innerHTML = L.map(function (c) { return '<li><span>' + nb(c.titre || c.l) + '</span><span class="m">' + mdt(montant(c, AN0), true) + '</span><small><button type="button" data-id="' + c.id + '">Retirer</button></small></li>'; }).join('');
     Array.prototype.forEach.call($('q-vos').querySelectorAll('button'), function (b) { b.onclick = function () { S.v[b.dataset.id] = -1; garder(); tout(); }; });
   }
-  function barre() { var on = !$('p-voter').hidden && !!suivante() && !etapeDue(); $('q-bar').hidden = !on; document.body.classList.toggle('q-vote', on); $('b-undo').disabled = !S.pile.length; }
+  function barre() { var v = !$('p-voter').hidden && !!suivante(), on = v && !etapeDue(), et = v && !!etapeDue(); $('q-bar').hidden = !on; $('q-bar2').hidden = !et; document.body.classList.toggle('q-vote', on || et); $('b-undo').disabled = $('b-undo2').disabled = !S.pile.length; }
 
   // ---------- Le résumé (étapes, fin, bilan) ----------
   function proches() {
@@ -822,36 +893,44 @@ body.q-vote { padding-bottom: 92px; }
     var t = a, out = '';
     G.forEach(function (g) {
       var span = Math.PI * g.m / tot, t2 = t - span, v = acc[g.c];
-      out += '<path d="' + arc(r0, R1, t - gap, t2 + gap) + '" fill="' + g.coul + '" opacity=".16"/>';
-      if (v != null) out += '<path d="' + arc(r0, r0 + (R1 - r0) * v / 100, t - gap, t2 + gap) + '" fill="' + g.coul + '"><title>' + esc(g.n) + ' : ' + nf(v, 0) + '\u00a0%</title></path>';
+      out += '<path class="g" style="--g:' + g.coul + '" d="' + arc(r0, R1, t - gap, t2 + gap) + '" opacity=".16"/>';
+      if (v != null) out += '<path class="g f" style="--g:' + g.coul + '" d="' + arc(r0, r0 + (R1 - r0) * v / 100, t - gap, t2 + gap) + '"><title>' + esc(g.n) + ' : ' + nf(v, 0) + '\u00a0%</title></path>';
       t = t2;
     });
     var best = P.G.slice().sort(function (x, y) { return y.v - x.v; })[0];
-    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Hémicycle : accord avec chaque groupe">' + out + (best ? '<text x="' + cx + '" y="' + (cy - 18) + '" text-anchor="middle" font-size="22" font-family="var(--serif)" fill="var(--fg)">' + nf(best.v, 0) + '\u00a0%</text><text x="' + cx + '" y="' + (cy - 2) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">d\'accord au plus</text>' : '') + '</svg>';
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Hémicycle : accord avec chaque groupe">' + out + (best ? '<text x="' + cx + '" y="' + (cy - 18) + '" text-anchor="middle" font-size="22" font-family="var(--serif)" fill="var(--fg)">' + nf(best.v, 0) + '\u00a0%</text><text x="' + cx + '" y="' + (cy - 2) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">le plus proche</text>' : '') + '</svg>';
   }
-  function proximite(P, min) {
+  function proximite(P, min, court) {
     if (P.n < min) return '<p class="q-note">Votez « pour » ou « contre » encore ' + (min - P.n) + ' mesure' + (min - P.n > 1 ? 's' : '') + ' que les députés ont votées, et vous verrez de quels groupes vous êtes le plus proche.</p>';
     var G = P.G.slice().sort(function (a, b) { return b.v - a.v; }), top = G.filter(function (x) { return Math.abs(x.v - G[0].v) < 0.5; });
-    return '<p class="q-gros">' + (top.length > 1 ? 'À égalité, vos votes ressemblent le plus à ceux de : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b>' : 'Vos votes ressemblent le plus à ceux du groupe <b>' + esc(G[0].g.n) + '</b>') + ' (' + nf(G[0].v, 0) + '\u00a0% d\'accord sur ' + P.n + ' mesures votées par les députés).</p>' +
-      '<div class="q-hemi">' + hemicycle(P) + '</div><div class="q-barres">' + G.map(function (x) { return '<div><span class="t">' + esc(x.g.n) + '</span><span class="r"><em style="left:0;width:' + x.v + '%;background:' + x.g.coul + '"></em></span><span class="v">' + nf(x.v, 0) + '\u00a0%</span></div>'; }).join('') + '</div>' +
-      '<p class="q-note">1 point quand le groupe a voté comme vous, ½ quand il s\'est abstenu, 0 sinon ; les non-inscrits ne forment pas un groupe et ne sont pas comptés.</p>';
+    return '<p class="q-gros">' + (top.length > 1 ? 'À égalité, vos votes ressemblent le plus à ceux de : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b>' : 'Vos votes ressemblent le plus à ceux du groupe <b>' + esc(G[0].g.n) + '</b>') + ' (' + nf(G[0].v, 0) + '\u00a0% d\'accord, sur ' + P.n + ' des ' + C.filter(function (c) { return c.an; }).length + ' mesures votées par les députés).</p>' +
+      '<div class="q-hemi">' + hemicycle(P) + '</div>' + (court ? '<div class="q-barres">' + G.slice(0, 3).map(barreG).join('') + '</div><details class="q-tous"><summary>Voir les ' + G.length + ' groupes</summary><div class="q-barres">' + G.slice(3).map(barreG).join('') + '</div></details>' : '<div class="q-barres">' + G.map(barreG).join('') + '</div>') +
+      '<p class="q-note">Dans l\'hémicycle, chaque groupe est à sa place ; la partie foncée montre la part de vos votes en commun. 1 point quand le groupe a voté comme vous, ½ quand il s\'est abstenu, 0 sinon ; les non-inscrits ne forment pas un groupe et ne sont pas comptés.</p>';
   }
+  function barreG(x) { return '<div><span class="t">' + esc(x.g.n) + '</span><span class="r"><em class="g" style="left:0;width:' + x.v + '%;--g:' + x.g.coul + '"></em></span><span class="v">' + nf(x.v, 0) + '\u00a0%</span></div>'; }
   function effort() {
     var E = { imp: 0, eco: 0, baisse: 0, dep: 0 };
     adoptees().forEach(function (c) { var m = montant(c, AN0), ret = c.sens !== 'recette'; E[m >= 0 ? (ret ? 'eco' : 'imp') : (ret ? 'dep' : 'baisse')] += Math.abs(m); });
     Object.keys(S.perso).forEach(function (k) { var x = AS[k], m = effetPerso(x, S.perso[k]), ret = x.groupe === 'depense'; E[m >= 0 ? (ret ? 'eco' : 'imp') : (ret ? 'dep' : 'baisse')] += Math.abs(m); });
     return E;
   }
-  function resume(court) {
-    var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1], zf = R0[R0.length - 1], E = effort(), net = E.imp + E.eco - E.baisse - E.dep;
-    var coul = { imp: 'var(--c-imp)', eco: 'var(--c-eco)', baisse: 'var(--c-baisse)', dep: 'var(--c-dep)' }, nom = { imp: 'Impôts en plus', eco: 'Dépenses en moins', baisse: 'Impôts en moins', dep: 'Dépenses en plus' };
-    var K = ['imp', 'eco', 'baisse', 'dep'].filter(function (k) { return E[k] > 0.0005; });
-    var o = objectif();
-    return '<p class="q-gros">' + (nbChoix() ? 'Vos mesures ' + (net >= 0 ? 'rapportent <b>' + mdt(net) + '</b>' : 'coûtent <b>' + mdt(-net) + '</b>') + ' en ' + AN0 + '.' : 'Vous n\'avez encore adopté aucune mesure.') +
+  // mode : 'etape' (résultat court), 'bilan' (sans les groupes, montrés à part), sinon complet.
+  function resume(mode) {
+    var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1], zf = R0[R0.length - 1], E = effort();
+    Object.keys(E).forEach(function (k) { E[k] = Math.round(E[k] * 10) / 10; });
+    var net = E.imp + E.eco - E.baisse - E.dep, apres = (r1.solde - z1.solde) / 100 * r1.pib, o = objectif();
+    // Deux barres sur la même échelle : ce qui réduit le déficit, ce qui l'augmente.
+    var red = E.imp + E.eco, aug = E.baisse + E.dep, mx = Math.max(red, aug, 1e-9);
+    var ligneE = function (t, v, cl, det) { return '<div><span class="t">' + t + ' : <b>' + mdt(v) + '</b>' + (det ? ' <small style="color:var(--muted)">(' + det + ')</small>' : '') + '</span><span class="r"><em class="' + cl + '" style="left:0;width:' + (v / mx * 100) + '%"></em></span><span class="v"></span></div>'; };
+    var det = function (a, la, b, lb) { return [a ? la + ' ' + mdt(a) : '', b ? lb + ' ' + mdt(b) : ''].filter(Boolean).join(', '); };
+    var barresE = (red || aug) ? '<div class="q-barres e1">' + (red ? ligneE('Ce qui réduit le déficit', red, '', det(E.imp, 'recettes en plus', E.eco, 'dépenses en moins')) : '') + (aug ? ligneE('Ce qui l\'augmente', aug, 'b2', det(E.baisse, 'recettes en moins', E.dep, 'dépenses en plus')) : '') + '</div>' : '';
+    var act = S.macro && nbChoix() && Math.abs(apres - net) >= 0.1 ? '<p class="q-note">Après l\'effet sur l\'activité, le déficit de ' + AN0 + ' ' + (apres >= 0 ? 'baisse' : 'augmente') + ' de ' + mdt(Math.abs(apres)) + ' : ' + (apres < net ? 'une partie est reprise, parce que l\'activité ralentit' : 'une partie est compensée, parce que l\'activité accélère') + ' (modèle de la direction du Trésor et de l\'Insee).</p>' : '';
+    var prec = mode === 'etape' && S.hist ? Object.keys(S.hist).map(Number).filter(function (k) { return k < nbDecisions(); }).sort(function (a, b) { return b - a; })[0] : null;
+    return '<div class="q-res"><p class="q-gros">' + (nbChoix() ? 'Vos mesures ' + (net >= 0 ? 'rapportent <b>' + mdt(net) + '</b>' : 'coûtent <b>' + mdt(-net) + '</b>') + ' en ' + AN0 + '.' : 'Vous n\'avez encore adopté aucune mesure.') +
       ' Le déficit de ' + AN0 + ' passe de ' + defic(z1.solde) + ' à <b>' + defic(r1.solde) + '</b> du PIB, la dette de ' + f.an + ' serait de <b>' + nf(f.d, 1) + '\u00a0%</b> au lieu de ' + nf(zf.d, 1) + '\u00a0%.</p>' +
-      (K.length ? '<div><div class="q-effort">' + K.map(function (k) { return '<span style="flex-grow:' + E[k] + ';background:' + coul[k] + '"></span>'; }).join('') + '</div><p class="q-effort-l">' + K.map(function (k) { return '<span><i style="background:' + coul[k] + '"></i>' + nom[k] + ' : ' + mdt(E[k]) + '</span>'; }).join('') + '</p></div>' : '') +
-      '<p class="q-gros" style="font-size:15px">' + o.t + '</p>' +
-      proximite(proches(), 5);
+      (prec ? '<p class="q-depuis">Depuis l\'étape des ' + prec + ' votes : déficit ' + AN0 + ' ' + defic(S.hist[prec].s) + ' → ' + defic(r1.solde) + ', dette ' + AN1 + ' ' + nf(S.hist[prec].d, 1) + '\u00a0% → ' + nf(f.d, 1) + '\u00a0%.</p>' : '') +
+      barresE + act + '<p class="q-gros" style="font-size:15px">' + o.t + '</p>' +
+      (mode === 'bilan' ? '' : proximite(proches(), MINP, mode === 'etape')) + '</div>';
   }
 
   // ---------- Créer ----------
@@ -872,7 +951,12 @@ body.q-vote { padding-bottom: 92px; }
     $('q-effet').innerHTML = pc ? '<b>' + mdt(Math.abs(e)) + '</b> ' + phrase(e, { sens: choisi.groupe === 'depense' ? 'depense' : 'recette' }) + ' par an, à partir de ' + AN0 : 'Choisissez de combien baisser ou augmenter cette ligne.';
     $('q-ch-h').textContent = pc ? 'Calcul de Concret : ' + Math.abs(pc) + '\u00a0% de ' + md(choisi.md) + '\u00a0Md€ ; le montant suit ensuite la croissance de l\'économie. On suppose que les comportements ne changent pas' + (choisi.macro && J.variantes[choisi.macro] ? ', sauf l\'effet sur l\'activité et l\'emploi, qui est compté : ' + (e >= 0 ? 'une partie de ce gain ne réduit pas le déficit, parce que l\'activité ralentit (modèle de la direction du Trésor et de l\'Insee).' : 'une partie de ce coût est compensée, parce que l\'activité accélère (modèle de la direction du Trésor et de l\'Insee).') : ' ; aucun effet sur l\'activité n\'est compté pour ce type de ligne.') : '';
     parPersonne(pc);
-    $('q-ajout').disabled = !pc; $('q-ajout').textContent = S.perso[choisi.k] != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
+    // Aperçu : le bandeau tel qu'il serait avec ce choix.
+    var av = S.perso[choisi.k], A1;
+    if (pc) S.perso[choisi.k] = pc; else delete S.perso[choisi.k];
+    A1 = simuler(); if (av == null) delete S.perso[choisi.k]; else S.perso[choisi.k] = av;
+    $('q-apercu').textContent = pc !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1) : '';
+    $('q-ajout').disabled = !pc || pc === av; $('q-ajout').textContent = S.perso[choisi.k] != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
   }
   // Pour une personne : les règles en vigueur et le montant moyen, lus à la source ; avec votre choix, le même pourcentage appliqué à la moyenne.
   function parPersonne(pc) {
@@ -886,13 +970,16 @@ body.q-vote { padding-bottom: 92px; }
     if (m && pc) t += '<p class="v">Avec ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0% : <b>' + eur(m.v * (1 + pc / 100)) + '</b> ' + u + ' en moyenne, si le changement est le même pour chacun. Il peut aussi porter sur la durée, les conditions ou une partie des personnes seulement : l\'effet serait alors différent selon les cas.</p>';
     el.innerHTML = t;
   }
-  function creer() {
-    $('q-tuiles-c').innerHTML = TUILES.filter(function (k) { return AS[k]; }).map(function (k) { var x = AS[k]; return '<button type="button" data-k="' + k + '" aria-pressed="false"><b>' + esc(x.l.split(' (')[0]) + '</b><span>' + md(x.md) + '\u00a0Md€ · ' + (x.groupe === 'recette' ? 'recette' : 'dépense') + '</span></button>'; }).join('');
+  function tuiles() {
+    $('q-tuiles-c').innerHTML = TUILES.filter(function (k) { return AS[k]; }).map(function (k) { var x = AS[k], v = S.perso[k]; return '<button type="button" data-k="' + k + '" aria-pressed="' + (!!choisi && choisi.k === k) + '"><b>' + esc(x.l.split(' (')[0]) + '</b><span>' + md(x.md) + '\u00a0Md€ en ' + x.an + ' · ' + (x.groupe === 'recette' ? 'recette' : 'dépense') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + Math.abs(v) + '\u00a0%</i>' : '') + '</button>'; }).join('');
     Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button'), function (b) { b.onclick = function () { choisir(b.dataset.k); }; });
+  }
+  function creer() {
+    tuiles();
     var norm = function (t) { return t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
     $('q-cherche').oninput = function () {
       var q = norm($('q-cherche').value.trim()), L = q.length < 2 ? [] : J.assiettes.filter(function (x) { return norm(x.l + ' ' + (x.note || '')).indexOf(q) >= 0; }).slice(0, 40);
-      $('q-resultats').hidden = !L.length;
+      $('q-resultats').hidden = !L.length; if (L.length) $('q-cherche').scrollIntoView({ block: 'start', behavior: 'smooth' });
       $('q-resultats').innerHTML = L.map(function (x) { return '<li><button type="button" data-k="' + esc(x.k) + '">' + esc(x.l) + '<span>' + md(x.md) + '\u00a0Md€</span></button></li>'; }).join('');
       Array.prototype.forEach.call($('q-resultats').querySelectorAll('button'), function (b) { b.onclick = function () { choisir(b.dataset.k); $('q-resultats').hidden = true; $('q-cherche').value = ''; }; });
     };
@@ -901,19 +988,19 @@ body.q-vote { padding-bottom: 92px; }
     $('q-pc').oninput = majCreer;
     $('q-ajout').onclick = function () {
       var pc = +$('q-pc').value; if (!choisi || !pc) return;
-      var r1 = an1(simuler()).solde;
+      var A0 = simuler();
       choisi.exclut.forEach(function (id) { if (S.v[id] === 1) S.v[id] = -1; if (S.perso[id] != null) delete S.perso[id]; });
       Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(choisi.k) >= 0) delete S.perso[k]; });
       S.perso[choisi.k] = pc; garder(); hud(true);
-      var e = an1(R).solde - r1; pop(mdt(effetPerso(choisi, pc), true) + ' · déficit ' + AN0 + ' ' + (Math.abs(e) < 0.05 ? 'presque inchangé' : (e > 0 ? '−' : '+') + nf(Math.abs(e), 1) + ' pt'));
+      pop(esc(choisi.l.split(' (')[0]) + ' ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0% · ' + avantApres(A0, R));
       mesCreer(); majCreer(); pile();
     };
     mesCreer();
   }
   function mesCreer() {
-    var K = Object.keys(S.perso);
+    var K = Object.keys(S.perso); tuiles();
     $('q-mes-n').textContent = K.length ? K.length + ' mesure' + (K.length > 1 ? 's' : '') + ' à vous' : 'Aucune mesure créée';
-    $('q-mes').innerHTML = K.map(function (k) { var x = AS[k], pc = S.perso[k]; return '<li><span>' + esc(x.l) + ' : ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%</span><span class="m">' + mdt(effetPerso(x, pc), true) + '</span><small><button type="button" data-k="' + esc(k) + '">Modifier</button> · <button type="button" data-r="' + esc(k) + '">Retirer</button></small></li>'; }).join('');
+    $('q-mes').innerHTML = K.map(function (k) { var x = AS[k], pc = S.perso[k]; return '<li><span>' + esc(x.l) + ' : ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%</span><span class="m">' + mdt(effetPerso(x, pc), true) + '</span><small><button type="button" data-k="' + esc(k) + '">Modifier</button><button type="button" data-r="' + esc(k) + '">Retirer</button></small></li>'; }).join('');
     Array.prototype.forEach.call($('q-mes').querySelectorAll('button[data-k]'), function (b) { b.onclick = function () { choisir(b.dataset.k); }; });
     Array.prototype.forEach.call($('q-mes').querySelectorAll('button[data-r]'), function (b) { b.onclick = function () { delete S.perso[b.dataset.r]; garder(); hud(true); mesCreer(); majCreer(); pile(); }; });
   }
@@ -938,8 +1025,8 @@ body.q-vote { padding-bottom: 92px; }
     var dep = { an: PJ.depart.an, d: PJ.depart.dette }, r1 = an1(R), z1 = an1(R0), f = R[R.length - 1], zf = R0[R0.length - 1], n = nbChoix();
     var tu = function (l, v, s) { return '<div class="q-tuile"><small>' + l + '</small><b>' + v + '</b><span>' + s + '</span></div>'; };
     $('q-rc-h').textContent = n ? 'Votre budget : ' + n + ' mesure' + (n > 1 ? 's' : '') : 'Le point de départ, sans aucune mesure';
-    $('q-tuiles').innerHTML = tu('Déficit ' + AN0, defic(r1.solde), 'sans vos mesures : ' + defic(z1.solde)) + tu('Déficit ' + f.an, defic(f.solde), 'sans vos mesures : ' + defic(zf.solde)) + tu('Dette ' + f.an, nf(f.d, 1) + '\u00a0%', 'sans vos mesures : ' + nf(zf.d, 1) + '\u00a0%') + tu('Emplois ' + f.an, S.macro ? sg(Math.round(f.emploi), 0) + ' 000' : '—', S.macro ? 'emplois salariés des entreprises' : 'effet non compté');
-    $('q-rc-p').innerHTML = resume().split('<div class="q-hemi">')[0].replace(/<p class="q-note">Votez « pour »[\s\S]*$/, '');
+    $('q-tuiles').innerHTML = tu('Déficit ' + AN0, defic(r1.solde), 'sans vos mesures : ' + defic(z1.solde)) + tu('Déficit ' + f.an, defic(f.solde), 'sans vos mesures : ' + defic(zf.solde)) + tu('Dette ' + f.an, nf(f.d, 1) + '\u00a0%', 'sans vos mesures : ' + nf(zf.d, 1) + '\u00a0%') + tu('Intérêts de la dette ' + f.an, mdt(f.interets * f.pib / 100), nf(f.interets, 1) + '\u00a0% du PIB ; sans vos mesures : ' + mdt(zf.interets * zf.pib / 100));
+    $('q-rc-p').innerHTML = resume('bilan');
     // Défi du jour
     var D = J.defis || [], j = new Date(), iso = j.getFullYear() + '-' + ('0' + (j.getMonth() + 1)).slice(-2) + '-' + ('0' + j.getDate()).slice(-2);
     var x = D.length ? D[((Math.round((new Date(iso + 'T12:00:00') - new Date('2026-01-01T12:00:00')) / 864e5) % D.length) + D.length) % D.length] : null;
@@ -956,20 +1043,21 @@ body.q-vote { padding-bottom: 92px; }
       $('q-defi').innerHTML = '<h2 id="q-df-t"><span class="eyebrow">Défi du jour</span>' + esc(x.t) + '</h2><p><span class="q-etat' + (ok ? ' ok' : '') + '">' + (ok ? '✓ Réussi' : 'En cours') + '</span></p><ul class="q-hyp" style="color:var(--fg)">' + cond.map(function (c) { return '<li>' + (c.ok ? '✓ ' : '') + esc(c.t) + '</li>'; }).join('') + '</ul>' +
         '<p class="q-note">' + (faisable ? 'Faisable avec les seules cartes de l\'onglet Voter.' : 'Les cartes seules n\'y suffisent pas : il faudra aussi créer vos propres mesures (onglet Créer).') + (x.src ? ' <a href="' + esc(x.src.url) + '" title="' + esc(x.src.source) + '">Source du chiffre</a>.' : '') + ' Un nouveau défi chaque jour.</p>';
     }
-    $('q-grp').innerHTML = proximite(proches(), 5);
+    $('q-grp').innerHTML = proximite(proches(), MINP);
     var e = PJ.ecart_croissance, h = [dep].concat(simuler({ dg: -e })), b = [dep].concat(simuler({ dg: e }));
     $('q-chart').innerHTML = courbe([{ L: [dep].concat(R0), c: 'var(--muted)', dash: '5 4' }, { L: PJ.ans.length ? [dep].concat(PJ.ans.map(function (y) { return { an: y.an, d: y.dette_fmi }; })) : [], c: 'var(--ea)', dash: '2 3' }, { L: [dep].concat(R), c: 'var(--fr)', w: 3, zone: [b, h] }]);
     $('q-leg').innerHTML = '<span><i style="background:var(--fr)"></i>Avec vos mesures</span><span><i style="background:var(--band2)"></i>Croissance d\'un point de plus ou de moins</span><span><i style="height:0;border-top:2px dashed var(--muted);border-radius:0"></i>Si rien ne change</span><span><i style="height:0;border-top:2px dotted var(--ea);border-radius:0"></i>Prévision du FMI</span>';
-    $('q-chart-n').textContent = '« Si rien ne change » garde chaque année le solde hors intérêts de ' + D0.an + ' ; la prévision du FMI, elle, compte les économies déjà prévues par le Gouvernement. Fin ' + PJ.depart.an + ', la dette était de ' + nf(PJ.depart.dette, 1) + '\u00a0% du PIB.';
+    $('q-chart-n').textContent = '« Si rien ne change » garde chaque année l\'écart entre recettes et dépenses, intérêts mis à part, de ' + D0.an + ' ; la prévision du FMI, elle, compte les économies déjà prévues par le Gouvernement. Fin ' + PJ.depart.an + ', la dette était de ' + nf(PJ.depart.dette, 1) + '\u00a0% du PIB.';
     var mx = Math.max.apply(null, R.concat(R0).map(function (r) { return Math.max(0, -r.solde); }).concat([PAR.regle]));
     $('q-def').innerHTML = R.filter(function (r) { return r.an >= AN0; }).map(function (r) { var v = Math.max(0, -r.solde); return '<div><span class="t">' + r.an + '</span><span class="r"><em style="left:0;width:' + (v / mx * 100) + '%"></em><em style="left:' + (PAR.regle / mx * 100) + '%;width:2px;background:var(--fg)"></em></span><span class="v">' + defic(r.solde) + '</span></div>'; }).join('');
     $('q-def-n').textContent = 'Le trait marque ' + nf(PAR.regle, 0) + '\u00a0% du PIB, la règle européenne. Sans mesure, le déficit augmente chaque année parce que les intérêts de la dette augmentent : ' + mdt(f.interets * f.pib / 100) + ' en ' + f.an + ' (' + nf(f.interets, 1) + '\u00a0% du PIB).';
     // Qui est concerné : ceux qui paient plus ou reçoivent moins, et ceux qui paient moins ou reçoivent plus.
     var Q = {}; adoptees().forEach(function (c) { c.qui.forEach(function (q) { Q[q] = (Q[q] || 0) + montant(c, AN0); }); });
     Object.keys(S.perso).forEach(function (k) { var x = AS[k]; x.qui.forEach(function (q) { Q[q] = (Q[q] || 0) + effetPerso(x, S.perso[k]); }); });
-    var liste = function (L, titre) { if (!L.length) return ''; var m = Math.max.apply(null, L.map(function (x) { return Math.abs(x[1]); })); return '<p class="q-ligne" style="margin:4px 0"><b>' + titre + '</b></p><div class="q-barres">' + L.map(function (x) { return '<div><span class="t">' + esc(J.qui[x[0]]) + '</span><span class="r"><em style="left:0;width:' + (Math.abs(x[1]) / m * 100) + '%"></em></span><span class="v">' + mdt(Math.abs(x[1])) + '</span></div>'; }).join('') + '</div>'; };
+    var mq = Math.max.apply(null, Object.keys(Q).map(function (q) { return Math.abs(Q[q]); }).concat([1e-9]));
+    var liste = function (L, titre, cl) { if (!L.length) return ''; var m = mq; return '<p class="q-ligne" style="margin:4px 0"><b>' + titre + '</b></p><div class="q-barres">' + L.map(function (x) { return '<div><span class="t">' + esc(J.qui[x[0]]) + '</span><span class="r"><em class="' + (cl || '') + '" style="left:0;width:' + (Math.abs(x[1]) / m * 100) + '%"></em></span><span class="v">' + mdt(Math.abs(x[1])) + '</span></div>'; }).join('') + '</div>'; };
     var plus = Object.keys(Q).filter(function (q) { return Q[q] > 0.0005; }).map(function (q) { return [q, Q[q]]; }).sort(function (a, b) { return b[1] - a[1]; }), moins = Object.keys(Q).filter(function (q) { return Q[q] < -0.0005; }).map(function (q) { return [q, Q[q]]; }).sort(function (a, b) { return a[1] - b[1]; });
-    $('q-qui').innerHTML = (plus.length || moins.length) ? liste(plus, 'Paient plus ou reçoivent moins') + liste(moins, 'Paient moins ou reçoivent plus') + '<p class="q-note">En ' + AN0 + ', au sens des textes. Une mesure qui concerne deux groupes compte pour chacun.</p>' : '<p class="q-note">Adoptez ou créez des mesures pour voir qui est concerné.</p>';
+    $('q-qui').innerHTML = (plus.length || moins.length) ? liste(plus, 'Paient plus ou reçoivent moins') + liste(moins, 'Paient moins ou reçoivent plus', 'b2') + '<p class="q-note">En ' + AN0 + ', au sens des textes. Une mesure qui concerne deux groupes compte pour chacun.</p>' : '<p class="q-note">Adoptez ou créez des mesures pour voir qui est concerné.</p>';
     $('q-eco').innerHTML = S.macro ? tu('PIB ' + f.an, sg(f.L, 1) + '\u00a0%', 'écart avec « rien ne change »') + tu('Emplois ' + f.an, sg(Math.round(f.emploi), 0) + ' 000', 'emplois salariés des entreprises') + tu('Chômage ' + f.an, sg(f.chomage, 1) + ' pt', 'écart du taux de chômage') : '';
     $('q-eco-n').textContent = S.macro ? 'D\'après les effets publiés par la direction du Trésor et l\'Insee (modèle Mésange) : baisser une dépense ou monter un impôt freine un peu l\'activité. Les mesures d\'un type que le modèle ne publie pas (impôt sur les sociétés, accises, SMIC…) ne comptent pas ici.' : 'Effet sur l\'activité non compté (voir « Changer les hypothèses », plus bas).';
   }
@@ -992,6 +1080,7 @@ body.q-vote { padding-bottom: 92px; }
   }
 
   function onglet(t) {
+    if (POP) { clearTimeout(popT); POP = false; }
     ['voter', 'creer', 'bilan'].forEach(function (x) { $('t-' + x).setAttribute('aria-selected', x === t); $('p-' + x).hidden = x !== t; });
     barre(); if (t === 'bilan') bilan();
     var h = $('q-hud').getBoundingClientRect().bottom, p = $('p-' + t).getBoundingClientRect().top; if (p < h) window.scrollBy({ top: p - h - 70 });
@@ -999,9 +1088,11 @@ body.q-vote { padding-bottom: 92px; }
   function tout(entree, anime) { hud(anime); pile(entree); barre(); }
 
   function objectifs() {
-    var O = [['trois', 'Déficit à ' + nf(PAR.regle, 0) + '\u00a0% en ' + AN0], ['dette', 'Dette stable en ' + AN1], ['aucun', 'Aucun']];
-    $('q-objs').innerHTML = O.map(function (o) { return '<button type="button" data-o="' + o[0] + '" aria-pressed="' + (S.obj === o[0]) + '">' + esc(o[1]) + (o[2] ? ' <small>· ' + esc(o[2]) + '</small>' : '') + '</button>'; }).join('');
-    Array.prototype.forEach.call($('q-objs').querySelectorAll('button'), function (b) { b.onclick = function () { S.obj = b.dataset.o; garder(); objectifs(); hud(); }; });
+    var O = [['trois', 'Déficit à ' + nf(PAR.regle, 0) + '\u00a0%'], ['dette', 'Dette stable'], ['aucun', 'Aucun']];
+    ['q-objs', 'q-objs2'].forEach(function (id) {
+      $(id).innerHTML = O.map(function (o) { return '<button type="button" data-o="' + o[0] + '" aria-pressed="' + (S.obj === o[0]) + '">' + esc(o[1]) + '</button>'; }).join('');
+      Array.prototype.forEach.call($(id).querySelectorAll('button'), function (b) { b.onclick = function () { S.obj = b.dataset.o; garder(); objectifs(); if (id === 'q-objs2') $('q-hobj').hidden = true; tout(); }; });
+    });
   }
 
   function demarrer(j, b) {
@@ -1012,14 +1103,14 @@ body.q-vote { padding-bottom: 92px; }
     PIBY[D0.an] = D0.pib_md; var pp = D0.pib_md; ANS.forEach(function (y) { pp *= (1 + y.croissance / 100) * (1 + y.inflation / 100); PIBY[y.an] = pp; });
     if (B && B.pays) PIBY[2024] = B.pays.FR.pib_meur / 1000;
     (J.assiettes || []).forEach(function (x) { AS[x.k] = x; });
-    // Ordre : thèmes variés, une dépense toutes les trois cartes, la plus grosse d'abord ; les mesures votées par les députés
-    // passent en tête tant que 5 n'ont pas reçu de réponse (voir suivante()).
-    var tri = function (x, y) { return Math.abs(montant(y, AN0)) - Math.abs(montant(x, AN0)); }, reste = C.slice().sort(tri), tete = [], th = {};
-    for (var i = 0; i < 12 && reste.length; i++) {
-      var dep = i % 3 === 2, x = reste.filter(function (c) { return !th[c.theme] && (dep ? c.sens !== 'recette' : c.sens === 'recette'); })[0] || reste.filter(function (c) { return !th[c.theme]; })[0] || reste[0];
-      tete.push(x); th[x.theme] = 1; reste.splice(reste.indexOf(x), 1);
-    }
-    C = tete.concat(reste);
+    // Ordre : tiré au hasard une fois par visiteur, puis une recette, une dépense, une recette… tant qu'il y en a des deux.
+    // Parmi les recettes, les mesures votées par les députés d'abord, pour que le résultat par groupe arrive dès 5 votes.
+    if (!S.graine) { S.graine = 1 + Math.floor(Math.random() * 2147483646); garder(); }
+    var g = S.graine, hasard = function () { g = g * 16807 % 2147483647; return (g - 1) / 2147483646; };
+    var mel = C.map(function (c) { return [hasard(), c]; }).sort(function (a, b) { return a[0] - b[0]; }).map(function (x) { return x[1]; });
+    var Rc = mel.filter(function (c) { return c.sens === 'recette' && c.an; }).concat(mel.filter(function (c) { return c.sens === 'recette' && !c.an; })), Dc = mel.filter(function (c) { return c.sens !== 'recette'; });
+    C = []; while (Rc.length || Dc.length) { if (Rc.length) C.push(Rc.shift()); if (Dc.length) C.push(Dc.shift()); }
+    var tri = function (x, y) { return Math.abs(montant(y, AN0)) - Math.abs(montant(x, AN0)); };
     // Le meilleur résultat possible avec les seules cartes (pour dire si un défi est faisable sans « Créer ») : chaque carte
     // qui réduit le déficit est adoptée, une seule par groupe de mesures qui se recouvrent.
     var V = {}, pris = {};
@@ -1028,20 +1119,21 @@ body.q-vote { padding-bottom: 92px; }
     R0 = simuler({ rien: true });
     $('q-lead').innerHTML = 'Sans nouvelle mesure, le déficit public passerait de ' + nf(-D0.solde, 1) + '\u00a0% du PIB en ' + D0.an + ' (Eurostat) à ' + defic(an1(R0).solde) + ' en ' + AN0 + ', parce que les intérêts de la dette augmentent. <b>Votez de vraies mesures, chiffrées et sourcées : votre résultat dès 5 votes.</b>';
     $('q-hyp').innerHTML = [
-      'Si rien ne change : le solde hors intérêts de ' + D0.an + ' (' + nf(D0.primaire, 1) + '\u00a0% du PIB, <a href="' + esc(D0.url) + '">' + esc(D0.source) + '</a>) reste le même chaque année, en part du PIB. C\'est une convention de Concret, pas une prévision.',
+      'Si rien ne change : l\'écart entre recettes et dépenses publiques, intérêts mis à part, de ' + D0.an + ' (' + nf(D0.primaire, 1) + '\u00a0% du PIB, <a href="' + esc(D0.url) + '">' + esc(D0.source) + '</a>) reste le même chaque année, en part du PIB. C\'est une convention de Concret, pas une prévision.',
       'Croissance, inflation et taux d\'intérêt moyen de la dette : prévision du FMI (' + esc(PJ.editions.join(' ; ')) + '). Ce qui ne vient ni du solde ni de la croissance (achats et ventes d\'actifs publics, écarts de calcul) est repris tel que le FMI le prévoit.',
       'Chaque mesure : son chiffrage officiel, lu dans le document cité sur sa carte, compté à partir de ' + AN0 + '. Quand le document ne chiffre pas les années suivantes, le dernier montant est gardé (mesure d\'une seule année : rien ensuite). Les avantages fiscaux (« dépenses fiscales ») sont chiffrés par le Gouvernement pour 2026 : l\'annexe du budget 2027 n\'est pas encore en ligne sur le site de l\'Assemblée.',
       'Effet sur l\'activité et l\'emploi (s\'il est coché) : variantes du modèle Mésange (direction du Trésor et Insee, 2017) ; une hausse de dépense ou une baisse d\'impôt de 1 point de PIB et leur effet, année par année, sur le PIB, le solde public, l\'emploi et le chômage. Le modèle étant linéaire selon le document, une baisse de dépense ou une hausse d\'impôt a l\'effet inverse. Année 4 : milieu des années 3 et 5 ; au-delà de 5 ans : l\'effet de la cinquième année.',
       'Taux d\'intérêt : un écart avec le taux à 10 ans de départ s\'ajoute au taux moyen de la dette à mesure qu\'elle se renouvelle (1 / durée de vie moyenne par an).',
       'Mesures écartées : ' + J.ecartees.map(function (x) { return esc(x.l) + ' (' + esc(x.pourquoi) + ')'; }).join(' ; ') + '.',
+      'Ordre des cartes : tiré au hasard pour chaque visiteur, en alternant une recette et une dépense tant qu\'il y en a des deux ; le jeu compte ' + C.filter(function (c) { return c.sens === 'recette'; }).length + ' mesures sur les recettes et ' + C.filter(function (c) { return c.sens !== 'recette'; }).length + ' sur les dépenses, d\'après les mesures chiffrées dans les documents officiels. Parmi les recettes, les mesures votées par les députés passent d\'abord.',
       'Ce qui n\'est pas compté : l\'effet de vos choix sur les taux d\'intérêt et sur les comportements autres que l\'activité.'
     ].map(function (t) { return '<li>' + t + '</li>'; }).join('');
     ['voter', 'creer', 'bilan'].forEach(function (x) { $('t-' + x).onclick = function () { onglet(x); }; });
     $('q-filtrer').onclick = function () { var h = !$('q-filtres').hidden; $('q-filtres').hidden = h; $('q-filtrer').setAttribute('aria-expanded', !h); };
     $('b-contre').onclick = function () { var c = suivante(); if (c) voter(c, -1); };
     $('b-pour').onclick = function () { var c = suivante(); if (c) voter(c, 1); };
-    $('b-passe').onclick = function () { var c = suivante(); if (c) { S.v[c.id] = 0; S.pile.push({ id: c.id, avant: null, retirees: [] }); garder(); tout(true); remonter(); } };
-    $('b-undo').onclick = annuler;
+    $('b-passe').onclick = function () { var c = suivante(); if (c) { var av = S.v[c.id]; delete S.v[c.id]; S.v[c.id] = 0; S.pile.push({ id: c.id, avant: av == null ? null : av, retirees: [] }); garder(); pop('Remise à la fin des cartes'); tout(true); remonter(); } };
+    $('b-undo').onclick = annuler; $('b-undo2').onclick = function () { var x = S.pile[S.pile.length - 1]; annuler(); if (x) { var n = nbDecisions(); S.etape = ETAPES.filter(function (e) { return e <= n; }).pop() || 0; garder(); tout(true); } };
     document.addEventListener('keydown', function (e) { if ($('p-voter').hidden || $('q-bar').hidden || /input|textarea|select/i.test((e.target || {}).tagName)) return; var c = suivante(); if (!c) return; if (e.key === 'ArrowRight') voter(c, 1); if (e.key === 'ArrowLeft') voter(c, -1); });
     var conf = false;
     $('q-reset').onclick = function () {
@@ -1051,7 +1143,9 @@ body.q-vote { padding-bottom: 92px; }
     $('q-partager').onclick = function () {
       var r1 = an1(R), f = R[R.length - 1], t = 'Mon quinquennat sur Concret : déficit ' + AN0 + ' à ' + defic(r1.solde) + ', dette ' + f.an + ' à ' + nf(f.d, 0) + '\u00a0% du PIB, avec ' + nbChoix() + ' mesures. Et vous ?', u = 'https://concret2027.fr/budget/';
       if (navigator.share) navigator.share({ text: t, url: u }).catch(function () {});
-      else if (navigator.clipboard) navigator.clipboard.writeText(t + ' ' + u).then(function () { $('q-partager').textContent = 'Texte copié'; }, function () {});
+      var montrer = function () { var p = $('q-partage-t') || document.createElement('p'); p.id = 'q-partage-t'; p.className = 'q-partage-t'; p.textContent = t + ' ' + u; $('q-partager').parentNode.after(p); };
+      if (navigator.share) return;
+      if (navigator.clipboard) navigator.clipboard.writeText(t + ' ' + u).then(function () { $('q-partager').textContent = 'Texte copié'; }, montrer); else montrer();
     };
     objectifs(); filtres(); hypotheses(); creer(); tout(true);
   }

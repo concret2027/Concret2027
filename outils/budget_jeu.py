@@ -494,6 +494,7 @@ def construire():
         if a and v:
             a['pp'] = {x: v.get(x) for x in ('beneficiaires', 'moyenne', 'regles')}
     for c in cartes:
+        c['sens'] = 'depense' if c['sens'] in ('dépense', 'depense') else c['sens']
         c['titre'] = COURT.get(c['id'], c['l'])
         if c['id'] in PAR_QUI: c['par'] = PAR_QUI[c['id']]
         c['statut_court'] = statut_court(c.get('statut'))
