@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="8c23b86d6e91">
+<meta name="concret-version" content="d9c8e9f8e1ab">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,6 @@
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261026c"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
-<script src="/commun/votez.js?v=20261028c"></script>
 <style>html, body { margin: 0; }
 
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -461,7 +460,6 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="note">Un point par bonne réponse, chaque jour ; seul le premier essai compte. Le classement de la semaine repart chaque lundi. Votre place est gardée grâce à un identifiant tiré au hasard sur cet appareil : ni e-mail, ni nom. Le pseudo est visible de tous ; pas d'insulte ni de nom de personnalité politique. <a href="#" id="qz-oubli">Effacer mes scores et mon pseudo</a></p>
   </section>
 
-  <section class="card" id="qz-loi" data-partage="non" aria-live="polite" hidden></section>
 
   <footer><p>Les réponses sont comptées de façon anonyme, pour afficher la part de chaque réponse et le classement du jour. <a href="/mentions-legales/">Mentions légales</a></p></footer>
 </div>
@@ -663,7 +661,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       document.getElementById('qz-cl-top').innerHTML = P.top.map(function (r) {
         return '<li' + (r.moi ? ' class="moi"' : '') + '><span class="r">' + r.rang + '</span><span class="p">' + (r.pseudo ? esc(r.pseudo) : '<i>Sans pseudo</i>') + (r.moi ? ' (vous)' : '') + '</span><span>' + nf(r.points) + (r.points > 1 ? ' pts' : ' pt') + '</span></li>';
       }).join('') +
-        // Hors du top 10 : la ligne du joueur sous le tableau, avec sa place.
+        // Hors des premiers du classement : la ligne du joueur sous le tableau, avec sa place.
         (P.moi && !P.top.some(function (r) { return r.moi; }) ? '<li class="sep" aria-hidden="true">…</li><li class="moi"><span class="r">' + P.moi.rang + '</span><span class="p">' + (CL.pseudo ? esc(CL.pseudo) : '<i>Sans pseudo</i>') + ' (vous)</span><span>' + nf(P.moi.points) + (P.moi.points > 1 ? ' pts' : ' pt') + '</span></li>' : '');
       var inp = document.getElementById('qz-pseudo-in');
       if (document.activeElement !== inp) inp.value = CL.pseudo || '';
@@ -766,7 +764,6 @@ footer p { margin: 0; } footer a { color: inherit; }
     });
   }
 
-  if (window.ConcretVotez) ConcretVotez.duJour(document.getElementById('qz-loi'));
   try { fetch('../data.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(main, function () { document.getElementById('qz-liste').innerHTML = '<p class="note">Les questions n\'ont pas pu être chargées. Rechargez la page.</p>'; }); } catch (e) {}
 })();
 </script>
