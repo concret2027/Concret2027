@@ -695,6 +695,12 @@ def construire():
             if not k.startswith('_') and v:
                 cas[k] = {x: v.get(x) for x in ('v', 'unite', 'date_effet', 'source', 'url')}
     for c in cartes:
+        # Budgets prêts à jouer : le texte du Gouvernement tel que déposé, et ce qu'il en reste après les votes de l'Assemblée
+        # en première lecture (mesure supprimée, article ou projet de loi rejeté, ou mesure non examinée : retirée).
+        if c.get('origine') in ('plf', 'plfss'):
+            st = c.get('statut') or ''
+            retire = bool(re.search(r"Supprimée|Article rejeté|Non examinée|projet de loi rejeté|Projet de loi rejeté|Rapport annexé supprimé|n'a pas rete", st))
+            c['preset'] = {'gouv': True, 'an': not retire, 'modifie': (not retire) and bool(re.search(r'Modifiée|modification', st))}
         c['sens'] = 'depense' if c['sens'] in ('dépense', 'depense') else c['sens']
         c['titre'] = COURT.get(c['id'], c['l'])
         if c['id'] in CLAIR:
@@ -732,6 +738,7 @@ def construire():
         'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'unites': unites, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
         'variantes': var, 'regle': REGLE, 'defis': DEFIS,
+        'pays_fmi': charger('fmi_pays.json'),
         'cible': ({'v': -AE['cible_solde_2027']['valeurs']['2027_plf_pct_pib'], 'an': AE['cible_solde_2027']['annee'], 'source': AE['cible_solde_2027']['document'] + ', ' + AE['cible_solde_2027']['page'],
                    'url': AE['cible_solde_2027']['url'], 'citation': AE['cible_solde_2027']['citation']} if 'cible_solde_2027' in AE else None),
         'variantes_source': P['mesange2017_linearite']['citation'] if 'mesange2017_linearite' in P else '',
