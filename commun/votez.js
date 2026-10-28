@@ -3,10 +3,24 @@
    Une question par texte (son dernier vote sur l'ensemble, sinon sur une partie, sinon la motion de rejet), et une par
    motion de censure, vote de confiance ou déclaration du Gouvernement suivie d'un vote.
    Le résultat (accord avec chaque groupe de députés) est calculé dans le navigateur. Les votes restent sur l'appareil
-   (localStorage « concret-votez ») : rien n'est envoyé, ni au compteur du quiz ni ailleurs.
+   (localStorage « concret-votez ») : le sens du vote n'est jamais envoyé. Seule la participation est comptée par le compteur
+   de Concret (outils/compteur_worker.js) : « un vote de plus sur ce texte » au premier vote d'un texte, et « une personne de
+   plus » au tout premier vote sur l'appareil ; ni pour, ni contre, ni rien qui identifie la personne.
    Utilisé par la page /votez/ et par le bloc « Votez les lois » du quiz. */
 (function () {
   var CLE = 'concret-votez', CLE_AV = 'concret-votez-avant', MIN = 5, SERIE = 10;
+  // Participation (jamais le sens du vote) : une clé du compteur par texte, une option unique.
+  var API = 'https://compteur.square-brook-9d65.workers.dev/', CLE_VU = 'concret-votez-compte';
+  var cleNb = function (id) { return 'quiz-votez-' + String(id).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 69); };
+  function nb(id, ajouter) {
+    var u = API + (ajouter ? 'hit' : 'get') + '?k=' + encodeURIComponent(cleNb(id)) + '&n=1' + (ajouter ? '&i=0' : '');
+    return fetch(u, { method: ajouter ? 'POST' : 'GET', cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { return j && j.v ? j.v[0] : null; }, function () { return null; });
+  }
+  // Au tout premier vote sur cet appareil : une personne de plus (une fois par appareil, et dans le total du jour).
+  function personne() { var f = null; try { f = localStorage.getItem(CLE_VU); } catch (e) { return; } if (f) return; try { localStorage.setItem(CLE_VU, '1'); } catch (e) {} nb('personnes', true); nb('personnes-' + aujourdhui(), true); }
+  // Un vote de plus : sur ce texte, au total et dans le total du jour. Ces nombres ne sont pas affichés sur le site :
+  // ils servent au compte rendu quotidien de l'éditeur (outils/votez_stats.js).
+  function compter(id) { personne(); nb(id, true); nb('total', true); nb('jour-' + aujourdhui(), true); }
   var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
   var dateFr = function (d) { var p = d.split('-'); return (+p[2] === 1 ? '1er' : +p[2]) + ' ' + MOIS[p[1] - 1] + ' ' + p[0]; };
   var moisFr = function (d) { var p = d.split('-'); return MOIS[p[1] - 1] + ' ' + p[0]; };
@@ -29,8 +43,10 @@
     '.vz-tete{display:flex;flex-wrap:wrap;gap:6px;align-items:center}' +
     '.vz-chip{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fr);background:var(--band);border-radius:999px;padding:4px 10px}' +
     '.vz-date{font-size:12.5px;font-weight:600;color:var(--muted)}' +
+    '.vz-neuf{background:var(--fr);color:#fff}' +
     '.vz-boite{display:grid;gap:6px;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}.vz-boite .eyebrow{margin:0}' +
     '.vz-expl{margin:0;font-size:15px;line-height:1.5}' +
+    '.vz-pts{margin:0;padding-left:20px;display:grid;gap:4px;font-size:15px;line-height:1.45}' +
     '.vz-lu{margin:0;font-size:12px;color:var(--muted)}.vz-lu a{color:var(--muted)}' +
     '.vz-q{margin:4px 0 0;font-size:17px;font-weight:700}' +
     '.vz-aide{margin:-4px 0 0;font-size:13.5px;color:var(--muted)}' +
@@ -60,6 +76,8 @@
     '.vz-hemi{position:relative}.vz-hemi svg{display:block;width:100%;height:auto;font-family:var(--sans)}.vz-hs{cursor:pointer;outline:none}.vz-hs:hover path,.vz-hs:focus path{filter:brightness(1.08)}' +
     '.vz-tip{position:absolute;top:0;z-index:3;max-width:260px;padding:7px 10px;border-radius:9px;background:var(--fg);color:var(--bg);font-size:12.5px;line-height:1.35;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
     '.vz-lire{margin:0;font-size:13.5px;color:var(--muted)}' +
+    '.vz-avis{display:grid;gap:8px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--fr);background:var(--band,var(--panel));font-size:14.5px}' +
+    '.vz-avis p{margin:0}.vz-avis-ok{justify-self:start;font:inherit;font-weight:700;min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--fr);background:var(--panel);color:var(--fr);cursor:pointer}' +
     '.vz-th{display:grid;gap:8px;border:1px solid var(--line);border-radius:12px;padding:0 12px}.vz-th[open]{padding-bottom:12px}' +
     '.vz-th>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:12px 0;font-size:16px;font-weight:700}.vz-th>summary::-webkit-details-marker{display:none}' +
     '.vz-th>summary small{display:block;font-size:13px;font-weight:500;color:var(--muted)}.vz-th>summary::after{content:"Voir ▾";margin-left:auto;color:var(--fr);font-size:14px;white-space:nowrap}.vz-th[open]>summary::after{content:"Masquer ▴"}' +
@@ -140,6 +158,8 @@
     // Le même texte dans l'ordre du jour (votes à venir) : dossier, et partie du budget s'il y a lieu.
     if (v.dos && (v.k === 'texte' || v.k === 'partie')) q.cav = v.dos + ':' + (v.k === 'partie' ? 'partie:' + nomPartie(v.t) : 'texte');
     J.GROUPES.forEach(function (g) { if (g.c === 'NI') return; var p = position(v, g.c); if (p) q.pos[g.c] = p; });
+    // Tous les groupes du même avis : le vote ne dit pas de qui l'on est proche (il ne compte pas dans l'accord avec chaque groupe).
+    var avis = {}; Object.keys(q.pos).forEach(function (c) { avis[q.pos[c]] = 1; }); q.unanime = Object.keys(avis).length === 1 ? Object.keys(avis)[0] : '';
     // Partage de l'Assemblée : sièges des groupes pour et contre les plus proches (sert à choisir les dix premiers votes).
     var S = { pour: 0, contre: 0, abstention: 0 };
     Object.keys(q.pos).forEach(function (c) { S[q.pos[c]] += v.g[c][4]; });
@@ -187,7 +207,7 @@
     // Ordre de la page : d'abord dix votes variés (pour la censure et pour chaque thème, le vote qui a le plus partagé l'Assemblée,
     // complétés par les plus partagés des textes sans thème), du plus partagé au moins partagé ; puis de quoi donner un résultat à
     // chaque thème (trois votes par thème, les plus partagés d'abord, un thème après l'autre) ; puis tous les autres, du plus
-    // récent au plus ancien.
+    // récent au plus ancien ; le tout mélangé (voir melanger).
     var parPartage = Q.slice().sort(function (a, b) { return b.partage - a.partage || (a.d < b.d ? 1 : -1); });
     var premiers = [], libre = function (q) { return premiers.indexOf(q) < 0; };
     var censure = parPartage.filter(function (q) { return q.k === 'censure'; })[0]; if (censure) premiers.push(censure);
@@ -209,21 +229,70 @@
       var q = parPartage.filter(function (x) { return pris.indexOf(x) < 0 && x.pg.indexOf(t[0]) >= 0; })[0];
       if (q) { pris.push(q); compter(q); }
     });
-    var ordre = pris.concat(Q.filter(function (q) { return pris.indexOf(q) < 0; }));
+    // Mélange : jamais deux votes budgétaires de suite (budget de l'État, de la Sécurité sociale, approbation des comptes), ni deux
+    // votes du même thème de suite ; à chaque place, le premier vote de la liste qui respecte ces deux règles (sinon le premier).
+    var budget = function (q) { return /loi de finances|financement de la sécurité sociale|résultats de la gestion|approbation des comptes|programmation des finances/i.test(q.titre || ''); };
+    var voisins = function (a, b) { return !!a && ((budget(a) && budget(b)) || a.pg.some(function (t) { return b.pg.indexOf(t) >= 0; })); };
+    var melanger = function (L, prec) {
+      var R = [], reste = L.slice();
+      while (reste.length) { var i = 0; for (var j = 0; j < reste.length; j++) if (!voisins(prec, reste[j])) { i = j; break; } prec = reste.splice(i, 1)[0]; R.push(prec); }
+      return R;
+    };
+    var ordre = melanger(pris.concat(Q.filter(function (q) { return pris.indexOf(q) < 0; })), null);
+    var finThemes = 1 + Math.max.apply(null, pris.map(function (q) { return ordre.indexOf(q); }));
     var G = {}; J.GROUPES.forEach(function (g) { G[g.c] = g; });
-    return { Q: Q, ordre: ordre, finThemes: pris.length, avenir: A, nbVotes: J.VOTES.length,  tous: tous, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: J.VOTES.length ? J.VOTES[J.VOTES.length - 1].d : '' };
+    return { Q: Q, ordre: ordre, finThemes: finThemes, avenir: A, nbVotes: J.VOTES.length,  tous: tous, G: G, groupes: J.GROUPES.filter(function (g) { return g.c !== 'NI'; }), maj: J.maj, P: J.P, debut: J.VOTES.length ? J.VOTES[J.VOTES.length - 1].d : '' };
   }
 
+  // L'accord avec un groupe sur un texte (calcul du 28 octobre 2026) : la part des députés du groupe qui ont voté comme vous,
+  // une abstention comptant pour moitié d'un côté comme de l'autre. Par exemple, vous pour, le groupe 60 pour, 30 contre et
+  // 10 abstentions : (60 + 10 / 2) / 100 = 65 %. Pas compté : un groupe dont moins de 5 députés, ou moins d'un quart des
+  // membres, ont voté. Censure : seuls les votes pour sont comptés, un député qui ne la vote pas est compté contre.
   var accord = function (a, b) { return a === b ? 1 : (a === 'abstention' || b === 'abstention') ? 0.5 : 0; };
+  var VOTANTS_MIN = 5, PART_MIN = 0.25, DATE_CALCUL = '2026-10-28', CLE_CALCUL = 'concret-votez-calcul';
+  function peuVotants(q, c) { var x = q.v.g[c]; if (!x || q.k === 'censure') return false; var t = x[1] + x[2] + x[3]; return t > 0 && (t < VOTANTS_MIN || t < PART_MIN * x[4]); }
+  function accordFin(u, q, c) {
+    var x = q.v.g[c]; if (!x || !q.pos[c]) return null;
+    var p = x[1], k = x[2], a = x[3], t = p + k + a;
+    if (q.k === 'censure') { t = x[4]; k = t - p; a = 0; }
+    else if (peuVotants(q, c)) return null;
+    if (!t) return null;
+    return (u === 'pour' ? p + a / 2 : u === 'contre' ? k + a / 2 : a + (p + k) / 2) / t;
+  }
   function resultat(D, filtre) {
     var mes = lireMes(), faits = D.Q.filter(function (q) { return CHOIX[mes[q.id]] && (!filtre || filtre(q)); });
+    var comptes = faits.filter(function (q) { return !q.unanime; }), unan = faits.filter(function (q) { return q.unanime; });
     var L = D.groupes.map(function (g) {
       var s = 0, n = 0;
-      faits.forEach(function (q) { var p = q.pos[g.c]; if (p) { n++; s += accord(mes[q.id], p); } });
+      comptes.forEach(function (q) { var x = accordFin(mes[q.id], q, g.c); if (x != null) { n++; s += x; } });
       return { c: g.c, n: g.n, nb: n, pct: n ? Math.round(100 * s / n) : null };
     }).filter(function (r) { return r.nb; }).sort(function (a, b) { return b.pct - a.pct || b.nb - a.nb; });
     var sa = 0; faits.forEach(function (q) { sa += accord(mes[q.id], q.majorite); });
-    return { nb: faits.length, groupes: L, assemblee: faits.length ? Math.round(100 * sa / faits.length) : null };
+    return { nb: faits.length, nbCompte: comptes.length, unan: unan.length, unanComme: unan.filter(function (q) { return mes[q.id] === q.unanime; }).length,
+      groupes: L, assemblee: faits.length ? Math.round(100 * sa / faits.length) : null };
+  }
+  // L'ancien calcul (jusqu'au 27 octobre 2026 : la position de la majorité du groupe, 1, ½ ou 0 point, sur tous les votes),
+  // gardé pour montrer une fois, à qui avait déjà un résultat, ses chiffres avant et après.
+  function resultatAncien(D) {
+    var mes = lireMes(), faits = D.Q.filter(function (q) { return CHOIX[mes[q.id]]; });
+    return { nb: faits.length, groupes: D.groupes.map(function (g) {
+      var s = 0, n = 0;
+      faits.forEach(function (q) { var p = q.pos[g.c]; if (p) { n++; s += accord(mes[q.id], p); } });
+      return { c: g.c, n: g.n, pct: n ? Math.round(100 * s / n) : null };
+    }).filter(function (r) { return r.pct != null; }).sort(function (a, b) { return b.pct - a.pct; }) };
+  }
+  function lireCalcul() { try { return localStorage.getItem(CLE_CALCUL); } catch (e) { return DATE_CALCUL; } }
+  function ecrireCalcul() { try { localStorage.setItem(CLE_CALCUL, DATE_CALCUL); } catch (e) {} }
+  // Au premier chargement depuis le changement, avant tout nouveau vote : qui avait déjà un résultat (au moins MIN votes)
+  // verra une fois ses chiffres avant et après ; les autres, rien.
+  var avisCalcul = false;
+  function decider(D) { if (lireCalcul() === DATE_CALCUL) return; if (resultatAncien(D).nb >= MIN) avisCalcul = true; else ecrireCalcul(); }
+  function avis(D, R) {
+    if (!avisCalcul) return '';
+    var A = resultatAncien(D), nv = {}; R.groupes.forEach(function (g) { nv[g.c] = g.pct; });
+    return '<div class="vz-avis" role="status"><p><b>Un calcul plus fin (depuis le ' + dateFr(DATE_CALCUL) + ').</b> Chaque député qui a voté compte désormais, et non plus seulement la position de la majorité de son groupe. Par exemple, un groupe vote à 60 pour, 30 contre et 10 abstentions, et vous votez pour : vous êtes d\'accord avec lui à 65 % sur ce texte, au lieu de 100 %. Les textes que tous les groupes ont votés de la même façon sont comptés à part.</p>' +
+      '<p>Vos ' + A.nb + ' votes : ' + A.groupes.slice(0, 3).map(function (g) { return '<b>' + esc(g.n) + '</b> ' + (nv[g.c] != null ? nv[g.c] + '\u00a0%' : 'pas encore de résultat') + ' (avant\u00a0: ' + g.pct + '\u00a0%)'; }).join(' · ') + '.</p>' +
+      '<button type="button" class="vz-avis-ok">Compris</button></div>';
   }
 
   function style() { if (!document.getElementById('vz-css')) { var st = document.createElement('style'); st.id = 'vz-css'; st.textContent = css; document.head.appendChild(st); } }
@@ -246,7 +315,7 @@
     function montrer(c, calme) {
       Array.prototype.forEach.call(bs, function (b) { b.setAttribute('aria-pressed', b.dataset.c === c ? 'true' : 'false'); });
       el.querySelector('.vz-choix').classList.add('fait'); el.querySelector('.vz-passe').hidden = true;
-      var par = { pour: [], contre: [], abstention: [] }, comme = 0, n = 0;
+      var par = { pour: [], contre: [], abstention: [] }, comme = 0, n = 0, peu = D.groupes.filter(function (g) { return q.pos[g.c] && peuVotants(q, g.c); }).map(function (g) { return esc(g.c); });
       D.groupes.forEach(function (g) { var p = q.pos[g.c]; if (!p) return; n++; if (p === c) comme++; par[p].push('<span' + (p === c ? ' class="moi"' : '') + '>' + esc(g.n) + '</span>'); });
       // D'abord le résultat et le bouton du vote suivant (visibles sans descendre), puis le détail groupe par groupe.
       rev.innerHTML = '<p class="vz-sort">À l\'Assemblée : <b>' + esc(q.sort) + '</b><small>' + q.compte + '</small></p>' +
@@ -254,23 +323,25 @@
         '<p class="vz-change">Pour changer votre vote, touchez une autre réponse.</p>' +
         (q.avant ? '<p class="vz-comme">Vous aviez voté le ' + dateFr(q.avant.le) + ', avant l\'Assemblée. Les députés ont pu modifier le texte pendant le débat.</p>' : '') +
         (o.suivant ? '<button type="button" class="vz-suite">' + esc(o.suivantLabel || 'Vote suivant →') + '</button>' : '') +
+        (q.unanime ? '<p class="vz-comme">Tous les groupes ont voté pareil : ce vote ne compte pas dans votre accord avec chaque groupe, il ne dit pas de qui vous êtes proche.</p>' : '') +
+        (peu.length && !q.unanime ? '<p class="vz-comme">Trop peu de députés ont voté dans ' + (peu.length > 1 ? 'les groupes ' : 'le groupe ') + peu.join(', ') + ' (moins de ' + VOTANTS_MIN + ', ou moins d\'un quart du groupe) : ' + (peu.length > 1 ? 'ils ne sont pas comptés' : 'il n\'est pas compté') + ' sur ce vote.</p>' : '') +
         '<div class="vz-gr">' + ['pour', 'contre', 'abstention'].filter(function (p) { return par[p].length; }).map(function (p) { return '<b>' + CHOIX[p] + '</b><div>' + par[p].join('') + '</div>'; }).join('') + '</div>';
       rev.hidden = false;
       if (!calme && rev.scrollIntoView) rev.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       var s = rev.querySelector('.vz-suite'); if (s) s.addEventListener('click', o.suivant);
     }
     Array.prototype.forEach.call(bs, function (b) {
-      b.addEventListener('click', function () { var m = lireMes(), change = CHOIX[m[q.id]]; if (m[q.id] === b.dataset.c) return; m[q.id] = b.dataset.c; ecrireMes(m); montrer(b.dataset.c, change); if (o.apres) o.apres(q, b.dataset.c); });
+      b.addEventListener('click', function () { var m = lireMes(), change = CHOIX[m[q.id]]; if (m[q.id] === b.dataset.c) return; m[q.id] = b.dataset.c; ecrireMes(m); montrer(b.dataset.c, change); if (!change) compter(q.id); if (o.apres) o.apres(q, b.dataset.c); });
     });
     el.querySelector('.vz-passe').addEventListener('click', function () { var m = lireMes(); m[q.id] = 'passe'; ecrireMes(m); if (o.apres) o.apres(q, 'passe'); if (o.suivant) o.suivant(); });
     if (CHOIX[deja]) montrer(deja, true);
   }
 
   // En-tête d'une carte : le genre de vote et sa date, en pastilles.
-  function tete(q) { return '<div class="vz-tete"><span class="vz-chip">' + esc(q.type) + '</span><span class="vz-date">' + dateFr(q.d) + '</span></div>'; }
-  // L'explication, dans son propre encadré.
+  function tete(q) { return '<div class="vz-tete"><span class="vz-chip">' + esc(q.type) + '</span>' + (q.nouveau ? '<span class="vz-chip vz-neuf">Nouveau</span>' : '') + '<span class="vz-date">' + dateFr(q.d) + '</span></div>'; }
+  // L'explication, dans son propre encadré : une phrase, puis au plus trois points.
   function expl(q) {
-    return q.expl ? '<div class="vz-boite"><span class="eyebrow">' + (q.k === 'censure' || q.k === 'confiance' ? 'Ce qui est en jeu' : 'Ce que prévoit le texte') + '</span><p class="vz-expl">' + esc(q.expl.e) + '</p><p class="vz-lu">Lu dans : <a href="' + esc(q.expl.url) + '">' + esc(q.expl.src) + '</a>' +
+    return q.expl ? '<div class="vz-boite"><span class="eyebrow">' + (q.k === 'censure' || q.k === 'confiance' ? 'Ce qui est en jeu' : 'Ce que prévoit le texte') + '</span><p class="vz-expl">' + esc(q.expl.e) + '</p>' + ((q.expl.points || []).length ? '<ul class="vz-pts">' + q.expl.points.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '') + '<p class="vz-lu">Lu dans : <a href="' + esc(q.expl.url) + '">' + esc(q.expl.src) + '</a>' +
       (q.explAvant || q.avenir ? ', avant le débat' : '') + '</p></div>' : '';
   }
   // Un vote à venir : on vote avant l'Assemblée ; le jour du vote, la carte montre ce qu'ont fait les groupes.
@@ -292,7 +363,7 @@
       var s = rev.querySelector('.vz-suite'); if (s) s.addEventListener('click', o.suivant);
     }
     Array.prototype.forEach.call(bs, function (b) {
-      b.addEventListener('click', function () { var a = lireAv(), le = aujourdhui(); if (a[q.cle] && a[q.cle].c === b.dataset.c) return; a[q.cle] = { c: b.dataset.c, le: le }; ecrireAv(a); montrer(b.dataset.c, le); if (o.apres) o.apres(q, b.dataset.c); });
+      b.addEventListener('click', function () { var a = lireAv(), le = aujourdhui(), premier = !a[q.cle]; if (a[q.cle] && a[q.cle].c === b.dataset.c) return; a[q.cle] = { c: b.dataset.c, le: le }; ecrireAv(a); montrer(b.dataset.c, le); if (premier) compter('avenir-' + q.cle); if (o.apres) o.apres(q, b.dataset.c); });
     });
     if (deja && CHOIX[deja.c]) montrer(deja.c, deja.le);
   }
@@ -367,43 +438,45 @@
   // avant trois votes, une barre grise qui avance vers le résultat.
   // Thèmes qui ont déjà un résultat (au moins trois votes) ; le bloc replié le dit, et reste ouvert d'un vote à l'autre s'il l'a été.
   var thOuvert = false;
-  function prets(D) { return THEMES.filter(function (t) { var R = resultat(D, function (q) { return q.pg.indexOf(t[0]) >= 0; }); return R.nb >= MIN_THEME && R.groupes.length; }).length; }
+  function prets(D) { return THEMES.filter(function (t) { var R = resultat(D, function (q) { return q.pg.indexOf(t[0]) >= 0; }); return R.nbCompte >= MIN_THEME && R.groupes.length; }).length; }
   function parTheme(D) {
     return THEMES.map(function (t) {
       var R = resultat(D, function (q) { return q.pg.indexOf(t[0]) >= 0; }), dispo = D.Q.filter(function (q) { return q.pg.indexOf(t[0]) >= 0; }).length;
       var top = R.groupes.filter(function (g, i) { return i < 2 && (R.groupes[0] || {}).pct - g.pct < 3; });
-      var pret = R.nb >= MIN_THEME && top.length;
+      var pret = R.nbCompte >= MIN_THEME && top.length;
       var corps = pret ? top.map(function (g) {
         var c = (D.G[g.c] || {}).coul || 'var(--fr)';
         // Le nom du groupe et sa part, dans une barre remplie d'une teinte pâle de sa couleur dans l'hémicycle.
         return '<span class="bb" title="' + esc(g.n) + ' (' + esc(g.c) + ') : ' + g.pct + ' %"><span class="fi" style="width:' + g.pct + '%;--c:' + c + '"></span>' +
           '<span class="lb"><span class="nm">' + esc(g.n) + '</span><b>' + g.pct + '\u00a0%</b></span></span>';
-      }).join('') : '<span class="b vide"><i style="width:' + Math.round(100 * Math.min(R.nb, MIN_THEME) / MIN_THEME) + '%"></i></span>' +
-        '<span class="g att">' + (dispo ? 'Encore ' + Math.max(1, MIN_THEME - R.nb) + ' vote' + (MIN_THEME - R.nb > 1 ? 's' : '') + ' sur ce thème pour un résultat' : 'Pas encore de texte sur ce thème') + '</span>';
+      }).join('') : '<span class="b vide"><i style="width:' + Math.round(100 * Math.min(R.nbCompte, MIN_THEME) / MIN_THEME) + '%"></i></span>' +
+        '<span class="g att">' + (dispo ? 'Encore ' + Math.max(1, MIN_THEME - R.nbCompte) + ' vote' + (MIN_THEME - R.nbCompte > 1 ? 's' : '') + ' sur ce thème pour un résultat' : 'Pas encore de texte sur ce thème') + '</span>';
       return '<li><a class="t" href="/' + t[0] + '/"><i aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + IC_TH[t[0]] + '</svg></i>' + t[1] + '</a><span class="n">' + R.nb + ' sur ' + dispo + ' texte' + (dispo > 1 ? 's' : '') + '</span>' + corps + '</li>';
     }).join('');
   }
   function bilan(el, D) {
     style();
-    var R = resultat(D), assez = R.nb >= MIN;
+    var R = resultat(D), assez = R.nbCompte >= MIN;
     var liste = R.groupes.map(function (g, i) {
       var c = (D.G[g.c] || {}).coul || 'var(--fr)';
       return '<li' + (i >= 3 ? ' class="vz-plus3" hidden' : '') + '><i style="background:' + c + '"></i><span class="n">' + esc(g.n) + ' <small>' + esc(g.c) + '</small></span><span class="v">' + g.pct + ' %</span><span class="b"><i style="width:' + g.pct + '%;background:' + c + '"></i></span></li>';
     }).join('');
     // Écart de moins de 3 points avec le suivant : les deux groupes sont nommés, « presque à égalité ».
     var top = R.groupes.filter(function (g, i) { return i < 2 && (R.groupes[0] || {}).pct - g.pct < 3; });
-    el.innerHTML = '<span class="eyebrow">Votre hémicycle' + (R.nb ? ' · ' + R.nb + ' vote' + (R.nb > 1 ? 's' : '') : '') + '</span>' +
+    el.innerHTML = avis(D, R) + '<span class="eyebrow">Votre hémicycle' + (R.nb ? ' · ' + R.nb + ' vote' + (R.nb > 1 ? 's' : '') : '') + '</span>' +
       '<h2>' + (assez ? 'Vous votez le plus souvent comme ' + (top.length > 1 ? top.map(function (g) { return esc(g.n) + ' (' + g.pct + '\u00a0%)'; }).join(' et ') + (top[0].pct === top[1].pct ? ', à égalité' : ', presque à égalité') : 'le groupe ' + esc(top[0].n)) : 'Votre hémicycle se remplit à partir de ' + MIN + ' votes') + '</h2>' +
       hemicycle(D, assez ? R : null) +
-      '<p class="vz-lire">Chaque groupe est à sa place dans l\'hémicycle, de la gauche à la droite. ' + (assez ? 'Plus sa part est colorée, plus vous votez comme lui. Touchez un groupe pour voir son nom.' : 'Encore ' + (MIN - R.nb) + ' vote' + (MIN - R.nb > 1 ? 's' : '') + ' : avant, le résultat dépendrait d\'un ou deux textes seulement.') + '</p>' +
+      '<p class="vz-lire">Chaque groupe est à sa place dans l\'hémicycle, de la gauche à la droite. ' + (assez ? 'Plus sa part est colorée, plus vous votez comme lui. Touchez un groupe pour voir son nom.' : 'Encore ' + (MIN - R.nbCompte) + ' vote' + (MIN - R.nbCompte > 1 ? 's' : '') + ' : avant, le résultat dépendrait d\'un ou deux textes seulement.' + (R.unan ? ' Les textes que tous les groupes ont votés pareil ne comptent pas.' : '')) + '</p>' +
+      (assez && R.unan ? '<p class="vz-lire">' + R.unan + ' de vos votes portaient sur des textes que tous les groupes ont votés de la même façon : vous étiez du même avis sur ' + R.unanComme + '. Ils ne comptent pas dans votre accord avec chaque groupe.</p>' : '') +
       (assez ? '<ul class="vz-bars">' + liste + '</ul>' + (R.groupes.length > 3 ? '<button type="button" class="vz-plus">Voir les ' + R.groupes.length + ' groupes</button>' : '') +
         '<details class="vz-th"' + (thOuvert ? ' open' : '') + '><summary><span>Par thème<small>' + prets(D) + ' thème' + (prets(D) > 1 ? 's' : '') + ' sur ' + THEMES.length + ' avec un résultat</small></span></summary><ul>' + parTheme(D) + '</ul><p class="vz-lire">Le groupe dont vos votes sont le plus proches sur chaque thème. « 2 sur 4 textes » : vous avez voté 2 des 4 textes du thème ; un texte voté plusieurs fois à l\'Assemblée est une seule question, avec son dernier vote. Le thème d\'un texte vient des mots de son titre (règle de la page La vie politique).</p></details>' +
         '<button type="button" class="vz-suite vz-partage">Partager mon résultat</button><p class="vz-lire vz-copie" hidden></p>' : '') +
       '<details class="vz-off"><summary>En détail : les groupes et le calcul</summary>' +
       '<p>' + D.groupes.filter(function (g) { return g.a != null; }).slice().sort(function (p, q) { return q.a - p.a; }).map(function (g) { return '<b>' + esc(g.c) + '</b> : ' + esc(g.n) + ' (' + g.m + ' députés)'; }).join(' · ') + '.</p>' +
-      '<p>Le calcul : sur chaque texte, votre choix est comparé à celui de la majorité du groupe. Même choix : 1 point. Vous pour et le groupe contre, ou l\'inverse : 0 point. Vous vous abstenez et le groupe vote pour ou contre, ou l\'inverse : ½ point. Le pourcentage est la moyenne de ces points sur vos votes où le groupe a pris position (par exemple 1 + 1 + ½ + 0 sur 4 textes = 63 %).' +
+      '<p>Le calcul (depuis le ' + dateFr(DATE_CALCUL) + ') : sur chaque texte, votre choix est comparé à celui de chaque député du groupe qui a voté ; une abstention compte pour moitié, d\'un côté comme de l\'autre. Par exemple, vous votez pour et le groupe a voté 60 pour, 30 contre et 10 abstentions : 65 % d\'accord sur ce texte. Le pourcentage est la moyenne sur vos votes. Ne comptent pas : un groupe dont moins de ' + VOTANTS_MIN + ' députés, ou moins d\'un quart des membres, ont voté ; les textes que tous les groupes ont votés de la même façon, qui ne disent pas de qui vous êtes proche. Censure : seuls les votes pour sont comptés, un député qui ne la vote pas est compté contre. Jusqu\'au 27 octobre 2026, seule comptait la position de la majorité du groupe, sur tous les textes.' +
       (assez ? ' Accord avec le résultat de l\'Assemblée : ' + R.assemblee + ' % de vos votes.' : '') + '</p>' +
       '<p>Place, couleur et nombre de députés de chaque groupe : plan officiel de l\'hémicycle et données ouvertes de l\'Assemblée nationale. Les ' + ((D.G.NI || {}).m || '') + ' députés non inscrits ne forment pas un groupe : ils ne sont pas dessinés. Vos votes restent sur cet appareil.</p></details>';
+    var ok = el.querySelector('.vz-avis-ok'); if (ok) ok.addEventListener('click', function () { ecrireCalcul(); avisCalcul = false; var a = el.querySelector('.vz-avis'); if (a) a.remove(); });
     var tip = el.querySelector('.vz-tip'), box = el.querySelector('.vz-hemi');
     var montre = function (g, e) {
       var c1 = el.querySelector('.vz-c1'), c2 = el.querySelector('.vz-c2');
@@ -448,7 +521,7 @@
     MIN: MIN, SERIE: SERIE, THEMES: THEMES, MIN_THEME: MIN_THEME, dateFr: dateFr, moisFr: moisFr, nf: nf, esc: esc, CHOIX: CHOIX,
     charger: function () {
       var lire = function (u) { return fetch(u, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); };
-      if (!donnees) donnees = Promise.all([lire('/donnees/votes.json'), lire('/donnees/votez_explications.json')]).then(function (r) { return construire(r[0], r[1].explications || {}); });
+      if (!donnees) donnees = Promise.all([lire('/donnees/votes.json'), lire('/donnees/votez_explications.json')]).then(function (r) { var D = construire(r[0], r[1].explications || {}); decider(D); return D; });
       return donnees;
     },
     mes: lireMes,
@@ -468,7 +541,7 @@
         if (!q) { el.innerHTML = ent + '<p class="note" style="font-size:14px">Vous avez voté tous les textes. Le prochain arrive dès que l\'Assemblée en vote un.</p>' + lien; return; }
         var zone = document.createElement('div'); el.innerHTML = ent; el.appendChild(zone);
         var pied = document.createElement('div'); el.appendChild(pied);
-        carte(zone, q, D, { apres: function () { var R = resultat(D); pied.innerHTML = (R.nb >= MIN && R.groupes.length ? '<p class="note" style="font-size:14px">Sur vos ' + R.nb + ' votes, vous êtes le plus proche du groupe <b>' + esc(R.groupes[0].n) + '</b> (' + R.groupes[0].pct + ' %).</p>' : '') + lien; } });
+        carte(zone, q, D, { apres: function () { var R = resultat(D); pied.innerHTML = (R.nbCompte >= MIN && R.groupes.length ? '<p class="note" style="font-size:14px">Sur vos ' + R.nb + ' votes, vous êtes le plus proche du groupe <b>' + esc(R.groupes[0].n) + '</b> (' + R.groupes[0].pct + ' %).</p>' : '') + lien; } });
       }).catch(function () {});
     }
   };

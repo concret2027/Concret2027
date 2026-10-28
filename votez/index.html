@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="0c3664522cf7">
+<meta name="concret-version" content="a2a3def64901">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -306,6 +306,10 @@ footer p { margin: 0; } footer a { color: inherit; }
 .vz-prog { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; } .vz-prog i { display: block; height: 100%; background: var(--fr); border-radius: 3px; transition: width .3s; }
 .vz-carte { border-color: var(--fr); }
 .vz-avenir { display: grid; gap: 12px; }
+.vz-bientot { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--fr); color: var(--fg); text-decoration: none; font-size: 14px; line-height: 1.4; }
+.vz-bientot b { color: var(--fr); font-size: 15px; }
+.vz-bientot[hidden], .vz-neufs[hidden] { display: none; }
+.vz-neufs { margin: 0; font-size: 14px; padding: 8px 12px; border-radius: 10px; background: var(--band); }
 .vz-av-h h2 { font-family: var(--serif); font-weight: 400; font-size: 24px; margin: 0; } .vz-av-h .note { margin-top: 4px; }
 .vz-av-l { display: grid; gap: 10px; } .vz-av-l > .card { border: 1.5px dashed var(--fr); }
 .vz-av > summary { cursor: pointer; list-style: none; display: grid; gap: 3px; min-height: 44px; }
@@ -338,9 +342,11 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card vz-intro" data-partage="non" aria-labelledby="vz-titre">
     <span class="eyebrow">Votez les lois</span>
     <h1 id="vz-titre">Et vous, qu'auriez-vous voté&nbsp;?</h1>
-    <p class="note" style="font-size:14.5px" id="vz-lead">De vrais votes de l'Assemblée, expliqués en deux phrases, par séries de 10. Dès 5 votes, voyez de quels groupes de députés vous êtes le plus proche.</p>
-    <p class="vz-prive">Vos votes restent sur cet appareil.</p>
+    <p class="note" style="font-size:14.5px" id="vz-lead">De vrais votes de l'Assemblée, expliqués simplement, par séries de 10. Et ceux qui arrivent, à voter avant les députés. Dès 5 votes, voyez de quels groupes de députés vous êtes le plus proche.</p>
+    <p class="vz-prive">Vos votes restent sur cet appareil : seul leur nombre est compté, jamais pour ou contre.</p>
     <p class="vz-retour" id="vz-retour" hidden></p>
+    <p class="vz-neufs" id="vz-neufs" hidden></p>
+    <a class="vz-bientot" id="vz-bientot" href="#vz-avenir" hidden></a>
   </section>
 
   <div class="vz-suivi" id="vz-suivi"><b id="vz-n"></b><div class="vz-prog" aria-hidden="true"><i id="vz-barre" style="width:0"></i></div></div>
@@ -365,12 +371,13 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="how-body">
       <ol>
         <li><b>Les votes proposés</b> : tous les votes importants de l'Assemblée nationale depuis le début de la législature (<span id="vz-debut"></span>) : vote sur l'ensemble d'un texte ou sur une partie d'un budget, motion de rejet, motion de censure, vote de confiance, déclaration du Gouvernement suivie d'un vote. Un texte voté plusieurs fois n'est proposé qu'une fois : son dernier vote sur l'ensemble.</li>
-        <li><b>L'explication de chaque texte</b> : une ou deux phrases écrites par Concret à partir du texte voté, dont le lien est donné juste en dessous : ce que le texte change, sans son but ni jugement. Pour un texte long, elle ne cite que quelques mesures, choisies par Concret parmi celles qui touchent le plus directement la vie des gens : elle ne dit jamais tout, le texte complet est en lien. Un texte n'est proposé qu'une fois son explication relue.</li>
+        <li><b>L'explication de chaque texte</b> : une phrase courte, puis au plus trois points, écrits par Concret à partir du texte voté en mots courants (les termes techniques sont expliqués entre parenthèses), dont le lien est donné juste en dessous : ce que le texte change, sans son but ni jugement. Pour un texte long, elle ne cite que quelques mesures, choisies par Concret parmi celles qui touchent le plus directement la vie des gens : elle ne dit jamais tout, le texte complet est en lien. Un texte n'est proposé qu'une fois son explication relue.</li>
         <li><b>L'ordre</b> : d'abord dix votes variés : une motion de censure et, pour chaque thème, le vote où les groupes se sont le plus partagés (sièges des groupes pour et contre les plus proches), complétés par les plus partagés des textes sans thème ; puis trois votes par thème, les plus partagés d'abord, pour que chaque thème ait son résultat, puis tous les autres, du plus récent au plus ancien.</li>
-        <li><b>La position d'un groupe</b> : celle de la majorité de ses députés qui ont voté, publiée par l'Assemblée. Pour une motion de censure, seuls les votes pour sont comptés : un groupe est compté pour si la majorité de ses membres l'a votée, contre sinon. Un groupe dont aucun député n'a voté n'est pas compté pour ce vote. Les députés non inscrits ne forment pas un groupe : ils ne sont pas comptés.</li>
-        <li><b>L'accord</b> : pour chaque texte, votre choix est comparé à celui de la majorité du groupe. Même choix (pour et pour, contre et contre) : 1 point. Vous pour et le groupe contre, ou l'inverse : 0 point. Vous vous abstenez et le groupe vote pour ou contre, ou l'inverse : ½ point, à mi-chemin. Le pourcentage est la moyenne de ces points : par exemple 1 + 1 + ½ + 0 sur 4 textes, soit 2,5 sur 4 = 63 %. « Je ne sais pas » n'est pas compté.</li>
+        <li><b>La position d'un groupe</b>, écrite sous chaque vote : celle de la majorité de ses députés qui ont voté, publiée par l'Assemblée. Pour une motion de censure, seuls les votes pour sont comptés : un groupe est compté pour si la majorité de ses membres l'a votée, contre sinon. Les députés non inscrits ne forment pas un groupe : ils ne sont pas comptés.</li>
+        <li><b>L'accord</b> (calcul du 28 octobre 2026) : sur chaque texte, votre choix est comparé à celui de chaque député du groupe qui a voté ; une abstention compte pour moitié, d'un côté comme de l'autre. Par exemple, vous votez pour et le groupe a voté 60 pour, 30 contre et 10 abstentions : (60 + 10 ÷ 2) ÷ 100 = 65 % d'accord sur ce texte. Le pourcentage est la moyenne sur vos votes. Pour une censure, un député qui ne la vote pas est compté contre. « Je ne sais pas » n'est pas compté.</li>
+        <li><b>Ce qui ne compte pas dans l'accord</b>, écrit sous le vote concerné : un groupe dont moins de 5 députés, ou moins d'un quart des membres, ont voté (sa position tiendrait à quelques personnes) ; un groupe dont aucun député n'a voté ; les textes que tous les groupes ont votés de la même façon, qui ne disent pas de qui vous êtes proche (ils sont comptés à part, et dans l'accord avec le résultat de l'Assemblée). Jusqu'au 27 octobre 2026, seule comptait la position de la majorité de chaque groupe (1 point, ½ si l'un des deux s'abstient, 0), sur tous les textes : qui avait déjà un résultat voit une fois ses chiffres avant et après.</li>
         <li><b>Les groupes</b> : les groupes actuels de l'Assemblée. Un groupe qui n'existait pas encore lors d'un vote n'est pas compté pour ce vote.</li>
-        <li><b>Vos votes</b> restent dans le navigateur de cet appareil : ils ne sont envoyés nulle part, et Concret ne peut pas les voir. Ils s'effacent avec les données du navigateur, ou avec le lien « Effacer tous mes votes ».</li>
+        <li><b>Vos votes</b> restent dans le navigateur de cet appareil : ils ne sont envoyés nulle part, et Concret ne peut pas les voir. Seule la participation est comptée, par le compteur de Concret : un vote de plus sur un texte la première fois que vous le votez, une personne de plus au tout premier vote sur cet appareil ; jamais pour, contre ou abstention, ni rien qui vous identifie. Vos votes s'effacent avec les données du navigateur, ou avec le lien « Effacer tous mes votes ».</li>
       </ol>
       <p class="note" id="vz-src"></p>
     </div>
@@ -378,7 +385,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <footer><p>concret2027.fr · Page indépendante de tout parti. Un groupe n'est pas un candidat : le résultat dit seulement de quels groupes de députés vos votes sont proches. <a href="/mentions-legales/">Mentions légales</a></p></footer>
 </div>
-<script src="/commun/votez.js?v=20261028q"></script>
+<script src="/commun/votez.js?v=20261028c"></script>
 <script>
 (function () {
   var V = window.ConcretVotez, $ = function (id) { return document.getElementById(id); }, D = null, cible = 0, force = null, tous = false;
@@ -412,18 +419,19 @@ footer p { margin: 0; } footer a { color: inherit; }
     // Sous le résultat : retour à la question en cours.
     if (!el.hidden && compte() < D.ordre.length) $('vz-res').insertAdjacentHTML('beforeend', '<a class="vz-revoter" href="#vz-carte">↑ Continuer à voter</a>');
   }
+  function avenirLien() { var n = D && D.avenir ? D.avenir.length : 0; return n ? '<p class="note"><a href="#vz-avenir" style="color:var(--fr);font-weight:600">' + n + ' vote' + (n > 1 ? 's' : '') + ' à venir à l\'Assemblée : votez avant les députés ↓</a></p>' : ''; }
   function tout() { suivi(); V.bilan($('vz-res'), D); retour(); mesVotes(); }
   function afficher(defiler) {
     var m = V.mes(), n = compte(), el = $('vz-carte');
     var q = force ? D.ordre.filter(function (x) { return x.id === force; })[0] : D.ordre.filter(function (x) { return !m[x.id]; })[0];
     if (!q) {
       el.className = 'card vz-carte vz-pause';
-      el.innerHTML = '<span class="eyebrow">C\'est fait</span><h2>Vous avez voté les ' + D.ordre.length + ' textes</h2><p class="note">Un nouveau vote s\'ajoute ici dès que l\'Assemblée en tient un.</p><p class="vz-suite-l"><a href="/quiz/">Le quiz du jour →</a><a href="/politique/">Comment chaque groupe a voté, sur La vie politique →</a></p>';
+      el.innerHTML = '<span class="eyebrow">C\'est fait</span><h2>Vous avez voté les ' + D.ordre.length + ' textes</h2><p class="note">Un nouveau vote s\'ajoute ici dès que l\'Assemblée en tient un.</p>' + avenirLien() + '<p class="vz-suite-l"><a href="/quiz/">Le quiz du jour →</a><a href="/politique/">Comment chaque groupe a voté, sur La vie politique →</a></p>';
     } else if (!force && n >= cible) {
       el.className = 'card vz-carte vz-pause';
       el.innerHTML = '<span class="eyebrow">Étape franchie · ' + n + ' votes</span><h2>' + (n === V.SERIE ? 'Les dix premiers votes sont faits' : n === etapeThemes() && themesPrets() ? 'Chaque thème a maintenant son résultat' : n + ' votes : votre résultat s\'affine') + '</h2>' +
         (function () { var R = V.resultat(D), g = R.groupes[0]; return R.nb >= V.MIN && g ? '<p class="vz-top">Pour l\'instant, vos votes ressemblent le plus à ceux du groupe <b>' + V.esc(g.n) + '</b> (' + g.pct + ' %).</p>' : ''; })() +
-        '<p class="note">Votre hémicycle se met à jour à chaque vote. Plus vous votez, plus le résultat est solide.</p><button type="button" class="vz-suite" id="vz-continuer">Prochaine étape : ' + etape(n) + ' votes</button>';
+        '<p class="note">Votre hémicycle se met à jour à chaque vote. Plus vous votez, plus le résultat est solide.</p>' + avenirLien() + '<button type="button" class="vz-suite" id="vz-continuer">Prochaine étape : ' + etape(n) + ' votes</button>';
       $('vz-continuer').addEventListener('click', function () { cible = etape(n); afficher(true); });
     } else {
       el.className = 'card vz-carte';
@@ -432,7 +440,22 @@ footer p { margin: 0; } footer a { color: inherit; }
     if (defiler) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
   V.charger().then(function (J) {
-    D = J; var n = compte();
+    D = J;
+    // Les votes arrivés depuis la dernière visite (liste des votes connus gardée sur l'appareil) passent en premier, marqués « Nouveau ».
+    var connus = null; try { connus = JSON.parse(localStorage.getItem('concret-votez-connus') || 'null'); } catch (e) {}
+    var mv = V.mes();
+    if (connus && connus.length) {
+      var neufs = D.ordre.filter(function (q) { return connus.indexOf(q.id) < 0 && !mv[q.id]; });
+      if (neufs.length) {
+        var apres = neufs.filter(function (q) { return D.ordre.indexOf(q) >= D.finThemes; }).length;
+        neufs.forEach(function (q) { q.nouveau = true; });
+        D.ordre = neufs.concat(D.ordre.filter(function (q) { return neufs.indexOf(q) < 0; })); D.finThemes += apres;
+        $('vz-neufs').hidden = false;
+        $('vz-neufs').innerHTML = '<b>' + neufs.length + ' nouveau' + (neufs.length > 1 ? 'x' : '') + ' vote' + (neufs.length > 1 ? 's' : '') + '</b> de l\'Assemblée depuis votre dernière visite : ' + (neufs.length > 1 ? 'ils passent' : 'il passe') + ' en premier.';
+      }
+    }
+    try { localStorage.setItem('concret-votez-connus', JSON.stringify(D.Q.map(function (q) { return q.id; }))); } catch (e) {}
+    var n = compte();
     // Une pause à chaque étape à partir de 10 (si la personne revient pile sur une étape, elle voit d'abord son résultat).
     cible = n >= V.SERIE && estEtape(n) ? n : Math.max(V.SERIE, etape(n));
     $('vz-debut').textContent = 'premier vote le ' + V.dateFr(D.debut);
@@ -440,6 +463,10 @@ footer p { margin: 0; } footer a { color: inherit; }
     tout(); afficher(false);
     if (D.avenir.length) {
       $('vz-avenir').hidden = false;
+      // En tête de page : les votes à venir, avec leur date, et un lien vers eux.
+      var avv = V.avant(), af = D.avenir.filter(function (q) { return !avv[q.cle]; }).length;
+      $('vz-bientot').hidden = false;
+      $('vz-bientot').innerHTML = '<b>' + D.avenir.length + ' vote' + (D.avenir.length > 1 ? 's' : '') + ' à venir à l\'Assemblée : votez avant les députés ↓</b><span>' + D.avenir.map(function (q) { return V.dateFr(q.d) + ' : ' + V.esc(q.titre); }).join(' · ') + (af < D.avenir.length ? ' (' + (D.avenir.length - af) + ' déjà voté' + (D.avenir.length - af > 1 ? 's' : '') + ' par vous)' : '') + '</span>';
       // Chaque vote à venir, replié : sa date et son titre ; « Voter maintenant » déplie l'explication et les boutons.
       D.avenir.forEach(function (q) {
         var d = document.createElement('details'), av = V.avant()[q.cle]; d.className = 'card vz-av'; d.setAttribute('data-partage', 'non');
@@ -461,6 +488,6 @@ footer p { margin: 0; } footer a { color: inherit; }
 </script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/partage.js?v=20261028g"></script>
-<script src="/commun/menu.js?v=20261028c"></script>
+<script src="/commun/menu.js?v=20261028r"></script>
 </body>
 </html>

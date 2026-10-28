@@ -1,6 +1,95 @@
 /* Menu du site pour tous : sur téléphone, un bouton « Menu » toujours visible au bout du bandeau (qui ouvre la liste des
    pages en grands boutons, avec une ligne d'explication chacune), un dégradé qui montre que le bandeau continue, et en bas
    de chaque page un bloc « Les autres pages ». Sur un grand écran, le bandeau tient en entier : seul le bloc du bas s'ajoute. */
+// Taille du texte réglée sur le téléphone. Sur iPhone et iPad (Réglages > Luminosité et affichage > Taille du texte), Safari la
+// donne par la police -apple-system-body, 17 px au réglage par défaut : chaque taille de texte en px des feuilles de style et
+// des attributs style est multipliée par le même rapport (jamais réduite, au plus 1,6 fois) ; les courbes (SVG) gardent la leur.
+// Le texte grossit et passe à la ligne, la page ne déborde pas. Ailleurs (Android, ordinateur), le navigateur applique lui-même
+// son réglage de taille ou de zoom.
+(function () {
+  var r = 1;
+  try {
+    if (window.CONCRET_TEXTE) r = +window.CONCRET_TEXTE; // essais seulement
+    else {
+      var p = document.createElement('span'); p.style.font = '-apple-system-body';
+      if (p.style.font) { p.textContent = 'a'; (document.body || document.documentElement).appendChild(p); r = parseFloat(getComputedStyle(p).fontSize) / 17; p.remove(); }
+    }
+  } catch (e) { r = 1; }
+  r = Math.min(1.6, r || 1);
+  if (r < 1.03) return;
+  var vu = typeof WeakSet === 'function' ? new WeakSet() : null; if (!vu) return;
+  var SVG = /(^|[\s>+~,(])(svg|text|tspan)\b/i, PX = /^([\d.]+)px$/;
+  // Le petit texte grossit le plus ; un titre ou un grand chiffre, déjà lisible, un peu moins (rien au-delà de 32 px), comme le fait le téléphone.
+  var gros = function (v) { var f = parseFloat(v), w = Math.min(1, Math.max(0, (32 - f) / 17)); return Math.round(f * (1 + (r - 1) * w) * 10) / 10 + 'px'; };
+  function regles(l) {
+    l = Array.prototype.slice.call(l);
+    for (var i = 0; i < l.length; i++) {
+      var x = l[i];
+      if (x.style && !vu.has(x)) {
+        vu.add(x);
+        for (var j = 0; j < x.style.length; j++) { // tailles données par des variables (--…font-size…)
+          var nm = x.style[j], vv = x.style.getPropertyValue(nm).trim();
+          if (nm.indexOf('--') === 0 && /font-size/.test(nm) && PX.test(vv)) x.style.setProperty(nm, gros(vv));
+        }
+        var f = x.style.fontSize;
+        if (PX.test(f) && !SVG.test(x.selectorText || '')) {
+          var imp = x.style.getPropertyPriority('font-size');
+          x.style.setProperty('font-size', gros(f), imp);
+          // Les textes des courbes (SVG) gardent leur taille : règle ajoutée juste après, pour eux seuls.
+          try {
+            var pa = x.parentRule || x.parentStyleSheet, k = Array.prototype.indexOf.call(pa.cssRules, x) + 1;
+            pa.insertRule(':is(' + x.selectorText + '):is(svg *){font-size:' + f + (imp ? ' !important' : '') + '}', k);
+            vu.add(pa.cssRules[k]);
+          } catch (e) {}
+        }
+      }
+      if (x.cssRules && x.cssRules.length) regles(x.cssRules); // @media, @supports, règles imbriquées
+    }
+  }
+  function feuilles() { for (var i = 0; i < document.styleSheets.length; i++) { try { regles(document.styleSheets[i].cssRules); } catch (e) {} } }
+  function attr(el) {
+    if (el.nodeType !== 1 || el.ownerSVGElement || el.tagName === 'svg' || vu.has(el)) return;
+    vu.add(el);
+    var f = el.style && el.style.fontSize; if (f && PX.test(f)) el.style.fontSize = gros(f);
+  }
+  function arbre(n) { attr(n); if (n.querySelectorAll) Array.prototype.forEach.call(n.querySelectorAll('[style*="font-size"]'), attr); }
+  feuilles(); arbre(document.documentElement);
+  // Un mot trop long pour sa case passe à la ligne (coupé en français), un tableau trop large défile dans son cadre.
+  var st = document.createElement('style');
+  st.textContent = 'body{overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}td,th{-webkit-hyphens:manual;hyphens:manual}';
+  vu.add(st); (document.head || document.documentElement).appendChild(st);
+  var att = 0;
+  function tableaux() {
+    clearTimeout(att);
+    att = setTimeout(function () {
+      Array.prototype.forEach.call(document.querySelectorAll('table'), function (t) {
+        var pa = t.parentElement; if (!pa || t.closest('svg')) return;
+        for (var a = pa; a && a !== document.body; a = a.parentElement) { var o = getComputedStyle(a).overflowX; if (o === 'auto' || o === 'scroll' || o === 'hidden') return; }
+        var lim = (pa.children.length === 1 ? pa.parentElement : pa).clientWidth;
+        if (t.getBoundingClientRect().width <= lim + 1) return;
+        if (pa.children.length === 1 && pa !== document.body) { pa.style.overflowX = 'auto'; pa.style.maxWidth = '100%'; pa.style.minWidth = '0'; return; }
+        var d = document.createElement('div'); d.style.overflowX = 'auto'; d.style.maxWidth = '100%';
+        pa.insertBefore(d, t); d.appendChild(t);
+      });
+    }, 150);
+  }
+  // Styles et blocs ajoutés ensuite par les scripts des pages.
+  new MutationObserver(function (m) {
+    var css = false;
+    m.forEach(function (x) {
+      Array.prototype.forEach.call(x.addedNodes, function (n) {
+        if (n.nodeType !== 1) return;
+        if (n.tagName === 'STYLE') css = true;
+        else if (n.tagName === 'LINK') n.addEventListener('load', feuilles);
+        else arbre(n);
+      });
+    });
+    if (css) feuilles();
+    tableaux();
+  }).observe(document.documentElement, { childList: true, subtree: true });
+  window.addEventListener('load', function () { feuilles(); tableaux(); });
+  window.addEventListener('resize', tableaux);
+})();
 (function () {
   var PAGES = [
     { u: '/', l: 'Accueil', t: 'Le classement des présidents et le pouls de la France', ic: 'accueil', large: 1 },
@@ -87,7 +176,7 @@
     'h2.inv,h3.inv{font-size:14.5px;font-weight:400;line-height:1.4;color:' + V.muted + '}h2.inv .eyebrow,h3.inv .eyebrow{font-size:18px;font-weight:700;line-height:1.25;letter-spacing:0;text-transform:none;color:' + V.fg + ';margin-bottom:3px}' +
     '.mn-maj{position:fixed;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:60;display:flex;align-items:center;gap:12px;width:min(calc(100% - 24px),480px);box-sizing:border-box;padding:12px 14px;border:0;border-radius:14px;background:' + V.fg + ';color:' + V.bg + ';font:inherit;font-size:14px;text-align:left;box-shadow:0 6px 24px rgba(0,0,0,.25);cursor:pointer}' +
     '.mn-maj span{flex:1}.mn-maj b{flex:none;padding:6px 12px;border-radius:999px;background:' + V.fr + ';color:#fff;font-weight:700}' +
-    '.nt-pli{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}' +
+    '.nt-pli{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--nt-l,2);line-clamp:var(--nt-l,2);overflow:hidden}' +
     '.nt-btn{font:inherit;font-size:13.5px;font-weight:600;color:' + V.fr + ';background:none;border:0;padding:6px 0;margin-top:-6px;min-height:36px;cursor:pointer;justify-self:start;align-self:start;text-align:left}' +
     '.nt-btn:focus-visible{outline:2px solid ' + V.fr + ';outline-offset:2px}';
   var ici = location.pathname.replace(/index\.html$/, '');
@@ -116,21 +205,37 @@
   // le reste. Les pages réécrivent ces textes quand elles redessinent une courbe : on les revoit à chaque changement.
   // Sur le Baromètre, les explications en tête de chaque bloc aussi (« Lire la suite »).
   // Sur la page Démographie, les paragraphes « À retenir » et les introductions longues aussi.
-  var NT = '.chart ~ p.note, .toile-svg ~ p.note, .bx-card > p.bx-note, .bx-group > p.bx-note, p.retenir, p.dernier';
+  // Sur toute page, un texte marqué class="replie" aussi (« Voir le détail », --nt-l : lignes montrées, 2 par défaut), et une liste
+  // marquée ainsi montre ses premiers éléments (data-n, 2 par défaut ; data-voir : le libellé, {n} pour leur nombre).
+  // Une explication de ce qui n'est pas compté, ni les mentions obligatoires d'un sondage (class="mentions"), ne se replient jamais.
+  var NT = '.chart ~ p.note, .toile-svg ~ p.note, .bx-card > p.bx-note, .bx-group > p.bx-note, p.retenir, p.dernier, .replie:not(ul):not(ol)';
+  function bouton(n) {
+    var b = n.nextElementSibling;
+    if (!b || !b.classList.contains('nt-btn')) {
+      b = document.createElement('button'); b.type = 'button'; b.className = 'nt-btn'; b.hidden = true;
+      b.addEventListener('click', function () { n.dataset.ntOuvert = n.dataset.ntOuvert ? '' : '1'; plier(); });
+      n.parentNode.insertBefore(b, n.nextSibling);
+    }
+    return b;
+  }
   function plier() {
+    Array.prototype.forEach.call(document.querySelectorAll('ul.replie, ol.replie'), function (n) {
+      var b = bouton(n), ouvert = !!n.dataset.ntOuvert, k = n.dataset.n ? +n.dataset.n : 2, L = n.children, reste = L.length - k;
+      for (var i = 0; i < L.length; i++) { var h = !ouvert && i >= k; if (L[i].hidden !== h) L[i].hidden = h; }
+      var t = reste <= 0 ? '' : ouvert ? 'Masquer ▴' : (n.dataset.voir ? n.dataset.voir.replace('{n}', reste) : k ? 'Voir les ' + reste + ' autres' : 'Voir le détail') + ' ▾';
+      if (b.textContent !== t) b.textContent = t;
+      if (b.hidden === !!t) b.hidden = !t;
+      b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
+    });
     Array.prototype.forEach.call(document.querySelectorAll(NT), function (n) {
-      if (n.classList.contains('pt-hors') || n.classList.contains('defs')) return;
-      var b = n.nextElementSibling;
-      if (!b || !b.classList.contains('nt-btn')) {
-        b = document.createElement('button'); b.type = 'button'; b.className = 'nt-btn'; b.hidden = true;
-        b.addEventListener('click', function () { n.dataset.ntOuvert = n.dataset.ntOuvert ? '' : '1'; plier(); });
-        n.parentNode.insertBefore(b, n.nextSibling);
-      }
+      if (n.classList.contains('pt-hors') || n.classList.contains('defs') || n.classList.contains('mentions')) return; // mentions légales d'un sondage : jamais repliées
+      var b = bouton(n);
       var ouvert = !!n.dataset.ntOuvert, deja = n.classList.contains('nt-pli');
       if (deja) n.classList.remove('nt-pli');
-      var lh = parseFloat(getComputedStyle(n).lineHeight) || 20, long = n.offsetHeight > lh * 3.4;
+      var cs = getComputedStyle(n), lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.45 || 20, nl = parseFloat(cs.getPropertyValue('--nt-l')) || 2, long = n.offsetHeight > lh * (nl + 1.4);
       if (long && !ouvert) n.classList.add('nt-pli');
-      var bx = n.classList.contains('bx-note') || n.classList.contains('retenir') || n.classList.contains('dernier'), t = !long ? '' : ouvert ? (bx ? 'Masquer ▴' : 'Masquer le détail ▴') : (bx ? 'Lire la suite ▾' : 'Détail du graphe ▾');
+      var rp = n.classList.contains('replie'), bx = !rp && (n.classList.contains('bx-note') || n.classList.contains('retenir') || n.classList.contains('dernier'));
+      var t = !long ? '' : ouvert ? (bx || rp ? 'Masquer ▴' : 'Masquer le détail ▴') : rp ? 'Voir le détail ▾' : bx ? 'Lire la suite ▾' : 'Détail du graphe ▾';
       if (b.textContent !== t) b.textContent = t;
       if (b.hidden === !!t) b.hidden = !t;
       b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
