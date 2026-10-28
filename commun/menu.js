@@ -1,6 +1,95 @@
 /* Menu du site pour tous : sur téléphone, un bouton « Menu » toujours visible au bout du bandeau (qui ouvre la liste des
    pages en grands boutons, avec une ligne d'explication chacune), un dégradé qui montre que le bandeau continue, et en bas
    de chaque page un bloc « Les autres pages ». Sur un grand écran, le bandeau tient en entier : seul le bloc du bas s'ajoute. */
+// Taille du texte réglée sur le téléphone. Sur iPhone et iPad (Réglages > Luminosité et affichage > Taille du texte), Safari la
+// donne par la police -apple-system-body, 17 px au réglage par défaut : chaque taille de texte en px des feuilles de style et
+// des attributs style est multipliée par le même rapport (jamais réduite, au plus 1,6 fois) ; les courbes (SVG) gardent la leur.
+// Le texte grossit et passe à la ligne, la page ne déborde pas. Ailleurs (Android, ordinateur), le navigateur applique lui-même
+// son réglage de taille ou de zoom.
+(function () {
+  var r = 1;
+  try {
+    if (window.CONCRET_TEXTE) r = +window.CONCRET_TEXTE; // essais seulement
+    else {
+      var p = document.createElement('span'); p.style.font = '-apple-system-body';
+      if (p.style.font) { p.textContent = 'a'; (document.body || document.documentElement).appendChild(p); r = parseFloat(getComputedStyle(p).fontSize) / 17; p.remove(); }
+    }
+  } catch (e) { r = 1; }
+  r = Math.min(1.6, r || 1);
+  if (r < 1.03) return;
+  var vu = typeof WeakSet === 'function' ? new WeakSet() : null; if (!vu) return;
+  var SVG = /(^|[\s>+~,(])(svg|text|tspan)\b/i, PX = /^([\d.]+)px$/;
+  // Le petit texte grossit le plus ; un titre ou un grand chiffre, déjà lisible, un peu moins (rien au-delà de 32 px), comme le fait le téléphone.
+  var gros = function (v) { var f = parseFloat(v), w = Math.min(1, Math.max(0, (32 - f) / 17)); return Math.round(f * (1 + (r - 1) * w) * 10) / 10 + 'px'; };
+  function regles(l) {
+    l = Array.prototype.slice.call(l);
+    for (var i = 0; i < l.length; i++) {
+      var x = l[i];
+      if (x.style && !vu.has(x)) {
+        vu.add(x);
+        for (var j = 0; j < x.style.length; j++) { // tailles données par des variables (--…font-size…)
+          var nm = x.style[j], vv = x.style.getPropertyValue(nm).trim();
+          if (nm.indexOf('--') === 0 && /font-size/.test(nm) && PX.test(vv)) x.style.setProperty(nm, gros(vv));
+        }
+        var f = x.style.fontSize;
+        if (PX.test(f) && !SVG.test(x.selectorText || '')) {
+          var imp = x.style.getPropertyPriority('font-size');
+          x.style.setProperty('font-size', gros(f), imp);
+          // Les textes des courbes (SVG) gardent leur taille : règle ajoutée juste après, pour eux seuls.
+          try {
+            var pa = x.parentRule || x.parentStyleSheet, k = Array.prototype.indexOf.call(pa.cssRules, x) + 1;
+            pa.insertRule(':is(' + x.selectorText + '):is(svg *){font-size:' + f + (imp ? ' !important' : '') + '}', k);
+            vu.add(pa.cssRules[k]);
+          } catch (e) {}
+        }
+      }
+      if (x.cssRules && x.cssRules.length) regles(x.cssRules); // @media, @supports, règles imbriquées
+    }
+  }
+  function feuilles() { for (var i = 0; i < document.styleSheets.length; i++) { try { regles(document.styleSheets[i].cssRules); } catch (e) {} } }
+  function attr(el) {
+    if (el.nodeType !== 1 || el.ownerSVGElement || el.tagName === 'svg' || vu.has(el)) return;
+    vu.add(el);
+    var f = el.style && el.style.fontSize; if (f && PX.test(f)) el.style.fontSize = gros(f);
+  }
+  function arbre(n) { attr(n); if (n.querySelectorAll) Array.prototype.forEach.call(n.querySelectorAll('[style*="font-size"]'), attr); }
+  feuilles(); arbre(document.documentElement);
+  // Un mot trop long pour sa case passe à la ligne (coupé en français), un tableau trop large défile dans son cadre.
+  var st = document.createElement('style');
+  st.textContent = 'body{overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}td,th{-webkit-hyphens:manual;hyphens:manual}';
+  vu.add(st); (document.head || document.documentElement).appendChild(st);
+  var att = 0;
+  function tableaux() {
+    clearTimeout(att);
+    att = setTimeout(function () {
+      Array.prototype.forEach.call(document.querySelectorAll('table'), function (t) {
+        var pa = t.parentElement; if (!pa || t.closest('svg')) return;
+        for (var a = pa; a && a !== document.body; a = a.parentElement) { var o = getComputedStyle(a).overflowX; if (o === 'auto' || o === 'scroll' || o === 'hidden') return; }
+        var lim = (pa.children.length === 1 ? pa.parentElement : pa).clientWidth;
+        if (t.getBoundingClientRect().width <= lim + 1) return;
+        if (pa.children.length === 1 && pa !== document.body) { pa.style.overflowX = 'auto'; pa.style.maxWidth = '100%'; pa.style.minWidth = '0'; return; }
+        var d = document.createElement('div'); d.style.overflowX = 'auto'; d.style.maxWidth = '100%';
+        pa.insertBefore(d, t); d.appendChild(t);
+      });
+    }, 150);
+  }
+  // Styles et blocs ajoutés ensuite par les scripts des pages.
+  new MutationObserver(function (m) {
+    var css = false;
+    m.forEach(function (x) {
+      Array.prototype.forEach.call(x.addedNodes, function (n) {
+        if (n.nodeType !== 1) return;
+        if (n.tagName === 'STYLE') css = true;
+        else if (n.tagName === 'LINK') n.addEventListener('load', feuilles);
+        else arbre(n);
+      });
+    });
+    if (css) feuilles();
+    tableaux();
+  }).observe(document.documentElement, { childList: true, subtree: true });
+  window.addEventListener('load', function () { feuilles(); tableaux(); });
+  window.addEventListener('resize', tableaux);
+})();
 (function () {
   var PAGES = [
     { u: '/', l: 'Accueil', t: 'Le classement des présidents et le pouls de la France', ic: 'accueil', large: 1 },
