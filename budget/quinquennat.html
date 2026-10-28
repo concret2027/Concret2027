@@ -332,7 +332,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-jauge { grid-column: 1 / -1; position: relative; height: 5px; border-radius: 3px; background: var(--line); margin-top: 6px; }
 .q-jauge b { position: absolute; top: -15px; transform: translateX(-50%); font: 600 10px/1 var(--sans, inherit); color: var(--fg); white-space: nowrap; }
 .q-hud .q-cumul { grid-column: 1 / -1; display: block; margin: 6px 0 0; font-size: 13px; line-height: 1.35; color: var(--fg); }
-.q-cumul b { font-variant-numeric: tabular-nums; color: var(--fr); }
+.q-hud .q-cumul b { font: 700 13px/1.35 inherit; font-family: inherit; font-variant-numeric: tabular-nums; color: var(--fr); }
 .q-hud .q-cumul.vide { color: var(--muted); }
 .q-jauge span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--fr); transition: width .35s ease; }
 .q-jauge em { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); }
@@ -691,7 +691,7 @@ body.q-mesures { padding-bottom: 92px; }
       '<h2>' + esc(c.l) + '</h2>' +
       (c.quoi ? '<p class="quoi">' + esc(c.quoi) + '</p>' : '') +
       (c.officiel ? '<p class="quoi">Intitulé officiel : « ' + esc(c.officiel) + ' ».</p>' : '') +
-      '<div class="q-montant"><b>' + sg(m1, 1) + ' Md€</b><span>' + (m1 >= 0 ? 'en moins de déficit' : 'en plus de déficit') + ' en ' + AN0 + ' (' + (ret ? (m1 >= 0 ? 'moins de dépense' : 'plus de dépense') : (m1 >= 0 ? 'plus d\'impôts ou de cotisations' : 'moins d\'impôts')) + ')</span><small>' + esc(anneesTexte(c)) +
+      '<div class="q-montant"><b>' + sg(m1, 1) + ' Md€</b><span>' + (m1 >= 0 ? 'en moins de déficit' : 'en plus de déficit') + ' en ' + AN0 + ' (' + (ret ? (m1 >= 0 ? 'dépense en moins' : 'dépense en plus') : (m1 >= 0 ? 'recette en plus' : 'recette en moins')) + ')</span><small>' + esc(anneesTexte(c)) +
       (c.origine === 'niche' ? ' Coût de la niche chiffré par le Gouvernement (' + esc(c.cout_annee) + ') : la recette de sa suppression peut être plus faible si les comportements changent.' : '') + '</small></div>' +
       '<p class="q-qui"><b>' + (c.qui_titre || (ret ? (m1 < 0 ? 'Qui reçoit plus' : 'Qui reçoit moins') : (m1 < 0 ? 'Qui paie moins' : 'Qui paie'))) + ' :</b> ' + esc(c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + (c.qui_texte ? ' · <span class="q-org">' + esc(c.qui_texte) + '</span>' : '') + '</p>' +
       (c.statut ? '<p class="q-an">À l\'Assemblée : ' + esc(court(c.statut)) + '</p>' : '') +
