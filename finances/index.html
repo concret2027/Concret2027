@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="d1c2aa3c15d3">
+<meta name="concret-version" content="e4c961a51960">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -347,7 +347,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 <div class="ex" data-t="exemple_regle">
                     <p><b>Dette :</b> elle a pris 3,1 points de PIB en France, 1,2 dans l'UE. La France a fait moins bien : <b>0 point</b>.</p>
           <p><b>Dépenses publiques :</b> +0,3 point de PIB en France, +0,5 dans l'UE. Elles ont moins augmenté chez nous : <b>1 point</b>.</p>
-          <p>Même exercice sur les autres critères. Bayrou marque 3 points sur 7 (les prélèvements 2025 ne sont pas encore publiés) : 3 ÷ 7 × 20 = <b>8,6/20</b>.</p>
+          <p>Même exercice sur les autres critères. Bayrou marque 3 points sur 8 : 3 ÷ 8 × 20 = <b>7,5/20</b>.</p>
         </div>
 </div></details>
 <details class="sous"><summary>Les 8 critères : quand la France marque-t-elle le point ?</summary><div>
@@ -920,7 +920,7 @@ function main(FEED) {
     });
     var best = list[0], above = list.filter(function (r) { return r.n >= 10; }).length;
     document.getElementById('rank-' + rankMode + '-note').textContent = (above ? above + ' sur ' + list.length + ' atteignent le niveau de la moyenne de l\'UE ; les autres sont en dessous de la moyenne européenne. ' : 'Tous sont en dessous de la moyenne européenne. ') +
-      'Meilleure note : ' + best.g.n + ' (' + nfmt(best.n) + '/20).' + (rankMode === 'pres' ? ' Chirac inclut les cinq ans de cohabitation avec Lionel Jospin ; Macron est noté sur 2017-2025.' : ' Lecornu sera noté au printemps 2027 ; Barnier (sept.-déc. 2024) n\'a pas d\'année complète.');
+      (function () { var ex = list.filter(function (r) { return nfmt(r.n) === nfmt(best.n); }).map(function (r) { return r.g.n; }); return (ex.length > 1 ? 'Meilleures notes, à égalité : ' + ex.slice(0, -1).join(', ') + ' et ' + ex[ex.length - 1] : 'Meilleure note : ' + best.g.n) + ' (' + nfmt(best.n) + '/20).'; })() + (rankMode === 'pres' ? ' Chirac inclut les cinq ans de cohabitation avec Lionel Jospin ; Macron est noté sur 2017-2025.' : ' Lecornu sera noté au printemps 2027 ; Barnier (sept.-déc. 2024) n\'a pas d\'année complète.');
   }
   var showAll = false;
   document.getElementById('gov-more').addEventListener('click', function () {
@@ -1046,7 +1046,7 @@ function main(FEED) {
     for (var j = ends.length - 1; j >= 0; j--) { var lim = j === ends.length - 1 ? H - 6 : ends[j + 1].y - 13; if (ends[j].y > lim) ends[j].y = lim; }
     // Les chiffres de fin de courbe en colonne, au bout de la courbe la plus longue : une courbe qui s'arrête plus tôt ne croise pas les autres.
     var xFin = Math.max.apply(null, ends.map(function (e) { return e.x; }));
-    ends.forEach(function (e) { svg.append('text').attr('x', xFin + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+    ends.forEach(function (e) { svg.append('text').attr('x', xFin + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c === 'var(--ea)' ? 'var(--ea-t, var(--ea))' : e.c === 'var(--es)' ? 'var(--es-t, var(--es))' : e.c).style('font-weight', e.main ? 700 : 500); });
     var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); });
     xs.sort(function (a, b) { return a - b; });
     var tf = o.tfmt || o.efmt || function (v) { return fmt(v, 1) + (o.unit || ''); };
@@ -1261,7 +1261,7 @@ function main(FEED) {
     svg.append('path').datum(fr).attr('d', line).attr('fill', 'none').attr('stroke', 'var(--fr)').attr('stroke-width', 2.2);
     var ends = [[fr, 'var(--fr)'], [ea, 'var(--ea)']].map(function (s) { var i = s[0].length - 1; svg.append('circle').attr('cx', x(i)).attr('cy', y(s[0][i])).attr('r', 3).attr('fill', s[1]); return { x: x(i), y: y(s[0][i]), t: fmt(s[0][i], 1) + unit, c: s[1] }; }).sort(function (a, b) { return a.y - b.y; });
     if (ends[1].y - ends[0].y < 12) { var mid = (ends[0].y + ends[1].y) / 2; ends[0].y = mid - 6; ends[1].y = mid + 6; }
-    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 5).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', 600).style('font-size', '10.5px'); });
+    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 5).attr('y', e.y + 4).text(e.t).style('fill', e.c === 'var(--ea)' ? 'var(--ea-t, var(--ea))' : e.c === 'var(--es)' ? 'var(--es-t, var(--es))' : e.c).style('font-weight', 600).style('font-size', '10.5px'); });
     svg.append('text').attr('x', m.l).attr('y', H - 3).text(moLab(0)).style('font-size', '10px');
     svg.append('text').attr('x', W - m.r).attr('y', H - 3).attr('text-anchor', 'end').text(moLab(n - 1)).style('font-size', '10px');
     hover(box, svg, H, m, d3.range(n).map(function (i) {
@@ -1473,6 +1473,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028i"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028m"></script>
+<script src="/commun/menu.js?v=20261028n"></script>
 </body>
 </html>

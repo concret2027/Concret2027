@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="d1c2aa3c15d3">
+<meta name="concret-version" content="e4c961a51960">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -775,7 +775,7 @@ function main(FEED) {
       svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' · seulement ' + countOf(r.g) + ' comparaisons' : '')).attr('text-anchor', few ? 'start' : (inside ? 'end' : 'start')).attr('x', few ? x(r.n) + 6 : (inside ? x(r.n) - 6 : x(r.n) + 6)).style('fill', few ? 'var(--muted)' : (inside ? 'var(--panel)' : 'var(--fg)')).style('font-weight', 700).style('font-size', '12px');
     });
     var best = list[0], above = list.filter(function (r) { return r.n >= 10; }).length;
-    document.getElementById('rank-' + mode + '-note').textContent = (above ? above + ' sur ' + list.length + (above > 1 ? ' atteignent' : ' atteint') + ' le niveau de nos voisins ; les autres sont en dessous de la moyenne. ' : 'Tous sont en dessous de la moyenne de nos voisins. ') + 'Meilleure note : ' + best.g.n + ' (' + nfmt(best.n) + '/20).' +
+    document.getElementById('rank-' + mode + '-note').textContent = (above ? above + ' sur ' + list.length + (above > 1 ? ' atteignent' : ' atteint') + ' le niveau de la moyenne de l\'UE ; les autres sont en dessous. ' : 'Tous sont en dessous de la moyenne de l\'UE. ') + (function () { var ex = list.filter(function (r) { return nfmt(r.n) === nfmt(best.n); }).map(function (r) { return r.g.n; }); return (ex.length > 1 ? 'Meilleures notes, à égalité : ' + ex.slice(0, -1).join(', ') + ' et ' + ex[ex.length - 1] : 'Meilleure note : ' + best.g.n) + ' (' + nfmt(best.n) + '/20).'; })() +
       (mode === 'pres' ? ' Emmanuel Macron, en exercice, est noté sur 2017-2025.' : ' En gris : note calculée sur moins de ' + MIN_N + ' comparaisons (mandat court, ou années non comptées), donc peu fiable. Touchez une barre pour voir le détail.');
   }
   function rankChart() { rankOne('pres'); rankOne('gov'); }
@@ -930,7 +930,7 @@ function main(FEED) {
     for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
     // Pile de chiffres trop basse : on la remonte pour qu'aucun ne sorte du graphique.
     for (var j = ends.length - 1; j >= 0; j--) { var lim = j === ends.length - 1 ? H - 6 : ends[j + 1].y - 13; if (ends[j].y > lim) ends[j].y = lim; }
-    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c === 'var(--ea)' ? 'var(--ea-t, var(--ea))' : e.c === 'var(--es)' ? 'var(--es-t, var(--es))' : e.c).style('font-weight', e.main ? 700 : 500); });
     var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); });
     xs.sort(function (a, b) { return a - b; });
     hover(box, svg, H, m, xs.map(function (xv) {
@@ -1228,6 +1228,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028i"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028m"></script>
+<script src="/commun/menu.js?v=20261028n"></script>
 </body>
 </html>

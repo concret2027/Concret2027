@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="d1c2aa3c15d3">
+<meta name="concret-version" content="e4c961a51960">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -379,7 +379,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
     ends.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
     for (var j = ends.length - 1; j >= 0; j--) { var lim = j === ends.length - 1 ? H - 6 : ends[j + 1].y - 13; if (ends[j].y > lim) ends[j].y = lim; }
-    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c === 'var(--ea)' ? 'var(--ea-t, var(--ea))' : e.c === 'var(--es)' ? 'var(--es-t, var(--es))' : e.c).style('font-weight', e.main ? 700 : 500); });
     var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); }); xs.sort(function (a, b) { return a - b; });
     hover(box, svg, H, m, xs.map(function (xv) {
       return { px: x(xv), t: o.xlab ? o.xlab(xv) : String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n, py: y(d.v), s: (o.efmt ? o.efmt(d.v) : fmt(d.v, o.dec)) } : null; }).filter(Boolean) };
@@ -585,6 +585,6 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/partage.js?v=20261028i"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261028m"></script>
+<script src="/commun/menu.js?v=20261028n"></script>
 </body>
 </html>

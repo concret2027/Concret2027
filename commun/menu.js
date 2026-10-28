@@ -126,7 +126,7 @@
   // Couleurs des pages (les pages et le Baromètre n'ont pas les mêmes noms de variables).
   var V = { bg: 'var(--bg, var(--color-bg, #f6f6f3))', panel: 'var(--panel, var(--color-panel, #fff))', fg: 'var(--fg, var(--color-fg, #1c1d22))',
     muted: 'var(--muted, var(--color-fg-muted, #62646d))', line: 'var(--line, var(--color-border-line, #e2e2dc))', fr: 'var(--fr, #2f5bd3)' };
-  var css = '.acc-fixe>summary{cursor:default;border-bottom:0!important;margin-bottom:0!important;padding-bottom:2px}.acc-fixe>summary .acc-t,.acc-fixe>summary .acc-cta{display:none}.mn-btn{position:sticky;right:0;margin-left:auto;flex:none;display:none;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:700;color:' + V.fg + ';' +
+  var css = ':root{--ea-t:#8a6418;--es-t:#b4531f}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ea-t:var(--ea);--es-t:var(--es)}}:root[data-theme="dark"]{--ea-t:var(--ea);--es-t:var(--es)}svg text[fill="var(--ea)"]{fill:var(--ea-t)}svg text[fill="var(--es)"]{fill:var(--es-t)}.acc-fixe>summary{cursor:default;border-bottom:0!important;margin-bottom:0!important;padding-bottom:2px}.acc-fixe>summary .acc-t,.acc-fixe>summary .acc-cta{display:none}.mn-btn{position:sticky;right:0;margin-left:auto;flex:none;display:none;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:700;color:' + V.fg + ';' +
       'background:linear-gradient(to right,transparent,' + V.bg + ' 26px);box-shadow:24px 0 0 0 ' + V.bg + ';border:0;padding:4px 2px 4px 34px;cursor:pointer}' +
     '.mn-btn span{display:inline-flex;align-items:center;gap:6px;border:1.5px solid ' + V.fg + ';border-radius:999px;padding:9px 14px;background:' + V.panel + '}' +
     // Zones à toucher de 44 px au moins (pages du bandeau, raccourcis « Aller à »), pour tous les doigts.
@@ -261,18 +261,25 @@
   // le bouton dit en quelques mots ce qui n'est pas compté (« Détail du graphe · non compté : 2020 et 2022 »).
   var TOUT = '.courbe-p, .grand .card';
   function nonComptes(html) {
-    var Y = [], av = null, fs = false;
+    var Y = [], av = null, fs = false, est = [];
     phrases(html).forEach(function (x) {
-      var tx = x.replace(/<[^>]+>/g, ''); if (!GARDE.test(tx) || REGLE.test(tx)) return;
+      var tx = x.replace(/<[^>]+>/g, ''), e = /(?:^|[.;] )(\d{4}) provisoire :/.exec(tx);
+      // Chiffre estimé par Concret en attendant la source (« 2025 provisoire : … ») : dit sur le bouton.
+      if (e) { if (est.indexOf(+e[1]) < 0) est.push(+e[1]); return; }
+      if (!GARDE.test(tx) || REGLE.test(tx)) return;
       if (/France seule/.test(tx)) { fs = true; return; }
       var m = /ne commence qu'en (\d{4})/.exec(tx); if (m) { av = +m[1]; return; }
       m = /^Non compté : en (\d{4})/.exec(tx) || /^En (\d{4})/.exec(tx) || /(\d{4})/.exec(tx);
       if (m && Y.indexOf(+m[1]) < 0) Y.push(+m[1]); else if (!m) Y.push(0);
     });
-    if (!Y.length && av == null) return fs ? ' · France seule' : '';
+    var et = function (L) { return L.length > 1 ? L.slice(0, -1).join(', ') + ' et ' + L[L.length - 1] : String(L[0]); };
+    var pe = est.length ? et(est.sort()) + ' estimé' + (est.length > 1 ? 's' : '') + ' par Concret' : '', nc = '';
     var L = Y.filter(Boolean).sort(); if (av != null) L.unshift('avant ' + av);
-    if (!L.length || Y.indexOf(0) >= 0 && L.length === 0 || L.length > 3) return ' · années non comptées';
-    return ' · non compté' + (L.length === 1 && /^avant/.test(L[0]) ? ' ' : ' : ') + (L.length > 1 ? L.slice(0, -1).join(', ') + ' et ' + L[L.length - 1] : L[0]);
+    if (L.length > 3 || (!L.length && Y.length)) nc = 'années non comptées';
+    else if (L.length) nc = 'non compté' + (L.length === 1 && /^avant/.test(L[0]) ? ' ' : ' : ') + et(L);
+    else if (fs) nc = 'France seule';
+    var parts = [pe, nc].filter(Boolean);
+    return parts.length ? ' · ' + parts.join(' · ') : '';
   }
   function garder(n) {
     if (n._ntSet != null && n._ntSet === n.innerHTML) return;

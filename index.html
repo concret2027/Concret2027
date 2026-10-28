@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="d1c2aa3c15d3">
+<meta name="concret-version" content="e4c961a51960">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -731,7 +731,9 @@ footer p { margin: 0; } footer a { color: inherit; }
     table('t-pres', c.pres, d.series); table('t-gov', c.gov, d.series);
     // Bloc replié : la ligne d'appel donne le premier du classement.
     var g1 = c.gov.filter(function (r) { return r.m != null; })[0];
-    if (g1) document.getElementById('gov-teaser').textContent = 'En tête : ' + g1.n + ' (' + fmt(g1.m) + '/20) · la note de chaque Premier ministre depuis 1995';
+    // Ex aequo au dixième près : tous nommés.
+    var ex1 = g1 ? c.gov.filter(function (r) { return r.m != null && fmt(r.m) === fmt(g1.m); }).map(function (r) { return r.n; }) : [];
+    if (g1) document.getElementById('gov-teaser').textContent = 'En tête' + (ex1.length > 1 ? ', à égalité : ' + ex1.slice(0, -1).join(', ') + ' et ' + ex1[ex1.length - 1] : ' : ' + g1.n) + ' (' + fmt(g1.m) + '/20) · la note de chaque Premier ministre depuis 1995';
     // Les gouvernements : les 5 premiers et le gouvernement le plus récent, les autres derrière un bouton.
     var box = document.getElementById('t-gov'), lignes = Array.prototype.slice.call(box.querySelectorAll('button.br'));
     var noteG = c.gov.filter(function (r) { return r.m != null; }), der = noteG.reduce(function (a, r, i) { return r.y1 > noteG[a].y1 ? i : a; }, 0);
@@ -769,6 +771,6 @@ footer p { margin: 0; } footer a { color: inherit; }
 <script src="/commun/partage.js?v=20261028i"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/contact.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028m"></script>
+<script src="/commun/menu.js?v=20261028n"></script>
 </body>
 </html>
