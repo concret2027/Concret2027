@@ -652,7 +652,7 @@ body.q-mesures { padding-bottom: 92px; }
       (c.officiel ? '<p class="quoi">Intitulé officiel : « ' + esc(c.officiel) + ' ».</p>' : '') +
       '<div class="q-montant"><b>' + sg(m1, 1) + ' Md€</b><span>' + (m1 >= 0 ? 'en moins de déficit' : 'en plus de déficit') + ' en ' + AN0 + ' (' + (ret ? 'dépense' : 'recette') + ')</span><small>' + esc(anneesTexte(c)) +
       (c.origine === 'niche' ? ' Coût de la niche chiffré par le Gouvernement (' + esc(c.cout_annee) + ') : la recette de sa suppression peut être plus faible si les comportements changent.' : '') + '</small></div>' +
-      '<p class="q-qui"><b>' + (c.qui_titre || (ret ? 'Qui reçoit moins' : 'Qui paie')) + ' :</b> ' + esc(c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + (c.qui_texte ? ' · <span class="q-org">' + esc(c.qui_texte) + '</span>' : '') + '</p>' +
+      '<p class="q-qui"><b>' + (c.qui_titre || (ret ? (m1 < 0 ? 'Qui reçoit plus' : 'Qui reçoit moins') : (m1 < 0 ? 'Qui paie moins' : 'Qui paie'))) + ' :</b> ' + esc(c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + (c.qui_texte ? ' · <span class="q-org">' + esc(c.qui_texte) + '</span>' : '') + '</p>' +
       (c.statut ? '<p class="q-an">À l\'Assemblée : ' + esc(court(c.statut)) + '</p>' : '') +
       '<details class="q-src"><summary>Détails' + (c.an ? ', vote des groupes' : '') + ' et source</summary>' + (c.statut && court(c.statut) !== c.statut ? '<p>' + esc(c.statut) + '</p>' : '') + an +
       (c.note ? '<p>' + esc(c.note) + '</p>' : '') + '<p>' + esc(c.src.doc) + (c.src.page ? ', page ' + esc(String(c.src.page).replace(/^p\. ?/, '')) : '') + ' : « ' + esc(c.src.citation) + ' » <a href="' + esc(c.src.url) + '">Lire le document</a></p>' +
@@ -672,7 +672,8 @@ body.q-mesures { padding-bottom: 92px; }
   }
   function voter(c, v) {
     var avant = S.v[c.id], r1 = simuler().filter(function (r) { return r.an === AN0; })[0].solde;
-    if (v === 1 && c.exclusif) C.forEach(function (o) { if (o !== c && o.exclusif === c.exclusif && S.v[o.id] === 1) S.v[o.id] = -1; });
+    // Mesures qui se recouvrent : en adopter une retire les autres (même groupe, ou liste « exclut » dans un sens ou dans l'autre).
+    if (v === 1) C.forEach(function (o) { if (o !== c && S.v[o.id] === 1 && ((c.exclusif && o.exclusif === c.exclusif) || (c.exclut || []).indexOf(o.id) >= 0 || (o.exclut || []).indexOf(c.id) >= 0)) S.v[o.id] = -1; });
     S.v[c.id] = v; garder();
     var el = $('q-card'); if (el) el.classList.add(v === 1 ? 'out-r' : 'out-l');
     var r2 = simuler().filter(function (r) { return r.an === AN0; })[0].solde, e = r2 - r1;

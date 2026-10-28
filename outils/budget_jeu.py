@@ -34,7 +34,7 @@ QUI = {
     'formation': 'Formation et apprentissage', 'complementaires': 'Mutuelles et assurances santé', 'menages_employeurs': 'Ménages qui emploient à domicile',
     'donateurs': 'Donateurs', 'logement': 'Travaux dans les logements', 'restauration': 'Restauration', 'agriculture': 'Agriculture et forêt',
     'transport': 'Transport routier', 'outre_mer': 'Outre-mer', 'handicap': 'Personnes handicapées', 'automobilistes': 'Acheteurs de voitures',
-    'agents_publics': 'Agents publics', 'chomeurs': 'Chômeurs', 'smic': 'Salariés au SMIC',
+    'agents_publics': 'Agents publics', 'chomeurs': 'Chômeurs', 'smic': 'Salariés au SMIC', 'assures': 'Assurés sociaux', 'soignants': 'Hôpitaux et soignants',
 }
 # Effet sur l'activité : la variante du modèle Mésange qui correspond au type de mesure (aucune pour l'impôt sur les sociétés,
 # les droits de succession et les accises : le modèle ne les publie pas).
@@ -223,6 +223,32 @@ def construire():
                            'macro': None, 'sens': 'depense', 'effet': {str(date.today().year + 1): round(pc * x['valeurs']['total'] / 1000, 3)},
                            'note': "Chiffrage de la DG Trésor pour une hausse de 1 %% (coût des allègements de cotisations, salaires publics, prestations, impôts), sans effet sur l'emploi ; Concret le multiplie par %d. Effet sur l'emploi : le groupe d'experts sur le SMIC retient qu'une hausse de 1 %% du coût du travail au niveau du SMIC réduit la demande de travail à ce niveau de %s à %s %% ; aucune source officielle ne donne un nombre d'emplois, il n'est pas compté ici." % (pc, fr_nb(-el['valeurs']['basse']), fr_nb(-el['valeurs']['haute'])) if el else '',
                            'src': {'doc': x['l'], 'page': x.get('page'), 'url': x['url'], 'citation': x['citation']}})
+    # Leviers de dépense chiffrés par la Commission des comptes de la Sécurité sociale (tableau de sensibilité, octobre 2026)
+    # et par le Gouvernement (point d'indice, 2022). Une hausse ou une baisse de x fois l'unité est comptée x fois (hypothèse de Concret).
+    an1 = str(date.today().year + 1)
+    CCSS = {'doc': "Commission des comptes de la Sécurité sociale, rapport d'octobre 2026, tableau 2 « Sensibilité des résultats des régimes et branches de sécurité sociale aux hypothèses de prévision »",
+            'page': '8', 'url': 'https://www.securite-sociale.fr/files/live/sites/SSFR/files/medias/CCSS/2026/CCSS-octobre-2026_assemble_VDEF.pdf'}
+    ondam = "Dépenses maladie : impact d’une hausse de 1 % dans le champ de l’ONDAM […] Tous régimes 2 650 (en millions d’euros)"
+    revalo = "Inflation : impact (en année pleine) d’une hausse de 1 point du taux d'inflation sur la revalorisation légale des prestations […] Tous régimes 3 370 (en millions d’euros)"
+    ag = "Allègements généraux (AG) : impact d’une hausse de 1 % du coût sur les cotisations nettes […] Tous régimes -560 (en millions d’euros)"
+    lev = [
+        ('ondam-moins-1', "Faire progresser les dépenses d'assurance maladie (ONDAM) de 1 % de moins en " + an1, "Les dépenses remboursées par l'assurance maladie (soins de ville, hôpitaux, médico-social) augmentent de 1 % de moins que l'objectif prévu.", 'sante', ['assures', 'soignants'], 'depense', 2.65, ondam, ['ondam-plus-1'], "Objectif proposé pour " + an1 + " : +2,0 %, soit 278,7 Md€ (projet de loi de financement de la sécurité sociale, article 43)."),
+        ('ondam-plus-1', "Faire progresser les dépenses d'assurance maladie (ONDAM) de 1 % de plus en " + an1, "Les dépenses remboursées par l'assurance maladie augmentent de 1 % de plus que l'objectif prévu.", 'sante', ['assures', 'soignants'], 'depense', -2.65, ondam, ['ondam-moins-1'], ''),
+        ('revalo-moins-1', "Revaloriser toutes les prestations de sécurité sociale d'un point de moins que l'inflation en " + an1, "Pensions de base, prestations familiales et autres prestations des régimes de base augmentent d'un point de moins que la hausse des prix.", 'retraites', ['retraites', 'familles'], 'depense', 3.37, revalo, ['revalo-plus-1', 'pensions-revalorisation-2027', 'prestations-familiales-gel'], "Régimes de base seulement (pas les retraites complémentaires Agirc-Arrco)."),
+        ('revalo-plus-1', "Revaloriser toutes les prestations de sécurité sociale d'un point de plus que l'inflation en " + an1, "Pensions de base, prestations familiales et autres prestations des régimes de base augmentent d'un point de plus que la hausse des prix.", 'retraites', ['retraites', 'familles'], 'depense', -3.37, revalo, ['revalo-moins-1', 'pensions-revalorisation-2027', 'prestations-familiales-gel'], "Régimes de base seulement (pas les retraites complémentaires Agirc-Arrco)."),
+        ('allegements-moins-10', "Réduire de 10 % les allègements généraux de cotisations patronales", "Les employeurs paient plus de cotisations sur les salaires proches du SMIC : les réductions générales de cotisations baissent de 10 %.", 'entreprises', ['entreprises'], 'cotis_emp', 5.6, ag, [], "La source chiffre 1 % ; Concret multiplie par 10. Coût des allègements généraux prévu pour " + an1 + " : 72,8 Md€ (même rapport, p. 67). Effet sur l'emploi : compté par le modèle Mésange (cotisations des employeurs), si l'effet sur l'activité est coché."),
+    ]
+    for i, l, q, th, qui, mac, v, cit, exc, note in lev:
+        cartes.append({'id': i, 'origine': 'levier', 'l': l, 'quoi': q, 'theme': th, 'qui': qui, 'qui_texte': '', 'macro': mac,
+                       'sens': 'depense' if mac == 'depense' else 'recette', 'effet': {an1: v}, 'exclut': exc,
+                       'note': (note + ' ' if note else '') + "Effet en année pleine, gardé chaque année ensuite.", 'src': dict(CCSS, citation=cit)})
+    pi = P.get('cout_1pct_point_indice')
+    if pi:
+        cartes.append({'id': 'point-indice-plus-1', 'origine': 'levier', 'l': "Augmenter de 1 % le point d'indice des fonctionnaires en " + an1,
+                       'quoi': "Le traitement de base des agents des trois fonctions publiques (État, collectivités, hôpitaux) augmente de 1 %. Le projet de budget 2027 prévoit de ne pas le revaloriser.",
+                       'theme': 'etat', 'qui': ['agents_publics'], 'qui_titre': 'Qui reçoit', 'qui_texte': '5,85 millions d\'agents publics fin 2024 (DGAFP)', 'macro': 'depense', 'sens': 'depense',
+                       'effet': {an1: -round(7.5 / 3.5, 2)}, 'note': "Dernier chiffrage officiel : la hausse de 3,5 % de juillet 2022 a coûté 7,5 Md€ ; Concret divise par 3,5. Montant de 2022, sans tenir compte de la hausse des salaires depuis.",
+                       'src': {'doc': pi['l'], 'page': pi.get('page'), 'url': pi['url'], 'citation': pi['citation']}})
     # Paramètres du modèle.
     var = {}
     for t, cle in MACRO.items():
