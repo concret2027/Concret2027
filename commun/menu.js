@@ -181,7 +181,10 @@
     '.mn-maj span{flex:1}.mn-maj b{flex:none;padding:6px 12px;border-radius:999px;background:' + V.fr + ';color:#fff;font-weight:700}' +
     '.nt-pli{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--nt-l,2);line-clamp:var(--nt-l,2);overflow:hidden}' +
     '.nt-btn{font:inherit;font-size:13.5px;font-weight:600;color:' + V.fr + ';background:none;border:0;padding:6px 0;margin-top:-6px;min-height:36px;cursor:pointer;justify-self:start;align-self:start;text-align:left}' +
-    '.nt-btn:focus-visible{outline:2px solid ' + V.fr + ';outline-offset:2px}';
+    '.nt-btn:focus-visible{outline:2px solid ' + V.fr + ';outline-offset:2px}' +
+    // Sur toutes les pages, les dépliants qui cachent des courbes (« Voir 2 autres courbes… ») se voient : fond bleu, gras, trait à gauche.
+    '.fold>summary,details.plus>summary{font-weight:700;color:' + V.fr + ';background:rgba(47,91,211,.10);background:color-mix(in srgb,' + V.fr + ' 13%,transparent);border-left:4px solid ' + V.fr + ';border-radius:12px;justify-content:space-between;gap:10px}' +
+    '.fold>summary:hover,details.plus>summary:hover,.fold[open]>summary,details.plus[open]>summary{background:rgba(47,91,211,.16);background:color-mix(in srgb,' + V.fr + ' 20%,transparent)}';
   var ici = location.pathname.replace(/index\.html$/, '');
   var lien = function (p) { return '<a href="' + p.u + '"' + (p.large ? ' class="mn-large"' : '') + (p.u === ici ? ' aria-current="page"' : '') + '>' + icone(p.ic) + '<b>' + p.l + '</b><span>' + p.t + '</span></a>'; };
   // Les pages par groupe (« Chaque jour », « Les missions notées », « Repères, sans note ») : un intitulé avant chaque groupe.
