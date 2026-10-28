@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="7c458d173056">
+<meta name="concret-version" content="4504b387e075">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -301,31 +301,33 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 
     <section class="bx-card" id="dernier-sondage">
       <h2 id="last-title">Premier tour : le dernier sondage</h2>
-      <p class="bx-note mentions" id="last-note">Premier tour, moyenne des hypothèses testées.</p>
+      <p class="bx-note" id="last-note">Premier tour, moyenne des hypothèses testées.</p>
       <div class="bx-last" id="last" data-source="dernier_sondage"></div>
+      <p class="bx-note mentions" id="last-src" hidden></p>
     </section>
 
     <section class="bx-card" id="premier-tour">
       <h2>Premier tour : l'évolution dans les sondages</h2>
       <p class="bx-note">Chaque point est un sondage (moyenne de ses hypothèses) ; la ligne suit la moyenne des sondages des trois semaines précédentes. Courbes des 8 premiers candidats des sondages. En juillet 2026, Marine Le Pen remplace Jordan Bardella comme candidate du RN.</p>
-      <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
       <div class="bx-legend" id="legend-t1"></div>
       <div class="bx-chart" id="chart-t1" data-source="sondages_t1 tendance_t1 evenements"></div>
+      <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
       <ol class="bx-events replie" id="events-list" data-source="evenements" data-n="0" data-voir="Voir les {n} événements numérotés sur la courbe"></ol>
     </section>
 
     <section class="bx-card" id="dernier-t2">
       <h2 id="last2-title">Second tour : le dernier sondage</h2>
-      <p class="bx-note mentions" id="last2-note">Score de chaque candidat dans chaque duel testé, en % des voix exprimées.</p>
+      <p class="bx-note" id="last2-note">Score de chaque candidat dans chaque duel testé, en % des voix exprimées.</p>
       <div class="bx-last" id="last2" data-source="dernier_sondage_t2"></div>
+      <p class="bx-note mentions" id="last2-src" hidden></p>
     </section>
 
     <section class="bx-card" id="second-tour">
       <h2>Second tour : l'évolution, Marine Le Pen selon son adversaire</h2>
       <p class="bx-note">Score de Marine Le Pen, en % des voix exprimées, dans chaque duel testé en 2026. Sous 50 %, elle perd.</p>
-      <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
       <div class="bx-legend" id="legend-t2"></div>
       <div class="bx-chart small" id="chart-t2" data-source="sondages_t2"></div>
+      <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
     </section>
 
     <div class="bx-group" id="parieurs"><h2>Les parieurs</h2><nav class="bx-grouplinks" aria-label="Parieurs"><a href="#parieurs-t1">Premier tour ↓</a><a href="#polymarket">Second tour ↓</a></nav></div>
@@ -742,12 +744,14 @@ dash.calc('duels_recents', {
     var P = rows[0].polls, noms = P.map(function (p) { return p.institut; });
     if (P.length === 1) {
       document.getElementById('last-title').textContent = 'Premier tour : le dernier sondage (' + P[0].institut + ')';
-      document.getElementById('last-note').innerHTML = mention(P[0]).replace(/\.$/, '. ') + 'Premier tour, moyenne des hypothèses testées.';
+      document.getElementById('last-note').textContent = 'Premier tour, moyenne des hypothèses testées.';
     } else {
       document.getElementById('last-title').textContent = 'Premier tour : les derniers sondages (' + et(noms) + ')';
       var jour = new Date(P[0].date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
       document.getElementById('last-note').textContent = 'Moyenne des ' + P.length + ' sondages dont le terrain finit le ' + jour + ' (pour chacun, moyenne de ses hypothèses de premier tour).';
     }
+    // Mentions obligatoires sous les barres, toujours en entier (plusieurs sondages : la liste plus bas, une ligne par sondage).
+    var src = document.getElementById('last-src'); src.hidden = P.length !== 1; src.innerHTML = P.length === 1 ? mention(P[0]) : '';
     var max = rows[0].score;
     rows.filter(function (r) { return r.score >= 1; }).forEach(function (r) {
       var l = document.createElement('div'); l.className = 'bx-lastbar';
@@ -770,7 +774,8 @@ dash.calc('duels_recents', {
     var P = rows[0].polls.map(function (i) { return { institut: i, date: rows[0].date }; });
     var jour = new Date(rows[0].date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
     document.getElementById('last2-title').textContent = 'Second tour : ' + (P.length > 1 ? 'les derniers sondages (' : 'le dernier sondage (') + et(P.map(function (p) { return p.institut; })) + ')';
-    document.getElementById('last2-note').innerHTML = (P.length > 1 ? 'Moyenne des ' + P.length + ' sondages dont le terrain finit le ' + esc(jour) + '. ' : mention(P[0]) + ' ') + 'Score de chaque candidat dans chaque duel testé, en % des voix exprimées.';
+    document.getElementById('last2-note').innerHTML = (P.length > 1 ? 'Moyenne des ' + P.length + ' sondages dont le terrain finit le ' + esc(jour) + '. ' : '') + 'Score de chaque candidat dans chaque duel testé, en % des voix exprimées.';
+    var src = document.getElementById('last2-src'); src.hidden = P.length !== 1; src.innerHTML = P.length === 1 ? mention(P[0]) : '';
     rows.forEach(function (r) {
       var l = document.createElement('div'); l.className = 'bx-duel';
       var t = document.createElement('div'); t.className = 'bx-duel-t';
