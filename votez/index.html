@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="2eaaedacc524">
+<meta name="concret-version" content="8e33c446607c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -302,8 +302,6 @@ footer p { margin: 0; } footer a { color: inherit; }
 .vz-revoter { display: block; margin-top: 4px; text-align: center; font-weight: 600; }
 .vz-prive::before { content: "🔒 "; }
 .vz-prive span { font-weight: 600; color: var(--fg); }
-.vz-gens { margin: 0; font-size: 14px; font-weight: 600; }
-.vz-gens[hidden] { display: none; }
 .vz-suivi { position: sticky; top: var(--navh, 56px); z-index: 8; display: flex; gap: 12px; align-items: center; padding: 8px 2px; margin: -8px 0; background: var(--bg); font-size: 14px; font-variant-numeric: tabular-nums; }
 .vz-prog { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; } .vz-prog i { display: block; height: 100%; background: var(--fr); border-radius: 3px; transition: width .3s; }
 .vz-carte { border-color: var(--fr); }
@@ -346,7 +344,6 @@ footer p { margin: 0; } footer a { color: inherit; }
     <h1 id="vz-titre">Et vous, qu'auriez-vous voté&nbsp;?</h1>
     <p class="note" style="font-size:14.5px" id="vz-lead">De vrais votes de l'Assemblée, expliqués simplement, par séries de 10. Et ceux qui arrivent, à voter avant les députés. Dès 5 votes, voyez de quels groupes de députés vous êtes le plus proche.</p>
     <p class="vz-prive">Vos votes restent sur cet appareil : seul leur nombre est compté, jamais pour ou contre.</p>
-    <p class="vz-gens" id="vz-gens" hidden></p>
     <p class="vz-retour" id="vz-retour" hidden></p>
     <p class="vz-neufs" id="vz-neufs" hidden></p>
     <a class="vz-bientot" id="vz-bientot" href="#vz-avenir" hidden></a>
@@ -387,7 +384,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <footer><p>concret2027.fr · Page indépendante de tout parti. Un groupe n'est pas un candidat : le résultat dit seulement de quels groupes de députés vos votes sont proches. <a href="/mentions-legales/">Mentions légales</a></p></footer>
 </div>
-<script src="/commun/votez.js?v=20261028u"></script>
+<script src="/commun/votez.js?v=20261028v"></script>
 <script>
 (function () {
   var V = window.ConcretVotez, $ = function (id) { return document.getElementById(id); }, D = null, cible = 0, force = null, tous = false;
@@ -458,8 +455,6 @@ footer p { margin: 0; } footer a { color: inherit; }
     }
     try { localStorage.setItem('concret-votez-connus', JSON.stringify(D.Q.map(function (q) { return q.id; }))); } catch (e) {}
     var n = compte();
-    // Participation : combien de personnes ont voté au moins un texte (une par appareil) ; jamais le sens des votes.
-    V.nb('personnes', false).then(function (p) { if (p != null && p >= V.SEUIL_NB) { $('vz-gens').hidden = false; $('vz-gens').textContent = V.nf(p) + ' personnes ont déjà voté sur Concret.'; } });
     // Une pause à chaque étape à partir de 10 (si la personne revient pile sur une étape, elle voit d'abord son résultat).
     cible = n >= V.SERIE && estEtape(n) ? n : Math.max(V.SERIE, etape(n));
     $('vz-debut').textContent = 'premier vote le ' + V.dateFr(D.debut);
