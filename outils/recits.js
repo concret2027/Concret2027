@@ -28,7 +28,8 @@ module.exports = [
   { id: 'fin_pib', page: 'finances', ou: 'titre « Richesse par habitant »', texte: '16 % au-dessus de la moyenne de l\'UE en 1990, au même niveau en 2025',
     verifier: function (c) { var P = c.fin.PIB, k = lastBoth(P.fr, P.eu), a = Math.round(100 * (P.fr[0] / P.eu[0] - 1)), b = Math.round(100 * (P.fr[k] / P.eu[k] - 1)); return { ok: a === 16 && b === 0 && 1990 + k === 2025, constat: '1990 : ' + (a >= 0 ? '+' : '') + a + ' %, ' + (1990 + k) + ' : ' + (b >= 0 ? '+' : '') + b + ' %' }; } },
   { id: 'fin_spread', page: 'finances', ou: 'titre « Politique et marchés »', texte: 'La France emprunte plus cher que l\'Italie',
-    verifier: function (c) { var sp = c.pouls.filter(function (r) { return r.indicateur === 'ecart_allemagne'; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }).pop(), it = c.fin.P.spread_italie; return { ok: +sp.valeur > it.v, constat: 'écart France ' + fr(+sp.valeur) + ' pb (' + sp.date + '), Italie ' + fr(it.v) + ' pb (' + it.date + ')' }; } },
+    // Le même mois pour les deux pays : dernières moyennes mensuelles (taux à 10 ans moins le taux allemand).
+    verifier: function (c) { var F = c.fin.FR, I = c.fin.IT, D = c.fin.DE, i = Math.min(F.length, I.length, D.length) - 1, f = Math.round((F[i] - D[i]) * 100), t = Math.round((I[i] - D[i]) * 100), mois = new Date(2017, i, 15).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); return { ok: f > t, constat: 'écart avec l\'Allemagne, moyenne de ' + mois + ' : France ' + fr(f) + ' pb, Italie ' + fr(t) + ' pb' }; } },
   // ===== Éducation =====
   { id: 'edu_bilan', page: 'education', ou: 'meta og:description et résumé « Le bilan »',
     texte: 'Plus de diplômés que la moyenne de l\'UE, mais des scores PISA plus bas et plus de jeunes au chômage',

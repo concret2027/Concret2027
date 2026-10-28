@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c8ed894050f8">
+<meta name="concret-version" content="c33833e1c8a1">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -457,7 +457,7 @@ section.theme > h2 { font-size: 21px; font-weight: 700; line-height: 1.2; }
   <div class="brand"><h1>Sécurité et justice</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#actualite">Actualité</a><a href="#annees">Année par année</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#actualite">Actualité</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a><a href="#annees">Année par année</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
   <section class="card" id="toile" hidden></section>
@@ -555,14 +555,6 @@ section.theme > h2 { font-size: 21px; font-weight: 700; line-height: 1.2; }
     </div>
   </details>
 
-  <section class="card" id="annees" aria-labelledby="yr-title">
-    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
-    <p class="note"><i class="pt p1"></i> la France a fait mieux que la moyenne de l'UE sur ce thème cette année-là, <i class="pt p0"></i> moins bien, <i class="pt ph"></i> autant, – pas de chiffre comparable (la raison est sous la ligne).</p>
-    <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
-    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 1995</button>
-  </section>
-
-
   <section class="card quiz" id="quiz" aria-labelledby="quiz-q">
     <span class="eyebrow" id="quiz-day">Question du jour</span>
     <p class="q" id="quiz-q">—</p>
@@ -593,6 +585,13 @@ section.theme > h2 { font-size: 21px; font-weight: 700; line-height: 1.2; }
     <summary><span class="acc-h">Le bilan</span><span class="acc-t">Ce qui a changé en dix ans, en France et chez ses voisins, thème par thème</span><span class="acc-cta"></span></summary>
     <div class="acc-body card summary"><ol id="sum-list"></ol></div>
   </details>
+
+  <section class="card" id="annees" aria-labelledby="yr-title">
+    <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
+    <p class="note"><i class="pt p1"></i> la France a fait mieux que la moyenne de l'UE sur ce thème cette année-là, <i class="pt p0"></i> moins bien, <i class="pt ph"></i> autant, – pas de chiffre comparable (la raison est sous la ligne).</p>
+    <div class="tbl-wrap"><table class="yrs"><thead id="yr-head"></thead><tbody id="yr-body"></tbody></table></div>
+    <button class="more" id="yr-more" aria-expanded="false">Voir toutes les années, depuis 1995</button>
+  </section>
 
   <details class="acc" id="methode">
     <summary><span class="acc-h">Méthode et sources</span><span class="acc-t">D'où viennent les chiffres, et leurs limites</span><span class="acc-cta"></span></summary>
@@ -1133,7 +1132,7 @@ function main(FEED) {
     b.innerHTML = '<span class="mini-h"><span class="mini-t">' + esc(c.lc || c.l) + '</span>' + (c.unite ? '<span class="mini-u">' + esc(c.unite) + '</span>' : '') + '</span>' +
       '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + [[D, 'var(--de)'], [Es, 'var(--es)'], [Us, 'var(--us)']].map(function (a) { return a[0].length ? trace(a[0]).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="' + a[1] + '" stroke-width="1.2" opacity=".75"/>'; }).join('') : ''; }).join('') + (E.length ? trace(E).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--ea)" stroke-width="1.6" stroke-dasharray="4 3"/>'; }).join('') : '') +
       trace(F).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--fr)" stroke-width="2.4" stroke-linejoin="round"/>'; }).join('') + '<circle cx="' + X(lf.x) + '" cy="' + Y(lf.v) + '" r="3" fill="var(--fr)" class="mini-pt"/></svg>' +
-      '<span class="mini-v"><span><b class="f">' + fmt(lf.v, dec) + u + '</b> France · ' + lf.x + ((c.prov || {})[lf.x] ? ' estimé' : '') + '</span><span>' + (le ? '<b class="e">' + fmt(le.v, dec) + u + '</b> moyenne UE' : '') + (/sans note/.test(o.tag || '') ? (le ? ' · ' : '') + 'sans note' : '') + '</span></span>';
+      '<span class="mini-v"><span><b class="f">' + fmt(lf.v, dec) + u + '</b> France · ' + lf.x + ((c.prov || {})[lf.x] ? ' estimé' : '') + '</span><span>' + (le ? '<b class="e">' + fmt(le.v, dec) + u + '</b> moyenne UE' : r ? 'moyenne UE ' + lf.x + ' pas encore publiée' : '') + (/sans note/.test(o.tag || '') ? (le ? ' · ' : '') + 'sans note' : '') + '</span></span>';
     b.setAttribute('aria-label', (c.lc || c.l) + (c.unite ? ', ' + c.unite : '') + ' : France ' + fmt(lf.v, dec) + u + (le ? ', moyenne de l\'UE ' + fmt(le.v, dec) + u : '') + ' en ' + lf.x + '. Voir la courbe en grand');
     b.addEventListener('click', function () {
       var g = document.createElement('div'); g.className = 'grand';
@@ -1400,6 +1399,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028q"></script>
+<script src="/commun/menu.js?v=20261028r"></script>
 </body>
 </html>

@@ -309,7 +309,7 @@
     Array.prototype.forEach.call(document.querySelectorAll('ul.replie, ol.replie'), function (n) {
       var b = bouton(n), ouvert = !!n.dataset.ntOuvert, k = n.dataset.n ? +n.dataset.n : 2, L = n.children, reste = L.length - k;
       for (var i = 0; i < L.length; i++) { var h = !ouvert && i >= k; if (L[i].hidden !== h) L[i].hidden = h; }
-      var t = reste <= 0 ? '' : ouvert ? 'Masquer ▴' : (n.dataset.voir ? n.dataset.voir.replace('{n}', reste) : k ? 'Voir les ' + reste + ' autres' : 'Voir le détail') + ' ▾';
+      var t = reste <= 0 ? '' : ouvert ? 'Masquer ▴' : (n.dataset.voir ? n.dataset.voir.replace('{n}', reste) : k ? (reste === 1 ? 'Voir l\'autre' : 'Voir les ' + reste + ' autres') : 'Voir le détail') + ' ▾';
       if (b.textContent !== t) b.textContent = t;
       if (b.hidden === !!t) b.hidden = !t;
       b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
@@ -391,6 +391,13 @@
   }
   function init() {
     compterOuvertures();
+    // Les raccourcis du haut (nav.jump) suivent toujours l'ordre réel des blocs de la page, même quand un bloc change de place.
+    var jp = document.querySelector('nav.jump');
+    if (jp) {
+      var cib = function (l) { return document.getElementById(decodeURIComponent((l.getAttribute('href') || '').slice(1))); };
+      var ls = Array.prototype.filter.call(jp.querySelectorAll('a[href^="#"]'), function (l) { return cib(l); });
+      ls.slice().sort(function (p, q) { return cib(p).compareDocumentPosition(cib(q)) & 4 ? -1 : 1; }).forEach(function (l) { jp.appendChild(l); });
+    }
     // Clavier et lecteur d'écran : la zone principale de la page, et un lien « Aller au contenu » qui saute les menus.
     var wrap = document.querySelector('main') || document.querySelector('.wrap');
     if (wrap && wrap.tagName !== 'MAIN' && !wrap.getAttribute('role')) wrap.setAttribute('role', 'main');
