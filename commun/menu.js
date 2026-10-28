@@ -273,8 +273,14 @@
       if (m && Y.indexOf(+m[1]) < 0) Y.push(+m[1]); else if (!m) Y.push(0);
     });
     var et = function (L) { return L.length > 1 ? L.slice(0, -1).join(', ') + ' et ' + L[L.length - 1] : String(L[0]); };
-    var pe = est.length ? et(est.sort()) + ' estimé' + (est.length > 1 ? 's' : '') + ' par Concret' : '', nc = '';
-    var L = Y.filter(Boolean).sort(); if (av != null) L.unshift('avant ' + av);
+    var L = Y.filter(Boolean).sort(), pe = '', nc = '';
+    if (est.length) {
+      // Année estimée et non comptée (le cas courant) : dit en une fois, « 2025 estimé, non compté ».
+      var tous = est.every(function (y) { return L.indexOf(y) >= 0; });
+      pe = et(est.sort()) + ' estimé' + (est.length > 1 ? 's' : '') + (tous ? ', non compté' + (est.length > 1 ? 's' : '') : '');
+      if (tous) L = L.filter(function (y) { return est.indexOf(y) < 0; });
+    }
+    if (av != null) L.unshift('avant ' + av);
     if (L.length > 3 || (!L.length && Y.length)) nc = 'années non comptées';
     else if (L.length) nc = 'non compté' + (L.length === 1 && /^avant/.test(L[0]) ? ' ' : ' : ') + et(L);
     else if (fs) nc = 'France seule';

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="55890e7c9ef8">
+<meta name="concret-version" content="55cd1cfd6731">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -295,7 +295,7 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .courbe-p > .eyebrow, .fold .card > h2 > .eyebrow, .grand .card > h2 > .eyebrow, section.theme > .charts4 .card > h2 > .eyebrow { text-transform: none; letter-spacing: 0; font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--fg); }
 .autres { display: grid; gap: 8px; }
 .minis-t { margin: 4px 0 0; font-size: 15px; font-weight: 700; } .minis-t span { font-weight: 400; font-size: 13px; color: var(--muted); }
-.minis-h { margin: -6px 0 0; font-size: 13px; font-weight: 600; color: var(--fr); }
+.minis-h { margin: -6px 0 0; font-size: 13px; font-weight: 600; color: var(--fr); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mini-u { display: block; font-size: 12px; line-height: 1.3; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
 .minis-k { margin: 0; display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 12px; color: var(--muted); }
 .minis-k i { display: inline-block; width: 12px; height: 0; border-top: 2.5px solid; vertical-align: middle; margin-right: 5px; }
@@ -317,7 +317,9 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 section.theme .charts4 .insight { font-family: var(--sans); font-size: 16px; line-height: 1.45; font-weight: 500; text-wrap: pretty; }
 .courbe-p, .grand .card { display: flex !important; flex-wrap: wrap; align-items: center; column-gap: 16px; row-gap: 8px; --nt-l: 0; }
 .courbe-p > *, .grand .card > * { flex: 1 1 100%; min-width: 0; }
-.courbe-p > .nt-btn, .courbe-p > .pt-share, .grand .card > .nt-btn, .grand .card > .pt-share { flex: 0 0 auto; margin-top: 0; }
+/* « Détail » et « Partager la courbe » toujours sur une ligne : le libellé de « Détail » passe à la ligne dans son bouton s'il est long. */
+.courbe-p > .nt-btn, .grand .card > .nt-btn { flex: 1 1 0; min-width: 0; margin-top: 0; text-align: left; white-space: normal; }
+.courbe-p > .pt-share, .grand .card > .pt-share { flex: 0 0 auto; margin-top: 0; }
 .courbe-p > p.note.nt-pli, .grand .card > p.note.nt-pli { display: none; }
 .courbe-p > .nt-btn, .courbe-p > .pt-share, .grand .card > .nt-btn, .grand .card > .pt-share { order: 1; }
 .courbe-p { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 12px 12px 10px; box-shadow: none; }
@@ -943,6 +945,8 @@ function main(FEED) {
     series.forEach(function (s) {
       svg.append('path').datum(s.data).attr('d', line).attr('clip-path', coupe ? 'url(#' + id + '-cp)' : null).attr('fill', 'none').attr('stroke', s.c).attr('stroke-width', s.main ? 2.6 : 1.8).attr('stroke-dasharray', s.dash ? '5 4' : null);
       if (s.dots) s.data.forEach(function (d) { if (d.v == null) return; svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
+      // Une année seule entre deux trous (changement de source, année manquante) : un point, sinon elle ne se verrait pas.
+      else s.data.forEach(function (d, i) { if (d.v == null) return; var a = s.data[i - 1], b = s.data[i + 1]; if ((!a || a.v == null) && (!b || b.v == null) && y(d.v) >= m.t) svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
       var l = s.data.filter(function (d) { return d.v != null; }).pop();
       var dehors = coupe && y(l.v) < m.t;
       if (!dehors) svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
@@ -1078,7 +1082,7 @@ function main(FEED) {
       if (EN_PLUS[t.k]) { var sc = serieCard; serieCard = function (w, id, c, tag, extra) { autres.push({ id: id, c: c, tag: tag, extra: extra }); return function () {}; }; try { dessins = EN_PLUS[t.k](horsMini) || []; } finally { serieCard = sc; } }
       if (autres.length) {
         var bloc = document.createElement('div'); bloc.className = 'autres';
-        bloc.innerHTML = '<p class="minis-h">Toucher une courbe pour agrandir et ajouter d\'autres pays</p><p class="minis-k"><span><i class="fr"></i>France</span><span><i class="ue"></i>Moyenne de l\'UE</span><span><i class="de"></i>Allemagne</span><span><i class="es"></i>Espagne</span>' + (autres.some(function (a) { return a.c && a.c.us && a.c.us.some(function (v) { return v != null; }); }) ? '<span><i class="us"></i>États-Unis</span>' : '') + '</p>';
+        bloc.innerHTML = '<p class="minis-h">Toucher pour agrandir et ajouter des pays</p><p class="minis-k"><span><i class="fr"></i>France</span><span><i class="ue"></i>Moyenne de l\'UE</span><span><i class="de"></i>Allemagne</span><span><i class="es"></i>Espagne</span>' + (autres.some(function (a) { return a.c && a.c.us && a.c.us.some(function (v) { return v != null; }); }) ? '<span><i class="us"></i>États-Unis</span>' : '') + '</p>';
         var grille = document.createElement('div'); grille.className = 'minis'; bloc.appendChild(grille);
         if (autres.length === 1) {
           // Une seule autre courbe : elle s'affiche directement en grand, avec ses pays, « + Ajouter un pays » et son bouton Partager.
@@ -1396,6 +1400,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028p"></script>
+<script src="/commun/menu.js?v=20261028q"></script>
 </body>
 </html>

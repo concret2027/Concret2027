@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="55890e7c9ef8">
+<meta name="concret-version" content="55cd1cfd6731">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -487,40 +487,98 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   // Questions fabriquées à partir des notes (commun/notes.js, mêmes chiffres que les bulletins des pages).
   // On ne garde que les notes calculées sur au moins une année complète, et une meilleure note sans égalité.
+  // Les deux questions fabriquées chaque jour, sans rien saisir à la main : l'une sur les notes (commun/notes.js), l'autre sur un
+  // indicateur des pages (data.json, dernier chiffre connu). Le type et le sujet changent d'un jour à l'autre, pour ne pas tourner en rond.
   function genere(S) {
     var cg = N.classement(S), M = N.MISSIONS, out = [], r = alea(idx * 7919 + 17);
     var note = function (x, k) { return x[k] == null || x[k + '_prov'] ? null : Math.round(x[k] * 10) / 10; };
     var seule = function (l) { var v = l.map(function (x) { return x.v; }).sort(function (a, b) { return b - a; }); return v[0] > v[1]; };
     var slug = function (m) { return m.url.split('/')[1]; };
-    // 1. Les présidents, sur une mission qui change chaque jour.
-    for (var t = 0; t < M.length; t++) {
-      var m = M[(idx + t) % M.length], P = cg.pres.slice().sort(function (a, b) { return a.y0 - b.y0; }).map(function (x) { return { n: court(x.n), v: note(x, m.k) }; });
-      if (P.some(function (x) { return x.v == null; }) || !seule(P)) continue;
-      var best = P.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = P.slice().sort(function (a, b) { return b.v - a.v; });
-      out.push({ page: 'notes', l: 'Les présidents', q: 'Sur la page ' + m.l + ', quel président a la note la plus haute ?', o: P.map(function (x) { return x.n; }), a: P.indexOf(best),
-        e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(m) + '/#bulletin', src: m.l });
-      break;
-    }
-    // 2. Quatre gouvernements tirés au sort, sur une autre mission.
-    for (t = 0; t < M.length; t++) {
-      m = M[(idx + 3 + t) % M.length];
-      var G = cg.gov.map(function (x) { return { n: x.n, v: note(x, m.k) }; }).filter(function (x) { return x.v != null; });
-      if (G.length < 4) continue;
-      var four = null;
-      for (var essai = 0; essai < 12 && !four; essai++) { var c = melange(G, r).slice(0, 4); if (seule(c)) four = c; }
-      if (!four) continue;
-      best = four.reduce(function (a, b) { return b.v > a.v ? b : a; }); tri = four.slice().sort(function (a, b) { return b.v - a.v; });
-      out.push({ page: 'notes', l: 'Les gouvernements', q: 'Sur la page ' + m.l + ', lequel de ces gouvernements a la note la plus haute ?', o: four.map(function (x) { return x.n; }), a: four.indexOf(best),
-        e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20).', lien: '/' + slug(m) + '/#bulletin', src: m.l });
-      break;
-    }
+    var pres = cg.pres.slice().sort(function (a, b) { return a.y0 - b.y0; });
+    var Q1 = [
+      // a. Les présidents sur une mission.
+      function (t) {
+        var m = M[(idx + t) % M.length], P = pres.map(function (x) { return { n: court(x.n), v: note(x, m.k) }; });
+        if (P.some(function (x) { return x.v == null; }) || !seule(P)) return null;
+        var best = P.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = P.slice().sort(function (a, b) { return b.v - a.v; });
+        return { l: 'Les présidents', q: 'Sur la page ' + m.l + ', quel président a la note la plus haute ?', o: P.map(function (x) { return x.n; }), a: P.indexOf(best),
+          e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(m) + '/#bulletin', src: m.l };
+      },
+      // b. Un président, ses missions : où a-t-il sa meilleure note ?
+      function (t) {
+        var p = pres[(idx + t) % pres.length], L = M.map(function (m) { return { m: m, v: note(p, m.k) }; }).filter(function (x) { return x.v != null; });
+        if (L.length < 4) return null;
+        var four = null; for (var e = 0; e < 12 && !four; e++) { var c = melange(L, r).slice(0, 4); if (seule(c)) four = c; }
+        if (!four) return null;
+        var best = four.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = four.slice().sort(function (a, b) { return b.v - a.v; });
+        return { l: 'Les présidents', q: 'Sur laquelle de ces pages ' + p.n + ' a-t-il sa meilleure note ?', o: four.map(function (x) { return x.m.l; }), a: four.indexOf(best),
+          e: tri.map(function (x) { return x.m.l + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(best.m) + '/#bulletin', src: best.m.l };
+      },
+      // c. Quatre gouvernements tirés au sort, sur une mission.
+      function (t) {
+        var m = M[(idx + 3 + t) % M.length], G = cg.gov.map(function (x) { return { n: x.n, v: note(x, m.k) }; }).filter(function (x) { return x.v != null; });
+        if (G.length < 4) return null;
+        var four = null; for (var e = 0; e < 12 && !four; e++) { var c = melange(G, r).slice(0, 4); if (seule(c)) four = c; }
+        if (!four) return null;
+        var best = four.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = four.slice().sort(function (a, b) { return b.v - a.v; });
+        return { l: 'Les gouvernements', q: 'Sur la page ' + m.l + ', lequel de ces gouvernements a la note la plus haute ?', o: four.map(function (x) { return x.n; }), a: four.indexOf(best),
+          e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20).', lien: '/' + slug(m) + '/#bulletin', src: m.l };
+      }
+    ];
+    // Les indicateurs des pages : France, moyenne de l'UE, Allemagne, Espagne, au dernier chiffre connu commun aux quatre.
+    var IND = [], dec = function (c) { return c.dec != null ? c.dec : 1; }, nf = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: d }).format(v); };
+    var PG = { sante: 'Santé', securite: 'Sécurité et justice', vie: 'Vie des Français' };
+    Object.keys(PG).forEach(function (pg) {
+      var C = (S[pg] || {}).C || {};
+      Object.keys(C).forEach(function (k) {
+        var c = C[k]; if (!c || !c.y || !c.fr || /propre|composite|croissance|effort/.test(c.regle || '')) return;
+        var ue = c.ue || c.ue_calc; if (!ue) return;
+        for (var i = c.y.length - 1; i >= 0; i--) if (c.fr[i] != null && ue[i] != null && !(c.est || {})[c.y[i]] && !(c.prov || {})[c.y[i]]) break;
+        if (i < 0) return;
+        IND.push({ pg: pg, page: PG[pg], l: c.lc || c.l, u: c.unite || '', y: c.y[i], d: dec(c), low: c.low, moyens: /^d(pol|trib|pris)$|^places$/.test(k), v: { 'France': c.fr[i], 'Moyenne de l\'UE': ue[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
+      });
+    });
+    [['el', 'Décrochage scolaire'], ['ne', 'Jeunes ni en emploi ni en études'], ['te', 'Diplômés du supérieur']].forEach(function (p) {
+      var c = ((S.education || {}).S || {})[p[0]]; if (!c) return;
+      for (var i = Math.min(c.fr.length, c.eu.length) - 1; i >= 0; i--) if (c.fr[i] != null && c.eu[i] != null) break;
+      if (i >= 0) IND.push({ pg: 'education', page: 'Éducation', l: p[1], u: '%', y: 2002 + i, d: 1, low: p[0] !== 'te', v: { 'France': c.fr[i], 'Moyenne de l\'UE': c.eu[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
+    });
+    [['dette', 'Dette publique', true], ['dep', 'Dépenses publiques', null], ['po', 'Impôts et cotisations', null]].forEach(function (p) {
+      var c = ((S.finances || {}).D || {})[p[0]]; if (!c) return;
+      for (var i = c.fr.length - 1; i >= 0; i--) if (c.fr[i] != null && c.eu[i] != null) break;
+      if (i >= 0) IND.push({ pg: 'finances', page: 'Finances', l: p[1], u: '% du PIB', y: 1995 + i, d: 1, low: p[2], v: { 'France': c.fr[i], 'Moyenne de l\'UE': c.eu[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
+    });
+    var unite = function (x) { return /^%/.test(x.u) ? ' %' : ' ' + x.u; };
+    var Q2 = [
+      // d. Qui a le chiffre le plus élevé ? (sans jugement : plus élevé ne veut pas dire mieux)
+      function (x) {
+        var n = Object.keys(x.v).filter(function (k) { return x.v[k] != null; }); if (n.length < 4) return null;
+        var L = n.map(function (k) { return { n: k, v: x.v[k] }; }); if (!seule(L)) return null;
+        var o = melange(L, r), best = o.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = L.slice().sort(function (a, b) { return b.v - a.v; });
+        return { l: x.page, q: x.l + ' (' + x.u + ', ' + x.y + ') : lequel a le chiffre le plus élevé ?', o: o.map(function (z) { return z.n; }), a: o.indexOf(best),
+          e: tri.map(function (z) { return z.n + ' : ' + nf(z.v, x.d) + (/^%/.test(x.u) ? ' %' : ''); }).join(' ; ') + ' (' + x.y + ', ' + x.u + ').', lien: '/' + x.pg + '/#courbes', src: x.page };
+      },
+      // e. Mieux ou moins bien que la moyenne de l'UE ? Seulement là où la page dit déjà ce qui est « mieux » (pas les moyens dépensés).
+      function (x) {
+        if (x.low == null || x.moyens) return null;
+        var f = x.v['France'], e = x.v['Moyenne de l\'UE']; if (f === e) return null;
+        var mieux = x.low ? f < e : f > e;
+        return { l: x.page, q: x.l + ', dernier chiffre connu : la France fait-elle mieux ou moins bien que la moyenne de l\'UE ?', o: ['Mieux que la moyenne de l\'UE', 'Moins bien que la moyenne de l\'UE'], a: mieux ? 0 : 1,
+          e: 'France : ' + nf(f, x.d) + unite(x) + ' ; moyenne de l\'UE : ' + nf(e, x.d) + unite(x) + ' (' + x.y + '). ' + (x.low ? 'Ici, un chiffre plus bas est compté comme mieux.' : 'Ici, un chiffre plus haut est compté comme mieux.'), lien: '/' + x.pg + '/#courbes', src: x.page };
+      }
+    ];
+    var q1 = null; for (var t = 0; t < 3 * M.length && !q1; t++) q1 = Q1[(idx + t) % Q1.length](t);
+    // Les indicateurs passent tous avant qu'un revienne : un pas fixe, premier avec leur nombre, dans une liste mélangée une fois pour toutes.
+    var nI = IND.length, pas = 7, pgcd = function (a, b) { return b ? pgcd(b, a % b) : a; }; while (nI && pgcd(pas, nI) !== 1) pas++;
+    var ord = melange(IND, alea(104729)), q2 = null; for (t = 0; t < nI * 2 && !q2; t++) q2 = Q2[(idx + t) % Q2.length](ord[((idx * pas + t) % nI + nI) % nI]);
+    [q1, q2].forEach(function (q) { if (q) { q.page = 'notes'; out.push(q); } });
     return out;
   }
 
   function main(feed) {
     var S = feed.series, Qs = [];
     PAGES.forEach(function (pg) { var B = (S[pg.p] || {}).QUIZ; if (B && B.length) { var Q = pick(B); Qs.push({ page: pg.p, l: pg.l, q: Q.q, o: Q.o, a: Q.a, e: Q.e, cle: pg.cle + idx, lien: Q.v ? '/' + pg.p + '/#' + Q.v : '/' + pg.p + '/#quiz', src: pg.l, Q: Q }); } });
-    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz-' + i + '-' + idx; g.Q = { q: g.q, o: g.o, d: 'Note sur 20, calculée avec la règle affichée sur chaque page : 10 = la France a fait aussi bien que la moyenne de l\'UE pendant le mandat.' }; Qs.push(g); });
+    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz2-' + i + '-' + idx; // « quiz2 » : nouvelles questions fabriquées (28 octobre 2026), une réponse gardée pour les anciennes ne s'y applique pas g.Q = { q: g.q, o: g.o, d: /^Les (présidents|gouvernements)$/.test(g.l) ? 'Note sur 20, calculée avec la règle affichée sur chaque page : 10 = la France a fait aussi bien que la moyenne de l\'UE pendant le mandat.' : 'Dernier chiffre connu, le même pour les quatre, lu dans les données de la page (Eurostat le plus souvent).' }; Qs.push(g); });
     var total = Qs.length, rep = Qs.map(function () { return null; });
     document.getElementById('qz-titre').textContent = total + ' questions sur la France face à ses voisins';
     var prog = document.getElementById('qz-prog'); prog.innerHTML = Qs.map(function () { return '<i></i>'; }).join('');
@@ -772,6 +830,6 @@ footer p { margin: 0; } footer a { color: inherit; }
 </script>
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261028p"></script>
+<script src="/commun/menu.js?v=20261028q"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="55890e7c9ef8">
+<meta name="concret-version" content="55cd1cfd6731">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -688,9 +688,13 @@ function main(FEED) {
       }
       return null;
     }).filter(Boolean);
-    // Les scores PISA ne sont pas sur la toile : tous les pays sont entre 450 et 490 points, et sur un axe qui part de 0
-    // les quatre formes se superposeraient (choix de l'éditeur, 28 octobre 2026). Ils sont dans les courbes PISA plus bas.
-    ConcretPays.init({ page: 'education', carte: { 'ch-pisa-m': 'education.PI.m', 'ch-pisa-r': 'education.PI.r', 'ch-pisa-s': 'education.PI.s' } }); ConcretPays.toile('toile', ConcretToile.dessiner, { titre: 'La France et ses voisins', axes: axes, omis: ['origine sociale (comparée à l\'OCDE)'], notes: ['Scores PISA pas sur la toile : tous les pays sont entre 450 et 490 points, et sur un axe qui part de 0 les écarts ne se verraient pas ; ils sont dans les courbes PISA, plus bas'], series: ConcretToile.SERIES });
+    // Les scores PISA restent sur la toile (choix de l'éditeur) : en ajoutant des pays, on voit les écarts.
+    [['m', 'PISA, maths'], ['r', 'PISA, lecture'], ['s', 'PISA, sciences']].forEach(function (p) {
+      var c = SER.PI[p[0]], i = c.y.length - 1, v = { fr: c.fr[i], ue: c.ue_calc[i] };
+      ['de', 'es', 'us'].forEach(function (w) { if (c[w] && c[w][i] != null) v[w] = c[w][i]; });
+      axes.push({ cle: 'education.PI.' + p[0], l: p[1], y: c.y[i], u: '', dec: 0, v: v });
+    });
+    ConcretPays.init({ page: 'education', carte: { 'ch-pisa-m': 'education.PI.m', 'ch-pisa-r': 'education.PI.r', 'ch-pisa-s': 'education.PI.s' } }); ConcretPays.toile('toile', ConcretToile.dessiner, { titre: 'La France et ses voisins', axes: axes, omis: ['origine sociale (comparée à l\'OCDE)'], series: ConcretToile.SERIES });
   })();
   var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
@@ -920,6 +924,8 @@ function main(FEED) {
     series.forEach(function (s) {
       svg.append('path').datum(s.data).attr('d', line).attr('fill', 'none').attr('stroke', s.c).attr('stroke-width', s.main ? 2.6 : 1.8).attr('stroke-dasharray', s.dash ? '5 4' : null);
       if (s.dots) s.data.forEach(function (d) { if (d.v == null) return; svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
+      // Une année seule entre deux trous (changement de source, année manquante) : un point, sinon elle ne se verrait pas.
+      else s.data.forEach(function (d, i) { if (d.v == null) return; var a = s.data[i - 1], b = s.data[i + 1]; if ((!a || a.v == null) && (!b || b.v == null) && y(d.v) >= m.t) svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
       var l = s.data.filter(function (d) { return d.v != null; }).pop();
       svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
       ends.push({ y: y(l.v), t: fmt(l.v, o.dec == null ? 1 : o.dec), c: s.c, x: x(l.x), main: s.main });
@@ -1226,6 +1232,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028p"></script>
+<script src="/commun/menu.js?v=20261028q"></script>
 </body>
 </html>
