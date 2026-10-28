@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="31db962d5b37">
+<meta name="concret-version" content="1514e0bfd4fd">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -28,7 +28,7 @@
 <script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261025j"></script>
 <script src="/commun/bref.js?v=20261028a"></script>
 <script src="/commun/toile.js?v=20261028b"></script>
@@ -406,6 +406,11 @@ footer p { margin: 0; } footer a { color: inherit; }
 .checks .i { font-weight: 700; } .checks li.g .i { color: var(--ok); } .checks li.b .i { color: var(--bad); } .checks li.m .i { color: var(--mid); }
 .checks b { font-weight: 600; }
 .tnotes { margin: 0; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+section.theme > h2 { font-size: 21px; font-weight: 700; line-height: 1.2; }
+.t-pills { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 12px; }
+.t-pills a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--fg); font-size: 14px; font-weight: 600; text-decoration: none; }
+.t-pills a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.t-defs-h { margin: 12px 0 2px; font-size: 13px; font-weight: 700; color: var(--muted); }
 .t-pied { display: grid; gap: 0; border-top: 1px solid var(--line); padding-top: 4px; }
 .pt-seul { display: none; }
 .tnotes-n { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
@@ -440,6 +445,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 </style>
 </head>
 <body data-sources="Sources : Eurostat, OCDE, OMS et Unicef, ClinicalTrials.gov, EFPIA, Commission des comptes de la Sécurité sociale, Insee (détail en bas de page).">
+<noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les notes et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/" aria-current="page">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
   <div class="stale" id="stale" role="status" hidden></div>
@@ -1062,6 +1068,10 @@ function main(FEED) {
 
   function buildThemes() {
     var root = document.getElementById('questions');
+    // Une rangée de raccourcis vers chaque thème, sous le titre « Les thèmes ».
+    var pil = document.createElement('nav'); pil.className = 't-pills'; pil.setAttribute('aria-label', 'Aller au thème');
+    pil.innerHTML = THEMES.map(function (t) { return '<a href="#q-' + t.k + '">' + esc(t.court || t.q) + '</a>'; }).join('');
+    root.parentNode.insertBefore(pil, root);
     THEMES.forEach(function (t) {
       var e = themeEtat(t), cs = courbes(t), m0 = cs[0], c = m0.c;
       var sec = document.createElement('section'); sec.className = 'card theme'; sec.id = 'q-' + t.k; sec.dataset.partageL = 'Partager le thème';
@@ -1113,7 +1123,9 @@ function main(FEED) {
       sec.appendChild(pied);
       var dp = document.createElement('details'); dp.className = 'defs-pli';
       dp.innerHTML = '<summary>Définitions et sources</summary><p class="note defs">' + defs.join('<br>') + '</p>';
-      pied.appendChild(dp); // « Voir les chiffres » et « Définitions et sources » l'un sous l'autre, sans grand écart
+      // Un seul dépliant en bas du thème : le tableau France / moyenne de l'UE, puis les définitions et les sources.
+      var tp = pied.querySelector('details.tab-pli');
+      if (tp) { tp.querySelector('summary').textContent = 'Les chiffres, définitions et sources'; var dd = dp.querySelector('.defs'); if (dd) { var h = document.createElement('p'); h.className = 't-defs-h'; h.textContent = 'Définitions et sources'; tp.appendChild(h); tp.appendChild(dd); } } else pied.appendChild(dp);
     });
   }
   // Une courbe agrandie sans « + Ajouter un pays » (source qui n'est pas encore relue pour les autres pays) : on le dit dessous.
@@ -1371,9 +1383,9 @@ function main(FEED) {
 })();
 })();
 </script>
-<script src="/commun/partage.js?v=20261028j"></script>
+<script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028n"></script>
+<script src="/commun/menu.js?v=20261028o"></script>
 </body>
 </html>

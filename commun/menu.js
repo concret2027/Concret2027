@@ -126,7 +126,7 @@
   // Couleurs des pages (les pages et le Baromètre n'ont pas les mêmes noms de variables).
   var V = { bg: 'var(--bg, var(--color-bg, #f6f6f3))', panel: 'var(--panel, var(--color-panel, #fff))', fg: 'var(--fg, var(--color-fg, #1c1d22))',
     muted: 'var(--muted, var(--color-fg-muted, #62646d))', line: 'var(--line, var(--color-border-line, #e2e2dc))', fr: 'var(--fr, #2f5bd3)' };
-  var css = ':root{--ea-t:#8a6418;--es-t:#b4531f}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ea-t:var(--ea);--es-t:var(--es)}}:root[data-theme="dark"]{--ea-t:var(--ea);--es-t:var(--es)}svg text[fill="var(--ea)"]{fill:var(--ea-t)}svg text[fill="var(--es)"]{fill:var(--es-t)}.acc-fixe>summary{cursor:default;border-bottom:0!important;margin-bottom:0!important;padding-bottom:2px}.acc-fixe>summary .acc-t,.acc-fixe>summary .acc-cta{display:none}.mn-btn{position:sticky;right:0;margin-left:auto;flex:none;display:none;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:700;color:' + V.fg + ';' +
+  var css = '.mn-skip{position:absolute;left:-9999px;top:8px;z-index:1000;background:var(--panel,#fff);color:var(--fg,#111);padding:10px 14px;border:2px solid var(--fr,#2f5bd3);border-radius:10px;font-weight:700}.mn-skip:focus{left:8px}:root{--ea-t:#8a6418;--es-t:#b4531f}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ea-t:var(--ea);--es-t:var(--es)}}:root[data-theme="dark"]{--ea-t:var(--ea);--es-t:var(--es)}svg text[fill="var(--ea)"]{fill:var(--ea-t)}svg text[fill="var(--es)"]{fill:var(--es-t)}.acc-fixe>summary{cursor:default;border-bottom:0!important;margin-bottom:0!important;padding-bottom:2px}.acc-fixe>summary .acc-t,.acc-fixe>summary .acc-cta{display:none}.mn-btn{position:sticky;right:0;margin-left:auto;flex:none;display:none;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:700;color:' + V.fg + ';' +
       'background:linear-gradient(to right,transparent,' + V.bg + ' 26px);box-shadow:24px 0 0 0 ' + V.bg + ';border:0;padding:4px 2px 4px 34px;cursor:pointer}' +
     '.mn-btn span{display:inline-flex;align-items:center;gap:6px;border:1.5px solid ' + V.fg + ';border-radius:999px;padding:9px 14px;background:' + V.panel + '}' +
     // Zones à toucher de 44 px au moins (pages du bandeau, raccourcis « Aller à »), pour tous les doigts.
@@ -385,6 +385,15 @@
   }
   function init() {
     compterOuvertures();
+    // Clavier et lecteur d'écran : la zone principale de la page, et un lien « Aller au contenu » qui saute les menus.
+    var wrap = document.querySelector('main') || document.querySelector('.wrap');
+    if (wrap && wrap.tagName !== 'MAIN' && !wrap.getAttribute('role')) wrap.setAttribute('role', 'main');
+    var cible = document.querySelector('.brand, section.hero, h1');
+    if (cible && !document.querySelector('.mn-skip')) {
+      if (!cible.id) cible.id = 'contenu'; if (!cible.hasAttribute('tabindex')) cible.setAttribute('tabindex', '-1');
+      var sk = document.createElement('a'); sk.className = 'mn-skip'; sk.href = '#' + cible.id; sk.textContent = 'Aller au contenu';
+      document.body.insertBefore(sk, document.body.firstChild);
+    }
     // Après une mise à jour, l'adresse perd son « ?maj=… ».
     if (/[?&]maj=/.test(location.search) && history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
     verifierVersion();

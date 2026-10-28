@@ -72,9 +72,14 @@
       go.hidden = false;
       go.onclick = function () { navigator.share({ files: [file], title: titreTxt, text: titreTxt + ' · ' + adresse }).then(function () { o.remove(); }, function () {}); };
     }
-    o.querySelector('.pt-close').onclick = function () { o.remove(); };
-    o.addEventListener('click', function (e) { if (e.target === o) o.remove(); });
+    // Clavier : la fenêtre prend le focus, se ferme par Échap, et rend le focus au bouton touché.
+    var avant = document.activeElement, fermer = function () { o.remove(); document.removeEventListener('keydown', esc); if (avant && avant.focus) try { avant.focus(); } catch (e) {} };
+    var esc = function (e) { if (e.key === 'Escape') fermer(); };
+    o.querySelector('.pt-close').onclick = fermer;
+    o.addEventListener('click', function (e) { if (e.target === o) fermer(); });
+    document.addEventListener('keydown', esc);
     document.body.appendChild(o);
+    try { (go.hidden ? o.querySelector('.pt-close') : go).focus(); } catch (e) {}
   }
   // Légende d'une courbe partagée seule : celle du bloc, sinon la légende commune placée juste avant le groupe de courbes
   // (Finances : « Les courbes » en tête des quatre graphiques).

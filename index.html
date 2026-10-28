@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="31db962d5b37">
+<meta name="concret-version" content="1514e0bfd4fd">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -368,6 +368,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 </style>
 </head>
 <body>
+<noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les notes et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/" aria-current="page">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
   <nav class="jump" aria-label="Aller à"><a href="#classement">Présidents</a><a href="#gouvernements">Gouvernements</a><a href="#aujourdhui">Aujourd'hui</a><a href="#pouls">En bref</a><a href="#pouls-semaine">Actualité et agenda</a><a href="#missions">Les missions</a><a href="#reperes">Lois et population</a><a href="#profil">Note par mission</a><a href="#fonctionnement">La règle</a><a href="#contact">Contact</a></nav>
@@ -382,7 +383,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   
   <section class="card" id="classement" aria-labelledby="cl-t">
     <h2 id="cl-t"><span class="eyebrow">Le classement général</span>Les présidents, toutes missions confondues</h2>
-    <p class="note">Moyenne des notes sur 20 de chaque mission. <b>Le trait pointillé, 10 : la France fait aussi bien que la moyenne de l'UE</b> ; au-dessus, mieux ; en dessous, moins bien. Le détail et la méthode sont sur chaque page.</p>
+    <p class="note">Moyenne des notes sur 20 de chaque mission ; chaque année compte pour le président en poste la plus grande partie de l'année. <b>Le trait pointillé, 10 : la France fait aussi bien que la moyenne de l'UE</b> ; au-dessus, mieux ; en dessous, moins bien. Le détail et la méthode sont sur chaque page.</p>
     <div class="bars" id="t-pres"></div>
     <p class="note">Touchez une ligne pour voir la note par mission.</p>
   </section>
@@ -699,7 +700,8 @@ footer p { margin: 0; } footer a { color: inherit; }
   var mot = function (r) { return recent(r) ? 'provisoire' : 'sur peu d\'années'; };
   function period(r, series) {
     var y = r.y0 === r.y1 ? String(r.y0) : r.y0 + '-' + r.y1, cur = (series.finances.PRES.concat(series.finances.GOVS)).filter(function (g) { return g.n === r.n && /en cours/.test(g.p || ''); })[0];
-    return y + (cur ? ', en exercice' : '');
+    // « Années notées » : chaque année compte pour celui qui était en poste la plus grande partie de l'année (Hollande : 2012-2016, 2017 va à Macron).
+    return 'années notées : ' + y + (cur ? ' (en exercice)' : '');
   }
   function table(id, rows, series) {
     var box = document.getElementById(id); box.textContent = '';
@@ -769,9 +771,9 @@ footer p { margin: 0; } footer a { color: inherit; }
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261028j"></script>
+<script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/contact.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028n"></script>
+<script src="/commun/menu.js?v=20261028o"></script>
 </body>
 </html>
