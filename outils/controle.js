@@ -173,7 +173,8 @@ if (S.politique) {
       var av = /^avenir:([A-Z0-9]+):(texte|partie:\S+)$/.exec(n);
       if (av ? !nums['dos:' + av[1]] : !nums[n]) err(id + ' : ' + (av ? 'ce dossier' : 'ce scrutin') + ' n\'est pas dans donnees/votes.json');
       if (!x.e || x.e.length > 320) err(id + ' : explication absente ou trop longue (320 signes au plus)');
-      if (/\b(afin de|afin que|vis(e|ant) à|dans le but|pour que)\b/i.test(x.e || '')) err(id + ' : l\'explication prête un but au texte (« afin de », « visant à »…) : dire seulement ce qu\'il change');
+      if (/\b(afin de|afin que|vis(e|ant) à|dans le but|pour que)\b/i.test([x.e || ''].concat(x.points || []).join(' '))) err(id + ' : l\'explication prête un but au texte (« afin de », « visant à »…) : dire seulement ce qu\'il change');
+      if (x.points && (!Array.isArray(x.points) || x.points.length > 3 || x.points.some(function (t) { return typeof t !== 'string' || !t || t.length > 140; }))) err(id + ' : « points » : trois au plus, 140 signes au plus chacun');
       if (!/^https:\/\/(www\.)?(assemblee-nationale\.fr|senat\.fr|legifrance\.gouv\.fr)\//.test(x.url || '') || !x.src || !jo.test(x.lu || '')) err(id + ' : source officielle, lien ou date de lecture manquant');
       if (typeof x.valide !== 'boolean') err(id + ' : « valide » doit être vrai ou faux');
       else {

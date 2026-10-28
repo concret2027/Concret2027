@@ -29,8 +29,10 @@
     '.vz-tete{display:flex;flex-wrap:wrap;gap:6px;align-items:center}' +
     '.vz-chip{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fr);background:var(--band);border-radius:999px;padding:4px 10px}' +
     '.vz-date{font-size:12.5px;font-weight:600;color:var(--muted)}' +
+    '.vz-neuf{background:var(--fr);color:#fff}' +
     '.vz-boite{display:grid;gap:6px;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}.vz-boite .eyebrow{margin:0}' +
     '.vz-expl{margin:0;font-size:15px;line-height:1.5}' +
+    '.vz-pts{margin:0;padding-left:20px;display:grid;gap:4px;font-size:15px;line-height:1.45}' +
     '.vz-lu{margin:0;font-size:12px;color:var(--muted)}.vz-lu a{color:var(--muted)}' +
     '.vz-q{margin:4px 0 0;font-size:17px;font-weight:700}' +
     '.vz-aide{margin:-4px 0 0;font-size:13.5px;color:var(--muted)}' +
@@ -277,10 +279,10 @@
   }
 
   // En-tête d'une carte : le genre de vote et sa date, en pastilles.
-  function tete(q) { return '<div class="vz-tete"><span class="vz-chip">' + esc(q.type) + '</span><span class="vz-date">' + dateFr(q.d) + '</span></div>'; }
-  // L'explication, dans son propre encadré.
+  function tete(q) { return '<div class="vz-tete"><span class="vz-chip">' + esc(q.type) + '</span>' + (q.nouveau ? '<span class="vz-chip vz-neuf">Nouveau</span>' : '') + '<span class="vz-date">' + dateFr(q.d) + '</span></div>'; }
+  // L'explication, dans son propre encadré : une phrase, puis au plus trois points.
   function expl(q) {
-    return q.expl ? '<div class="vz-boite"><span class="eyebrow">' + (q.k === 'censure' || q.k === 'confiance' ? 'Ce qui est en jeu' : 'Ce que prévoit le texte') + '</span><p class="vz-expl">' + esc(q.expl.e) + '</p><p class="vz-lu">Lu dans : <a href="' + esc(q.expl.url) + '">' + esc(q.expl.src) + '</a>' +
+    return q.expl ? '<div class="vz-boite"><span class="eyebrow">' + (q.k === 'censure' || q.k === 'confiance' ? 'Ce qui est en jeu' : 'Ce que prévoit le texte') + '</span><p class="vz-expl">' + esc(q.expl.e) + '</p>' + ((q.expl.points || []).length ? '<ul class="vz-pts">' + q.expl.points.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '') + '<p class="vz-lu">Lu dans : <a href="' + esc(q.expl.url) + '">' + esc(q.expl.src) + '</a>' +
       (q.explAvant || q.avenir ? ', avant le débat' : '') + '</p></div>' : '';
   }
   // Un vote à venir : on vote avant l'Assemblée ; le jour du vote, la carte montre ce qu'ont fait les groupes.

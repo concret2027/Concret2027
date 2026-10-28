@@ -306,6 +306,10 @@ footer p { margin: 0; } footer a { color: inherit; }
 .vz-prog { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; } .vz-prog i { display: block; height: 100%; background: var(--fr); border-radius: 3px; transition: width .3s; }
 .vz-carte { border-color: var(--fr); }
 .vz-avenir { display: grid; gap: 12px; }
+.vz-bientot { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--fr); color: var(--fg); text-decoration: none; font-size: 14px; line-height: 1.4; }
+.vz-bientot b { color: var(--fr); font-size: 15px; }
+.vz-bientot[hidden], .vz-neufs[hidden] { display: none; }
+.vz-neufs { margin: 0; font-size: 14px; padding: 8px 12px; border-radius: 10px; background: var(--band); }
 .vz-av-h h2 { font-family: var(--serif); font-weight: 400; font-size: 24px; margin: 0; } .vz-av-h .note { margin-top: 4px; }
 .vz-av-l { display: grid; gap: 10px; } .vz-av-l > .card { border: 1.5px dashed var(--fr); }
 .vz-av > summary { cursor: pointer; list-style: none; display: grid; gap: 3px; min-height: 44px; }
@@ -338,9 +342,11 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card vz-intro" data-partage="non" aria-labelledby="vz-titre">
     <span class="eyebrow">Votez les lois</span>
     <h1 id="vz-titre">Et vous, qu'auriez-vous voté&nbsp;?</h1>
-    <p class="note" style="font-size:14.5px" id="vz-lead">De vrais votes de l'Assemblée, expliqués en deux phrases, par séries de 10. Dès 5 votes, voyez de quels groupes de députés vous êtes le plus proche.</p>
+    <p class="note" style="font-size:14.5px" id="vz-lead">De vrais votes de l'Assemblée, expliqués simplement, par séries de 10. Et ceux qui arrivent, à voter avant les députés. Dès 5 votes, voyez de quels groupes de députés vous êtes le plus proche.</p>
     <p class="vz-prive">Vos votes restent sur cet appareil.</p>
     <p class="vz-retour" id="vz-retour" hidden></p>
+    <p class="vz-neufs" id="vz-neufs" hidden></p>
+    <a class="vz-bientot" id="vz-bientot" href="#vz-avenir" hidden></a>
   </section>
 
   <div class="vz-suivi" id="vz-suivi"><b id="vz-n"></b><div class="vz-prog" aria-hidden="true"><i id="vz-barre" style="width:0"></i></div></div>
@@ -378,7 +384,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <footer><p>concret2027.fr · Page indépendante de tout parti. Un groupe n'est pas un candidat : le résultat dit seulement de quels groupes de députés vos votes sont proches. <a href="/mentions-legales/">Mentions légales</a></p></footer>
 </div>
-<script src="/commun/votez.js?v=20261028r"></script>
+<script src="/commun/votez.js?v=20261028s"></script>
 <script>
 (function () {
   var V = window.ConcretVotez, $ = function (id) { return document.getElementById(id); }, D = null, cible = 0, force = null, tous = false;
@@ -412,18 +418,19 @@ footer p { margin: 0; } footer a { color: inherit; }
     // Sous le résultat : retour à la question en cours.
     if (!el.hidden && compte() < D.ordre.length) $('vz-res').insertAdjacentHTML('beforeend', '<a class="vz-revoter" href="#vz-carte">↑ Continuer à voter</a>');
   }
+  function avenirLien() { var n = D && D.avenir ? D.avenir.length : 0; return n ? '<p class="note"><a href="#vz-avenir" style="color:var(--fr);font-weight:600">' + n + ' vote' + (n > 1 ? 's' : '') + ' à venir à l\'Assemblée : votez avant les députés ↓</a></p>' : ''; }
   function tout() { suivi(); V.bilan($('vz-res'), D); retour(); mesVotes(); }
   function afficher(defiler) {
     var m = V.mes(), n = compte(), el = $('vz-carte');
     var q = force ? D.ordre.filter(function (x) { return x.id === force; })[0] : D.ordre.filter(function (x) { return !m[x.id]; })[0];
     if (!q) {
       el.className = 'card vz-carte vz-pause';
-      el.innerHTML = '<span class="eyebrow">C\'est fait</span><h2>Vous avez voté les ' + D.ordre.length + ' textes</h2><p class="note">Un nouveau vote s\'ajoute ici dès que l\'Assemblée en tient un.</p><p class="vz-suite-l"><a href="/quiz/">Le quiz du jour →</a><a href="/politique/">Comment chaque groupe a voté, sur La vie politique →</a></p>';
+      el.innerHTML = '<span class="eyebrow">C\'est fait</span><h2>Vous avez voté les ' + D.ordre.length + ' textes</h2><p class="note">Un nouveau vote s\'ajoute ici dès que l\'Assemblée en tient un.</p>' + avenirLien() + '<p class="vz-suite-l"><a href="/quiz/">Le quiz du jour →</a><a href="/politique/">Comment chaque groupe a voté, sur La vie politique →</a></p>';
     } else if (!force && n >= cible) {
       el.className = 'card vz-carte vz-pause';
       el.innerHTML = '<span class="eyebrow">Étape franchie · ' + n + ' votes</span><h2>' + (n === V.SERIE ? 'Les dix premiers votes sont faits' : n === etapeThemes() && themesPrets() ? 'Chaque thème a maintenant son résultat' : n + ' votes : votre résultat s\'affine') + '</h2>' +
         (function () { var R = V.resultat(D), g = R.groupes[0]; return R.nb >= V.MIN && g ? '<p class="vz-top">Pour l\'instant, vos votes ressemblent le plus à ceux du groupe <b>' + V.esc(g.n) + '</b> (' + g.pct + ' %).</p>' : ''; })() +
-        '<p class="note">Votre hémicycle se met à jour à chaque vote. Plus vous votez, plus le résultat est solide.</p><button type="button" class="vz-suite" id="vz-continuer">Prochaine étape : ' + etape(n) + ' votes</button>';
+        '<p class="note">Votre hémicycle se met à jour à chaque vote. Plus vous votez, plus le résultat est solide.</p>' + avenirLien() + '<button type="button" class="vz-suite" id="vz-continuer">Prochaine étape : ' + etape(n) + ' votes</button>';
       $('vz-continuer').addEventListener('click', function () { cible = etape(n); afficher(true); });
     } else {
       el.className = 'card vz-carte';
@@ -432,7 +439,22 @@ footer p { margin: 0; } footer a { color: inherit; }
     if (defiler) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
   V.charger().then(function (J) {
-    D = J; var n = compte();
+    D = J;
+    // Les votes arrivés depuis la dernière visite (liste des votes connus gardée sur l'appareil) passent en premier, marqués « Nouveau ».
+    var connus = null; try { connus = JSON.parse(localStorage.getItem('concret-votez-connus') || 'null'); } catch (e) {}
+    var mv = V.mes();
+    if (connus && connus.length) {
+      var neufs = D.ordre.filter(function (q) { return connus.indexOf(q.id) < 0 && !mv[q.id]; });
+      if (neufs.length) {
+        var apres = neufs.filter(function (q) { return D.ordre.indexOf(q) >= D.finThemes; }).length;
+        neufs.forEach(function (q) { q.nouveau = true; });
+        D.ordre = neufs.concat(D.ordre.filter(function (q) { return neufs.indexOf(q) < 0; })); D.finThemes += apres;
+        $('vz-neufs').hidden = false;
+        $('vz-neufs').innerHTML = '<b>' + neufs.length + ' nouveau' + (neufs.length > 1 ? 'x' : '') + ' vote' + (neufs.length > 1 ? 's' : '') + '</b> de l\'Assemblée depuis votre dernière visite : ' + (neufs.length > 1 ? 'ils passent' : 'il passe') + ' en premier.';
+      }
+    }
+    try { localStorage.setItem('concret-votez-connus', JSON.stringify(D.Q.map(function (q) { return q.id; }))); } catch (e) {}
+    var n = compte();
     // Une pause à chaque étape à partir de 10 (si la personne revient pile sur une étape, elle voit d'abord son résultat).
     cible = n >= V.SERIE && estEtape(n) ? n : Math.max(V.SERIE, etape(n));
     $('vz-debut').textContent = 'premier vote le ' + V.dateFr(D.debut);
@@ -440,6 +462,10 @@ footer p { margin: 0; } footer a { color: inherit; }
     tout(); afficher(false);
     if (D.avenir.length) {
       $('vz-avenir').hidden = false;
+      // En tête de page : les votes à venir, avec leur date, et un lien vers eux.
+      var avv = V.avant(), af = D.avenir.filter(function (q) { return !avv[q.cle]; }).length;
+      $('vz-bientot').hidden = false;
+      $('vz-bientot').innerHTML = '<b>' + D.avenir.length + ' vote' + (D.avenir.length > 1 ? 's' : '') + ' à venir à l\'Assemblée : votez avant les députés ↓</b><span>' + D.avenir.map(function (q) { return V.dateFr(q.d) + ' : ' + V.esc(q.titre); }).join(' · ') + (af < D.avenir.length ? ' (' + (D.avenir.length - af) + ' déjà voté' + (D.avenir.length - af > 1 ? 's' : '') + ' par vous)' : '') + '</span>';
       // Chaque vote à venir, replié : sa date et son titre ; « Voter maintenant » déplie l'explication et les boutons.
       D.avenir.forEach(function (q) {
         var d = document.createElement('details'), av = V.avant()[q.cle]; d.className = 'card vz-av'; d.setAttribute('data-partage', 'non');

@@ -69,7 +69,7 @@ if (ordre === 'a-ecrire') {
     vus++;
     var pb = [];
     if (!x.e || x.e.length > 320) pb.push('explication absente ou trop longue');
-    if (/\b(afin de|afin que|vis(e|ant) à|dans le but|pour que)\b/i.test(x.e || '')) pb.push('but prêté au texte');
+    if (/\b(afin de|afin que|vis(e|ant) à|dans le but|pour que)\b/i.test([x.e || ''].concat(x.points || []).join(' '))) pb.push('but prêté au texte');
     if (!(x.preuves || []).length) pb.push('aucune citation (« preuves ») à relire');
     (x.preuves || []).forEach(function (p) {
       var t = doc(p.url || x.url);
