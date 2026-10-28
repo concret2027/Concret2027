@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="e26ba382da9e">
+<meta name="concret-version" content="39c65a9389e1">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -391,6 +391,10 @@ footer p { margin: 0; } footer a { color: inherit; }
 .lire { margin: 0; font-size: 14.5px; line-height: 1.5; } .lire b.g { color: var(--ok); } .lire b.b { color: var(--bad); }
 .t-sum { margin: 0; font-size: 14px; color: var(--muted); } .t-sum .ic { display: inline-flex; gap: 4px; margin-right: 8px; } .t-sum .ic i { font-style: normal; font-weight: 700; } .t-sum .ic i.g { color: var(--ok); } .t-sum .ic i.b { color: var(--bad); } .t-sum .ic i.m { color: var(--mid); }
 .fold-in { display: grid; gap: 12px; padding: 0 10px 10px; } .defs { font-size: 12px; }
+.defs-pli > summary { cursor: pointer; list-style: none; display: flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: var(--fr); }
+.defs-pli > summary::-webkit-details-marker { display: none; }
+.defs-pli > summary::after { content: "\00a0▾"; } .defs-pli[open] > summary::after { content: "\00a0▴"; }
+.defs-pli > .defs { margin: 0; }
 .acc.theme .acc-h { font-size: 18px; } .acc-t .ic { display: inline-flex; gap: 4px; margin-right: 6px; } .acc-t .ic i { font-style: normal; font-weight: 700; } .acc-t .ic i.g { color: var(--ok); } .acc-t .ic i.b { color: var(--bad); } .acc-t .ic i.m { color: var(--mid); }
 .acc.theme > .acc-body > .card { border: 0; padding: 0 4px; background: none; }
 .checks.sub { margin-top: 6px; gap: 4px; font-size: 13px; color: var(--muted); }
@@ -1011,8 +1015,11 @@ function main(FEED) {
       var nb = grid.children.length, quoi = (nb ? nb + ' autre' + (nb > 1 ? 's' : '') + ' courbe' + (nb > 1 ? 's' : '') + ' et ' : '') + 'les sources';
       fold.innerHTML = '<summary><span class="ouvrir">Voir ' + quoi + '</span><span class="fermer">Masquer ' + quoi + '</span></summary>';
       var inner = document.createElement('div'); inner.className = 'fold-in';
-      inner.innerHTML = '<p class="note defs">' + defs.join('<br>') + '</p>';
-      inner.appendChild(grid); fold.appendChild(inner); sec.appendChild(fold);
+      // Les courbes d'abord ; les définitions et les sources dessous, repliées sous « Définitions et sources ».
+      inner.appendChild(grid);
+      var dp = document.createElement('details'); dp.className = 'defs-pli';
+      dp.innerHTML = '<summary>Définitions et sources</summary><p class="note defs">' + defs.join('<br>') + '</p>';
+      inner.appendChild(dp); fold.appendChild(inner); sec.appendChild(fold);
       var f = { el: fold, draw: function () { more.forEach(function (d) { d(); }); } };
       fold.addEventListener('toggle', function () { if (fold.open) f.draw(); });
       FOLDS.push(f);
