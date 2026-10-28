@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="ad0dabeae973">
+<meta name="concret-version" content="906725ff33d0">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -306,6 +306,7 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
 .key i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
 .key i.dash { background: repeating-linear-gradient(90deg, var(--ea) 0 5px, transparent 5px 8px) !important; }
+.key i.bd { width: 12px; height: 10px; background: var(--band); border: 1px solid var(--line); }
 .key.mini { font-size: 11px; gap: 2px 10px; margin: 0 0 2px; } .key.mini i { width: 12px; height: 2px; margin-right: 4px; }
 .bar-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
 .bars-big { font-family: var(--serif); font-size: 18px; margin: 0; }
@@ -343,7 +344,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><h1>Éducation</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#actualite">Actualité</a><a href="#courbes">Thèmes</a><a href="#annees">Année par année</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#actualite">Actualité</a><a href="#annees">Année par année</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
   <section class="card" id="toile" hidden></section>
@@ -402,70 +403,18 @@ footer p { margin: 0; } footer a { color: inherit; }
     </details>
   </section>
 
-  <h2 class="grp-t" id="actualite">L'actualité</h2>
-
-  <details class="acc" id="acc-actu">
-    <summary><span class="acc-h">L'actualité de l'éducation</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-edu"></ul></div>
-  </details>
-
-  <details class="acc" id="acc-month">
-    <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card">
-      <div class="month" style="grid-template-columns:minmax(0,1fr)">
-        <div class="mo">
-          <span class="mo-lab" id="u-lab">Chômage des moins de 25 ans</span>
-          <span class="mo-num" id="u-num">—</span>
-          <span class="delta" id="u-delta"></span>
-          <span class="mo-t" id="u-t"></span>
-          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span></div>
-          <div class="chart" id="mo-u"></div>
-          <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
-        </div>
-      </div>
-      <p class="note">Le chômage des jeunes dit si l'école mène à un emploi. En juin et juillet, les chiffres de Parcoursup prendront le relais : candidats encore sans proposition, formations demandées.</p>
-    </div>
-  </details>
-
-  <details class="acc" id="acc-today">
-    <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-actions"><span class="acc-cta"></span><button class="share" id="share-fact-top" type="button" aria-label="Partager le chiffre du jour">Partager</button></span></summary>
-    <div class="acc-body">
-      <section class="summary" aria-label="Un chiffre à retenir">
-        <p class="daily"><span class="eyebrow" id="daily-lab">Un chiffre à retenir</span><span id="daily-text">—</span><button class="share" id="share-fact" type="button">Partager ce chiffre</button></p>
-      </section>
-      <section class="today" aria-label="Les chiffres clés">
-        <div class="today-grid">
-          <div class="metric">
-            <span class="lab">Budget de l'Éducation nationale</span>
-            <div class="row"><span class="num" id="bud-num">64,4<small>Md€</small></span><span class="delta" id="bud-year">en 2026, hors pensions</span></div>
-            <div class="foot">Soit <b id="bud-day">177 M€ par jour</b>, ou <b id="edu-since">—</b> dépensés depuis minuit. La France consacre <b id="sp-fr">5,1 % de son PIB</b> à l'éducation, contre <span id="sp-eu">4,7 %</span> dans l'Union européenne.</div>
-          </div>
-          <div class="metric">
-            <span class="lab">Lecture à 17 ans</span>
-            <div class="row" data-t="lecture_jdc_chiffre"><span class="num">14<small>%</small></span><span class="delta up">des jeunes en difficulté</span></div>
-            <div class="foot" data-t="lecture_jdc_texte">Mesuré à la Journée défense et citoyenneté 2025 : <b>6 %</b> sont en situation d'illettrisme. C'est environ un jeune sur sept qui ne lit pas couramment à la sortie du système scolaire.</div>
-          </div>
-        </div>
-      </section>
-    </div>
-  </details>
-
-  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
-    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>La France face à l'Union européenne, l'Allemagne et les États-Unis</h2>
-    <p class="note">Bandes de fond : Premiers ministres successifs.</p>
-    <p class="note replie">Les États-Unis n'apparaissent que là où une série comparable existe : le décrochage, les jeunes sans emploi ni études et les diplômés du supérieur sont des indicateurs européens.</p>
-  </section>
+  <h2 class="grp-t" id="courbes">Les courbes</h2>
 
   <div class="charts4">
-    <section class="card" aria-labelledby="c1"><h2 id="c1" class="inv"><span class="eyebrow">Décrochage, % des 18-24 ans</span>Moins de décrocheurs que nos voisins</h2><div class="chart" id="ch-el"></div><p class="note">Les 18-24 ans sortis de l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et sans formation.</p></section>
-    <section class="card" aria-labelledby="c2"><h2 id="c2" class="inv"><span class="eyebrow">Ni emploi ni études, % des 15-29 ans</span>Plus de jeunes à l'arrêt que nos voisins</h2><div class="chart" id="ch-ne"></div><p class="note">Tous les 15-29 ans qui ne travaillent pas et n'étudient pas, diplômés ou non.</p></section>
-    <section class="card" aria-labelledby="c3"><h2 id="c3" class="inv"><span class="eyebrow">Diplômés du supérieur, % des 25-34 ans</span>Plus de diplômés : 11 points d'avance sur l'UE</h2><div class="chart" id="ch-te"></div></section>
+    <section class="card" aria-labelledby="c1"><h2 id="c1" class="inv"><span class="eyebrow">Décrochage, % des 18-24 ans</span>Moins de décrocheurs que nos voisins</h2><div class="chart" id="ch-el"></div><p class="note">Les 18-24 ans sortis de l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et sans formation. Pas de chiffre comparable pour les États-Unis : c'est un indicateur européen.</p></section>
+    <section class="card" aria-labelledby="c2"><h2 id="c2" class="inv"><span class="eyebrow">Ni emploi ni études, % des 15-29 ans</span>Plus de jeunes à l'arrêt que nos voisins</h2><div class="chart" id="ch-ne"></div><p class="note">Tous les 15-29 ans qui ne travaillent pas et n'étudient pas, diplômés ou non. Pas de chiffre comparable pour les États-Unis : c'est un indicateur européen.</p></section>
+    <section class="card" aria-labelledby="c3"><h2 id="c3" class="inv"><span class="eyebrow">Diplômés du supérieur, % des 25-34 ans</span>Plus de diplômés : 11 points d'avance sur l'UE</h2><div class="chart" id="ch-te"></div><p class="note">Pas de chiffre comparable pour les États-Unis : c'est un indicateur européen.</p></section>
     <section class="card" aria-labelledby="c4"><h2 id="c4" class="inv"><span class="eyebrow">Chômage des 15-24 ans, %</span>Deux à trois fois plus qu'en Allemagne</h2><div class="chart" id="ch-yu"></div><p class="note">Estimations de l'OIT (Banque mondiale), mêmes définitions pour les quatre.</p></section>
   </div>
 
   <section class="card" id="depense" aria-labelledby="dep-title">
     <h2 id="dep-title" class="inv"><span class="eyebrow">Ce que ça coûte, % du PIB</span>La France dépense plus que ses voisins, pour des résultats PISA inférieurs</h2>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--us)"></i>États-Unis</span><span><i class="bd"></i>Bandes : Premiers ministres successifs</span></div>
     <div class="chart" id="ch-dep"></div>
     <p class="note" data-t="depense_note">Dépense publique d'éducation, de la maternelle au supérieur (Eurostat). En 2024 : France 5,1 %, Union européenne 4,7 %, Allemagne 4,5 %. L'écart avec l'UE représente environ 12 Md€ par an. États-Unis : chiffres de l'Unesco (2015-2021), calculés un peu différemment ; sur cette base, la France est autour de 5,4 %. Ce critère n'entre pas dans la note : dépenser plus n'est ni bien ni mal en soi, c'est le résultat qui compte.</p>
   </section>
@@ -495,12 +444,60 @@ footer p { margin: 0; } footer a { color: inherit; }
   <section class="card" id="universites" aria-labelledby="u-title">
     <h2 id="u-title" class="inv"><span class="eyebrow">Universités, classement de Shanghai</span>Quatre universités dans le top 100 mondial, autant que l'Allemagne</h2>
     <p class="insight" data-t="shanghai_texte">La meilleure université française est passée de la <b>65<sup>e</sup></b> place en 2003 à la <b>13<sup>e</sup></b> en 2026 (Paris-Saclay). Mais ce bond date de 2020 et vient surtout du regroupement d'établissements en grandes universités (Paris-Saclay, PSL, Université Paris Cité), qui additionne leurs publications et leurs prix : le nombre d'universités françaises dans le top 100 n'a, lui, presque pas bougé.</p>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span></div>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i class="bd"></i>Bandes : Premiers ministres successifs</span></div>
     <div class="chart" id="ch-arwu"></div>
     <span class="eyebrow" style="margin:6px 0 0">États-Unis, même classement</span>
     <div class="chart" id="ch-arwu-us"></div>
     <p class="note" data-t="shanghai_note">Nombre d'établissements classés dans les 100 premiers. Les États-Unis dominent mais reculent : 58 universités en 2003, 37 en 2026. 2018 : chiffre américain non vérifié, laissé vide. Le classement de Shanghai mesure la recherche (prix Nobel, médailles Fields, publications, citations), pas la qualité de l'enseignement ; il n'entre pas dans la note, car un regroupement d'universités suffit à faire monter un établissement sans que rien ne change pour les étudiants. Source : <a href="https://www.shanghairanking.com/rankings/arwu/2025">ShanghaiRanking</a>, éditions 2003 à 2026 ; 2018 : <a href="https://www.letudiant.fr/etudes/fac/classement-de-shanghai-2018-quelles-sont-les-19-universites-francaises-du-top-500.html">L'Étudiant</a>.</p>
   </section>
+
+  <h2 class="grp-t" id="actualite">L'actualité</h2>
+
+  <details class="acc acc-fixe" id="acc-month" open>
+    <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card">
+      <div class="month" style="grid-template-columns:minmax(0,1fr)">
+        <div class="mo">
+          <span class="mo-lab" id="u-lab">Chômage des moins de 25 ans</span>
+          <span class="mo-num" id="u-num">—</span>
+          <span class="delta" id="u-delta"></span>
+          <span class="mo-t" id="u-t"></span>
+          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span></div>
+          <div class="chart" id="mo-u"></div>
+          <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
+        </div>
+      </div>
+      <p class="note">Le chômage des jeunes dit si l'école mène à un emploi. En juin et juillet, les chiffres de Parcoursup prendront le relais : candidats encore sans proposition, formations demandées.</p>
+    </div>
+  </details>
+
+  <details class="acc acc-fixe" id="acc-actu" open>
+    <summary><span class="acc-h">L'actualité de l'éducation</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card"><ul class="actu replie" data-n="3" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu replie" data-n="2" id="agenda-edu"></ul></div>
+  </details>
+
+  <details class="acc acc-fixe" id="acc-today" open>
+    <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-actions"><span class="acc-cta"></span><button class="share" id="share-fact-top" type="button" aria-label="Partager le chiffre du jour">Partager</button></span></summary>
+    <div class="acc-body">
+      <section class="summary" aria-label="Un chiffre à retenir">
+        <p class="daily"><span class="eyebrow" id="daily-lab">Un chiffre à retenir</span><span id="daily-text">—</span><button class="share" id="share-fact" type="button">Partager ce chiffre</button></p>
+      </section>
+      <section class="today" aria-label="Les chiffres clés">
+        <div class="today-grid">
+          <div class="metric">
+            <span class="lab">Budget de l'Éducation nationale</span>
+            <div class="row"><span class="num" id="bud-num">64,4<small>Md€</small></span><span class="delta" id="bud-year">en 2026, hors pensions</span></div>
+            <div class="foot">Soit <b id="bud-day">177 M€ par jour</b>, ou <b id="edu-since">—</b> dépensés depuis minuit. La France consacre <b id="sp-fr">5,1 % de son PIB</b> à l'éducation, contre <span id="sp-eu">4,7 %</span> dans l'Union européenne.</div>
+          </div>
+          <div class="metric">
+            <span class="lab">Lecture à 17 ans</span>
+            <div class="row" data-t="lecture_jdc_chiffre"><span class="num">14<small>%</small></span><span class="delta up">des jeunes en difficulté</span></div>
+            <div class="foot" data-t="lecture_jdc_texte">Mesuré à la Journée défense et citoyenneté 2025 : <b>6 %</b> sont en situation d'illettrisme. C'est environ un jeune sur sept qui ne lit pas couramment à la sortie du système scolaire.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </details>
 
   <section class="card" id="annees" aria-labelledby="yr-title">
     <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
@@ -901,6 +898,7 @@ function main(FEED) {
         return '<span><i' + (s.dash ? ' class="dash" data-c="' + s.c + '" style="background:repeating-linear-gradient(90deg,' + s.c + ' 0 4px,transparent 4px 6px) !important"' : ' style="background:' + s.c + '"') + '></i>' + String(n).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>';
       }).filter(Boolean).reverse();
       if (!items.length) return;
+      if (o.bands) items.push('<span><i class="bd"></i>Bandes : Premiers ministres successifs</span>');
       var k = document.createElement('div'); k.className = 'key mini'; k.id = id + '-mini'; k.innerHTML = items.join('');
       box.parentNode.insertBefore(k, box);
     })();
@@ -1230,6 +1228,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028i"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028k"></script>
+<script src="/commun/menu.js?v=20261028l"></script>
 </body>
 </html>

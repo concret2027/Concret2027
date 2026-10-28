@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="ad0dabeae973">
+<meta name="concret-version" content="906725ff33d0">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -296,7 +296,7 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .minis-h { margin: -6px 0 0; font-size: 13px; font-weight: 600; color: var(--fr); }
 .minis-k { margin: 0; display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 12px; color: var(--muted); }
 .minis-k i { display: inline-block; width: 12px; height: 0; border-top: 2.5px solid; vertical-align: middle; margin-right: 5px; }
-.minis-k i.fr { border-color: var(--fr); } .minis-k i.ue { border-top: 2px dashed var(--ea); } .minis-k i.de { border-color: var(--de); border-top-width: 1.5px; } .minis-k i.es { border-color: var(--es); border-top-width: 1.5px; }
+.minis-k i.fr { border-color: var(--fr); } .minis-k i.ue { border-top: 2px dashed var(--ea); } .minis-k i.de { border-color: var(--de); border-top-width: 1.5px; } .minis-k i.es { border-color: var(--es); border-top-width: 1.5px; } .minis-k i.us { border-color: var(--us); border-top-width: 1.5px; }
 .minis { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 10px; }
 .mini { font: inherit; text-align: left; display: grid; gap: 4px; align-content: start; padding: 9px 10px 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--fg); cursor: pointer; min-height: 44px; }
 .mini:hover, .mini:focus-visible { border-color: var(--fr); }
@@ -309,6 +309,7 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .minis .grand { grid-column: 1 / -1; display: grid; gap: 6px; }
 .grand .reduire { justify-self: end; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--fr); background: none; border: 0; min-height: 44px; padding: 0 4px; cursor: pointer; }
 /* Sous une courbe : « Détail du graphe » et « Partager » côte à côte, le détail tout replié. */
+section.theme .charts4 .insight { font-family: var(--sans); font-size: 16px; line-height: 1.45; font-weight: 500; text-wrap: pretty; }
 .courbe-p, .grand .card { display: flex !important; flex-wrap: wrap; align-items: center; column-gap: 16px; row-gap: 8px; --nt-l: 0; }
 .courbe-p > *, .grand .card > * { flex: 1 1 100%; min-width: 0; }
 .courbe-p > .nt-btn, .courbe-p > .pt-share, .grand .card > .nt-btn, .grand .card > .pt-share { flex: 0 0 auto; margin-top: 0; }
@@ -447,7 +448,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><h1>Défense</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit" id="visit" hidden></p>
-  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#actualite">Actualité</a><a href="#courbes">Thèmes</a><a href="#annees">Année par année</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#actualite">Actualité</a><a href="#annees">Année par année</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
   <section class="card" id="toile" hidden></section>
@@ -482,14 +483,25 @@ footer p { margin: 0; } footer a { color: inherit; }
     </details>
   </section>
 
+  <h2 class="grp-t" id="courbes">Les thèmes</h2>
+
+  <div class="themes" id="questions"></div>
+
+  <section class="card" id="q-eff" aria-labelledby="eff-t">
+    <h2 id="eff-t"><span class="eyebrow">Affiché, sans note</span>Effectifs militaires</h2>
+    <p class="note" id="eff-why"></p>
+    <div class="charts4" id="eff-charts"></div>
+  </section>
+
+  <section class="card" id="q-ind" aria-labelledby="ind-t">
+    <h2 id="ind-t"><span class="eyebrow">Affiché, sans note</span>Industrie de défense</h2>
+    <p class="note" id="ind-why"></p>
+    <div class="charts4" id="ind-charts"></div>
+  </section>
+
   <h2 class="grp-t" id="actualite">L'actualité</h2>
 
-  <details class="acc" id="acc-actu">
-    <summary><span class="acc-h">L'actualité de la défense</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-list"></ul></div>
-  </details>
-
-  <details class="acc" id="acc-month">
+  <details class="acc acc-fixe" id="acc-month" open>
     <summary><span class="acc-h">Le budget et les repères</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body card">
       <div class="month" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr))">
@@ -508,7 +520,12 @@ footer p { margin: 0; } footer a { color: inherit; }
     </div>
   </details>
 
-  <details class="acc" id="acc-today">
+  <details class="acc acc-fixe" id="acc-actu" open>
+    <summary><span class="acc-h">L'actualité de la défense</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body card"><ul class="actu replie" data-n="3" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu replie" data-n="2" id="agenda-list"></ul></div>
+  </details>
+
+  <details class="acc acc-fixe" id="acc-today" open>
     <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-cta"></span></summary>
     <div class="acc-body">
       <section class="summary" aria-label="Un chiffre à retenir">
@@ -530,24 +547,6 @@ footer p { margin: 0; } footer a { color: inherit; }
       </section>
     </div>
   </details>
-
-  <section class="card" id="courbes" data-partage="non" aria-labelledby="fz-title">
-    <h2 id="fz-title"><span class="eyebrow">Les courbes</span>Les deux thèmes notés, la France face à ses voisins</h2>
-  </section>
-
-  <div class="themes" id="questions"></div>
-
-  <section class="card" id="q-eff" aria-labelledby="eff-t">
-    <h2 id="eff-t"><span class="eyebrow">Affiché, sans note</span>Effectifs militaires</h2>
-    <p class="note" id="eff-why"></p>
-    <div class="charts4" id="eff-charts"></div>
-  </section>
-
-  <section class="card" id="q-ind" aria-labelledby="ind-t">
-    <h2 id="ind-t"><span class="eyebrow">Affiché, sans note</span>Industrie de défense</h2>
-    <p class="note" id="ind-why"></p>
-    <div class="charts4" id="ind-charts"></div>
-  </section>
 
   <section class="card" id="annees" aria-labelledby="yr-title">
     <h2 id="yr-title"><span class="eyebrow">Année par année</span>La note de chaque année, président en exercice compris</h2>
@@ -1102,7 +1101,7 @@ function main(FEED) {
       if (EN_PLUS[t.k]) { var sc = serieCard; serieCard = function (w, id, c, tag, extra) { autres.push({ id: id, c: c, tag: tag, extra: extra }); return function () {}; }; try { dessins = EN_PLUS[t.k](horsMini) || []; } finally { serieCard = sc; } }
       if (autres.length) {
         var bloc = document.createElement('div'); bloc.className = 'autres';
-        bloc.innerHTML = '<h3 class="minis-t">' + (autres.length > 1 ? 'Les ' + autres.length + ' autres courbes du thème' : 'L\'autre courbe du thème') + '</h3><p class="minis-h">Toucher une courbe pour agrandir et ajouter d\'autres pays</p><p class="minis-k"><span><i class="fr"></i>France</span><span><i class="ue"></i>Moyenne de l\'UE</span><span><i class="de"></i>Allemagne</span><span><i class="es"></i>Espagne</span></p>';
+        bloc.innerHTML = '<h3 class="minis-t">' + (autres.length > 1 ? 'Les ' + autres.length + ' autres courbes du thème' : 'L\'autre courbe du thème') + '</h3><p class="minis-h">Toucher une courbe pour agrandir et ajouter d\'autres pays</p><p class="minis-k"><span><i class="fr"></i>France</span><span><i class="ue"></i>Moyenne de l\'UE</span><span><i class="de"></i>Allemagne</span><span><i class="es"></i>Espagne</span>' + (autres.some(function (a) { return a.c && a.c.us && a.c.us.some(function (v) { return v != null; }); }) ? '<span><i class="us"></i>États-Unis</span>' : '') + '</p>';
         var grille = document.createElement('div'); grille.className = 'minis'; bloc.appendChild(grille);
         if (autres.length === 1) {
           // Une seule autre courbe : elle s'affiche directement en grand, avec ses pays, « + Ajouter un pays » et son bouton Partager.
@@ -1132,7 +1131,7 @@ function main(FEED) {
     var c = o.c, r = has(c, 'ue') ? 'ue' : has(c, 'ue_calc') ? 'ue_calc' : null, dec = decOf(c), u = c.uc === ' %' || /^%/.test(c.unite || '') ? ' %' : '';
     var pts = function (w) { return c.y.map(function (y, i) { return { x: y, v: (c[w] || [])[i] }; }).filter(function (p) { return p.v != null; }); };
     // L'Allemagne et l'Espagne en traits fins, pour montrer qu'on peut comparer à d'autres pays en agrandissant.
-    var F = pts('fr'), E = r ? pts(r) : [], D = pts('de'), Es = pts('es'), all = F.concat(E, D, Es); if (!F.length) return document.createElement('span');
+    var F = pts('fr'), E = r ? pts(r) : [], D = pts('de'), Es = pts('es'), Us = pts('us'), all = F.concat(E, D, Es, Us); if (!F.length) return document.createElement('span');
     var x0 = Math.min.apply(null, all.map(function (p) { return p.x; })), x1 = Math.max.apply(null, all.map(function (p) { return p.x; })), v0 = Math.min.apply(null, all.map(function (p) { return p.v; })), v1 = Math.max.apply(null, all.map(function (p) { return p.v; }));
     if (v1 === v0) { v1 += 1; v0 -= 1; }
     var W = 160, H = 62, X = function (x) { return 4 + (x - x0) / Math.max(1, x1 - x0) * (W - 12); }, Y = function (v) { return 4 + (1 - (v - v0) / (v1 - v0)) * (H - 8); };
@@ -1141,7 +1140,7 @@ function main(FEED) {
     var lf = F[F.length - 1], le = E.filter(function (p) { return p.x === lf.x; })[0] || null;
     var b = document.createElement('button'); b.type = 'button'; b.className = 'mini';
     b.innerHTML = '<span class="mini-t">' + esc(c.lc || c.l) + '</span>' +
-      '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + [[D, 'var(--de)'], [Es, 'var(--es)']].map(function (a) { return a[0].length ? trace(a[0]).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="' + a[1] + '" stroke-width="1.2" opacity=".75"/>'; }).join('') : ''; }).join('') + (E.length ? trace(E).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--ea)" stroke-width="1.6" stroke-dasharray="4 3"/>'; }).join('') : '') +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + [[D, 'var(--de)'], [Es, 'var(--es)'], [Us, 'var(--us)']].map(function (a) { return a[0].length ? trace(a[0]).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="' + a[1] + '" stroke-width="1.2" opacity=".75"/>'; }).join('') : ''; }).join('') + (E.length ? trace(E).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--ea)" stroke-width="1.6" stroke-dasharray="4 3"/>'; }).join('') : '') +
       trace(F).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--fr)" stroke-width="2.4" stroke-linejoin="round"/>'; }).join('') + '<circle cx="' + X(lf.x) + '" cy="' + Y(lf.v) + '" r="3" fill="var(--fr)" class="mini-pt"/></svg>' +
       '<span class="mini-v"><span><b class="f">' + fmt(lf.v, dec) + u + '</b> France · ' + lf.x + '</span><span>' + (le ? '<b class="e">' + fmt(le.v, dec) + u + '</b> moyenne UE' : '') + (/sans note/.test(o.tag || '') ? (le ? ' · ' : '') + 'sans note' : '') + '</span></span>';
     b.setAttribute('aria-label', (c.lc || c.l) + ' : France ' + fmt(lf.v, dec) + u + (le ? ', moyenne de l\'UE ' + fmt(le.v, dec) + u : '') + ' en ' + lf.x + '. Voir la courbe en grand');
@@ -1381,6 +1380,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028i"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028k"></script>
+<script src="/commun/menu.js?v=20261028l"></script>
 </body>
 </html>

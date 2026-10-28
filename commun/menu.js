@@ -126,7 +126,7 @@
   // Couleurs des pages (les pages et le Baromètre n'ont pas les mêmes noms de variables).
   var V = { bg: 'var(--bg, var(--color-bg, #f6f6f3))', panel: 'var(--panel, var(--color-panel, #fff))', fg: 'var(--fg, var(--color-fg, #1c1d22))',
     muted: 'var(--muted, var(--color-fg-muted, #62646d))', line: 'var(--line, var(--color-border-line, #e2e2dc))', fr: 'var(--fr, #2f5bd3)' };
-  var css = '.mn-btn{position:sticky;right:0;margin-left:auto;flex:none;display:none;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:700;color:' + V.fg + ';' +
+  var css = '.acc-fixe>summary{cursor:default;border-bottom:0!important;margin-bottom:0!important;padding-bottom:2px}.acc-fixe>summary .acc-t,.acc-fixe>summary .acc-cta{display:none}.mn-btn{position:sticky;right:0;margin-left:auto;flex:none;display:none;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:700;color:' + V.fg + ';' +
       'background:linear-gradient(to right,transparent,' + V.bg + ' 26px);box-shadow:24px 0 0 0 ' + V.bg + ';border:0;padding:4px 2px 4px 34px;cursor:pointer}' +
     '.mn-btn span{display:inline-flex;align-items:center;gap:6px;border:1.5px solid ' + V.fg + ';border-radius:999px;padding:9px 14px;background:' + V.panel + '}' +
     // Zones à toucher de 44 px au moins (pages du bandeau, raccourcis « Aller à »), pour tous les doigts.
@@ -340,6 +340,7 @@
     compter('page');
     document.addEventListener('toggle', function (e) {
       var d = e.target; if (!d || !d.open || !d.classList) return;
+      if (d.classList.contains('acc-fixe')) return; // ouvert d'office, pas une ouverture du visiteur
       compter(d.classList.contains('tab-pli') ? 'chiffres' : d.classList.contains('defs-pli') ? 'defs' : d.classList.contains('fold') || d.classList.contains('plus') ? 'replis' : 'autres');
     }, true);
     document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.nt-btn')) compter('detail'); }, true);
@@ -359,6 +360,8 @@
     }).observe(document.body, { childList: true, characterData: true, subtree: true });
     addEventListener('resize', plierBientot);
     document.addEventListener('toggle', plierBientot, true);
+    // Les blocs d'actualité restent ouverts : leur titre n'est pas un bouton (le bouton Partager qu'il porte, si.)
+    document.addEventListener('click', function (e) { var su = e.target.closest && e.target.closest('details.acc-fixe > summary'); if (su && !e.target.closest('button, a')) e.preventDefault(); }, true);
     if (!document.getElementById('mn-css')) { var st = document.createElement('style'); st.id = 'mn-css'; st.textContent = css; document.head.appendChild(st); }
     var nav = document.querySelector('nav.site');
     if (nav && !nav.querySelector('.mn-btn')) {
