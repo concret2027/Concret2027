@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="23cbdd1b086e">
+<meta name="concret-version" content="8313f91326bb">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -394,6 +394,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .qz-fin { border: 1.5px solid var(--fr); background: var(--band); text-align: center; justify-items: center; }
 .qz-score { font-family: var(--serif); font-size: 64px; line-height: 1; }
 .qz-score small { font-size: 28px; color: var(--muted); }
+.qz-maint { display: block; margin-top: 8px; font-family: var(--sans, system-ui, sans-serif); font-size: 13.5px; line-height: 1.4; color: var(--muted); }
 .qz-grille { font-size: 22px; letter-spacing: 2px; }
 .qz-rang { font-size: 15px; max-width: 46ch; margin: 0; }
 .qz-rang b { font-weight: 600; }
@@ -662,9 +663,12 @@ footer p { margin: 0; } footer a { color: inherit; }
 
     // Score du jour : un compteur par score possible (0 à total), remis à zéro chaque jour par la date dans son nom.
     var classe = null; // le classement du jour, repris dans l'image partagée
+    // Le score qui compte : le premier essai du jour, gardé sur l'appareil une fois compté ; sinon les réponses de maintenant.
+    function scoreCompte() { var ok = rep.filter(Boolean).length, c = null; try { c = localStorage.getItem('quiz-score-compte-' + iso); } catch (e) {} return c != null && /^\d+$/.test(c) && +c <= total ? +c : ok; }
     function fin(nouveau) {
-      var ok = rep.filter(Boolean).length, box = document.getElementById('qz-fin');
-      document.getElementById('qz-score').innerHTML = ok + '<small> / ' + total + '</small>';
+      var ok = rep.filter(Boolean).length, box = document.getElementById('qz-fin'), sc0 = scoreCompte();
+      // En grand, le score compté (celui du classement et de la série) ; si les réponses ont changé depuis, elles sont dites dessous.
+      document.getElementById('qz-score').innerHTML = sc0 + '<small> / ' + total + '</small>' + (sc0 !== ok ? '<span class="qz-maint">Vos réponses de maintenant (la grille) : ' + ok + ' sur ' + total + '. Seul le premier essai du jour compte.</span>' : '');
       document.getElementById('qz-grille').textContent = rep.map(function (v) { return v ? '🟩' : '🟥'; }).join('');
       box.hidden = false; if (nouveau) setTimeout(function () { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
       // Le score n'est compté qu'une fois par jour et par appareil ; il n'est marqué « compté » qu'une fois le compteur d'accord
@@ -680,7 +684,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       // En haut de l'écran, toujours visible : le score, puis la place du jour dès qu'elle est connue ; un toucher mène au score.
       // La barre de progression laisse la place à la phrase, écrite en entier.
       var haut = function (t) { document.getElementById('qz-prog').hidden = true; document.getElementById('qz-n').innerHTML = '<a href="#qz-fin">' + t + ' ↓</a>'; };
-      haut('Votre score : ' + ok + ' sur ' + total);
+      haut('Votre score : ' + sc + ' sur ' + total);
       if (!window.ConcretQuiz) return;
       var cle = 'score-' + total + '-' + iso;
       rang.textContent = 'Classement du jour en cours de chargement…';
@@ -695,8 +699,8 @@ footer p { margin: 0; } footer a { color: inherit; }
         var ord = place === 1 ? '1re' : place + 'e', T = tous.toLocaleString('fr-FR');
         classe = { tous: tous, place: ord, egaux: egaux };
         rang.innerHTML = '<span class="qz-rang-e">Votre classement du jour</span><span class="qz-place">' + ord + ' place</span>sur <b>' + T + ' personnes</b> qui ont fini le quiz aujourd\'hui' + (egaux ? ', ex aequo avec ' + (egaux === 1 ? 'une autre personne' : egaux.toLocaleString('fr-FR') + ' autres') : '') + '.' +
-          (sc !== ok ? '<span class="qz-rang-n">Le classement compte votre premier essai du jour : ' + sc + ' sur ' + total + '.</span>' : '');
-        haut('Votre score : ' + ok + ' sur ' + total + ' · classement du jour : ' + ord + ' sur ' + T);
+          '';
+        haut('Votre score : ' + sc + ' sur ' + total + ' · classement du jour : ' + ord + ' sur ' + T);
       }, function () { rang.textContent = 'Le classement du jour n\'a pas pu être chargé. Rechargez la page pour réessayer.'; });
     }
     // Vos scores jour après jour, gardés sur cet appareil seulement : série de jours de suite, record, moyenne, la semaine.
@@ -855,7 +859,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       return new Promise(function (res) { c.toBlob(res, 'image/png'); });
     }
     document.getElementById('qz-partager').addEventListener('click', function () {
-      var ok = rep.filter(Boolean).length, dit = document.getElementById('qz-copie'), jour = day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+      var ok = scoreCompte(), dit = document.getElementById('qz-copie'), jour = day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
       var t = 'Quiz du jour de Concret, ' + jour + ' : ' + ok + ' / ' + total + '. À vous : concret2027.fr/quiz';
       (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () { return image(ok); }).then(function (blob) {
         var f = blob && new File([blob], 'concret-quiz-' + iso + '.png', { type: 'image/png' });
