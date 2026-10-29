@@ -79,7 +79,7 @@
     var ordre = ['Europe hors UE', 'Amériques', 'Asie et Océanie', 'Hors UE']; groupes.sort(function (a, c) { return ordre.indexOf(a.r) - ordre.indexOf(c.r); });
     b.innerHTML = h + '<select aria-label="Ajouter un pays"><option value="">+ Ajouter un pays</option>' + (ue.length ? '<optgroup label="Union européenne">' + opt(ue) + '</optgroup>' : '') + groupes.map(function (x) { return '<optgroup label="' + x.r + '">' + opt(x.l) + '</optgroup>'; }).join('') + '</select>' +
       (sans.length ? '<span class="cp-msg">' + sans.join(', ') + ' : pas de chiffre publié pour cet indicateur.</span>' : '') +
-      (ch.length ? '<span class="cp-msg">' + (ch.length > 1 ? 'Pays ajoutés' : 'Pays ajouté') + ' en pointillé sur ce graphique seulement, comme repère : aucune note ne change.</span>' : '');
+      (ch.length ? '<span class="cp-msg">' + (ch.length > 1 ? 'Pays ajoutés' : 'Pays ajouté') + ' en pointillé sur ce graphique seulement, comme repère : aucun résultat ne change.</span>' : '');
   }
   // Au clavier, sur un menu fermé, chaque flèche change déjà le choix (Windows, Linux) : le pays n'est ajouté qu'avec Entrée
   // ou en quittant le menu, pour qu'on puisse parcourir la liste. À la souris ou au doigt, dès le choix.

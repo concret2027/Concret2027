@@ -10,8 +10,8 @@ var fr = function (v, d) { return String(d ? r1(v) : Math.round(v)).replace('.',
 module.exports = [
   // ===== Finances publiques =====
   { id: 'fin_bilan', page: 'finances', ou: 'meta og:description et résumé « Le bilan depuis 1995 »',
-    texte: 'Depuis 1995, aucune note de président n\'atteint 10/20 en finances publiques',
-    verifier: function (c) { var best = c.notes.finances.pres.slice().sort(function (a, b) { return b.v - a.v; })[0]; return { ok: best.v < 10, constat: 'meilleure note de président : ' + best.n + ', ' + fr(best.v, 1) + '/20' }; } },
+    texte: 'Depuis 1995, sous aucun président la France n\'atteint 10/20 en finances publiques',
+    verifier: function (c) { var best = c.notes.finances.pres.slice().sort(function (a, b) { return b.v - a.v; })[0]; return { ok: best.v < 10, constat: 'résultat le plus haut : ' + best.n + ', ' + fr(best.v, 1) + '/20' }; } },
   { id: 'fin_bilan_ue', page: 'finances', ou: 'résumé « Le bilan depuis 1995 »',
     texte: 'dette, dépenses et impôts au-dessus de la moyenne de l\'UE',
     verifier: function (c) {

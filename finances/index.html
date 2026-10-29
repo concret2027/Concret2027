@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="6b554529bbfc">
+<meta name="concret-version" content="23cbdd1b086e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -14,15 +14,15 @@
 <meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)">
 <title>Finances publiques · Concret</title>
-<meta name="description" content="Dette, taux d'emprunt, impôts, dépenses : les finances publiques françaises comparées à la moyenne de l'Union européenne, et la note de chaque président et gouvernement depuis 1995.">
+<meta name="description" content="Dette, taux d'emprunt, impôts, dépenses : les finances publiques françaises comparées à la moyenne de l'Union européenne, et le résultat de la France sous chaque président et gouvernement depuis 1995.">
 <meta property="og:title" content="Finances publiques · Concret">
-<meta property="og:description" content="Depuis 1995, aucune note de président n'atteint 10/20 en finances publiques. Les chiffres du jour et les notes de chaque gouvernement.">
+<meta property="og:description" content="Depuis 1995, sous aucun président la France n'atteint 10/20 en finances publiques. Les chiffres du jour et le résultat sous chaque gouvernement.">
 <meta property="og:url" content="https://concret2027.fr/finances/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://concret2027.fr/donnees/apercu/finances.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Finances publiques : la France face à la moyenne de l'UE et la note des présidents">
+<meta property="og:image:alt" content="Finances publiques : la France face à la moyenne de l'UE, mandat par mandat">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://concret2027.fr/donnees/apercu/finances.png">
 <script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
@@ -30,10 +30,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261031a"></script>
-<script src="/commun/toile.js?v=20261031c"></script>
-<script src="/commun/pays.js?v=20261031a"></script>
-<script src="/commun/quiz.js?v=20261031h"></script>
+<script src="/commun/bref.js?v=20261031i"></script>
+<script src="/commun/toile.js?v=20261031i"></script>
+<script src="/commun/pays.js?v=20261031i"></script>
+<script src="/commun/quiz.js?v=20261031i"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
 .sous > summary { cursor: pointer; list-style: none; padding: 10px 0; font-weight: 600; font-size: 13.5px; color: var(--fr); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -326,28 +326,28 @@ footer p { margin: 0; } footer a { color: inherit; }
 </style>
 </head>
 <body data-sources="Sources : Eurostat, Insee, Banque mondiale, FMI, Agence France Trésor (détail en bas de page).">
-<noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les notes et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
+<noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les résultats et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/" aria-current="page">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><h1>Finances publiques</h1><span id="today"></span></div>
   <p class="upd" id="upd">Chargement des données…</p>
   <p class="visit visit-res" id="visit" aria-hidden="true"></p>
-  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#acc-today">Aujourd'hui</a><a href="#acc-month">Ce mois-ci</a><a href="#acc-actu">Actualité</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Résultats</a><a href="#courbes">Thèmes</a><a href="#acc-today">Aujourd'hui</a><a href="#acc-month">Ce mois-ci</a><a href="#acc-actu">Actualité</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
   <section class="card" id="toile" hidden></section>
   <section class="card" id="bulletin" aria-labelledby="gov-title">
-    <h2 id="gov-title"><span class="eyebrow">Les notes des finances publiques</span>Président par président&nbsp;: la France face à la moyenne de l'UE</h2>
-    <button class="share pt-share" id="share-rank" type="button" style="justify-self:start;margin:0" aria-label="Partager le classement">Partager le classement</button>
+    <h2 id="gov-title"><span class="eyebrow">Les finances publiques, mandat par mandat</span>Président par président&nbsp;: la France face à la moyenne de l'UE</h2>
+    <button class="share pt-share" id="share-rank" type="button" style="justify-self:start;margin:0" aria-label="Partager les résultats">Partager les résultats</button>
     <details class="how">
-      <summary>La règle : comment la note est calculée</summary>
+      <summary>La règle : comment le résultat est calculé</summary>
       <div class="how-body">
-        <p class="explain"><b>La règle :</b> chaque année et pour chaque critère, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>La note sur 20 est la part des points marqués. 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
+        <p class="explain"><b>La règle :</b> chaque année et pour chaque critère, la France <b>marque 1 point</b> si elle progresse mieux que la moyenne de l'Union européenne, <b>ou si elle fait déjà mieux qu'elle et ne se dégrade pas</b> ; 0 sinon, ½ en cas d'égalité. <b>Le résultat sur 20 est la part des points marqués. 10/20 : la France fait aussi bien que la moyenne de l'UE ; au-dessus, mieux ; en dessous, moins bien.</b></p>
 <details class="sous"><summary>Pas à pas</summary><div>
 <p><b>1. Chaque année, une comparaison avec la moyenne de l'UE.</b> Pour chaque critère, on compare l'évolution de la France sur l'année à celle de la moyenne des 27 pays de l'Union européenne, publiée par Eurostat et la Banque mondiale (la même référence sur toutes les pages). Si la France a fait mieux, elle marque 1 point. Si elle a fait moins bien, elle garde le point quand elle fait déjà mieux que la moyenne de l'UE cette année-là (dette, déficit, dépenses ou prélèvements plus bas, chômage plus faible, commerce mieux couvert, intérêts plus faibles) et ne se dégrade pas ; sinon, 0. Égalité : un demi-point. La croissance, comparée sans niveau, garde la seule règle de l'évolution.</p>
-<p><b>2. Une note par critère.</b> On additionne les points du mandat et on divise par le nombre d'années. Un gouvernement de 3 ans qui marque 1 point sur 3 a donc 1/3 sur ce critère.</p>
-<p><b>3. La note finale</b> est la moyenne des 8 critères, ramenée sur 20.</p>
+<p><b>2. Un résultat par critère.</b> On additionne les points du mandat et on divise par le nombre d'années. Un gouvernement de 3 ans qui marque 1 point sur 3 a donc 1/3 sur ce critère.</p>
+<p><b>3. Le résultat final</b> est la moyenne des 8 critères, ramenée sur 20.</p>
 </div></details>
 <details class="sous"><summary>Un exemple : François Bayrou, 2025</summary><div>
 <div class="ex" data-t="exemple_regle">
@@ -367,11 +367,11 @@ footer p { margin: 0; } footer a { color: inherit; }
           <tr><td>Commerce extérieur<span>Ce que la France vend à l'étranger rapporté à ce qu'elle y achète (exportations ÷ importations). La France marque le point si ce rapport s'améliore plus que dans l'UE ; elle le garde aussi s'il est meilleur que dans l'UE et ne se dégrade pas.</span></td></tr>
           <tr><td>Coût de la dette<span>Les intérêts payés sur la dette, en % du PIB. La France marque le point si ses intérêts augmentent moins, ou baissent plus, que dans l'UE ; elle le garde aussi s'ils sont plus faibles que dans l'UE et n'augmentent pas.</span></td></tr>
         </tbody></table>
-<p class="note">Choix assumé de Concret : moins de dépenses ou de prélèvements que la moyenne de l'UE rapporte un point. Chaque année est attribuée au Premier ministre en poste la majeure partie de l'année ; les présidents sont notés sur toutes leurs années. Limite : un point marqué de justesse vaut autant qu'un point marqué largement, et un gouvernement d'un an est jugé sur peu de comparaisons. Les séries Eurostat commençant en 1995, l'année 1995 ne compte que pour la croissance et l'emploi. Eurostat ne publie la moyenne de l'UE de la dette qu'à partir de 2000 : la dette n'est comptée qu'à partir de 2001.</p>
+<p class="note">Choix assumé de Concret : moins de dépenses ou de prélèvements que la moyenne de l'UE rapporte un point. Chaque année est attribuée au Premier ministre en poste la majeure partie de l'année ; les présidents sont comptés sur toutes leurs années. Limite : un point marqué de justesse vaut autant qu'un point marqué largement, et un gouvernement d'un an est jugé sur peu de comparaisons. Les séries Eurostat commençant en 1995, l'année 1995 ne compte que pour la croissance et l'emploi. Eurostat ne publie la moyenne de l'UE de la dette qu'à partir de 2000 : la dette n'est comptée qu'à partir de 2001.</p>
 </div></details>
       </div>
     </details>
-    <p class="note" style="margin:0">Critères comptés dans la note : touchez-en un pour le retirer (ou le remettre) et voir les notes changer.</p>
+    <p class="note" style="margin:0">Critères comptés dans le résultat : touchez-en un pour le retirer (ou le remettre) et voir les résultats changer.</p>
     <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
     <span class="eyebrow" style="margin:0">Les présidents</span>
     <p class="note">Touchez une barre pour voir le détail.</p>
@@ -379,7 +379,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="pres-detail" id="pres-detail" hidden></div>
     <p class="note" id="rank-pres-note"></p>
     <details class="gov-pli" id="gov-pli">
-      <summary><span>Les gouvernements<small>La note de chaque Premier ministre, et son détail année par année</small></span></summary>
+      <summary><span>Les gouvernements<small>Le résultat sous chaque Premier ministre, et son détail année par année</small></span></summary>
       <div class="gov-pli-body">
       <div class="chart" id="rank-gov"></div>
       <p class="note" id="rank-gov-note"></p>
@@ -545,7 +545,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   </details>
 
   <details class="acc" id="acc-bilan">
-    <summary><span class="acc-h">Le bilan depuis 1995</span><span class="acc-t">Depuis 1995, aucune note de président n'atteint 10/20 en finances publiques · dette, dépenses et impôts au-dessus de la moyenne de l'UE</span><span class="acc-cta"></span></summary>
+    <summary><span class="acc-h">Le bilan depuis 1995</span><span class="acc-t">Depuis 1995, sous aucun président la France n'atteint 10/20 en finances publiques · dette, dépenses et impôts au-dessus de la moyenne de l'UE</span><span class="acc-cta"></span></summary>
     <div class="acc-body card summary"><ol id="sum-list"></ol></div>
   </details>
 
@@ -907,7 +907,7 @@ function main(FEED) {
     var box = document.getElementById('rank-' + rankMode); box.textContent = '';
     var W = Math.max(300, box.clientWidth), small = W < 520, rh = 26, lw = small ? 92 : 150, top = 22, H = top + list.length * rh + 26;
     var x = d3.scaleLinear().domain([0, 20]).range([lw, W - 34]);
-    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'group').attr('aria-label', 'Classement des notes sur 20 ; chaque barre ouvre le détail');
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'group').attr('aria-label', 'Résultats sur 20 ; chaque barre ouvre le détail');
     [0, 5, 10, 15, 20].forEach(function (t) {
       svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 4).attr('y2', H - 20).attr('stroke', t === 10 ? 'var(--fg)' : 'var(--grid)').attr('stroke-dasharray', t === 10 ? '4 3' : null);
       svg.append('text').attr('x', x(t)).attr('y', top - 8).attr('text-anchor', 'middle').text(t).style('fill', t === 10 ? 'var(--fg)' : null).style('font-weight', t === 10 ? 700 : null);
@@ -926,7 +926,7 @@ function main(FEED) {
     });
     var best = list[0], above = list.filter(function (r) { return r.n >= 10; }).length;
     document.getElementById('rank-' + rankMode + '-note').textContent = (above ? above + ' sur ' + list.length + ' atteignent le niveau de la moyenne de l\'UE ; les autres sont en dessous de la moyenne européenne. ' : 'Tous sont en dessous de la moyenne européenne. ') +
-      (function () { var ex = list.filter(function (r) { return nfmt(r.n) === nfmt(best.n); }).map(function (r) { return r.g.n; }); return (ex.length > 1 ? 'Meilleures notes, à égalité : ' + ex.slice(0, -1).join(', ') + ' et ' + ex[ex.length - 1] : 'Meilleure note : ' + best.g.n) + ' (' + nfmt(best.n) + '/20).'; })() + (rankMode === 'pres' ? ' Chirac inclut les cinq ans de cohabitation avec Lionel Jospin ; Macron est noté sur 2017-2025.' : ' Lecornu sera noté au printemps 2027 ; Barnier (sept.-déc. 2024) n\'a pas d\'année complète.');
+      (function () { var ex = list.filter(function (r) { return nfmt(r.n) === nfmt(best.n); }).map(function (r) { return r.g.n; }); return (ex.length > 1 ? 'Les plus hauts, à égalité : ' + ex.slice(0, -1).join(', ') + ' et ' + ex[ex.length - 1] : 'Le plus haut : ' + best.g.n) + ' (' + nfmt(best.n) + '/20).'; })() + (rankMode === 'pres' ? ' Chirac inclut les cinq ans de cohabitation avec Lionel Jospin ; Macron est compté sur 2017-2025.' : ' Lecornu sera compté au printemps 2027 ; Barnier (sept.-déc. 2024) n\'a pas d\'année complète.');
   }
   var showAll = false;
   document.getElementById('gov-more').addEventListener('click', function () {
@@ -943,7 +943,7 @@ function main(FEED) {
     var nP = PIB.fr.length - 1, rP = Math.round(100 * (PIB.fr[nP] / PIB.eu[nP] - 1)), rP0 = Math.round(100 * (PIB.fr[0] / PIB.eu[0] - 1));
     var name = function (r) { return r.g.n.split(' ').slice(-1)[0]; };
     var items = [
-      (anyAbove ? '<b>' + bestP.g.n + ' est le seul président dont la note atteint 10/20 en finances publiques.</b>' : '<b>Depuis 1995, aucune note de président n\'atteint 10/20 en finances publiques.</b>') +
+      (anyAbove ? '<b>' + bestP.g.n + ' est le seul président sous lequel la France atteint 10/20 en finances publiques.</b>' : '<b>Depuis 1995, sous aucun président la France n\'atteint 10/20 en finances publiques.</b>') +
         ' Chaque année, on compare la France à la moyenne de l\'Union européenne sur 8 critères (dette, déficit, dépenses, impôts, croissance, chômage, commerce, coût de la dette). Le meilleur, ' + bestP.g.n + ', ne fait mieux qu\'elle que dans ' + Math.round(bestP.n * 5) + ' % des cas : ' + nfmt(bestP.n) + '/20. ' + (worst.length > 1 ? worst.map(function (r) { return r.g.n; }).join(' et ') + ' sont' : worst[0].g.n + ' est') + ' à ' + nfmt(worst[0].n) + '.',
       '<b>Impôts et cotisations.</b> ' + fmt(at(D.po.fr, 2024), 1) + ' % du PIB en 2024, 2<sup>e</sup> de l\'Union européenne derrière le Danemark, ' + fmt(poGap, 1) + ' points de plus que la moyenne de l\'UE.',
       '<b>Dépenses publiques.</b> ' + fmt(at(D.dep.fr, last), 1) + ' % du PIB en ' + last + ', ' + fmt(depGap, 1) + ' points de plus que la moyenne de l\'UE.',
@@ -988,7 +988,7 @@ function main(FEED) {
   function renderGov() {
     var box = document.getElementById('gov-list'); box.textContent = '';
     var pend = document.createElement('div'); pend.className = 'gov pending';
-    pend.innerHTML = '<div class="badge p">à venir</div><div class="who"><b>Sébastien Lecornu</b> <span>· depuis sept. 2025 · Macron</span></div><div class="note">Noté à la publication des comptes 2026 par l\'Insee (printemps 2027).</div>';
+    pend.innerHTML = '<div class="badge p">à venir</div><div class="who"><b>Sébastien Lecornu</b> <span>· depuis sept. 2025 · Macron</span></div><div class="note">Calculé à la publication des comptes 2026 par l\'Insee (printemps 2027).</div>';
     box.appendChild(pend);
     // Repliés : on montre les gouvernements jusqu'au premier qui a une note, puis le bouton pour voir les autres.
     var premier = Math.max(0, GOVS.slice().reverse().findIndex(function (g) { return noteOf(g) != null && !isNaN(noteOf(g)); }));
@@ -1097,7 +1097,7 @@ function main(FEED) {
     });
   });
 
-  // ===== Retraites publiques, % du PIB : affiché, non noté. Masqué tant que la mise à jour automatique n'a pas rempli la série. =====
+  // ===== Retraites publiques, % du PIB : affiché, sans calcul. Masqué tant que la mise à jour automatique n'a pas rempli la série. =====
   function retraitesChart() {
     var R = SER.retraites, sec = document.getElementById('retraites');
     if (!R || !R.annees || R.annees.length < 2) { sec.hidden = true; return; }
@@ -1112,7 +1112,7 @@ function main(FEED) {
     var parts = [['fr', 'France'], ['eu', 'Moyenne de l\'UE'], ['de', 'Allemagne'], ['us', 'États-Unis']].map(function (p) { var l = lastOf(p[0]); return l ? p[1] + ' ' + fmt(l.v, 1) + ' % (' + l.y + ')' : null; }).filter(Boolean);
     // Début des séries : expliqué là où on le voit (règle de CLAUDE.md).
     var debut = [['eu', 'la moyenne de l\'UE'], ['de', 'l\'Allemagne'], ['us', 'les États-Unis']].map(function (p) { var a = R[p[0]] || [], i = 0; while (i < a.length && a[i] == null) i++; return i > 0 && i < a.length ? p[1] + ' à partir de ' + R.annees[i] : null; }).filter(Boolean);
-    setHtml('ret-note', 'Dernières valeurs : ' + parts.join(', ') + '. ' + (debut.length ? 'Courbes qui commencent plus tard : ' + debut.join(', ') + ', première année publiée par la source. ' : '') + 'Dépenses publiques de la fonction « vieillesse » (pensions de retraite pour l\'essentiel), en % du PIB. Sources : ' + R.source + '. Les chiffres américains suivent une définition proche mais pas identique. Affiché pour information : cet indicateur n\'entre pas dans la note.');
+    setHtml('ret-note', 'Dernières valeurs : ' + parts.join(', ') + '. ' + (debut.length ? 'Courbes qui commencent plus tard : ' + debut.join(', ') + ', première année publiée par la source. ' : '') + 'Dépenses publiques de la fonction « vieillesse » (pensions de retraite pour l\'essentiel), en % du PIB. Sources : ' + R.source + '. Les chiffres américains suivent une définition proche mais pas identique. Affiché pour information : cet indicateur n\'entre pas dans le résultat.');
   }
 
   // ===== Spreads =====
@@ -1388,12 +1388,12 @@ function main(FEED) {
       x.fillText(C.from, gx, gy + gh + 50); x.textAlign = 'right'; x.fillText(C.to, gx + gw, gy + gh + 50); x.textAlign = 'left';
       x.fillStyle = '#1c1d22'; x.font = '400 44px Newsreader, Georgia, serif'; wrapText(x, C.line, 80, gy + gh + 130, W - 160, 56);
     } else {
-      x.fillText(('Les notes des finances publiques · ' + day).toUpperCase(), 80, 175);
+      x.fillText(('Les finances publiques, mandat par mandat · ' + day).toUpperCase(), 80, 175);
       x.fillStyle = '#1c1d22'; x.font = '400 58px Newsreader, Georgia, serif';
-      wrapText(x, 'Depuis 1995, aucune note de président n\'atteint 10/20 en finances publiques', 80, 270, W - 160, 70);
+      wrapText(x, 'Depuis 1995, sous aucun président la France n\'atteint 10/20 en finances publiques', 80, 270, W - 160, 70);
       var rows = PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; }).sort(function (a, b) { return b.v - a.v; });
       var y0 = 490, x0 = 470, bw = W - x0 - 110;
-      x.font = '500 30px "Inter Tight", system-ui, sans-serif'; x.fillStyle = '#62646d'; x.fillText('Note sur 20 · la France face à la moyenne de l\'UE, sur 8 critères', 80, 420);
+      x.font = '500 30px "Inter Tight", system-ui, sans-serif'; x.fillStyle = '#62646d'; x.fillText('Résultat sur 20 · la France face à la moyenne de l\'UE, sur 8 critères', 80, 420);
       rows.forEach(function (r, i) {
         var y = y0 + i * 120;
         x.fillStyle = '#1c1d22'; x.font = '600 40px "Inter Tight", system-ui, sans-serif'; x.textAlign = 'right'; x.fillText(r.n, x0 - 24, y + 50); x.textAlign = 'left';
@@ -1489,7 +1489,7 @@ function main(FEED) {
 </script>
 <script src="/commun/partage.js?v=20261031d"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
-<script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261031g"></script>
+<script src="/commun/lois.js?v=20261031i"></script>
+<script src="/commun/menu.js?v=20261031i"></script>
 </body>
 </html>

@@ -10,6 +10,8 @@ Tout chiffre publié a une source, et il a été lu à cette source. Rien d'inve
 
 Concret est fact-based et non partisan : aucun titre, aucune phrase ne porte de jugement ni d'adjectif évaluatif (« généreux », « mal », « vit à crédit »…). Les titres disent ce qui est mesuré (« Espérance de vie », « Coût »), les chiffres et la règle de notation parlent seuls.
 
+Vocabulaire (choix de l'éditeur, 29 octobre 2026) : Concret mesure la France pendant un mandat, il ne juge pas les personnes. Sur le site, le chiffre sur 20 est un « résultat » (jamais une « note ») : « La France sous chaque président », « mandat par mandat », « Le résultat de chaque mission », « années comptées », « sans calcul » (pas « sans note »), « Le plus haut » (pas « Meilleure note »). Sous chaque résultat : « Ce n'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l'UE pendant le mandat. » Restent « note » : celle des agences (Moody's, S&P) et les notes d'enquête (satisfaction sur 10) ; et, dans le code et ce fichier, les noms internes (`notes.js`, `noteOf`…).
+
 ## Anonymat
 
 - Commits : `git config user.name "Concret"` et `git config user.email "noreply@concret2027.fr"`. Aucune ligne `Co-Authored-By`, aucun nom ni e-mail personnel, nulle part (code, commits, journal).

@@ -71,13 +71,13 @@ function carte(o) {
     await p.close();
     if (!r) throw new Error('bloc « En bref » introuvable sur la page ' + MISSIONS[i][0]);
     bref[MISSIONS[i][0]] = { l: MISSIONS[i][1], n: +r.n[0], total: +r.n[1], items: r.items };
-    cartes.push({ f: MISSIONS[i][0], titre: MISSIONS[i][1], sous: 'La France face à la moyenne de l\'Union européenne', n: [r.n[0], '/' + r.n[1]], nt: 'indicateurs où la France fait mieux, au dernier chiffre connu', pres: r.pres, pied: 'La note des présidents sur 20 · 10 = aussi bien que la moyenne de l\'UE', adresse: 'concret2027.fr/' + MISSIONS[i][0] });
+    cartes.push({ f: MISSIONS[i][0], titre: MISSIONS[i][1], sous: 'La France face à la moyenne de l\'Union européenne', n: [r.n[0], '/' + r.n[1]], nt: 'indicateurs où la France fait mieux, au dernier chiffre connu', pres: r.pres, pied: 'La France sous chaque président, sur 20 · 10 = aussi bien que la moyenne de l\'UE', adresse: 'concret2027.fr/' + MISSIONS[i][0] });
   }
   var BJ = path.join(ROOT, 'donnees', 'bref.json'), bj = JSON.stringify({ missions: bref }, null, 1) + '\n';
   if (!fs.existsSync(BJ) || fs.readFileSync(BJ, 'utf8') !== bj) fs.writeFileSync(BJ, bj);
   // Accueil (et mentions légales) : le classement général, toutes missions confondues (même calcul que la page).
   var S = JSON.parse(fs.readFileSync(path.join(ROOT, 'data.json'), 'utf8')).series, cg = NOTES.classement(S).pres.slice().sort(function (a, c) { return a.y0 - c.y0; });
-  var gen = { titre: 'Les présidents notés, mission par mission', sous: 'Finances, éducation, santé, sécurité et justice, défense, vie des Français : face à la moyenne de l\'UE, depuis 1995', pres: cg.map(function (x) { return { n: court(x.n), v: x.m }; }), pied: 'Classement général sur 20 · ' + NOTES.MISSIONS.length + ' missions', adresse: 'concret2027.fr' };
+  var gen = { titre: 'La France mesurée, mandat par mandat', sous: 'Finances, éducation, santé, sécurité et justice, défense, vie des Français : face à la moyenne de l\'UE, depuis 1995', pres: cg.map(function (x) { return { n: court(x.n), v: x.m }; }), pied: 'Toutes missions confondues, sur 20 · ' + NOTES.MISSIONS.length + ' missions', adresse: 'concret2027.fr' };
   cartes.push(Object.assign({ f: 'accueil' }, gen));
   // Baromètre : le nombre de jours avant le premier tour (date lue dans l'agenda du baromètre), refait chaque jour.
   var D = JSON.parse(fs.readFileSync(path.join(ROOT, 'data.json'), 'utf8')).datasets, t1 = (D.agenda_barometre || []).filter(function (a) { return /premier tour/i.test(a.evenement); })[0];
@@ -90,16 +90,16 @@ function carte(o) {
     var v0 = SP.VOTES.filter(function (v) { return !v.loi; })[0], l0 = SP.LOIS[0];
     cartes.push({ f: 'politique', titre: 'La vie politique', sous: 'Les grandes lois de chaque gouvernement, les votes de l\'Assemblée, les dates depuis 1995', n: [String(SP.LOIS.length), ' lois'], nt: 'publiées au Journal officiel en douze mois', dates: [v0 ? ['Dernier vote', jl(v0.d)] : null, l0 ? ['Dernière loi publiée', jl(l0.jo || l0.d)] : null].filter(Boolean), pied: 'Source : Assemblée nationale, données ouvertes', adresse: 'concret2027.fr/politique' });
   }
-  // L'évolution démographique : naissances et décès de la dernière année publiée par Eurostat (page sans note).
+  // L'évolution démographique : naissances et décès de la dernière année publiée par Eurostat (page sans calcul).
   var PP = S.demographie;
   if (PP && fs.existsSync(path.join(ROOT, 'demographie', 'index.html'))) {
     var kn = PP.K.nais, kd = PP.K.deces, km = PP.K.solmig, nfr = function (v) { return new Intl.NumberFormat('fr-FR').format(v).replace(/\u202f/g, ' '); };
-    cartes.push({ f: 'demographie', titre: 'L\'évolution démographique', sous: 'Naissances, âges, migrations : la France face à l\'Europe, sans note', n: [nfr(kn.fr[kn.fr.length - 1]), ''], nt: 'naissances en France en ' + kn.y[kn.y.length - 1], dates: [['Décès ' + kd.y[kd.y.length - 1], nfr(kd.fr[kd.fr.length - 1])], ['Solde migratoire ' + km.y[km.y.length - 1], (km.fr[km.fr.length - 1] > 0 ? '+' : '') + nfr(km.fr[km.fr.length - 1])]], pied: 'Source : Eurostat', adresse: 'concret2027.fr/demographie' });
+    cartes.push({ f: 'demographie', titre: 'L\'évolution démographique', sous: 'Naissances, âges, migrations : la France face à l\'Europe, sans calcul', n: [nfr(kn.fr[kn.fr.length - 1]), ''], nt: 'naissances en France en ' + kn.y[kn.y.length - 1], dates: [['Décès ' + kd.y[kd.y.length - 1], nfr(kd.fr[kd.fr.length - 1])], ['Solde migratoire ' + km.y[km.y.length - 1], (km.fr[km.fr.length - 1] > 0 ? '+' : '') + nfr(km.fr[km.fr.length - 1])]], pied: 'Source : Eurostat', adresse: 'concret2027.fr/demographie' });
   }
   // Quiz du jour : la première question du jour (celle de la page Vie des Français, même calcul que la page), refaite chaque jour.
   var SQ = (S.vie || {}).QUIZ || [], jq = new Date(); jq.setHours(0, 0, 0, 0);
   var iq = Math.round((jq - new Date(2026, 0, 1)) / 864e5), Q1 = SQ.length ? SQ[((iq % SQ.length) + SQ.length) % SQ.length] : null;
-  if (Q1 && fs.existsSync(path.join(ROOT, 'quiz', 'index.html'))) cartes.push({ f: 'quiz', titre: 'Quiz du jour', sous: jq.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) + ' · la France face à ses voisins, la note des présidents', quiz: Q1, pied: 'Chaque réponse renvoie à la courbe qui la prouve', adresse: 'concret2027.fr/quiz' });
+  if (Q1 && fs.existsSync(path.join(ROOT, 'quiz', 'index.html'))) cartes.push({ f: 'quiz', titre: 'Quiz du jour', sous: jq.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) + ' · la France face à ses voisins, mandat par mandat', quiz: Q1, pied: 'Chaque réponse renvoie à la courbe qui la prouve', adresse: 'concret2027.fr/quiz' });
   // Votez les lois : le nombre de textes expliqués, prêts à voter, et le prochain vote fixé à l'ordre du jour.
   var FV = path.join(ROOT, 'donnees', 'votes.json'), FX = path.join(ROOT, 'donnees', 'votez_explications.json');
   if (fs.existsSync(FV) && fs.existsSync(FX) && fs.existsSync(path.join(ROOT, 'votez', 'index.html'))) {
@@ -108,7 +108,7 @@ function carte(o) {
     cartes.push({ f: 'votez', titre: 'Votez les lois', sous: 'Les vrais votes de l\'Assemblée nationale, expliqués, à voter à votre tour', n: [String(nx), ' textes'], nt: 'à voter : voyez de quels groupes de députés vous êtes le plus proche', dates: av ? [['Prochain vote à l\'Assemblée', jl(av.d)]] : [], pied: 'Source : Assemblée nationale, données ouvertes · vos votes restent sur votre appareil', adresse: 'concret2027.fr/votez' });
   }
   // Concret sur l'écran d'accueil : les étapes (la carte que montre WhatsApp quand on envoie la page), sans chiffre.
-  if (fs.existsSync(path.join(ROOT, 'application', 'index.html'))) cartes.push({ f: 'application', titre: 'Concret sur l\'écran d\'accueil', sous: 'Une icône, comme une application, sur téléphone et ordinateur : rien à télécharger', etapes: [['iPhone, dans Safari', 'Partager (ou ⋯ → Partager) → Sur l\'écran d\'accueil → Ajouter'], ['Android, dans Chrome', '⋮ → Ajouter à l\'écran d\'accueil → Installer'], ['Ordinateur, Chrome ou Edge', 'Icône d\'installation de la barre d\'adresse → Installer']], adresse: 'concret2027.fr/application', pied: 'Concret : la note des présidents et des gouvernements, la France face à ses voisins' });
+  if (fs.existsSync(path.join(ROOT, 'application', 'index.html'))) cartes.push({ f: 'application', titre: 'Concret sur l\'écran d\'accueil', sous: 'Une icône, comme une application, sur téléphone et ordinateur : rien à télécharger', etapes: [['iPhone, dans Safari', 'Partager (ou ⋯ → Partager) → Sur l\'écran d\'accueil → Ajouter'], ['Android, dans Chrome', '⋮ → Ajouter à l\'écran d\'accueil → Installer'], ['Ordinateur, Chrome ou Edge', 'Icône d\'installation de la barre d\'adresse → Installer']], adresse: 'concret2027.fr/application', pied: 'Concret : la France face à ses voisins, mandat par mandat' });
   // Une image n'est refaite que si son contenu a changé (empreinte du texte de la carte) : le dépôt ne grossit pas chaque jour.
   var EMP = path.join(OUT, 'empreintes.json'), emp = fs.existsSync(EMP) ? JSON.parse(fs.readFileSync(EMP, 'utf8')) : {}, faites = [];
   for (var j = 0; j < cartes.length; j++) {

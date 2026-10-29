@@ -48,12 +48,12 @@
       '<details class="bref-det"><summary>Voir les ' + l.length + ' indicateurs</summary><div class="bref-chips">' +
       tri.map(function (x) { return '<a class="' + x.cl + '" href="#' + esc(x.cible) + '" data-cible="' + esc(x.cible) + '" title="Voir la courbe"><i>' + ICON[x.cl] + '</i>' + esc(x.l) + '</a>'; }).join('') +
       '</div></details>' +
-      '<span class="eyebrow" style="margin:4px 0 0">La note des présidents sur cette page</span><div class="bref-pres">' +
+      '<span class="eyebrow" style="margin:4px 0 0">La France sous chaque président</span><div class="bref-pres">' +
       o.pres.map(function (p) {
         var c = p.v == null ? '' : p.v >= 10 ? 'g' : p.v >= 6 ? 'm' : 'b';
         return '<a class="' + c + '" href="#bulletin"><span>' + esc(p.n.split(' ').slice(-1)[0]) + '</span><b>' + (p.v == null ? '—' : fmt(p.v)) + '</b><i style="width:' + (p.v == null ? 0 : 5 * p.v) + '%"></i></a>';
       }).join('') + '</div>' +
-      '<p class="note">Sur 20 ; 10 = aussi bien que la moyenne de l\'UE. La note compte, année par année, si la France progresse mieux que la moyenne de l\'UE (ou garde son avance) ; le chiffre du haut compare seulement le dernier niveau connu. <a class="pt-hors" href="#bulletin">Le détail et les gouvernements ↓</a></p>';
+      '<p class="note">Sur 20 ; 10 = aussi bien que la moyenne de l\'UE. Le résultat compte, année par année, si la France progresse mieux que la moyenne de l\'UE (ou garde son avance) ; le chiffre du haut compare seulement le dernier niveau connu. Ce n\'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l\'UE pendant le mandat. <a class="pt-hors" href="#bulletin">Le détail et les gouvernements ↓</a></p>';
     // Le bouton « Partager » (commun/partage.js) a pu être posé sur le bloc encore vide : on le laisse le reposer.
     box.removeAttribute('data-partage');
     box.querySelectorAll('.bref-chips a').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); });

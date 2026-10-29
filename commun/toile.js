@@ -111,7 +111,7 @@
     box.appendChild(svg);
     var note = document.createElement('p'); note.className = 'note';
     var ax0 = (o.axes || []).filter(function (a) { return a && a.l; })[0];
-    note.textContent = 'Plus loin du centre : un chiffre plus élevé, pas forcément mieux' + (ax0 ? ' (par exemple « ' + ax0.l + ' »)' : '') + '. Chaque axe va du plus bas (0, ou moins pour un chiffre négatif) au plus haut des pays affichés ; la plage de chaque axe est dans « Les chiffres ». Aucune note ici : elles sont calculées année par année, plus bas.' +
+    note.textContent = 'Plus loin du centre : un chiffre plus élevé, pas forcément mieux' + (ax0 ? ' (par exemple « ' + ax0.l + ' »)' : '') + '. Chaque axe va du plus bas (0, ou moins pour un chiffre négatif) au plus haut des pays affichés ; la plage de chaque axe est dans « Les chiffres ». Aucun résultat sur 20 ici : ils sont calculés année par année, plus bas.' +
       (manque.length ? ' ' + manque.join(' ; ') + ' (la forme est coupée à cet endroit).' : '') + (o.notes && o.notes.length ? ' ' + o.notes.join(' ; ') + '.' : '') + (o.omis && o.omis.length ? ' Pas sur la toile, faute de chiffre comparable au même moment : ' + o.omis.join(', ') + '.' : '');
     box.appendChild(note);
     var det = document.createElement('details'); det.className = 'toile-det';

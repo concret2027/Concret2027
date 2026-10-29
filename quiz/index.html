@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="6b554529bbfc">
+<meta name="concret-version" content="23cbdd1b086e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -14,9 +14,9 @@
 <meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)">
 <title>Quiz du jour · Concret</title>
-<meta name="description" content="Chaque jour, huit questions sur la France face à ses voisins européens et sur la note des présidents et des gouvernements. Chaque réponse renvoie à la courbe qui la prouve.">
+<meta name="description" content="Chaque jour, huit questions sur la France face à ses voisins européens et sur les résultats de la France sous chaque président et gouvernement. Chaque réponse renvoie à la courbe qui la prouve.">
 <meta property="og:title" content="Quiz du jour · Concret">
-<meta property="og:description" content="Huit questions par jour sur la France face à ses voisins européens et sur la note des présidents. Chaque réponse renvoie à sa source.">
+<meta property="og:description" content="Huit questions par jour sur la France face à ses voisins européens et sur les résultats mandat par mandat. Chaque réponse renvoie à sa source.">
 <meta property="og:url" content="https://concret2027.fr/quiz/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://concret2027.fr/donnees/apercu/quiz.png">
@@ -29,8 +29,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261031a"></script>
-<script src="/commun/quiz.js?v=20261031h"></script>
+<script src="/commun/bref.js?v=20261031i"></script>
+<script src="/commun/quiz.js?v=20261031i"></script>
 <style>html, body { margin: 0; }
 
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -427,14 +427,14 @@ footer p { margin: 0; } footer a { color: inherit; }
 </style>
 </head>
 <body data-sources="Sources : les pages de Concret (données Eurostat, OCDE, OTAN, Insee, PNUD et autres, détail sur chaque page).">
-<noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les notes et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
+<noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les résultats et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/" aria-current="page">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
   <div class="brand"><b>Quiz du jour</b><span id="today"></span></div>
 
   <section class="card qz-intro" data-partage="non" aria-labelledby="qz-titre">
     <h1 id="qz-titre">Huit questions sur la France face à ses voisins</h1>
-    <p class="note" style="font-size:14px">Une question par page de Concret et deux sur la note des présidents, avec la réponse sourcée. Nouvelles questions chaque jour à minuit.</p>
+    <p class="note" style="font-size:14px">Une question par page de Concret et deux sur les résultats mandat par mandat, avec la réponse sourcée. Nouvelles questions chaque jour à minuit.</p>
   </section>
 
   <div class="qz-suivi" id="qz-suivi"><b id="qz-n">0 / 8</b><div class="qz-prog" id="qz-prog" aria-hidden="true"></div></div>
@@ -508,18 +508,18 @@ footer p { margin: 0; } footer a { color: inherit; }
         var m = M[t], P = pres.map(function (x) { return { n: court(x.n), v: note(x, m.k) }; });
         if (P.some(function (x) { return x.v == null; }) || !seule(P)) return null;
         var best = P.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = P.slice().sort(function (a, b) { return b.v - a.v; });
-        return { l: 'Les présidents', q: 'Sur la page ' + m.l + ', quel président a la note la plus haute ?', o: P.map(function (x) { return x.n; }), a: P.indexOf(best),
-          e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(m) + '/#bulletin', src: m.l };
+        return { l: 'Les présidents', q: 'Sur la page ' + m.l + ', quel président a le résultat le plus haut ?', o: P.map(function (x) { return x.n; }), a: P.indexOf(best),
+          e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (résultats sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(m) + '/#bulletin', src: m.l };
       },
-      // b. Un président, ses missions : où a-t-il sa meilleure note ?
+      // b. Un président, ses missions : où a-t-il son résultat le plus haut ?
       function (t) {
         var p = pres[t], L = M.map(function (m) { return { m: m, v: note(p, m.k) }; }).filter(function (x) { return x.v != null; });
         if (L.length < 4) return null;
         var four = null; for (var e = 0; e < 12 && !four; e++) { var c = melange(L, r).slice(0, 4); if (seule(c)) four = c; }
         if (!four) return null;
         var best = four.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = four.slice().sort(function (a, b) { return b.v - a.v; });
-        return { l: 'Les présidents', q: 'Sur laquelle de ces pages ' + p.n + ' a-t-il sa meilleure note ?', o: four.map(function (x) { return x.m.l; }), a: four.indexOf(best),
-          e: tri.map(function (x) { return x.m.l + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(best.m) + '/#bulletin', src: best.m.l };
+        return { l: 'Les présidents', q: 'Sur laquelle de ces pages ' + p.n + ' a-t-il son résultat le plus haut ?', o: four.map(function (x) { return x.m.l; }), a: four.indexOf(best),
+          e: tri.map(function (x) { return x.m.l + ' : ' + fmt(x.v); }).join(' ; ') + ' (résultats sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(best.m) + '/#bulletin', src: best.m.l };
       },
       // c. Quatre gouvernements tirés au sort, sur une mission.
       function (t, q4) {
@@ -529,8 +529,8 @@ footer p { margin: 0; } footer a { color: inherit; }
         if (!four) return null;
         var best = four.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = four.slice().sort(function (a, b) { return b.v - a.v; });
         var noms = four.map(function (x) { return court(x.n); });
-        return { l: 'Les gouvernements', q: noms.slice(0, -1).join(', ') + ' ou ' + noms[noms.length - 1] + ' : sur la page ' + m.l + ', lequel de ces gouvernements a la note la plus haute ?', o: four.map(function (x) { return x.n; }), a: four.indexOf(best),
-          e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20).', lien: '/' + slug(m) + '/#bulletin', src: m.l };
+        return { l: 'Les gouvernements', q: noms.slice(0, -1).join(', ') + ' ou ' + noms[noms.length - 1] + ' : sur la page ' + m.l + ', lequel de ces gouvernements a le résultat le plus haut ?', o: four.map(function (x) { return x.n; }), a: four.indexOf(best),
+          e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (résultats sur 20).', lien: '/' + slug(m) + '/#bulletin', src: m.l };
       }
     ];
     // Les indicateurs des pages : France, moyenne de l'UE, Allemagne, Espagne, au dernier chiffre connu commun aux quatre.
@@ -601,7 +601,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   function main(feed) {
     var S = feed.series, Qs = [];
     PAGES.forEach(function (pg) { var B = (S[pg.p] || {}).QUIZ; if (B && B.length) { var Q = pick(B); Qs.push({ page: pg.p, l: pg.l, q: Q.q, o: Q.o, a: Q.a, e: Q.e, cle: pg.cle + idx + '-' + (function (t) { var h = 5381; for (var i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0; return h.toString(36); })(Q.q), lien: Q.v ? '/' + pg.p + '/#' + Q.v : '/' + pg.p + '/#quiz', src: pg.l, Q: Q }); } });
-    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz3-' + i + '-' + idx; g.Q = { q: g.q, o: g.o, d: /^Les (présidents|gouvernements)$/.test(g.l) ? 'Note sur 20, calculée avec la règle affichée sur chaque page : 10 = la France a fait aussi bien que la moyenne de l\'UE pendant le mandat.' : 'Chiffres de la même année pour chaque réponse, lus dans les données de la page (Eurostat le plus souvent).' }; Qs.push(g); });
+    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz3-' + i + '-' + idx; g.Q = { q: g.q, o: g.o, d: /^Les (présidents|gouvernements)$/.test(g.l) ? 'Résultat sur 20, calculé avec la règle affichée sur chaque page : 10 = la France a fait aussi bien que la moyenne de l\'UE pendant le mandat.' : 'Chiffres de la même année pour chaque réponse, lus dans les données de la page (Eurostat le plus souvent).' }; Qs.push(g); });
     var total = Qs.length, rep = Qs.map(function () { return null; });
     document.getElementById('qz-titre').textContent = total + ' questions sur la France face à ses voisins';
     var prog = document.getElementById('qz-prog'); prog.innerHTML = Qs.map(function () { return '<i></i>'; }).join('');
@@ -783,7 +783,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       appel('oubli', { id: joueur() }, 'POST').then(function () { try { localStorage.removeItem('concret-joueur'); localStorage.removeItem('quiz-classement-' + iso); } catch (e) {} document.getElementById('qz-cl').hidden = true; CL = null; }, function () {});
     });
 
-    // Partager le classement : une image (période, place, points, les 5 premiers et la ligne du joueur), comme pour le score.
+    // Partager les résultats : une image (période, place, points, les 5 premiers et la ligne du joueur), comme pour le score.
     function imageClassement() {
       var P = CL[periode], W = 1080, H = 1080, c = document.createElement('canvas'), g = c.getContext('2d'), serif = '"Newsreader", Georgia, serif', sans = '"Inter Tight", system-ui, sans-serif';
       var quand = { semaine: 'cette semaine', mois: 'ce mois-ci', total: 'depuis le début' }[periode], nf = function (v) { return v.toLocaleString('fr-FR'); };
@@ -873,6 +873,6 @@ footer p { margin: 0; } footer a { color: inherit; }
 </script>
 <script src="/commun/partage.js?v=20261031d"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
-<script src="/commun/menu.js?v=20261031g"></script>
+<script src="/commun/menu.js?v=20261031i"></script>
 </body>
 </html>
