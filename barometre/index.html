@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="8313f91326bb">
+<meta name="concret-version" content="a1aa732ff283">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -282,7 +282,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
     <div class="bx-stale" id="bx-stale" hidden>Données en cours d’actualisation : la dernière mise à jour date de plus d’un jour.</div>
   </header>
   <nav class="jump" aria-label="Aller à">
-    <div class="jump-l1"><a href="#aujourdhui" data-g="moment">En ce moment</a><a href="#sondages" data-g="sondages">Sondages</a><a href="#parieurs" data-g="parieurs">Parieurs</a><a href="#detail" data-g="detail">Tous les sondages</a><a href="#methode" data-g="methode">Méthode</a></div>
+    <div class="jump-l1"><a href="#aujourdhui" data-g="moment">En ce moment</a><a href="#sondages" data-g="sondages">Sondages</a><a href="#parieurs" data-g="parieurs">Parieurs</a><a href="#wikipedia" data-g="wikipedia">Wikipédia</a><a href="#detail" data-g="detail">Tous les sondages</a><a href="#methode" data-g="methode">Méthode</a></div>
   </nav>
 
   <!-- En tête : l'essentiel du moment (la synthèse, puis ce qui a bougé), l'actualité, puis tout de suite les sondages.
@@ -356,6 +356,15 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <h3 class="bx-sub">L'évolution</h3>
       <p class="bx-note">Chances de victoire des 6 favoris de ce marché, depuis novembre 2025 : un relevé par semaine, puis un par jour.</p>
       <div class="bx-chart" id="chart-pmh" data-source="polymarket_hist"></div>
+    </section>
+
+    <div class="bx-group" id="wikipedia"><h2>Les lectures sur Wikipédia</h2></div>
+
+    <section class="bx-card wide" id="wiki-carte">
+      <h2>Combien de fois la page Wikipédia de chaque candidat a été lue</h2>
+      <p class="bx-note">Ce n'est ni un sondage ni un soutien : le nombre de fois où la page Wikipédia en français de chaque candidat a été lue, par semaine complète (du lundi au dimanche). Une hausse peut suivre une annonce, une polémique ou un passage à la télévision. Les candidats : les 8 premiers des sondages des 30 derniers jours, parmi ceux testés dans au moins la moitié de ces sondages.</p>
+      <div class="bx-chart" id="chart-wiki" data-source="wikipedia_vues"></div>
+      <p class="bx-note bx-lastsrc" id="wiki-src"></p>
     </section>
 
     <div class="bx-group" id="detail"><h2>Le détail des sondages</h2><nav class="bx-grouplinks" aria-label="Détail"><a href="#duels">Duels ↓</a><a href="#tous-sondages">Premier tour ↓</a><a href="#notices">Notices ↓</a></nav></div>
@@ -897,11 +906,13 @@ dash.calc('duels_recents', {
   }
 
   // Les parieurs : l'évolution des chances des 6 favoris d'un marché, toutes les courbes sur le même graphique.
-  function drawPMLines(id, hist, pmr, quoi) {
+  // o (facultatif) : fmt (chiffre écrit), tick (axe), n (nombre de courbes), aria, tete (titre de l'info-bulle) ; sans o, les parieurs.
+  function drawPMLines(id, hist, pmr, quoi, o) {
+    o = o || {}; var fmtV = o.fmt || BX.pct;
     var box = document.getElementById(id);
     box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
     var withHist = {}; hist.forEach(function (r) { withHist[r.candidat] = 1; });
-    var C = pmr.filter(function (c) { return withHist[c.short]; }).slice(0, BX.TOP_PM).map(function (c) {
+    var C = pmr.filter(function (c) { return withHist[c.short]; }).slice(0, o.n || BX.TOP_PM).map(function (c) {
       var pts = hist.filter(function (r) { return r.candidat === c.short; }).map(function (r) { return { d: BX.day(r.date), v: +r.probabilite }; }).sort(function (a, b) { return a.d - b.d; });
       // Le point du jour reprend la valeur des barres (même relevé, même arrondi).
       if (pts.length && c.releve && +pts[pts.length - 1].d === +BX.day(c.releve)) pts[pts.length - 1].v = c.v;
@@ -912,11 +923,11 @@ dash.calc('duels_recents', {
     var W = box.clientWidth || 600, H = 320;
     var x = d3.scaleUtc(d3.extent(all, function (r) { return r.d; }), [0, 1]);
     var y = d3.scaleLinear([0, Math.ceil(d3.max(all, function (r) { return r.v; }) / 10) * 10], [H - 28, 12]);
-    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', quoi + ' selon Polymarket, évolution des 6 favoris');
-    var gy = svg.append('g').call(d3.axisLeft(y).ticks(5).tickFormat(function (v) { return v + ' %'; }).tickSize(0));
+    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', o.aria || quoi + ' selon Polymarket, évolution des 6 favoris');
+    var gy = svg.append('g').call(d3.axisLeft(y).ticks(5).tickFormat(o.tick || function (v) { return v + ' %'; }).tickSize(0));
     styleAxis(gy);
     var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); });
-    mL = Math.ceil(mL) + 10; var mR = 112;
+    mL = Math.ceil(mL) + 10; var mR = o.mR || 112;
     gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
     x.range([mL, W - mR]);
     svg.insert('g', ':first-child').selectAll('line').data(y.ticks(5)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
@@ -931,12 +942,12 @@ dash.calc('duels_recents', {
     labs.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
     svg.append('g').selectAll('text').data(labs).join('text').attr('x', W - mR + 6).attr('y', function (l) { return l.y + 4; }).attr('fill', function (l) { return l.c.col; })
-      .style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text(function (l) { return l.c.s + ' ' + BX.pct(l.v); });
+      .style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text(function (l) { return l.c.s + ' ' + fmtV(l.v); });
     var allD = Array.from(new Set(all.map(function (r) { return +r.d; }))).sort(function (a, b) { return a - b; }).map(function (v) { return new Date(v); });
     xhair(svg, box, W, 12, H - 28, function (sx) {
       var d = allD[d3.bisector(function (q) { return q; }).center(allD, x.invert(sx))];
-      var rows = C.map(function (c) { var q = c.pts.filter(function (p) { return p.d <= d; }).pop(); return q ? { c: c.col, n: c.name, v: q.v, py: y(q.v), s: BX.pct(q.v) } : null; }).filter(Boolean).sort(function (a, b) { return b.v - a.v; });
-      return { px: x(d), head: BX.fmtDay(d) + ' · ' + quoi.toLowerCase(), rows: rows };
+      var rows = C.map(function (c) { var q = c.pts.filter(function (p) { return p.d <= d; }).pop(); return q ? { c: c.col, n: c.name, v: q.v, py: y(q.v), s: fmtV(q.v) } : null; }).filter(Boolean).sort(function (a, b) { return b.v - a.v; });
+      return { px: x(d), head: o.tete ? o.tete(d) : BX.fmtDay(d) + ' · ' + quoi.toLowerCase(), rows: rows };
     });
   }
 
@@ -1060,6 +1071,18 @@ dash.calc('duels_recents', {
     chart('chart-pmh', ph.status === 'ok' && pm.status === 'ok', false, function () { drawPMLines('chart-pmh', ph.data, pmr, 'Chances de victoire'); });
     chart('chart-t2', t2.status === 'ok', t2.status === 'error', function () { drawT2(t2.data); });
     chart('chart-pm', pm.status === 'ok', pm.status === 'error', function () { drawPM('chart-pm', pm.data, 'Chances de victoire au second tour selon Polymarket'); });
+    // Lectures des pages Wikipédia (outils/wikipedia.py) : une courbe par candidat, par semaine complète.
+    var wv = dash.data('wikipedia_vues'), wi = (dash.data('wikipedia_info').data || [])[0];
+    chart('chart-wiki', wv.status === 'ok', wv.status === 'error', function () {
+      var H = wv.data.map(function (r) { return { candidat: r.candidat, date: r.semaine, probabilite: r.vues }; });
+      var der = {}; H.forEach(function (r) { if (!der[r.candidat] || r.date > der[r.candidat].date) der[r.candidat] = r; });
+      var L = Object.keys(der).sort(function (a, b) { return der[b].probabilite - der[a].probabilite; }).map(function (c) { return { short: c, name: BX.full(c) }; });
+      var nfw = function (v) { return Math.round(v).toLocaleString('fr-FR'); };
+      drawPMLines('chart-wiki', H, L, 'Lectures', { n: 8, fmt: nfw, mR: 132, tick: function (v) { return v >= 1000 ? (v / 1000).toLocaleString('fr-FR') + ' k' : String(v); },
+        aria: 'Lectures de la page Wikipédia de chaque candidat, par semaine', tete: function (d) { return 'Semaine du ' + BX.fmtDay(d) + ' · lectures'; } });
+      var src = document.getElementById('wiki-src');
+      if (wi) { src.innerHTML = 'Source : <a href="' + wi.url + '">Wikimedia</a>, lectures par des personnes (robots exclus), relevé du ' + BX.fmtDay(BX.day(wi.releve)) + ', semaines jusqu\'au ' + BX.fmtDay(BX.day(wi.jusqu_au)) + '.' + (wi.manque ? ' Pas relu ce jour-là, chiffres précédents gardés : ' + wi.manque + '.' : ''); }
+    });
 
     if (du.status === 'ok') {
       var tbd = document.getElementById('tbody-duels'); tbd.textContent = '';
@@ -1257,7 +1280,7 @@ window.addEventListener('baro:data', function () {
 // Barre « Aller à » : le groupe où l'on se trouve est surligné (les liens Premier tour / Second tour sont sous chaque titre).
 (function () {
   var nav = document.querySelector('.jump'); if (!nav) return;
-  var G = ['moment', 'sondages', 'parieurs', 'detail', 'methode'], cur = null;
+  var G = ['moment', 'sondages', 'parieurs', 'wikipedia', 'detail', 'methode'], cur = null;
   var ID = { moment: 'aujourdhui' }, choisi = null, fin = 0;
   function montre(g) {
     if (g === cur) return; cur = g;
