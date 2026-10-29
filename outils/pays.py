@@ -191,6 +191,7 @@ def arwu():
     return f
 
 
+import pays_pdf as PDF  # rapports de l'EFPIA (W.A.I.T., « The Pharmaceutical Industry in Figures ») lus dans leurs PDF
 import vie as V
 import demographie as DM
 
@@ -206,6 +207,8 @@ DEFS = {
     'sante.alc': ue_calc('sante.alc'),
     'sante.essais': essais_tous(),
     # Programmes (vaccins, dépistages) : chaque élément a sa courbe (« ch-vac-grippe » → « sante.vac-grippe »).
+    # Innovation : nouveaux médicaments (W.A.I.T.) et ventes de médicaments, lus dans les rapports de l'EFPIA (outils/pays_pdf.py).
+    'sante.wd': PDF.wait_dispo, 'sante.wt': PDF.wait_delai, 'sante.a-med': PDF.medicaments,
     'sante.vac-grippe': est('hlth_ps_immu', 'unit=PC'),
     'sante.vac-rougeole': wuenic('MCV2', 'IM_MCV2'), 'sante.vac-dtp3': wuenic('WHS4_100', 'IM_DTP3'), 'sante.vac-hpv': wuenic('SDGHPVRECEIVED', None),
     'sante.dep-sein': ue_calc('sante.dep.sein'), 'sante.dep-colon': ue_calc('sante.dep.colon'), 'sante.dep-col': ue_calc('sante.dep.col'),
@@ -337,6 +340,10 @@ def main():
         avant = {}
     sans = {}
     if seul:
+        try:
+            sans = {k: v for k, v in json.load(open(os.path.join(ROOT, 'donnees', 'pays_index.json'), encoding='utf-8')).get('sans', {}).items() if k not in seul}
+        except Exception:
+            pass
         out = {k: v for k, v in avant.items() if k not in seul}
     for cle, f in DEFS.items():
         if seul and cle not in seul:

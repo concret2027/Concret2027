@@ -8,9 +8,12 @@
 Chaque fonction rend {pays: {année: valeur}} avec les codes de outils/ue_calc.py (EL pour la Grèce, UK pour le Royaume-Uni) ;
 pour l'étude W.A.I.T., la clé 'ue' porte la moyenne de l'UE imprimée par le rapport.
 Les chiffres des graphiques sont du texte dans le PDF, mais les noms de pays sont écrits à la verticale : chaque chiffre est
-rattaché à sa barre par sa position, et chaque barre au nom écrit dessous. Une édition n'est gardée que si chaque barre a son
-pays et sa valeur, si les barres sont dans l'ordre du graphique, et si « produits disponibles / médicaments autorisés » redonne
-le pourcentage imprimé ; sinon elle est écartée et signalée (ECARTEES). Rien n'est saisi à la main.
+rattaché à sa barre (ou, pour les délais, au point de la moyenne) par sa position, et chaque barre au nom écrit dessous.
+Une édition n'est gardée que si chaque barre a son pays et sa valeur et chaque valeur sa barre, si chaque valeur tombe à la
+hauteur de sa barre sur l'axe, si les barres de disponibilité sont rangées comme le graphique (décroissant), si « produits
+disponibles / médicaments autorisés » redonne le pourcentage imprimé, et si la moyenne de l'UE de la note concorde ; sinon elle
+est écartée et signalée (ECARTEES). Pour le tableau des ventes, la somme des pays doit redonner le total imprimé.
+Rien n'est saisi à la main.
 
   python3 outils/pays_pdf.py      relit les éditions, compte les pays par année et compare la France, l'Allemagne, l'Espagne
                                   et la moyenne de l'UE aux chiffres publiés dans data.json (rien n'est écrit)
@@ -32,12 +35,13 @@ WAIT = {
     2024: 'https://efpia.eu/media/oeganukm/efpia-patients-wait-indicator-2024-final-110425.pdf',
     2025: 'https://www.efpia.eu/media/mnfdwzax/efpia-patients-wait-indicator-2025.pdf',
 }
-# « The Pharmaceutical Industry in Figures » : chaque édition donne une année (édition 2026 : 2024). L'édition 2025 (année 2023,
-# https://www.efpia.eu/media/uj0popel/the-pharmaceutical-industry-in-figures-2025.pdf) n'est plus en ligne (erreur 404).
+# « The Pharmaceutical Industry in Figures » : chaque édition donne une année (édition 2026 : 2024). L'édition 2025 (année 2023)
+# ne répond plus à son adresse (erreur 404, octobre 2026) : elle est écartée tant qu'elle n'est pas de nouveau en ligne.
 FIGURES = {
     2022: 'https://www.efpia.eu/media/637143/the-pharmaceutical-industry-in-figures-2022.pdf',
     2023: 'https://www.efpia.eu/media/rm4kzdlx/the-pharmaceutical-industry-in-figures-2023.pdf',
     2024: 'https://www.efpia.eu/media/2rxdkn43/the-pharmaceutical-industry-in-figures-2024.pdf',
+    2025: 'https://www.efpia.eu/media/uj0popel/the-pharmaceutical-industry-in-figures-2025.pdf',
     2026: 'https://www.efpia.eu/media/owqczcqz/the-pharmaceutical-industry-in-figures-2026.pdf',
 }
 
@@ -54,6 +58,7 @@ TOTAL = {'eu approvals', 'ema approvals'}
 
 ECARTEES = []   # (série, édition, raison) : éditions laissées de côté
 PARTIELS = {}   # (série, année) -> pays marqués d'une seule astérisque (« did not complete a full dataset »)
+BARRES = {}     # (série, année) -> (barres du graphique, barres dont la valeur a été lue)
 _pdf = {}
 
 
@@ -74,7 +79,7 @@ def code(nom):
         return NOMS[n]
     if n in SANS_CODE:
         return None
-    raise KeyError(nom)
+    raise KeyError('pays inconnu : %s' % nom)
 
 
 def page_titre(doc, motif):
@@ -109,7 +114,7 @@ def lignes_horizontales(pg):
     for m in mots:
         t = ''.join(c['text'] for c in m)
         if re.fullmatch(r'\d[\d,]*%?', t):
-            out.append(dict(texte=t, x=(m[0]['x0'] + m[-1]['x1']) / 2, x0=m[0]['x0'], top=m[0]['top']))
+            out.append(dict(texte=t, x=(m[0]['x0'] + m[-1]['x1']) / 2, top=m[0]['top'], y=(m[0]['top'] + m[0]['bottom']) / 2))
     return out
 
 
@@ -130,22 +135,33 @@ def etiquettes(pg):
     return out
 
 
-def graphique(pg):
-    """Barres d'un graphique de l'étude W.A.I.T., de gauche à droite : [{nom, valeurs}] où valeurs = nombres écrits au-dessus."""
+BLANC = ((1,), (1.0,), 1, 1.0, (1, 1, 1), (1.0, 1.0, 1.0))
+
+
+def graphique(pg, serie):
+    """Barres d'un graphique de l'étude W.A.I.T., de gauche à droite : [{nom, valeurs, y}] où valeurs = nombres écrits
+    au-dessus et y = hauteur dessinée (haut de la barre, ou centre du point de la moyenne pour les délais), traduite en
+    valeur par l'axe (axe(y))."""
     labs = etiquettes(pg)
     haut = Counter(round(t) for _, _, t in labs).most_common(1)[0][0]
     labs = [l for l in labs if haut - 6 <= l[2] <= haut + 40]          # les noms sous l'axe (pas le titre de l'axe)
     bas = haut - 2
-    # Barres (ou boîtes) : rectangles pleins, ni blancs ni gris de fond, de la largeur d'une barre, au-dessus des noms.
-    rs = [r for r in pg.rects if r['fill'] and 5 < r['width'] < 14 and r['x1'] < pg.width and r['bottom'] <= bas
-          and r['height'] > 0.5 and r['non_stroking_color'] not in ((1,), (1.0,), 1, 1.0, (1, 1, 1), (1.0, 1.0, 1.0))]
-    rs.sort(key=lambda r: r['x0'])
+    if serie == 'dispo':
+        # Barres : rectangles pleins, ni blancs ni transparents, de la largeur d'une barre, au-dessus des noms.
+        fs = [(r, r['top']) for r in pg.rects if r['fill'] and 5 < r['width'] < 14 and r['x1'] < pg.width and r['bottom'] <= bas
+              and r['height'] > 0.5 and r['non_stroking_color'] not in BLANC]
+    else:
+        # Délais : le point rond de la moyenne, dessiné pour chaque pays (les boîtes, elles, manquent quand il y a peu de dates).
+        fs = [(c, (c['top'] + c['bottom']) / 2) for c in pg.curves if c['fill'] and 4 < c['width'] < 12 and 4 < c['height'] < 12
+              and c['x1'] < pg.width and c['bottom'] <= bas and c['non_stroking_color'] not in BLANC]
+    fs.sort(key=lambda f: f[0]['x0'])
     barres = []
-    for r in rs:
+    for r, y in fs:
         x = (r['x0'] + r['x1']) / 2
         if barres and abs(x - barres[-1]['x']) <= 3:
+            barres[-1]['y'] = min(barres[-1]['y'], y)
             continue
-        barres.append(dict(x=x, x0=r['x0'], noms=[], valeurs=[]))
+        barres.append(dict(x=x, x0=r['x0'], y=y, noms=[], valeurs=[]))
     if len(barres) < 10:
         raise ValueError('barres introuvables (%d)' % len(barres))
     pas = sorted(b['x'] - a['x'] for a, b in zip(barres, barres[1:]))[len(barres) // 2]
@@ -154,21 +170,27 @@ def graphique(pg):
         if abs(b['x'] - x) <= 0.5 * pas:
             b['noms'].append(t)
         elif t.strip():
-            barres.append(dict(x=x, x0=x, noms=[t], valeurs=[], sans_barre=True))
+            barres.append(dict(x=x, x0=x, y=None, noms=[t], valeurs=[], sans_barre=True))
     barres.sort(key=lambda b: b['x'])
-    # Graduations de l'axe : à gauche de la première barre ; elles bornent le haut du graphique.
+    # Graduations de l'axe : à gauche de la première barre ; elles bornent le haut du graphique et donnent l'échelle.
     nums = lignes_horizontales(pg)
     gauche = barres[0]['x0'] - 3
-    grad = [n for n in nums if n['x'] < gauche and n['top'] < bas]
-    if not grad:
+    grad = [n for n in nums if n['x'] < gauche and n['top'] < bas and not n['texte'].endswith('%')]
+    if len(grad) < 3:
         raise ValueError("graduations de l'axe introuvables")
+    gv, gy = [nombre(n['texte']) for n in grad], [n['y'] for n in grad]
+    mv, my = sum(gv) / len(gv), sum(gy) / len(gy)
+    pente = sum((a - mv) * (b - my) for a, b in zip(gv, gy)) / sum((a - mv) ** 2 for a in gv)
+    axe = lambda y: mv + (y - my) / pente
+    if max(abs(axe(b) - a) for a, b in zip(gv, gy)) > 0.01 * (max(gv) - min(gv)):
+        raise ValueError("graduations de l'axe irrégulières")
     plafond = min(n['top'] for n in grad) - 15
     droite = barres[-1]['x'] + pas
     vals = [n for n in nums if gauche <= n['x'] <= droite and plafond < n['top'] < bas]
     # Chaque nombre va à la barre la plus proche ; une barre reçoit au plus un nombre de chaque sorte (nombre, pourcentage).
     cand = sorted(((abs(b['x'] - n['x']), i, j) for i, n in enumerate(vals) for j, b in enumerate(barres)
                    if abs(b['x'] - n['x']) <= 0.75 * pas), key=lambda c: c[0])
-    pris, orph = set(), []
+    pris = set()
     for d, i, j in cand:
         if i in pris:
             continue
@@ -181,7 +203,8 @@ def graphique(pg):
         raise ValueError('nombres sans barre : %s' % orph)
     for b in barres:
         b['nom'] = ' '.join(b['noms']).replace('  ', ' ').strip()
-    return barres, pg.extract_text() or ''
+        b['dessin'] = None if b['y'] is None else axe(b['y'])
+    return barres, pg.extract_text() or '', max(gv) - min(gv)
 
 
 def lire_wait(serie):
@@ -195,14 +218,15 @@ def lire_wait(serie):
                 if not m or int(m.group(1)) != y:
                     raise ValueError("la couverture n'annonce pas l'étude %d" % y)
                 motif = r'Rate of availability \(\d{4}' if serie == 'dispo' else r'Time to availability \(\d{4}'
-                barres, texte = graphique(doc.pages[page_titre(doc, motif)])
-            lu, partiels = (dispo if serie == 'dispo' else delai)(barres, texte)
+                barres, texte, etendue = graphique(doc.pages[page_titre(doc, motif)], serie)
+            lu, partiels = (dispo if serie == 'dispo' else delai)(barres, texte, etendue)
         except Exception as e:
             ECARTEES.append((serie, y, str(e)))
             continue
         for g, v in lu.items():
             out.setdefault(g, {})[y] = v
         PARTIELS[(serie, y)] = partiels
+        BARRES[(serie, y)] = (sum(1 for b in barres if not b.get('sans_barre')), sum(1 for b in barres if b['valeurs']))
     return out
 
 
@@ -217,24 +241,39 @@ def pays_des_barres(barres):
     return out
 
 
-def dispo(barres, texte):
-    """« Rate of availability » : sous chaque barre, le nombre de médicaments disponibles et le pourcentage ; contrôles."""
+def ecarts_dessin(lus, etendue, quoi):
+    """Chaque valeur imprimée doit tomber à la hauteur de sa barre : écart à l'axe à moins de 1 % de l'axe, une fois retiré le
+    décalage commun (l'étiquette est posée un peu au-dessus du point)."""
+    if not lus:
+        return
+    r = sorted(d - v for _, v, d, _ in lus)
+    med = r[len(r) // 2]
+    loin = ['%s (%g)' % (nom, v) for nom, v, d, tol in lus if abs(d - v - med) > 0.01 * etendue + tol]
+    if loin:
+        raise ValueError('%s qui ne tombent pas à la hauteur de leur barre : %s' % (quoi, ', '.join(loin)))
+
+
+def dispo(barres, texte, etendue):
+    """« Rate of availability » : au-dessus de chaque barre, le nombre de médicaments disponibles et le pourcentage."""
     lst = pays_des_barres(barres)
     tot = [b for g, _, _, b in lst if g == 'total']
     if len(tot) != 1 or len(tot[0]['valeurs']) != 1:
         raise ValueError('nombre de médicaments autorisés introuvable')
     total = nombre(tot[0]['valeurs'][0])
-    out, partiels, suite, manque = {}, set(), [], []
+    out, partiels, suite, manque, dessin = {}, set(), [], [], []
     for g, nom, ast, b in lst:
-        if g == 'total':
-            continue
         pc = [nombre(v[:-1]) for v in b['valeurs'] if v.endswith('%')]
         nb = [nombre(v) for v in b['valeurs'] if not v.endswith('%')]
+        if g == 'total':
+            dessin.append((nom, total, b['dessin'], 0))
+            continue
         if b.get('sans_barre') or len(pc) != 1:
             manque.append(nom)
             continue
         if nb and abs(nb[0] / total * 100 - pc[0]) > 0.5 + 1e-9:
             raise ValueError('%s : %d / %d ne redonne pas %d %%' % (nom, nb[0], total, pc[0]))
+        # Hauteur de la barre : le nombre imprimé, ou à défaut le pourcentage ramené en nombre (arrondi : ½ point).
+        dessin.append((nom, nb[0], b['dessin'], 0) if nb else (nom, pc[0] * total / 100, b['dessin'], 0.005 * total))
         suite.append(pc[0])
         if g:
             out[g] = pc[0]
@@ -244,37 +283,38 @@ def dispo(barres, texte):
         raise ValueError('barres sans pourcentage : %s' % manque)
     if any(a < b for a, b in zip(suite, suite[1:])):
         raise ValueError("les barres ne sont pas dans l'ordre décroissant")
+    ecarts_dessin(dessin, etendue, 'nombres')
     m = re.search(r'European Union average:\s*(\d+) products available \((\d+)%\)', texte)
     if not m or 'ue' not in out or int(m.group(2)) != out['ue'] or abs(int(m.group(1)) / total * 100 - out['ue']) > 0.5 + 1e-9:
         raise ValueError("moyenne de l'UE : la barre et la note ne concordent pas")
     return out, partiels
 
 
-def delai(barres, texte):
-    """« Time to availability » : délai moyen écrit au-dessus de chaque boîte ; moyenne de l'UE lue dans la note du graphique."""
+def delai(barres, texte, etendue):
+    """« Time to availability » : délai moyen écrit au-dessus du point de la moyenne de chaque pays ; moyenne de l'UE lue
+    dans la note du graphique. Les pays ne sont pas rangés par moyenne (édition 2024) : pas de contrôle d'ordre ici."""
     lst = pays_des_barres(barres)
-    out, partiels, suite, manque = {}, set(), [], []
+    out, partiels, manque, dessin = {}, set(), [], []
     for g, nom, ast, b in lst:
         if len(b['valeurs']) > 1:
             raise ValueError('%s : plusieurs nombres %s' % (nom, b['valeurs']))
         if not b['valeurs']:
-            # Un pays nommé sans boîte ni chiffre (trop peu de dates déclarées) : pas de valeur, rien à rattacher.
+            # Un pays nommé sans point ni chiffre (trop peu de dates déclarées) : pas de valeur, rien à rattacher.
             if not b.get('sans_barre'):
                 manque.append(nom)
             continue
         if b.get('sans_barre'):
-            raise ValueError('%s : un chiffre sans boîte' % nom)
+            raise ValueError('%s : un chiffre sans point de moyenne' % nom)
         v = nombre(b['valeurs'][0])
-        suite.append(v)
+        dessin.append((nom, v, b['dessin'], 0))
         if g:
             out[g] = v
             if ast == 1:
                 partiels.add(g)
     if manque:
-        raise ValueError('boîtes sans chiffre : %s' % manque)
-    if any(a > b for a, b in zip(suite, suite[1:])):
-        raise ValueError("les boîtes ne sont pas dans l'ordre croissant")
-    m = re.search(r'European Union average:\s*([\d,]+) days', texte)
+        raise ValueError('points sans chiffre : %s' % manque)
+    ecarts_dessin(dessin, etendue, 'délais')
+    m = re.search(r'European Union average:\s*([\d,]+)\s*days', texte)
     if not m:
         raise ValueError("moyenne de l'UE introuvable dans la note")
     out['ue'] = nombre(m.group(1))
@@ -351,25 +391,26 @@ def medicaments():
 
 
 def comparer(nom, lu, ref, pays, dec, cle=None):
-    """Tableau : valeur lue / valeur publiée dans data.json, pour chaque pays et chaque année ; rend (accords, écarts)."""
+    """Tableau : valeur lue / valeur publiée dans data.json, pour chaque pays et chaque année ; rend (accords, écarts).
+    Un pays que data.json ne publie pas est seulement affiché (lu / -)."""
     ok, ko = 0, []
     print('\n%s' % nom)
-    print('  %-5s' % 'année' + ''.join('%14s' % g for g in pays))
+    print('  %-5s' % 'année' + ''.join('%16s' % g for g in pays))
     for i, y in enumerate(ref['y']):
         cases = []
         for g in pays:
-            pub = (ref[cle][g.lower()] if cle else ref.get(g.lower()))
+            pub = ref[cle].get(g.lower()) if cle else ref.get(g.lower())
             p = pub[i] if pub and i < len(pub) else None
             w = lu.get('ue' if g == 'UE' else g, {}).get(y)
-            if p is None and w is None:
-                cases.append('%14s' % '-')
-                continue
             wr = None if w is None else round(w, dec)
-            egal = p is not None and wr is not None and abs(wr - p) < 1e-9
+            if p is None:
+                cases.append('%16s' % ('%s / -' % ('-' if wr is None else '%g' % wr)))
+                continue
+            egal = wr is not None and abs(wr - p) < 1e-9
             ok += egal
             if not egal:
-                ko.append((g, y, wr, p))
-            cases.append('%14s' % ('%s/%s %s' % (wr, p, '=' if egal else '≠')))
+                ko.append((nom.split(' (')[0], g, y, wr, p))
+            cases.append('%16s' % ('%s / %g %s' % ('-' if wr is None else '%g' % wr, p, '=' if egal else 'X')))
         print('  %-5d' % y + ''.join(cases))
     return ok, ko
 
@@ -382,20 +423,22 @@ def main():
         ans = sorted({y for a in r.values() for y in a})
         print('%s : %s' % (nom, ', '.join('%d : %d pays' % (y, sum(1 for g, a in r.items() if g != 'ue' and y in a)) for y in ans)))
         res[nom] = r
+    print('\nBarres du graphique / valeurs lues (W.A.I.T.) : ' + ', '.join('%s %d : %d/%d' % (s, y, *n) for (s, y), n in sorted(BARRES.items())))
+    print('Pays marqués « dataset incomplet » par le rapport : ' + ', '.join('%s %d : %s' % (s, y, ' '.join(sorted(p))) for (s, y), p in sorted(PARTIELS.items()) if p))
     print('\nÉditions écartées : ' + ('aucune' if not ECARTEES else ''))
     for s, ed, raison in ECARTEES:
         print('  %s, édition %d : %s' % (s, ed, raison))
     bilan = []
-    bilan.append(comparer('Nouveaux médicaments disponibles (%) : lu / data.json', res['wait_dispo'], o['C']['wd'], ['FR', 'DE', 'UE'], 0))
-    bilan.append(comparer("Délai d'accès (jours) : lu / data.json", res['wait_delai'], o['C']['wt'], ['FR', 'DE', 'UE'], 0))
+    bilan.append(comparer('Nouveaux médicaments disponibles (%) : lu / data.json', res['wait_dispo'], o['C']['wd'], ['FR', 'DE', 'ES', 'UE'], 0))
+    bilan.append(comparer("Délai d'accès (jours) : lu / data.json", res['wait_delai'], o['C']['wt'], ['FR', 'DE', 'ES', 'UE'], 0))
     md = o['AFF']['medic']
     bilan.append(comparer('Ventes de médicaments (M€) : lu / data.json', medicaments_meur(), md, ['FR', 'DE', 'ES'], 0, cle='md'))
     bilan.append(comparer('Ventes de médicaments (% du PIB) : lu / data.json', res['medicaments'], md, ['FR', 'DE', 'ES'], md.get('dec', 2)))
     ok = sum(b[0] for b in bilan)
     ko = [x for b in bilan for x in b[1]]
     print('\n%d chiffres identiques, %d différents ou absents' % (ok, len(ko)))
-    for g, y, w, p in ko:
-        print('  %s %d : lu %s, publié %s' % (g, y, w, p))
+    for n, g, y, w, p in ko:
+        print('  %s, %s %d : lu %s, publié %s' % (n, g, y, w, p))
     return 1 if ko or ECARTEES else 0
 
 
