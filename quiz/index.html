@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="155e3350f1e4">
+<meta name="concret-version" content="9a27bc730a54">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -378,6 +378,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .reps .rv { grid-column: 1; font-size: 14.5px; line-height: 1.4; } .reps .rv b { font-weight: 700; font-variant-numeric: tabular-nums; }
 .reps .st { grid-column: 2; grid-row: 1 / span 2; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; background: var(--grid); color: var(--fg); }
 .reps .st.ok { background: var(--s-good); color: var(--ok); } .reps .st.mid { background: var(--s-mid); color: var(--mid); } .reps .st:empty { display: none; } .mo-tab { width: 100%; table-layout: fixed; } .mo-tab th:first-child { width: 44%; } .mo-tab td small { display: block; } .mo-row { cursor: pointer; } .mo-row[aria-selected="true"] td { background: var(--band); } .mo-row[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--fr); }
+
+.qz-rang-n { display: block; margin-top: 6px; font-size: 13.5px; color: var(--muted); }
 </style>
 <style>
 .qz-intro { display: grid; gap: 8px; }
@@ -663,12 +665,15 @@ footer p { margin: 0; } footer a { color: inherit; }
       document.getElementById('qz-score').innerHTML = ok + '<small> / ' + total + '</small>';
       document.getElementById('qz-grille').textContent = rep.map(function (v) { return v ? '🟩' : '🟥'; }).join('');
       box.hidden = false; if (nouveau) setTimeout(function () { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
-      try { localStorage.setItem('quiz-histo-' + iso, ok + '/' + total); } catch (e) {}
+      // Le score n'est compté qu'une fois par jour et par appareil ; il n'est marqué « compté » qu'une fois le compteur d'accord
+      // (si l'envoi a échoué, il repart au prochain chargement de la page). Le classement et la série gardent ce premier essai,
+      // même si les questions du jour ont changé depuis (on peut alors y répondre à nouveau, sans que rien ne change).
+      var cleCompte = 'quiz-score-compte-' + iso, deja = false, compte = null;
+      try { compte = localStorage.getItem(cleCompte); deja = compte != null; } catch (e) {}
+      var sc = deja && /^\d+$/.test(compte) && +compte <= total ? +compte : ok;
+      try { localStorage.setItem('quiz-histo-' + iso, sc + '/' + total); } catch (e) {}
       perso();
       classement();
-      // Le score n'est compté qu'une fois par jour et par appareil ; il n'est marqué « compté » qu'une fois le compteur d'accord
-      // (si l'envoi a échoué, il repart au prochain chargement de la page).
-      var cleCompte = 'quiz-score-compte-' + iso, deja = false; try { deja = localStorage.getItem(cleCompte) != null; } catch (e) {}
       var rang = document.getElementById('qz-rang');
       // En haut de l'écran, toujours visible : le score, puis la place du jour dès qu'elle est connue ; un toucher mène au score.
       // La barre de progression laisse la place à la phrase, écrite en entier.
@@ -684,10 +689,11 @@ footer p { margin: 0; } footer a { color: inherit; }
         if (!tous) { rang.textContent = 'Le classement du jour s\'affiche quand vous finissez le quiz sur cet appareil.'; return; }
         if (tous < 2) { rang.textContent = 'Vous êtes la première personne à finir le quiz aujourd\'hui. Le classement s\'affiche dès 2 personnes.'; return; }
         // La place : 1 + le nombre de personnes qui ont fait mieux ; les égalités partagent la même place (la personne elle-même n'est pas comptée parmi les « ex aequo »).
-        var mieux = n.slice(ok + 1).reduce(function (a, b) { return a + b; }, 0), egaux = Math.max(0, n[ok] - 1), place = mieux + 1;
+        var mieux = n.slice(sc + 1).reduce(function (a, b) { return a + b; }, 0), egaux = Math.max(0, n[sc] - 1), place = mieux + 1;
         var ord = place === 1 ? '1re' : place + 'e', T = tous.toLocaleString('fr-FR');
         classe = { tous: tous, place: ord, egaux: egaux };
-        rang.innerHTML = '<span class="qz-rang-e">Votre classement du jour</span><span class="qz-place">' + ord + ' place</span>sur <b>' + T + ' personnes</b> qui ont fini le quiz aujourd\'hui' + (egaux ? ', ex aequo avec ' + (egaux === 1 ? 'une autre personne' : egaux.toLocaleString('fr-FR') + ' autres') : '') + '.';
+        rang.innerHTML = '<span class="qz-rang-e">Votre classement du jour</span><span class="qz-place">' + ord + ' place</span>sur <b>' + T + ' personnes</b> qui ont fini le quiz aujourd\'hui' + (egaux ? ', ex aequo avec ' + (egaux === 1 ? 'une autre personne' : egaux.toLocaleString('fr-FR') + ' autres') : '') + '.' +
+          (sc !== ok ? '<span class="qz-rang-n">Le classement compte votre premier essai du jour : ' + sc + ' sur ' + total + '.</span>' : '');
         haut('Votre score : ' + ok + ' sur ' + total + ' · classement du jour : ' + ord + ' sur ' + T);
       }, function () { rang.textContent = 'Le classement du jour n\'a pas pu être chargé. Rechargez la page pour réessayer.'; });
     }
