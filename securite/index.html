@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="a1aa94b78440">
+<meta name="concret-version" content="083813b34447">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
-<script src="../commun/notes.js?v=20261025j"></script>
+<script src="../commun/notes.js?v=20261029b"></script>
 <script src="/commun/bref.js?v=20261028b"></script>
 <script src="/commun/toile.js?v=20261029a"></script>
 <script src="/commun/pays.js?v=20261028b"></script>
@@ -416,6 +416,7 @@ section.theme > *, .autres > * { min-width: 0; }
 .t-pills a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--fg); font-size: 14px; font-weight: 600; text-decoration: none; }
 .t-pills a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
 .t-defs-h { margin: 12px 0 2px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.c-fait { margin: 2px 0 4px; font-size: 14.5px; line-height: 1.4; font-weight: 400; color: var(--fg); flex: 1 1 100%; }
 .t-pied { display: grid; gap: 0; border-top: 1px solid var(--line); padding-top: 4px; }
 .pt-seul { display: none; }
 .tnotes-n { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
@@ -1013,6 +1014,8 @@ function main(FEED) {
   }
   function serieCard(wrap, id, c, tag, extra) {
     var sec = card(wrap, id, c.l + ', ' + c.unite, tag);
+    // Sous le titre, en texte normal : un fait calculé (commun/notes.js, ConcretNotes.fait), jamais saisi.
+    var fp = ConcretNotes.fait(c); if (fp) { var pf = document.createElement('p'); pf.className = 'c-fait'; pf.textContent = fp; var h2 = sec.querySelector('h2'); h2.parentNode.insertBefore(pf, h2.nextSibling); }
     sec.querySelector('.key').innerHTML = keyHtml(c);
     return function () { sec.querySelector('.note').innerHTML = [serieChart(id, c, extra), c.note && extra && extra.affiche ? esc(c.note) : '', c.pourquoi, srcNote(c)].filter(Boolean).join(' '); };
   }
@@ -1070,7 +1073,7 @@ function main(FEED) {
       t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || esc(x.ex || '')) + (x.source ? ' Source : ' + lien(x, x.source) + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + esc(q.l) + ' (' + esc(q.unite) + '). Source : ' + lien(q, q.source) + '.'); }); });
       sec.innerHTML = '<h2></h2><p class="t-sum"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>' + (e.ok ? 'La France fait mieux que la moyenne de l\'UE sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n : 'La France ne fait mieux que la moyenne de l\'UE sur aucun des ' + e.n + ' indicateurs') + ' (dernier chiffre connu).</p>' +
         // La courbe principale dans son propre cadre : on peut la partager seule (« Partager la courbe »).
-        '<div class="card courbe-p" data-partage-l="Partager la courbe"><span class="eyebrow">' + esc(c.l) + ', ' + esc(c.unite) + '</span><div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p></div>' +
+        '<div class="card courbe-p" data-partage-l="Partager la courbe"><span class="eyebrow">' + esc(c.l) + ', ' + esc(c.unite) + '</span>' + (ConcretNotes.fait(c) ? '<p class="c-fait">' + esc(ConcretNotes.fait(c)) + '</p>' : '') + '<div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p></div>' +
         ''; // le tableau et la note du thème : en bas du bloc, sous toutes les courbes
       sec.querySelector('h2').textContent = t.q;
       root.appendChild(sec);
@@ -1403,6 +1406,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261028t"></script>
+<script src="/commun/menu.js?v=20261029a"></script>
 </body>
 </html>

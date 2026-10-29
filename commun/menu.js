@@ -283,7 +283,7 @@
       if (tous) L = L.filter(function (y) { return est.indexOf(y) < 0; });
     }
     if (av != null) L.unshift('avant ' + av);
-    if (L.length > 3 || (!L.length && Y.length)) nc = 'années non comptées';
+    if (L.length > 3 || (!L.length && Y.length && !est.length)) nc = 'années non comptées';
     else if (L.length) nc = 'non compté' + (L.length === 1 && /^avant/.test(L[0]) ? ' ' : ' : ') + et(L);
     else if (fs) nc = 'France seule';
     var parts = [pe, nc].filter(Boolean);
