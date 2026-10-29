@@ -120,7 +120,8 @@
     politique: '<path d="M3 9l9-5 9 5"/><path d="M5 9v8"/><path d="M10 9v8"/><path d="M14 9v8"/><path d="M19 9v8"/><path d="M3 20h18"/>',
     demographie: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.8.2 5 2.6 5 5.8"/>',
     cherche: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
-    lettre: '<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/>'
+    lettre: '<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/>',
+    appli: '<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>'
   };
   var icone = function (k) { return '<i class="mn-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + IC[k] + '</svg></i>'; };
   // Couleurs des pages (les pages et le Baromètre n'ont pas les mêmes noms de variables).
@@ -190,13 +191,15 @@
     '.fold>summary,details.plus>summary{font-weight:700;color:' + V.fr + ';background:rgba(47,91,211,.10);background:color-mix(in srgb,' + V.fr + ' 13%,transparent);border-left:4px solid ' + V.fr + ';border-radius:12px;justify-content:space-between;gap:10px}' +
     '.fold>summary:hover,details.plus>summary:hover,.fold[open]>summary,details.plus[open]>summary{background:rgba(47,91,211,.16);background:color-mix(in srgb,' + V.fr + ' 20%,transparent)}';
   var ici = location.pathname.replace(/index\.html$/, '');
+  // Concret ouvert depuis l'écran d'accueil (web app) : pas de lien vers l'explication pour l'y mettre.
+  var appli = function () { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; };
   var lien = function (p) { return '<a href="' + p.u + '"' + (p.large ? ' class="mn-large"' : '') + (p.u === ici ? ' aria-current="page"' : '') + '>' + icone(p.ic) + '<b>' + p.l + '</b><span>' + p.t + '</span></a>'; };
   // Les pages par groupe (« Chaque jour », « Les missions notées », « Repères, sans note ») : un intitulé avant chaque groupe.
   var liste = function (L) { var g = null; return L.map(function (p) { var h = p.g && p.g !== g ? '<h3 class="mn-g">' + p.g + '</h3>' : ''; g = p.g || g; return h + lien(p); }).join(''); };
 
   function ouvrir(btn) {
     var v = document.createElement('div'); v.className = 'mn-voile';
-    v.innerHTML = '<div class="mn-panneau" role="dialog" aria-modal="true" aria-label="Les pages de Concret"><div class="mn-haut"><b>Les pages de Concret</b><button type="button" class="mn-ferme">Fermer ✕</button></div><div class="mn-pied">' + (document.querySelector('.rech-b') ? '<button type="button" class="mn-cherche">' + icone('cherche') + 'Rechercher un chiffre</button>' : '') + (ici !== '/contact/' ? '<a href="/contact/">' + icone('lettre') + 'Écrire à Concret</a>' : '') + '</div><nav class="mn-liste">' + liste(PAGES) + '</nav></div>';
+    v.innerHTML = '<div class="mn-panneau" role="dialog" aria-modal="true" aria-label="Les pages de Concret"><div class="mn-haut"><b>Les pages de Concret</b><button type="button" class="mn-ferme">Fermer ✕</button></div><div class="mn-pied">' + (document.querySelector('.rech-b') ? '<button type="button" class="mn-cherche">' + icone('cherche') + 'Rechercher un chiffre</button>' : '') + (ici !== '/contact/' ? '<a href="/contact/">' + icone('lettre') + 'Écrire à Concret</a>' : '') + (ici !== '/application/' && !appli() ? '<a href="/application/">' + icone('appli') + 'Installer Concret</a>' : '') + '</div><nav class="mn-liste">' + liste(PAGES) + '</nav></div>';
     var fermer = function () { v.remove(); document.removeEventListener('keydown', esc); document.documentElement.style.overflow = ''; btn.focus(); };
     var esc = function (e) { if (e.key === 'Escape') fermer(); };
     v.addEventListener('click', function (e) { if (e.target === v || e.target.closest('.mn-ferme')) fermer(); else if (e.target.closest('.mn-cherche')) { fermer(); document.querySelector('.rech-b').click(); } });
@@ -435,6 +438,9 @@
       if (!p || a.querySelector('.mn-ic')) return;
       a.classList.add('mn-avec'); a.insertAdjacentHTML('afterbegin', icone(p.ic));
     });
+    // Dans le pied de chaque page : comment mettre Concret sur l'écran d'accueil (page /application/, à envoyer sur WhatsApp).
+    var pied = document.querySelector('footer p:last-of-type') || document.querySelector('footer');
+    if (pied && ici !== '/application/' && !appli() && !pied.querySelector('.mn-app')) pied.insertAdjacentHTML('beforeend', ' · <a class="mn-app" href="/application/">Mettre Concret sur l\'écran d\'accueil</a>');
     // En bas de page (pas sur l'accueil, qui a déjà la liste des missions) : les autres pages.
     if (ici !== '/' && !document.querySelector('.mn-autres')) {
       var f = document.querySelector('footer'), sec = document.createElement('section');

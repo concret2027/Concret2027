@@ -14,7 +14,7 @@ Lancé par outils/controle.js verifier, avant la validation, pour suivre chaque 
   python3 outils/quiz_auto.py            compare
   python3 outils/quiz_auto.py --ecrire   écrit dans data.json
 """
-import json, os, re, sys
+import hashlib, json, os, re, sys
 from datetime import date, datetime
 try:
     from zoneinfo import ZoneInfo
@@ -258,7 +258,8 @@ def main():
             html = h.read()
         ancien = ser['QUIZ']
         aujourdhui = ancien[idx % len(ancien)]
-        mains = [q for q in ancien if not q.get('auto')]
+        # Ordre fixe des questions écrites à la main (pas celui de la liste en cours) : deux passages de suite donnent la même liste.
+        mains = sorted((q for q in ancien if not q.get('auto')), key=lambda q: hashlib.md5(q.get('q', '').encode('utf-8')).hexdigest())
         neuf = fabriquer(S, P, pg, html, mains)
         # La question du jour reste la même : on fait tourner la liste pour qu'elle tombe aujourd'hui.
         if aujourdhui in neuf:
