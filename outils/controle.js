@@ -33,10 +33,15 @@ if (cmd === 'a-faire') {
 if (cmd !== 'verifier') { console.error('Usage : node outils/controle.js a-faire|verifier [AAAA-MM-JJ] [--compte-rendu fichier.md]'); process.exit(2); }
 
 // ===== 1. Validation de data.json =====
+// Questions du jour calculées à partir des séries (outils/quiz_auto.py) : refaites avant la validation, pour suivre chaque nouveau
+// chiffre ; la question d'aujourd'hui ne change pas.
+var qa = cp.spawnSync('python3', [path.join(__dirname, 'quiz_auto.py'), '--ecrire'], { cwd: ROOT, encoding: 'utf8', timeout: 60000 });
+var qaErr = qa.status !== 0 ? ((qa.stderr || qa.error && qa.error.message || 'erreur').trim().split('\n').pop()) : null;
 var bloquant = [], alertes = [];
 var d;
 try { d = rd('data.json'); } catch (e) { console.log('Concret ✗ ' + dateFr(today) + ' : data.json illisible (' + e.message + '), rien publié.'); process.exit(1); }
 var err = function (m) { bloquant.push(m); };
+if (qaErr) alertes.push('questions du jour calculées non refaites (' + qaErr + ') : relancer python3 outils/quiz_auto.py --ecrire');
 if (!d.updated || !d.updated_iso || isNaN(Date.parse(d.updated_iso))) err('updated / updated_iso absents ou invalides');
 var DATASETS = ['sondages_t1', 'sondages_t2', 'polymarket', 'polymarket_hist', 'polymarket_t1', 'polymarket_t1_hist', 'evenements', 'agenda_barometre', 'pouls', 'finances_mois', 'actu_finances', 'agenda_finances', 'education_mois', 'actu_education', 'agenda_education'];
 DATASETS.forEach(function (k) { if (!Array.isArray((d.datasets || {})[k])) err('jeu de données manquant : ' + k); });
