@@ -401,7 +401,7 @@
     if (jp) {
       var cib = function (l) { return document.getElementById(decodeURIComponent((l.getAttribute('href') || '').slice(1))); };
       var ls = Array.prototype.filter.call(jp.querySelectorAll('a[href^="#"]'), function (l) { return cib(l); });
-      ls.slice().sort(function (p, q) { return cib(p).compareDocumentPosition(cib(q)) & 4 ? -1 : 1; }).forEach(function (l) { jp.appendChild(l); });
+      ls.slice().sort(function (p, q) { return cib(p).compareDocumentPosition(cib(q)) & 4 ? -1 : 1; }).forEach(function (l) { l.parentNode.appendChild(l); }); // chacun reste dans sa rangée (Baromètre : .jump-l1)
     }
     // Clavier et lecteur d'écran : la zone principale de la page, et un lien « Aller au contenu » qui saute les menus.
     var wrap = document.querySelector('main') || document.querySelector('.wrap');
