@@ -135,6 +135,7 @@
     // En flex, l'espace en tête de « 2027 », « du jour », « les lois » disparaît : on le remet (sinon « Baromètre2027 » sur ordinateur).
     'nav.site>a .lg{margin-left:.28em}' +
     'nav.jump a,.jump-l1>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}' +
+    'nav.jump a.mn-ici{background:' + V.fg + ';color:' + V.bg + ';border-color:' + V.fg + '}' +
     '.mn-btn:focus-visible span{outline:2px solid ' + V.fr + ';outline-offset:2px}' +
     '.mn-btn{display:inline-flex}' +
     '.mn-voile{position:fixed;inset:0;z-index:50;background:rgba(10,12,18,.5);display:flex;justify-content:flex-end}' +
@@ -394,6 +395,33 @@
     document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.nt-btn')) compter('detail'); }, true);
     document.addEventListener('concret:vue', function (e) { compter(e.detail || 'courbe'); });
   }
+  function suivre(jp, cib) {
+    var ls = Array.prototype.filter.call(jp.querySelectorAll('a[href^="#"]'), function (l) { return cib(l); }), cur = null, choisi = null, fin = 0;
+    if (!ls.length) return;
+    var montre = function (l) {
+      if (l === cur) return; cur = l;
+      ls.forEach(function (x) { x.classList.toggle('mn-ici', x === l); if (x === l) x.setAttribute('aria-current', 'true'); else x.removeAttribute('aria-current'); });
+      if (l) { var r = l.parentNode; if (r.scrollWidth > r.clientWidth) r.scrollLeft = Math.max(0, l.offsetLeft - 40); }
+    };
+    var maj = function () {
+      if (choisi && Date.now() < fin) return montre(choisi);
+      choisi = null;
+      var lim = jp.getBoundingClientRect().bottom + 80, ici = null;
+      ls.forEach(function (l) { var e = cib(l), r = e && e.getBoundingClientRect(); if (r && r.height && r.top <= lim) ici = l; });
+      montre(ici);
+    };
+    var t = 0; addEventListener('scroll', function () { if (!t) t = requestAnimationFrame(function () { t = 0; maj(); }); }, { passive: true });
+    addEventListener('resize', maj); setTimeout(maj, 300);
+    jp.addEventListener('click', function (e) {
+      var l = e.target.closest && e.target.closest('a[href^="#"]'), c = l && cib(l); if (!c) return;
+      e.preventDefault(); choisi = l; fin = Date.now() + 1500; montre(l);
+      for (var d = c; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
+      // Le titre juste sous les deux bandeaux collés (pages, raccourcis), quel que soit le navigateur.
+      var n = document.querySelector('nav.site'), haut = (n ? n.offsetHeight : 0) + jp.offsetHeight + 12;
+      requestAnimationFrame(function () { window.scrollTo({ top: Math.max(0, window.pageYOffset + c.getBoundingClientRect().top - haut), behavior: 'smooth' }); });
+      if (history.replaceState) history.replaceState(null, '', l.getAttribute('href'));
+    });
+  }
   function init() {
     compterOuvertures();
     // Les raccourcis du haut (nav.jump) suivent toujours l'ordre réel des blocs de la page, même quand un bloc change de place.
@@ -403,6 +431,9 @@
       var ls = Array.prototype.filter.call(jp.querySelectorAll('a[href^="#"]'), function (l) { return cib(l); });
       ls.slice().sort(function (p, q) { return cib(p).compareDocumentPosition(cib(q)) & 4 ? -1 : 1; }).forEach(function (l) { l.parentNode.appendChild(l); }); // chacun reste dans sa rangée (Baromètre : .jump-l1)
     }
+    // Le raccourci de la partie où l'on se trouve est en noir, comme sur le Baromètre (qui a le sien) : la dernière partie dont
+    // le titre est passé sous la rangée. Après un toucher, la partie choisie, posée juste sous la rangée.
+    if (jp && !jp.querySelector('.jump-l1')) suivre(jp, cib);
     // Clavier et lecteur d'écran : la zone principale de la page, et un lien « Aller au contenu » qui saute les menus.
     var wrap = document.querySelector('main') || document.querySelector('.wrap');
     if (wrap && wrap.tagName !== 'MAIN' && !wrap.getAttribute('role')) wrap.setAttribute('role', 'main');
