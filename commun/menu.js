@@ -200,7 +200,7 @@
   // un seul lien, celui de /application/ : c'est sa carte (les étapes) que WhatsApp montre en aperçu,
   // y compris depuis Concret déjà installé.
   var APP_MSG = 'Concret sur l\'écran d\'accueil, comme une application :\n' +
-    '• iPhone, dans Safari : ⋯ → Partager → Sur l\'écran d\'accueil → Ajouter\n' +
+    '• iPhone, dans Safari : bouton Partager (ou ⋯ → Partager) → Sur l\'écran d\'accueil → Ajouter\n' +
     '• Android, dans Chrome : ⋮ → Ajouter à l\'écran d\'accueil → Installer\n' +
     '• Ordinateur, dans Chrome ou Edge : l\'icône d\'installation de la barre d\'adresse → Installer (Mac, Safari : Fichier → Ajouter au Dock)\n' +
     'Le détail : https://concret2027.fr/application/';
