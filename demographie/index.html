@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c21ac2d70630">
+<meta name="concret-version" content="25d3e1ec3f66">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -361,9 +361,10 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
       svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', t === 0 ? 'var(--axis)' : 'var(--grid)');
       svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(yfmt ? yfmt(t) : t.toLocaleString('fr-FR'));
     });
-    (small ? xt.filter(function (_, i) { return i % 2 === 0; }) : xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(xfmt ? xfmt(t) : t); });
+    (small ? xt.filter(function (_, i, A) { var L = A.length - 1; return i === L || (i % 2 === 0 && !(L % 2 === 1 && i === L - 1)); }) : xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(xfmt ? xfmt(t) : t); });
   }
-  var ticks = function (a, b) { var s = Math.max(1, Math.ceil((b - a) / 6)), t = []; for (var y = a; y <= b; y += s) t.push(y); return t; };
+  // La dernière année est toujours écrite sous l'axe (comme sur les pages de mission).
+  var ticks = function (a, b) { var s = Math.max(1, Math.ceil((b - a) / 6)), t = []; for (var y = a; y <= b; y += s) t.push(y); if (t[t.length - 1] !== b) { if (b - t[t.length - 1] < s / 2) t.pop(); t.push(b); } return t; };
   function lineChart(id, series, o) {
     // Courbe loin de l'écran : dessinée quand on s'en approche, sa place gardée (commun/menu.js).
     var bx0 = document.getElementById(id);
@@ -595,6 +596,6 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/partage.js?v=20261031d"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
-<script src="/commun/menu.js?v=20261031f"></script>
+<script src="/commun/menu.js?v=20261031g"></script>
 </body>
 </html>

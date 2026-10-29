@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c21ac2d70630">
+<meta name="concret-version" content="25d3e1ec3f66">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -601,7 +601,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   function main(feed) {
     var S = feed.series, Qs = [];
     PAGES.forEach(function (pg) { var B = (S[pg.p] || {}).QUIZ; if (B && B.length) { var Q = pick(B); Qs.push({ page: pg.p, l: pg.l, q: Q.q, o: Q.o, a: Q.a, e: Q.e, cle: pg.cle + idx + '-' + (function (t) { var h = 5381; for (var i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0; return h.toString(36); })(Q.q), lien: Q.v ? '/' + pg.p + '/#' + Q.v : '/' + pg.p + '/#quiz', src: pg.l, Q: Q }); } });
-    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz3-' + i + '-' + idx; g.Q = { q: g.q, o: g.o, d: /^Les (présidents|gouvernements)$/.test(g.l) ? 'Note sur 20, calculée avec la règle affichée sur chaque page : 10 = la France a fait aussi bien que la moyenne de l\'UE pendant le mandat.' : 'Dernier chiffre connu, le même pour les quatre, lu dans les données de la page (Eurostat le plus souvent).' }; Qs.push(g); });
+    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz3-' + i + '-' + idx; g.Q = { q: g.q, o: g.o, d: /^Les (présidents|gouvernements)$/.test(g.l) ? 'Note sur 20, calculée avec la règle affichée sur chaque page : 10 = la France a fait aussi bien que la moyenne de l\'UE pendant le mandat.' : 'Chiffres de la même année pour chaque réponse, lus dans les données de la page (Eurostat le plus souvent).' }; Qs.push(g); });
     var total = Qs.length, rep = Qs.map(function () { return null; });
     document.getElementById('qz-titre').textContent = total + ' questions sur la France face à ses voisins';
     var prog = document.getElementById('qz-prog'); prog.innerHTML = Qs.map(function () { return '<i></i>'; }).join('');
@@ -872,6 +872,6 @@ footer p { margin: 0; } footer a { color: inherit; }
 </script>
 <script src="/commun/partage.js?v=20261031d"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
-<script src="/commun/menu.js?v=20261031f"></script>
+<script src="/commun/menu.js?v=20261031g"></script>
 </body>
 </html>

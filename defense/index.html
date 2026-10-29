@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c21ac2d70630">
+<meta name="concret-version" content="25d3e1ec3f66">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1015,7 +1015,8 @@ function main(FEED) {
   };
   function keyHtml(c) {
     return ['fr', 'ue', 'ue_calc', 'de', 'es', 'us'].filter(function (w) { return has(c, w); }).map(function (w) {
-      if (w === 'ue' || w === 'ue_calc') return '<span><i class="dash"></i>' + (w === 'ue' ? 'Moyenne de l\'UE' : 'Moyenne de l\'UE') + '</span>';
+      // ue_l : la moyenne ne porte que sur une partie des pays de l'UE (les 23 membres de l'OTAN).
+      if (w === 'ue' || w === 'ue_calc') return '<span><i class="dash"></i>' + esc(c.ue_l || 'Moyenne de l\'UE') + '</span>';
       return '<span><i style="background:' + NOMS[w][1] + '"></i>' + NOMS[w][0] + '</span>';
     }).join('') + (estDe(c).length ? '<span><i class="dash" data-c="var(--fr)" style="background:repeating-linear-gradient(90deg,var(--fr) 0 4px,transparent 4px 6px) !important"></i>France, estimation de l\'OTAN</span>' : '') + (c.objectif ? '<span><i style="background:var(--bad)"></i>Repère de l\'OTAN</span>' : '');
   }
@@ -1027,7 +1028,7 @@ function main(FEED) {
     if (has(c, 'es')) S.push({ c: 'var(--es)', data: serOf(c, 'es') });
     if (has(c, 'de')) S.push({ c: 'var(--de)', data: serOf(c, 'de'), dots: c.y.length < 8 });
     if (has(c, 'ue')) S.push({ c: 'var(--ea)', dash: 1, data: serOf(c, 'ue'), dots: c.y.length < 8 });
-    if (has(c, 'ue_calc')) S.push({ c: 'var(--ea)', n: 'Moyenne UE (calcul Concret)', dash: 1, data: serOf(c, 'ue_calc') });
+    if (has(c, 'ue_calc')) S.push({ c: 'var(--ea)', n: c.ue_l || 'Moyenne UE (calcul Concret)', dash: 1, data: serOf(c, 'ue_calc') });
     S = S.concat(frSeries(c));
     var x0 = c.y[0], x1 = c.y[c.y.length - 1];
     lineChart(id, S, Object.assign({ x: [x0 - .5, x1 + .5], xt: ticks(x0, x1), unit: c.unite.charAt(0) === '%' ? ' %' : '', dec: decOf(c), label: c.l, obj: c.objectif || null, est: estDe(c)[0] || null }, extra || {}));
@@ -1428,6 +1429,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261031d"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261031f"></script>
+<script src="/commun/menu.js?v=20261031g"></script>
 </body>
 </html>
