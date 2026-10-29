@@ -43,8 +43,22 @@
   }
   function garder(id, l) { var k = opts.page + ':' + id; if (l.length) choix[k] = l; else delete choix[k]; try { localStorage.setItem(CLE, JSON.stringify(choix)); } catch (e) {} }
   function redessiner(id) { var f = courbes[id] || toiles[id]; if (f) try { f(); } catch (e) {} }
-  function choisir(id, g) { var l = choisis(id).slice(); if (!id || !g || l.indexOf(g) >= 0) return; if (l.length >= MAX) l.shift(); l.push(g); garder(id, l); charger().then(function () { redessiner(id); }); }
-  function retirer(id, g) { garder(id, choisis(id).filter(function (x) { return x !== g; })); redessiner(id); }
+  // Clavier et lecteur d'écran : la barre est redessinée, le focus revient sur son menu, et le changement est annoncé.
+  function annoncer(t) {
+    var a = document.getElementById('cp-annonce');
+    if (!a) { a = document.createElement('div'); a.id = 'cp-annonce'; a.setAttribute('role', 'status'); a.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap'; document.body.appendChild(a); }
+    a.textContent = ''; setTimeout(function () { a.textContent = t; }, 50);
+  }
+  function refocus(id, avait) {
+    if (!avait) return;
+    var b = document.querySelector('.cp-bar[data-id="' + id + '"]'), s = b && b.querySelector('select'); if (s) try { s.focus({ preventScroll: true }); } catch (e) { }
+  }
+  function choisir(id, g) {
+    var l = choisis(id).slice(); if (!id || !g || l.indexOf(g) >= 0) return; if (l.length >= MAX) l.shift(); l.push(g); garder(id, l);
+    var avait = document.activeElement && document.activeElement.closest && document.activeElement.closest('.cp-bar');
+    charger().then(function () { redessiner(id); refocus(id, avait); annoncer('Ajout au graphique, en pointillé : ' + nom(g) + '.'); });
+  }
+  function retirer(id, g) { garder(id, choisis(id).filter(function (x) { return x !== g; })); redessiner(id); refocus(id, true); annoncer('Retrait du graphique : ' + nom(g) + '.'); }
 
   // La barre sous une courbe ou une toile : les pays ajoutés à ce graphique (à retirer d'un toucher) et le menu pour en ajouter.
   function barre(b) {
@@ -67,7 +81,20 @@
       (sans.length ? '<span class="cp-msg">' + sans.join(', ') + ' : pas de chiffre publié pour cet indicateur.</span>' : '') +
       (ch.length ? '<span class="cp-msg">' + (ch.length > 1 ? 'Pays ajoutés' : 'Pays ajouté') + ' en pointillé sur ce graphique seulement, comme repère : aucune note ne change.</span>' : '');
   }
-  document.addEventListener('change', function (e) { var b = e.target.closest && e.target.closest('.cp-bar'); if (b && e.target.tagName === 'SELECT') choisir(b.dataset.id, e.target.value); });
+  // Au clavier, sur un menu fermé, chaque flèche change déjà le choix (Windows, Linux) : le pays n'est ajouté qu'avec Entrée
+  // ou en quittant le menu, pour qu'on puisse parcourir la liste. À la souris ou au doigt, dès le choix.
+  var fleche = 0;
+  document.addEventListener('keydown', function (e) {
+    var s = e.target; if (!s || s.tagName !== 'SELECT' || !s.closest('.cp-bar')) return;
+    if (/^(Arrow|Page|Home|End)/.test(e.key) || e.key.length === 1) fleche = Date.now();
+    else if (e.key === 'Enter' && s.value) { e.preventDefault(); fleche = 0; choisir(s.closest('.cp-bar').dataset.id, s.value); }
+  });
+  document.addEventListener('change', function (e) {
+    var b = e.target.closest && e.target.closest('.cp-bar'); if (!b || e.target.tagName !== 'SELECT') return;
+    if (Date.now() - fleche < 600) return;
+    choisir(b.dataset.id, e.target.value);
+  });
+  document.addEventListener('focusout', function (e) { var s = e.target; if (s && s.tagName === 'SELECT' && s.value && fleche && s.closest('.cp-bar')) { fleche = 0; choisir(s.closest('.cp-bar').dataset.id, s.value); } });
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-retirer]'), bar = b && b.closest('.cp-bar'); if (bar) retirer(bar.dataset.id, b.dataset.retirer); });
   function poserBarre(apres, k, id) {
     if (!apres || !apres.parentNode) return;

@@ -61,20 +61,20 @@
   }
   // L'image prend quelques secondes à préparer : passé ce délai, l'iPhone refuse d'ouvrir le menu de partage.
   // On montre alors l'image avec un bouton « Partager » qui, touché, ouvre le menu tout de suite.
-  function montrer(url, file, titreTxt) {
+  function montrer(url, file, titreTxt, btn) {
     var o = document.createElement('div'); o.className = 'pt-overlay';
-    o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
+    o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'Partager l\'image');
     o.style.cssText = 'position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px';
     o.innerHTML = '<div style="background:#fff;color:#111;border-radius:14px;padding:14px;max-width:min(92vw,520px);max-height:92vh;overflow:auto;display:grid;gap:10px;font:14px system-ui,sans-serif"><img alt="Image à partager" style="width:100%;border-radius:8px"><button type="button" class="pt-go" hidden style="font:inherit;font-weight:600;padding:12px;border-radius:10px;border:0;background:#2f5bd3;color:#fff">Partager l\'image</button><a download="concret.png" style="font-weight:600">Enregistrer l\'image</a><span>Ou appui long sur l\'image pour la partager.</span><button type="button" class="pt-close" style="font:inherit;font-weight:600;padding:10px;border-radius:10px;border:0;background:#111;color:#fff">Fermer</button></div>';
-    o.querySelector('img').src = url; o.querySelector('a').href = url;
+    o.querySelector('img').src = url; o.querySelector('img').alt = 'Image à partager : ' + titreTxt; o.querySelector('a').href = url;
     var go = o.querySelector('.pt-go');
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
       go.hidden = false;
       go.onclick = function () { navigator.share({ files: [file], title: titreTxt, text: titreTxt + ' · ' + adresse }).then(function () { o.remove(); }, function () {}); };
     }
     // Clavier : la fenêtre prend le focus, se ferme par Échap, et rend le focus au bouton touché.
-    var avant = document.activeElement, fermer = function () { o.remove(); document.removeEventListener('keydown', esc); if (avant && avant.focus) try { avant.focus(); } catch (e) {} };
-    var esc = function (e) { if (e.key === 'Escape') fermer(); };
+    var avant = btn || document.activeElement, fermer = function () { o.remove(); document.removeEventListener('keydown', esc); if (avant && avant.focus) try { avant.focus(); } catch (e) {} };
+    var esc = function (e) { if (e.key === 'Escape') fermer(); else if (window.ConcretMenu) ConcretMenu.pieger(o.firstChild, e); };
     o.querySelector('.pt-close').onclick = fermer;
     o.addEventListener('click', function (e) { if (e.target === o) fermer(); });
     document.addEventListener('keydown', esc);
@@ -142,10 +142,10 @@
     }).then(function (r) {
       var file = new File([r.blob], 'concret.png', { type: 'image/png' });
       var t = titre(card);
-      if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: t, text: t + ' · ' + adresse }).catch(function (e) { if (!e || e.name !== 'AbortError') montrer(r.url, file, t); });
-      montrer(r.url, file, t);
-    }).catch(function () { alert('Le partage n\'a pas pu être préparé.'); })
-      .then(function () { if (wasClosed) card.open = false; plis.forEach(function (d) { d.open = false; }); btn.textContent = label; btn.disabled = false; });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: t, text: t + ' · ' + adresse }).catch(function (e) { if (!e || e.name !== 'AbortError') montrer(r.url, file, t, btn); });
+      montrer(r.url, file, t, btn);
+    }).then(function () { return label; }, function () { return 'L\'image n\'a pas pu être préparée. Réessayer'; })
+      .then(function (l) { if (wasClosed) card.open = false; plis.forEach(function (d) { d.open = false; }); btn.textContent = l; btn.disabled = false; if (!document.activeElement || document.activeElement === document.body) try { btn.focus(); } catch (e) { } if (l !== label) { btn.setAttribute('role', 'status'); setTimeout(function () { btn.textContent = label; btn.removeAttribute('role'); }, 6000); } });
   }
   function equiper(root) {
     Array.prototype.forEach.call((root || document).querySelectorAll(SEL), function (card) {

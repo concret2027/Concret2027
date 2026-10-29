@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="a8064bba04b4">
+<meta name="concret-version" content="104e1ac38edf">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -30,9 +30,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261030b"></script>
+<script src="/commun/bref.js?v=20261031a"></script>
 <script src="/commun/toile.js?v=20261030a"></script>
-<script src="/commun/pays.js?v=20261029b"></script>
+<script src="/commun/pays.js?v=20261031a"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
 .sous { border-top: 1px solid var(--line); }
@@ -318,6 +318,11 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .glossary dd { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
 footer { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 8px; }
 footer p { margin: 0; } footer a { color: inherit; }
+/* La place du bloc « En bref » est gardée pendant le chargement des données : la page ne saute pas quand il se remplit. */
+#reponse.bref { min-height: 540px; }
+/* Même chose pour « Les dernières nouvelles » ou « Depuis votre dernière visite », juste au-dessus (invisible jusqu'à ce qu'il soit écrit). */
+.visit-res { visibility: hidden; min-height: 104px; }
+@media (min-width: 700px) { #reponse.bref { min-height: 480px; } .visit-res { min-height: 64px; } }
 </style>
 </head>
 <body data-sources="Sources : Eurostat, Insee, Banque mondiale, FMI, Agence France Trésor (détail en bas de page).">
@@ -327,13 +332,13 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><h1>Finances publiques</h1><span id="today"></span></div>
   <p class="upd" id="upd">Chargement des données…</p>
-  <p class="visit" id="visit" hidden></p>
+  <p class="visit visit-res" id="visit" aria-hidden="true"></p>
   <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#acc-today">Aujourd'hui</a><a href="#acc-month">Ce mois-ci</a><a href="#acc-actu">Actualité</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
   <section class="card" id="toile" hidden></section>
   <section class="card" id="bulletin" aria-labelledby="gov-title">
-    <h2 id="gov-title"><span class="eyebrow">Les notes des finances publiques</span>Président par président : la France face à la moyenne de l'UE</h2>
+    <h2 id="gov-title"><span class="eyebrow">Les notes des finances publiques</span>Président par président&nbsp;: la France face à la moyenne de l'UE</h2>
     <button class="share pt-share" id="share-rank" type="button" style="justify-self:start;margin:0" aria-label="Partager le classement">Partager le classement</button>
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
@@ -640,6 +645,7 @@ function main(FEED) {
   var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Moyenne de l\'UE', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--it)': 'Italie', 'var(--es)': 'Espagne' };
   function hover(box, svg, H, m, pts) {
     if (!pts.length) return;
+    if (window.ConcretMenu && ConcretMenu.tableau) ConcretMenu.tableau(box, pts, svg.attr('aria-label'));
     var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
     svg.classed('hov', true);
     var g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
@@ -776,7 +782,6 @@ function main(FEED) {
         ConcretBref.afficher(vis, 'Depuis votre dernière visite (' + when + ')', pv);
       }
       else ConcretBref.premiere(vis, { actu: ((FEED && FEED.datasets) || {}).actu_finances }); // Première visite : les dernières nouvelles de la page.
-      vis.hidden = !lastV;
     } catch (e) {}
     document.getElementById('daily-lab').textContent = 'Le chiffre du ' + day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
     document.getElementById('daily-text').innerHTML = FACTS[((idx % FACTS.length) + FACTS.length) % FACTS.length];
@@ -902,7 +907,7 @@ function main(FEED) {
     var box = document.getElementById('rank-' + rankMode); box.textContent = '';
     var W = Math.max(300, box.clientWidth), small = W < 520, rh = 26, lw = small ? 92 : 150, top = 22, H = top + list.length * rh + 26;
     var x = d3.scaleLinear().domain([0, 20]).range([lw, W - 34]);
-    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Classement des notes sur 20');
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'group').attr('aria-label', 'Classement des notes sur 20 ; chaque barre ouvre le détail');
     [0, 5, 10, 15, 20].forEach(function (t) {
       svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 4).attr('y2', H - 20).attr('stroke', t === 10 ? 'var(--fg)' : 'var(--grid)').attr('stroke-dasharray', t === 10 ? '4 3' : null);
       svg.append('text').attr('x', x(t)).attr('y', top - 8).attr('text-anchor', 'middle').text(t).style('fill', t === 10 ? 'var(--fg)' : null).style('font-weight', t === 10 ? 700 : null);
@@ -1479,9 +1484,9 @@ function main(FEED) {
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261028k"></script>
-<script src="/commun/recherche.js?v=20261025b"></script>
+<script src="/commun/partage.js?v=20261031a"></script>
+<script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261030j"></script>
+<script src="/commun/menu.js?v=20261031a"></script>
 </body>
 </html>

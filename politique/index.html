@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="a8064bba04b4">
+<meta name="concret-version" content="104e1ac38edf">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -127,6 +127,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .vote details > summary::after { content: "\00a0▾"; } .vote details[open] > summary::after { content: "\00a0▴"; }
 .liens { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; }
 .liens a { color: var(--muted); }
+.liens a, .lois .m a { display: inline-flex; align-items: center; min-height: 24px; }
 .liens a.pg { color: var(--fr); font-weight: 600; text-decoration: none; }
 /* Tableaux */
 .tw { overflow-x: auto; }
@@ -198,6 +199,10 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 .chap::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .vers-votez { margin: 0; } .vers-votez a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--fr); text-decoration: none; }
 .lire-plus > summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--fr); min-height: 40px; display: flex; align-items: center; }
+/* La place des blocs remplis par les données est gardée pendant le chargement : la page ne saute pas quand ils arrivent. */
+#bref3:empty { min-height: 440px; }
+@media (min-width: 700px) { #bref3:empty { min-height: 220px; } }
+@media (min-width: 1100px) { #bref3:empty { min-height: 150px; } }
 </style>
 </head>
 <body data-sources="Sources : Assemblée nationale (données ouvertes), Conseil constitutionnel, Élysée, Sénat (détail dans « La règle et les sources »).">
@@ -387,7 +392,7 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
         (v.moc ? '' : '<div class="barre" aria-hidden="true"><i class="p" style="width:' + (100 * v.p / tot) + '%"></i><i class="c" style="width:' + (100 * v.c / tot) + '%"></i><i class="a" style="width:' + (100 * v.a / tot) + '%"></i></div>') +
         '<div class="pos">' + lignes + '</div>' +
         '<details><summary>Le vote de chaque groupe</summary><div class="tw">' + tab + '</div></details>' +
-        '<div class="liens"><a href="' + urlScrutin(v.n) + '">Scrutin n° ' + v.n + ' (Assemblée nationale)</a>' + (v.dos ? '<a href="' + urlDossier(v.dos) + '">Le dossier du texte</a>' : '') + lienPages(v.pg) + '</div></article>';
+        '<div class="liens"><a href="' + urlScrutin(v.n) + '">Scrutin n° ' + v.n + ' (Assemblée nationale)</a>' + (v.dos ? '<a href="' + urlDossier(v.dos) + '" aria-label="Le dossier du texte du scrutin n° ' + v.n + '">Le dossier du texte</a>' : '') + lienPages(v.pg) + '</div></article>';
     }
     dessinerVotes();
 
@@ -409,7 +414,7 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
         return '<li><div><div class="t"><b>Loi n° ' + esc(l.code) + '</b> du ' + dLong(l.d) + ' ' + esc(l.t) + '</div><div class="m">' +
           (l.jo ? '<span>Journal officiel' + (l.njo ? ' n° ' + esc(l.njo) : '') + ' du ' + dLong(l.jo) + '</span>' : '') +
           (v ? '<a href="#v' + v.n + '" data-v="' + v.n + '">Vote final à l\'Assemblée : ' + nf(v.p) + ' pour, ' + nf(v.c) + ' contre (' + dCourt(v.d, true) + ')</a>' : '') +
-          '<a href="' + urlDossier(l.dos) + '">Le dossier</a>' + lienPages(l.pg) + '</div></div></li>';
+          '<a href="' + urlDossier(l.dos) + '" aria-label="Le dossier de la loi n° ' + esc(l.code) + '">Le dossier</a>' + lienPages(l.pg) + '</div></div></li>';
       }).join('') || '<li><p class="vide">Aucune loi dans cette catégorie.</p></li>';
       $('lois-plus').hidden = L.length <= nlMax;
       $('lois-plus').textContent = 'Voir ' + Math.min(20, L.length - nlMax) + ' lois de plus (' + (L.length - nlMax) + ' restantes)';
@@ -495,8 +500,8 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 })();
 </script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/partage.js?v=20261028k"></script>
-<script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261030j"></script>
+<script src="/commun/partage.js?v=20261031a"></script>
+<script src="/commun/recherche.js?v=20261031a"></script>
+<script src="/commun/menu.js?v=20261031a"></script>
 </body>
 </html>

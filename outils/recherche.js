@@ -37,6 +37,8 @@ function serveur() {
     await p.evaluate(function () { document.querySelectorAll('details').forEach(function (d) { d.open = true; d.dispatchEvent(new Event('toggle')); }); });
     await p.waitForTimeout(1500);
     var items = await p.evaluate(function () {
+      // Les tableaux de chiffres cachés à l'écran (lus par les lecteurs d'écran) ne vont pas dans l'index.
+      document.querySelectorAll('.mn-sr').forEach(function (e) { e.remove(); });
       var net = function (t) { return (t || '').replace(/\s+/g, ' ').trim(); }, res = [], vus = {};
       var titreDe = function (el) {
         var h = el.querySelector(':scope > h2, :scope > summary .acc-h, :scope > .mo-lab, :scope > h3, :scope > .eyebrow, :scope > span.eyebrow, :scope > .lab, h2');

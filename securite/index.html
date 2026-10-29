@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="a8064bba04b4">
+<meta name="concret-version" content="104e1ac38edf">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -30,9 +30,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261030b"></script>
+<script src="/commun/bref.js?v=20261031a"></script>
 <script src="/commun/toile.js?v=20261030a"></script>
-<script src="/commun/pays.js?v=20261029b"></script>
+<script src="/commun/pays.js?v=20261031a"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
@@ -295,7 +295,7 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .courbe-p > .eyebrow, .fold .card > h2 > .eyebrow, .grand .card > h2 > .eyebrow, section.theme > .charts4 .card > h2 > .eyebrow { text-transform: none; letter-spacing: 0; font-size: 15px; line-height: 1.3; font-weight: 700; color: var(--fg); }
 .autres { display: grid; gap: 8px; }
 .minis-t { margin: 4px 0 0; font-size: 15px; font-weight: 700; } .minis-t span { font-weight: 400; font-size: 13px; color: var(--muted); }
-.minis-h { margin: -6px 0 0; font-size: 13px; font-weight: 600; color: var(--fr); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.minis-h { margin: -6px 0 0; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mini-u { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 12px; line-height: 1.3; color: var(--muted); overflow: hidden; margin-top: 1px; }
 .minis-k { margin: 0; display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 12px; color: var(--muted); }
 .minis-k i { display: inline-block; width: 12px; height: 0; border-top: 2.5px solid; vertical-align: middle; margin-right: 5px; }
@@ -448,7 +448,12 @@ section.theme > *, .autres > * { min-width: 0; }
 .qlist a { color: var(--fg); font-weight: 600; text-decoration: none; } .qlist span { color: var(--muted); font-size: 13px; } .qlist span b { color: var(--fg); font-weight: 600; }
 .pres-line { margin: 0; font-size: 13.5px; } .pres-line b { font-weight: 600; font-variant-numeric: tabular-nums; }
 #plus-loin > .acc-body { padding-top: 0; }
-.mo { min-width: 0; } .mo-tab { width: 100%; table-layout: fixed; } .mo-tab th:first-child { width: 44%; } .mo-tab td small { display: block; } .mo-row { cursor: pointer; } .mo-row[aria-selected="true"] td { background: var(--band); } .mo-row[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--fr); }
+.mo { min-width: 0; } .mo-tab { width: 100%; table-layout: fixed; } .mo-tab th:first-child { width: 44%; } .mo-tab td small { display: block; } .mo-row { cursor: pointer; } .mo-row[data-sel="true"] td { background: var(--band); } .mo-row[data-sel="true"] td:first-child { box-shadow: inset 3px 0 0 var(--fr); } .mo-b { font: inherit; color: inherit; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; min-height: 24px; } .mo-b:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+/* La place du bloc « En bref » est gardée pendant le chargement des données : la page ne saute pas quand il se remplit. */
+#reponse.bref { min-height: 540px; }
+/* Même chose pour « Les dernières nouvelles » ou « Depuis votre dernière visite », juste au-dessus (invisible jusqu'à ce qu'il soit écrit). */
+.visit-res { visibility: hidden; min-height: 104px; }
+@media (min-width: 700px) { #reponse.bref { min-height: 480px; } .visit-res { min-height: 64px; } }
 </style>
 </head>
 <body data-sources="Sources : Eurostat, SSMSI (ministère de l'Intérieur) (détail en bas de page).">
@@ -458,13 +463,13 @@ section.theme > *, .autres > * { min-width: 0; }
   <div class="stale" id="stale" role="status" hidden></div>
   <div class="brand"><h1>Sécurité et justice</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
-  <p class="visit" id="visit" hidden></p>
+  <p class="visit visit-res" id="visit" aria-hidden="true"></p>
   <nav class="jump" aria-label="Aller à"><a href="#bulletin">Notes</a><a href="#courbes">Thèmes</a><a href="#acc-month">Ce mois-ci</a><a href="#acc-actu">Actualité</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a><a href="#annees">Année par année</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
   <section class="card" id="toile" hidden></section>
   <section class="card" id="bulletin" aria-labelledby="gov-title">
-    <h2 id="gov-title"><span class="eyebrow">Les notes de la sécurité et de la justice</span>Président par président : la France face à la moyenne de l'UE</h2>
+    <h2 id="gov-title"><span class="eyebrow">Les notes de la sécurité et de la justice</span>Président par président&nbsp;: la France face à la moyenne de l'UE</h2>
     <details class="how">
       <summary>La règle : comment la note est calculée</summary>
       <div class="how-body">
@@ -826,7 +831,7 @@ function main(FEED) {
     var box = document.getElementById('rank-' + mode); box.textContent = '';
     var W = Math.max(300, box.clientWidth), small = W < 520, rh = 26, lw = small ? 92 : 150, top = 22, H = top + list.length * rh + 26;
     var x = d3.scaleLinear().domain([0, 20]).range([lw, W - 34]);
-    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Classement des notes sur 20');
+    var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'group').attr('aria-label', 'Classement des notes sur 20 ; chaque barre ouvre le détail');
     [0, 5, 10, 15, 20].forEach(function (t) {
       svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 4).attr('y2', H - 20).attr('stroke', t === 10 ? 'var(--fg)' : 'var(--grid)').attr('stroke-dasharray', t === 10 ? '4 3' : null);
       svg.append('text').attr('x', x(t)).attr('y', top - 8).attr('text-anchor', 'middle').text(t).style('fill', t === 10 ? 'var(--fg)' : null);
@@ -867,6 +872,7 @@ function main(FEED) {
   var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Moyenne de l\'UE', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--es)': 'Espagne' };
   function hover(box, svg, H, m, pts) {
     if (!pts.length) return;
+    if (window.ConcretMenu && ConcretMenu.tableau) ConcretMenu.tableau(box, pts, svg.attr('aria-label'));
     var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
     svg.classed('hov', true);
     var g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
@@ -1147,7 +1153,11 @@ function main(FEED) {
       g.innerHTML = '<button type="button" class="reduire">Réduire ▴</button>';
       b.parentNode.insertBefore(g, b); b.hidden = true;
       var d = serieCard(g, o.id, c, o.tag, o.extra), card = g.querySelector('.card'); card.classList.add('courbe-s'); card.dataset.partageL = 'Partager la courbe'; d(); sansPays(card);
-      g.querySelector('.reduire').onclick = function () { g.remove(); b.hidden = false; b.focus(); };
+      var reduire = function () { g.remove(); b.hidden = false; b.focus(); };
+      g.querySelector('.reduire').onclick = reduire;
+      // Clavier : le focus va au titre de la courbe agrandie, Échap la referme et rend le focus à la petite courbe.
+      g.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !e.target.closest('select')) { e.preventDefault(); reduire(); } });
+      var gt = card.querySelector('h3, h2, .lab') || card; gt.setAttribute('tabindex', '-1'); try { gt.focus({ preventScroll: true }); } catch (e) { }
       document.dispatchEvent(new CustomEvent('concret:vue', { detail: 'courbe' }));
       g.scrollIntoView({ block: 'nearest' });
     });
@@ -1222,13 +1232,13 @@ function main(FEED) {
     setHtml('p-lab', esc(o.l) + ' enregistrés · 12 mois jusqu\'à ' + moName(o, n));
     setHtml('p-num', fmt(d.a) + ' <small>' + esc(o.unite) + ' en France</small>');
     var el = document.getElementById('p-delta'); el.textContent = sg(d.e, 1) + ' % sur un an'; el.className = 'delta ' + (d.e > 0 ? 'up' : 'dn');
-    Array.prototype.forEach.call(document.querySelectorAll('#p-tab tr'), function (tr) { tr.setAttribute('aria-selected', tr.dataset.k === MSEL ? 'true' : 'false'); });
+    Array.prototype.forEach.call(document.querySelectorAll('#p-tab tr'), function (tr) { var o = tr.dataset.k === MSEL ? 'true' : 'false'; tr.setAttribute('data-sel', o); var b = tr.querySelector('.mo-b'); if (b) b.setAttribute('aria-pressed', o); });
     if (document.getElementById('acc-month').open) moChart('mo-p', cumul(o), 0, ' ' + o.unite, true);
   }
   (function () {
     var o = MO.viol, n = o.v.length - 1, d = douze(MO.hom);
-    setHtml('p-tab', ['hom', 'viol', 'vols', 'camb'].map(function (k) { var q = MO[k], z = douze(q); return '<tr class="nm mo-row" data-k="' + k + '" tabindex="0" role="button"><td>' + esc(q.l) + '</td><td>' + fmt(z.a) + ' <small>' + esc(q.unite) + '</small></td><td>' + sg(z.e, 1) + ' %</td></tr>'; }).join(''));
-    Array.prototype.forEach.call(document.querySelectorAll('#p-tab tr'), function (tr) { var f = function () { MSEL = tr.dataset.k; moTop(); }; tr.addEventListener('click', f); tr.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); f(); } }); });
+    setHtml('p-tab', ['hom', 'viol', 'vols', 'camb'].map(function (k) { var q = MO[k], z = douze(q); return '<tr class="nm mo-row" data-k="' + k + '"><td><button type="button" class="mo-b" aria-pressed="false">' + esc(q.l) + '</button></td><td>' + fmt(z.a) + ' <small>' + esc(q.unite) + '</small></td><td>' + sg(z.e, 1) + ' %</td></tr>'; }).join(''));
+    Array.prototype.forEach.call(document.querySelectorAll('#p-tab tr'), function (tr) { var f = function () { MSEL = tr.dataset.k; moTop(); }; tr.addEventListener('click', f); }); // le bouton de la première case répond au clavier
     moTop();
     setHtml('p-t', 'Chiffres jusqu\'à ' + moName(o, n) + '. « Sur un an » : total des 12 derniers mois comparé aux 12 mois précédents. ' + esc(MO.src.note) + ' Homicides : chiffres mensuels non consolidés, plus élevés que le bilan annuel du ministère (' + fmt(MO.src.hom_annuel[1]) + ' victimes en ' + MO.src.hom_annuel[0] + '). France seule : aucun voisin ne publie de chiffre mensuel comparable, ces chiffres ne comptent donc pas dans la note. Source : ' + lien(MO.src, MO.src.source) + '.');
     var dv = douze(MO.viol);
@@ -1404,9 +1414,9 @@ function main(FEED) {
 })();
 })();
 </script>
-<script src="/commun/partage.js?v=20261028k"></script>
-<script src="/commun/recherche.js?v=20261025b"></script>
+<script src="/commun/partage.js?v=20261031a"></script>
+<script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261030j"></script>
+<script src="/commun/menu.js?v=20261031a"></script>
 </body>
 </html>

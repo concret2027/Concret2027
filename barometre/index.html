@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="a8064bba04b4">
+<meta name="concret-version" content="104e1ac38edf">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -58,6 +58,7 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .dash-skeleton { color: transparent !important; background: var(--color-border-line); border-radius: 6px; min-height: 1em; }
 .bx-stale { font-size: var(--cds-font-size-caption); color: var(--color-bad); border: 1px solid var(--color-bad); border-radius: 6px; padding: 4px 8px; justify-self: start; }
 .bx-updated { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+@media (max-width: 699px) { .bx-updated { min-height: 3em; } } /* deux lignes une fois les données arrivées : la place est gardée */
 .bx-foot { max-width: 1200px; margin: 0 auto; padding-top: var(--cds-gap-lg); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border-top: 1px solid var(--color-border-line); }
 
 .bx { display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); max-width: 1200px; margin-inline: auto; }
@@ -141,7 +142,10 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 /* Replié : trois lignes de la synthèse, le reste sous « Voir le détail ». */
 .bx-today.plie .bx-take { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
 .bx-today.plie .bx-todaylist { display: none; }
-.bx-today .today-voir { margin-top: -8px; font: inherit; font-size: 14.5px; font-weight: 600; color: #2f5bd3; background: none; border: 0; padding: 0; min-height: 44px; cursor: pointer; justify-self: start; align-self: start; text-align: left; }
+/* La place de « L'essentiel du moment » est gardée pendant le chargement : la page ne saute pas quand il se remplit. */
+.bx-today.charge { min-height: 146px; }
+@media (min-width: 700px) { .bx-today.charge { min-height: 124px; } }
+.bx-today .today-voir { margin-top: -8px; font: inherit; font-size: 14.5px; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 0; min-height: 44px; cursor: pointer; justify-self: start; align-self: start; text-align: left; }
 .bx-visit { margin: 0; font-size: 14px; line-height: 1.45; padding: 8px 12px; border-left: 3px solid #2f5bd3; background: var(--color-panel); border-radius: 0 8px 8px 0; }
 .bx-visit b { font-weight: 600; }
 .bx-todaylist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14.5px; line-height: 1.45; }
@@ -178,6 +182,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 .bx-tip .r b { font-weight: 600; }
 .bx-tip .n { white-space: normal; max-width: 220px; margin-top: 3px; }
 .bx-tablebox { overflow-x: auto; }
+.bx-tablebox:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
 .bx-voir { font: inherit; font-size: 14px; font-weight: 600; color: var(--fr); background: none; border: 1px solid var(--color-border-line); border-radius: 999px; padding: 8px 16px; min-height: 44px; cursor: pointer; justify-self: start; margin-top: 8px; }
 .bx-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
 .bx-table th, .bx-table td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
@@ -242,7 +247,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
     cache[id] = c.fn.apply(null, args); return cache[id];
   }
   window.dash = {
-    colors: ['#3a5bd9', '#b25e12', '#d23f3f', '#c2447c', '#17806f', '#8a5cd1', '#4a8a22', '#8c6d4f'],
+    colors: ['#3a5bd9', '#b25e12', '#d23f3f', '#c2447c', '#17806f', '#8a5cd1', '#3f7d1d', '#8c6d4f'],
     calc: function (id, o) { calcs[id] = o; },
     loader: function () {},
     data: function (id) { var d = get(id); return d ? { status: 'ok', data: d, columns: d[0] ? Object.keys(d[0]) : [], meta: [] } : { status: 'missing', data: [] }; },
@@ -282,7 +287,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 
   <!-- En tête : l'essentiel du moment (la synthèse, puis ce qui a bougé), l'actualité, puis tout de suite les sondages.
        Les candidats ne sont montrés qu'une fois, dans « Les sondages » (plus de carte « moyenne des 30 derniers jours » en double). -->
-  <section class="bx-card bx-today plie" id="aujourdhui" data-partage="non">
+  <section class="bx-card bx-today plie charge" id="aujourdhui" data-partage="non">
     <h2 id="today-h">L'essentiel du moment <span id="today-since" hidden></span><span id="today-hint" hidden></span></h2>
     <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
     <ul class="bx-todaylist" id="today-list"><li>Chargement…</li></ul>
@@ -359,7 +364,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <h2>Derniers duels testés</h2>
       <p class="bx-note">Sondages de second tour des 45 derniers jours.</p>
       <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
-      <div class="bx-tablebox">
+      <div class="bx-tablebox" tabindex="0" role="region" aria-label="Derniers duels testés, tableau">
         <table class="bx-table" data-source="duels_recents" data-row-key="duel">
           <thead><tr><th class="l" data-field="duel">Duel · institut</th><th data-field="date">Date</th><th data-field="score_rn">Le Pen</th><th data-field="score_adversaire">Adversaire</th></tr></thead>
           <tbody id="tbody-duels"></tbody>
@@ -372,7 +377,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <h2>Tous les sondages de premier tour</h2>
       <p class="bx-note">Moyenne des hypothèses testées par chaque enquête, en %, pour les 15 premiers candidats des sondages. Case vide : le candidat ne figurait dans aucune hypothèse testée par ce sondage.</p>
       <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
-      <div class="bx-tablebox">
+      <div class="bx-tablebox" tabindex="0" role="region" aria-label="Tous les sondages de premier tour, tableau">
         <table class="bx-table" data-source="tableau_t1" data-row-key="sondage">
           <thead><tr id="thead-t1"><th class="l" data-field="sondage">Sondage</th></tr></thead>
           <tbody id="tbody-t1"></tbody>
@@ -423,7 +428,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
   var FIXE2 = { 'Hollande': '#946503', 'Ruffin': '#64748b', 'Villepin': '#0369a1', 'Knafo': '#be185d' };
   var EXTRA = ['#0f766e', '#b45309', '#64748b', '#be185d', '#946503', '#0369a1'], extraOf = {}, nExtra = 0;
   // En mode sombre, les mêmes couleurs, plus claires, pour rester lisibles sur le fond sombre (contraste d'au moins 4,5:1).
-  var SOMBRE = { '#3a5bd9': '#7d98ff', '#b25e12': '#f0a050', '#d23f3f': '#ff7a7a', '#c2447c': '#e27aaa', '#17806f': '#3ccfb5', '#8a5cd1': '#b394ec', '#4a8a22': '#7fcf4f', '#8c6d4f': '#c4a484', '#946503': '#e0b13c', '#64748b': '#9aa7ba', '#0369a1': '#4fb3ea', '#be185d': '#f06aa8', '#0f766e': '#2dd4bf', '#b45309': '#f59e4b' };
+  var SOMBRE = { '#3a5bd9': '#7d98ff', '#b25e12': '#f0a050', '#d23f3f': '#ff7a7a', '#c2447c': '#e27aaa', '#17806f': '#3ccfb5', '#8a5cd1': '#b394ec', '#3f7d1d': '#7fcf4f', '#8c6d4f': '#c4a484', '#946503': '#e0b13c', '#64748b': '#9aa7ba', '#0369a1': '#4fb3ea', '#be185d': '#f06aa8', '#0f766e': '#2dd4bf', '#b45309': '#f59e4b' };
   var sombre = function () { var t = document.documentElement.getAttribute('data-theme'); return t ? t === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); };
   BX.col = function (s) {
     var c;
@@ -1271,7 +1276,7 @@ window.addEventListener('baro:data', function () {
     // Le défilement vers une ancre ne s'arrête pas au même endroit selon le navigateur : on pose le titre juste sous les raccourcis.
     var c = document.getElementById(a.getAttribute('href').slice(1)); if (!c) return;
     e.preventDefault(); if (c.tagName === 'DETAILS') c.open = true;
-    c.scrollIntoView({ behavior: 'smooth', block: 'start' }); if (history.replaceState) history.replaceState(null, '', a.getAttribute('href'));
+    var M = window.ConcretMenu; c.scrollIntoView({ behavior: M ? M.doux() : 'smooth', block: 'start' }); if (M) M.focaliser(c); if (history.replaceState) history.replaceState(null, '', a.getAttribute('href'));
   } });
   var t = 0; addEventListener('scroll', function () { if (!t) t = requestAnimationFrame(function () { t = 0; maj(); }); }, { passive: true });
   addEventListener('resize', maj); maj();
@@ -1363,6 +1368,7 @@ window.addEventListener('baro:data', function () {
       bv.addEventListener('click', function () { var o = sec.classList.toggle('plie'); bv.textContent = o ? 'Voir le détail ▾' : 'Masquer ▴'; bv.setAttribute('aria-expanded', o ? 'false' : 'true'); });
     }
     bv.hidden = !items.length && !(document.getElementById('takeaway').scrollHeight > document.getElementById('takeaway').clientHeight + 2);
+    sec.classList.remove('charge');
     // Depuis votre dernière visite (gardé dans le navigateur du visiteur uniquement).
     // « cur » = début de la visite en cours ; « base » = visite précédente. Une nouvelle visite commence après 1 h d'absence.
     try {
@@ -1423,9 +1429,9 @@ window.addEventListener('baro:data', function () {
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261028k"></script>
-<script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261030j"></script>
+<script src="/commun/partage.js?v=20261031a"></script>
+<script src="/commun/recherche.js?v=20261031a"></script>
+<script src="/commun/menu.js?v=20261031a"></script>
 <script>
 // Longues listes du Baromètre (duels, sondages de premier tour, notices) : les 6 premières lignes, puis « Voir les N autres »
 // qui déplie dans la page (pas de zone qui défile à l'intérieur de la page). Refait à chaque mise à jour du tableau.

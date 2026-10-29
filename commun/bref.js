@@ -13,7 +13,7 @@
     '.bref-chips a i{font-style:normal;font-weight:700;margin-right:3px;color:var(--bad)}.bref-chips a.g i{color:var(--ok)}.bref-chips a.m i{color:var(--mid)}' +
     '.bref-pres{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 10px}' +
     '.bref-pres a{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--fg);text-decoration:none;overflow:hidden}' +
-    '.bref-pres a span{font-size:12.5px;color:var(--muted);font-weight:600}.bref-pres a b{font-family:var(--serif);font-size:28px;font-weight:500;line-height:1.1}' +
+    '.bref-pres a span{font-size:12.5px;color:var(--muted);font-weight:600}.bref-pres a b{font-family:var(--serif);font-size:clamp(22px,7vw,28px);font-weight:500;line-height:1.1}' +
     '.bref-pres a i{position:absolute;left:0;bottom:0;height:4px;background:var(--bad)}.bref-pres a.g i{background:var(--ok)}.bref-pres a.m i{background:var(--mid)}' +
     '.bref-pres a.g b{color:var(--ok)}.bref-pres a.m b{color:var(--mid)}.bref-pres a.b b{color:var(--bad)}' +
     '@keyframes bref-flash{0%{box-shadow:0 0 0 3px var(--fr)}100%{box-shadow:0 0 0 3px transparent}}.bref-flash{animation:bref-flash 1.6s ease-out}';
@@ -28,7 +28,7 @@
     // Défilement dès l'image suivante (le bloc ouvert a pris sa place), sans attente.
     requestAnimationFrame(function () {
       var c = el.closest('.card, .mo') || el.closest('section') || el;
-      c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      c.scrollIntoView({ behavior: window.ConcretMenu ? ConcretMenu.doux() : 'smooth', block: 'start' });
       c.classList.remove('bref-flash'); void c.offsetWidth; c.classList.add('bref-flash');
       // La page bouge encore (courbes qui se dessinent au-dessus) : une fois posée, on remet la courbe en haut.
       setTimeout(function () { var h = c.getBoundingClientRect().top; if (h < 60 || h > 260) c.scrollIntoView({ block: 'start' }); }, 1300);
@@ -84,9 +84,9 @@
   function afficher(box, titre, parts) {
     if (!box) return; var L = (parts || []).filter(Boolean);
     if (L.length > 2) L = [L.slice(0, L.length - 1).join(' ; '), L[L.length - 1]];
-    if (!L.length) return;
+    if (!L.length) { box.hidden = true; return; }
     var maj = function (h) { return h.replace(/^((?:<[^>]+>)*)([a-zà-ÿ])/, function (m, t, c) { return t + c.toUpperCase(); }); };
-    var div = document.createElement('div'); div.className = box.className; div.id = box.id;
+    var div = document.createElement('div'); div.className = box.className.replace(/\s*visit-res\b/, ''); div.id = box.id;
     div.innerHTML = '<b>' + titre + '</b><ul class="vis-l">' + L.map(function (x) { var t = maj(x), fin = t.replace(/<[^>]+>/g, '').trim().slice(-1); return '<li>' + t + (/[.…!?]/.test(fin) ? '' : '.') + '</li>'; }).join('') + '</ul>';
     box.parentNode.replaceChild(div, box); lier(div);
   }

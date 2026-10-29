@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="a8064bba04b4">
+<meta name="concret-version" content="104e1ac38edf">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -172,6 +172,10 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
 .renvoi a:hover { border-color: var(--fr); }
 .chap { display: flex; align-items: center; gap: 10px; margin: 22px 0 -2px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .chap::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+/* La place des blocs remplis par les données est gardée pendant le chargement : la page ne saute pas quand ils arrivent. */
+#chiffres:empty { min-height: 300px; }
+@media (min-width: 700px) { #chiffres:empty { min-height: 150px; } }
+@media (min-width: 1100px) { #chiffres:empty { min-height: 115px; } }
 </style>
 </head>
 <body data-sources="Sources : Eurostat et Insee (démographie et migrations), Cour des comptes (détail sous chaque courbe).">
@@ -325,6 +329,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
   // ===== Courbes (même dessin que les autres pages) =====
   function hover(box, svg, H, m, pts) {
     if (!pts.length) return;
+    if (window.ConcretMenu && ConcretMenu.tableau) ConcretMenu.tableau(box, pts, svg.attr('aria-label'));
     svg.classed('hov', true);
     var g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
     var vl = g.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--fg)').attr('stroke-opacity', .35);
@@ -583,10 +588,10 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
 })();
 </script>
 <script src="/commun/toile.js?v=20261030a"></script>
-<script src="/commun/pays.js?v=20261029b"></script>
+<script src="/commun/pays.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/partage.js?v=20261028k"></script>
-<script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261030j"></script>
+<script src="/commun/partage.js?v=20261031a"></script>
+<script src="/commun/recherche.js?v=20261031a"></script>
+<script src="/commun/menu.js?v=20261031a"></script>
 </body>
 </html>

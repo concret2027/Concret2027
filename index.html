@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="a8064bba04b4">
+<meta name="concret-version" content="104e1ac38edf">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)">
-<title>Concret</title>
+<title>Concret · Présidents et gouvernements notés, mission par mission</title>
 <meta name="description" content="Ce que font ceux qui gouvernent, en chiffres ; les vrais votes pour vous situer. Pour chaque président et gouvernement depuis 1995, la France comparée à la moyenne de l'Union européenne avec une même règle appliquée aux chiffres publics, un quiz du jour et les vrais votes de l'Assemblée. Chiffres publics, sourcés, mis à jour chaque jour.">
 <meta property="og:title" content="Concret : ce que font ceux qui gouvernent, en chiffres ; les vrais votes pour vous situer">
 <meta property="og:description" content="Le bilan chiffré de chaque président et gouvernement depuis 1995, la France face à ses voisins, le quiz du jour et les vrais votes de l'Assemblée.">
@@ -317,7 +317,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .radar .ra { fill: var(--fg); font-size: 13px; font-weight: 600; } .radar .rl { fill: var(--muted); font-size: 10px; }
 .radar-who .chip i, .rtab i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .radar-who .chip[aria-pressed="false"] { opacity: .55; }
-.pick > summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--fr); } .pick[open] > summary { margin-bottom: 8px; }
+.pick > summary { cursor: pointer; padding-block: 4px; font-size: 13.5px; font-weight: 600; color: var(--fr); } .pick[open] > summary { margin-bottom: 8px; }
 .rtab { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
 .rtab th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
 .rtab td { text-align: right; padding: 6px; border-bottom: 1px solid var(--grid); white-space: nowrap; } .rtab th:first-child, .rtab td:first-child { text-align: left; }
@@ -655,7 +655,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     box.innerHTML = h + '</svg>';
     // Les mêmes chiffres en tableau, et la raison quand une mission n'est pas notée.
     var why = [];
-    document.getElementById('radar-table').innerHTML = rows.length ? '<thead><tr><th></th>' + MISS.map(function (m) { return '<th title="' + m.l + '"><span class="lg">' + m.l + '</span><span class="ab">' + (ABR[m.k] || m.l) + '</span></th>'; }).join('') + '<th><span class="lg">Moyenne</span><span class="ab">Moy.</span></th></tr></thead><tbody>' + rows.map(function (r) {
+    document.getElementById('radar-table').innerHTML = rows.length ? '<thead><tr><th scope="col"><span class="mn-sr">' + (kind === 'pres' ? 'Président' : 'Gouvernement') + '</span></th>' + MISS.map(function (m) { return '<th title="' + m.l + '"><span class="lg">' + m.l + '</span><span class="ab">' + (ABR[m.k] || m.l) + '</span></th>'; }).join('') + '<th><span class="lg">Moyenne</span><span class="ab">Moy.</span></th></tr></thead><tbody>' + rows.map(function (r) {
       var c = colOf(r);
       MISS.forEach(function (m) { if (r[m.k] == null) why.push(r.n + ', ' + m.l.toLowerCase() + ' non notée : ' + m.debut + '.'); else if (r[m.k + '_prov']) why.push(r.n + ', ' + m.l.toLowerCase() + ' * : note ' + (r.y1 >= new Date().getFullYear() - 3 ? 'provisoire, chiffres des dernières années pas encore publiés' : 'fragile, ' + m.debut) + ' (' + r[m.k + '_n'] + ' comparaison' + (r[m.k + '_n'] > 1 ? 's' : '') + ', compte pour ' + fmt(r[m.k + '_w'], 2) + ' dans la moyenne).'); });
       return '<tr><td><i style="background:' + c + '"></i>' + esc(r.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin')) + '</td>' + MISS.map(function (m) { return '<td>' + (r[m.k] == null ? '—' : fmt(r[m.k]) + (r[m.k + '_prov'] ? ' *' : '')) + '</td>'; }).join('') + '<td><b>' + fmt(r.m) + (r.m_prov ? ' *' : '') + '</b></td></tr>';
@@ -711,7 +711,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       if (r.m == null) return;
       var b = document.createElement('button'); b.className = 'br'; b.type = 'button'; b.setAttribute('aria-expanded', 'false');
       var w = r.m / 20 * 100, inside = w > 22;
-      b.innerHTML = '<span class="nm">' + r.n + '<small>' + period(r, series) + (r.m_prov ? ', note ' + mot(r) : '') + '</small></span><span class="tr"><span class="ten"></span><span class="fl ' + cls(r.m) + '" style="width:' + w + '%"></span><span class="v" style="' + (inside ? 'left:calc(' + w + '% - 2.8em);color:#fff' : 'left:calc(' + w + '% + 6px)') + '">' + fmt(r.m) + '</span></span>';
+      b.innerHTML = '<span class="nm">' + r.n + '<small>' + period(r, series) + (r.m_prov ? ', note ' + mot(r) : '') + '</small></span><span class="tr"><span class="ten"></span><span class="fl ' + cls(r.m) + '" style="width:' + w + '%"></span><span class="v" style="' + (inside ? 'left:calc(' + w + '% - 2.8em);color:var(--bg)' : 'left:calc(' + w + '% + 6px)') + '">' + fmt(r.m) + '</span></span>';
       var d = document.createElement('div'); d.className = 'bd'; d.hidden = true;
       d.innerHTML = MISS.map(function (m) { var v = r[m.k]; return '<a class="' + (v == null ? 'na' : cls(v)) + '" href="' + m.url + '">' + m.l + ' <b>' + (v == null ? 'non noté' : fmt(v) + '/20') + '</b>' + (r[m.k + '_prov'] ? ' <small>' + mot(r) + '</small>' : '') + '</a>'; }).join('') + (r.k < MISS.length ? '<span class="note" style="align-self:center">Moyenne sur ' + r.k + ' mission' + (r.k > 1 ? 's' : '') + '.</span>' : '');
       // Mission non notée ou notée sur une partie du mandat : la raison, en une phrase, là où on la voit.
@@ -778,9 +778,9 @@ footer p { margin: 0; } footer a { color: inherit; }
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261028k"></script>
-<script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/contact.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261030j"></script>
+<script src="/commun/partage.js?v=20261031a"></script>
+<script src="/commun/recherche.js?v=20261031a"></script>
+<script src="/commun/contact.js?v=20261031a"></script>
+<script src="/commun/menu.js?v=20261031a"></script>
 </body>
 </html>

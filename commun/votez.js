@@ -53,7 +53,7 @@
     '.vz-choix{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:8px}' +
     '.vz-choix button{font:inherit;font-weight:700;font-size:15.5px;min-height:52px;border-radius:12px;border:1.5px solid var(--fg);background:var(--panel);color:var(--fg);cursor:pointer}' +
     '.vz-choix button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}' +
-    '.vz-choix button:disabled{cursor:default}.vz-choix.fait button:not([aria-pressed="true"]){opacity:.6}' +
+    '.vz-choix button:disabled{cursor:default}.vz-choix.fait button:not([aria-pressed="true"]){opacity:.75}' +
     '.vz-change{margin:0;font-size:12.5px;color:var(--muted)}' +
     '.vz-choix button:focus-visible,.vz-passe:focus-visible,.vz-suite:focus-visible{outline:2px solid var(--fr);outline-offset:2px}' +
     '.vz-passe{font:inherit;font-size:13.5px;color:var(--muted);background:none;border:0;padding:4px 0;min-height:40px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;justify-self:start}' +
@@ -73,7 +73,7 @@
     '.vz-bars .n{font-weight:600;line-height:1.3}.vz-bars .v{font-weight:700;font-variant-numeric:tabular-nums}' +
     '.vz-bars .b{grid-column:1/-1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}.vz-bars .b i{display:block;height:100%;background:var(--fr);border-radius:4px}' +
     '.vz-bars>li>i{width:10px;height:10px;border-radius:3px;grid-row:1;align-self:center}.vz-bars li{grid-template-columns:10px minmax(0,1fr) auto!important}.vz-bars .n small{color:var(--muted);font-weight:500;font-size:11.5px}.vz-bars .b{grid-column:2/-1!important}' +
-    '.vz-hemi{position:relative}.vz-hemi svg{display:block;width:100%;height:auto;font-family:var(--sans)}.vz-hs{cursor:pointer;outline:none}.vz-hs:hover path,.vz-hs:focus path{filter:brightness(1.08)}' +
+    '.vz-hemi{position:relative}.vz-hemi svg{display:block;width:100%;height:auto;font-family:var(--sans)}.vz-hs{cursor:pointer;outline:none}.vz-hs:hover path,.vz-hs:focus path{filter:brightness(1.08)}.vz-hs:focus-visible path:first-child{opacity:1;fill-opacity:.16;stroke:var(--fg);stroke-width:2}' +
     '.vz-tip{position:absolute;top:0;z-index:3;max-width:260px;padding:7px 10px;border-radius:9px;background:var(--fg);color:var(--bg);font-size:12.5px;line-height:1.35;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
     '.vz-lire{margin:0;font-size:13.5px;color:var(--muted)}' +
     '.vz-avis{display:grid;gap:8px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--fr);background:var(--band,var(--panel));font-size:14.5px}' +
@@ -327,6 +327,10 @@
         (peu.length && !q.unanime ? '<p class="vz-comme">Trop peu de députés ont voté dans ' + (peu.length > 1 ? 'les groupes ' : 'le groupe ') + peu.join(', ') + ' (moins de ' + VOTANTS_MIN + ', ou moins d\'un quart du groupe) : ' + (peu.length > 1 ? 'ils ne sont pas comptés' : 'il n\'est pas compté') + ' sur ce vote.</p>' : '') +
         '<div class="vz-gr">' + ['pour', 'contre', 'abstention'].filter(function (p) { return par[p].length; }).map(function (p) { return '<b>' + CHOIX[p] + '</b><div>' + par[p].join('') + '</div>'; }).join('') + '</div>';
       rev.hidden = false;
+      // Lecteur d'écran : seulement la ligne du résultat est lue, pas tout le détail.
+      var st = el.querySelector('.vz-statut');
+      if (!st) { st = document.createElement('p'); st.className = 'vz-statut'; st.setAttribute('role', 'status'); st.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;margin:0'; rev.parentNode.insertBefore(st, rev); }
+      if (!calme) st.textContent = 'À l\'Assemblée : ' + q.sort + '. Vous avez voté comme ' + comme + ' groupe' + (comme > 1 ? 's' : '') + ' sur ' + n + '.';
       if (!calme && rev.scrollIntoView) rev.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       var s = rev.querySelector('.vz-suite'); if (s) s.addEventListener('click', o.suivant);
     }
@@ -384,11 +388,11 @@
       // Le pourcentage d'accord écrit dans chaque part assez large (les autres : au toucher).
       var pc = x && large ? '<text x="' + (cx + (R1 - 15) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 - 15) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--fg)" style="paint-order:stroke;stroke:var(--panel);stroke-width:3px">' + x.pct + '\u00a0%</text>' : '';
       var lab = large ? '<text x="' + (cx + (R1 + 13) * Math.cos(mid)).toFixed(1) + '" y="' + (cy - (R1 + 13) * Math.sin(mid) + 4).toFixed(1) + '" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--muted)">' + esc(court) + '</text>' : '';
-      return '<g class="vz-hs" tabindex="0" data-info="' + info + '"' + (x ? ' data-pct="' + x.pct + '" data-c="' + esc(court) + '"' : '') + '><path d="' + secteur(a0 - ecart, a1 + ecart, r0, R1) + '" fill="' + g.coul + '" opacity=".16"/>' +
+      return '<g class="vz-hs" tabindex="0" role="button" aria-label="' + info + '" data-info="' + info + '"' + (x ? ' data-pct="' + x.pct + '" data-c="' + esc(court) + '"' : '') + '><path d="' + secteur(a0 - ecart, a1 + ecart, r0, R1) + '" fill="' + g.coul + '" opacity=".16"/>' +
         (x ? '<path d="' + secteur(a0 - ecart, a1 + ecart, r0, rb) + '" fill="' + g.coul + '"/>' : '') + lab + pc + '</g>';
     }).join('');
     var top = R && R.groupes[0];
-    return '<div class="vz-hemi"><svg viewBox="-12 -14 ' + (W + 24) + ' ' + (H + 14) + '" role="img" aria-label="Hémicycle : votre accord avec chaque groupe">' + parts +
+    return '<div class="vz-hemi"><svg viewBox="-12 -14 ' + (W + 24) + ' ' + (H + 14) + '" role="group" aria-label="Hémicycle : votre accord avec chaque groupe">' + parts +
       // Au centre : l'accord avec le groupe le plus proche, ou avec le groupe touché.
       (top ? '<text class="vz-c1" x="' + cx + '" y="' + (cy - 14) + '" text-anchor="middle" font-family="var(--serif)" font-size="30" fill="var(--fg)" data-def="' + top.pct + ' %">' + top.pct + ' %</text><text class="vz-c2" x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)" data-def="d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '">d\'accord avec ' + esc(top.c.replace('-NFP', '')) + '</text>' : '') +
       '</svg><div class="vz-tip" hidden></div></div>';

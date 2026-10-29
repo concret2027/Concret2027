@@ -128,7 +128,7 @@
   // Couleurs des pages (les pages et le Baromètre n'ont pas les mêmes noms de variables).
   var V = { bg: 'var(--bg, var(--color-bg, #f6f6f3))', panel: 'var(--panel, var(--color-panel, #fff))', fg: 'var(--fg, var(--color-fg, #1c1d22))',
     muted: 'var(--muted, var(--color-fg-muted, #62646d))', line: 'var(--line, var(--color-border-line, #e2e2dc))', fr: 'var(--fr, #2f5bd3)' };
-  var css = '@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) #t-pres .tr .v,:root:not([data-theme="light"]) #t-gov .tr .v{color:#15161a}}:root[data-theme="dark"] #t-pres .tr .v,:root[data-theme="dark"] #t-gov .tr .v{color:#15161a}#annees{min-width:0;overflow-x:auto}.nt-btn{white-space:normal;text-align:left;max-width:100%}.vote a{display:inline-flex;align-items:center;min-height:24px}html{scroll-padding-top:140px}.vis-l{margin:4px 0 0;padding-left:18px}.vis-l li{margin:3px 0}.vis-l a,.note a:not([class]){color:' + V.fr + ';text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}.vis-l a{font-weight:500}.vis-l a b{font-weight:inherit}.mn-skip{position:absolute;left:-9999px;top:8px;z-index:1000;background:var(--panel,#fff);color:var(--fg,#111);padding:10px 14px;border:2px solid var(--fr,#2f5bd3);border-radius:10px;font-weight:700}.mn-skip:focus{left:8px}:root{--ea-t:#8a6418;--es-t:#b4531f}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ea-t:var(--ea);--es-t:var(--es)}}:root[data-theme="dark"]{--ea-t:var(--ea);--es-t:var(--es)}svg text[fill="var(--ea)"]{fill:var(--ea-t)}svg text[fill="var(--es)"]{fill:var(--es-t)}.acc-fixe>summary{cursor:default;border-bottom:0!important;margin-bottom:0!important;padding-bottom:2px}.acc-fixe>summary .acc-t,.acc-fixe>summary .acc-cta{display:none}.mn-btn{position:sticky;right:0;margin-left:auto;flex:none;display:none;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:700;color:' + V.fg + ';' +
+  var css = '@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) #t-pres .tr .v,:root:not([data-theme="light"]) #t-gov .tr .v{color:#15161a}}:root[data-theme="dark"] #t-pres .tr .v,:root[data-theme="dark"] #t-gov .tr .v{color:#15161a}#annees{min-width:0;overflow-x:auto}.nt-btn{white-space:normal;text-align:left;max-width:100%}.vote a{display:inline-flex;align-items:center;min-height:24px}html{scroll-padding-top:140px}.vis-l{margin:4px 0 0;padding-left:18px}.vis-l li{margin:3px 0}.vis-l a,.note a:not([class]){color:' + V.fr + ';text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}.vis-l a{font-weight:500}.vis-l a b{font-weight:inherit}main.mn-main{display:contents}nav.site a.logo{flex-shrink:0}@media (forced-colors: active){.key i,.cp-chip i,svg{forced-color-adjust:none}}.mn-sr{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}.mn-skip{position:absolute;left:-9999px;top:8px;z-index:1000;background:var(--panel,#fff);color:var(--fg,#111);padding:10px 14px;border:2px solid var(--fr,#2f5bd3);border-radius:10px;font-weight:700}.mn-skip:focus{left:8px}:root{--ea-t:#8a6418;--es-t:#b4531f;--it-t:#1a7a43}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ea-t:var(--ea);--es-t:var(--es);--it-t:var(--it)}}:root[data-theme="dark"]{--ea-t:var(--ea);--es-t:var(--es);--it-t:var(--it)}svg text[fill="var(--ea)"]{fill:var(--ea-t)}svg text[fill="var(--es)"]{fill:var(--es-t)}svg text[style*="fill: var(--ea)"]{fill:var(--ea-t)!important}svg text[style*="fill: var(--es)"]{fill:var(--es-t)!important}svg text[style*="fill: var(--it)"],svg text[fill="var(--it)"]{fill:var(--it-t)!important}.acc-fixe>summary{cursor:default;border-bottom:0!important;margin-bottom:0!important;padding-bottom:2px}.acc-fixe>summary .acc-t,.acc-fixe>summary .acc-cta{display:none}.mn-btn{position:sticky;right:0;margin-left:auto;flex:none;display:none;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:700;color:' + V.fg + ';' +
       'background:linear-gradient(to right,transparent,' + V.bg + ' 26px);box-shadow:24px 0 0 0 ' + V.bg + ';border:0;padding:4px 2px 4px 34px;cursor:pointer}' +
     '.mn-btn span{display:inline-flex;align-items:center;gap:6px;border:1.5px solid ' + V.fg + ';border-radius:999px;padding:9px 14px;background:' + V.panel + '}' +
     // Zones à toucher de 44 px au moins (pages du bandeau, raccourcis « Aller à »), pour tous les doigts.
@@ -210,11 +210,20 @@
   // Les pages par groupe (« Chaque jour », « Les missions notées », « Repères, sans note ») : un intitulé avant chaque groupe.
   var liste = function (L) { var g = null; return L.map(function (p) { var h = p.g && p.g !== g ? '<h3 class="mn-g">' + p.g + '</h3>' : ''; g = p.g || g; return h + lien(p); }).join(''); };
 
+  // Fenêtre ouverte (Menu, Partager) : le Tab tourne dans la fenêtre, sans passer derrière le voile.
+  var pieger = function (box, e) {
+    if (e.key !== 'Tab') return;
+    var f = Array.prototype.filter.call(box.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'), function (x) { return x.offsetWidth || x.offsetHeight; });
+    if (!f.length) return;
+    var a = f[0], z = f[f.length - 1], ic = document.activeElement;
+    if (e.shiftKey && (ic === a || !box.contains(ic))) { e.preventDefault(); z.focus(); }
+    else if (!e.shiftKey && (ic === z || !box.contains(ic))) { e.preventDefault(); a.focus(); }
+  };
   function ouvrir(btn) {
     var v = document.createElement('div'); v.className = 'mn-voile';
     v.innerHTML = '<div class="mn-panneau" role="dialog" aria-modal="true" aria-label="Les pages de Concret"><div class="mn-haut"><b>Les pages de Concret</b><button type="button" class="mn-ferme">Fermer ✕</button></div><div class="mn-pied">' + (document.querySelector('.rech-b') ? '<button type="button" class="mn-cherche" aria-label="Rechercher un chiffre">' + icone('cherche') + 'Rechercher</button>' : '') + (ici !== '/contact/' ? '<a href="/contact/" aria-label="Écrire à Concret">' + icone('lettre') + 'Écrire</a>' : '') + (appli() ? '<a href="' + WA + '" target="_blank" rel="noopener" aria-label="Envoyer à quelqu\'un comment installer Concret, sur WhatsApp">' + icone('wa') + 'Envoyer</a>' : ici !== '/application/' ? '<a href="/application/" aria-label="Installer Concret sur l\'écran d\'accueil, ou l\'envoyer sur WhatsApp">' + icone('appli') + 'Installer</a>' : '') + '</div><nav class="mn-liste">' + liste(PAGES) + '</nav></div>';
     var fermer = function () { v.remove(); document.removeEventListener('keydown', esc); document.documentElement.style.overflow = ''; btn.focus(); };
-    var esc = function (e) { if (e.key === 'Escape') fermer(); };
+    var esc = function (e) { if (e.key === 'Escape') fermer(); else pieger(v.firstChild, e); };
     v.addEventListener('click', function (e) { if (e.target === v || e.target.closest('.mn-ferme')) fermer(); else if (e.target.closest('.mn-cherche')) { fermer(); document.querySelector('.rech-b').click(); } });
     document.addEventListener('keydown', esc); document.documentElement.style.overflow = 'hidden';
     document.body.appendChild(v); v.querySelector('.mn-ferme').focus();
@@ -407,6 +416,28 @@
     document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.nt-btn')) compter('detail'); }, true);
     document.addEventListener('concret:vue', function (e) { compter(e.detail || 'courbe'); });
   }
+  // Défilement doux, sauf si la personne a demandé moins d'animations dans les réglages de son appareil.
+  var doux = function () { return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; };
+  // Clavier et lecteur d'écran : après un raccourci, le focus va au titre de la partie choisie (sinon le Tab suivant repart du haut).
+  var focaliser = function (c) {
+    var t = /^H[1-4]$|^SUMMARY$/.test(c.tagName) ? c : c.querySelector('h2, h3, summary') || c;
+    if (t.tagName !== 'SUMMARY' && !t.hasAttribute('tabindex')) t.setAttribute('tabindex', '-1');
+    try { t.focus({ preventScroll: true }); } catch (e) { }
+  };
+  // Lecteur d'écran : les chiffres de chaque courbe en tableau (une ligne par année, une colonne par pays), caché à l'écran.
+  // Les pages l'appellent en dessinant la courbe, avec les mêmes chiffres que ceux montrés au toucher.
+  var tableau = function (box, pts, titre) {
+    if (!box || !pts || !pts.length || pts.length > 80) return;
+    var old = box.querySelector(':scope > table.mn-sr'); if (old) old.remove();
+    var e = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }, nom = function (r) { return r.n || 'Valeur'; }, cols = [];
+    pts.forEach(function (p) { (p.rows || []).forEach(function (r) { if (cols.indexOf(nom(r)) < 0) cols.push(nom(r)); }); });
+    if (!cols.length) return;
+    var t = document.createElement('table'); t.className = 'mn-sr'; t.setAttribute('data-html2canvas-ignore', '');
+    t.innerHTML = '<caption>Les chiffres de la courbe' + (titre ? ' : ' + e(titre) : '') + '</caption><thead><tr><th scope="col">Année</th>' + cols.map(function (c) { return '<th scope="col">' + e(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      pts.map(function (p) { var v = {}; (p.rows || []).forEach(function (r) { v[nom(r)] = r.s; }); return '<tr><th scope="row">' + e(p.t) + '</th>' + cols.map(function (c) { return '<td>' + (v[c] != null ? e(v[c]) : 'pas de chiffre') + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
+    box.appendChild(t);
+  };
+  window.ConcretMenu = { doux: doux, focaliser: focaliser, pieger: pieger, tableau: tableau };
   function suivre(jp, cib) {
     var ls = Array.prototype.filter.call(jp.querySelectorAll('a[href^="#"]'), function (l) { return cib(l); }), cur = null, choisi = null, fin = 0;
     if (!ls.length) return;
@@ -430,7 +461,8 @@
       for (var d = c; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
       // Le titre juste sous les deux bandeaux collés (pages, raccourcis), quel que soit le navigateur.
       var n = document.querySelector('nav.site'), haut = (n ? n.offsetHeight : 0) + jp.offsetHeight + 12;
-      requestAnimationFrame(function () { window.scrollTo({ top: Math.max(0, window.pageYOffset + c.getBoundingClientRect().top - haut), behavior: 'smooth' }); });
+      focaliser(c);
+      requestAnimationFrame(function () { window.scrollTo({ top: Math.max(0, window.pageYOffset + c.getBoundingClientRect().top - haut), behavior: doux() }); });
       if (history.replaceState) history.replaceState(null, '', l.getAttribute('href'));
     });
   }
@@ -447,8 +479,14 @@
     // le titre est passé sous la rangée. Après un toucher, la partie choisie, posée juste sous la rangée.
     if (jp && !jp.querySelector('.jump-l1')) suivre(jp, cib);
     // Clavier et lecteur d'écran : la zone principale de la page, et un lien « Aller au contenu » qui saute les menus.
-    var wrap = document.querySelector('main') || document.querySelector('.wrap');
-    if (wrap && wrap.tagName !== 'MAIN' && !wrap.getAttribute('role')) wrap.setAttribute('role', 'main');
+    // La zone principale : un <main> entre le bandeau des pages et le pied de page, sans rien changer à la mise en page (display: contents).
+    var wrap = document.querySelector('.wrap, .bx');
+    if (wrap && !document.querySelector('main, [role="main"]')) {
+      var kids = Array.prototype.slice.call(wrap.children), i0 = 0, i1 = kids.length;
+      while (i0 < i1 && kids[i0].matches('nav.site, .mn-skip, script, style')) i0++;
+      while (i1 > i0 && kids[i1 - 1].matches('footer, .mn-autres, script, style')) i1--;
+      if (i1 > i0) { var mn = document.createElement('main'); mn.className = 'mn-main'; wrap.insertBefore(mn, kids[i0]); kids.slice(i0, i1).forEach(function (k) { mn.appendChild(k); }); }
+    }
     var cible = document.querySelector('.brand, section.hero, h1');
     if (cible && !document.querySelector('.mn-skip')) {
       if (!cible.id) cible.id = 'contenu'; if (!cible.hasAttribute('tabindex')) cible.setAttribute('tabindex', '-1');

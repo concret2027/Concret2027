@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="a8064bba04b4">
+<meta name="concret-version" content="104e1ac38edf">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -333,6 +333,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 .vz-plus { font: inherit; font-size: 13.5px; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 6px 0; cursor: pointer; justify-self: start; }
 .how ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
 .how a { color: var(--fr); }
+/* La place des blocs remplis par les données est gardée pendant le chargement : la page ne saute pas quand ils arrivent. */
+#vz-carte:has(> p.note:only-child) { min-height: 600px; }
+@media (min-width: 700px) { #vz-carte:has(> p.note:only-child) { min-height: 480px; } }
 </style>
 </head>
 <body data-sources="Source : Assemblée nationale, données ouvertes (scrutins de la 17e législature) ; calcul de Concret à partir de vos votes.">
@@ -352,7 +355,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <div class="vz-suivi" id="vz-suivi"><b id="vz-n"></b><div class="vz-prog" aria-hidden="true"><i id="vz-barre" style="width:0"></i></div></div>
 
-  <section class="card vz-carte" id="vz-carte" data-partage="non" aria-live="polite"><p class="note">Chargement des votes…</p></section>
+  <section class="card vz-carte" id="vz-carte" data-partage="non"><p class="note">Chargement des votes…</p></section>
 
   <section class="card vz-res" id="vz-res" data-src="Source : Assemblée nationale, scrutins de la 17e législature ; calcul de Concret à partir de vos votes."></section>
 
@@ -386,7 +389,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <footer><p>concret2027.fr · Page indépendante de tout parti. Un groupe n'est pas un candidat : le résultat dit seulement de quels groupes de députés vos votes sont proches. <a href="/mentions-legales/">Mentions légales</a></p></footer>
 </div>
-<script src="/commun/votez.js?v=20261029a"></script>
+<script src="/commun/votez.js?v=20261031a"></script>
 <script>
 (function () {
   var V = window.ConcretVotez, $ = function (id) { return document.getElementById(id); }, D = null, cible = 0, force = null, tous = false;
@@ -438,7 +441,11 @@ footer p { margin: 0; } footer a { color: inherit; }
       el.className = 'card vz-carte';
       V.carte(el, q, D, { apres: function () { force = null; tout(); }, suivant: function () { afficher(true); }, suivantLabel: compte() + 1 >= cible && !force ? 'Voir où j\'en suis →' : 'Vote suivant →' });
     }
-    if (defiler) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    if (defiler) {
+      el.scrollIntoView({ block: 'start', behavior: window.ConcretMenu ? ConcretMenu.doux() : 'smooth' });
+      // Clavier et lecteur d'écran : le bouton touché a disparu, le focus va au titre du vote suivant, qui est lu.
+      var h = el.querySelector('h2, h3'); if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { } }
+    }
   }
   V.charger().then(function (J) {
     D = J;
@@ -487,8 +494,8 @@ footer p { margin: 0; } footer a { color: inherit; }
   });
 })();
 </script>
-<script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/partage.js?v=20261028k"></script>
-<script src="/commun/menu.js?v=20261030j"></script>
+<script src="/commun/recherche.js?v=20261031a"></script>
+<script src="/commun/partage.js?v=20261031a"></script>
+<script src="/commun/menu.js?v=20261031a"></script>
 </body>
 </html>
