@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="057d7c3957d0">
+<meta name="concret-version" content="9bf3cf4ce7f9">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -65,7 +65,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .site::-webkit-scrollbar { display: none; }
 @media (max-width: 520px) { .site { gap: 14px; } .site .lg { display: none; } .site a.logo { font-size: 18px; margin-right: 0; } }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 21; background: var(--color-bg); }
-.bx [id] { scroll-margin-top: calc(var(--navh, 44px) + 96px); }
+/* Les deux bandeaux collés (pages, raccourcis) sont déjà comptés par html { scroll-padding-top } (commun/menu.js) : juste un peu d'air en plus. */
+.bx [id] { scroll-margin-top: 12px; }
 .jump { display: grid !important; gap: 6px; } .jump-l1, .jump-l2 { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; } .jump-l1::-webkit-scrollbar, .jump-l2::-webkit-scrollbar { display: none; }
 .jump a.on { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
 .jump-l2 a { font-weight: 500; padding: 4px 11px; }
@@ -1251,12 +1252,27 @@ window.addEventListener('baro:data', function () {
 (function () {
   var nav = document.querySelector('.jump'); if (!nav) return;
   var G = ['moment', 'sondages', 'parieurs', 'detail', 'methode'], cur = null;
-  function maj() {
-    var lim = nav.getBoundingClientRect().bottom + 24, g = 'moment';
-    G.forEach(function (x) { var e = document.getElementById(x); if (e && e.getBoundingClientRect().top <= lim) g = x; });
+  var ID = { moment: 'aujourdhui' }, choisi = null, fin = 0;
+  function montre(g) {
     if (g === cur) return; cur = g;
     nav.querySelectorAll('.jump-l1 a').forEach(function (a) { var on = a.getAttribute('data-g') === g; a.classList.toggle('on', on); if (on) a.parentNode.scrollLeft = Math.max(0, a.offsetLeft - 40); });
   }
+  // La partie surlignée : la dernière dont le titre est passé sous la ligne des raccourcis (avec une marge, pour celle
+  // qu'on vient de choisir, posée juste dessous). Après un toucher, c'est celle-là, jusqu'à la fin du défilement.
+  function maj() {
+    if (choisi && Date.now() < fin) { montre(choisi); return; }
+    choisi = null;
+    var lim = nav.getBoundingClientRect().bottom + 80, g = 'moment';
+    G.forEach(function (x) { var e = document.getElementById(ID[x] || x); if (e && e.getBoundingClientRect().top <= lim) g = x; });
+    montre(g);
+  }
+  nav.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('.jump-l1 a'); if (a) {
+    choisi = a.getAttribute('data-g'); fin = Date.now() + 1500; montre(choisi);
+    // Le défilement vers une ancre ne s'arrête pas au même endroit selon le navigateur : on pose le titre juste sous les raccourcis.
+    var c = document.getElementById(a.getAttribute('href').slice(1)); if (!c) return;
+    e.preventDefault(); if (c.tagName === 'DETAILS') c.open = true;
+    c.scrollIntoView({ behavior: 'smooth', block: 'start' }); if (history.replaceState) history.replaceState(null, '', a.getAttribute('href'));
+  } });
   var t = 0; addEventListener('scroll', function () { if (!t) t = requestAnimationFrame(function () { t = 0; maj(); }); }, { passive: true });
   addEventListener('resize', maj); maj();
   // Sur grand écran, l'agenda est ouvert d'office.
