@@ -15,7 +15,10 @@
 
   // op : 'hit' (ajoute 1 à l'option i et renvoie les totaux de toutes les options) ou 'get' (lit les totaux) ; n : nombre d'options.
   // En cas d'erreur du réseau ou du serveur, deux nouveaux essais, espacés.
+  // Seul le vrai site compte : une copie (essais, relectures automatiques) lit les totaux sans rien ajouter.
+  var VRAI = /(^|\.)concret2027\.fr$/.test(location.hostname);
   function compteur(op, cle, n, i) {
+    if (op === 'hit' && !VRAI) op = 'get';
     var u = API + op + '?k=' + encodeURIComponent(cle) + '&n=' + n + (op === 'hit' ? '&i=' + i : '');
     var essai = function (k) {
       return fetch(u, { method: op === 'hit' ? 'POST' : 'GET', cache: 'no-store' }).then(function (x) {
@@ -73,5 +76,5 @@
     }
     return totaux(page, Q, choix, nouveau).then(function (n) { afficher(opts, ans, n, nouveau); return n; }, function () { return null; });
   }
-  window.ConcretQuiz = { repondu: repondu, chemin: chemin, compteur: compteur, aide: aide, api: API };
+  window.ConcretQuiz = { repondu: repondu, chemin: chemin, compteur: compteur, aide: aide, api: API, vrai: VRAI };
 })();

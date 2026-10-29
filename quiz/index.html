@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="25d3e1ec3f66">
+<meta name="concret-version" content="6b554529bbfc">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -30,7 +30,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="../commun/notes.js?v=20261029c"></script>
 <script src="/commun/bref.js?v=20261031a"></script>
-<script src="/commun/quiz.js?v=20261026b"></script>
+<script src="/commun/quiz.js?v=20261031h"></script>
 <style>html, body { margin: 0; }
 
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -744,7 +744,8 @@ footer p { margin: 0; } footer a { color: inherit; }
       var id = joueur(), sec = document.getElementById('qz-cl'); if (!id || !window.ConcretQuiz || !ConcretQuiz.api || !window.fetch) return;
       var cle = 'quiz-classement-' + iso, envoye = false; try { envoye = localStorage.getItem(cle) != null; } catch (e) {}
       var pr;
-      if (envoye) pr = appel('classement', { id: id, jour: iso });
+      // Une copie du site (essais, relectures automatiques) lit le classement sans y inscrire de partie.
+      if (envoye || (window.ConcretQuiz && ConcretQuiz.vrai === false)) pr = appel('classement', { id: id, jour: iso });
       else {
         var c = [], g = 0;
         Qs.forEach(function (x, i) {

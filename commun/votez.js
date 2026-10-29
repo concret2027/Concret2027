@@ -12,7 +12,9 @@
   // Participation (jamais le sens du vote) : une clé du compteur par texte, une option unique.
   var API = 'https://compteur.square-brook-9d65.workers.dev/', CLE_VU = 'concret-votez-compte';
   var cleNb = function (id) { return 'quiz-votez-' + String(id).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 69); };
+  // Seul le vrai site compte : une copie (essais, relectures automatiques) n'ajoute rien.
   function nb(id, ajouter) {
+    if (ajouter && !/(^|\.)concret2027\.fr$/.test(location.hostname)) return Promise.resolve(null);
     var u = API + (ajouter ? 'hit' : 'get') + '?k=' + encodeURIComponent(cleNb(id)) + '&n=1' + (ajouter ? '&i=0' : '');
     return fetch(u, { method: ajouter ? 'POST' : 'GET', cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { return j && j.v ? j.v[0] : null; }, function () { return null; });
   }
