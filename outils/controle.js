@@ -108,6 +108,8 @@ if (S.education) {
 // ces mentions peuvent venir du rapport complet de l'institut (statut « rapport », datasets.sondages_rapports).
 (function () {
   var DS = d.datasets || {}, N = DS.sondages_notices || [], cle = function (dt, i) { return dt + '|' + String(i).replace(/ Interactive$/, ''); }, a = {};
+  // Une notice de la Commission des sondages ne vaut que pour un sondage.
+  var vuN = {}; N.forEach(function (n) { if (!n.notice) return; if (vuN[n.notice]) err('sondages_notices : la notice n° ' + n.notice + ' est donnée à deux sondages (' + vuN[n.notice] + ' et ' + n.date + ' ' + n.institut + ') ; une seule est la bonne'); vuN[n.notice] = n.date + ' ' + n.institut; });
   N.forEach(function (n) { a[cle(n.date, n.institut)] = n; if (!n.commanditaire || !n.marge || !n.url) err('sondages_notices ' + n.date + ' ' + n.institut + ' : commanditaire, marge d\'erreur ou lien ' + (n.statut === 'rapport' ? 'du rapport' : 'de la notice') + ' manquant');
     // Sondage publié avec les mentions de son rapport, en attendant la notice : signalé si elle tarde plus de 15 jours.
     if (n.statut === 'rapport' && (Date.parse(today) - Date.parse(n.date)) / 864e5 > 15) alertes.push('sondage ' + n.date + ' ' + n.institut + ' : notice toujours pas en ligne à la Commission des sondages, plus de 15 jours après (mentions lues dans le rapport de l\'institut)'); });
