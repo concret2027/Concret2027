@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="083813b34447">
+<meta name="concret-version" content="4dec45e0fad0">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -772,7 +772,7 @@ function main(FEED) {
         var when = days >= 1 ? 'il y a ' + days + ' jour' + (days > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lastV.t) / 3600e3)) + ' h';
         var dr = Math.round((LIVE.rate - lastV.r) * 100) / 100;
         var DSF = (FEED && FEED.datasets) || {};
-        var pv = ConcretBref.nouveau({ chiffres: ['<a href="#acc-today" data-cible="acc-today">la dette a pris <b>' + big(dd) + '</b>' + (dr ? ', le taux d\'emprunt à 10 ans a ' + (dr > 0 ? 'pris' : 'perdu') + ' <b>' + fmt(Math.abs(dr), 2) + ' point</b>' : ', le taux d\'emprunt n\'a pas bougé') + '</a>'], actu: DSF.actu_finances, agenda: DSF.agenda_finances, depuis: lastV.t, jour: days >= 1 });
+        var pv = ConcretBref.nouveau({ chiffres: ['<a href="#acc-today" data-cible="acc-today">la dette a pris <b>' + big(dd) + '</b></a>', '<a href="#acc-today" data-cible="acc-today">taux d\'emprunt de l\'État à 10 ans : <b>' + fmt(LIVE.rate, 2) + ' %</b> à la clôture du ' + new Date(LIVE.rateDate + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }).replace(/^1 /, '1er ') + (dr ? ' (' + (dr > 0 ? '+' : '−') + fmt(Math.abs(dr), 2) + ' point depuis votre visite)' : ' (même chiffre qu\'à votre visite)') + '</a>'], actu: DSF.actu_finances, agenda: DSF.agenda_finances, depuis: lastV.t, jour: days >= 1 });
         ConcretBref.afficher(vis, 'Depuis votre dernière visite (' + when + ')', pv);
       }
       else ConcretBref.premiere(vis, { actu: ((FEED && FEED.datasets) || {}).actu_finances }); // Première visite : les dernières nouvelles de la page.
