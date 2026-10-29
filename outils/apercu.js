@@ -39,12 +39,14 @@ function carte(o) {
     '.p i{position:absolute;left:0;bottom:0;height:9px}.g b{color:#1f8a4c}.g i{background:#1f8a4c}.m b{color:#b0812a}.m i{background:#b0812a}.b b{color:#c43d3d}.b i{background:#c43d3d}' +
     '.dates{display:flex;flex-direction:column;gap:14px;margin-left:auto}.d{background:#fff;border:2px solid #e2e2dc;border-radius:22px;padding:18px 28px}.d span{display:block;font-size:24px;color:#62646d;font-weight:600}.d b{font-family:Newsreader,serif;font-size:52px;font-weight:500}' +
     '.qz{flex:1;display:flex;flex-direction:column;gap:22px}.qq{font-family:Newsreader,serif;font-size:44px;line-height:1.15}.qo{display:grid;grid-template-columns:1fr 1fr;gap:14px}.qo span{background:#fff;border:2px solid #e2e2dc;border-radius:16px;padding:14px 20px;font-size:28px;font-weight:600}' +
+    '.et{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:center}.e{background:#fff;border:2px solid #e2e2dc;border-radius:22px;padding:24px 28px}.e span{display:block;font-size:26px;color:#62646d;font-weight:600;margin-bottom:10px}.e b{display:block;font-size:34px;font-weight:700;line-height:1.3}' +
     '.f{font-size:23px;color:#62646d}</style></head><body>' +
     '<div class="top"><span class="brand">Concret</span><span class="adr">' + esc(o.adresse) + '</span></div>' +
     '<div class="t">' + esc(o.titre) + '</div><div class="s">' + esc(o.sous) + '</div>' +
     '<div class="mid">' + (o.n ? '<div class="gauche"><div class="n">' + esc(o.n[0]) + '<small>' + esc(o.n[1]) + '</small></div><div class="nt">' + esc(o.nt) + '</div></div>' : '') +
     (o.pres ? '<div class="pres">' + o.pres.map(function (p) { return '<div class="p ' + cl(p.v) + '"><span>' + esc(p.n) + '</span><b>' + nf(p.v) + '</b><i style="width:' + (p.v == null ? 0 : 5 * p.v) + '%"></i></div>'; }).join('') + '</div>' : '') +
     (o.quiz ? '<div class="qz"><div class="qq">' + esc(o.quiz.q) + '</div><div class="qo">' + o.quiz.o.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('') + '</div></div>' : '') +
+    (o.etapes ? '<div class="et">' + o.etapes.map(function (x) { return '<div class="e"><span>' + esc(x[0]) + '</span><b>' + esc(x[1]) + '</b></div>'; }).join('') + '</div>' : '') +
     (o.dates ? '<div class="dates">' + o.dates.map(function (d) { return '<div class="d"><span>' + esc(d[0]) + '</span><b>' + esc(d[1]) + '</b></div>'; }).join('') + '</div>' : '') + '</div>' +
     '<div class="f">' + esc(o.pied) + '</div></body></html>';
 }
@@ -105,6 +107,8 @@ function carte(o) {
     var nx = Object.keys(XV).filter(function (k) { return XV[k].valide && !/^avenir:/.test(k); }).length, av = (VZ.AVENIR || [])[0];
     cartes.push({ f: 'votez', titre: 'Votez les lois', sous: 'Les vrais votes de l\'Assemblée nationale, expliqués, à voter à votre tour', n: [String(nx), ' textes'], nt: 'à voter : voyez de quels groupes de députés vous êtes le plus proche', dates: av ? [['Prochain vote à l\'Assemblée', jl(av.d)]] : [], pied: 'Source : Assemblée nationale, données ouvertes · vos votes restent sur votre appareil', adresse: 'concret2027.fr/votez' });
   }
+  // Concret sur l'écran d'accueil : les étapes (la carte que montre WhatsApp quand on envoie la page), sans chiffre.
+  if (fs.existsSync(path.join(ROOT, 'application', 'index.html'))) cartes.push({ f: 'application', titre: 'Concret sur l\'écran d\'accueil', sous: 'Une icône sur le téléphone, comme une application : rien à télécharger, aucun compte', etapes: [['iPhone, dans Safari', '⋯ → Partager → Sur l\'écran d\'accueil → Ajouter'], ['Android, dans Chrome', '⋮ → Ajouter à l\'écran d\'accueil → Installer']], adresse: 'concret2027.fr/application', pied: 'Concret : la note des présidents et des gouvernements, la France face à ses voisins' });
   // Une image n'est refaite que si son contenu a changé (empreinte du texte de la carte) : le dépôt ne grossit pas chaque jour.
   var EMP = path.join(OUT, 'empreintes.json'), emp = fs.existsSync(EMP) ? JSON.parse(fs.readFileSync(EMP, 'utf8')) : {}, faites = [];
   for (var j = 0; j < cartes.length; j++) {

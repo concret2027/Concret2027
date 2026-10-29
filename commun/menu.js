@@ -196,9 +196,10 @@
     '.fold>summary:hover,details.plus>summary:hover,.fold[open]>summary,details.plus[open]>summary{background:rgba(47,91,211,.16);background:color-mix(in srgb,' + V.fr + ' 20%,transparent)}';
   var ici = location.pathname.replace(/index\.html$/, '');
   // Concret ouvert depuis l'écran d'accueil (web app) : pas de lien vers l'explication pour l'y mettre.
-  // Le message des étapes pour installer Concret (le même que sur /application/), à envoyer sur WhatsApp d'un toucher,
+  // Le message des étapes pour installer Concret (le même que sur /application/), à envoyer sur WhatsApp d'un toucher ;
+  // un seul lien, celui de /application/ : c'est sa carte (les étapes) que WhatsApp montre en aperçu,
   // y compris depuis Concret déjà installé.
-  var APP_MSG = 'Concret (concret2027.fr) sur l\'écran d\'accueil, comme une application :\n' +
+  var APP_MSG = 'Concret sur l\'écran d\'accueil, comme une application :\n' +
     '• iPhone, dans Safari : ⋯ → Partager → Sur l\'écran d\'accueil → Ajouter\n' +
     '• Android, dans Chrome : ⋮ → Ajouter à l\'écran d\'accueil → Installer\n' +
     'Le détail : https://concret2027.fr/application/';
