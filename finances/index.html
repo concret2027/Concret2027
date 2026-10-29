@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="4dec45e0fad0">
+<meta name="concret-version" content="f006a6f9fb72">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -794,7 +794,7 @@ function main(FEED) {
     setHtml('pib-insight', 'En 1990, un Français produisait <b>' + rel(r0) + '</b> que la moyenne de l\'UE. En ' + (1990 + n) + ', <b>' + rel(r1) + '</b>.');
     var gr = function (k) { var v = Math.round((PIB[k][n] / PIB[k][0] - 1) * 100); return (v >= 0 ? '+' : '−') + Math.abs(v) + ' %'; };
     setHtml('pib-note', 'PIB par habitant, en dollars de 2021 (hors inflation) et corrigé des écarts de prix entre pays (« parité de pouvoir d\'achat », Banque mondiale). Depuis 1990 : France ' + gr('fr') + ', Union européenne ' + gr('eu') + ', Allemagne ' + gr('de') + ', États-Unis ' + gr('us') + '.');
-    setHtml('sp-key', 'moyennes mensuelles, jusqu\'en ' + new Date(2017, SER.FR.length - 1, 15).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }));
+    setHtml('sp-key', 'moyennes mensuelles, jusqu\'en ' + new Date(2017, SER.FR.length - 1, 15).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) + ' ; cercle vide : la France le ' + new Date(LIVE.spreadDate + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + ', chiffre du jour (pas de chiffre du jour pour l\'Italie et l\'Espagne)');
   })();
 
   // ===== Bulletin =====
@@ -1142,8 +1142,14 @@ function main(FEED) {
       svg.append('circle').attr('cx', x(l.d)).attr('cy', y(l.v)).attr('r', 4).attr('fill', s[1]);
       svg.append('text').attr('x', x(l.d) + 6).attr('y', y(l.v) + 4).text(l.v).style('fill', s[1]).style('font-weight', 600);
     });
+    // Le chiffre du jour de la France, à part : un cercle vide, non relié aux moyennes mensuelles (pas de chiffre du jour pour l'Italie et l'Espagne).
+    if (LIVE.spread != null && LIVE.spreadDate) {
+      var dj = new Date(LIVE.spreadDate + 'T12:00:00');
+      svg.append('circle').attr('cx', x(dj)).attr('cy', y(LIVE.spread)).attr('r', 4.5).attr('fill', 'var(--panel)').attr('stroke', 'var(--fr)').attr('stroke-width', 2);
+      svg.append('text').attr('x', x(dj) - 8).attr('y', y(LIVE.spread) + 4).attr('text-anchor', 'end').text(Math.round(LIVE.spread) + ' le ' + dj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })).style('fill', 'var(--fr)').style('font-weight', 600).style('font-size', '11px');
+    }
     hover(box, svg, H, m, sFR.map(function (f, i) {
-      var last = i === sFR.length - 1, it = sIT[i], es = last ? null : sES[i];
+      var last = false, it = sIT[i], es = sES[i];
       var ev = EVENTS.filter(function (e) { return !last && e.d.getFullYear() === f.d.getFullYear() && e.d.getMonth() === f.d.getMonth(); })[0];
       return { px: x(f.d), t: last ? f.d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : f.d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) + ' (moyenne)', note: ev ? ev.t : '',
         rows: [{ c: 'var(--fr)', n: 'France', py: y(f.v), s: f.v + ' pb' }].concat(it ? [{ c: 'var(--it)', n: 'Italie', py: y(it.v), s: it.v + ' pb' }] : []).concat(es ? [{ c: 'var(--es)', n: 'Espagne', py: y(es.v), s: es.v + ' pb' }] : []) };
