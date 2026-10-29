@@ -323,41 +323,6 @@
   var defense = function (S) { return sante(S); };
   // Vie des Français : même méthode ; conditions de vie jugées année par année (elles réagissent vite aux décisions).
   var vie = function (S) { return sante(S); };
-  // La phrase sous le titre d'une courbe (pages de mission) : un fait calculé, jamais saisi. L'écart avec la moyenne de l'UE au
-  // dernier chiffre définitif, comparé à dix ans plus tôt (ou au dernier changement de méthode, s'il est plus récent : on ne
-  // compare jamais à travers une rupture) ; une année estimée ou provisoire n'est pas prise. Sans moyenne de l'UE : la France seule.
-  function fait(c) {
-    if (!c || !c.y || !c.fr || c.regle === 'composite') return '';
-    var Y = c.y, est = c.est || {}, prov = c.prov || {}, r = c.ue ? 'ue' : c.ue_calc ? 'ue_calc' : null, d = c.dec != null ? c.dec : 1;
-    var ok = function (i, w) { return c[w] && c[w][i] != null && !est[Y[i]] && !prov[Y[i]]; };
-    var nf = function (v, k) { k = k == null ? d : k; return Number(v).toLocaleString('fr-FR', { minimumFractionDigits: k, maximumFractionDigits: k }).replace(/^-/, '−'); };
-    var deux = function (i) { return ok(i, 'fr') && (!r || ok(i, r)); };
-    var iL = -1; for (var i = Y.length - 1; i >= 0; i--) if (deux(i)) { iL = i; break; }
-    if (iL < 0) return '';
-    var yL = Y[iL], rupt = Object.keys(c.br || {}).map(Number).filter(function (b) { return b <= yL; }), y0c = Math.max.apply(null, [yL - 10].concat(rupt));
-    var i0 = -1; for (i = 0; i < iL; i++) if (Y[i] >= y0c && deux(i)) { i0 = i; break; }
-    if (i0 >= 0 && yL - Y[i0] < 3) i0 = -1;
-    var uw = /%|^\/10$/.test((c.uc || c.unite || '').trim()) || /^points?$/.test((c.uc || '').trim()) ? 'point' : /^ans?$/.test((c.uc || '').trim()) ? 'an' : /^jours?$/.test((c.uc || '').trim()) ? 'jour' : null;
-    var pl = function (v, w) { return w + (Math.abs(v) >= 2 ? 's' : ''); };
-    var lv = function (v) { return nf(v) + (/^%( du PIB)?$/.test((c.uc || '').trim()) ? ' ' + (c.uc || '').trim() : ''); };
-    var unit = (c.uu || c.unite || '').replace(/^%\s*/, '% ');
-    if (c.regle === 'croissance' && r && i0 >= 0) {
-      var g = function (w) { return (c[w][iL] / c[w][i0] - 1) * 100; }, sg = function (v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + nf(Math.abs(v), 1) + ' %'; };
-      return 'De ' + Y[i0] + ' à ' + yL + ' : ' + sg(g('fr')) + ' en France, ' + sg(g(r)) + ' pour la moyenne de l\'UE.';
-    }
-    var uL = '';
-    if (!r || c.regle === 'propre') return 'France : ' + lv(c.fr[iL]) + ' en ' + yL + (i0 >= 0 ? ', contre ' + lv(c.fr[i0]) + ' en ' + Y[i0] : '') + uL + '.';
-    var gap = function (k) { return +(c.fr[k] - c[r][k]).toFixed(d); };
-    if (uw) {
-      var pos = function (v) { return v === 0 ? 'au niveau de la moyenne de l\'UE' : nf(Math.abs(v)) + ' ' + pl(v, uw) + (v > 0 ? ' au-dessus' : ' en dessous'); };
-      var gL = gap(iL);
-      if (i0 < 0) return 'En ' + yL + ', la France est ' + (gL === 0 ? pos(0) : pos(gL) + ' de la moyenne de l\'UE') + '.';
-      var g0 = gap(i0);
-      return 'En ' + yL + ', la France est ' + (gL === 0 ? pos(0) : pos(gL) + ' de la moyenne de l\'UE') + ' ; ' + (g0 === 0 ? 'au niveau' : pos(g0)) + ' en ' + Y[i0] + '.';
-    }
-    // L'unité est déjà dans le titre de la courbe : pas de répétition.
-    return 'En ' + yL + ' : ' + lv(c.fr[iL]) + ' en France, ' + lv(c[r][iL]) + ' en moyenne dans l\'UE' + (i0 >= 0 ? ' (' + lv(c.fr[i0]) + ' et ' + lv(c[r][i0]) + ' en ' + Y[i0] + ')' : '') + '.';
-  }
-  var api = { fait: fait, match: match, avance: avance, degrade: degrade, POURQUOI: POURQUOI, finances: finances, education: education, sante: sante, securite: securite, defense: defense, vie: vie, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url, debut: m.debut }; }) };
+  var api = { match: match, avance: avance, degrade: degrade, POURQUOI: POURQUOI, finances: finances, education: education, sante: sante, securite: securite, defense: defense, vie: vie, classement: classement, MISSIONS: MISSIONS.map(function (m) { return { k: m.k, l: m.l, url: m.url, debut: m.debut }; }) };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ConcretNotes = api;
 })(this);

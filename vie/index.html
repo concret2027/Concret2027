@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="f006a6f9fb72">
+<meta name="concret-version" content="cae31e954ae2">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -29,10 +29,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
-<script src="../commun/notes.js?v=20261029b"></script>
+<script src="../commun/notes.js?v=20261029c"></script>
 <script src="/commun/bref.js?v=20261028b"></script>
 <script src="/commun/toile.js?v=20261029a"></script>
-<script src="/commun/pays.js?v=20261028b"></script>
+<script src="/commun/pays.js?v=20261029a"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
@@ -1062,8 +1062,8 @@ function main(FEED) {
   }
   function serieCard(wrap, id, c, tag, extra) {
     var sec = card(wrap, id, c.l + ', ' + c.unite, tag);
-    // Sous le titre, en texte normal : un fait calculé (commun/notes.js, ConcretNotes.fait), jamais saisi.
-    var fp = ConcretNotes.fait(c); if (fp) { var pf = document.createElement('p'); pf.className = 'c-fait'; pf.textContent = fp; var h2 = sec.querySelector('h2'); h2.parentNode.insertBefore(pf, h2.nextSibling); }
+    // Sous le titre : la place de la France parmi les pays de l'UE, calculée par outils/rangs.js (rien si elle n'est pas calculée).
+    var pf = document.createElement('p'); pf.className = 'c-fait'; var h2 = sec.querySelector('h2'); h2.parentNode.insertBefore(pf, h2.nextSibling); ConcretPays.rang('vie.' + id.slice(3), pf);
     sec.querySelector('.key').innerHTML = keyHtml(c);
     return function () { sec.querySelector('.note').innerHTML = [serieChart(id, c, extra), c.note && extra && extra.affiche ? esc(c.note) : '', c.pourquoi, srcNote(c)].filter(Boolean).join(' '); };
   }
@@ -1118,10 +1118,11 @@ function main(FEED) {
       t.crit.forEach(function (k) { var x = C[k]; defs.push('<b>' + esc(x.lc || x.l) + '.</b> ' + (x.note || esc(x.ex || '')) + (x.source ? ' Source : ' + lien(x, x.source) + '.' : '')); if (x.sous) Object.keys(x.sous).forEach(function (j) { var q = x.sous[j]; defs.push('<b>' + esc(q.lc || q.l) + '.</b> ' + esc(q.l) + ' (' + esc(q.unite) + '). Source : ' + lien(q, q.source) + '.'); }); });
       sec.innerHTML = '<h2></h2><p class="t-sum"><span class="ic">' + e.l.map(function (x) { return '<i class="' + x.cl + '">' + ICON[x.cl] + '</i>'; }).join('') + '</span>' + (e.ok ? 'La France fait mieux que la moyenne de l\'UE sur ' + e.ok + ' indicateur' + (e.ok > 1 ? 's' : '') + ' sur ' + e.n : 'La France ne fait mieux que la moyenne de l\'UE sur aucun des ' + e.n + ' indicateurs') + ' (dernier chiffre connu).</p>' +
         // La courbe principale dans son propre cadre : on peut la partager seule (« Partager la courbe »).
-        '<div class="card courbe-p" data-partage-l="Partager la courbe"><span class="eyebrow">' + esc(c.l) + ', ' + esc(c.unite) + '</span>' + (ConcretNotes.fait(c) ? '<p class="c-fait">' + esc(ConcretNotes.fait(c)) + '</p>' : '') + '<div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p></div>' +
+        '<div class="card courbe-p" data-partage-l="Partager la courbe"><span class="eyebrow">' + esc(c.l) + ', ' + esc(c.unite) + '</span>' + '<p class="c-fait"></p>' + '<div class="key">' + (c.regle === 'propre' ? '<span><i style="background:var(--fr)"></i>France</span>' : keyHtml(c)) + '</div><div class="chart" id="ch-' + m0.id + '"></div><p class="note"></p></div>' +
         ''; // le tableau et la note du thème : en bas du bloc, sous toutes les courbes
       sec.querySelector('h2').textContent = t.q;
       root.appendChild(sec);
+      ConcretPays.rang('vie.' + m0.id, sec.querySelector('.courbe-p .c-fait'));
       // Visibles : le tableau du thème et sa courbe principale ; les autres courbes et les sources dans le dépliant.
       MAIN.push(function () { sec.querySelector('.courbe-p .note').innerHTML = [serieChart('ch-' + m0.id, c, innerWidth < 600 ? { h: 250 } : null), srcNote(c)].filter(Boolean).join(' '); });
       // Les autres courbes du thème : toutes visibles en petit (France et moyenne de l'UE), deux par ligne sur téléphone ;

@@ -85,6 +85,19 @@
         Object.keys(courbes).concat(Object.keys(toiles)).forEach(redessiner);
       }).catch(function () {});
     },
+    // La phrase sous le titre d'une courbe : la place de la France parmi les pays de l'UE (calculée par outils/rangs.js).
+    // Sans rang (pas assez de pays, ou une source pas encore relue pour les autres pays), l'élément est retiré.
+    rang: function (cle, el) {
+      if (!el) return;
+      chargerIndex().then(function (d) {
+        var R = d.rangs && d.rangs[cle]; if (!R) { el.remove(); return; }
+        var nf = function (v) { return Number(v).toLocaleString('fr-FR', { minimumFractionDigits: R.dec, maximumFractionDigits: R.dec }).replace(/^-/, '−'); };
+        var bas = R.rb < R.rh, k = bas ? R.rb : R.rh, pays = ' des ' + R.n + ' pays de l\'UE' + (R.n < 27 ? ' qui le publient' : '');
+        var place = 'le ' + (k === 1 ? '' : k + 'e ') + 'chiffre le plus ' + (bas ? 'bas' : 'élevé');
+        var bornes = [R.rh > 1 ? 'le plus élevé : ' + R.haut[0] + ', ' + nf(R.haut[1]) : '', R.rb > 1 ? 'le plus bas : ' + R.bas[0] + ', ' + nf(R.bas[1]) : ''].filter(Boolean).join(' ; ');
+        el.textContent = 'En ' + R.y + ', la France a ' + place + pays + (bornes ? ' (' + bornes + ')' : '') + '.';
+      }).catch(function () { el.remove(); });
+    },
     // Une courbe : la retenir pour la redessiner quand son choix change, et lui ajouter les pays choisis pour elle.
     retenir: function (id, f) { courbes[id] = f; },
     ajouter: function (id, series) {

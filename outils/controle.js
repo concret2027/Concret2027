@@ -327,6 +327,9 @@ if (!bloquant.length) {
   // Version du site (outils/version.js) : ne change que si une page ou un script commun change ; la web app s'en sert pour proposer la mise à jour.
   var vs = cp.spawnSync('node', [path.join(__dirname, 'version.js')], { cwd: ROOT, encoding: 'utf8', timeout: 60000 });
   if (vs.status !== 0) alertes.push('version du site non refaite (' + ((vs.stderr || vs.error && vs.error.message || 'erreur').trim().split('\n').pop()) + ') : relancer node outils/version.js');
+  // Place de la France parmi les pays de l'UE, sous le titre des courbes des pages de mission (outils/rangs.js, dans donnees/pays_index.json).
+  var rg = cp.spawnSync('node', [path.join(__dirname, 'rangs.js')], { cwd: ROOT, encoding: 'utf8', timeout: 60000 });
+  if (rg.status !== 0) alertes.push('place de la France dans l\'UE non recalculée (' + ((rg.stderr || rg.error && rg.error.message || 'erreur').trim().split('\n').pop()) + ') : relancer node outils/rangs.js');
   var ix = cp.spawnSync('node', [path.join(__dirname, 'recherche.js')], { cwd: ROOT, encoding: 'utf8', timeout: 240000 });
   if (ix.status !== 0) alertes.push('index du moteur de recherche non refait (' + ((ix.stderr || ix.error && ix.error.message || 'délai dépassé').trim().split('\n').pop()) + ') : relancer node outils/recherche.js');
   // Cartes d'aperçu des liens (og:image) : refaites quand les chiffres qu'elles montrent changent.

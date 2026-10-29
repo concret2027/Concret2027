@@ -9,7 +9,7 @@ Ces pays sont affichés comme repères : ils ne changent aucune note.
   python3 outils/pays.py            compare et résume
   python3 outils/pays.py --ecrire   écrit donnees/pays.json
 """
-import json, os, sys
+import json, os, subprocess, sys
 from datetime import date
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ue_calc as U
@@ -260,6 +260,8 @@ def main():
         idx = {'maj': doc['maj'], 'noms': doc['noms'], 'hors_ue': doc['hors_ue'], 'regions': {g: REG.get(g, 'Hors UE') for g in HORS}, 'cles': sorted(out), 'dispo': dispo}
         open(os.path.join(ROOT, 'donnees', 'pays_index.json'), 'w', encoding='utf-8').write(json.dumps(idx, ensure_ascii=False, separators=(',', ':')))
         print('Écrit : donnees/pays.json et donnees/pays_index.json')
+        # La place de la France dans l'UE (sous le titre des courbes) suit les nouveaux chiffres : outils/rangs.js l'ajoute à l'index.
+        subprocess.run(['node', os.path.join(ROOT, 'outils', 'rangs.js')], check=False)
 
 
 if __name__ == '__main__':
