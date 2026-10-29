@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="f5148ff67af9">
+<meta name="concret-version" content="feacba52923e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -32,7 +32,7 @@
 <script src="../commun/notes.js?v=20261029c"></script>
 <script src="/commun/bref.js?v=20261028b"></script>
 <script src="/commun/toile.js?v=20261029a"></script>
-<script src="/commun/pays.js?v=20261029a"></script>
+<script src="/commun/pays.js?v=20261029b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
 .ex { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bad); border: 1px solid var(--bad); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
@@ -703,7 +703,7 @@ function main(FEED) {
     var simples = KEYS.filter(function (k) { return C[k] && C[k].regle !== 'composite' && C[k].regle !== 'propre'; });
     var T = ConcretToile.depuisC(C, simples, { page: 'vie' });
     var prog = KEYS.filter(function (k) { return C[k] && C[k].regle === 'composite'; }).map(function (k) { return C[k].lc || C[k].l; });
-    ConcretPays.init({ page: 'vie', carte: {} }); ConcretPays.toile('toile', ConcretToile.dessiner, { titre: 'La France et ses voisins', axes: T.axes, notes: T.notes.concat(prog.length ? [prog.join(', ') + ' : plusieurs programmes à la fois, détaillés plus bas'] : []), omis: T.omis, series: ConcretToile.SERIES });
+    ConcretPays.init({ page: 'vie', carte: {} , sans: { 'ch-moral-m': "Pas d'autres pays sur le chiffre du mois : ils s'ajoutent sur la courbe annuelle du moral des ménages." } }); ConcretPays.toile('toile', ConcretToile.dessiner, { titre: 'La France et ses voisins', axes: T.axes, notes: T.notes.concat(prog.length ? [prog.join(', ') + ' : plusieurs programmes à la fois, détaillés plus bas'] : []), omis: T.omis, series: ConcretToile.SERIES });
   })();
   var col = function (n) { return n >= 10 ? 'var(--ok)' : n >= 6 ? 'var(--mid)' : 'var(--bad)'; };
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };

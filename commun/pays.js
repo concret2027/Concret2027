@@ -11,7 +11,7 @@
     '.cp-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 6px 4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-weight:600;color:var(--fg)}' +
     '.cp-chip i{display:inline-block;width:16px;height:0;border-top:3px dashed}' +
     '.cp-chip button{font:inherit;border:0;background:none;color:var(--muted);cursor:pointer;padding:2px 6px;min-height:28px}' +
-    '.cp-msg{font-size:12.5px;color:var(--muted);flex-basis:100%}';
+    '.cp-msg{font-size:12.5px;color:var(--muted);flex-basis:100%}.cp-sans{margin:6px 0 0}';
   var opts = { page: '', carte: {} }, data = null, chargement = null, index = null, chIndex = null, choix = {}, courbes = {}, toiles = {};
   // Le choix est rangé par graphique : { 'sante:ch-esp': ['IT'], 'sante:toile': ['SE', 'US'] }.
   try { var c0 = JSON.parse(localStorage.getItem(CLE) || '{}'); if (c0 && typeof c0 === 'object' && !Array.isArray(c0)) choix = c0; } catch (e) {}
@@ -76,13 +76,22 @@
     b.dataset.cle = k || ''; b.dataset.id = id; barre(b);
   }
 
+  // Une courbe sans autres pays : la raison, à la place du menu (la page la donne, sinon outils/pays.py dans l'index).
+  function sansPays(id) {
+    var el = document.getElementById(id); if (!el || !el.parentNode || cle(id)) return;
+    var why = (opts.sans || {})[id] || ((index && index.sans) || {})[opts.page + '.' + id.replace(/^ch-/, '')], nx = el.nextElementSibling;
+    if (!why || (nx && nx.classList.contains('cp-sans'))) return;
+    var ps = document.createElement('p'); ps.className = 'cp-msg cp-sans'; ps.setAttribute('data-partage-ignorer', '1'); ps.textContent = why; el.parentNode.insertBefore(ps, el.nextSibling);
+  }
+
   window.ConcretPays = {
     init: function (o) {
-      opts.page = o.page || ''; opts.carte = o.carte || {};
+      opts.page = o.page || ''; opts.carte = o.carte || {}; opts.sans = o.sans || {};
       if (!document.getElementById('cp-css')) { var st = document.createElement('style'); st.id = 'cp-css'; st.textContent = css; document.head.appendChild(st); }
       var ids = function () { return Object.keys(choix).filter(function (k) { return k.indexOf(opts.page + ':') === 0; }).map(function (k) { return k.slice(opts.page.length + 1); }); };
       chargerIndex().then(function () { return ids().length ? charger() : null; }).then(function () {
         Object.keys(courbes).concat(Object.keys(toiles)).forEach(redessiner);
+        Object.keys(opts.sans).forEach(sansPays);
       }).catch(function () {});
     },
     // La phrase sous le titre d'une courbe : la place de la France parmi les pays de l'UE (calculée par outils/rangs.js).
@@ -102,6 +111,7 @@
     retenir: function (id, f) { courbes[id] = f; },
     ajouter: function (id, series) {
       var el = document.getElementById(id), k = cle(id), dejaUS = series.some(function (x) { return x && x.c === 'var(--us)'; });
+      if (el && !k && index) sansPays(id);
       if (el && k) { poserBarre(el, k, id); var bb = el.nextElementSibling; if (bb && bb.classList.contains('cp-bar')) { if (dejaUS) bb.dataset.us = '1'; else delete bb.dataset.us; barre(bb); } }
       var ch = choisis(id);
       if (!data || !k || !ch.length) return series;
