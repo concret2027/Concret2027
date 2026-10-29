@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c9457893f145">
+<meta name="concret-version" content="155e3350f1e4">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -30,7 +30,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261028b"></script>
+<script src="/commun/bref.js?v=20261030b"></script>
 <script src="/commun/toile.js?v=20261029a"></script>
 <script src="/commun/pays.js?v=20261029b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
@@ -1173,7 +1173,7 @@ function main(FEED) {
     // Une ligne par morceau continu (une année manquante coupe la ligne, comme sur la grande courbe).
     var trace = function (P) { var seg = [], cur = []; P.forEach(function (p, k) { if (k && p.x !== P[k - 1].x + 1 && cur.length) { seg.push(cur); cur = []; } cur.push(X(p.x).toFixed(1) + ',' + Y(p.v).toFixed(1)); }); if (cur.length) seg.push(cur); return seg.map(function (sg) { return sg.length > 1 ? sg.join(' ') : sg[0] + ' ' + sg[0]; }); };
     var lf = F[F.length - 1], le = E.filter(function (p) { return p.x === lf.x; })[0] || null;
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'mini';
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'mini'; b.dataset.courbe = o.id;
     b.innerHTML = '<span class="mini-h"><span class="mini-t">' + esc(c.lc || c.l) + '</span>' + (c.unite ? '<span class="mini-u">' + esc(c.unite) + '</span>' : '') + '</span>' +
       '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + [[D, 'var(--de)'], [Es, 'var(--es)'], [Us, 'var(--us)']].map(function (a) { return a[0].length ? trace(a[0]).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="' + a[1] + '" stroke-width="1.2" opacity=".75"/>'; }).join('') : ''; }).join('') + (E.length ? trace(E).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--ea)" stroke-width="1.6" stroke-dasharray="4 3"/>'; }).join('') : '') +
       trace(F).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--fr)" stroke-width="2.4" stroke-linejoin="round"/>'; }).join('') + '<circle cx="' + X(lf.x) + '" cy="' + Y(lf.v) + '" r="3" fill="var(--fr)" class="mini-pt"/></svg>' +

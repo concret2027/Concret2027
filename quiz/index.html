@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c9457893f145">
+<meta name="concret-version" content="155e3350f1e4">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261028b"></script>
+<script src="/commun/bref.js?v=20261030b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; }
 
@@ -87,6 +87,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
 .jump a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
 section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
+/* Les questions : le bandeau des pages et la barre de progression sont déjà comptés par html { scroll-padding-top } (commun/menu.js). */
+section.quiz[id], #qz-fin { scroll-margin-top: 12px; }
 .flash { animation: flash 1.6s ease-out; }
 @keyframes flash { 0% { background: var(--band); box-shadow: 0 0 0 3px var(--fr); border-radius: 10px; } 100% { box-shadow: 0 0 0 0 transparent; } }
 @media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
@@ -537,17 +539,17 @@ footer p { margin: 0; } footer a { color: inherit; }
         var ue = c.ue || c.ue_calc; if (!ue) return;
         // Les dix dernières années définitives communes à la France et à la moyenne de l'UE.
         for (var i = c.y.length - 1, nb = 0; i >= 0 && nb < 10; i--) if (c.fr[i] != null && ue[i] != null && !(c.est || {})[c.y[i]] && !(c.prov || {})[c.y[i]]) {
-          IND.push({ pg: pg, page: PG[pg], der: !nb++, l: c.lc || c.l, u: c.unite || '', y: c.y[i], d: dec(c), low: c.low, moyens: /^d(pol|trib|pris)$|^places$/.test(k), v: { 'France': c.fr[i], 'Moyenne de l\'UE': ue[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
+          IND.push({ pg: pg, page: PG[pg], courbe: 'ch-' + k, der: !nb++, l: c.lc || c.l, u: c.unite || '', y: c.y[i], d: dec(c), low: c.low, moyens: /^d(pol|trib|pris)$|^places$/.test(k), v: { 'France': c.fr[i], 'Moyenne de l\'UE': ue[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
         }
       });
     });
     [['el', 'Décrochage scolaire'], ['ne', 'Jeunes ni en emploi ni en études'], ['te', 'Diplômés du supérieur']].forEach(function (p) {
       var c = ((S.education || {}).S || {})[p[0]]; if (!c) return;
-      for (var i = Math.min(c.fr.length, c.eu.length) - 1, nb = 0; i >= 0 && nb < 10; i--) if (c.fr[i] != null && c.eu[i] != null) IND.push({ pg: 'education', page: 'Éducation', der: !nb++, l: p[1], u: '%', y: 2002 + i, d: 1, low: p[0] !== 'te', v: { 'France': c.fr[i], 'Moyenne de l\'UE': c.eu[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
+      for (var i = Math.min(c.fr.length, c.eu.length) - 1, nb = 0; i >= 0 && nb < 10; i--) if (c.fr[i] != null && c.eu[i] != null) IND.push({ pg: 'education', page: 'Éducation', courbe: 'ch-' + p[0], der: !nb++, l: p[1], u: '%', y: 2002 + i, d: 1, low: p[0] !== 'te', v: { 'France': c.fr[i], 'Moyenne de l\'UE': c.eu[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
     });
     [['dette', 'Dette publique', true], ['dep', 'Dépenses publiques', null], ['po', 'Impôts et cotisations', null]].forEach(function (p) {
       var c = ((S.finances || {}).D || {})[p[0]]; if (!c) return;
-      for (var i = c.fr.length - 1, nb = 0; i >= 0 && nb < 10; i--) if (c.fr[i] != null && c.eu[i] != null) IND.push({ pg: 'finances', page: 'Finances', der: !nb++, l: p[1], u: '% du PIB', y: 1995 + i, d: 1, low: p[2], v: { 'France': c.fr[i], 'Moyenne de l\'UE': c.eu[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
+      for (var i = c.fr.length - 1, nb = 0; i >= 0 && nb < 10; i--) if (c.fr[i] != null && c.eu[i] != null) IND.push({ pg: 'finances', page: 'Finances', courbe: 'ch-' + p[0], der: !nb++, l: p[1], u: '% du PIB', y: 1995 + i, d: 1, low: p[2], v: { 'France': c.fr[i], 'Moyenne de l\'UE': c.eu[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
     });
     var unite = function (x) { return /^%/.test(x.u) ? ' %' : ' ' + x.u; };
     var Q2 = [
@@ -556,8 +558,8 @@ footer p { margin: 0; } footer a { color: inherit; }
         var n = Object.keys(x.v).filter(function (k) { return x.v[k] != null; }); if (n.length < 4) return null;
         var L = n.map(function (k) { return { n: k, v: x.v[k] }; }); if (!seule(L)) return null;
         var o = melange(L, r), best = o.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = L.slice().sort(function (a, b) { return b.v - a.v; });
-        return { l: x.page, q: x.l + ' (' + x.u + ', ' + x.y + ') : lequel a le chiffre le plus élevé ?', o: o.map(function (z) { return z.n; }), a: o.indexOf(best),
-          e: tri.map(function (z) { return z.n + ' : ' + nf(z.v, x.d) + (/^%/.test(x.u) ? ' %' : ''); }).join(' ; ') + ' (' + x.y + ', ' + x.u + ').', lien: '/' + x.pg + '/#courbes', src: x.page };
+        return { l: x.page, q: x.l + ', en ' + x.y + ' (' + x.u + ') : entre la France, la moyenne de l\'UE, l\'Allemagne et l\'Espagne, qui avait le chiffre le plus élevé ?', o: o.map(function (z) { return z.n; }), a: o.indexOf(best),
+          e: tri.map(function (z) { return z.n + ' : ' + nf(z.v, x.d) + (/^%/.test(x.u) ? ' %' : ''); }).join(' ; ') + ' (' + x.y + ', ' + x.u + ').', lien: '/' + x.pg + '/#' + x.courbe, src: x.page };
       },
       // e. Mieux ou moins bien que la moyenne de l'UE ? Seulement là où la page dit déjà ce qui est « mieux » (pas les moyens dépensés).
       function (x) {
@@ -565,7 +567,7 @@ footer p { margin: 0; } footer a { color: inherit; }
         var f = x.v['France'], e = x.v['Moyenne de l\'UE']; if (f === e) return null;
         var mieux = x.low ? f < e : f > e;
         return { l: x.page, q: x.l + (x.der ? ', dernier chiffre connu' : ', en ' + x.y) + ' : la France fait-elle mieux ou moins bien que la moyenne de l\'UE ?', o: ['Mieux que la moyenne de l\'UE', 'Moins bien que la moyenne de l\'UE'], a: mieux ? 0 : 1,
-          e: 'France : ' + nf(f, x.d) + unite(x) + ' ; moyenne de l\'UE : ' + nf(e, x.d) + unite(x) + ' (' + x.y + '). ' + (x.low ? 'Ici, un chiffre plus bas est compté comme mieux.' : 'Ici, un chiffre plus haut est compté comme mieux.'), lien: '/' + x.pg + '/#courbes', src: x.page };
+          e: 'France : ' + nf(f, x.d) + unite(x) + ' ; moyenne de l\'UE : ' + nf(e, x.d) + unite(x) + ' (' + x.y + '). ' + (x.low ? 'Ici, un chiffre plus bas est compté comme mieux.' : 'Ici, un chiffre plus haut est compté comme mieux.'), lien: '/' + x.pg + '/#' + x.courbe, src: x.page };
       }
     ];
     // Toutes les questions possibles (forme × mission, président ou indicateur), puis un pas fixe, premier avec leur nombre :
@@ -601,6 +603,22 @@ footer p { margin: 0; } footer a { color: inherit; }
     var prog = document.getElementById('qz-prog'); prog.innerHTML = Qs.map(function () { return '<i></i>'; }).join('');
     var liste = document.getElementById('qz-liste');
 
+    // La prochaine question sans réponse (après la question n, puis depuis le début) ; sinon, le score.
+    function apres(n, doux) {
+      var k = -1; for (var d = 1; d < total; d++) { var j = (n + d) % total; if (rep[j] == null) { k = j; break; } }
+      var cible = k < 0 ? document.getElementById('qz-fin') : document.getElementById('q' + (k + 1));
+      if (cible) cible.scrollIntoView({ behavior: doux ? 'smooth' : 'auto', block: 'start' });
+    }
+    // « Vérifier sur la page » : au retour sur le quiz, on reprend à la question suivante (et pas en haut de la page).
+    liste.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('a.qz-src'), s = a && a.closest('section.quiz'); if (s) try { sessionStorage.setItem('concret-quiz-retour', s.id.slice(1) + '|' + idx); } catch (er) {} });
+    function retour() {
+      var r = null; try { r = sessionStorage.getItem('concret-quiz-retour'); sessionStorage.removeItem('concret-quiz-retour'); } catch (er) {}
+      if (!r) return; var p = r.split('|'); if (+p[1] !== idx) return;
+      // Le navigateur remet sa propre position, et la page bouge encore en se chargeant : on reprend la question trois fois.
+      try { history.scrollRestoration = 'manual'; } catch (er) {}
+      [0, 400, 1200].forEach(function (t) { setTimeout(function () { apres(+p[0] - 1, false); }, t); });
+    }
+    addEventListener('pageshow', function (e) { if (e.persisted) retour(); });
     Qs.forEach(function (x, n) {
       var sec = document.createElement('section'); sec.className = 'card quiz'; sec.id = 'q' + (n + 1);
       sec.innerHTML = '<span class="eyebrow">' + (n + 1) + ' / ' + total + ' · ' + esc(x.l) + '</span><p class="q">' + esc(x.q) + '</p><div class="opts"></div><p class="answer" role="status" tabindex="-1" hidden></p>';
@@ -620,9 +638,7 @@ footer p { margin: 0; } footer a { color: inherit; }
           var su = document.createElement('p'); su.className = 'qz-suite'; var bt = document.createElement('button'); bt.type = 'button'; su.appendChild(bt); sec.appendChild(su);
           bt.addEventListener('click', function () {
             // La prochaine question sans réponse (après celle-ci, puis depuis le début) ; sinon, le score.
-            var k = -1; for (var d = 1; d < total; d++) { var j = (n + d) % total; if (rep[j] == null) { k = j; break; } }
-            var cible = k < 0 ? document.getElementById('qz-fin') : document.getElementById('q' + (k + 1));
-            if (cible) cible.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            apres(n, true);
           });
         }
         suites();
@@ -633,6 +649,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       try { var prev = localStorage.getItem(x.cle); if (prev != null && +prev < x.o.length) reveal(+prev); } catch (e) {}
     });
     if (rep.every(function (v) { return v != null; })) fin(false);
+    retour();
     // Le libellé des boutons « Question suivante » : « Voir mon score » quand toutes les questions ont une réponse.
     function suites() {
       var toutes = rep.every(function (v) { return v != null; });

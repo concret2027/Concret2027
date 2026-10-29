@@ -27,9 +27,11 @@
     for (var d = el; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
     // Défilement dès l'image suivante (le bloc ouvert a pris sa place), sans attente.
     requestAnimationFrame(function () {
-      var c = el.closest('section, .card, .mo') || el;
+      var c = el.closest('.card, .mo') || el.closest('section') || el;
       c.scrollIntoView({ behavior: 'smooth', block: 'start' });
       c.classList.remove('bref-flash'); void c.offsetWidth; c.classList.add('bref-flash');
+      // La page bouge encore (courbes qui se dessinent au-dessus) : une fois posée, on remet la courbe en haut.
+      setTimeout(function () { var h = c.getBoundingClientRect().top; if (h < 60 || h > 260) c.scrollIntoView({ block: 'start' }); }, 1300);
     });
   }
 
@@ -108,7 +110,12 @@
   // Lien venu d'une autre page (par exemple le quiz) vers une courbe repliée : on attend qu'elle existe, puis on l'ouvre.
   if (location.hash.length > 1) {
     var vise = decodeURIComponent(location.hash.slice(1)), essais = 0;
-    var t = setInterval(function () { var el = document.getElementById(vise); if (el || ++essais > 40) { clearInterval(t); if (el) aller(vise); } }, 250);
+    // Une petite courbe (« Toucher pour agrandir ») n'existe qu'agrandie : on touche sa vignette, puis on y descend.
+    var t = setInterval(function () {
+      var el = document.getElementById(vise), mini = !el && document.querySelector('.mini[data-courbe="' + vise + '"]');
+      if (mini) { mini.click(); el = document.getElementById(vise); }
+      if (el || ++essais > 40) { clearInterval(t); if (el) aller(vise); }
+    }, 250);
   }
   window.ConcretBref = { render: render, aller: aller, nouveau: nouveau, lier: lier, afficher: afficher, premiere: premiere };
 })();
