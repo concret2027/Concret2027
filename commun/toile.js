@@ -110,7 +110,8 @@
       '<div class="toile-l">' + S.map(function (s) { return '<span><i class="' + (s.dash ? 'd' : '') + '" style="border-top-color:' + s.c + (s.pointille ? ';border-top-style:dotted' : '') + '"></i>' + esc(s.n) + '</span>'; }).join('') + '</div>';
     box.appendChild(svg);
     var note = document.createElement('p'); note.className = 'note';
-    note.textContent = 'Plus loin du centre : plus élevé, pas forcément mieux (une dette plus élevée s\'éloigne aussi du centre). Chaque axe va du plus bas (0, ou moins pour un chiffre négatif) au plus haut des pays affichés ; la plage de chaque axe est dans « Les chiffres ». Aucune note ici : elles sont calculées année par année, plus bas.' +
+    var ax0 = (o.axes || []).filter(function (a) { return a && a.l; })[0];
+    note.textContent = 'Plus loin du centre : un chiffre plus élevé, pas forcément mieux' + (ax0 ? ' (par exemple « ' + ax0.l + ' »)' : '') + '. Chaque axe va du plus bas (0, ou moins pour un chiffre négatif) au plus haut des pays affichés ; la plage de chaque axe est dans « Les chiffres ». Aucune note ici : elles sont calculées année par année, plus bas.' +
       (manque.length ? ' ' + manque.join(' ; ') + ' (la forme est coupée à cet endroit).' : '') + (o.notes && o.notes.length ? ' ' + o.notes.join(' ; ') + '.' : '') + (o.omis && o.omis.length ? ' Pas sur la toile, faute de chiffre comparable au même moment : ' + o.omis.join(', ') + '.' : '');
     box.appendChild(note);
     var det = document.createElement('details'); det.className = 'toile-det';
@@ -128,7 +129,7 @@
   }
   // Les séries affichées par défaut, dans les couleurs des courbes du site.
   var SERIES = [
-    { k: 'fr', n: 'France', c: 'var(--fr)', main: 1 }, { k: 'ue', n: 'Union européenne', court: 'UE', c: 'var(--ea)', dash: 1 },
+    { k: 'fr', n: 'France', c: 'var(--fr)', main: 1 }, { k: 'ue', n: 'Moyenne de l\'UE', court: 'UE', c: 'var(--ea)', dash: 1 },
     { k: 'de', n: 'Allemagne', court: 'All.', c: 'var(--de)' }, { k: 'es', n: 'Espagne', court: 'Esp.', c: 'var(--es)' }
   ];
   window.ConcretToile = { dessiner: dessiner, depuisC: depuisC, SERIES: SERIES };

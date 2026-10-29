@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="9a27bc730a54">
+<meta name="concret-version" content="a8064bba04b4">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -333,7 +333,8 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
     $('maj').textContent = 'Mis à jour le ' + dLong(S.maj);
 
     // En bref : le dernier vote, la dernière loi publiée, le prochain jour de séance.
-    var v0 = VOTES[0], l0 = S.LOIS[0], a0 = S.AGENDA[0];
+    // La prochaine séance : aujourd'hui ou à venir.
+    var auj0 = new Date().toLocaleDateString('sv-SE'), v0 = VOTES[0], l0 = S.LOIS[0], a0 = S.AGENDA.filter(function (x) { return x.d >= auj0; })[0];
     $('bref3').innerHTML =
       (v0 ? '<a class="bcase" href="#v' + v0.n + '"><span class="lab">Dernier vote · ' + dCourt(v0.d) + '</span><span class="t">' + esc(maj1(court(v0.t))) + '</span><span class="d"><span class="sort ' + (v0.s === 'adopté' ? 'adopte">Adopté' : 'rejete">Rejeté') + '</span> ' + nf(v0.p) + ' pour, ' + nf(v0.c) + ' contre</span></a>' : '') +
       (l0 ? '<a class="bcase" href="#lois"><span class="lab">Dernière loi publiée · ' + dCourt(l0.jo || l0.d) + '</span><span class="t">Loi ' + esc(l0.t) + '</span><span class="d">Loi n° ' + esc(l0.code) + '</span></a>' : '') +
@@ -427,9 +428,11 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 
     // L'agenda.
     var pt = function (o) { return '<li>' + esc(o) + '</li>'; };
-    $('agenda-l').innerHTML = S.AGENDA.map(function (a, i) { return '<li' + (i >= 4 ? ' hidden' : '') + '><span class="d">' + maj1(dJour(a.d)) + '</span><div><ul>' + a.o.slice(0, 3).map(pt).join('') + '</ul>' + (a.o.length > 3 ? '<details class="ag-plus"><summary>' + (a.o.length - 3) + ' autre' + (a.o.length > 4 ? 's' : '') + ' point' + (a.o.length > 4 ? 's' : '') + '</summary><ul>' + a.o.slice(3).map(pt).join('') + '</ul></details>' : '') + '</div></li>'; }).join('') || '<li><span></span><p class="vide">Aucune séance confirmée dans les quatorze jours qui viennent.</p></li>';
-    if (S.AGENDA.length > 4) {
-      var agp = $('agenda-plus'), nr = S.AGENDA.length - 4;
+    // Seulement aujourd'hui et les jours à venir (l'ordre du jour relevé la veille commence parfois hier).
+    var auj1 = new Date().toLocaleDateString('sv-SE'), AG = S.AGENDA.filter(function (x) { return x.d >= auj1; });
+    $('agenda-l').innerHTML = AG.map(function (a, i) { return '<li' + (i >= 4 ? ' hidden' : '') + '><span class="d">' + maj1(dJour(a.d)) + '</span><div><ul>' + a.o.slice(0, 3).map(pt).join('') + '</ul>' + (a.o.length > 3 ? '<details class="ag-plus"><summary>' + (a.o.length - 3) + ' autre' + (a.o.length > 4 ? 's' : '') + ' point' + (a.o.length > 4 ? 's' : '') + '</summary><ul>' + a.o.slice(3).map(pt).join('') + '</ul></details>' : '') + '</div></li>'; }).join('') || '<li><span></span><p class="vide">Aucune séance confirmée dans les quatorze jours qui viennent.</p></li>';
+    if (AG.length > 4) {
+      var agp = $('agenda-plus'), nr = AG.length - 4;
       agp.textContent = 'Voir les ' + nr + ' jours de séance suivants'; agp.hidden = false;
       agp.onclick = function () { $('agenda-l').querySelectorAll('li[hidden]').forEach(function (li) { li.hidden = false; }); agp.hidden = true; };
     }
@@ -494,6 +497,6 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 <script src="/commun/lois.js?v=20261027a"></script>
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261030h"></script>
+<script src="/commun/menu.js?v=20261030j"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="9a27bc730a54">
+<meta name="concret-version" content="a8064bba04b4">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
 <script src="/commun/bref.js?v=20261030b"></script>
-<script src="/commun/toile.js?v=20261029a"></script>
+<script src="/commun/toile.js?v=20261030a"></script>
 <script src="/commun/pays.js?v=20261029b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
@@ -399,7 +399,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <h2 id="pib-title" class="inv"><span class="eyebrow">Richesse par habitant</span>16 % au-dessus de la moyenne de l'UE en 1990, au même niveau en 2025</h2>
     <p class="insight" id="pib-insight">En 1990, un Français produisait <b>16 % de plus</b> que la moyenne de l'UE. En 2025, <b>autant</b>.</p>
     <div class="bar-row">
-      <div class="key"><span><i style="background:var(--us)"></i>États-Unis</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--fr)"></i>France</span></div>
+      <div class="key"><span><i style="background:var(--us)"></i>États-Unis</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i class="dash"></i>Moyenne de l'UE</span><span><i style="background:var(--fr)"></i>France</span></div>
       <div class="chips" role="group" aria-label="Mode d'affichage">
         <button class="chip" id="pib-lvl" aria-pressed="true">En dollars</button>
         <button class="chip" id="pib-idx" aria-pressed="false">Base 100 en 1990</button>
@@ -411,7 +411,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card" id="retraites" aria-labelledby="ret-title" hidden>
     <h2 id="ret-title" class="inv"><span class="eyebrow">Retraites publiques, % du PIB</span>Le poids des retraites dans la richesse nationale</h2>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
     <div class="chart" id="ch-retraites"></div>
     <p class="note" id="ret-note"></p>
   </section>
@@ -477,7 +477,7 @@ footer p { margin: 0; } footer a { color: inherit; }
         <span class="mo-num" id="u-num">—</span>
         <span class="delta" id="u-delta"></span>
         <span class="mo-t" id="u-t"></span>
-        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span></div>
+        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
         <div class="chart" id="mo-u"></div>
         <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
       </div>
@@ -486,7 +486,7 @@ footer p { margin: 0; } footer a { color: inherit; }
         <span class="mo-num" id="i-num">—</span>
         <span class="delta" id="i-delta"></span>
         <span class="mo-t" id="i-t"></span>
-        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span></div>
+        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
         <div class="chart" id="mo-i"></div>
         <button class="share" type="button" data-share="inflation">Partager ce graphique</button>
       </div>
@@ -500,7 +500,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       </div>
       <div class="mo">
         <span class="mo-lab">Croissance trimestre par trimestre</span>
-        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--ea)"></i>Union européenne</span></div>
+        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--ea)"></i>Moyenne de l'UE</span></div>
         <div class="chart" id="mo-g"></div>
       </div>
     </div>
@@ -637,7 +637,7 @@ function main(FEED) {
   }
   tick(); setInterval(tick, 1000);
   // ===== Curseur au doigt ou à la souris : date et valeurs de toutes les courbes =====
-  var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Union européenne', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--it)': 'Italie', 'var(--es)': 'Espagne' };
+  var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Moyenne de l\'UE', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--it)': 'Italie', 'var(--es)': 'Espagne' };
   function hover(box, svg, H, m, pts) {
     if (!pts.length) return;
     var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
@@ -1060,10 +1060,10 @@ function main(FEED) {
   var ser = function (arr) { return arr.map(function (v, i) { return { x: Y0 + i, v: v }; }); };
   var XT = [1995, 2000, 2005, 2010, 2015, 2020, 2025], XD = [1994.5, 2025.5];
   function four() {
-    lineChart('ch-dette', [{ c: 'var(--us)', data: ser(D.dette.us) }, { c: 'var(--es)', data: ser(D.dette.es) }, { c: 'var(--de)', data: ser(D.dette.de) }, { c: 'var(--ea)', n: 'Union européenne', dash: 1, data: ser(D.dette.eu) }, { c: 'var(--fr)', main: 1, data: ser(D.dette.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, label: 'Dette publique en % du PIB, France, Union européenne, Allemagne, Espagne et États-Unis, 1995-2025' });
-    lineChart('ch-deficit', [{ c: 'var(--us)', data: ser(D.deficit.us) }, { c: 'var(--es)', data: ser(D.deficit.es) }, { c: 'var(--de)', data: ser(D.deficit.de) }, { c: 'var(--ea)', n: 'Union européenne', dash: 1, data: ser(D.deficit.eu) }, { c: 'var(--fr)', main: 1, data: ser(D.deficit.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, min: -15, max: 2, label: 'Solde public en % du PIB, France, Union européenne, Allemagne, Espagne et États-Unis, 1995-2025' });
-    lineChart('ch-dep', [{ c: 'var(--us)', data: ser(D.dep.us) }, { c: 'var(--es)', data: ser(D.dep.es) }, { c: 'var(--de)', data: ser(D.dep.de) }, { c: 'var(--ea)', n: 'Union européenne', dash: 1, data: ser(D.dep.eu) }, { c: 'var(--fr)', main: 1, data: ser(D.dep.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, label: 'Dépenses publiques en % du PIB, 1995-2025' });
-    lineChart('ch-po', [{ c: 'var(--us)', data: ser(D.po.us) }, { c: 'var(--es)', data: ser(D.po.es) }, { c: 'var(--de)', data: ser(D.po.de) }, { c: 'var(--ea)', n: 'Union européenne', dash: 1, data: ser(D.po.eu) }, { c: 'var(--fr)', main: 1, data: ser(D.po.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, label: 'Impôts et cotisations en % du PIB, 1995-2024' });
+    lineChart('ch-dette', [{ c: 'var(--us)', data: ser(D.dette.us) }, { c: 'var(--es)', data: ser(D.dette.es) }, { c: 'var(--de)', data: ser(D.dette.de) }, { c: 'var(--ea)', n: 'Moyenne de l\'UE', dash: 1, data: ser(D.dette.eu) }, { c: 'var(--fr)', main: 1, data: ser(D.dette.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, label: 'Dette publique en % du PIB, France, Union européenne, Allemagne, Espagne et États-Unis, 1995-2025' });
+    lineChart('ch-deficit', [{ c: 'var(--us)', data: ser(D.deficit.us) }, { c: 'var(--es)', data: ser(D.deficit.es) }, { c: 'var(--de)', data: ser(D.deficit.de) }, { c: 'var(--ea)', n: 'Moyenne de l\'UE', dash: 1, data: ser(D.deficit.eu) }, { c: 'var(--fr)', main: 1, data: ser(D.deficit.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, min: -15, max: 2, label: 'Solde public en % du PIB, France, Union européenne, Allemagne, Espagne et États-Unis, 1995-2025' });
+    lineChart('ch-dep', [{ c: 'var(--us)', data: ser(D.dep.us) }, { c: 'var(--es)', data: ser(D.dep.es) }, { c: 'var(--de)', data: ser(D.dep.de) }, { c: 'var(--ea)', n: 'Moyenne de l\'UE', dash: 1, data: ser(D.dep.eu) }, { c: 'var(--fr)', main: 1, data: ser(D.dep.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, label: 'Dépenses publiques en % du PIB, 1995-2025' });
+    lineChart('ch-po', [{ c: 'var(--us)', data: ser(D.po.us) }, { c: 'var(--es)', data: ser(D.po.es) }, { c: 'var(--de)', data: ser(D.po.de) }, { c: 'var(--ea)', n: 'Moyenne de l\'UE', dash: 1, data: ser(D.po.eu) }, { c: 'var(--fr)', main: 1, data: ser(D.po.fr) }], { unit: ' %', x: XD, xt: XT, bands: 1, label: 'Impôts et cotisations en % du PIB, 1995-2024' });
   }
   // Courbe française plus courte que les autres : on dit pourquoi, sous le graphique.
   function manque() {
@@ -1078,7 +1078,7 @@ function main(FEED) {
   var pibMode = 'lvl';
   function pibChart() {
     var s = ['us', 'es', 'de', 'eu', 'fr'].map(function (k) {
-      return { c: k === 'eu' ? 'var(--ea)' : 'var(--' + k + ')', n: { eu: 'Union européenne' }[k], dash: k === 'eu', main: k === 'fr', data: PIB[k].map(function (v, i) { return { x: 1990 + i, v: pibMode === 'idx' ? v / PIB[k][0] * 100 : v }; }) };
+      return { c: k === 'eu' ? 'var(--ea)' : 'var(--' + k + ')', n: { eu: 'Moyenne de l\'UE' }[k], dash: k === 'eu', main: k === 'fr', data: PIB[k].map(function (v, i) { return { x: 1990 + i, v: pibMode === 'idx' ? v / PIB[k][0] * 100 : v }; }) };
     });
     lineChart('pib-chart', s, { x: [1990, 2025], xt: [1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025], label: 'PIB par habitant, 1990-2025',
       yfmt: pibMode === 'idx' ? null : function (t) { return fmt(t / 1000) + ' 000'; }, efmt: pibMode === 'idx' ? function (v) { return fmt(v); } : function (v) { return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(v / 100) * 100).replace(/\u202f|\u00a0/g, ' ') + ' $'; } });
@@ -1098,10 +1098,10 @@ function main(FEED) {
     for (var t = Math.ceil(y0 / 5) * 5; t <= y1; t += 5) xt.push(t);
     if (xt[xt.length - 1] !== y1) xt.push(y1);
     var s = function (k) { return R.annees.map(function (y, i) { return { x: y, v: (R[k] || [])[i] }; }); };
-    lineChart('ch-retraites', [{ c: 'var(--us)', data: s('us') }, { c: 'var(--de)', data: s('de') }, { c: 'var(--ea)', n: 'Union européenne', dash: 1, data: s('eu') }, { c: 'var(--fr)', main: 1, data: s('fr') }],
+    lineChart('ch-retraites', [{ c: 'var(--us)', data: s('us') }, { c: 'var(--de)', data: s('de') }, { c: 'var(--ea)', n: 'Moyenne de l\'UE', dash: 1, data: s('eu') }, { c: 'var(--fr)', main: 1, data: s('fr') }],
       { unit: ' %', x: [y0 - 0.5, y1 + 0.5], xt: xt, label: 'Dépenses publiques de retraite en % du PIB, France, Union européenne, Allemagne et États-Unis, ' + y0 + '-' + y1 });
     var lastOf = function (k) { var a = R[k] || []; for (var i = a.length - 1; i >= 0; i--) if (a[i] != null) return { v: a[i], y: R.annees[i] }; return null; };
-    var parts = [['fr', 'France'], ['eu', 'Union européenne'], ['de', 'Allemagne'], ['us', 'États-Unis']].map(function (p) { var l = lastOf(p[0]); return l ? p[1] + ' ' + fmt(l.v, 1) + ' % (' + l.y + ')' : null; }).filter(Boolean);
+    var parts = [['fr', 'France'], ['eu', 'Moyenne de l\'UE'], ['de', 'Allemagne'], ['us', 'États-Unis']].map(function (p) { var l = lastOf(p[0]); return l ? p[1] + ' ' + fmt(l.v, 1) + ' % (' + l.y + ')' : null; }).filter(Boolean);
     // Début des séries : expliqué là où on le voit (règle de CLAUDE.md).
     var debut = [['eu', 'la moyenne de l\'UE'], ['de', 'l\'Allemagne'], ['us', 'les États-Unis']].map(function (p) { var a = R[p[0]] || [], i = 0; while (i < a.length && a[i] == null) i++; return i > 0 && i < a.length ? p[1] + ' à partir de ' + R.annees[i] : null; }).filter(Boolean);
     setHtml('ret-note', 'Dernières valeurs : ' + parts.join(', ') + '. ' + (debut.length ? 'Courbes qui commencent plus tard : ' + debut.join(', ') + ', première année publiée par la source. ' : '') + 'Dépenses publiques de la fonction « vieillesse » (pensions de retraite pour l\'essentiel), en % du PIB. Sources : ' + R.source + '. Les chiffres américains suivent une définition proche mais pas identique. Affiché pour information : cet indicateur n\'entre pas dans la note.');
@@ -1482,6 +1482,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261030h"></script>
+<script src="/commun/menu.js?v=20261030j"></script>
 </body>
 </html>

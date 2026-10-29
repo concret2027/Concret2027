@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="9a27bc730a54">
+<meta name="concret-version" content="a8064bba04b4">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
 <script src="/commun/bref.js?v=20261030b"></script>
-<script src="/commun/toile.js?v=20261029a"></script>
+<script src="/commun/toile.js?v=20261030a"></script>
 <script src="/commun/pays.js?v=20261029b"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* Sous-parties repliées de la règle : lisibles sur téléphone, on ouvre ce qu'on veut lire. */
@@ -415,7 +415,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card" id="depense" aria-labelledby="dep-title">
     <h2 id="dep-title" class="inv"><span class="eyebrow">Ce que ça coûte, % du PIB</span>Dépense d'éducation : 5,1 % du PIB en France, 4,7 % dans l'UE</h2>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--us)"></i>États-Unis</span><span><i class="bd"></i>Bandes : Premiers ministres successifs</span></div>
+    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--us)"></i>États-Unis</span><span><i class="bd"></i>Bandes : Premiers ministres successifs</span></div>
     <div class="chart" id="ch-dep"></div>
     <p class="note" data-t="depense_note">Dépense publique d'éducation, de la maternelle au supérieur (Eurostat). En 2024 : France 5,1 %, Union européenne 4,7 %, Allemagne 4,5 %. L'écart avec l'UE représente environ 12 Md€ par an. États-Unis : chiffres de l'Unesco (2015-2021), calculés un peu différemment ; sur cette base, la France est autour de 5,4 %. Ce critère n'entre pas dans la note : dépenser plus n'est ni bien ni mal en soi, c'est le résultat qui compte.</p>
   </section>
@@ -463,7 +463,7 @@ footer p { margin: 0; } footer a { color: inherit; }
           <span class="mo-num" id="u-num">—</span>
           <span class="delta" id="u-delta"></span>
           <span class="mo-t" id="u-t"></span>
-          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Union européenne</span></div>
+          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
           <div class="chart" id="mo-u"></div>
           <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
         </div>
@@ -651,8 +651,8 @@ function main(FEED) {
       var y = d.y, df = at(c.fr, y) - at(c.fr, y - 1), de = at(c.eu, y) - at(c.eu, y - 1), e = df - de;
       h += '<tr><td>' + y + '</td><td>' + lv(c.fr, y) + '</td><td>' + lv(c.eu, y) + '</td><td>' + (e == null || isNaN(e) ? '' : e === 0 ? '0' : sg(e, Math.abs(e) < 0.05 ? 2 : 1)) + '</td><td>' + ptHtml(d.pt) + '</td></tr>';
       // Pourquoi une année n'est pas comptée, ou ne vaut qu'un demi-point : dit en clair sous le tableau.
-      if (d.pt === 1 && EDU().evolAn(c, y) !== 1) why.push(POURQUOI.avance(y, 'l\'Union européenne', fmt(at(c.fr, y), 1), fmt(at(c.eu, y), 1)));
-      else if (d.pt === 0.5) why.push(POURQUOI.egalite(y, 'l\'Union européenne'));
+      if (d.pt === 1 && EDU().evolAn(c, y) !== 1) why.push(POURQUOI.avance(y, 'l\'Moyenne de l\'UE', fmt(at(c.fr, y), 1), fmt(at(c.eu, y), 1)));
+      else if (d.pt === 0.5) why.push(POURQUOI.egalite(y, 'l\'Moyenne de l\'UE'));
       else if (d.pt == null) why.push(y <= Y0 ? POURQUOI.debut(Y0) : c.br.indexOf(y) >= 0 ? POURQUOI.methode(y, (c.br_motif || {})[y] || 'fr') : y > lastY || at(c.fr, y) == null ? POURQUOI.pasPublie(y, 'Eurostat') : POURQUOI.absent(y));
     });
     wrap.innerHTML = h + '</tbody></table>' + (why.length ? '<p class="kdet-why">' + why.join('<br>') + '</p>' : '') + '<p>Écart = évolution de la France moins celle de l\'UE, en points.</p>';
@@ -851,7 +851,7 @@ function main(FEED) {
   // ===== Graphes =====
   var BANDS = GOVS.concat([{ n: 'Lecornu', y0: 2026, y1: 2026 }]);
   // ===== Curseur au doigt ou à la souris : date et valeurs de toutes les courbes =====
-  var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Union européenne', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--it)': 'Italie', 'var(--es)': 'Espagne' };
+  var SNAME = { 'var(--fr)': 'France', 'var(--ea)': 'Moyenne de l\'UE', 'var(--de)': 'Allemagne', 'var(--us)': 'États-Unis', 'var(--it)': 'Italie', 'var(--es)': 'Espagne' };
   function hover(box, svg, H, m, pts) {
     if (!pts.length) return;
     var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
@@ -917,7 +917,7 @@ function main(FEED) {
       svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--grid)');
       svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(String(t).replace('.', ','));
     });
-    (small ? o.xt.filter(function (_, i) { return i % 2 === 0; }) : o.xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t); });
+    (small ? o.xt.filter(function (_, i, t) { return i % 2 === 0 || i === t.length - 1; }) : o.xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t); });
     var line = d3.line().defined(function (d) { return d.v != null; }).x(function (d) { return x(d.x); }).y(function (d) { return y(d.v); });
     var ends = [];
     series.forEach(function (s) {
@@ -927,7 +927,8 @@ function main(FEED) {
       else s.data.forEach(function (d, i) { if (d.v == null) return; var a = s.data[i - 1], b = s.data[i + 1]; if ((!a || a.v == null) && (!b || b.v == null) && y(d.v) >= m.t) svg.append('circle').attr('cx', x(d.x)).attr('cy', y(d.v)).attr('r', 2.5).attr('fill', s.c); });
       var l = s.data.filter(function (d) { return d.v != null; }).pop();
       svg.append('circle').attr('cx', x(l.x)).attr('cy', y(l.v)).attr('r', s.main ? 4 : 3).attr('fill', s.c);
-      ends.push({ y: y(l.v), t: fmt(l.v, o.dec == null ? 1 : o.dec), c: s.c, x: x(l.x), main: s.main });
+      // Un chiffre au bout de la courbe, sauf pour les repères marqués « nofin » (PISA : les scores sont trop proches, ils s'empilaient).
+      if (!s.nofin) ends.push({ y: y(l.v), t: fmt(l.v, o.dec == null ? 1 : o.dec), c: s.c, x: x(l.x), main: s.main });
     });
     ends.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
@@ -948,14 +949,14 @@ function main(FEED) {
     var c = S[k], out = [{ c: 'var(--de)', n: 'Allemagne', data: ser(c.de) }];
     if (c.es) out.unshift({ c: 'var(--es)', n: 'Espagne', data: ser(c.es) });
     if (c.us) out.unshift({ c: 'var(--us)', n: 'États-Unis', data: ser(c.us) });
-    return out.concat([{ c: 'var(--ea)', n: 'Union européenne', dash: 1, data: ser(c.eu) }, { c: 'var(--fr)', n: 'France', main: 1, data: ser(c.fr) }]);
+    return out.concat([{ c: 'var(--ea)', n: 'Moyenne de l\'UE', dash: 1, data: ser(c.eu) }, { c: 'var(--fr)', n: 'France', main: 1, data: ser(c.fr) }]);
   };
   var pser = function (c, key) { return c.y.map(function (y, j) { return { x: y, v: c[key][j] }; }); };
   function drawCharts() {
     CURVES.forEach(function (k) {
       lineChart('ch-' + k, PEERS(k), { unit: ' %', x: [2001.5, 2025.5], xt: XT, bands: 1, label: S[k].l + ', France, Union européenne, Allemagne' + (S[k].us ? ' et États-Unis' : '') + ', 2002-2025' });
     });
-    lineChart('ch-dep', [{ c: 'var(--us)', n: 'États-Unis (Unesco)', data: ser(SP.us) }, { c: 'var(--es)', n: 'Espagne', data: ser(SP.es) }, { c: 'var(--de)', n: 'Allemagne', data: ser(SP.de) }, { c: 'var(--ea)', n: 'Union européenne', dash: 1, data: ser(SP.eu) }, { c: 'var(--fr)', n: 'France', main: 1, data: ser(SP.fr) }],
+    lineChart('ch-dep', [{ c: 'var(--us)', n: 'États-Unis (Unesco)', data: ser(SP.us) }, { c: 'var(--es)', n: 'Espagne', data: ser(SP.es) }, { c: 'var(--de)', n: 'Allemagne', data: ser(SP.de) }, { c: 'var(--ea)', n: 'Moyenne de l\'UE', dash: 1, data: ser(SP.eu) }, { c: 'var(--fr)', n: 'France', main: 1, data: ser(SP.fr) }],
       { unit: ' %', x: [2001.5, 2025.5], xt: XT, bands: 1, label: 'Dépense publique d\'éducation en % du PIB, 2002-2024' });
     // Méthode de la moyenne de l'UE (outils/ue_calc.py), lue dans les données de chaque domaine.
     (function () {
@@ -971,8 +972,8 @@ function main(FEED) {
     })();
     ['m', 'r', 's'].forEach(function (k) {
       var c = PI[k];
-      lineChart('ch-pisa-' + k, [{ c: 'var(--us)', n: 'États-Unis', dots: 1, data: pser(c, 'us') }, { c: 'var(--es)', n: 'Espagne', dots: 1, data: pser(c, 'es') }, { c: 'var(--de)', n: 'Allemagne', dots: 1, data: pser(c, 'de') }, { c: 'var(--muted)', n: 'Moyenne OCDE', dots: 1, data: pser(c, 'oe') }, { c: 'var(--ea)', n: 'Moyenne UE (calcul Concret)', dash: 1, dots: 1, data: pser(c, 'ue_calc') }, { c: 'var(--fr)', n: 'France', main: 1, dots: 1, data: pser(c, 'fr') }],
-        { x: [c.y[0] - 1, 2026], xt: { m: [2003, 2009, 2015, 2022], r: [2000, 2006, 2012, 2018, 2025], s: [2006, 2012, 2018, 2025] }[k], label: 'PISA ' + c.l + ', ' + c.y[0] + '-2025', dec: 0, unit: ' pts', h: 230 });
+      lineChart('ch-pisa-' + k, [{ c: 'var(--us)', n: 'États-Unis', dots: 1, nofin: 1, data: pser(c, 'us') }, { c: 'var(--es)', n: 'Espagne', dots: 1, nofin: 1, data: pser(c, 'es') }, { c: 'var(--de)', n: 'Allemagne', dots: 1, nofin: 1, data: pser(c, 'de') }, { c: 'var(--muted)', n: 'Moyenne OCDE', dots: 1, nofin: 1, data: pser(c, 'oe') }, { c: 'var(--ea)', n: 'Moyenne UE (calcul Concret)', dash: 1, dots: 1, data: pser(c, 'ue_calc') }, { c: 'var(--fr)', n: 'France', main: 1, dots: 1, data: pser(c, 'fr') }],
+        { x: [c.y[0] - 1, 2026], xt: { m: [2003, 2009, 2015, 2025], r: [2000, 2006, 2012, 2018, 2025], s: [2006, 2012, 2018, 2025] }[k], label: 'PISA ' + c.l + ', ' + c.y[0] + '-2025', dec: 0, unit: ' pts', h: 230 });
     });
     lineChart('ch-eq', [{ c: 'var(--ea)', n: 'Moyenne OCDE', dash: 1, dots: 1, data: pser(EQ, 'oe') }, { c: 'var(--fr)', n: 'France', main: 1, dots: 1, data: pser(EQ, 'fr') }],
       { x: [2001, 2026], xt: [2003, 2012, 2022, 2025], label: 'Écart de score en maths entre élèves favorisés et défavorisés, 2003-2025', dec: 0, unit: ' pts', h: 220 });
@@ -1233,6 +1234,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261030h"></script>
+<script src="/commun/menu.js?v=20261030j"></script>
 </body>
 </html>

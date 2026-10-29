@@ -13,6 +13,8 @@ var UE = ['BE', 'BG', 'CZ', 'DK', 'DE', 'EE', 'IE', 'EL', 'ES', 'FR', 'HR', 'IT'
 var AFFN = { dep: 'depense', det: 'detenus', jug: 'juges', pol: 'police' };
 var NOM = Object.assign({ FR: 'France', DE: 'Allemagne', ES: 'Espagne' }, P.noms || {});
 var MIN = 20, rangs = {};
+// Les pays à égalité au plus haut ou au plus bas sont tous nommés (« Roumanie et Bulgarie »), sans la France, déjà dans la phrase.
+var noms = function (L, v) { var n = L.filter(function (x) { return x.v === v && x.g !== 'FR'; }).map(function (x) { return NOM[x.g]; }); return n.length > 1 ? n.slice(0, -1).join(', ') + ' et ' + n[n.length - 1] : n[0] || 'France'; };
 
 Object.keys(P.series).forEach(function (cle) {
   var p = cle.split('.'), pg = p[0], k = p[1];
@@ -33,7 +35,7 @@ Object.keys(P.series).forEach(function (cle) {
     L.sort(function (a, b) { return b.v - a.v; });
     // Rang compté depuis le haut et depuis le bas : 1 + le nombre de pays strictement au-dessus (ou au-dessous).
     var f = c.fr[i], rh = 1 + L.filter(function (x) { return x.v > f; }).length, rb = 1 + L.filter(function (x) { return x.v < f; }).length;
-    rangs[cle] = { y: y, rh: rh, rb: rb, n: L.length, dec: c.dec != null ? c.dec : 1, haut: [NOM[L[0].g], L[0].v], bas: [NOM[L[L.length - 1].g], L[L.length - 1].v] };
+    rangs[cle] = { y: y, rh: rh, rb: rb, n: L.length, dec: c.dec != null ? c.dec : 1, haut: [noms(L, L[0].v), L[0].v], bas: [noms(L, L[L.length - 1].v), L[L.length - 1].v] };
     break;
   }
 });

@@ -250,7 +250,7 @@ def fabriquer(x, P, nom):
                 y0, y1 = x['y'][per[0]], x['y'][der]
                 add(('anmax|' if haut else 'anmin|') + str(y0) + '|' + str(y1), 'annee',
                     T + ' : en quelle année la France a-t-elle eu son chiffre le plus ' + ('élevé' if haut else 'bas') + ' entre ' + str(y0) + ' et ' + str(y1) + ' ?',
-                    o, o.index(str(x['y'][vs[0]])), 'En ' + str(x['y'][vs[0]]) + ' : ' + fmt(x['fr'][vs[0]]) + ' (France, ' + src + '). En ' + str(y1) + ' : ' + fmt(x['fr'][der]) + '.')
+                    o, o.index(str(x['y'][vs[0]])), 'En ' + str(x['y'][vs[0]]) + ' : ' + fmt(x['fr'][vs[0]]) + ' (France, ' + src + ').' + ('' if vs[0] == der else ' En ' + str(y1) + ' : ' + fmt(x['fr'][der]) + '.'))
     ex = x['ex']
     mots = lambda t: set(re.findall(r"[a-zà-ÿ]{4,}", (t or '').lower()))
     d = (ex[0].upper() + ex[1:] + '.') if ex and len(mots(ex) - mots(x['l'] + ' ' + x['u'])) >= 4 else None

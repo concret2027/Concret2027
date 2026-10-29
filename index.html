@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="9a27bc730a54">
+<meta name="concret-version" content="a8064bba04b4">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -561,7 +561,8 @@ footer p { margin: 0; } footer a { color: inherit; }
     var fait = function (k, h) { var a = document.querySelector('#reperes a.pg[href="/' + k + '/"]'); if (!a || !h || a.querySelector('.pg-fait')) return; var r = document.createElement('span'); r.className = 'pg-fait'; r.innerHTML = h; a.appendChild(r); };
     try {
       var SP = S.politique, v0 = SP && SP.VOTES.filter(function (v) { return !v.loi; })[0], l0 = SP && SP.LOIS[0];
-      var a0 = SP && SP.AGENDA[0];
+      // La prochaine séance : la première du jour ou à venir (l'ordre du jour relevé la veille peut commencer hier).
+      var auj = new Date().toLocaleDateString('sv-SE'), a0 = SP && SP.AGENDA.filter(function (x) { return x.d >= auj; })[0];
       fait('politique', [l0 ? 'Dernière loi publiée le ' + jc(l0.jo || l0.d) : '', v0 ? 'dernier vote retenu le ' + jc(v0.d) : '', a0 ? 'prochaine séance le ' + jc(a0.d) : ''].filter(Boolean).join(' · '));
       var SD = S.demographie, dern = function (c) { for (var i = c.y.length - 1; i >= 0; i--) if (c.fr[i] != null) return { y: c.y[i], v: c.fr[i] }; return null; };
       if (SD) {
@@ -609,7 +610,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 (function () {
   // Toile d'araignée : la note de chaque mission (sur 20) pour les présidents ou gouvernements choisis.
   // Mêmes notes que le classement général (commun/notes.js), aucune saisie à la main.
-  var COL = ['#2f5bd3', '#c43d3d', '#1f8a4c', '#b0812a', '#a2459a', '#d0632a'];
+  // Les couleurs de la toile : hors du vert, de l'or et du rouge, qui disent déjà la note (au-dessus, autour, en dessous de 10).
+  var COL = ['#2f5bd3', '#8a4fc0', '#0f8b8d', '#c2407e', '#5d6475', '#1d9bd1'];
   var fmt = function (v) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v); };
   var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
   var MISS = ConcretNotes.MISSIONS, data = null, kind = 'pres', chosen = {};
@@ -631,10 +633,10 @@ footer p { margin: 0; } footer a { color: inherit; }
     ring.sort(function (a, b) { return a - b; }).forEach(function (v) {
       var p = MISS.map(function (_, i) { return pt(i, v).join(','); }).join(' ');
       h += '<polygon points="' + p + '" fill="none" stroke="' + (v === 10 ? 'var(--fg)' : 'var(--grid)') + '"' + (v === 10 ? ' stroke-dasharray="4 3"' : '') + '/>';
-      // Deux graduations seulement, sur les diagonales du haut, loin des points : 10 (moyenne de l'UE) à droite, le maximum à gauche.
-      if (v !== 10 && v !== S) return;
-      var a0 = pt(0, v), a1 = pt(v === 10 ? 1 : n - 1, v), q = [(a0[0] + a1[0]) / 2, (a0[1] + a1[1]) / 2];
-      h += '<text x="' + (q[0] + (v === 10 ? 9 : -4)) + '" y="' + (q[1] - (v === 10 ? 6 : 3)) + '" text-anchor="' + (v === 10 ? 'start' : 'end') + '" class="rl">' + (v === 10 ? '10 = moyenne UE' : v + ' sur 20') + '</text>';
+      // Une seule graduation, le maximum, juste sous la pointe du haut, à droite de l'axe : le pointillé (10, la moyenne de l'UE) est expliqué au-dessus de la toile.
+      if (v !== S) return;
+      var a0 = pt(0, v);
+      h += '<text x="' + (a0[0] + 5) + '" y="' + (a0[1] + 12) + '" class="rl">' + v + ' sur 20</text>';
     });
     MISS.forEach(function (m, i) {
       var e = pt(i, S), dx = e[0] - cx, dy = e[1] - cy, L = lignes(m.l);
@@ -647,7 +649,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     rows.forEach(function (r) {
       var c = colOf(r), pts = MISS.map(function (m, i) { return r[m.k] == null ? null : pt(i, r[m.k]); });
       var ok = pts.filter(Boolean);
-      if (ok.length > 1) h += '<polygon points="' + ok.map(function (p) { return p.join(','); }).join(' ') + '" fill="' + c + '" fill-opacity=".12" stroke="' + c + '" stroke-width="2.2"/>';
+      if (ok.length > 1) h += '<polygon points="' + ok.map(function (p) { return p.join(','); }).join(' ') + '" fill="' + c + '" fill-opacity=".05" stroke="' + c + '" stroke-width="2.2"/>';
       ok.forEach(function (p) { h += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4" fill="' + c + '"/>'; });
     });
     box.innerHTML = h + '</svg>';
@@ -732,6 +734,11 @@ footer p { margin: 0; } footer a { color: inherit; }
     if (!d.series) return fail();
     var c = ConcretNotes.classement(d.series);
     table('t-pres', c.pres, d.series); table('t-gov', c.gov, d.series);
+    // Deux présidents à moins d'un demi-point l'un de l'autre : l'écart est écrit sous le classement.
+    var pr = c.pres.filter(function (r) { return r.m != null; }), proches = [];
+    for (var ip = 1; ip < pr.length; ip++) if (Math.abs(pr[ip - 1].m - pr[ip].m) < 0.5) proches.push(pr[ip - 1].n + ' (' + fmt(pr[ip - 1].m) + ') et ' + pr[ip].n + ' (' + fmt(pr[ip].m) + ') : ' + fmt(Math.abs(pr[ip - 1].m - pr[ip].m)).replace(/^0,0$/, '0') + ' point d\'écart');
+    var tp = document.getElementById('t-pres'), pe = document.getElementById('t-pres-ecart');
+    if (proches.length && tp) { if (!pe) { pe = document.createElement('p'); pe.className = 'note'; pe.id = 't-pres-ecart'; tp.parentNode.insertBefore(pe, tp.nextSibling); } pe.textContent = 'Écart de moins d\'un demi-point : ' + proches.join(' ; ') + '.'; }
     // Bloc replié : la ligne d'appel donne le premier du classement.
     var g1 = c.gov.filter(function (r) { return r.m != null; })[0];
     // Ex aequo au dixième près : tous nommés.
@@ -774,6 +781,6 @@ footer p { margin: 0; } footer a { color: inherit; }
 <script src="/commun/partage.js?v=20261028k"></script>
 <script src="/commun/recherche.js?v=20261025b"></script>
 <script src="/commun/contact.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261030h"></script>
+<script src="/commun/menu.js?v=20261030j"></script>
 </body>
 </html>

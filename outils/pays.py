@@ -310,7 +310,7 @@ def reference(o, cle):
         d = S[p]['AFF'][AFFN.get(rest[2:], rest[2:])]
     else:
         d = S[p]['C'][rest]
-    return {'y': d['y'], 'FR': d.get('fr'), 'DE': d.get('de'), 'ES': d.get('es')}
+    return {'y': d['y'], 'FR': d.get('fr'), 'DE': d.get('de'), 'ES': d.get('es'), 'dec': d.get('dec')}
 
 
 def accord(lu, ref):
@@ -364,10 +364,13 @@ def main():
             sans[cle] = "Pas d'autres pays : relue à la source pour tous les pays, cette série ne redonne pas les chiffres publiés ici pour la France, l'Allemagne et l'Espagne ; les autres pays seraient mesurés autrement."
             continue
         ys = sorted({y for g in UE for y in lu.get(g, {}) if y >= 1995})
-        dec = 3 if cle.startswith('demographie.M.') else 2
+        # Au moins les décimales de la série publiée (l'indice de développement humain en a 3) : le rang et la courbe d'un pays
+        # ajouté se comparent au chiffre de la France sans arrondi.
+        dec = max(3 if cle.startswith('demographie.M.') else 2, ref.get('dec') or 0)
         out[cle] = {'y': ys}
         for g in UE:
-            if g in ('FR', 'DE', 'ES'):
+            # La France, l'Allemagne et l'Espagne sont déjà sur la courbe ; sauf quand la page n'a pas l'une d'elles (W.A.I.T. sans l'Espagne).
+            if g == 'FR' or (g in ('DE', 'ES') and ref.get(g)):
                 continue
             s = [None if lu.get(g, {}).get(y) is None else round(lu[g][y], dec) for y in ys]
             if any(v is not None for v in s):
