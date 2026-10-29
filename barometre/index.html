@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="ed7a4a496e0f">
+<meta name="concret-version" content="fb71a871342c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -359,8 +359,8 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
     </section>
 
     <details class="bx-card bx-fold wide" id="wikipedia" open>
-      <summary><h2>Par ailleurs : qui fait parler de lui</h2><span class="bx-fold-hint">Les lectures de leur page Wikipédia, en moyenne sur 4 semaines. Ce n'est ni un sondage ni un soutien.</span></summary>
-      <p class="bx-note">Ce n'est ni un sondage ni un soutien : le nombre de fois où la page Wikipédia en français de chaque candidat est lue, par semaine, en moyenne sur les 4 dernières semaines complètes (du lundi au dimanche), pour que le pic d'une seule semaine ne masque pas la tendance. Une hausse peut suivre une annonce, une polémique ou un passage à la télévision. Les candidats : les 8 premiers des sondages des 30 derniers jours, parmi ceux testés dans au moins la moitié de ces sondages.</p>
+      <summary><h2>Par ailleurs : qui fait parler de lui</h2><span class="bx-fold-hint">Les lectures de leur page Wikipédia, en moyenne sur 28 jours. Ce n'est ni un sondage ni un soutien.</span></summary>
+      <p class="bx-note">Ce n'est ni un sondage ni un soutien : le nombre de fois où la page Wikipédia en français de chaque candidat est lue, par semaine, en moyenne sur les 28 derniers jours, jusqu'à la veille de la mise à jour (relevé chaque matin), pour que le pic d'une seule semaine ne masque pas la tendance. Une hausse peut suivre une annonce, une polémique ou un passage à la télévision. Les candidats : les 8 premiers des sondages des 30 derniers jours, parmi ceux testés dans au moins la moitié de ces sondages.</p>
       <div class="bx-chart" id="chart-wiki" data-source="wikipedia_vues"></div>
       <p class="bx-note bx-lastsrc" id="wiki-src"></p>
     </details>
@@ -1072,20 +1072,15 @@ dash.calc('duels_recents', {
     // Lectures des pages Wikipédia (outils/wikipedia.py) : une courbe par candidat, par semaine complète.
     var wv = dash.data('wikipedia_vues'), wi = (dash.data('wikipedia_info').data || [])[0];
     var dessinWiki = function () {
-      // Moyenne glissante sur 4 semaines : chaque point est la moyenne de la semaine et des 3 précédentes (lectures par semaine).
-      var parC = {}; wv.data.forEach(function (r) { (parC[r.candidat] = parC[r.candidat] || []).push(r); });
-      var H = [];
-      Object.keys(parC).forEach(function (c) {
-        var L = parC[c].slice().sort(function (a, b) { return a.semaine < b.semaine ? -1 : 1; });
-        L.forEach(function (r, i) { if (i < 3) return; var t = 0; for (var k = i - 3; k <= i; k++) t += +L[k].vues; H.push({ candidat: c, date: r.semaine, probabilite: t / 4 }); });
-      });
+      // Chaque point : la moyenne par semaine des 28 jours qui finissent ce jour-là (outils/wikipedia.py), le dernier finit la veille du relevé.
+      var H = wv.data.map(function (r) { return { candidat: r.candidat, date: r.jusqu_au, probabilite: +r.vues }; });
       var der = {}; H.forEach(function (r) { if (!der[r.candidat] || r.date > der[r.candidat].date) der[r.candidat] = r; });
       var L = Object.keys(der).sort(function (a, b) { return der[b].probabilite - der[a].probabilite; }).map(function (c) { return { short: c, name: BX.full(c) }; });
       var nfw = function (v) { return Math.round(v).toLocaleString('fr-FR'); };
       drawPMLines('chart-wiki', H, L, 'Lectures', { n: 8, fmt: nfw, mR: 132, tick: function (v) { return v >= 1000 ? (v / 1000).toLocaleString('fr-FR') + ' k' : String(v); },
-        aria: 'Lectures de la page Wikipédia de chaque candidat, par semaine, en moyenne sur 4 semaines', tete: function (d) { return 'Moyenne des 4 semaines jusqu\'à celle du ' + BX.fmtDay(d) + ' · lectures par semaine'; } });
+        aria: 'Lectures de la page Wikipédia de chaque candidat, par semaine, en moyenne sur 28 jours', tete: function (d) { return '28 jours jusqu\'au ' + BX.fmtDay(d) + ' · lectures par semaine'; } });
       var src = document.getElementById('wiki-src');
-      if (wi) { src.innerHTML = 'Source : <a href="' + wi.url + '">Wikimedia</a>, lectures par des personnes (robots exclus), relevé du ' + BX.fmtDay(BX.day(wi.releve)) + ', semaines jusqu\'au ' + BX.fmtDay(BX.day(wi.jusqu_au)) + '.' + (wi.manque ? ' Pas relu ce jour-là, chiffres précédents gardés : ' + wi.manque + '.' : ''); }
+      if (wi) { src.innerHTML = 'Source : <a href="' + wi.url + '">Wikimedia</a>, lectures par des personnes (robots exclus), relevé du ' + BX.fmtDay(BX.day(wi.releve)) + ', 28 derniers jours jusqu\'au ' + BX.fmtDay(BX.day(wi.jusqu_au)) + '.' + (wi.manque ? ' Pas relu ce jour-là, chiffres précédents gardés : ' + wi.manque + '.' : ''); }
     };
     var blocW = document.getElementById('wikipedia');
     if (blocW && !blocW.dataset.pret) { blocW.dataset.pret = '1'; blocW.addEventListener('toggle', function () { if (blocW.open) chart('chart-wiki', wv.status === 'ok', wv.status === 'error', dessinWiki); }); }

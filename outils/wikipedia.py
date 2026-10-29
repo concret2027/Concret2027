@@ -2,7 +2,8 @@
 """Baromètre : consultations de la page Wikipédia (en français) des candidats, chiffres publics de Wikimedia.
 
 Une mesure de l'intérêt du public, pas un sondage ni un soutien : le nombre de fois où la page de chaque candidat a été
-lue (personnes seulement, robots exclus par Wikimedia), additionné par semaine complète, du lundi au dimanche.
+lue (personnes seulement, robots exclus par Wikimedia), en lectures par semaine, en moyenne sur les 28 jours qui finissent
+la veille du relevé (le dernier jour publié par Wikimedia), puis tous les 7 jours en remontant : la courbe va jusqu'à hier.
 Les candidats : les 8 premiers des sondages de premier tour des 30 derniers jours, parmi ceux testés dans au moins la moitié
 de ces sondages (
 Marine Le Pen et Jordan Bardella comptent comme un seul candidat du RN, Marine Le Pen).
@@ -11,7 +12,7 @@ Wikimedia quand il répond « trop de requêtes » (en-tête Retry-After) ; un c
 chiffres précédents, et c'est dit.
 
   python3 outils/wikipedia.py            compare à data.json, sans rien écrire
-  python3 outils/wikipedia.py --ecrire   écrit datasets.wikipedia_vues et datasets.wikipedia_info
+  python3 outils/wikipedia.py --ecrire   écrit datasets.wikipedia_vues ({candidat, jusqu_au, vues}) et datasets.wikipedia_info ; chaque matin
 """
 import json, os, subprocess, sys, time, urllib.parse
 from datetime import date, timedelta
@@ -69,32 +70,39 @@ def main():
     o = json.load(open(os.path.join(ROOT, 'data.json'), encoding='utf-8'))
     D = o['datasets']
     C = candidats(D)
-    auj = date.today(); dim = auj - timedelta(days=auj.weekday() + 1)  # dernier dimanche passé : semaines complètes seulement
+    auj = date.today(); hier = auj - timedelta(days=1)
     avant = {}
     for r in D.get('wikipedia_vues', []): avant.setdefault(r['candidat'], []).append(r)
-    out, manque = [], []
+    lus, manque = {}, []
     for i, c in enumerate(C):
         if i: time.sleep(8)
         t = PAGES.get(c)
-        v = lire(t, DEBUT, dim) if t else None
+        v = lire(t, DEBUT - timedelta(days=27), hier) if t else None
         if not v:
-            manque.append(c); out += avant.get(c, []); print('%-12s pas lu (%s) : chiffres précédents gardés' % (c, 'page inconnue' if not t else 'Wikimedia refuse')); continue
-        sem = {}
-        for j, n in v.items():
-            d = date(int(j[:4]), int(j[4:6]), int(j[6:]))
-            lundi = d - timedelta(days=d.weekday()); sem[lundi] = sem.get(lundi, 0) + n
-        L = [{'candidat': c, 'semaine': k.isoformat(), 'vues': str(sem[k])} for k in sorted(sem)]
-        out += L
-        print('%-12s %s : %s semaines, dernière (%s) : %s consultations' % (c, t, len(L), L[-1]['semaine'], L[-1]['vues']))
-    info = [{'releve': auj.isoformat(), 'jusqu_au': dim.isoformat(), 'candidats': ', '.join(C), 'source': 'Wikimedia, consultations des pages Wikipédia en français (personnes, robots exclus)',
-             'url': 'https://pageviews.wmcloud.org/?project=fr.wikipedia.org&platform=all-access&agent=user&pages=' + '|'.join(urllib.parse.quote(PAGES[c].replace(' ', '_')) for c in C if c in PAGES),
+            manque.append(c); print('%-12s pas lu (%s) : chiffres précédents gardés' % (c, 'page inconnue' if not t else 'Wikimedia refuse')); continue
+        lus[c] = {date(int(j[:4]), int(j[4:6]), int(j[6:])): n for j, n in v.items()}
+    if not lus:
+        print('Wikipédia ✗ aucun chiffre lu. Rien écrit.'); sys.exit(1)
+    # Dernier jour publié par Wikimedia pour tous les candidats lus (le chiffre d'hier peut arriver dans la matinée).
+    fin = min(max(v) for v in lus.values())
+    out = []
+    for c in C:
+        if c not in lus: out += avant.get(c, []); continue
+        v, L, J = lus[c], [], fin
+        # Un point tous les 7 jours, en remontant depuis le dernier jour : la moyenne par semaine des 28 jours qui finissent ce jour-là.
+        while J - timedelta(days=27) >= DEBUT - timedelta(days=27) and J >= DEBUT:
+            jours = [v.get(J - timedelta(days=k)) for k in range(28)]
+            if all(x is not None for x in jours): L.append({'candidat': c, 'jusqu_au': J.isoformat(), 'vues': str(round(sum(jours) / 4))})
+            J -= timedelta(days=7)
+        L.reverse(); out += L
+        print('%-12s %s : %s points, dernier (28 jours jusqu\'au %s) : %s lectures par semaine' % (c, PAGES[c], len(L), L[-1]['jusqu_au'], L[-1]['vues']))
+    info = [{'releve': auj.isoformat(), 'jusqu_au': fin.isoformat(), 'candidats': ', '.join(C), 'source': 'Wikimedia, consultations des pages Wikipédia en français (personnes, robots exclus)',
+             'url': 'https://pageviews.wmcloud.org/?project=fr.wikipedia.org&platform=all-access&agent=user&range=latest-90&pages=' + '|'.join(urllib.parse.quote(PAGES[c].replace(' ', '_')) for c in C if c in PAGES),
              'manque': ', '.join(manque)}]
-    if ecrire and out:
+    if ecrire:
         D['wikipedia_vues'] = out; D['wikipedia_info'] = info
         open(os.path.join(ROOT, 'data.json'), 'w', encoding='utf-8').write(json.dumps(o, indent=0, ensure_ascii=False))
         print('Écrit : datasets.wikipedia_vues (%d lignes) et wikipedia_info.' % len(out))
-    elif not out:
-        print('Wikipédia ✗ aucun chiffre lu. Rien écrit.'); sys.exit(1)
 
 
 if __name__ == '__main__':

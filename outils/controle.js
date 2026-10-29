@@ -45,8 +45,8 @@ if (qaErr) alertes.push('questions du jour calculées non refaites (' + qaErr + 
 if (!d.updated || !d.updated_iso || isNaN(Date.parse(d.updated_iso))) err('updated / updated_iso absents ou invalides');
 var DATASETS = ['sondages_t1', 'sondages_t2', 'polymarket', 'polymarket_hist', 'polymarket_t1', 'polymarket_t1_hist', 'wikipedia_vues', 'wikipedia_info', 'evenements', 'agenda_barometre', 'pouls', 'finances_mois', 'actu_finances', 'agenda_finances', 'education_mois', 'actu_education', 'agenda_education'];
 DATASETS.forEach(function (k) { if (!Array.isArray((d.datasets || {})[k])) err('jeu de données manquant : ' + k); });
-// Lectures Wikipédia du Baromètre (outils/wikipedia.py) : des nombres entiers plausibles, une semaine par lundi.
-((d.datasets || {}).wikipedia_vues || []).forEach(function (r) { var v = Number(r.vues); if (!(v >= 0 && v < 2e7) || Math.round(v) !== v || !/^\d{4}-\d{2}-\d{2}$/.test(r.semaine) || new Date(r.semaine + 'T12:00:00Z').getUTCDay() !== 1) err('wikipedia_vues ' + r.candidat + ' ' + r.semaine + ' : chiffre ou semaine invalide (' + r.vues + ')'); });
+// Lectures Wikipédia du Baromètre (outils/wikipedia.py) : des nombres entiers plausibles, datés du dernier jour des 28 jours comptés.
+((d.datasets || {}).wikipedia_vues || []).forEach(function (r) { var v = Number(r.vues); if (!(v >= 0 && v < 2e7) || Math.round(v) !== v || !/^\d{4}-\d{2}-\d{2}$/.test(r.jusqu_au || '')) err('wikipedia_vues ' + r.candidat + ' ' + r.jusqu_au + ' : chiffre ou date invalide (' + r.vues + ')'); });
 Object.keys(d.datasets || {}).forEach(function (k) {
   (d.datasets[k] || []).forEach(function (r, i) { Object.keys(r).forEach(function (f) { if (typeof r[f] !== 'string') err(k + '[' + i + '].' + f + ' n\'est pas une chaîne'); }); });
 });
