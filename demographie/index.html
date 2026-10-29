@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="ae8d25cb1dd9">
+<meta name="concret-version" content="c21ac2d70630">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -365,6 +365,9 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
   }
   var ticks = function (a, b) { var s = Math.max(1, Math.ceil((b - a) / 6)), t = []; for (var y = a; y <= b; y += s) t.push(y); return t; };
   function lineChart(id, series, o) {
+    // Courbe loin de l'écran : dessinée quand on s'en approche, sa place gardée (commun/menu.js).
+    var bx0 = document.getElementById(id);
+    if (!o.maintenant && bx0 && window.ConcretMenu && ConcretMenu.plusTard && ConcretMenu.plusTard(bx0, function () { lineChart(id, series, Object.assign({}, o, { maintenant: 1 })); }, o.h || (bx0.clientWidth && bx0.clientWidth < 520 ? 220 : 260))) return;
     // Pays ajoutés par le visiteur (commun/pays.js) : en pointillé, repères seulement.
     if (window.ConcretPays) { var s0 = series; ConcretPays.retenir(id, function () { lineChart(id, s0, o); }); series = ConcretPays.ajouter(id, series); }
     var box = $(id); box.textContent = '';
@@ -587,11 +590,11 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
   }).catch(function (e) { $('chiffres').innerHTML = '<p class="note">Les données n\'ont pas pu être chargées. Rechargez la page.</p>'; if (window.console) console.error(e); });
 })();
 </script>
-<script src="/commun/toile.js?v=20261030a"></script>
+<script src="/commun/toile.js?v=20261031c"></script>
 <script src="/commun/pays.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/partage.js?v=20261031a"></script>
+<script src="/commun/partage.js?v=20261031d"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
-<script src="/commun/menu.js?v=20261031b"></script>
+<script src="/commun/menu.js?v=20261031f"></script>
 </body>
 </html>

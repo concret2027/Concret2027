@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="ae8d25cb1dd9">
+<meta name="concret-version" content="c21ac2d70630">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
 <script src="/commun/bref.js?v=20261031a"></script>
-<script src="/commun/toile.js?v=20261030a"></script>
+<script src="/commun/toile.js?v=20261031c"></script>
 <script src="/commun/pays.js?v=20261031a"></script>
 <script src="/commun/quiz.js?v=20261026b"></script>
 <style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }.demo { border: 2px dashed var(--bad); color: var(--bad); background: var(--s-bad); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; }
@@ -300,7 +300,7 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .minis-k { margin: 0; display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 12px; color: var(--muted); }
 .minis-k i { display: inline-block; width: 12px; height: 0; border-top: 2.5px solid; vertical-align: middle; margin-right: 5px; }
 .minis-k i.fr { border-color: var(--fr); } .minis-k i.ue { border-top: 2px dashed var(--ea); } .minis-k i.de { border-color: var(--de); border-top-width: 1.5px; } .minis-k i.es { border-color: var(--es); border-top-width: 1.5px; } .minis-k i.us { border-color: var(--us); border-top-width: 1.5px; }
-.minis { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 10px; }
+.minis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 10px; } /* les petites courbes prennent toute la largeur, même peu nombreuses (ordinateur) */
 .mini { font: inherit; text-align: left; display: grid; gap: 4px; align-content: start; padding: 9px 10px 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--fg); cursor: pointer; min-height: 44px; }
 .mini:hover, .mini:focus-visible { border-color: var(--fr); }
 .mini-h { display: block; min-height: calc(2.5em * 1.08 + 18px); font-size: 13.5px; }
@@ -905,6 +905,9 @@ function main(FEED) {
     document.addEventListener('pointerdown', function (ev) { if (!node.contains(ev.target)) hide(); });
   }
   function lineChart(id, series, o) {
+    // Courbe loin de l'écran : dessinée quand on s'en approche, sa place gardée (commun/menu.js).
+    var bx0 = document.getElementById(id);
+    if (!o.maintenant && bx0 && window.ConcretMenu && ConcretMenu.plusTard && ConcretMenu.plusTard(bx0, function () { lineChart(id, series, Object.assign({}, o, { maintenant: 1 })); }, o.h || (bx0.clientWidth && bx0.clientWidth < 520 ? 220 : 260))) return;
     // Pays ajoutés par le visiteur (commun/pays.js) : en pointillé, repères seulement.
     if (window.ConcretPays) { var s0 = series; ConcretPays.retenir(id, function () { lineChart(id, s0, o); }); series = ConcretPays.ajouter(id, series); }
     var box = document.getElementById(id); box.textContent = '';
@@ -1144,8 +1147,8 @@ function main(FEED) {
     var lf = F[F.length - 1], le = E.filter(function (p) { return p.x === lf.x; })[0] || null;
     var b = document.createElement('button'); b.type = 'button'; b.className = 'mini'; b.dataset.courbe = o.id;
     b.innerHTML = '<span class="mini-h"><span class="mini-t">' + esc(c.lc || c.l) + '</span>' + (c.unite ? '<span class="mini-u">' + esc(c.unite) + '</span>' : '') + '</span>' +
-      '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + [[D, 'var(--de)'], [Es, 'var(--es)'], [Us, 'var(--us)']].map(function (a) { return a[0].length ? trace(a[0]).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="' + a[1] + '" stroke-width="1.2" opacity=".75"/>'; }).join('') : ''; }).join('') + (E.length ? trace(E).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--ea)" stroke-width="1.6" stroke-dasharray="4 3"/>'; }).join('') : '') +
-      trace(F).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--fr)" stroke-width="2.4" stroke-linejoin="round"/>'; }).join('') + '<circle cx="' + X(lf.x) + '" cy="' + Y(lf.v) + '" r="3" fill="var(--fr)" class="mini-pt"/></svg>' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + [[D, 'var(--de)'], [Es, 'var(--es)'], [Us, 'var(--us)']].map(function (a) { return a[0].length ? trace(a[0]).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="' + a[1] + '" stroke-width="1.2" opacity=".75"/>'; }).join('') : ''; }).join('') + (E.length ? trace(E).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--ea)" stroke-width="1.6" stroke-dasharray="4 3"/>'; }).join('') : '') +
+      trace(F).map(function (q) { return '<polyline vector-effect="non-scaling-stroke" points="' + q + '" fill="none" stroke="var(--fr)" stroke-width="2.4" stroke-linejoin="round"/>'; }).join('') + '<polyline vector-effect="non-scaling-stroke" points="' + X(lf.x) + ',' + Y(lf.v) + ' ' + X(lf.x) + ',' + Y(lf.v) + '" fill="none" stroke="var(--fr)" stroke-width="6" stroke-linecap="round" class="mini-pt"/></svg>' +
       '<span class="mini-v"><span><b class="f">' + fmt(lf.v, dec) + u + '</b> France · ' + lf.x + ((c.prov || {})[lf.x] ? ' estimé' : '') + '</span><span>' + (le ? '<b class="e">' + fmt(le.v, dec) + u + '</b> moyenne UE' : r ? 'moyenne UE ' + lf.x + ' pas encore publiée' : '') + (/sans note/.test(o.tag || '') ? (le ? ' · ' : '') + 'sans note' : '') + '</span></span>';
     b.setAttribute('aria-label', (c.lc || c.l) + (c.unite ? ', ' + c.unite : '') + ' : France ' + fmt(lf.v, dec) + u + (le ? ', moyenne de l\'UE ' + fmt(le.v, dec) + u : '') + ' en ' + lf.x + '. Voir la courbe en grand');
     b.addEventListener('click', function () {
@@ -1414,9 +1417,9 @@ function main(FEED) {
 })();
 })();
 </script>
-<script src="/commun/partage.js?v=20261031a"></script>
+<script src="/commun/partage.js?v=20261031d"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/menu.js?v=20261031b"></script>
+<script src="/commun/menu.js?v=20261031f"></script>
 </body>
 </html>

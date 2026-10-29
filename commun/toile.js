@@ -33,7 +33,7 @@
       if (i < c.y.length - 1 && c.est && c.est[c.y[c.y.length - 1]]) notes.push((c.lc || c.l) + ' : dernier chiffre définitif (' + c.y[i] + '), les années suivantes ne sont que des estimations');
       if (i < 0) { omis.push(c.lc || c.l); return; }
       var v = { ue: ue[i] }; ['fr', 'de', 'es', 'us'].forEach(function (w) { if (c[w] && c[w][i] != null) v[w] = c[w][i]; });
-      axes.push({ cle: opts.page ? opts.page + '.' + k : null, l: c.lc || c.l, y: c.y[i], u: c.uc != null ? c.uc : (/%/.test(c.unite || '') ? ' %' : ''), dec: c.dec, v: v, cible: (opts.cible || function (k) { return 'ch-' + k; })(k) });
+      axes.push({ cle: opts.page ? opts.page + '.' + k : null, l: c.lc || c.l, lt: c.lt, y: c.y[i], u: c.uc != null ? c.uc : (/%/.test(c.unite || '') ? ' %' : ''), dec: c.dec, v: v, cible: (opts.cible || function (k) { return 'ch-' + k; })(k) });
     });
     return { axes: axes, omis: omis, notes: notes };
   }
@@ -63,7 +63,7 @@
       svg.appendChild(el('line', { class: 'ax', x1: cx, y1: cy, x2: x, y2: y }));
       var c = Math.cos(ang(i)), s = Math.sin(ang(i)), lx = cx + (R + 14) * c, ly = cy + (R + 14) * s;
       var anc = Math.abs(c) < (n > 9 ? 0.1 : 0.25) ? 'middle' : c > 0 ? 'start' : 'end';
-      var L = lignes(a.l, pt ? 12 : n > 9 ? 13 : 15), rg = fmt(a.lo, a.dec) + ' à ' + fmt(a.hi, a.dec) + (a.u || '');
+      var L = lignes(a.lt || a.l, pt ? 12 : n > 9 ? 13 : 15) /* lt : libellé court sur la toile, nom complet dans « Les chiffres » */, rg = fmt(a.lo, a.dec) + ' à ' + fmt(a.hi, a.dec) + (a.u || '');
       var RG = pt ? [] : lignes(rg, 17), tot = L.length + RG.length, y0 = ly + (s < -0.25 ? -(tot - 1) * LH : s > 0.25 ? 4 : -(tot - 1) * LH / 2 + 4);
       LB.push({ x: lx, y: y0, anc: anc, L: L, rg: RG, h: tot * LH });
     });

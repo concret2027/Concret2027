@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="ae8d25cb1dd9">
+<meta name="concret-version" content="c21ac2d70630">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -122,7 +122,7 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-tile .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
 .bx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-md); }
 .bx-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
-.bx-card.wide { grid-column: 1 / -1; }
+.bx-card.wide, .bx-grid > #agenda { grid-column: 1 / -1; } /* l'agenda sur toute la largeur : à côté, il n'y a rien */
 .mn-autres { max-width: 1200px; margin-inline: auto !important; padding-inline: 16px; box-sizing: border-box; }
 .bx-group { grid-column: 1 / -1; margin: var(--cds-gap-md) 0 0; padding-top: var(--cds-gap-md); border-top: 1px solid var(--color-border-line); display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
 .bx-group h2 { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); }
@@ -425,10 +425,11 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
   BX.short = function (full) { for (var k in BX.NAMES) if (BX.NAMES[k] === full) return k; var p = String(full).split(' '); return p[p.length - 1]; };
   BX.full = function (s) { return BX.NAMES[s] || s; };
   var FIXED = { 'Le Pen': 0, 'Bardella': 0, 'Philippe': 1, 'Mélenchon': 2, 'Glucksmann': 3, 'Retailleau': 4, 'Attal': 5, 'Lisnard': 6, 'Zemmour': 7 };
-  var FIXE2 = { 'Hollande': '#946503', 'Ruffin': '#64748b', 'Villepin': '#0369a1', 'Knafo': '#be185d' };
-  var EXTRA = ['#0f766e', '#b45309', '#64748b', '#be185d', '#946503', '#0369a1'], extraOf = {}, nExtra = 0;
+  // Chaque candidat souvent testé a sa couleur, loin des autres (pas deux orangés, pas deux verts-bleus) ; les autres prennent les couleurs de réserve.
+  var FIXE2 = { 'Hollande': '#27272a', 'Tondelier': '#0369a1', 'Dupont-Aignan': '#64748b', 'Roussel': '#881337', 'Ruffin': '#64748b', 'Villepin': '#1e3a8a', 'Knafo': '#be185d' };
+  var EXTRA = ['#be185d', '#946503', '#881337', '#0369a1', '#27272a'], extraOf = {}, nExtra = 0;
   // En mode sombre, les mêmes couleurs, plus claires, pour rester lisibles sur le fond sombre (contraste d'au moins 4,5:1).
-  var SOMBRE = { '#3a5bd9': '#7d98ff', '#b25e12': '#f0a050', '#d23f3f': '#ff7a7a', '#c2447c': '#e27aaa', '#17806f': '#3ccfb5', '#8a5cd1': '#b394ec', '#3f7d1d': '#7fcf4f', '#8c6d4f': '#c4a484', '#946503': '#e0b13c', '#64748b': '#9aa7ba', '#0369a1': '#4fb3ea', '#be185d': '#f06aa8', '#0f766e': '#2dd4bf', '#b45309': '#f59e4b' };
+  var SOMBRE = { '#3a5bd9': '#7d98ff', '#b25e12': '#f0a050', '#d23f3f': '#ff7a7a', '#c2447c': '#e27aaa', '#17806f': '#3ccfb5', '#8a5cd1': '#b394ec', '#3f7d1d': '#7fcf4f', '#8c6d4f': '#c4a484', '#946503': '#e0b13c', '#64748b': '#9aa7ba', '#0369a1': '#4fb3ea', '#be185d': '#f06aa8', '#0f766e': '#2dd4bf', '#b45309': '#f59e4b', '#881337': '#fb7185', '#27272a': '#d4d4d8', '#1e3a8a': '#93b4ff' };
   var sombre = function () { var t = document.documentElement.getAttribute('data-theme'); return t ? t === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); };
   BX.col = function (s) {
     var c;
@@ -991,7 +992,7 @@ dash.calc('duels_recents', {
     var x = d3.scaleLinear([0, d3.max(data, function (d) { return d.v; })], [0, Math.max(40, W - mL - 52)]);
     svg.append('g').selectAll('rect').data(data).join('rect').attr('x', mL).attr('y', function (d, i) { return i * row + 5; }).attr('height', 16).attr('rx', 4)
       .attr('width', function (d) { return Math.max(2, x(d.v)); })
-      .attr('fill', function (d, i) { return i === 0 && d.n !== 'Autres candidats' ? BX.c(dash.colors[0]) : 'var(--cds-chart-muted)'; });
+      .attr('fill', function (d) { return BX.col(BX.short(d.n)) || 'var(--cds-chart-muted)'; }); // chaque candidat dans sa couleur, la même que dans les sondages et sur la courbe d'évolution dessous
     svg.append('g').selectAll('text').data(data).join('text').attr('x', function (d) { return mL + Math.max(2, x(d.v)) + 6; }).attr('y', function (d, i) { return i * row + 17; })
       .attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').style('font-variant-numeric', 'tabular-nums').text(function (d) { return BX.pct(d.v); });
       // Ceux qui ne se présentent pas : leur chiffre et la raison, en une phrase sous les barres.
@@ -1367,8 +1368,14 @@ window.addEventListener('baro:data', function () {
       bv.dataset.pret = '1';
       bv.addEventListener('click', function () { var o = sec.classList.toggle('plie'); bv.textContent = o ? 'Voir le détail ▾' : 'Masquer ▴'; bv.setAttribute('aria-expanded', o ? 'false' : 'true'); });
     }
-    bv.hidden = !items.length && !(document.getElementById('takeaway').scrollHeight > document.getElementById('takeaway').clientHeight + 2);
-    sec.classList.remove('charge');
+    // La place gardée pendant le chargement (.charge) est rendue quand la phrase de synthèse est écrite elle aussi (autre script) :
+    // sinon le bloc rétrécit, puis grandit de nouveau.
+    var tk = document.getElementById('takeaway');
+    var finir = function () {
+      if (tk.querySelector('.dash-skeleton')) return false;
+      bv.hidden = !items.length && !(tk.scrollHeight > tk.clientHeight + 2); sec.classList.remove('charge'); return true;
+    };
+    if (!finir()) { var mo = new MutationObserver(function () { if (finir()) mo.disconnect(); }); mo.observe(tk, { childList: true, subtree: true, characterData: true }); setTimeout(function () { mo.disconnect(); sec.classList.remove('charge'); }, 8000); }
     // Depuis votre dernière visite (gardé dans le navigateur du visiteur uniquement).
     // « cur » = début de la visite en cours ; « base » = visite précédente. Une nouvelle visite commence après 1 h d'absence.
     try {
@@ -1429,9 +1436,9 @@ window.addEventListener('baro:data', function () {
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261031a"></script>
+<script src="/commun/partage.js?v=20261031d"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
-<script src="/commun/menu.js?v=20261031b"></script>
+<script src="/commun/menu.js?v=20261031f"></script>
 <script>
 // Longues listes du Baromètre (duels, sondages de premier tour, notices) : les 6 premières lignes, puis « Voir les N autres »
 // qui déplie dans la page (pas de zone qui défile à l'intérieur de la page). Refait à chaque mise à jour du tableau.

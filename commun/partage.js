@@ -96,6 +96,8 @@
     var wasClosed = card.tagName === 'DETAILS' && !card.open; if (wasClosed) card.open = true;
     // Courbe repliée sous son titre (pages de mission) : ouverte le temps de la capture, puis refermée.
     var plis = Array.prototype.filter.call(card.querySelectorAll('details.pli-courbe'), function (d) { return !d.open; }); plis.forEach(function (d) { d.open = true; });
+    // Courbe pas encore dessinée (loin de l'écran) : dessinée tout de suite, pour être dans l'image.
+    if (window.ConcretMenu && ConcretMenu.presser) ConcretMenu.presser(card);
     lib().then(function (h2c) {
       // Le titre est déjà écrit en haut de l'image : on le retire de la capture pour ne pas le répéter.
       var h = card.querySelector('h1, h2, .acc-h, .lab, .eyebrow'); if (h) h.setAttribute('data-pt-titre', ''); card.setAttribute('data-pt-bloc', '');

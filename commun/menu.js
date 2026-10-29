@@ -307,9 +307,11 @@
       pe = et(est.sort()) + ' estimé' + (est.length > 1 ? 's' : '') + (tous ? ', non compté' + (est.length > 1 ? 's' : '') : '');
       if (tous) L = L.filter(function (y) { return est.indexOf(y) < 0; });
     }
-    if (av != null) L.unshift('avant ' + av);
+    // « avant 2009 » couvre déjà les années d'avant (pas de « avant 2009 et 2005 »).
+    if (av != null) { L = L.filter(function (y) { return y >= av; }); L.unshift('avant\u00a0' + av); }
     if (L.length > 3 || (!L.length && Y.length && !est.length)) nc = 'années non comptées';
-    else if (L.length) nc = 'non compté' + (L.length === 1 && /^avant/.test(L[0]) ? ' ' : ' : ') + et(L);
+    // Espaces insécables : jamais « : » ni « et 2022 » seuls en début de ligne.
+    else if (L.length) nc = 'non compté' + (L.length === 1 && /^avant/.test(L[0]) ? '\u00a0' : '\u00a0: ') + et(L).replace(/ et /, '\u00a0et ');
     else if (fs) nc = 'France seule';
     var parts = [pe, nc].filter(Boolean);
     return parts.length ? ' · ' + parts.join(' · ') : '';
@@ -341,26 +343,33 @@
       if (b.hidden === !!t) b.hidden = !t;
       b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
     });
+    var libres = [], parCarte = new Map();
     Array.prototype.forEach.call(document.querySelectorAll(NT), function (n) {
       if (n.classList.contains('pt-hors') || n.classList.contains('defs') || n.classList.contains('mentions')) return; // mentions légales d'un sondage : jamais repliées
       var carte = n.closest && n.closest(TOUT);
       if (carte) {
-        var notes = Array.prototype.filter.call(carte.querySelectorAll('p.note'), function (x) { return x.matches(NT) && x.closest(TOUT) === carte && x.textContent.trim(); });
+        // Les notes de la carte, cherchées une fois par carte (pas une fois par note).
+        var notes = parCarte.get(carte);
+        if (!notes) { notes = Array.prototype.filter.call(carte.querySelectorAll('p.note'), function (x) { return x.matches(NT) && x.closest(TOUT) === carte && x.textContent.trim(); }); parCarte.set(carte, notes); }
         var tete = notes[0];
         if (n !== tete) { var o = tete && !!tete.dataset.ntOuvert; n.classList.toggle('nt-pli', !o); var bb = n.nextElementSibling; if (bb && bb.classList.contains('nt-btn')) bb.hidden = true; return; }
         var b0 = bouton(n), ouv = !!n.dataset.ntOuvert;
         n.classList.toggle('nt-pli', !ouv);
-        var t0 = ouv ? 'Masquer le détail ▴' : (nonComptes(notes.map(function (x) { return x.innerHTML; }).join(' ')) ? 'Détail' : 'Détail du graphe') + nonComptes(notes.map(function (x) { return x.innerHTML; }).join(' ')) + ' ▾';
+        var nc = ouv ? '' : nonComptes(notes.map(function (x) { return x.innerHTML; }).join(' '));
+        var t0 = ouv ? 'Masquer le détail ▴' : (nc ? 'Détail' : 'Détail du graphe') + nc + ' ▾';
         if (b0.textContent !== t0) b0.textContent = t0;
         if (b0.hidden) b0.hidden = false;
         b0.setAttribute('aria-expanded', ouv ? 'true' : 'false');
         return;
       }
-      garder(n);
-      var b = bouton(n);
-      var ouvert = !!n.dataset.ntOuvert, deja = n.classList.contains('nt-pli');
-      if (deja) n.classList.remove('nt-pli');
-      var cs = getComputedStyle(n), lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.45 || 20, nl = parseFloat(cs.getPropertyValue('--nt-l')) || 2, long = n.offsetHeight > lh * (nl + 1.4);
+      garder(n); libres.push(n);
+    });
+    // Les textes hors des cartes de courbe : mesurés tous ensemble (tout dépliés, puis toutes les hauteurs lues, puis repliés),
+    // pour une seule mise en page au lieu d'une par texte (la page se figeait au chargement).
+    libres.forEach(function (n) { n.classList.remove('nt-pli'); });
+    var longs = libres.map(function (n) { var cs = getComputedStyle(n), lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.45 || 20, nl = parseFloat(cs.getPropertyValue('--nt-l')) || 2; return n.offsetHeight > lh * (nl + 1.4); });
+    libres.forEach(function (n, i) {
+      var b = bouton(n), ouvert = !!n.dataset.ntOuvert, long = longs[i];
       if (long && !ouvert) n.classList.add('nt-pli');
       var rp = n.classList.contains('replie'), bx = !rp && (n.classList.contains('bx-note') || n.classList.contains('retenir') || n.classList.contains('dernier'));
       var t = !long ? '' : ouvert ? (bx || rp ? 'Masquer ▴' : 'Masquer le détail ▴') : rp ? 'Voir le détail ▾' : bx ? 'Lire la suite ▾' : 'Détail du graphe ▾';
@@ -428,17 +437,41 @@
   // Les pages l'appellent en dessinant la courbe, avec les mêmes chiffres que ceux montrés au toucher.
   var tableau = function (box, pts, titre) {
     if (!box || !pts || !pts.length || pts.length > 80) return;
-    var old = box.querySelector(':scope > .mn-sr'); if (old) old.remove();
-    var e = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }, nom = function (r) { return r.n || 'Valeur'; }, cols = [];
-    pts.forEach(function (p) { (p.rows || []).forEach(function (r) { if (cols.indexOf(nom(r)) < 0) cols.push(nom(r)); }); });
-    if (!cols.length) return;
-    // Le tableau est dans une boîte d'un pixel : un tableau seul garde la largeur de ses colonnes et élargirait la page.
-    var w = document.createElement('div'); w.className = 'mn-sr'; w.setAttribute('data-html2canvas-ignore', ''); var t = document.createElement('table'); w.appendChild(t);
-    t.innerHTML = '<caption>Les chiffres de la courbe' + (titre ? ' : ' + e(titre) : '') + '</caption><thead><tr><th scope="col">Année</th>' + cols.map(function (c) { return '<th scope="col">' + e(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
-      pts.map(function (p) { var v = {}; (p.rows || []).forEach(function (r) { v[nom(r)] = r.s; }); return '<tr><th scope="row">' + e(p.t) + '</th>' + cols.map(function (c) { return '<td>' + (v[c] != null ? e(v[c]) : 'pas de chiffre') + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
-    box.appendChild(w);
+    // Fait quand le navigateur est libre, après le dessin des courbes : la page ne se fige pas au chargement.
+    // Si la courbe est redessinée entre-temps (pays ajouté), seul le dernier tableau est fait.
+    var jeton = box.mnTab = (box.mnTab || 0) + 1;
+    var faire = function () {
+      if (box.mnTab !== jeton || !box.isConnected) return;
+      var old = box.querySelector(':scope > .mn-sr'); if (old) old.remove();
+      var e = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }, nom = function (r) { return r.n || 'Valeur'; }, cols = [];
+      pts.forEach(function (p) { (p.rows || []).forEach(function (r) { if (cols.indexOf(nom(r)) < 0) cols.push(nom(r)); }); });
+      if (!cols.length) return;
+      // Le tableau est dans une boîte d'un pixel : un tableau seul garde la largeur de ses colonnes et élargirait la page.
+      var w = document.createElement('div'); w.className = 'mn-sr'; w.setAttribute('data-html2canvas-ignore', ''); var t = document.createElement('table'); w.appendChild(t);
+      t.innerHTML = '<caption>Les chiffres de la courbe' + (titre ? ' : ' + e(titre) : '') + '</caption><thead><tr><th scope="col">Année</th>' + cols.map(function (c) { return '<th scope="col">' + e(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        pts.map(function (p) { var v = {}; (p.rows || []).forEach(function (r) { v[nom(r)] = r.s; }); return '<tr><th scope="row">' + e(p.t) + '</th>' + cols.map(function (c) { return '<td>' + (v[c] != null ? e(v[c]) : 'pas de chiffre') + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
+      box.appendChild(w);
+    };
+    if (window.requestIdleCallback) requestIdleCallback(faire, { timeout: 4000 }); else setTimeout(faire, 300);
   };
-  window.ConcretMenu = { doux: doux, focaliser: focaliser, pieger: pieger, tableau: tableau };
+  // Courbe loin de l'écran (ou dans un bloc replié) : dessinée quand on s'en approche, pour que la page ne se fige pas
+  // au chargement. Sa place est gardée en attendant (hauteur prévue), pour que la page ne saute pas. Renvoie true si
+  // le dessin attend. presser(bloc) dessine tout de suite ce qui attend dans un bloc (avant d'en faire une image).
+  var attente = [];
+  var plusTard = function (box, fn, haut) {
+    if (!box || !window.IntersectionObserver) return false;
+    var r = box.getBoundingClientRect();
+    if (r.width && r.bottom > -800 && r.top < innerHeight + 800) return false;
+    if (box.mnIO) box.mnIO.disconnect();
+    var x = { box: box, fn: null };
+    x.fn = function () { if (x.fait) return; x.fait = true; if (box.mnIO) { box.mnIO.disconnect(); box.mnIO = null; } attente = attente.filter(function (y) { return y !== x; }); box.style.minHeight = ''; fn(); };
+    box.textContent = ''; if (haut) box.style.minHeight = haut + 'px';
+    box.mnIO = new IntersectionObserver(function (es) { if (es.some(function (e) { return e.isIntersecting; })) x.fn(); }, { rootMargin: '800px 0px' });
+    box.mnIO.observe(box); attente.push(x);
+    return true;
+  };
+  var presser = function (root) { attente.filter(function (x) { return !root || root.contains(x.box); }).forEach(function (x) { x.fn(); }); };
+  window.ConcretMenu = { doux: doux, focaliser: focaliser, pieger: pieger, tableau: tableau, plusTard: plusTard, presser: presser };
   function suivre(jp, cib) {
     var ls = Array.prototype.filter.call(jp.querySelectorAll('a[href^="#"]'), function (l) { return cib(l); }), cur = null, choisi = null, fin = 0;
     if (!ls.length) return;
