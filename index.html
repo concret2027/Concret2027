@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="0557071faba5">
+<meta name="concret-version" content="9c5eb57b7c7d">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -648,6 +648,16 @@ footer p { margin: 0; } footer a { color: inherit; }
       return '<tr><td><i style="background:' + c + '"></i>' + esc(r.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin')) + '</td>' + MISS.map(function (m) { return '<td>' + (r[m.k] == null ? '—' : fmt(r[m.k]) + (r[m.k + '_prov'] ? ' *' : '')) + '</td>'; }).join('') + '</tr>';
     }).join('') + '</tbody>' : '';
     document.getElementById('radar-why').textContent = why.join(' ');
+    // Le tableau : la première ligne, les autres derrière un bouton (moins long à lire d'emblée).
+    var trs = Array.prototype.slice.call(document.querySelectorAll('#radar-table tbody tr')), bt = document.getElementById('radar-plus');
+    if (bt) bt.remove();
+    if (trs.length > 1 && !tableTout) {
+      trs.slice(1).forEach(function (tr) { tr.hidden = true; });
+      bt = document.createElement('button'); bt.type = 'button'; bt.id = 'radar-plus'; bt.className = 'plus-gov';
+      bt.textContent = 'Voir les ' + (trs.length - 1) + ' autres ' + (kind === 'pres' ? 'présidents' : 'gouvernements');
+      bt.addEventListener('click', function () { tableTout = true; trs.forEach(function (tr) { tr.hidden = false; }); bt.remove(); });
+      document.getElementById('radar-table').insertAdjacentElement('afterend', bt);
+    }
   }
   function chips() {
     var box = document.getElementById('radar-who'); box.textContent = '';
@@ -659,8 +669,9 @@ footer p { margin: 0; } footer a { color: inherit; }
       box.appendChild(b);
     });
   }
+  var tableTout = false;
   function setKind(k) {
-    kind = k; chosen = {};
+    kind = k; chosen = {}; tableTout = false;
     // Par défaut : les présidents, tous ; les gouvernements, les trois derniers comptés.
     var list = data[k].filter(function (r) { return r.m != null; });
     (k === 'pres' ? list : list.slice().sort(function (a, b) { return b.y0 - a.y0; }).slice(0, 3)).forEach(function (r) { chosen[r.n] = true; });

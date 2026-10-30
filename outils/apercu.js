@@ -40,11 +40,15 @@ function carte(o) {
     '.dates{display:flex;flex-direction:column;gap:14px;margin-left:auto}.d{background:#fff;border:2px solid #e2e2dc;border-radius:22px;padding:18px 28px}.d span{display:block;font-size:24px;color:#62646d;font-weight:600}.d b{font-family:Newsreader,serif;font-size:52px;font-weight:500}' +
     '.qz{flex:1;display:flex;flex-direction:column;gap:22px}.qq{font-family:Newsreader,serif;font-size:44px;line-height:1.15}.qo{display:grid;grid-template-columns:1fr 1fr;gap:14px}.qo span{background:#fff;border:2px solid #e2e2dc;border-radius:16px;padding:14px 20px;font-size:28px;font-weight:600}' +
     '.et{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:center}.e{background:#fff;border:2px solid #e2e2dc;border-radius:22px;padding:22px 22px;height:100%;max-height:250px}.e span{display:block;font-size:23px;color:#62646d;font-weight:600;margin-bottom:10px}.e b{display:block;font-size:29px;font-weight:700;line-height:1.3}' +
+    '.mi{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-left:auto;max-width:700px}.mm{background:#fff;border:2px solid #e2e2dc;border-radius:20px;padding:16px 20px 18px;display:flex;flex-direction:column;gap:6px}' +
+    '.mm span{font-size:22px;color:#62646d;font-weight:600;line-height:1.15;min-height:52px}.mm b{font-family:Newsreader,serif;font-size:54px;font-weight:500;line-height:1}.mm b small{font-size:28px;color:#62646d}' +
+    '.mm i{display:block;height:8px;border-radius:4px;background:#e8e8e2;position:relative;overflow:hidden}.mm i u{position:absolute;left:0;top:0;bottom:0;background:#2f5bd3;border-radius:4px}' +
     '.f{font-size:23px;color:#62646d}</style></head><body>' +
     '<div class="top"><span class="brand">Concret</span><span class="adr">' + esc(o.adresse) + '</span></div>' +
     '<div class="t">' + esc(o.titre) + '</div><div class="s">' + esc(o.sous) + '</div>' +
     '<div class="mid">' + (o.n ? '<div class="gauche"><div class="n">' + esc(o.n[0]) + '<small>' + esc(o.n[1]) + '</small></div><div class="nt">' + esc(o.nt) + '</div></div>' : '') +
     (o.pres ? '<div class="pres">' + o.pres.map(function (p) { return '<div class="p ' + cl(p.v) + '"><span>' + esc(p.n) + '</span><b>' + nf(p.v) + '</b><i style="width:' + (p.v == null ? 0 : 5 * p.v) + '%"></i></div>'; }).join('') + '</div>' : '') +
+    (o.missions ? '<div class="mi">' + o.missions.map(function (m) { return '<div class="mm"><span>' + esc(m.l) + '</span><b>' + m.n + '<small>/' + m.t + '</small></b><i><u style="width:' + Math.round(100 * m.n / m.t) + '%"></u></i></div>'; }).join('') + '</div>' : '') +
     (o.quiz ? '<div class="qz"><div class="qq">' + esc(o.quiz.q) + '</div><div class="qo">' + o.quiz.o.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('') + '</div></div>' : '') +
     (o.etapes ? '<div class="et">' + o.etapes.map(function (x) { return '<div class="e"><span>' + esc(x[0]) + '</span><b>' + esc(x[1]) + '</b></div>'; }).join('') + '</div>' : '') +
     (o.dates ? '<div class="dates">' + o.dates.map(function (d) { return '<div class="d"><span>' + esc(d[0]) + '</span><b>' + esc(d[1]) + '</b></div>'; }).join('') + '</div>' : '') + '</div>' +
@@ -79,7 +83,7 @@ function carte(o) {
   // blocs « En bref », comme « Le pouls de la France ») ; aucune moyenne des missions par président, qui se lirait comme un classement.
   var S = JSON.parse(fs.readFileSync(path.join(ROOT, 'data.json'), 'utf8')).series;
   var nTot = 0, tTot = 0; Object.keys(bref).forEach(function (k) { nTot += bref[k].n; tTot += bref[k].total; });
-  var gen = { titre: 'La France mesurée, mandat par mandat', sous: 'Six missions de l\'État face à la moyenne de l\'UE, depuis 1995', n: [String(nTot), '/' + tTot], nt: 'indicateurs où la France fait mieux que la moyenne de l\'UE (dernier chiffre connu)', pied: NOTES.MISSIONS.length + ' missions, chacune avec sa page, sa règle et ses chiffres', adresse: 'concret2027.fr' };
+  var gen = { titre: 'La France mesurée, mandat par mandat', sous: 'Six missions de l\'État face à la moyenne de l\'UE, depuis 1995', n: [String(nTot), '/' + tTot], nt: 'indicateurs où la France fait mieux que la moyenne de l\'UE, au dernier chiffre connu', missions: Object.keys(bref).map(function (k) { return { l: bref[k].l, n: bref[k].n, t: bref[k].total }; }), pied: 'Page par page : indicateurs où la France fait mieux que la moyenne de l\'UE', adresse: 'concret2027.fr' };
   cartes.push(Object.assign({ f: 'accueil' }, gen));
   // Baromètre : le nombre de jours avant le premier tour (date lue dans l'agenda du baromètre), refait chaque jour.
   var D = JSON.parse(fs.readFileSync(path.join(ROOT, 'data.json'), 'utf8')).datasets, t1 = (D.agenda_barometre || []).filter(function (a) { return /premier tour/i.test(a.evenement); })[0];

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="0557071faba5">
+<meta name="concret-version" content="9c5eb57b7c7d">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -599,6 +599,10 @@ footer p { margin: 0; } footer a { color: inherit; }
     for (var k = 0, i1 = i0; k < ord1.length && !q1; k++) { var c1 = ord1[(i1 + k) % ord1.length]; q1 = Q1[c1[0]](c1[1], c1[2] && melange(c1[2], r)); }
     var ord = melange(IND, alea(104729)), C2 = []; ord.forEach(function (x, j) { Q2.forEach(function (fn, f) { if (fn(x)) C2.push([f, j]); }); });
     var q2 = null; for (k = 0, i1 = tour(C2.length); k < C2.length && !q2; k++) { var c2 = C2[(i1 + k) % C2.length]; q2 = Q2[c2[0]](ord[c2[1]]); }
+    // À partir du 31 octobre 2026, la deuxième question est celle du jour de la page Démographie (series.demographie.QUIZ,
+    // fabriquée par outils/quiz_auto.py, sujets à tour de rôle) ; comme les questions sur les mandats, son point est déclaré.
+    var DQ = (S.demographie || {}).QUIZ;
+    if (idx >= 303 && DQ && DQ.length) { var dq = pick(DQ); q2 = { l: 'Démographie', q: dq.q, o: dq.o, a: dq.a, e: dq.e, d: dq.d, lien: dq.v ? '/demographie/#' + dq.v : '/demographie/', src: 'Démographie' }; }
     [q1, q2].forEach(function (q) { if (q) { q.page = 'notes'; out.push(q); } });
     return out;
   }

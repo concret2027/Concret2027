@@ -32,7 +32,9 @@ UE = ['BE', 'BG', 'CZ', 'DK', 'DE', 'EE', 'IE', 'EL', 'ES', 'FR', 'HR', 'IT', 'C
 MIN = 20          # pays de l'UE avec un chiffre, pour une question sur les pays
 L = 31            # longueur de la fenêtre QUIZ
 ECART_COURBE = 6  # jours avant de revenir sur la même courbe
-PAGES = ['finances', 'education', 'sante', 'securite', 'defense', 'vie']
+PAGES = ['finances', 'education', 'sante', 'securite', 'defense', 'vie', 'demographie']
+# Courbes dont l'ancre sur la page n'est pas « ch-<clé> ».
+ANCRE = {'demographie.nes_hue': 'ch-neshue'}
 # Finances et Éducation : leurs séries n'ont ni intitulé ni années dans data.json (années fixes, comme sur leurs pages).
 FIN = [('dette', 'Dette publique', '% du PIB', None), ('dep', 'Dépense publique', '% du PIB', 'dépense de toutes les administrations publiques (État, collectivités, Sécurité sociale)'),
        ('po', 'Impôts et cotisations', '% du PIB', 'impôts et cotisations sociales prélevés par les administrations publiques (prélèvements obligatoires)')]
@@ -61,7 +63,9 @@ def h(t):
 
 def titre(x):
     # « 15-29 ans » ne se coupe pas en fin de ligne (trait d'union insécable).
-    return re.sub(r'(\d)-(\d)', '\\1\u2011\\2', x['l'] + (' (%)' if x['u'] == '%' else ', ' + x['u']))
+    # Pas d'unité répétée quand elle redit l'intitulé (« Enfants par femme »).
+    u = '' if not x['u'] or x['u'].lower() == x['l'].lower() else (' (%)' if x['u'] == '%' else ', ' + x['u'])
+    return re.sub(r'(\d)-(\d)', '\\1\u2011\\2', x['l'] + u)
 
 
 def unite(x):
@@ -106,9 +110,9 @@ def indicateurs(S, pg, html):
                 if "'ch-a-" + k + "'" not in html:
                     continue
             br = c.get('br') or {}
-            out.append(base(cle=pg + '.' + pre + k, l=c.get('l'), u=c.get('unite', ''), ex=c.get('ex'), dec=c.get('dec', 1), src=court(c.get('source')),
+            out.append(base(cle=pg + '.' + pre + k, l=c.get('l'), u=c.get('unite', ''), ex=c.get('ex'), dec=int(c.get('dec', 1)), src=court(c.get('source')),
                             y=c['y'], fr=c['fr'], ue=c.get('ue') or c.get('ue_calc') or [], de=c.get('de') or [], es=c.get('es') or [],
-                            est=c.get('est') or {}, prov=c.get('prov') or {}, br=br if isinstance(br, dict) else {str(b): 1 for b in br}, v='ch-' + pre + k))
+                            est=c.get('est') or {}, prov=c.get('prov') or {}, br=br if isinstance(br, dict) else {str(b): 1 for b in br}, v=ANCRE.get(pg + '.' + k, 'ch-' + pre + k)))
     return out
 
 
@@ -262,8 +266,10 @@ def fabriquer(x, P, nom):
 
 
 # Un sujet = une courbe ; les courbes d'un même sujet comptent ensemble (les obligations de quitter le territoire : celles
-# délivrées et les départs), pour ne pas revenir trop souvent sur le même sujet.
-SUJETS = [(re.compile(r'quitter le territoire', re.I), 'oqtf')]
+# délivrées et les départs ; la population née à l'étranger et les étrangers), pour ne pas revenir trop souvent sur le même sujet.
+SUJETS = [(re.compile(r'quitter le territoire', re.I), 'oqtf'),
+          # Démographie : les personnes nées à l'étranger, nées hors de l'UE et les étrangers, un seul sujet.
+          (re.compile(r"^(Personnes nées|Étrangers)", re.I), 'origine')]
 
 
 def sujet(q):
@@ -299,7 +305,11 @@ def main():
     bilan = []
     for pg in PAGES:
         ser = S.get(pg)
-        if not ser or not (ser.get('QUIZ') or ser.get('QUIZ_ECRITES')):
+        if not ser:
+            continue
+        if pg == 'demographie':
+            ser.setdefault('QUIZ_ECRITES', [])  # page sans calcul : seulement des questions sur les chiffres, aucune écrite à la main
+        if not (ser.get('QUIZ') or 'QUIZ_ECRITES' in ser):
             continue
         with open(os.path.join(ROOT, pg, 'index.html'), encoding='utf-8') as fh:
             html = fh.read()
