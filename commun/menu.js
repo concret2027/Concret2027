@@ -411,15 +411,50 @@
   // Compte rendu pour l'éditeur : node outils/vues_stats.js (rien n'est affiché sur le site).
   var VUES = 'https://compteur.square-brook-9d65.workers.dev/hit?n=1&i=0&k=', vuesFaites = {};
   var pageNom = (location.pathname.replace(/index\.html$/, '').replace(/^\/|\/$/g, '') || 'accueil').replace(/[^a-z0-9-]+/g, '-');
+  // Les appareils de l'éditeur ne sont pas comptés : concret2027.fr/?moi=1 les retire une fois pour toutes (ici et dans GoatCounter),
+  // ?moi=0 les compte de nouveau.
+  var editeur = false;
+  try {
+    var qm = /[?&]moi=([01])/.exec(location.search);
+    if (qm) { if (qm[1] === '1') { localStorage.setItem('concret-editeur', '1'); localStorage.setItem('skipgc', 't'); } else { localStorage.removeItem('concret-editeur'); localStorage.removeItem('skipgc'); } }
+    editeur = localStorage.getItem('concret-editeur') === '1';
+  } catch (e) {}
+  var compte = function () { return location.hostname === 'concret2027.fr' && !editeur && !!window.fetch; };
+  function envoyer(k, n, i) { try { fetch(VUES.replace('n=1&i=0', 'n=' + (n || 1) + '&i=' + (i || 0)) + encodeURIComponent(k), { method: 'POST', cache: 'no-store', keepalive: true }).catch(function () {}); } catch (e) {} }
   function compter(quoi) {
-    if (location.hostname !== 'concret2027.fr' || vuesFaites[quoi] || !window.fetch) return; vuesFaites[quoi] = 1;
-    try { fetch(VUES + encodeURIComponent('quiz-vue-' + pageNom + (quoi === 'page' ? '' : '-' + quoi)), { method: 'POST', cache: 'no-store', keepalive: true }).catch(function () {}); } catch (e) {}
+    if (!compte() || vuesFaites[quoi]) return; vuesFaites[quoi] = 1;
+    envoyer('quiz-vue-' + pageNom + (quoi === 'page' ? '' : '-' + quoi));
+  }
+  // Où vont les visiteurs et combien de temps ils restent, en totaux seulement (rien qui relie deux pages à une personne) :
+  // le passage d'une page à l'autre (« entree » quand on arrive d'ailleurs), le temps passé sur la page (par tranches),
+  // et pour la visite entière, combien ont duré au moins 10 s, 30 s, 1, 3 et 10 minutes et vu au moins 2, 3, 5 et 10 pages.
+  function compterParcours() {
+    if (!compte()) return;
+    var nomDe = function (ch) { return (ch.replace(/index\.html$/, '').replace(/^\/|\/$/g, '') || 'accueil').replace(/[^a-z0-9-]+/g, '-'); };
+    var de = 'entree', v;
+    try { var r = document.referrer && new URL(document.referrer); if (r && r.hostname === location.hostname) de = nomDe(r.pathname); } catch (e) {}
+    try { v = JSON.parse(sessionStorage.getItem('concret-visite') || 'null'); } catch (e) { return; }
+    if (!v || de === 'entree') v = { t: 0, p: 0, seuils: [], pages: [], der: '' };
+    if (v.der === pageNom) return; // page rechargée : pas un nouveau passage
+    v.p++; v.der = pageNom;
+    envoyer('quiz-vue-chemin-' + de + '-' + pageNom);
+    [2, 3, 5, 10].forEach(function (n) { if (v.p >= n && v.pages.indexOf(n) < 0) { v.pages.push(n); envoyer('quiz-vue-visite-pages-' + n); } });
+    var garder = function () { try { sessionStorage.setItem('concret-visite', JSON.stringify(v)); } catch (e) {} };
+    garder();
+    var vu = 0, depuis = document.visibilityState === 'visible' ? Date.now() : 0, tempsEnvoye = false;
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') { depuis = Date.now(); return; }
+      if (depuis) { vu += Date.now() - depuis; v.t += Date.now() - depuis; depuis = 0; }
+      if (!tempsEnvoye) { tempsEnvoye = true; var s = vu / 1000; envoyer('quiz-vue-temps-' + pageNom, 6, s < 10 ? 0 : s < 30 ? 1 : s < 60 ? 2 : s < 180 ? 3 : s < 600 ? 4 : 5); }
+      [10, 30, 60, 180, 600].forEach(function (n) { if (v.t >= n * 1000 && v.seuils.indexOf(n) < 0) { v.seuils.push(n); envoyer('quiz-vue-visite-' + n + 's'); } });
+      garder();
+    });
   }
   // Appareils : le navigateur garde une marque à la première visite du site (et le jour de la dernière visite comptée) ; le compteur
   // reçoit seulement « un appareil de plus » (depuis le début, et ce jour-là). Rien qui identifie la personne ; deux appareils d'une
   // même personne comptent deux fois, une navigation privée aussi.
   function compterAppareil() {
-    if (location.hostname !== 'concret2027.fr' || !window.fetch) return;
+    if (!compte()) return;
     var jour = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }), vu, dernier;
     try { vu = localStorage.getItem('concret-appareil'); dernier = localStorage.getItem('concret-appareil-jour'); } catch (e) { return; }
     var cles = [];
@@ -427,10 +462,10 @@
     if (dernier !== jour) cles.push('quiz-vue-appareils-' + jour);
     if (!cles.length) return;
     try { localStorage.setItem('concret-appareil', vu || jour); localStorage.setItem('concret-appareil-jour', jour); } catch (e) { return; }
-    cles.forEach(function (k) { try { fetch(VUES + encodeURIComponent(k), { method: 'POST', cache: 'no-store', keepalive: true }).catch(function () {}); } catch (e) {} });
+    cles.forEach(function (k) { envoyer(k); });
   }
   function compterOuvertures() {
-    compter('page'); compterAppareil();
+    compter('page'); compterAppareil(); compterParcours();
     document.addEventListener('toggle', function (e) {
       var d = e.target; if (!d || !d.open || !d.classList) return;
       if (d.classList.contains('acc-fixe')) return; // ouvert d'office, pas une ouverture du visiteur
