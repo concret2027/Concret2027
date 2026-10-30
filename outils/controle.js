@@ -2,7 +2,9 @@
 /* Contrôle de la mise à jour automatique de Concret.
    node outils/controle.js a-faire [AAAA-MM-JJ]
        Liste les indicateurs du calendrier à vérifier aujourd'hui.
-   node outils/controle.js verifier [AAAA-MM-JJ] [--compte-rendu fichier.md]
+   node outils/controle.js verifier [AAAA-MM-JJ] [--compte-rendu fichier.md] [--quotidienne]
+       --quotidienne (tâche quotidienne de midi) : refuse la publication tant qu'un indicateur dû n'a pas été vérifié
+       aujourd'hui (fait, ou introuvable à la source et noté comme tel : tentative + 1, revu demain).
        Valide data.json, recalcule toutes les notes (commun/notes.js), les compare à la dernière publication,
        vérifie les récits (outils/recits.js), contrôle le calendrier, met à jour donnees/notes.json,
        donnees/a_valider.json et l'index du moteur de recherche (donnees/recherche.json, par outils/recherche.js), écrit le journal du mois (journal/AAAA-MM.md) et imprime la notification.
@@ -15,6 +17,7 @@ var NOTES = require('../commun/notes.js'), RECITS = require('./recits.js');
 
 var args = process.argv.slice(2), cmd = args[0];
 var today = (args[1] && /^\d{4}-\d{2}-\d{2}$/.test(args[1])) ? args[1] : new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+var quotidienne = args.indexOf('--quotidienne') > 0;
 var crIdx = args.indexOf('--compte-rendu'), compteRendu = crIdx > 0 ? fs.readFileSync(args[crIdx + 1], 'utf8').trim() : '';
 var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 var dateFr = function (iso) { var p = iso.split('-'); return (+p[2] === 1 ? '1er' : +p[2]) + ' ' + MOIS[+p[1] - 1] + ' ' + p[0]; };
@@ -302,13 +305,18 @@ if (!bloquant.length) {
 }
 
 // ===== 4. Calendrier =====
-var problemes = [];
+var problemes = [], nonFaites = 0;
 cal.indicateurs.forEach(function (i) {
   if (i.statut === 'en_retard') problemes.push(i.libelle + ' : publication attendue' + (i.publication_attendue ? ' le ' + i.publication_attendue : '') + ' introuvable (tentative ' + i.tentatives + ')');
-  else if (i.prochaine_verification <= today && i.derniere_verification !== today) problemes.push(i.libelle + ' : vérification prévue le ' + i.prochaine_verification + ' non faite');
+  else if (i.prochaine_verification <= today && i.derniere_verification !== today) {
+    // La promesse du site : tout ce qui est dû est vérifié chaque jour. La tâche quotidienne ne publie pas en en laissant de côté.
+    if (quotidienne) { err('Vérification due non faite : ' + i.libelle + ' (' + i.id + ', prévue le ' + i.prochaine_verification + ')'); nonFaites++; }
+    else problemes.push(i.libelle + ' : vérification prévue le ' + i.prochaine_verification + ' non faite');
+  }
   // Valeur publiée mais pas encore confirmée à une source officielle : signalée chaque jour tant qu'elle l'est.
   if (i.statut === 'a_verifier' || i.statut === 'a_recuperer') problemes.push(i.libelle + ' : ' + (i.statut === 'a_recuperer' ? 'série pas encore récupérée, rien n\'est affiché' : 'nouvelle valeur pas encore confirmée à la source, le site garde la dernière valeur vérifiée') + '.');
 });
+if (nonFaites) err('Pour chacune : fais-la, ou, si la source est illisible ou la publication pas encore parue, note-le dans le calendrier (tentatives + 1, prochaine_verification = demain) et dans le compte rendu, puis relance le contrôle.');
 var fait = cal.indicateurs.filter(function (i) { return i.derniere_verification === today; });
 
 // ===== 5. Ce qui a changé dans data.json depuis la dernière publication =====
@@ -369,7 +377,7 @@ fs.appendFileSync(jf, J.join('\n'));
 var out = [];
 if (bloquant.length) {
   out.push('Concret ✗ ' + dateFr(today) + ' : données refusées, rien publié (' + bloquant.length + ' erreur(s)).');
-  bloquant.slice(0, 5).forEach(function (b) { out.push('⚠ ' + b); });
+  bloquant.slice(0, quotidienne ? 60 : 5).forEach(function (b) { out.push('⚠ ' + b); });
 } else {
   // Le classement général de l'accueil d'abord : c'est le changement que les lecteurs voient en premier.
   var tri = chgNotes.filter(function (c) { return /^Classement général/.test(c); }).concat(chgNotes.filter(function (c) { return !/^Classement général/.test(c); }));
