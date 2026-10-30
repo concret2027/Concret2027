@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="2e7c4c3c2945">
+<meta name="concret-version" content="1124aa23b2cd">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -696,12 +696,13 @@ footer p { margin: 0; } footer a { color: inherit; }
     // Le tableau : la première ligne, les autres derrière un bouton (moins long à lire d'emblée).
     var trs = Array.prototype.slice.call(document.querySelectorAll('#radar-table tbody tr')), bt = document.getElementById('radar-plus');
     if (bt) bt.remove();
-    if (trs.length > 1 && !tableTout) {
-      trs.slice(1).forEach(function (tr) { tr.hidden = true; });
+    if (trs.length > 1) {
+      // Un seul bouton qui déplie et replie.
+      var qui = (trs.length - 1) + ' autres ' + (kind === 'pres' ? 'présidents' : 'gouvernements');
+      var regle = function () { trs.slice(1).forEach(function (tr) { tr.hidden = !tableTout; }); bt.textContent = tableTout ? 'Replier le tableau' : 'Voir les ' + qui; bt.setAttribute('aria-expanded', tableTout ? 'true' : 'false'); };
       bt = document.createElement('button'); bt.type = 'button'; bt.id = 'radar-plus'; bt.className = 'plus-gov';
-      bt.textContent = 'Voir les ' + (trs.length - 1) + ' autres ' + (kind === 'pres' ? 'présidents' : 'gouvernements');
-      bt.addEventListener('click', function () { tableTout = true; trs.forEach(function (tr) { tr.hidden = false; }); bt.remove(); });
-      document.getElementById('radar-table').insertAdjacentElement('afterend', bt);
+      bt.addEventListener('click', function () { tableTout = !tableTout; regle(); });
+      document.getElementById('radar-table').insertAdjacentElement('afterend', bt); regle();
     }
   }
   function chips() {
