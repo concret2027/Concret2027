@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="d7707bb8b11b">
+<meta name="concret-version" content="83064c1af3ed">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -315,6 +315,10 @@ footer p { margin: 0; } footer a { color: inherit; }
 .piliers span:last-child { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
 .radar svg { display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto; font-family: var(--sans); }
 .radar .ra { fill: var(--fg); font-size: 13px; font-weight: 600; } .radar .rl { fill: var(--muted); font-size: 10px; }
+.radar { position: relative; } @media (max-width: 520px) { .radar { margin-inline: -14px; } .radar .ra { font-size: 12px; } }
+.radar .rv { font-size: 9.5px; font-weight: 700; paint-order: stroke; stroke: var(--panel, var(--bg)); stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
+.radar .rhit { fill: transparent; cursor: pointer; }
+.radar-bulle { position: absolute; z-index: 3; pointer-events: none; background: var(--fg); color: var(--bg); font-size: 13px; line-height: 1.3; padding: 6px 9px; border-radius: 8px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); }
 .radar-who .chip i, .rtab i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .radar-who .chip[aria-pressed="false"] { opacity: .55; }
 #radar-plus { background: var(--fr); border-color: var(--fr); color: var(--bg); } /* bleu : un bouton qu'on reconnaît */
@@ -616,7 +620,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     if (ring.indexOf(10) < 0) ring.push(10);
     // Noms de mission sur deux lignes au besoin (« Sécurité / et justice ») ; place réservée à gauche et à droite.
     var lignes = function (l) { var w = l.split(' '); return w.length > 2 ? [w[0], w.slice(1).join(' ')] : [l]; };
-    var W = Math.min(520, Math.max(300, box.clientWidth)), side = 84, R = Math.min(W / 2 - side, 170), cx = W / 2, cy = R + 40, H = 2 * R + 84, n = MISS.length;
+    var W = Math.min(520, Math.max(300, box.clientWidth)), side = W < 420 ? 66 : 84, R = Math.min(W / 2 - side, 170), cx = W / 2, cy = R + 40, H = 2 * R + 84, n = MISS.length;
     var ang = function (i) { return -Math.PI / 2 + i * 2 * Math.PI / n; }, pt = function (i, v) { return [cx + Math.cos(ang(i)) * R * Math.min(v, S) / S, cy + Math.sin(ang(i)) * R * Math.min(v, S) / S]; };
     var h = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Résultats sur 20 par mission, échelle de 0 à ' + S + '">';
     ring.sort(function (a, b) { return a - b; }).forEach(function (v) {
@@ -641,7 +645,29 @@ footer p { margin: 0; } footer a { color: inherit; }
       if (ok.length > 1) h += '<polygon points="' + ok.map(function (p) { return p.join(','); }).join(' ') + '" fill="' + c + '" fill-opacity=".05" stroke="' + c + '" stroke-width="2.2"/>';
       ok.forEach(function (p) { h += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4" fill="' + c + '"/>'; });
     });
-    box.innerHTML = h + '</svg>';
+    // Le chiffre de chaque point, en petit, à côté de lui (de part et d'autre de l'axe, décalé s'il en touche un autre) ;
+    // et une zone à toucher (ou survoler) par point, qui affiche la bulle « Nom · Mission : 12,1 sur 20 ».
+    var poses = [], hits = '';
+    MISS.forEach(function (m, i) {
+      var a = ang(i), px = -Math.sin(a), py = Math.cos(a), ux = Math.cos(a), uy = Math.sin(a);
+      rows.filter(function (r) { return r[m.k] != null; }).sort(function (x, y) { return x[m.k] - y[m.k]; }).forEach(function (r, k) {
+        var p = pt(i, r[m.k]), sg = k % 2 ? -1 : 1, x = p[0] + px * sg * 10, y = p[1] + py * sg * 10 + 3, t = 0;
+        while (t++ < 4 && poses.some(function (q) { return Math.abs(q[0] - x) < 24 && Math.abs(q[1] - y) < 10; })) { x += ux * 10; y += uy * 10; }
+        poses.push([x, y]);
+        var anc = px * sg > 0.35 ? 'start' : px * sg < -0.35 ? 'end' : 'middle';
+        h += '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + anc + '" class="rv" fill="' + colOf(r) + '">' + fmt(r[m.k]) + '</text>';
+        hits += '<circle class="rhit" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="13" data-b="' + esc(r.n + ' · ' + m.l + ' : ' + fmt(r[m.k]) + ' sur 20').replace(/"/g, '&quot;') + '"/>';
+      });
+    });
+    box.innerHTML = h + hits + '</svg>';
+    var bulle = document.createElement('div'); bulle.className = 'radar-bulle'; bulle.hidden = true; box.appendChild(bulle);
+    var montre = function (e) {
+      var c = e.target.closest && e.target.closest('.rhit'); if (!c) { bulle.hidden = true; return; }
+      var sv = box.querySelector('svg'), k = sv.getBoundingClientRect().width / W, bb = box.getBoundingClientRect(), sb = sv.getBoundingClientRect();
+      bulle.textContent = c.getAttribute('data-b'); bulle.hidden = false;
+      bulle.style.left = Math.max(80, Math.min(bb.width - 80, sb.left - bb.left + c.cx.baseVal.value * k)) + 'px'; bulle.style.top = (sb.top - bb.top + c.cy.baseVal.value * k) + 'px';
+    };
+    box.onpointerdown = montre; box.onpointermove = function (e) { if (e.pointerType === 'mouse') montre(e); }; box.onpointerleave = function () { bulle.hidden = true; };
     // Les mêmes chiffres en tableau, et la raison quand une mission n'est pas notée.
     var why = [];
     document.getElementById('radar-table').innerHTML = rows.length ? '<thead><tr><th scope="col" class="rt-sur">Sur 20<span class="mn-sr">, ' + (kind === 'pres' ? 'président' : 'gouvernement') + '</span></th>' + MISS.map(function (m) { return '<th title="' + m.l + '"><span class="lg">' + m.l + '</span><span class="ab">' + (ABR[m.k] || m.l) + '</span></th>'; }).join('') + '</tr></thead><tbody>' + rows.map(function (r) {
