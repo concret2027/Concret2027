@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="7a44c0e54cdb">
+<meta name="concret-version" content="774e4ea25005">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -311,13 +311,14 @@ footer p { margin: 0; } footer a { color: inherit; }
       <li>la fréquentation : le nombre d'appareils différents (une marque gardée sur votre appareil ; le compteur reçoit seulement « un de plus »), le passage d'une page à l'autre et le temps passé sur chaque page, par tranches, en totaux, sans rien qui relie deux pages à une même personne ;</li>
       <li>la participation à « Votez les lois » : le nombre de personnes qui votent et le nombre de votes par texte, jamais le sens du vote.</li>
     </ul>
-    <p id="ne-pas-compter"><a id="nc-lien" href="/mentions-legales/?moi=1#ne-pas-compter">Ne pas compter mes visites sur cet appareil</a> (fréquentation, ici et dans GoatCounter ; les réponses au quiz et les votes restent comptés).</p>
+    <p id="ne-pas-compter" hidden></p>
     <script>
     (function () {
       // ?moi=1 et ?moi=0 sont lus par commun/menu.js, chargé plus bas : on lit le lien ici aussi pour afficher tout de suite le bon état.
       var m = /[?&]moi=([01])/.exec(location.search), non;
       try { non = m ? m[1] === '1' : localStorage.getItem('concret-editeur') === '1'; } catch (e) { return; }
-      if (non) document.getElementById('ne-pas-compter').innerHTML = 'Vos visites ne sont pas comptées sur cet appareil. <a href="/mentions-legales/?moi=0#ne-pas-compter">Les compter de nouveau</a>';
+      // Visible seulement sur les appareils déjà retirés des comptes (ceux de l'éditeur, par concret2027.fr/?moi=1).
+      if (non) { var e = document.getElementById('ne-pas-compter'); e.hidden = false; e.innerHTML = 'Vos visites ne sont pas comptées sur cet appareil. <a href="/mentions-legales/?moi=0#ne-pas-compter">Les compter de nouveau</a>'; }
     })();
     </script>
     <p><b>Le classement du quiz.</b> Votre navigateur tire au hasard un identifiant, gardé sur votre appareil ; le compteur garde, pour cet identifiant, le score de chaque jour et, si vous en choisissez un, le pseudo affiché dans le classement : ni e-mail, ni nom, ni adresse IP. Le lien « Effacer mes scores et mon pseudo », sous le classement, supprime ces données.</p>
