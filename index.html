@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="774e4ea25005">
+<meta name="concret-version" content="0557071faba5">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -317,6 +317,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .radar .ra { fill: var(--fg); font-size: 13px; font-weight: 600; } .radar .rl { fill: var(--muted); font-size: 10px; }
 .radar-who .chip i, .rtab i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .radar-who .chip[aria-pressed="false"] { opacity: .55; }
+.rtab th.rt-sur { text-align: left; color: var(--fg); font-weight: 700; white-space: nowrap; }
 .pick > summary { cursor: pointer; padding-block: 4px; font-size: 13.5px; font-weight: 600; color: var(--fr); } .pick[open] > summary { margin-bottom: 8px; }
 .rtab { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
 .rtab th { font-size: 11px; font-weight: 600; color: var(--muted); text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
@@ -371,7 +372,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 <noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les résultats et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/" aria-current="page">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
-  <nav class="jump" aria-label="Aller à"><a href="#classement">Présidents</a><a href="#gouvernements">Gouvernements</a><a href="#aujourdhui">Aujourd'hui</a><a href="#pouls">En bref</a><a href="#pouls-semaine">Actualité et agenda</a><a href="#missions">Les missions</a><a href="#reperes">Lois et population</a><a href="#profil">Résultat par mission</a><a href="#fonctionnement">La règle</a><a href="#contact">Contact</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#profil">Mandat par mandat</a><a href="#aujourdhui">Aujourd'hui</a><a href="#pouls">En bref</a><a href="#pouls-semaine">Actualité et agenda</a><a href="#missions">Les missions</a><a href="#reperes">Lois et population</a><a href="#fonctionnement">La règle</a><a href="#contact">Contact</a></nav>
 
   <section class="hero" style="display:grid;gap:12px;margin-top:10px">
     <span class="eyebrow" style="margin:0">Concret</span>
@@ -381,21 +382,16 @@ footer p { margin: 0; } footer a { color: inherit; }
 
 
   
-  <section class="card" id="classement" aria-labelledby="cl-t">
-    <h2 id="cl-t"><span class="eyebrow">Toutes missions confondues</span>La France sous chaque président</h2>
-    <p class="note">Moyenne des résultats sur 20 de chaque mission ; chaque année compte pour le président en poste la plus grande partie de l'année (pour Jacques Chirac, cohabitation comprise, avec le gouvernement de Lionel Jospin de 1997 à 2001). <b>Le trait pointillé, 10 : la France fait aussi bien que la moyenne de l'UE</b> ; au-dessus, mieux ; en dessous, moins bien. Le détail et la méthode sont sur chaque page.</p>
-    <div class="bars" id="t-pres"></div>
-    <p class="note">Touchez une ligne pour voir le résultat par mission. Ce n'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l'UE pendant le mandat.</p>
+  <section class="card" id="profil" aria-labelledby="pr-t">
+    <h2 id="pr-t"><span class="eyebrow">Mandat par mandat</span>La France sous chaque président, mission par mission</h2>
+    <p class="note"><b>Comment lire :</b> chaque pointe est une mission, mesurée sur 20 ; <b>10 : la France fait aussi bien que la moyenne de l'UE</b> (le pointillé) ; plus loin du centre, mieux qu'elle ; plus près, moins bien.</p>
+    <div class="chips" role="group" aria-label="Qui afficher"><button class="chip" id="radar-pres" aria-pressed="true">Présidents</button><button class="chip" id="radar-gov" aria-pressed="false">Gouvernements</button></div>
+    <details class="pick"><summary>Choisir qui comparer</summary><div class="chips radar-who" id="radar-who" role="group" aria-label="Choisir qui comparer"></div></details>
+    <div class="radar" id="radar"></div>
+    <table class="rtab" id="radar-table"></table>
+    <p class="note" id="radar-why"></p>
+    <p class="note">Ce n'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l'UE pendant le mandat. Les missions ne sont pas additionnées : chacune a sa page, sa règle et ses chiffres.</p>
   </section>
-
-  <details class="acc" id="gouvernements">
-    <summary><span class="eyebrow" style="margin:0">Toutes missions confondues</span><span class="acc-h">Les gouvernements</span><span class="acc-t" id="gov-teaser">Le résultat sous chaque Premier ministre depuis 1995, toutes missions confondues</span><span class="acc-cta"></span></summary>
-    <div class="acc-body">
-      <div class="bars" id="t-gov"></div>
-      <p class="note">Sébastien Lecornu sera compté quand les chiffres de 2026 seront publiés. Michel Barnier n'est pas compté à part : chaque année compte pour un seul gouvernement, et 2024 pour Gabriel Attal.</p>
-      <details class="sous"><summary>Résultats provisoires ou sur peu d'années, missions sans résultat</summary><div><p class="note">Un résultat « provisoire » repose sur moins d'une année complète de chiffres et changera à leur publication ; un résultat « sur peu d'années » aussi, parce que les séries commencent pendant le mandat. Dans la moyenne, ces résultats (marqués *) pèsent selon leurs comparaisons : 3 comparaisons sur les 10 d'une année complète comptent pour 0,3 mission. Quand une mission n'a pas encore de chiffres pour un mandat (les séries de l'éducation commencent en 2002, la plupart de celles de la santé entre 2000 et 2011), elle n'entre pas dans la moyenne : touchez une ligne pour voir pourquoi. Éducation : résultats PISA répartis sur les dix années de scolarité des élèves (choix modifiable sur la page Éducation). Classement établi le 22 octobre 2026.</p></div></details>
-    </div>
-  </details>
 
   <section class="card auj" id="aujourdhui" data-partage="non" aria-labelledby="auj-t">
     <span id="auj-t" class="eyebrow" style="margin:0">Aujourd'hui sur Concret</span>
@@ -447,15 +443,6 @@ footer p { margin: 0; } footer a { color: inherit; }
   </section>
 
 
-  <section class="card" id="profil" aria-labelledby="pr-t">
-    <h2 id="pr-t"><span class="eyebrow">Le profil de chacun</span>Le résultat de chaque mission</h2>
-    <p class="note"><b>Comment lire :</b> chaque pointe est une mission, mesurée sur 20 ; plus loin du centre, mieux que la moyenne de l'UE. <b>Pointillé : 10, aussi bien qu'elle.</b></p>
-    <div class="chips" role="group" aria-label="Qui afficher"><button class="chip" id="radar-pres" aria-pressed="true">Présidents</button><button class="chip" id="radar-gov" aria-pressed="false">Gouvernements</button></div>
-    <details class="pick"><summary>Choisir qui comparer</summary><div class="chips radar-who" id="radar-who" role="group" aria-label="Choisir qui comparer"></div></details>
-    <div class="radar" id="radar"></div>
-    <table class="rtab" id="radar-table"></table>
-    <p class="note" id="radar-why"></p>
-  </section>
 
 
   <details class="acc" id="pouls-cote">
@@ -655,10 +642,10 @@ footer p { margin: 0; } footer a { color: inherit; }
     box.innerHTML = h + '</svg>';
     // Les mêmes chiffres en tableau, et la raison quand une mission n'est pas notée.
     var why = [];
-    document.getElementById('radar-table').innerHTML = rows.length ? '<thead><tr><th scope="col"><span class="mn-sr">' + (kind === 'pres' ? 'Président' : 'Gouvernement') + '</span></th>' + MISS.map(function (m) { return '<th title="' + m.l + '"><span class="lg">' + m.l + '</span><span class="ab">' + (ABR[m.k] || m.l) + '</span></th>'; }).join('') + '<th><span class="lg">Moyenne</span><span class="ab">Moy.</span></th></tr></thead><tbody>' + rows.map(function (r) {
+    document.getElementById('radar-table').innerHTML = rows.length ? '<thead><tr><th scope="col" class="rt-sur">Sur 20<span class="mn-sr">, ' + (kind === 'pres' ? 'président' : 'gouvernement') + '</span></th>' + MISS.map(function (m) { return '<th title="' + m.l + '"><span class="lg">' + m.l + '</span><span class="ab">' + (ABR[m.k] || m.l) + '</span></th>'; }).join('') + '</tr></thead><tbody>' + rows.map(function (r) {
       var c = colOf(r);
       MISS.forEach(function (m) { if (r[m.k] == null) why.push(r.n + ', ' + m.l.toLowerCase() + ' sans résultat : ' + m.debut + '.'); else if (r[m.k + '_prov']) why.push(r.n + ', ' + m.l.toLowerCase() + ' * : note ' + (r.y1 >= new Date().getFullYear() - 3 ? 'provisoire, chiffres des dernières années pas encore publiés' : 'fragile, ' + m.debut) + ' (' + r[m.k + '_n'] + ' comparaison' + (r[m.k + '_n'] > 1 ? 's' : '') + ', compte pour ' + fmt(r[m.k + '_w'], 2) + ' dans la moyenne).'); });
-      return '<tr><td><i style="background:' + c + '"></i>' + esc(r.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin')) + '</td>' + MISS.map(function (m) { return '<td>' + (r[m.k] == null ? '—' : fmt(r[m.k]) + (r[m.k + '_prov'] ? ' *' : '')) + '</td>'; }).join('') + '<td><b>' + fmt(r.m) + (r.m_prov ? ' *' : '') + '</b></td></tr>';
+      return '<tr><td><i style="background:' + c + '"></i>' + esc(r.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin')) + '</td>' + MISS.map(function (m) { return '<td>' + (r[m.k] == null ? '—' : fmt(r[m.k]) + (r[m.k + '_prov'] ? ' *' : '')) + '</td>'; }).join('') + '</tr>';
     }).join('') + '</tbody>' : '';
     document.getElementById('radar-why').textContent = why.join(' ');
   }
@@ -691,72 +678,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 })();
 </script>
 <script>
-(function () {
-  // Classement général : recalculé à chaque visite à partir de data.json, avec les règles de commun/notes.js
-  // (les mêmes que sur les pages Finances et Éducation, réglages par défaut). Aucune note n'est saisie à la main.
-  var fmt = function (v) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v); };
-  var cls = function (v) { return v >= 10 ? 'g' : v >= 6 ? 'm' : 'b'; };
-  var MISS = ConcretNotes.MISSIONS;
-  // Peu de comparaisons : « provisoire » si le mandat est récent (chiffres pas encore publiés), « fragile » sinon (les séries commencent pendant ou après le mandat).
-  var recent = function (r) { return r.y1 >= new Date().getFullYear() - 3; };
-  var mot = function (r) { return recent(r) ? 'provisoire' : 'sur peu d\'années'; };
-  function period(r, series) {
-    var y = r.y0 === r.y1 ? String(r.y0) : r.y0 + '-' + r.y1, cur = (series.finances.PRES.concat(series.finances.GOVS)).filter(function (g) { return g.n === r.n && /en cours/.test(g.p || ''); })[0];
-    // « Années notées » : chaque année compte pour celui qui était en poste la plus grande partie de l'année (Hollande : 2012-2016, 2017 va à Macron).
-    return 'années comptées : ' + y + (cur ? ' (en exercice)' : '');
-  }
-  function table(id, rows, series) {
-    var box = document.getElementById(id); box.textContent = '';
-    rows.forEach(function (r) {
-      if (r.m == null) return;
-      var b = document.createElement('button'); b.className = 'br'; b.type = 'button'; b.setAttribute('aria-expanded', 'false');
-      var w = r.m / 20 * 100, inside = w > 22;
-      b.innerHTML = '<span class="nm">' + r.n + '<small>' + period(r, series) + (r.m_prov ? ', note ' + mot(r) : '') + '</small></span><span class="tr"><span class="ten"></span><span class="fl ' + cls(r.m) + '" style="width:' + w + '%"></span><span class="v" style="' + (inside ? 'left:calc(' + w + '% - 2.8em);color:var(--bg)' : 'left:calc(' + w + '% + 6px)') + '">' + fmt(r.m) + '</span></span>';
-      var d = document.createElement('div'); d.className = 'bd'; d.hidden = true;
-      d.innerHTML = MISS.map(function (m) { var v = r[m.k]; return '<a class="' + (v == null ? 'na' : cls(v)) + '" href="' + m.url + '">' + m.l + ' <b>' + (v == null ? 'sans résultat' : fmt(v) + '/20') + '</b>' + (r[m.k + '_prov'] ? ' <small>' + mot(r) + '</small>' : '') + '</a>'; }).join('') + (r.k < MISS.length ? '<span class="note" style="align-self:center">Moyenne sur ' + r.k + ' mission' + (r.k > 1 ? 's' : '') + '.</span>' : '');
-      // Mission sans résultat ou notée sur une partie du mandat : la raison, en une phrase, là où on la voit.
-      var why = MISS.map(function (m) {
-        var a = r[m.k + '_ans'];
-        if (r[m.k] == null) return m.l + ' sans résultat : ' + m.debut + '.';
-        if (r[m.k + '_prov']) return m.l + ' : note ' + mot(r) + ', ' + r[m.k + '_n'] + ' comparaison' + (r[m.k + '_n'] > 1 ? 's' : '') + ' seulement, moins d\'une année complète de chiffres' + (recent(r) ? ' ; elle changera quand les chiffres des dernières années seront publiés' : ' : ' + m.debut) + ' ; elle compte pour ' + fmt(r[m.k + '_w'], 2) + ' mission dans la moyenne.';
-        if (a && (a[0] > r.y0 || a[1] < r.y1)) return m.l + ' compté sur ' + (a[0] === a[1] ? a[0] : a[0] + '-' + a[1]) + ' seulement : ' + (a[0] > r.y0 ? m.debut : 'les chiffres des années suivantes ne sont pas encore publiés') + '.';
-        return null;
-      }).filter(Boolean);
-      if (why.length) d.innerHTML += '<span class="note" style="flex-basis:100%">' + why.join(' ') + '</span>';
-      b.addEventListener('click', function () { var o = d.hidden; d.hidden = !o; b.setAttribute('aria-expanded', o ? 'true' : 'false'); });
-      box.appendChild(b); box.appendChild(d);
-    });
-  }
-  function fail() { ['t-pres', 't-gov'].forEach(function (id) { var el = document.getElementById(id); if (el) el.textContent = 'Les résultats n\'ont pas pu être chargés. Rechargez la page.'; }); }
-  // Raccourci vers un bloc replié : il s'ouvre.
-  document.querySelectorAll('.jump a[href^="#"]').forEach(function (a) { a.addEventListener('click', function () { var el = document.querySelector(a.getAttribute('href')); if (el && el.tagName === 'DETAILS') el.open = true; }); });
-  window.CONCRET_DATA.then(function (d) {
-    if (!d.series) return fail();
-    var c = ConcretNotes.classement(d.series);
-    table('t-pres', c.pres, d.series); table('t-gov', c.gov, d.series);
-    // Deux présidents à moins d'un demi-point l'un de l'autre : l'écart est écrit sous le classement.
-    var pr = c.pres.filter(function (r) { return r.m != null; }), proches = [];
-    for (var ip = 1; ip < pr.length; ip++) if (Math.abs(pr[ip - 1].m - pr[ip].m) < 0.5) proches.push(pr[ip - 1].n + ' (' + fmt(pr[ip - 1].m) + ') et ' + pr[ip].n + ' (' + fmt(pr[ip].m) + ') : ' + fmt(Math.abs(pr[ip - 1].m - pr[ip].m)).replace(/^0,0$/, '0') + ' point d\'écart');
-    var tp = document.getElementById('t-pres'), pe = document.getElementById('t-pres-ecart');
-    if (proches.length && tp) { if (!pe) { pe = document.createElement('p'); pe.className = 'note'; pe.id = 't-pres-ecart'; tp.parentNode.insertBefore(pe, tp.nextSibling); } pe.textContent = 'Écart de moins d\'un demi-point : ' + proches.join(' ; ') + '.'; }
-    // Bloc replié : la ligne d'appel donne le premier du classement.
-    var g1 = c.gov.filter(function (r) { return r.m != null; })[0];
-    // Ex aequo au dixième près : tous nommés.
-    var ex1 = g1 ? c.gov.filter(function (r) { return r.m != null && fmt(r.m) === fmt(g1.m); }).map(function (r) { return r.n; }) : [];
-    if (g1) document.getElementById('gov-teaser').textContent = 'Le plus haut' + (ex1.length > 1 ? ', à égalité : ' + ex1.slice(0, -1).join(', ') + ' et ' + ex1[ex1.length - 1] : ' : ' + g1.n) + ' (' + fmt(g1.m) + '/20) · le résultat sous chaque Premier ministre depuis 1995';
-    // Les gouvernements : les 5 premiers et le gouvernement le plus récent, les autres derrière un bouton.
-    var box = document.getElementById('t-gov'), lignes = Array.prototype.slice.call(box.querySelectorAll('button.br'));
-    var noteG = c.gov.filter(function (r) { return r.m != null; }), der = noteG.reduce(function (a, r, i) { return r.y1 > noteG[a].y1 ? i : a; }, 0);
-    if (lignes.length > 7) {
-      var caches = [];
-      lignes.forEach(function (b, i) { if (i >= 5 && i !== der) { b.hidden = true; caches.push(b); } });
-      var plus = document.createElement('button'); plus.type = 'button'; plus.className = 'plus-gov';
-      plus.textContent = 'Voir les ' + caches.length + ' autres gouvernements';
-      plus.addEventListener('click', function () { caches.forEach(function (b) { b.hidden = false; }); plus.remove(); });
-      box.appendChild(plus);
-    }
-  }).catch(fail);
-})();
+// Raccourci vers un bloc replié : il s'ouvre.
+document.querySelectorAll('.jump a[href^="#"]').forEach(function (a) { a.addEventListener('click', function () { var el = document.querySelector(a.getAttribute('href')); if (el && el.tagName === 'DETAILS') el.open = true; }); });
 </script>
 <script>(function () { var n = document.querySelector('.site'); if (!n) return; var f = function () { document.documentElement.style.setProperty('--navh', n.offsetHeight + 'px'); }; f(); if (window.ResizeObserver) new ResizeObserver(f).observe(n); else addEventListener('resize', f); })();</script>
 <script>

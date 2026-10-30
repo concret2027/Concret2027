@@ -75,9 +75,11 @@ function carte(o) {
   }
   var BJ = path.join(ROOT, 'donnees', 'bref.json'), bj = JSON.stringify({ missions: bref }, null, 1) + '\n';
   if (!fs.existsSync(BJ) || fs.readFileSync(BJ, 'utf8') !== bj) fs.writeFileSync(BJ, bj);
-  // Accueil (et mentions légales) : le classement général, toutes missions confondues (même calcul que la page).
-  var S = JSON.parse(fs.readFileSync(path.join(ROOT, 'data.json'), 'utf8')).series, cg = NOTES.classement(S).pres.slice().sort(function (a, c) { return a.y0 - c.y0; });
-  var gen = { titre: 'La France mesurée, mandat par mandat', sous: 'Finances, éducation, santé, sécurité et justice, défense, vie des Français : face à la moyenne de l\'UE, depuis 1995', pres: cg.map(function (x) { return { n: court(x.n), v: x.m }; }), pied: 'Toutes missions confondues, sur 20 · ' + NOTES.MISSIONS.length + ' missions', adresse: 'concret2027.fr' };
+  // Accueil (et mentions légales) : le nombre d'indicateurs où la France fait mieux que la moyenne de l'UE, toutes pages (somme des
+  // blocs « En bref », comme « Le pouls de la France ») ; aucune moyenne des missions par président, qui se lirait comme un classement.
+  var S = JSON.parse(fs.readFileSync(path.join(ROOT, 'data.json'), 'utf8')).series;
+  var nTot = 0, tTot = 0; Object.keys(bref).forEach(function (k) { nTot += bref[k].n; tTot += bref[k].total; });
+  var gen = { titre: 'La France mesurée, mandat par mandat', sous: 'Six missions de l\'État face à la moyenne de l\'UE, depuis 1995', n: [String(nTot), '/' + tTot], nt: 'indicateurs où la France fait mieux que la moyenne de l\'UE (dernier chiffre connu)', pied: NOTES.MISSIONS.length + ' missions, chacune avec sa page, sa règle et ses chiffres', adresse: 'concret2027.fr' };
   cartes.push(Object.assign({ f: 'accueil' }, gen));
   // Baromètre : le nombre de jours avant le premier tour (date lue dans l'agenda du baromètre), refait chaque jour.
   var D = JSON.parse(fs.readFileSync(path.join(ROOT, 'data.json'), 'utf8')).datasets, t1 = (D.agenda_barometre || []).filter(function (a) { return /premier tour/i.test(a.evenement); })[0];

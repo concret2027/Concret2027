@@ -12,8 +12,9 @@ Chaque page pose une question par jour (sur la page, dans le quiz et dans le com
     revient pas tant qu'il en reste une jamais posée. Les questions écrites à la main encore jamais posées passent en premier
     (une tous les trois jours au plus).
   - series.<page>.QUIZ est la fenêtre des 31 jours à venir : la question du jour d est en position d % 31. La question
-    d'aujourd'hui ne change pas d'un passage à l'autre ; jamais la même courbe moins de six jours après, et si possible pas
-    deux fois de suite la même forme de question.
+    d'aujourd'hui ne change pas d'un passage à l'autre ; les sujets (courbes, ou courbes d'un même sujet comme les
+    obligations de quitter le territoire) à tour de rôle, le moins récemment posé d'abord, jamais le même moins de six jours
+    après, et si possible pas deux fois de suite la même forme de question.
 Lancé par outils/controle.js verifier, avant la validation. Jamais de saisie à la main dans QUIZ.
   python3 outils/quiz_auto.py                                   compare
   python3 outils/quiz_auto.py --ecrire                          écrit data.json et donnees/quiz_plan.json
@@ -260,6 +261,18 @@ def fabriquer(x, P, nom):
     return Q
 
 
+# Un sujet = une courbe ; les courbes d'un même sujet comptent ensemble (les obligations de quitter le territoire : celles
+# délivrées et les départs), pour ne pas revenir trop souvent sur le même sujet.
+SUJETS = [(re.compile(r'quitter le territoire', re.I), 'oqtf')]
+
+
+def sujet(q):
+    if q.get('forme') == 'main': return 'main|' + q.get('k', q['q'])
+    for rx, nom in SUJETS:
+        if rx.search(q['q'].split(':')[0]): return nom
+    return q.get('v') or q['q']
+
+
 def jour_idx():
     d = datetime.now(ZoneInfo('Europe/Paris')).date() if ZoneInfo else date.today()
     return (d - date(2026, 1, 1)).days
@@ -330,24 +343,33 @@ def main():
         ordre = sorted(pool, key=lambda k: (0 if k in mains else max(0, dern - an(k)) // 5 + 1, h(pg + k)))
         # Les formes de question à tour de rôle.
         CYCLE = ['chiffre', 'haut', 'duel', 'evol', 'bas', 'dessus', 'proche', 'annee']
+        # Les sujets à tour de rôle : le sujet posé il y a le plus longtemps passe en premier, pour qu'une courbe riche en
+        # questions (beaucoup de pays, beaucoup d'années) ne revienne pas plus souvent que les autres.
+        dernier = {}
+        for k, j in poses.items():
+            if k in pool: dernier[sujet(pool[k])] = max(dernier.get(sujet(pool[k]), -10**6), j)
+        for n, k in enumerate(choisis): dernier[sujet(pool[k])] = idx + n
         while len(choisis) < L:
             prec = [pool[k] for k in choisis[-(ECART_COURBE - 1):]]
-            vs = {q['v'] for q in prec}
+            vs = {sujet(q) for q in prec}
             forme0 = prec[-1]['forme'] if prec else None
             libre = lambda k: k not in poses and k not in choisis
             cand = None
             if not any(pool[k]['forme'] == 'main' for k in choisis[-2:]):
-                cand = next((k for k in ordre if k in mains and libre(k) and pool[k].get('v') not in vs), None)
+                cand = next((k for k in ordre if k in mains and libre(k) and sujet(pool[k]) not in vs), None)
             # Décalé d'une page à l'autre : le même jour, les pages ne posent pas toutes la même forme de question.
             voulue = CYCLE[(len(choisis) + 3 * PAGES.index(pg)) % len(CYCLE)]
-            cand = cand or next((k for k in ordre if libre(k) and pool[k]['v'] not in vs and pool[k]['forme'] == voulue), None) \
-                or next((k for k in ordre if libre(k) and pool[k]['v'] not in vs and pool[k]['forme'] != forme0), None) \
-                or next((k for k in ordre if libre(k) and pool[k]['v'] not in vs), None) \
-                or next((k for k in ordre if libre(k)), None)
+            if not cand:
+                sujets = sorted({sujet(pool[k]) for k in ordre if libre(k) and sujet(pool[k]) not in vs}, key=lambda x: (dernier.get(x, -10**6), h(pg + x)))
+                for sj in sujets[:1]:
+                    du = [k for k in ordre if libre(k) and sujet(pool[k]) == sj]
+                    cand = next((k for k in du if pool[k]['forme'] == voulue), None) or next((k for k in du if pool[k]['forme'] != forme0), None) or du[0]
+            cand = cand or next((k for k in ordre if libre(k)), None)
             if not cand:
                 # Tout a été posé : la question posée il y a le plus longtemps.
                 cand = min((k for k in pool if k not in choisis), key=lambda k: poses.get(k, -1))
             choisis.append(cand)
+            dernier[sujet(pool[cand])] = idx + len(choisis) - 1
         etat['jours'] = {str(idx + n): k for n, k in enumerate(choisis)}
         poses.setdefault(choisis[0], idx)
         fen = [None] * L

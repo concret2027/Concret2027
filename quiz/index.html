@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="774e4ea25005">
+<meta name="concret-version" content="0557071faba5">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -591,8 +591,12 @@ footer p { margin: 0; } footer a { color: inherit; }
     // Les missions à tour de rôle : la liste de chaque mission mélangée une fois pour toutes, puis une mission après l'autre.
     var parM = M.map(function (m, t) { return melange(C3.filter(function (c) { return c[1] === t; }), alea(7919 + t)); }), C3b = [];
     for (var n3 = 0; n3 < Math.max.apply(null, parM.map(function (l) { return l.length; }).concat(0)); n3++) parM.forEach(function (l) { if (l[n3]) C3b.push(l[n3]); });
-    var a7 = idx % 7 === 0 || !C3b.length, ord1 = a7 ? melange(C1, alea(7907)) : C3b, q1 = null;
-    for (var k = 0, i1 = a7 ? tour(Math.floor(idx / 7), ord1.length) : (idx - Math.floor(idx / 7) - 1) % ord1.length; k < ord1.length && !q1; k++) { var c1 = ord1[(i1 + k) % ord1.length]; q1 = Q1[c1[0]](c1[1], c1[2] && melange(c1[2], r)); }
+    var a7 = idx % 7 === 0 || !C3b.length, ord1 = a7 ? melange(C1, alea(7907)) : C3b, q1 = null, i0 = a7 ? tour(Math.floor(idx / 7), ord1.length) : (idx - Math.floor(idx / 7) - 1) % ord1.length;
+    // À partir du 31 octobre 2026 (jour 303), plus de question « quel président / quel gouvernement a le résultat le plus haut » :
+    // le site ne classe pas les personnes. Reste, chaque jour, la question « sur quelle page tel président a-t-il son résultat le
+    // plus haut ? » (b). Les jours d'avant gardent leurs questions (scores déjà enregistrés).
+    if (idx >= 303) { ord1 = melange(C1.filter(function (c) { return c[0] === 1; }), alea(7907)); i0 = tour(ord1.length); }
+    for (var k = 0, i1 = i0; k < ord1.length && !q1; k++) { var c1 = ord1[(i1 + k) % ord1.length]; q1 = Q1[c1[0]](c1[1], c1[2] && melange(c1[2], r)); }
     var ord = melange(IND, alea(104729)), C2 = []; ord.forEach(function (x, j) { Q2.forEach(function (fn, f) { if (fn(x)) C2.push([f, j]); }); });
     var q2 = null; for (k = 0, i1 = tour(C2.length); k < C2.length && !q2; k++) { var c2 = C2[(i1 + k) % C2.length]; q2 = Q2[c2[0]](ord[c2[1]]); }
     [q1, q2].forEach(function (q) { if (q) { q.page = 'notes'; out.push(q); } });
