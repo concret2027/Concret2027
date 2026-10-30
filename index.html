@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="29fa983f5e63">
+<meta name="concret-version" content="2e7c4c3c2945">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -317,10 +317,12 @@ footer p { margin: 0; } footer a { color: inherit; }
 .radar .ra { fill: var(--fg); font-size: 13px; font-weight: 600; } .radar .rl { fill: var(--muted); font-size: 10px; }
 .radar { position: relative; } @media (max-width: 520px) { .radar { margin-inline: -14px; } .radar .ra { font-size: 12px; } }
 .radar .rv { font-size: 10px; font-weight: 500; paint-order: stroke; stroke: var(--panel, var(--bg)); stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
-.radar .rhit { fill: transparent; cursor: pointer; }
 .radar-leg { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; margin: 2px 0 10px; font-size: 12.5px; color: var(--muted); }
 .radar-leg span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; } .radar-leg i { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
-.radar-bulle { position: absolute; z-index: 3; pointer-events: none; background: var(--fg); color: var(--bg); font-size: 13px; line-height: 1.3; padding: 6px 9px; border-radius: 8px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); }
+.radar-bulle { position: absolute; z-index: 3; pointer-events: none; background: var(--panel, var(--bg)); color: var(--fg); border: 1px solid var(--line); box-shadow: 0 4px 14px rgba(0,0,0,.14); font-size: 13px; line-height: 1.35; padding: 8px 10px; border-radius: 10px; display: grid; gap: 2px; min-width: 150px; }
+.radar-bulle b { font-size: 13.5px; margin-bottom: 2px; } .radar-bulle span { display: flex; align-items: center; gap: 6px; } .radar-bulle span i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.radar-bulle em { font-style: normal; font-weight: 700; margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; } .radar-bulle small { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+.radar svg { touch-action: pan-y; }
 .radar-who .chip i, .rtab i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .radar-who .chip[aria-pressed="false"] { opacity: .55; }
 #radar-plus { background: var(--fr); border-color: var(--fr); color: var(--bg); } /* bleu : un bouton qu'on reconnaît */
@@ -649,8 +651,9 @@ footer p { margin: 0; } footer a { color: inherit; }
       ok.forEach(function (p) { h += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="4" fill="' + c + '"/>'; });
     });
     // Le chiffre de chaque point, en petit, à côté de lui (de part et d'autre de l'axe, décalé s'il en touche un autre) ;
-    // et une zone à toucher (ou survoler) par point, qui affiche la bulle « Nom · Mission : 12,1 sur 20 ».
-    var poses = [], hits = '';
+    // Toucher (ou survoler) la toile près d'une mission affiche, comme sur les courbes des sondages, le chiffre de chacun pour cette
+    // mission, dans l'ordre des mandats, et souligne l'axe.
+    var poses = [];
     MISS.forEach(function (m, i) {
       var a = ang(i), px = -Math.sin(a), py = Math.cos(a), ux = Math.cos(a), uy = Math.sin(a);
       rows.filter(function (r) { return r[m.k] != null; }).sort(function (x, y) { return x[m.k] - y[m.k]; }).forEach(function (r, k) {
@@ -659,20 +662,29 @@ footer p { margin: 0; } footer a { color: inherit; }
         poses.push([x, y]);
         var anc = px * sg > 0.35 ? 'start' : px * sg < -0.35 ? 'end' : 'middle';
         h += '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + anc + '" class="rv" fill="' + colOf(r) + '">' + fmt(r[m.k]) + '</text>';
-        hits += '<circle class="rhit" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="13" data-b="' + esc(r.n + ' · ' + m.l + ' : ' + fmt(r[m.k]) + ' sur 20').replace(/"/g, '&quot;') + '"/>';
       });
     });
-    box.innerHTML = h + hits + '</svg>';
+    box.innerHTML = h + '</svg>';
     // Légende : la couleur de chaque président ou gouvernement affiché (le tableau dessous est replié).
     document.getElementById('radar-leg').innerHTML = rows.map(function (r) { return '<span><i style="background:' + colOf(r) + '"></i>' + esc(r.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin')) + '</span>'; }).join('');
     var bulle = document.createElement('div'); bulle.className = 'radar-bulle'; bulle.hidden = true; box.appendChild(bulle);
+    var axe = document.createElementNS('http://www.w3.org/2000/svg', 'line'); axe.setAttribute('stroke', 'var(--fg)'); axe.setAttribute('stroke-width', '1.5'); axe.style.display = 'none';
+    var sv = box.querySelector('svg'); sv.insertBefore(axe, sv.firstChild.nextSibling);
+    var cache = function () { bulle.hidden = true; axe.style.display = 'none'; };
     var montre = function (e) {
-      var c = e.target.closest && e.target.closest('.rhit'); if (!c) { bulle.hidden = true; return; }
-      var sv = box.querySelector('svg'), k = sv.getBoundingClientRect().width / W, bb = box.getBoundingClientRect(), sb = sv.getBoundingClientRect();
-      bulle.textContent = c.getAttribute('data-b'); bulle.hidden = false;
-      bulle.style.left = Math.max(80, Math.min(bb.width - 80, sb.left - bb.left + c.cx.baseVal.value * k)) + 'px'; bulle.style.top = (sb.top - bb.top + c.cy.baseVal.value * k) + 'px';
+      var sb = sv.getBoundingClientRect(), bb = box.getBoundingClientRect(), k = sb.width / W;
+      var x = (e.clientX - sb.left) / k - cx, y = (e.clientY - sb.top) / k - cy;
+      if (Math.sqrt(x * x + y * y) > R + 60 || !rows.length) return cache();
+      var i = ((Math.round((Math.atan2(y, x) + Math.PI / 2) / (2 * Math.PI / n)) % n) + n) % n, m = MISS[i], e1 = pt(i, S);
+      axe.setAttribute('x1', cx); axe.setAttribute('y1', cy); axe.setAttribute('x2', e1[0]); axe.setAttribute('y2', e1[1]); axe.style.display = '';
+      bulle.innerHTML = '<b>' + esc(m.l) + '</b>' + rows.map(function (r) { return '<span><i style="background:' + colOf(r) + '"></i>' + esc(r.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin')) + '<em>' + (r[m.k] == null ? 'sans résultat' : fmt(r[m.k]) + (r[m.k + '_prov'] ? ' *' : '')) + '</em></span>'; }).join('') + '<small>sur 20 · 10 = moyenne de l\'UE</small>';
+      bulle.hidden = false;
+      // La bulle de l'autre côté du centre, pour laisser voir l'axe choisi.
+      var bx = sb.left - bb.left + (cx - (e1[0] - cx) * .5) * k, by = sb.top - bb.top + (cy - (e1[1] - cy) * .5) * k, bw = bulle.offsetWidth, bh = bulle.offsetHeight;
+      bulle.style.left = Math.max(4, Math.min(bb.width - bw - 4, bx - bw / 2)) + 'px';
+      bulle.style.top = Math.max(0, Math.min(bb.height - bh, by - bh / 2)) + 'px';
     };
-    box.onpointerdown = montre; box.onpointermove = function (e) { if (e.pointerType === 'mouse') montre(e); }; box.onpointerleave = function () { bulle.hidden = true; };
+    box.onpointerdown = montre; box.onpointermove = function (e) { if (e.pointerType === 'mouse') montre(e); }; box.onpointerleave = cache;
     // Les mêmes chiffres en tableau, et la raison quand une mission n'est pas notée.
     var why = [];
     document.getElementById('radar-table').innerHTML = rows.length ? '<thead><tr><th scope="col" class="rt-sur">Sur 20<span class="mn-sr">, ' + (kind === 'pres' ? 'président' : 'gouvernement') + '</span></th>' + MISS.map(function (m) { return '<th title="' + m.l + '"><span class="lg">' + m.l + '</span><span class="ab">' + (ABR[m.k] || m.l) + '</span></th>'; }).join('') + '</tr></thead><tbody>' + rows.map(function (r) {
