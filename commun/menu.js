@@ -415,8 +415,22 @@
     if (location.hostname !== 'concret2027.fr' || vuesFaites[quoi] || !window.fetch) return; vuesFaites[quoi] = 1;
     try { fetch(VUES + encodeURIComponent('quiz-vue-' + pageNom + (quoi === 'page' ? '' : '-' + quoi)), { method: 'POST', cache: 'no-store', keepalive: true }).catch(function () {}); } catch (e) {}
   }
+  // Appareils : le navigateur garde une marque à la première visite du site (et le jour de la dernière visite comptée) ; le compteur
+  // reçoit seulement « un appareil de plus » (depuis le début, et ce jour-là). Rien qui identifie la personne ; deux appareils d'une
+  // même personne comptent deux fois, une navigation privée aussi.
+  function compterAppareil() {
+    if (location.hostname !== 'concret2027.fr' || !window.fetch) return;
+    var jour = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }), vu, dernier;
+    try { vu = localStorage.getItem('concret-appareil'); dernier = localStorage.getItem('concret-appareil-jour'); } catch (e) { return; }
+    var cles = [];
+    if (!vu) cles.push('quiz-vue-appareils');
+    if (dernier !== jour) cles.push('quiz-vue-appareils-' + jour);
+    if (!cles.length) return;
+    try { localStorage.setItem('concret-appareil', vu || jour); localStorage.setItem('concret-appareil-jour', jour); } catch (e) { return; }
+    cles.forEach(function (k) { try { fetch(VUES + encodeURIComponent(k), { method: 'POST', cache: 'no-store', keepalive: true }).catch(function () {}); } catch (e) {} });
+  }
   function compterOuvertures() {
-    compter('page');
+    compter('page'); compterAppareil();
     document.addEventListener('toggle', function (e) {
       var d = e.target; if (!d || !d.open || !d.classList) return;
       if (d.classList.contains('acc-fixe')) return; // ouvert d'office, pas une ouverture du visiteur

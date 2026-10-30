@@ -28,5 +28,12 @@ var pc = function (n, d) { return d ? Math.round(100 * n / d) + ' %' : '—'; };
     lignes.push('  ' + p + ' : ' + v[0] + ' visite' + (v[0] > 1 ? 's' : '') + (det.length ? ' ; ' + det.join(', ') : ' ; rien ouvert'));
   }
   if (lignes.length === 1) lignes.push('  aucune visite comptée pour l\'instant.');
+  // Appareils (commun/menu.js) : depuis le début, aujourd'hui, hier et les sept derniers jours (heure de Paris).
+  var j = function (n) { return new Date(Date.now() - n * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }); };
+  var a = await Promise.all(['appareils'].concat([0, 1, 2, 3, 4, 5, 6].map(function (n) { return 'appareils-' + j(n); })).map(lire));
+  if (a[0] != null) {
+    var sept = a.slice(1).reduce(function (t, v) { return t + (v || 0); }, 0);
+    lignes.unshift('Appareils différents sur le site (pour l\'éditeur ; comptés depuis le 30 octobre 2026) : ' + a[0] + ' depuis le début · aujourd\'hui ' + (a[1] || 0) + ' · hier ' + (a[2] || 0) + ' · 7 derniers jours, total des appareils de chaque jour ' + sept + '.');
+  }
   console.log(lignes.join('\n'));
 })();
