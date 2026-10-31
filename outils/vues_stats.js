@@ -43,6 +43,9 @@ var pc = function (n, d) { return d ? Math.round(100 * n / d) + ' %' : '—'; };
     var sept = a.slice(1).reduce(function (t, v) { return t + (v || 0); }, 0);
     lignes.unshift('Appareils différents sur le site (pour l\'éditeur ; comptés depuis le 30 octobre 2026) : ' + a[0] + ' depuis le début · aujourd\'hui ' + (a[1] || 0) + ' · hier ' + (a[2] || 0) + ' · 7 derniers jours, total des appareils de chaque jour ' + sept + '.');
   }
+  // Quiz : nouveaux joueurs et joueurs revenus (quiz/index.html, depuis le 31 octobre 2026 ; appareils de l'éditeur exclus).
+  var jq = await Promise.all([0, 1].map(function (n) { return Promise.all([lire('joueurs-nouveaux-' + j(n)), lire('joueurs-revenus-' + j(n))]); }));
+  if (jq[0][0] != null) lignes.push('Quiz terminé (appareils, éditeur exclu) : aujourd\'hui ' + (jq[0][0] || 0) + ' nouveau' + ((jq[0][0] || 0) > 1 ? 'x' : '') + ' joueur' + ((jq[0][0] || 0) > 1 ? 's' : '') + ', ' + (jq[0][1] || 0) + ' revenu' + ((jq[0][1] || 0) > 1 ? 's' : '') + ' · hier ' + (jq[1][0] || 0) + ' et ' + (jq[1][1] || 0) + ' (comptés depuis le 31 octobre 2026).');
   // Parcours (commun/menu.js, depuis le 30 octobre 2026) : passages d'une page à l'autre, temps passé, durée et longueur des visites.
   var TOUTES = PAGES.concat(['contact', 'mentions-legales', 'application']);
   var nomP = function (p) { return p === 'entree' ? 'arrivée sur le site' : p; };

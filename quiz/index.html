@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="7f7b81d9db02">
+<meta name="concret-version" content="0271794c0056">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -706,6 +706,17 @@ footer p { margin: 0; } footer a { color: inherit; }
       rang.textContent = 'Classement du jour en cours de chargement…';
       // Une seule requête : le score de la personne est compté (sauf s'il l'a déjà été), et le compteur renvoie le nombre de personnes à chaque score.
       var prom = deja ? ConcretQuiz.compteur('get', cle, total + 1) : ConcretQuiz.compteur('hit', cle, total + 1, ok).then(function (v) { try { localStorage.setItem(cleCompte, String(ok)); } catch (e) {} return v; });
+      // Nouveaux joueurs et joueurs revenus du jour, pour l'éditeur seulement (node outils/vues_stats.js, jamais affiché) :
+      // « un de plus », sans rien qui identifie la personne. Revenu = cet appareil a déjà fini un quiz un autre jour
+      // (historique gardé dans le navigateur, quiz-histo-<date>). Les appareils de l'éditeur (?moi=1) ne sont pas comptés.
+      if (!deja) {
+        var ed = false, avant = false;
+        try {
+          ed = localStorage.getItem('concret-editeur') === '1';
+          for (var li = 0; li < localStorage.length; li++) { var lk = localStorage.key(li); if (/^quiz-histo-\d{4}-\d{2}-\d{2}$/.test(lk || '') && lk !== 'quiz-histo-' + iso) { avant = true; break; } }
+        } catch (e) {}
+        if (!ed) try { ConcretQuiz.compteur('hit', 'quiz-vue-joueurs-' + (avant ? 'revenus' : 'nouveaux') + '-' + iso, 1, 0).catch(function () {}); } catch (e) {}
+      }
       prom.then(function (n) {
         var tous = n.reduce(function (a, b) { return a + b; }, 0);
         if (!tous) { rang.textContent = 'Le classement du jour s\'affiche quand vous finissez le quiz sur cet appareil.'; return; }
