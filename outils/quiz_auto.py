@@ -452,7 +452,10 @@ def main():
             if not any(pool[k]['forme'] == 'main' for k in choisis[-2:]):
                 cand = next((k for k in ordre if k in mains and libre(k) and sujet(pool[k]) not in vs), None)
             # Décalé d'une page à l'autre : le même jour, les pages ne posent pas toutes la même forme de question.
-            voulue = CYCLE[(len(choisis) + 3 * PAGES.index(pg)) % len(CYCLE)]
+            # La forme du jour suit la date (et non la place dans la fenêtre, qui repart chaque jour) : deux jours de suite,
+            # jamais la même forme de question sur une page.
+            voulue = CYCLE[(jour + 3 * PAGES.index(pg)) % len(CYCLE)]
+            if not prec and str(idx - 1) in jours and jours[str(idx - 1)] in pool: forme0 = pool[jours[str(idx - 1)]]['forme']
             if not cand:
                 # D'abord un sujet pas posé ces derniers jours avec une question vraiment nouvelle ; une page qui a peu de sujets
                 # (Finances : trois courbes) revient plus vite sur un sujet, mais jamais sur la même question.
