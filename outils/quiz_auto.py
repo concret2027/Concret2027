@@ -36,7 +36,7 @@ ECART_FAMILLE = 120  # jours avant de reposer la même question pour une autre a
 ECART_FORME = 30  # jours avant de reposer la même forme de question sur la même courbe (autre année, autre réponse)
 PAGES = ['finances', 'education', 'sante', 'securite', 'defense', 'vie', 'demographie']
 # Courbes dont l'ancre sur la page n'est pas « ch-<clé> ».
-ANCRE = {'demographie.nes_hue': 'ch-neshue'}
+ANCRE = {'demographie.nes_hue': 'ch-neshue', 'demographie.M.departs': 'ch-oq', 'demographie.M.oqtf': 'ch-oqtf'}
 # Finances et Éducation : leurs séries n'ont ni intitulé ni années dans data.json (années fixes, comme sur leurs pages).
 # Dette, dépense et prélèvements ; les autres courbes et repères de la page sont ajoutés dans indicateurs().
 FIN = [('dette', 'Dette publique', '% du PIB', None), ('dep', 'Dépense publique', '% du PIB', 'dépense de toutes les administrations publiques (État, collectivités, Sécurité sociale)'),
@@ -65,9 +65,12 @@ def h(t):
 
 
 # Intitulés réécrits pour une question, quand « intitulé, unité » ne se lit pas (l'unité est une phrase entière).
-TITRE_QUIZ = {'vie.s80': 'Écart de revenu entre les plus aisés et les plus modestes'}
+TITRE_QUIZ = {'vie.s80': 'Écart de revenu entre les plus aisés et les plus modestes',
+              'sante.secu': "Solde de l'Assurance maladie (négatif : déficit), % du PIB",
+              'vie.rev': 'Revenu des ménages par habitant, hors inflation (100 en 2008)'}
 # Et l'explication de son chiffre, affichée sous la question.
-D_QUIZ = {'vie.s80': 'Le chiffre dit combien de fois plus de revenu ont les 20 % les plus aisés que les 20 % les plus modestes (4 = quatre fois plus).'}
+D_QUIZ = {'vie.rev': "Un indice : 100 = le niveau de 2008 dans chaque pays ; 110 = 10 % de plus qu'en 2008, hors inflation.",
+          'vie.s80': 'Le chiffre dit combien de fois plus de revenu ont les 20 % les plus aisés que les 20 % les plus modestes (4 = quatre fois plus).'}
 
 
 def titre(x):
@@ -135,24 +138,41 @@ def indicateurs(S, pg, html):
                 out.append(base(cle='finances.Y10', l='Taux d\'emprunt de l\'État à 10 ans, moyenne de l\'année', u='%', dec=2, src='Eurostat', y=an(1994, len(Y['fr'])),
                                 fr=Y['fr'], de=Y.get('de') or [], es=Y.get('es') or [], v='rate-num'))
         if pg == 'education':
+            SP, AR, EQ = ser.get('SP') or {}, ser.get('ARWU') or {}, ser.get('EQ') or {}
+            if SP.get('fr'):
+                out.append(base(cle='education.dep', l="Dépense d'éducation", u='% du PIB', y=list(range(2002, 2002 + len(SP['fr']))), fr=SP['fr'], ue=SP.get('eu') or [],
+                                de=SP.get('de') or [], es=SP.get('es') or [], v='ch-dep', ex="dépense publique pour l'éducation, de l'école maternelle à l'université"))
+            if AR.get('fr') and AR.get('y'):
+                out.append(base(cle='education.arwu', l='Universités dans le top 100 mondial (classement de Shanghai)', u='', dec=0, src='Classement de Shanghai',
+                                y=AR['y'], fr=AR['fr'], de=AR.get('de') or [], es=AR.get('es') or [], v='ch-arwu'))
+            if EQ.get('fr') and EQ.get('y'):
+                out.append(base(cle='education.eq', l="Écart de score PISA entre élèves favorisés et défavorisés", u='points', dec=0, src='OCDE', y=EQ['y'], fr=EQ['fr'],
+                                v='ch-eq', ex="écart de score en mathématiques entre les élèves du quart le plus favorisé et ceux du quart le plus défavorisé"))
             for k, l, u, v in PISA:
                 c = (ser.get('PI') or {}).get(k)
                 if c and c.get('y') and c.get('fr'):
                     out.append(base(cle='education.PI.' + k, l=l, u=u, y=c['y'], fr=c['fr'], ue=c.get('ue_calc') or [], de=c.get('de') or [], es=c.get('es') or [],
                                     dec=0, src='OCDE', v=v))
         return out
-    for groupe, pre in (('C', ''), ('AFF', 'a-')):
+    for groupe, pre in (('C', ''), ('AFF', 'a-'), ('M', 'M.')):
         for k, c in (ser.get(groupe) or {}).items():
-            if not c.get('y') or not c.get('fr') or c.get('regle') in ('composite', 'croissance', 'propre'):
+            if c.get('regle') == 'composite':
+                # Un programme (vaccins, dépistages) : une courbe par vaccin ou dépistage, lien vers la courbe du programme.
+                for sk, sc in (c.get('sous') or {}).items():
+                    if sc.get('y') and sc.get('fr'):
+                        out.append(base(cle=pg + '.' + k + '-' + sk, l=sc.get('l'), u=sc.get('unite', ''), ex=sc.get('ex'), dec=int(sc.get('dec', 1)), src=court(sc.get('sc') or sc.get('source')),
+                                        y=sc['y'], fr=sc['fr'], ue=sc.get('ue') or sc.get('ue_calc') or [], de=sc.get('de') or [], es=sc.get('es') or [], v='ch-' + k))
                 continue
-            if pre:
+            if not c.get('y') or not c.get('fr'):
+                continue
+            if pre == 'a-':
                 k = AFFN.get(k, k)
                 if "'ch-a-" + k + "'" not in html:
                     continue
             br = c.get('br') or {}
             out.append(base(cle=pg + '.' + pre + k, l=c.get('l'), u=c.get('unite', ''), ex=c.get('ex'), dec=int(c.get('dec', 1)), src=court(c.get('source')),
                             y=c['y'], fr=c['fr'], ue=c.get('ue') or c.get('ue_calc') or [], de=c.get('de') or [], es=c.get('es') or [],
-                            est=c.get('est') or {}, prov=c.get('prov') or {}, br=br if isinstance(br, dict) else {str(b): 1 for b in br}, v=ANCRE.get(pg + '.' + k, 'ch-' + pre + k)))
+                            est=c.get('est') or {}, prov=c.get('prov') or {}, br=br if isinstance(br, dict) else {str(b): 1 for b in br}, v=ANCRE.get(pg + '.' + pre + k, 'ch-' + ('' if pre == 'M.' else pre) + k)))
     return out
 
 
@@ -198,7 +218,7 @@ def fabriquer(x, P, nom):
         #    assez, sinon des écarts fixes.
         a = abs(f)
         if a:
-            d = 0 if a >= 10 else 1 if a >= 1 else 2
+            d = 0 if a >= 10 or x['dec'] == 0 else 1 if a >= 1 else 2  # un nombre entier (universités, points) reste entier
             r = lambda v: round(v, d)
             pct = x['u'].startswith('%') and 'PIB' not in x['u']
             ecart = max(0.12 * a, 10 ** -d)
@@ -315,6 +335,7 @@ SUJETS = [(re.compile(r'quitter le territoire', re.I), 'oqtf'),
 
 def sujet(q):
     if q.get('forme') == 'main': return 'main|' + q.get('k', q['q'])
+    if str(q.get('k', '')).startswith('demographie.M.'): return 'migrations'
     for rx, nom in SUJETS:
         if rx.search(q['q'].split(':')[0]): return nom
     return q.get('v') or q['q']
