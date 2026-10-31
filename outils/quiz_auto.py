@@ -32,6 +32,7 @@ UE = ['BE', 'BG', 'CZ', 'DK', 'DE', 'EE', 'IE', 'EL', 'ES', 'FR', 'HR', 'IT', 'C
 MIN = 20          # pays de l'UE avec un chiffre, pour une question sur les pays
 L = 31            # longueur de la fenêtre QUIZ
 ECART_COURBE = 6  # jours avant de revenir sur la même courbe
+ECART_FAMILLE = 120  # jours avant de reposer la même question pour une autre année avec la même réponse
 PAGES = ['finances', 'education', 'sante', 'securite', 'defense', 'vie', 'demographie']
 # Courbes dont l'ancre sur la page n'est pas « ch-<clé> ».
 ANCRE = {'demographie.nes_hue': 'ch-neshue'}
@@ -288,6 +289,12 @@ def sujet(q):
     return q.get('v') or q['q']
 
 
+def famille(q):
+    """La même question pour le joueur : même courbe, même forme, même bonne réponse (l'année change seule)."""
+    if q.get('forme') == 'main': return 'main|' + q.get('k', q['q'])
+    return '|'.join([str(q.get('v')), str(q.get('forme')), str(q['o'][q['a']]) if q.get('o') else ''])
+
+
 def jour_idx():
     d = datetime.now(ZoneInfo('Europe/Paris')).date() if ZoneInfo else date.today()
     return (d - date(2026, 1, 1)).days
@@ -368,20 +375,31 @@ def main():
         for k, j in poses.items():
             if k in pool: dernier[sujet(pool[k])] = max(dernier.get(sujet(pool[k]), -10**6), j)
         for n, k in enumerate(choisis): dernier[sujet(pool[k])] = idx + n
+        fam_vue = {}
+        for k, j in poses.items():
+            if k in pool: fam_vue[famille(pool[k])] = max(fam_vue.get(famille(pool[k]), -10**6), j)
+        for n, k in enumerate(choisis): fam_vue[famille(pool[k])] = idx + n
         while len(choisis) < L:
             prec = [pool[k] for k in choisis[-(ECART_COURBE - 1):]]
             vs = {sujet(q) for q in prec}
             forme0 = prec[-1]['forme'] if prec else None
             libre = lambda k: k not in poses and k not in choisis
+            # Même courbe, même forme, même bonne réponse (« le plus élevé en 2024 » puis « en 2025 », toujours le même pays) :
+            # c'est la même question pour le joueur ; elle attend ECART_FAMILLE jours.
+            jour = idx + len(choisis)
+            neuve = lambda k: jour - fam_vue.get(famille(pool[k]), -10**6) >= ECART_FAMILLE
             cand = None
             if not any(pool[k]['forme'] == 'main' for k in choisis[-2:]):
                 cand = next((k for k in ordre if k in mains and libre(k) and sujet(pool[k]) not in vs), None)
             # Décalé d'une page à l'autre : le même jour, les pages ne posent pas toutes la même forme de question.
             voulue = CYCLE[(len(choisis) + 3 * PAGES.index(pg)) % len(CYCLE)]
             if not cand:
-                sujets = sorted({sujet(pool[k]) for k in ordre if libre(k) and sujet(pool[k]) not in vs}, key=lambda x: (dernier.get(x, -10**6), h(pg + x)))
+                # D'abord un sujet pas posé ces derniers jours avec une question vraiment nouvelle ; une page qui a peu de sujets
+                # (Finances : trois courbes) revient plus vite sur un sujet, mais jamais sur la même question.
+                tri = lambda f: sorted({sujet(pool[k]) for k in ordre if libre(k) and f(k)}, key=lambda x: (dernier.get(x, -10**6), h(pg + x)))
+                sujets = tri(lambda k: neuve(k) and sujet(pool[k]) not in vs) or tri(neuve) or tri(lambda k: sujet(pool[k]) not in vs) or tri(lambda k: True)
                 for sj in sujets[:1]:
-                    du = [k for k in ordre if libre(k) and sujet(pool[k]) == sj]
+                    du = [k for k in ordre if libre(k) and neuve(k) and sujet(pool[k]) == sj] or [k for k in ordre if libre(k) and sujet(pool[k]) == sj]
                     cand = next((k for k in du if pool[k]['forme'] == voulue), None) or next((k for k in du if pool[k]['forme'] != forme0), None) or du[0]
             cand = cand or next((k for k in ordre if libre(k)), None)
             if not cand:
@@ -389,6 +407,7 @@ def main():
                 cand = min((k for k in pool if k not in choisis), key=lambda k: poses.get(k, -1))
             choisis.append(cand)
             dernier[sujet(pool[cand])] = idx + len(choisis) - 1
+            fam_vue[famille(pool[cand])] = idx + len(choisis) - 1
         etat['jours'] = {str(idx + n): k for n, k in enumerate(choisis)}
         poses.setdefault(choisis[0], idx)
         fen = [None] * L
