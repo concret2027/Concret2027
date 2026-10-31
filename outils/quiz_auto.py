@@ -62,7 +62,9 @@ def h(t):
 
 
 # Intitulés réécrits pour une question, quand « intitulé, unité » ne se lit pas (l'unité est une phrase entière).
-TITRE_QUIZ = {'vie.s80': 'Revenu des 20 % les plus aisés, en nombre de fois celui des 20 % les plus modestes'}
+TITRE_QUIZ = {'vie.s80': 'Écart de revenu entre les plus aisés et les plus modestes'}
+# Et l'explication de son chiffre, affichée sous la question.
+D_QUIZ = {'vie.s80': 'Le chiffre dit combien de fois plus de revenu ont les 20 % les plus aisés que les 20 % les plus modestes (4 = quatre fois plus).'}
 
 
 def titre(x):
@@ -265,6 +267,7 @@ def fabriquer(x, P, nom):
     ex = x['ex']
     mots = lambda t: set(re.findall(r"[a-zà-ÿ]{4,}", (t or '').lower()))
     d = (ex[0].upper() + ex[1:] + '.') if ex and len(mots(ex) - mots(x['l'] + ' ' + x['u'])) >= 4 else None
+    d = D_QUIZ.get(x.get('cle'), d)
     if d:
         for q in Q:
             q['d'] = d
