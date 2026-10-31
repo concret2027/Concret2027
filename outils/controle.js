@@ -99,13 +99,50 @@ if (S.education) {
 })();
 // Question du jour : le lien « Vérifier » (QUIZ[i].v) mène à une courbe ou un bloc qui existe sur la page.
 (function () {
-  ['finances', 'education', 'sante', 'securite', 'defense', 'vie'].forEach(function (pg) {
-    var html = fs.readFileSync(path.join(ROOT, pg, 'index.html'), 'utf8'), ser = S[pg] || {}, cles = Object.keys(ser.C || {}).concat(Object.keys(ser.AFF || {}));
+  ['finances', 'education', 'sante', 'securite', 'defense', 'vie', 'demographie'].forEach(function (pg) {
+    var ser = S[pg] || {}, cles = Object.keys(ser.C || {}).concat(Object.keys(ser.AFF || {}));
     (ser.QUIZ || []).forEach(function (q, i) {
       if (!q.v) return;
+      var html = fs.readFileSync(path.join(ROOT, q.p || pg, 'index.html'), 'utf8');  // q.p : question venue d'une autre page (La vie politique)
       var ok = html.indexOf('id="' + q.v + '"') >= 0 || html.indexOf('\'' + q.v + '\'') >= 0 || cles.some(function (k) { return q.v === 'ch-' + k || q.v === 'ch-a-' + k || q.v.indexOf('ch-' + k + '-') === 0; });
       if (!ok) err(pg + '.QUIZ[' + i + '] : lien « Vérifier » vers « ' + q.v + ' », absent de la page');
     });
+  });
+})();
+// Audit des questions du jour, à chaque passage (les 31 jours à venir de chaque page) : quatre réponses différentes, une bonne
+// réponse, aucune question reposée (même texte, ou même question pour une autre année avec la même réponse), pas de forme
+// de question identique deux jours de suite, des réponses chiffrées vraisemblables (aucune impossible), un texte propre.
+(function () {
+  var jour0 = Math.round((Date.UTC(+today.slice(0, 4), +today.slice(5, 7) - 1, +today.slice(8, 10)) - Date.UTC(2026, 0, 1)) / 864e5);
+  var num = function (t) { var m = /^(−|-)?\s*([\d\s\u202f\u00a0]+(?:,\d+)?)\s*(%)?$/.exec(String(t).trim()); return m ? { v: (m[1] ? -1 : 1) * parseFloat(m[2].replace(/[\s\u202f\u00a0]/g, '').replace(',', '.')), pc: !!m[3] } : null; };
+  var forme = function (q) { var t = q.q; return /quel était le chiffre/.test(t) ? 'chiffre' : /quel pays de l'UE avait le chiffre le plus élevé/.test(t) ? 'haut' : /le plus bas en/.test(t) && /quel pays/.test(t) ? 'bas' : /combien de pays/.test(t) ? 'dessus' : /le plus proche/.test(t) ? 'proche' : /quatre pays/.test(t) ? 'duel' : /comment le chiffre/.test(t) ? 'evol' : /en quelle année/.test(t) ? 'annee' : 'autre'; };
+  ['finances', 'education', 'sante', 'securite', 'defense', 'vie', 'demographie'].forEach(function (pg) {
+    var Q = (S[pg] || {}).QUIZ || [], n = Q.length; if (!n) return;
+    var vu = {}, prec = null;
+    for (var k = 0; k < n; k++) {
+      var q = Q[(jour0 + k) % n], ou = pg + ', question du ' + (k ? 'jour J+' + k : 'jour') + ' : « ' + String(q.q).slice(0, 70) + '… »';
+      if (!q.o || q.o.length !== 4) err(ou + ' : ' + (q.o ? q.o.length : 0) + ' réponses au lieu de 4');
+      else if (new Set(q.o).size !== 4) err(ou + ' : deux réponses identiques');
+      if (!(q.a >= 0 && q.a < (q.o || []).length)) err(ou + ' : bonne réponse absente');
+      if (/None|NaN|undefined|null|\(\s*\(|,\s*,|\)\s*\(/.test(q.q + ' ' + (q.o || []).join(' '))) err(ou + ' : texte mal formé');
+      if (/\b([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{5,}), \1\b/i.test(q.q)) err(ou + ' : mots répétés (« ' + /\b([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{5,}), \1\b/i.exec(q.q)[1] + ' »)');
+      if (String(q.q).length > 200) alertes.push(ou + ' : question longue (' + String(q.q).length + ' signes), à raccourcir');
+      var cle = String(q.q).replace(/\b(19|20)\d\d\b/g, '#') + '|' + (q.o || [])[q.a];
+      if (vu[q.q]) err(ou + ' : même question que le jour J+' + vu[q.q]);
+      else if (vu[cle] !== undefined && forme(q) !== 'annee') err(ou + ' : même question, même réponse que le jour J+' + vu[cle] + ' (seule l\'année change)');
+      vu[q.q] = vu[q.q] || String(k); vu[cle] = vu[cle] !== undefined ? vu[cle] : String(k);
+      var f = forme(q); if (prec && f !== 'autre' && f === prec) alertes.push(ou + ' : même forme de question que la veille (' + f + ')');
+      prec = f;
+      var nums = (q.o || []).map(num);
+      if (nums.every(Boolean) && f === 'chiffre') {
+        var bon = nums[q.a].v;
+        nums.forEach(function (x, j) {
+          if (x.pc && (x.v < 0 || x.v > 100)) err(ou + ' : réponse impossible (' + q.o[j] + ')');
+          if (bon > 0 && (x.v < 0.4 * bon || x.v > 1.6 * bon)) err(ou + ' : réponse invraisemblable (' + q.o[j] + ' pour ' + q.o[q.a] + ')');
+          if (/de 0 à 1/.test(q.q) && x.v > 1) err(ou + ' : réponse impossible (' + q.o[j] + ', indice de 0 à 1)');
+        });
+      }
+    }
   });
 })();
 // Sondages (loi du 19 juillet 1977) : chaque sondage publié a sa notice lue à la Commission des sondages

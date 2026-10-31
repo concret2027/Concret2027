@@ -69,6 +69,11 @@
       a.addEventListener('click', function (ev) { if (window.ConcretBref) { ev.preventDefault(); ConcretBref.aller(Q.v); } });
       ans.appendChild(document.createTextNode(' ')); ans.appendChild(a);
     }
+    // Une question venue d'une autre page (Q.p, par exemple La vie politique sur la page Défense) : le lien mène à cette page.
+    if (!cible && !el && Q.p && Q.v && !ans.querySelector('.qz-voir')) {
+      var ap = document.createElement('a'); ap.className = 'qz-voir'; ap.href = '/' + Q.p + '/#' + Q.v; ap.textContent = 'Vérifier sur la page ' + (Q.lp || Q.p) + ' →';
+      ans.appendChild(document.createTextNode(' ')); ans.appendChild(ap);
+    }
     // Sur une page de mission, un lien vers le quiz complet du jour.
     if (!el && !ans.querySelector('.qz-tout')) {
       var t = document.createElement('a'); t.className = 'qz-voir qz-tout'; t.href = '/quiz/'; t.textContent = 'Toutes les questions du jour →';

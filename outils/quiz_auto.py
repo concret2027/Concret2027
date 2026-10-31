@@ -19,8 +19,10 @@ Lancé par outils/controle.js verifier, avant la validation. Jamais de saisie à
   python3 outils/quiz_auto.py                                   compare
   python3 outils/quiz_auto.py --ecrire                          écrit data.json et donnees/quiz_plan.json
   python3 outils/quiz_auto.py --ecrire --changer securite,vie   remplace aussi la question d'aujourd'hui de ces pages
+  python3 outils/quiz_auto.py --a-relire 7                      les questions des 7 prochains jours, avec leur clé (relecture)
+  python3 outils/quiz_auto.py --refuser <clé>[,<clé>]           une question refusée n'est plus jamais posée (donnees/quiz_refus.json)
 """
-import hashlib, json, os, re, sys
+import collections, hashlib, json, os, re, sys
 from datetime import date, datetime
 try:
     from zoneinfo import ZoneInfo
@@ -80,9 +82,14 @@ TITRE_QUIZ = {'vie.s80': 'Écart de revenu entre les plus aisés et les plus mod
               'vie.emp': "Taux d'emploi des 20-64 ans (%)",
               'vie.conf': "Moral des ménages (solde d'opinion)",
               'vie.a-idh': 'Indice de développement humain (de 0 à 1)',
-              'demographie.med': 'Âge médian de la population, en années'}
+              'demographie.med': 'Âge médian de la population, en années',
+              'defense.equip': "Part de l'équipement dans la dépense de défense (%)",
+              'defense.a-export': "Part du pays dans les livraisons mondiales d'armes, sur 5 ans (%)",
+              'demographie.p65': 'Part des 65 ans et plus dans la population (%)'}
 # Et l'explication de son chiffre, affichée sous la question.
-D_QUIZ = {'vie.rev': "Un indice : 100 = le niveau de 2008 dans chaque pays ; 110 = 10 % de plus qu'en 2008, hors inflation.",
+D_QUIZ = {'sante.secu': "Recettes moins dépenses de l'Assurance maladie, en % du PIB ; un chiffre négatif est un déficit : le chiffre le plus élevé est le plus petit déficit.",
+          'finances.D.deficit': "Recettes moins dépenses de toutes les administrations publiques ; un chiffre négatif est un déficit : le chiffre le plus élevé est le plus petit déficit.",
+'vie.rev': "Un indice : 100 = le niveau de 2008 dans chaque pays ; 110 = 10 % de plus qu'en 2008, hors inflation.",
           'vie.s80': 'Le chiffre dit combien de fois plus de revenu ont les 20 % les plus aisés que les 20 % les plus modestes (4 = quatre fois plus).'}
 
 
@@ -323,10 +330,20 @@ def fabriquer(x, P, nom):
             pc = 100 * (f - f0) / f0
             if 7 <= abs(pc) <= 13:
                 continue
-            o = ['Baisse de plus de 10 %', 'Baisse de moins de 10 %', 'Hausse de moins de 10 %', 'Hausse de plus de 10 %']
-            a = 0 if pc <= -10 else 1 if pc < 0 else 2 if pc < 10 else 3
+            if x['u'].startswith('%'):
+                # Un chiffre déjà en % : l'évolution se dit en points (« 10 % » se lirait aussi en points, deux bonnes réponses).
+                dp = f - f0
+                if 0.7 <= abs(dp) <= 1.3:
+                    continue
+                o = ['Baisse de plus d\'un point', 'Baisse de moins d\'un point', 'Hausse de moins d\'un point', 'Hausse de plus d\'un point']
+                a = 0 if dp <= -1 else 1 if dp < 0 else 2 if dp < 1 else 3
+                ec = ('+' if dp > 0 else '−') + nf(abs(dp), 1) + ' point' + ('s' if abs(dp) >= 2 else '')
+            else:
+                o = ['Baisse de plus de 10 %', 'Baisse de moins de 10 %', 'Hausse de moins de 10 %', 'Hausse de plus de 10 %']
+                a = 0 if pc <= -10 else 1 if pc < 0 else 2 if pc < 10 else 3
+                ec = ('+' if pc > 0 else '−') + nf(abs(pc), 0) + ' %'
             add('evol|' + str(y) + '|' + str(recul), 'evol', T + ' : entre ' + str(y - recul) + ' et ' + str(y) + ', comment le chiffre de la France a-t-il évolué ?', o, a,
-                str(y - recul) + ' : ' + fmt(f0) + ' ; ' + str(y) + ' : ' + fmt(f) + ', soit ' + ('+' if pc > 0 else '−') + nf(abs(pc), 0) + ' % (France, ' + src + ').')
+                str(y - recul) + ' : ' + fmt(f0) + ' ; ' + str(y) + ' : ' + fmt(f) + ', soit ' + ec + ' (France, ' + src + ').')
     # 8. L'année du plus haut et du plus bas, sur la dernière période sans changement de méthode (au moins huit années).
     if idxs:
         der = idxs[-1]
@@ -361,11 +378,14 @@ def fabriquer(x, P, nom):
 # délivrées et les départs ; la population née à l'étranger et les étrangers), pour ne pas revenir trop souvent sur le même sujet.
 SUJETS = [(re.compile(r'quitter le territoire', re.I), 'oqtf'),
           # Démographie : les personnes nées à l'étranger, nées hors de l'UE et les étrangers, un seul sujet.
-          (re.compile(r"^(Personnes nées|Étrangers)", re.I), 'origine')]
+          (re.compile(r"^(Personnes nées|Étrangers)", re.I), 'origine'),
+          # Sécurité et justice : les prisons (places, occupation, personnes détenues, dépense), un seul sujet.
+          (re.compile(r"prison|détenu", re.I), 'prisons')]
 
 
 def sujet(q):
     if q.get('forme') == 'main': return 'main|' + q.get('k', q['q'])
+    if q.get('sj'): return q['sj']
     if str(q.get('k', '')).startswith('demographie.M.'): return 'migrations'
     for rx, nom in SUJETS:
         if rx.search(q['q'].split(':')[0]): return nom
@@ -379,7 +399,51 @@ def famille(q):
 
 
 def forme_courbe(q):
+    if q.get('p'): return 'forme|' + q['k']  # vie politique : chaque date, chaque groupe est une question à part
     return 'forme|' + (('main|' + q.get('k', q['q'])) if q.get('forme') == 'main' else str(q.get('v')) + '|' + str(q.get('forme')))
+
+
+MOIS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
+
+
+def date_fr(iso):
+    a, m, j = iso.split('-')
+    return ('1er' if j == '01' else str(int(j))) + ' ' + MOIS_FR[int(m) - 1] + ' ' + a
+
+
+def politique(S):
+    """Questions sur la vie politique (series.politique : frise depuis 1995, groupes de l'Assemblée), mêmes données que la page."""
+    Pp, out = S.get('politique') or {}, []
+    base = lambda k, fo, q, o, a, e, v, sj: {'k': 'politique.' + k, 'forme': fo, 'q': q, 'o': o, 'a': a, 'e': e, 'v': v, 'p': 'politique', 'lp': 'La vie politique', 'sj': sj}
+    # Quatre sujets (gouvernements, révisions de la Constitution, élections et votes de l'Assemblée, groupes) : la vie politique
+    # revient aussi souvent qu'une courbe de la Défense par sujet, donc plus souvent que chacune d'elles.
+    SJ = {'gouvernement': 'pol-gouvernements', 'constitution': 'pol-constitution'}
+    F = Pp.get('FRISE') or []
+    vus = collections.Counter(f['t'] for f in F)
+    annees = sorted({int(f['d'][:4]) for f in F})
+    for f in F:
+        if vus[f['t']] > 1:
+            continue  # « Jacques Chirac élu président » deux fois : la question n'aurait pas une seule réponse
+        y = int(f['d'][:4])
+        autres = [a for a in annees if abs(a - y) >= 2]
+        if len(autres) < 3:
+            continue
+        tirees = sorted(autres, key=lambda a: h(f['d'] + str(a)))[:3]
+        o = [str(a) for a in sorted(tirees + [y])]
+        out.append(base('frise|' + f['d'], 'annee', '« ' + f['t'] + ' » : en quelle année ?', o, o.index(str(y)),
+                        f['t'] + ', le ' + date_fr(f['d']) + ' (' + re.split(r',|\(', f.get('src') or 'Journal officiel')[0].strip() + ').', 'frise', SJ.get(f['k'], 'pol-elections')))
+    G = [g for g in (Pp.get('GROUPES') or []) if g.get('c') != 'NI' and g.get('m')]
+    for g in G:
+        autres = sorted({x['m'] for x in G if abs(x['m'] - g['m']) >= 5}, key=lambda m: h(g['c'] + str(m)))[:3]
+        if len(autres) < 3:
+            continue
+        o = [str(m) for m in sorted(autres + [g['m']])]
+        out.append(base('groupe|' + g['c'], 'chiffre', 'Combien de députés compte le groupe « ' + g['n'] + ' » à l\'Assemblée nationale ?', o, o.index(str(g['m'])),
+                        str(g['m']) + ' députés au ' + date_fr(Pp.get('maj') or '2026-01-01') + ' (Assemblée nationale, données ouvertes).', 'groupes', 'pol-groupes'))
+    return out
+
+
+AUTRES = {'defense': politique}
 
 
 def jour_idx():
@@ -389,13 +453,46 @@ def jour_idx():
 
 def nettoie(q):
     """La question telle qu'elle va dans data.json."""
-    o = {k: q[k] for k in ('q', 'o', 'a', 'e', 'v', 'd') if q.get(k) is not None}
+    o = {k: q[k] for k in ('q', 'o', 'a', 'e', 'v', 'd', 'p', 'lp') if q.get(k) is not None}
     if q.get('auto'):
         o['auto'] = True
     return o
 
 
+def relire(n):
+    """Les questions des n prochains jours (aujourd'hui compris), page par page, avec leur clé : pour la relecture indépendante."""
+    D, idx = lire('data.json'), jour_idx()
+    plan = lire('donnees/quiz_plan.json')
+    for pg in PAGES:
+        Q = (D['series'].get(pg) or {}).get('QUIZ') or []
+        if not Q:
+            continue
+        print('== ' + pg)
+        for k in range(n):
+            q = Q[(idx + k) % len(Q)]
+            cle = (plan.get(pg) or {}).get('jours', {}).get(str(idx + k), '?')
+            print('J+%d [%s]%s %s' % (k, cle, ' (' + q['lp'] + ')' if q.get('lp') else '', q['q']))
+            print('    réponses : ' + ' / '.join(q['o']) + '  → bonne : ' + q['o'][q['a']])
+            print('    explication : ' + q['e'] + (('\n    aide : ' + q['d']) if q.get('d') else ''))
+
+
+def refuser(cles):
+    """Une question refusée par la relecture n'est plus jamais posée (donnees/quiz_refus.json) ; relancer ensuite --ecrire."""
+    f = os.path.join(ROOT, 'donnees', 'quiz_refus.json')
+    R = lire('donnees/quiz_refus.json') if os.path.exists(f) else []
+    for c in cles:
+        if c not in R:
+            R.append(c)
+    with open(f, 'w', encoding='utf-8') as fh:
+        fh.write(json.dumps(sorted(R), ensure_ascii=False, indent=1) + '\n')
+    print('Refusées : ' + ', '.join(cles) + ' (' + str(len(R)) + ' au total). Lancer python3 outils/quiz_auto.py --ecrire.')
+
+
 def main():
+    if '--a-relire' in sys.argv:
+        return relire(int(sys.argv[sys.argv.index('--a-relire') + 1]))
+    if '--refuser' in sys.argv:
+        return refuser(sys.argv[sys.argv.index('--refuser') + 1].split(','))
     ecrire = '--ecrire' in sys.argv
     changer = set(sys.argv[sys.argv.index('--changer') + 1].split(',')) if '--changer' in sys.argv else set()
     D = lire('data.json')
@@ -429,10 +526,20 @@ def main():
                 continue  # toujours quatre réponses : une question écrite à deux réponses n'est plus posée
             mains[k] = dict(q, k=k, forme='main', auto=False)
         pool = dict(mains)
+        frefus = os.path.join(ROOT, 'donnees', 'quiz_refus.json')
+        refus = set(lire('donnees/quiz_refus.json')) if os.path.exists(frefus) else set()
         for x in indicateurs(S, pg, html):
             for q in fabriquer(x, P, nom):
                 q['auto'] = True
                 pool.setdefault(q['k'], q)
+        # La Défense n'a que six courbes : pour ne pas y revenir sans cesse, ses jours alternent avec des questions sur la vie
+        # politique (dates de la frise depuis 1995, groupes de l'Assemblée), affichées comme telles.
+        if pg in AUTRES:
+            for q in AUTRES[pg](S):
+                q['auto'] = True
+                pool.setdefault(q['k'], q)
+        for k in [k for k in pool if k in refus]:
+            del pool[k]  # refusée par la relecture indépendante
         etat = plan.setdefault(pg, {'poses': {}, 'jours': {}})
         poses, jours = etat['poses'], etat['jours']
         if premier:
@@ -493,12 +600,17 @@ def main():
                 # D'abord un sujet pas posé ces derniers jours avec une question vraiment nouvelle ; une page qui a peu de sujets
                 # (Finances : trois courbes) revient plus vite sur un sujet, mais jamais sur la même question.
                 tri = lambda f: sorted({sujet(pool[k]) for k in ordre if libre(k) and f(k)}, key=lambda x: (dernier.get(x, -10**6), h(pg + x)))
-                sujets = tri(lambda k: fraiche(k) and sujet(pool[k]) not in vs) or tri(fraiche) or tri(lambda k: neuve(k) and sujet(pool[k]) not in vs) \
-                    or tri(neuve) or tri(lambda k: sujet(pool[k]) not in vs) or tri(lambda k: True)
-                for sj in sujets[:1]:
-                    du = [k for k in ordre if libre(k) and fraiche(k) and sujet(pool[k]) == sj] or [k for k in ordre if libre(k) and neuve(k) and sujet(pool[k]) == sj] \
-                        or [k for k in ordre if libre(k) and sujet(pool[k]) == sj]
-                    cand = next((k for k in du if pool[k]['forme'] == voulue), None) or next((k for k in du if pool[k]['forme'] != forme0), None) or du[0]
+                autre = lambda k: pool[k]['forme'] != forme0
+                hors = lambda k: sujet(pool[k]) not in vs
+                # Par ordre de préférence : question vraiment nouvelle, autre forme que la veille, sujet pas vu ces derniers jours.
+                niveaux = [lambda k: fraiche(k) and autre(k) and hors(k), lambda k: fraiche(k) and autre(k), lambda k: neuve(k) and autre(k) and hors(k),
+                           lambda k: neuve(k) and autre(k), lambda k: neuve(k) and hors(k), neuve, hors, lambda k: True]
+                for niv in niveaux:
+                    sujets = tri(niv)
+                    if sujets:
+                        du = [k for k in ordre if libre(k) and niv(k) and sujet(pool[k]) == sujets[0]]
+                        cand = next((k for k in du if pool[k]['forme'] == voulue), None) or du[0]
+                        break
             cand = cand or next((k for k in ordre if libre(k)), None)
             if not cand:
                 # Tout a été posé : la question posée il y a le plus longtemps.
