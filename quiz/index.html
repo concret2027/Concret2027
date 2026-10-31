@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="2fd95b123c8f">
+<meta name="concret-version" content="d9eb7f1116ea">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -503,6 +503,19 @@ footer p { margin: 0; } footer a { color: inherit; }
     var slug = function (m) { return m.url.split('/')[1]; };
     var pres = cg.pres.slice().sort(function (a, b) { return a.y0 - b.y0; });
     var govs = function (m) { return cg.gov.map(function (x) { return { n: x.n, v: note(x, m.k) }; }).filter(function (x) { return x.v != null; }); };
+    // Sous un président ou un gouvernement, sur laquelle de quatre pages la France a-t-elle son résultat le plus haut ?
+    // (le résultat de la France pendant le mandat, jamais une note de la personne).
+    var mandat = function (p, gouv) {
+      if (!p) return null;
+      var L = M.map(function (m) { return { m: m, v: note(p, m.k) }; }).filter(function (x) { return x.v != null; });
+      if (L.length < 4) return null;
+      var four = null; for (var e = 0; e < 12 && !four; e++) { var c = melange(L, r).slice(0, 4); if (seule(c)) four = c; }
+      if (!four) return null;
+      var best = four.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = four.slice().sort(function (a, b) { return b.v - a.v; });
+      var qui = gouv ? 'le gouvernement ' + (/^[AEIOUÉÈYH]/i.test(p.n) ? 'd\'' : 'de ') + p.n : p.n;
+      return { l: gouv ? 'Les gouvernements' : 'Les présidents', q: 'Sous ' + qui + ', sur laquelle de ces pages la France a-t-elle son résultat le plus haut ?', o: four.map(function (x) { return x.m.l; }), a: four.indexOf(best),
+        e: tri.map(function (x) { return x.m.l + ' : ' + fmt(x.v); }).join(' ; ') + ' (résultats sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(best.m) + '/#bulletin', src: best.m.l };
+    };
     var Q1 = [
       // a. Les présidents sur une mission.
       function (t) {
@@ -512,16 +525,8 @@ footer p { margin: 0; } footer a { color: inherit; }
         return { l: 'Les présidents', q: 'Sur la page ' + m.l + ', quel président a le résultat le plus haut ?', o: P.map(function (x) { return x.n; }), a: P.indexOf(best),
           e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (résultats sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(m) + '/#bulletin', src: m.l };
       },
-      // b. Un président, ses missions : où a-t-il son résultat le plus haut ?
-      function (t) {
-        var p = pres[t], L = M.map(function (m) { return { m: m, v: note(p, m.k) }; }).filter(function (x) { return x.v != null; });
-        if (L.length < 4) return null;
-        var four = null; for (var e = 0; e < 12 && !four; e++) { var c = melange(L, r).slice(0, 4); if (seule(c)) four = c; }
-        if (!four) return null;
-        var best = four.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = four.slice().sort(function (a, b) { return b.v - a.v; });
-        return { l: 'Les présidents', q: 'Sur laquelle de ces pages ' + p.n + ' a-t-il son résultat le plus haut ?', o: four.map(function (x) { return x.m.l; }), a: four.indexOf(best),
-          e: tri.map(function (x) { return x.m.l + ' : ' + fmt(x.v); }).join(' ; ') + ' (résultats sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(best.m) + '/#bulletin', src: best.m.l };
-      },
+      // b. Un mandat (président), ses missions : sur quelle page la France a-t-elle son résultat le plus haut ?
+      function (t) { return mandat(pres[t], false); },
       // c. Quatre gouvernements tirés au sort, sur une mission.
       function (t, q4) {
         var m = M[t], G = govs(m);
@@ -532,7 +537,9 @@ footer p { margin: 0; } footer a { color: inherit; }
         var noms = four.map(function (x) { return court(x.n); });
         return { l: 'Les gouvernements', q: noms.slice(0, -1).join(', ') + ' ou ' + noms[noms.length - 1] + ' : sur la page ' + m.l + ', lequel de ces gouvernements a le résultat le plus haut ?', o: four.map(function (x) { return x.n; }), a: four.indexOf(best),
           e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (résultats sur 20).', lien: '/' + slug(m) + '/#bulletin', src: m.l };
-      }
+      },
+      // d. Un gouvernement, ses missions (comme b).
+      function (t) { return mandat(cg.gov[t], true); }
     ];
     // Les indicateurs des pages : France, moyenne de l'UE, Allemagne, Espagne, au dernier chiffre connu commun aux quatre.
     var IND = [], dec = function (c) { return c.dec != null ? c.dec : 1; }, nf = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: d }).format(v); };
@@ -595,7 +602,8 @@ footer p { margin: 0; } footer a { color: inherit; }
     // À partir du 31 octobre 2026 (jour 303), plus de question « quel président / quel gouvernement a le résultat le plus haut » :
     // le site ne classe pas les personnes. Reste, chaque jour, la question « sur quelle page tel président a-t-il son résultat le
     // plus haut ? » (b). Les jours d'avant gardent leurs questions (scores déjà enregistrés).
-    if (idx >= 303) { ord1 = melange(C1.filter(function (c) { return c[0] === 1; }), alea(7907)); i0 = tour(ord1.length); }
+    // Dès le 1er novembre 2026 (jour 304), les gouvernements aussi (d) ; le 31 octobre garde sa question (réponses déjà données).
+    if (idx >= 303) { ord1 = melange(C1.filter(function (c) { return c[0] === 1; }).concat(idx >= 304 ? cg.gov.map(function (g, t) { return [3, t]; }) : []), alea(7907)); i0 = tour(ord1.length); }
     for (var k = 0, i1 = i0; k < ord1.length && !q1; k++) { var c1 = ord1[(i1 + k) % ord1.length]; q1 = Q1[c1[0]](c1[1], c1[2] && melange(c1[2], r)); }
     var ord = melange(IND, alea(104729)), C2 = []; ord.forEach(function (x, j) { Q2.forEach(function (fn, f) { if (fn(x)) C2.push([f, j]); }); });
     var q2 = null; for (k = 0, i1 = tour(C2.length); k < C2.length && !q2; k++) { var c2 = C2[(i1 + k) % C2.length]; q2 = Q2[c2[0]](ord[c2[1]]); }

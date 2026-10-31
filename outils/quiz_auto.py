@@ -67,7 +67,20 @@ def h(t):
 # Intitulés réécrits pour une question, quand « intitulé, unité » ne se lit pas (l'unité est une phrase entière).
 TITRE_QUIZ = {'vie.s80': 'Écart de revenu entre les plus aisés et les plus modestes',
               'sante.secu': "Solde de l'Assurance maladie (négatif : déficit), % du PIB",
-              'vie.rev': 'Revenu des ménages par habitant, hors inflation (100 en 2008)'}
+              'vie.rev': 'Revenu des ménages par habitant, hors inflation (100 en 2008)',
+              'education.eq': 'Écart de score PISA entre élèves favorisés et défavorisés, en points',
+              'sante.esp': 'Espérance de vie à la naissance, en années',
+              'sante.a-hly': 'Espérance de vie en bonne santé, en années',
+              'sante.equ': 'Écart de renoncement aux soins entre les plus modestes et les plus aisés, en points',
+              'sante.vac-hpv': 'Vaccination contre le papillomavirus, filles de 15 ans, au moins une dose (%)',
+              'sante.alc': "Alcool bu par habitant de 15 ans et plus, en litres d'alcool pur par an",
+              'sante.wt': "Délai d'accès aux nouveaux médicaments après l'autorisation européenne, en jours",
+              'securite.quart': 'Ménages qui signalent délinquance, violence ou vandalisme dans leur quartier (%)',
+              'defense.a-export': "Part des livraisons mondiales d'armes, sur 5 ans (%)",
+              'vie.emp': "Taux d'emploi des 20-64 ans (%)",
+              'vie.conf': "Moral des ménages (solde d'opinion)",
+              'vie.a-idh': 'Indice de développement humain (de 0 à 1)',
+              'demographie.med': 'Âge médian de la population, en années'}
 # Et l'explication de son chiffre, affichée sous la question.
 D_QUIZ = {'vie.rev': "Un indice : 100 = le niveau de 2008 dans chaque pays ; 110 = 10 % de plus qu'en 2008, hors inflation.",
           'vie.s80': 'Le chiffre dit combien de fois plus de revenu ont les 20 % les plus aisés que les 20 % les plus modestes (4 = quatre fois plus).'}
@@ -221,14 +234,16 @@ def fabriquer(x, P, nom):
             d = 0 if a >= 10 or x['dec'] == 0 else 1 if a >= 1 else 2  # un nombre entier (universités, points) reste entier
             r = lambda v: round(v, d)
             pct = x['u'].startswith('%') and 'PIB' not in x['u']
-            ecart = max(0.12 * a, 10 ** -d)
+            # Des réponses vraisemblables : d'abord les chiffres réels d'autres pays la même année (UE, Allemagne, Espagne, puis
+            # les pays de l'UE), assez éloignés de celui de la France (8 %) ; sinon des écarts de 10 à 40 %.
+            ecart = max(0.08 * a, 10 ** -d)
             pris = [r(f)]
-            ok = lambda v: all(abs(v - p) >= ecart - 1e-9 for p in pris) and (not pct or 0 <= v <= 100) and (f < 0 or v > 0)
-            for w in ('ue', 'de', 'es'):
-                v = val(x[w], i)
+            ok = lambda v: all(abs(v - p) >= ecart - 1e-9 for p in pris) and (not pct or 0 <= v <= 100) and (f < 0 or v > 0) and abs(v - f) <= 0.6 * a and ('de 0 à 1' not in x['u'] or v <= 1)
+            reels = [val(x[w], i) for w in ('ue', 'de', 'es')] + [v for g, v in sorted(pays_annee(x, P, i) or [], key=lambda t: h(x['cle'] + Y + t[0])) if g != 'FR']
+            for v in reels:
                 if v is not None and len(pris) < 4 and ok(r(v)):
                     pris.append(r(v))
-            for m in ((0.6, 1.4, 1.8, 0.4, 2.2) if f > 0 else (1.4, 0.6, 1.8, 0.4, 2.2)):
+            for m in ((0.9, 1.1, 0.8, 1.2, 0.7, 1.3, 0.6, 1.4) if f > 0 else (1.1, 0.9, 1.2, 0.8, 1.3, 0.7, 1.4, 0.6)):
                 if len(pris) < 4 and ok(r(f * m)):
                     pris.append(r(f * m))
             if len(pris) == 4:
@@ -497,8 +512,7 @@ def main():
         for n, k in enumerate(choisis):
             fen[(idx + n) % L] = nettoie(pool[k])
         # La question d'aujourd'hui garde le texte déjà en ligne (même question) : les réponses déjà données restent comptées.
-        if ancien and auj and choisis[0] == auj and pg not in changer and ancien[idx % len(ancien)].get('a') == fen[idx % L].get('a') \
-                and ancien[idx % len(ancien)].get('o') == fen[idx % L].get('o'):
+        if ancien and auj and choisis[0] == auj and pg not in changer:
             fen[idx % L] = ancien[idx % len(ancien)]
         change = json.dumps(fen, ensure_ascii=False) != json.dumps(ancien, ensure_ascii=False)
         jamais = sum(1 for k in pool if k not in poses)
