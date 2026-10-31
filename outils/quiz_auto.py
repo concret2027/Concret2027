@@ -277,12 +277,21 @@ def fabriquer(x, P, nom):
             o = sorted([nom[p1]] + [nom[g] for g in autres], key=lambda t: h(x['cle'] + 'p' + t))
             add('proche|' + Y, 'proche', T + ' : en ' + Y + ', quel pays de l\'UE avait le chiffre le plus proche de celui de la France ?', o, o.index(nom[p1]),
                 nom[p1] + ' : ' + fmt(dist[0][2]) + ', contre ' + fmt(f) + ' en France (' + Y + ', ' + src + ').')
-        # 6. La France face à un autre pays (trois pays par année, tirés de la question, écart d'au moins 5 %).
+        # 6. La France et trois autres pays : lequel avait le chiffre le plus élevé ? (quatre réponses ; le plus élevé dépasse
+        #    le deuxième d'au moins 5 %, pour que la question ne se joue pas à une décimale près).
         loin = [(g, v) for g, v in Lp if g != 'FR' and abs(v - f) >= 0.05 * max(abs(f), abs(v))]
-        for g, v in sorted(loin, key=lambda t: h(x['cle'] + Y + t[0]))[:3]:
-            o = sorted(['France', nom[g]], key=lambda t: h(x['cle'] + Y + g + t))
-            add('duel|' + Y + '|' + g, 'duel', T + ' : en ' + Y + ', lequel de ces deux pays avait le chiffre le plus élevé ?', o, o.index('France' if f > v else nom[g]),
-                'France : ' + fmt(f) + ' ; ' + nom[g] + ' : ' + fmt(v) + ' (' + Y + ', ' + src + ').')
+        tires = sorted(loin, key=lambda t: h(x['cle'] + Y + t[0]))
+        for n0 in range(0, min(len(tires), 9), 3):
+            trio = tires[n0:n0 + 3]
+            if len(trio) < 3:
+                break
+            groupe = [('FR', f)] + trio
+            tri = sorted(groupe, key=lambda t: -t[1])
+            if tri[0][1] - tri[1][1] < 0.05 * max(abs(tri[0][1]), abs(tri[1][1])):
+                continue
+            o = sorted([nom[g] for g, _ in groupe], key=lambda t: h(x['cle'] + Y + str(n0) + t))
+            add('duel|' + Y + '|' + trio[0][0], 'duel', T + ' : en ' + Y + ', lequel de ces quatre pays avait le chiffre le plus élevé ?', o, o.index(nom[tri[0][0]]),
+                ' ; '.join(nom[g] + ' : ' + fmt(v) for g, v in tri) + ' (' + Y + ', ' + src + ').')
     # 7. Plus haut ou plus bas qu'il y a cinq ou dix ans (sans traverser un changement de méthode).
     for i in idxs:
         y, f = x['y'][i], x['fr'][i]
@@ -293,9 +302,16 @@ def fabriquer(x, P, nom):
             f0 = x['fr'][j]
             if abs(f - f0) < 0.03 * max(abs(f), abs(f0)) or nf(f, dec) == nf(f0, dec):
                 continue
-            add('evol|' + str(y) + '|' + str(recul), 'evol', T + ' : le chiffre de la France était-il plus élevé en ' + str(y) + ' qu\'en ' + str(y - recul) + ' ?',
-                ['Plus élevé en ' + str(y), 'Plus bas en ' + str(y)], 0 if f > f0 else 1,
-                str(y - recul) + ' : ' + fmt(f0) + ' ; ' + str(y) + ' : ' + fmt(f) + ' (France, ' + src + ').')
+            # Quatre réponses : baisse ou hausse, de plus ou de moins de 10 % (chiffres positifs seulement ; pas trop près du seuil).
+            if f <= 0 or f0 <= 0:
+                continue
+            pc = 100 * (f - f0) / f0
+            if 7 <= abs(pc) <= 13:
+                continue
+            o = ['Baisse de plus de 10 %', 'Baisse de moins de 10 %', 'Hausse de moins de 10 %', 'Hausse de plus de 10 %']
+            a = 0 if pc <= -10 else 1 if pc < 0 else 2 if pc < 10 else 3
+            add('evol|' + str(y) + '|' + str(recul), 'evol', T + ' : entre ' + str(y - recul) + ' et ' + str(y) + ', comment le chiffre de la France a-t-il évolué ?', o, a,
+                str(y - recul) + ' : ' + fmt(f0) + ' ; ' + str(y) + ' : ' + fmt(f) + ', soit ' + ('+' if pc > 0 else '−') + nf(abs(pc), 0) + ' % (France, ' + src + ').')
     # 8. L'année du plus haut et du plus bas, sur la dernière période sans changement de méthode (au moins huit années).
     if idxs:
         der = idxs[-1]
@@ -394,6 +410,8 @@ def main():
         mains = {}
         for q in ser['QUIZ_ECRITES']:
             k = 'main|' + h(q['q'])[:12]
+            if len(q.get('o') or []) < 4:
+                continue  # toujours quatre réponses : une question écrite à deux réponses n'est plus posée
             mains[k] = dict(q, k=k, forme='main', auto=False)
         pool = dict(mains)
         for x in indicateurs(S, pg, html):
