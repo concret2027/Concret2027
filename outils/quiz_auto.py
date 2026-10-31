@@ -61,7 +61,13 @@ def h(t):
     return hashlib.md5(t.encode('utf-8')).hexdigest()
 
 
+# Intitulés réécrits pour une question, quand « intitulé, unité » ne se lit pas (l'unité est une phrase entière).
+TITRE_QUIZ = {'vie.s80': 'Revenu des 20 % les plus aisés, en nombre de fois celui des 20 % les plus modestes'}
+
+
 def titre(x):
+    if x.get('cle') in TITRE_QUIZ:
+        return re.sub(r'(\d)-(\d)', '\\1\u2011\\2', TITRE_QUIZ[x['cle']])
     # « 15-29 ans » ne se coupe pas en fin de ligne (trait d'union insécable).
     # Pas d'unité répétée quand elle redit l'intitulé (« Enfants par femme »).
     u = '' if not x['u'] or x['u'].lower() == x['l'].lower() else (' (%)' if x['u'] == '%' else ', ' + x['u'])
@@ -385,6 +391,10 @@ def main():
         fen = [None] * L
         for n, k in enumerate(choisis):
             fen[(idx + n) % L] = nettoie(pool[k])
+        # La question d'aujourd'hui garde le texte déjà en ligne (même question) : les réponses déjà données restent comptées.
+        if ancien and auj and choisis[0] == auj and pg not in changer and ancien[idx % len(ancien)].get('a') == fen[idx % L].get('a') \
+                and ancien[idx % len(ancien)].get('o') == fen[idx % L].get('o'):
+            fen[idx % L] = ancien[idx % len(ancien)]
         change = json.dumps(fen, ensure_ascii=False) != json.dumps(ancien, ensure_ascii=False)
         jamais = sum(1 for k in pool if k not in poses)
         bilan.append(pg + ' : ' + str(len(pool)) + ' questions (' + str(len(mains)) + ' écrites), ' + str(jamais) + ' jamais posées' + (' · changé' if change else '')
