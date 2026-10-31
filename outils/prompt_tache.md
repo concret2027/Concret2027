@@ -81,6 +81,14 @@ Phrases d'actualité, d'agenda et d'événements : une phrase neutre et factuell
 4. Sinon : git add data.json donnees journal ; commit « Mise à jour des données (<date heure>) » ; git fetch origin main ; si origin/main a avancé, repars de origin/main, réapplique tes changements et relance verifier ; puis git push origin HEAD:main.
 5. Secours Claude : lis l'artifact https://claude.ai/artifact/QE3F4NgDPn1Z4aPET1YY4A avec l'outil Artifact (action « read »), remplace uniquement le contenu de la balise `<script id="baro-data" type="application/json">…</script>` par {"updated", "datasets"} de data.json (json.dumps(..., ensure_ascii=False), chaque « </ » remplacé par « <\/ »), vérifie qu'il reste une seule balise baro-data, et republie (action « publish », même url, sans icon).
 
+## 4 bis. Tableau de bord d'audience (chaque jour, après la publication ; sans effet sur elle)
+Pour l'éditeur seulement : l'artifact « Concret, audience » (https://claude.ai/artifact/KhsRYd7bAecNAm4E9qjgo5). Rien de ce qui suit n'entre dans le dépôt ni dans le journal. Si une étape échoue, passe à la suite, écris « Tableau d'audience non mis à jour : <erreur> » dans l'e-mail et n'arrête rien.
+1. Lis `datasets/hist` avec l'outil ArtifactData (action get, url de l'artifact) : son `source.url` (`/_blob/<id>`) donne l'identifiant du fichier de la veille ; récupère-le avec l'outil Artifact (action read, `path` = <id>) : c'est l'historique précédent.
+2. `node outils/audience.js <dossier hors dépôt, dans le scratchpad> <fichier de la veille>` : écrit d_jours, d_pages, d_temps, d_chemins, d_visites, d_resume et d_hist (.json).
+3. Envoie chacun de ces sept fichiers dans l'artifact (Artifact, `url`, `asset: true`, `file_path`, un fichier par appel) ; chaque réponse donne un `/_blob/<id>`.
+4. Dans un seul `batch` ArtifactData, mets à jour `datasets/jours`, `pages`, `temps`, `chemins`, `visites`, `resume` et `hist` (update, avec `if_version` lu au préalable) : `source.url` = le nouveau `/_blob/<id>` et `updated.at` = maintenant (heure de Paris). Puis supprime les anciens fichiers (Artifact, action delete, `path` = ancien <id>).
+5. Ne modifie jamais `files/index.html` (la page) ni `dash/meta` sans demande de l'éditeur. Mets le lien de l'artifact dans l'e-mail, à la place du bloc `vues_stats.js` si l'éditeur l'a demandé, sinon en plus.
+
 ## 5. Notification
 1. E-mail quotidien, seulement si la tâche planifiée donne une adresse (sinon passe au point 2), même si tout va bien et même si une étape a échoué : charge l'outil Gmail avec ToolSearch (« select:mcp__Gmail__send_message ») et envoie un message à l'adresse du propriétaire (écrite seulement dans la tâche planifiée, jamais dans le dépôt).
    - Objet : « Concret, <date> : tout est à jour » si verifier n'affiche aucun ⚠ ni « À valider », sinon « Concret, <date> : N point(s) à regarder ». En cas d'échec (verifier en erreur, push refusé, dépôt inaccessible) : « Concret, <date> : ÉCHEC, rien publié ».
