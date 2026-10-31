@@ -38,6 +38,7 @@ PAGES = ['finances', 'education', 'sante', 'securite', 'defense', 'vie', 'demogr
 # Courbes dont l'ancre sur la page n'est pas « ch-<clé> ».
 ANCRE = {'demographie.nes_hue': 'ch-neshue'}
 # Finances et Éducation : leurs séries n'ont ni intitulé ni années dans data.json (années fixes, comme sur leurs pages).
+# Dette, dépense et prélèvements ; les autres courbes et repères de la page sont ajoutés dans indicateurs().
 FIN = [('dette', 'Dette publique', '% du PIB', None), ('dep', 'Dépense publique', '% du PIB', 'dépense de toutes les administrations publiques (État, collectivités, Sécurité sociale)'),
        ('po', 'Impôts et cotisations', '% du PIB', 'impôts et cotisations sociales prélevés par les administrations publiques (prélèvements obligatoires)')]
 EDU = [('el', 'Décrochage', '% des 18-24 ans', "jeunes de 18 à 24 ans qui ont quitté l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et ne suivent aucune formation"),
@@ -95,7 +96,7 @@ def indicateurs(S, pg, html):
     """Chaque courbe de la page : intitulé, unité, années, France, UE, Allemagne, Espagne, changements de méthode, lien."""
     out = []
     ser = S.get(pg, {})
-    base = lambda **k: dict({'est': {}, 'prov': {}, 'br': {}, 'dec': 1, 'src': 'Eurostat', 'ex': None}, **k)
+    base = lambda **k: dict({'est': {}, 'prov': {}, 'br': {}, 'dec': 1, 'src': 'Eurostat', 'ex': None, 'ue': [], 'de': [], 'es': []}, **k)
     if pg in ('finances', 'education'):
         D, y0, tab = (ser.get('D', {}), 1995, FIN) if pg == 'finances' else (ser.get('S', {}), 2002, EDU)
         for k, l, u, ex in tab:
@@ -104,6 +105,35 @@ def indicateurs(S, pg, html):
                 continue
             out.append(base(cle=pg + ('.D.' if pg == 'finances' else '.S.') + k, l=l, u=u, ex=ex, y=list(range(y0, y0 + len(c['fr']))), fr=c['fr'],
                             ue=c.get('eu') or [], de=c.get('de') or [], es=c.get('es') or [], br={str(b): 1 for b in (c.get('br') or [])}, v='ch-' + k))
+        if pg == 'finances':
+            # Les autres courbes et repères de la page (toile « La France et ses voisins », retraites, taux à 10 ans) : mêmes
+            # chiffres que la page, mêmes séries des autres pays (donnees/pays.json) quand elles existent.
+            an = lambda y0, n: list(range(y0, y0 + n))
+            Dd = ser.get('D', {}).get('deficit') or {}
+            if Dd.get('fr'):
+                out.append(base(cle='finances.D.deficit', l='Solde public (négatif : déficit)', u='% du PIB', y=an(1995, len(Dd['fr'])), fr=Dd['fr'], ue=Dd.get('eu') or [],
+                                de=Dd.get('de') or [], es=Dd.get('es') or [], v='ch-deficit',
+                                ex="recettes moins dépenses de toutes les administrations publiques ; un chiffre négatif est un déficit"))
+            PI = ser.get('PIB') or {}
+            if PI.get('fr'):
+                out.append(base(cle='finances.PIB', l='Richesse par habitant', u='en dollars', dec=0, src='Banque mondiale', y=an(1990, len(PI['fr'])), fr=PI['fr'],
+                                ue=PI.get('eu') or [], de=PI.get('de') or [], es=PI.get('es') or [], v='pib-chart',
+                                ex="PIB par habitant, en dollars de 2021, hors inflation et corrigé des écarts de prix entre pays (parité de pouvoir d'achat)"))
+            X94, X95 = ser.get('X94') or {}, ser.get('X95') or {}
+            if X94.get('uFr'):
+                out.append(base(cle='finances.X94.u', l='Chômage, moyenne de l\'année', u='%', src='Banque mondiale', y=an(1994, len(X94['uFr'])), fr=X94['uFr'],
+                                ue=X94.get('uEu') or [], es=X94.get('uEs') or [], v='toile'))
+            if X95.get('iFr'):
+                out.append(base(cle='finances.X95.i', l='Intérêts de la dette', u='% du PIB', y=an(1995, len(X95['iFr'])), fr=X95['iFr'], ue=X95.get('iEu') or [],
+                                es=X95.get('iEs') or [], v='toile', ex="intérêts payés chaque année par toutes les administrations publiques sur leur dette"))
+            R = ser.get('retraites') or {}
+            if R.get('fr') and R.get('annees'):
+                out.append(base(cle='finances.retraites', l='Dépenses publiques de retraite', u='% du PIB', y=R['annees'], fr=R['fr'], ue=R.get('eu') or [],
+                                de=R.get('de') or [], v='ch-retraites', ex="pensions de vieillesse versées par les administrations publiques"))
+            Y = ser.get('Y10') or {}
+            if Y.get('fr'):
+                out.append(base(cle='finances.Y10', l='Taux d\'emprunt de l\'État à 10 ans, moyenne de l\'année', u='%', dec=2, src='Eurostat', y=an(1994, len(Y['fr'])),
+                                fr=Y['fr'], de=Y.get('de') or [], es=Y.get('es') or [], v='rate-num'))
         if pg == 'education':
             for k, l, u, v in PISA:
                 c = (ser.get('PI') or {}).get(k)
