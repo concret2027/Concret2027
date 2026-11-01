@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="0271794c0056">
+<meta name="concret-version" content="3842d57b1564">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -687,8 +687,8 @@ footer p { margin: 0; } footer a { color: inherit; }
       document.getElementById('qz-score').innerHTML = sc0 + '<small> / ' + total + '</small>' + (sc0 !== ok ? '<span class="qz-maint">Vos réponses de maintenant (la grille) : ' + ok + ' sur ' + total + '. Seul le premier essai du jour compte.</span>' : '');
       document.getElementById('qz-grille').textContent = rep.map(function (v) { return v ? '🟩' : '🟥'; }).join('');
       box.hidden = false; if (nouveau) setTimeout(function () { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
-      // Le score n'est compté qu'une fois par jour et par appareil ; il n'est marqué « compté » qu'une fois le compteur d'accord
-      // (si l'envoi a échoué, il repart au prochain chargement de la page). Le classement et la série gardent ce premier essai,
+      // Le score n'est compté qu'une fois par jour et par appareil (marqué « compté » sur l'appareil avant l'envoi ; un appareil qui
+      // ne garde rien, navigation sans mémoire, n'est pas compté). Le classement et la série gardent ce premier essai,
       // même si les questions du jour ont changé depuis (on peut alors y répondre à nouveau, sans que rien ne change).
       var cleCompte = 'quiz-score-compte-' + iso, deja = false, compte = null;
       try { compte = localStorage.getItem(cleCompte); deja = compte != null; } catch (e) {}
@@ -705,11 +705,14 @@ footer p { margin: 0; } footer a { color: inherit; }
       var cle = 'score-' + total + '-' + iso;
       rang.textContent = 'Classement du jour en cours de chargement…';
       // Une seule requête : le score de la personne est compté (sauf s'il l'a déjà été), et le compteur renvoie le nombre de personnes à chaque score.
-      var prom = deja ? ConcretQuiz.compteur('get', cle, total + 1) : ConcretQuiz.compteur('hit', cle, total + 1, ok).then(function (v) { try { localStorage.setItem(cleCompte, String(ok)); } catch (e) {} return v; });
+      // Marqué « compté » avant l'envoi : une page rechargée, ou une réponse du compteur perdue en route, ne compte jamais deux fois
+      // la même partie (le 1er novembre 2026, le compteur du jour avait reçu plusieurs fois le même score sans partie au classement).
+      var marque = false; if (!deja) try { localStorage.setItem(cleCompte, String(ok)); marque = localStorage.getItem(cleCompte) === String(ok); } catch (e) {}
+      var prom = deja || !marque ? ConcretQuiz.compteur('get', cle, total + 1) : ConcretQuiz.compteur('hit', cle, total + 1, ok);
       // Nouveaux joueurs et joueurs revenus du jour, pour l'éditeur seulement (node outils/vues_stats.js, jamais affiché) :
       // « un de plus », sans rien qui identifie la personne. Revenu = cet appareil a déjà fini un quiz un autre jour
       // (historique gardé dans le navigateur, quiz-histo-<date>). Les appareils de l'éditeur (?moi=1) ne sont pas comptés.
-      if (!deja) {
+      if (!deja && marque) {
         var ed = false, avant = false;
         try {
           ed = localStorage.getItem('concret-editeur') === '1';
