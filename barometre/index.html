@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="99c435bd9079">
+<meta name="concret-version" content="6c0ce2967b18">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1403,11 +1403,13 @@ window.addEventListener('baro:data', function () {
     var st = ds.sondages_t1 || [];
     if (st.length) {
       var last = st.map(function (r) { return r.date; }).sort().pop(), rows = st.filter(function (r) { return r.date === last; });
-      var inst = Array.from(new Set(rows.map(function (r) { return r.institut; }))).reverse(), n = ago(last); // le dernier publié d'abord
+      // Jours depuis la publication (« publie ») quand elle est connue, sinon depuis la fin du terrain.
+      var pub = rows.map(function (r) { return r.publie || r.date; }).sort().pop();
+      var inst = Array.from(new Set(rows.map(function (r) { return r.institut; }))).reverse(), n = ago(pub); // le dernier publié d'abord
       // Plusieurs sondages le même jour : la moyenne de ces sondages, comme le bloc « Les derniers sondages ».
       var moy = {}; rows.forEach(function (r) { (moy[r.candidat] = moy[r.candidat] || []).push(+r.score); });
       var top = Object.keys(moy).map(function (c) { var v = moy[c]; return { candidat: c, score: v.reduce(function (a, b) { return a + b; }, 0) / v.length, terrain: rows[0].terrain }; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
-      items.push((n <= 4 ? '<b>' + (inst.length > 1 ? 'Nouveaux sondages ' : 'Nouveau sondage ') : '<b>Pas de nouveau sondage depuis ' + n + ' jours.</b> Dernier en date : ') + esc(inst.join(', ')) + (n <= 4 ? '</b>' : '') + ' (' + (inst.length > 1 ? 'moyenne des ' + inst.length + ' sondages, terrains finis le ' + fd(last) : 'terrain du ' + esc(rows[0].terrain || fd(last))) + ') : ' +
+      items[n <= 4 ? 'unshift' : 'push']((n <= 4 ? '<b>' + (inst.length > 1 ? 'Nouveaux sondages ' : 'Nouveau sondage ') + (n <= 0 ? 'publié aujourd\'hui, ' : n === 1 ? 'publié hier, ' : '') : '<b>Pas de nouveau sondage depuis ' + n + ' jours.</b> Dernier en date : ') + esc(inst.join(', ')) + (n <= 4 ? '</b>' : '') + ' (' + (inst.length > 1 ? 'moyenne des ' + inst.length + ' sondages, terrains finis le ' + fd(last) : 'terrain du ' + esc(rows[0].terrain || fd(last))) + ') : ' +
         top.map(function (r) { return esc(r.candidat) + ' ' + nf(+r.score, 1) + ' %'; }).join(', ') + '.');
     }
     // Événement récent
