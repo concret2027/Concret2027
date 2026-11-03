@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="6c0ce2967b18">
+<meta name="concret-version" content="35b0aedf69e8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -319,7 +319,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 
     <section class="bx-card" id="premier-tour">
       <h2>Premier tour : l'évolution dans les sondages</h2>
-      <p class="bx-note">Chaque point est un sondage (moyenne de ses hypothèses) ; la ligne suit la moyenne des sondages des trois semaines précédentes. Courbes des 8 premiers candidats des sondages. En juillet 2026, Marine Le Pen remplace Jordan Bardella comme candidate du RN. La moyenne de « L'essentiel », plus haut, porte sur les 30 derniers jours : les deux chiffres peuvent différer.</p>
+      <p class="bx-note">Chaque point est un sondage (moyenne de ses hypothèses) ; la ligne suit la moyenne des sondages des 30 jours précédents, la même que dans « L'essentiel ». Courbes des 8 premiers candidats des sondages. En juillet 2026, Marine Le Pen remplace Jordan Bardella comme candidate du RN.</p>
       <div class="bx-legend" id="legend-t1"></div>
       <div class="bx-chart" id="chart-t1" data-source="sondages_t1 tendance_t1 evenements"></div>
       <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
@@ -496,7 +496,7 @@ dash.calc('moyenne_t1', {
 dash.calc('tendance_t1', {
   inputs: ['sondages_t1'],
   title: 'Tendance premier tour',
-  description: 'Pour chaque candidat et chaque date de sondage, moyenne de ses scores sur les 21 jours précédents ; le RN est suivi sans mélanger Bardella et Le Pen.',
+  description: 'Pour chaque candidat et chaque date de sondage, moyenne de ses scores sur les 30 jours précédents (comme « L\'essentiel ») ; le RN est suivi sans mélanger Bardella et Le Pen.',
   fn: function (sondages_t1) {
     var rows = sondages_t1.map(function (r) { return { date: r.date, c: r.candidat === 'Le Pen' || r.candidat === 'Bardella' ? 'RN' : r.candidat, seg: r.candidat, v: Number(r.score) }; });
     var out = [];
@@ -507,8 +507,9 @@ dash.calc('tendance_t1', {
       var mine = rows.filter(function (r) { return r.c === parts[0] && r.seg === parts[1]; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
       var dates = mine.map(function (r) { return r.date; }).filter(function (d, i, a) { return a.indexOf(d) === i; });
       dates.forEach(function (d) {
-        var from = new Date(Date.parse(d) - 21 * 86400000).toISOString().slice(0, 10);
-        var w = mine.filter(function (r) { return r.date <= d && r.date > from; });
+        // Même période que « L'essentiel » : les sondages des 30 jours qui précèdent (bornes comprises).
+        var from = new Date(Date.parse(d) - 30 * 86400000).toISOString().slice(0, 10);
+        var w = mine.filter(function (r) { return r.date <= d && r.date >= from; });
         out.push({ date: d, candidat: parts[0], segment: parts[1], valeur: Math.round(w.reduce(function (a, r) { return a + r.v; }, 0) / w.length * 10) / 10 });
       });
     });
@@ -782,7 +783,7 @@ dash.calc('duels_recents', {
     ((dash.data('sondages_t1') || {}).data || []).filter(function (r) { return r.date < fin && r.date >= deb; }).forEach(function (r) {
       (av[r.candidat] = av[r.candidat] || []).push(+r.score); nbp[r.date + '|' + r.institut] = 1;
     });
-    var nAv = Object.keys(nbp).length, ecart = nAv > 0, sansMoy = [];
+    var nAv = Object.keys(nbp).length, ecart = nAv > 0, sansMoy = [], ex = null;
     var nf1 = function (x) { return x.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); };
     if (ecart) {
       var t = document.createElement('div'); t.className = 'bx-lastbar ec tete'; t.setAttribute('aria-hidden', 'true');
@@ -801,6 +802,10 @@ dash.calc('duels_recents', {
           var m = Math.round(a.reduce(function (x, y) { return x + y; }, 0) / a.length * 10) / 10, d = Math.round((r.score - m) * 10) / 10;
           e.textContent = d === 0 ? '=' : (d > 0 ? '▲ +' : '▼ −') + nf1(Math.abs(d)); if (d) e.className += d > 0 ? ' bx-up' : ' bx-down';
           e.title = 'Moyenne des sondages précédents : ' + nf1(m) + ' %';
+          if (!ex) {
+            var avec = ((dash.data('sondages_t1') || {}).data || []).filter(function (x) { return x.candidat === r.candidat && x.date <= fin && x.date >= deb; }).map(function (x) { return +x.score; });
+            ex = { c: r.candidat, s: r.score, m: m, d: d, avec: Math.round(avec.reduce(function (x, y) { return x + y; }, 0) / avec.length * 10) / 10 };
+          }
           e.setAttribute('aria-label', d === 0 ? 'égal à la moyenne des sondages précédents' : (d > 0 ? 'plus ' : 'moins ') + nf1(Math.abs(d)) + ' point par rapport à la moyenne des sondages précédents (' + nf1(m) + ' %)');
         } else { e.textContent = 'non compté'; sansMoy.push(r.candidat); }
         l.appendChild(e);
@@ -811,6 +816,7 @@ dash.calc('duels_recents', {
       var j = function (x) { return new Date(x + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
       var en = document.createElement('p'); en.className = 'bx-note';
       en.textContent = 'Écart, en points : par rapport à la moyenne des ' + nAv + ' sondage' + (nAv > 1 ? 's' : '') + ' dont le terrain finit entre le ' + j(deb) + ' et le ' + j(new Date(Date.parse(fin) - 864e5).toISOString().slice(0, 10)) + ' (pour chacun, moyenne de ses hypothèses). Les instituts ne posent pas tous les mêmes hypothèses : l\'écart compare des enquêtes différentes.' +
+        (ex ? ' Par exemple, ' + ex.c + ' : ' + nf1(ex.m) + ' % en moyenne avant ce sondage, ' + nf1(ex.s) + ' % dans ce sondage (écart ' + (ex.d > 0 ? '+' : ex.d < 0 ? '−' : '') + nf1(Math.abs(ex.d)) + '), ' + nf1(ex.avec) + ' % en moyenne en l\'incluant, le chiffre de « L\'essentiel » et de la fin de la courbe.' : '') +
         (sansMoy.length ? ' ' + et(sansMoy) + ' : non compté, ' + (sansMoy.length > 1 ? 'pas testés' : 'pas testé') + ' dans ces sondages.' : '');
       box.appendChild(en);
     }
