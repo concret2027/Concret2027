@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="3842d57b1564">
+<meta name="concret-version" content="99c435bd9079">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -213,6 +213,10 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 .bx-lastbar .tr { height: 12px; background: var(--cds-chart-grid); border-radius: 6px; overflow: hidden; }
 .bx-lastbar .fl { height: 100%; border-radius: 6px; }
 .bx-lastbar .pv { text-align: right; }
+.bx-lastbar.ec { grid-template-columns: 96px minmax(0, 1fr) 48px 60px; }
+.bx-lastbar .ev { text-align: right; color: var(--color-fg-muted); white-space: nowrap; }
+.bx-lastbar .ev.bx-up { color: var(--color-ok); } .bx-lastbar .ev.bx-down { color: var(--color-bad); }
+.bx-lastbar.tete { font-size: 11px; color: var(--color-fg-muted); margin-bottom: -2px; }
 .bx-lastsrc { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
 .bx-duel { display: grid; gap: 4px; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
 .bx-duel-t { display: flex; justify-content: space-between; gap: 8px; }
@@ -773,15 +777,43 @@ dash.calc('duels_recents', {
     // Mentions obligatoires sous les barres, toujours en entier (plusieurs sondages : la liste plus bas, une ligne par sondage).
     var src = document.getElementById('last-src'); src.hidden = P.length !== 1; src.innerHTML = P.length === 1 ? mention(P[0]) : '';
     var max = rows[0].score;
+    // Écart avec la moyenne des sondages dont le terrain finit dans les 30 jours précédents (même règle que « L'essentiel »).
+    var fin = P[0].date, deb = new Date(Date.parse(fin) - 30 * 864e5).toISOString().slice(0, 10), av = {}, nbp = {};
+    ((dash.data('sondages_t1') || {}).data || []).filter(function (r) { return r.date < fin && r.date >= deb; }).forEach(function (r) {
+      (av[r.candidat] = av[r.candidat] || []).push(+r.score); nbp[r.date + '|' + r.institut] = 1;
+    });
+    var nAv = Object.keys(nbp).length, ecart = nAv > 0, sansMoy = [];
+    var nf1 = function (x) { return x.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); };
+    if (ecart) {
+      var t = document.createElement('div'); t.className = 'bx-lastbar ec tete'; t.setAttribute('aria-hidden', 'true');
+      t.innerHTML = '<div></div><div></div><div class="pv">Score</div><div class="ev">Écart</div>'; box.appendChild(t);
+    }
     rows.filter(function (r) { return r.score >= 1; }).forEach(function (r) {
-      var l = document.createElement('div'); l.className = 'bx-lastbar';
+      var l = document.createElement('div'); l.className = 'bx-lastbar' + (ecart ? ' ec' : '');
       var n = document.createElement('div'); n.textContent = r.candidat + (r.n < P.length ? ' *' : ''); l.appendChild(n);
       var tr = document.createElement('div'); tr.className = 'tr'; var fl = document.createElement('div'); fl.className = 'fl';
       fl.style.width = (r.score / max * 100) + '%'; fl.style.background = colorOf(r.candidat);
       tr.appendChild(fl); l.appendChild(tr);
       var v = document.createElement('div'); v.className = 'pv'; v.textContent = BX.pct(r.score); l.appendChild(v);
+      if (ecart) {
+        var e = document.createElement('div'), a = av[r.candidat]; e.className = 'ev';
+        if (a) {
+          var m = Math.round(a.reduce(function (x, y) { return x + y; }, 0) / a.length * 10) / 10, d = Math.round((r.score - m) * 10) / 10;
+          e.textContent = d === 0 ? '=' : (d > 0 ? '▲ +' : '▼ −') + nf1(Math.abs(d)); if (d) e.className += d > 0 ? ' bx-up' : ' bx-down';
+          e.title = 'Moyenne des sondages précédents : ' + nf1(m) + ' %';
+          e.setAttribute('aria-label', d === 0 ? 'égal à la moyenne des sondages précédents' : (d > 0 ? 'plus ' : 'moins ') + nf1(Math.abs(d)) + ' point par rapport à la moyenne des sondages précédents (' + nf1(m) + ' %)');
+        } else { e.textContent = 'non compté'; sansMoy.push(r.candidat); }
+        l.appendChild(e);
+      }
       box.appendChild(l);
     });
+    if (ecart) {
+      var j = function (x) { return new Date(x + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
+      var en = document.createElement('p'); en.className = 'bx-note';
+      en.textContent = 'Écart, en points : par rapport à la moyenne des ' + nAv + ' sondage' + (nAv > 1 ? 's' : '') + ' dont le terrain finit entre le ' + j(deb) + ' et le ' + j(new Date(Date.parse(fin) - 864e5).toISOString().slice(0, 10)) + ' (pour chacun, moyenne de ses hypothèses). Les instituts ne posent pas tous les mêmes hypothèses : l\'écart compare des enquêtes différentes.' +
+        (sansMoy.length ? ' ' + et(sansMoy) + ' : non compté, ' + (sansMoy.length > 1 ? 'pas testés' : 'pas testé') + ' dans ces sondages.' : '');
+      box.appendChild(en);
+    }
     var part = rows.filter(function (r) { return r.score >= 1 && r.n < P.length; });
     if (part.length) { var w = document.createElement('p'); w.className = 'bx-note'; w.textContent = '* ' + et(part.map(function (r) { return r.candidat + ' (' + r.n + ' sur ' + P.length + ')'; })) + ' : ' + (part.length > 1 ? 'testés' : 'testé') + ' dans une partie de ces sondages seulement ; moyenne des sondages où ' + (part.length > 1 ? 'ils figurent' : 'il figure') + '.'; box.appendChild(w); }
     if (P.length > 1) { var ul = document.createElement('ul'); ul.className = 'bx-note bx-lastsrc'; ul.innerHTML = P.map(function (p) { return '<li>' + mentionCourte(p) + '</li>'; }).join(''); box.appendChild(ul); var cs = document.createElement('p'); cs.className = 'bx-note mentions'; cs.textContent = 'Notices consultables à la Commission des sondages (marge d\'erreur selon le score).'; box.appendChild(cs); }
