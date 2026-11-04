@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="4e73901f9f41">
+<meta name="concret-version" content="5ef4d0781a47">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -341,7 +341,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <div class="bx-cmp-c" id="cmp-cands" role="group" aria-label="Choisir un candidat"></div>
       <p class="bx-cmp-phrase" id="cmp-phrase"></p>
       <div class="bx-cmp-plus">
-        <p class="bx-note">Chaque campagne à la même distance du vote : moyenne des sondages des 30 jours, un point par sondage. ◆ : le résultat officiel.</p>
+        <p class="bx-note">Chaque campagne à la même distance du vote : moyenne des sondages des 30 jours, un point par sondage. ◆ : le résultat officiel ; l'écart avec le bout de la courbe est l'écart entre les sondages des dernières semaines et le vote.</p>
         <p class="bx-note" id="cmp-note"></p>
       </div>
       <button type="button" class="bx-cmp-voir" aria-expanded="false">Voir le détail ▾</button>
@@ -369,7 +369,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <div class="bx-cmp-c" id="cmp2-cands" role="group" aria-label="Choisir l'adversaire"></div>
       <p class="bx-cmp-phrase" id="cmp2-phrase"></p>
       <div class="bx-cmp-plus">
-        <p class="bx-note">Score de Marine Le Pen au second tour, à la même distance du vote. En 2017 et en 2022, face à Emmanuel Macron (◆ : le résultat officiel) ; en 2027, choisissez l'adversaire.</p>
+        <p class="bx-note">Score de Marine Le Pen au second tour, à la même distance du vote. En 2017 et en 2022, face à Emmanuel Macron (◆ : le résultat officiel, qui peut différer des sondages des dernières semaines) ; en 2027, choisissez l'adversaire.</p>
         <p class="bx-note" id="cmp2-note"></p>
       </div>
       <button type="button" class="bx-cmp-voir" aria-expanded="false">Voir le détail ▾</button>
@@ -1003,6 +1003,9 @@ dash.calc('duels_recents', {
   var cmpDist = function (j) { var m = Math.round(-j / 30.44); return m >= 2 ? m + ' mois' : (-j) + ' jours'; };
   var cmpMois = function (j, t) { return new Date(Date.parse(t + 'T12:00:00Z') + j * 864e5).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); };
   var cmpL = function (t) { return '<span class="l">' + t + ' </span>'; };
+  // Info-bulle : « À 6 mois », « À 12 jours », « La veille » ; dans la dernière semaine, le résultat officiel à côté de la moyenne des sondages.
+  var cmpTete = function (j, tour) { var m = Math.round(-j / 30.44); return j === 0 ? 'Jour du ' + tour : j === -1 ? 'La veille du ' + tour : (m >= 1 ? 'À ' + m + ' mois' : 'À ' + (-j) + ' jours') + ' du ' + tour; };
+  var cmpRes = function (vis, j, y, lab) { var out = []; if (j < -7) return out; vis.forEach(function (s) { if (s.res != null) out.push({ c: CMP_COL[s.an], n: lab(s) + ' · résultat officiel', v: s.res, py: y(s.res), s: s.res.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %' }); }); return out; };
   function drawCmp(rows2027) {
     if (!CMP.passe) return;
     var box = document.getElementById('chart-cmp'); box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
@@ -1050,10 +1053,9 @@ dash.calc('duels_recents', {
       var j = Math.round(x.invert(sx)); if (j > 0 || j < J0) return null;
       var rows = vis.map(function (s) {
         var q = null; s.tr.forEach(function (p) { if (p.j <= j && p.j >= j - 30) q = p; });
-        return q ? { c: CMP_COL[s.an], n: CMP_LAB[s.an], v: q.v, py: y(q.v), s: BX.pct(q.v) } : null;
-      }).filter(Boolean);
-      var m = Math.round(-j / 30.44);
-      return { px: x(j), head: j === 0 ? 'Premier tour' : (m >= 1 ? 'À ' + m + ' mois' : 'À ' + (-j) + ' jours') + ' du premier tour · moyenne des sondages', rows: rows };
+        return q ? { c: CMP_COL[s.an], n: CMP_LAB[s.an] + ' · sondages', v: q.v, py: y(q.v), s: BX.pct(q.v) } : null;
+      }).filter(Boolean).concat(cmpRes(vis, j, y, function (s) { return CMP_LAB[s.an]; }));
+      return { px: x(j), head: cmpTete(j, 'premier tour') + ' · moyenne des sondages des 30 jours', rows: rows };
     });
     // La phrase : à la même distance du premier tour que le dernier sondage de 2026-2027.
     var ph = document.getElementById('cmp-phrase'), nt = document.getElementById('cmp-note'), cur = S[0], nom = BX.full(CMP.cand);
@@ -1157,9 +1159,9 @@ dash.calc('duels_recents', {
     xhair(svg, box, W, 14, H - 30, function (sx) {
       var j = Math.round(x.invert(sx)); if (j > 0 || j < J0) return null;
       var rows = vis.map(function (s) { var q = null; s.tr.forEach(function (p) { if (p.j <= j && p.j >= j - 30) q = p; });
-        return q ? { c: CMP_COL[s.an], n: CMP_LAB[s.an] + ' face à ' + s.adv, v: q.v, py: y(q.v), s: BX.pct(q.v) } : null; }).filter(Boolean);
-      var m = Math.round(-j / 30.44);
-      return { px: x(j), head: (j === 0 ? 'Second tour' : (m >= 1 ? 'À ' + m + ' mois' : 'À ' + (-j) + ' jours') + ' du second tour') + ' · score de Marine Le Pen', rows: rows };
+        return q ? { c: CMP_COL[s.an], n: CMP_LAB[s.an] + ' face à ' + s.adv + ' · sondages', v: q.v, py: y(q.v), s: BX.pct(q.v) } : null; }).filter(Boolean)
+        .concat(cmpRes(vis, j, y, function (s) { return CMP_LAB[s.an] + ' face à ' + s.adv; }));
+      return { px: x(j), head: cmpTete(j, 'second tour') + ' · score de Marine Le Pen', rows: rows };
     });
     var fd = function (j, t) { return new Date(Date.parse(t + 'T12:00:00Z') + j * 864e5).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); };
     var at = function (s, j) { var w = s.pts.filter(function (p) { return p.j <= j && p.j >= j - 30; }); return w.length ? { v: Math.round(w.reduce(function (a, p) { return a + p.v; }, 0) / w.length * 10) / 10, n: w.length } : null; };
