@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="5ef4d0781a47">
+<meta name="concret-version" content="6d338281e4d4">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -369,7 +369,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <div class="bx-cmp-c" id="cmp2-cands" role="group" aria-label="Choisir l'adversaire"></div>
       <p class="bx-cmp-phrase" id="cmp2-phrase"></p>
       <div class="bx-cmp-plus">
-        <p class="bx-note">Score de Marine Le Pen au second tour, à la même distance du vote. En 2017 et en 2022, face à Emmanuel Macron (◆ : le résultat officiel, qui peut différer des sondages des dernières semaines) ; en 2027, choisissez l'adversaire.</p>
+        <p class="bx-note">Score de Marine Le Pen dans les duels de second tour déjà testés en 2017 ou en 2022, à la même distance du vote ; en repère, la finale face à Emmanuel Macron (◆ : le résultat officiel). Les autres duels de 2027 (Philippe, Attal, Glucksmann, Retailleau) n'étaient pas testés : ils sont dans « Second tour : l'évolution ».</p>
         <p class="bx-note" id="cmp2-note"></p>
       </div>
       <button type="button" class="bx-cmp-voir" aria-expanded="false">Voir le détail ▾</button>
@@ -1098,14 +1098,13 @@ dash.calc('duels_recents', {
     lp.forEach(function (r) { nb[r.adversaire] = (nb[r.adversaire] || 0) + 1; });
     // Deux groupes : les duels déjà testés en 2017 ou en 2022, puis ceux qui ne le sont qu'en 2027.
     var deja = {}; (CMP.passe.campagnes || []).forEach(function (c) { (c.duels || []).forEach(function (p) { deja[p.adversaire] = 1; }); });
-    var advs = Object.keys(nb).filter(function (a) { return nb[a] >= 3; }).sort(function (a, b) { return (deja[b] ? 1 : 0) - (deja[a] ? 1 : 0) || nb[b] - nb[a]; });
+    // Seuls les duels déjà testés en 2017 ou en 2022 se comparent ; les autres sont dans « Second tour : l'évolution ».
+    var advs = Object.keys(nb).filter(function (a) { return nb[a] >= 3 && deja[a]; }).sort(function (a, b) { return nb[b] - nb[a]; });
     if (!advs.length) return;
     if (!CMP2.adv || advs.indexOf(CMP2.adv) < 0) CMP2.adv = advs[0];
     var bt = document.getElementById('cmp2-cands');
     if (bt.querySelectorAll('button').length !== advs.length) { bt.textContent = ''; var grp = null;
       advs.forEach(function (c) {
-        var g = deja[c] ? 'Déjà testés en 2017 ou en 2022 :' : 'Testés seulement en 2027 (en 2017 et 2022, la courbe est la finale face à Macron) :';
-        if (g !== grp) { grp = g; var t = document.createElement('span'); t.className = 'bx-cmp-g'; t.textContent = g; bt.appendChild(t); }
         var b = document.createElement('button'); b.type = 'button'; b.textContent = 'Face à ' + c; b.dataset.adv = c;
         b.addEventListener('click', function () { CMP2.adv = c; drawCmp2(rows2027); });
         bt.appendChild(b);
@@ -1137,19 +1136,20 @@ dash.calc('duels_recents', {
     var labs = [], vis = S.filter(function (s) { return s.pts.length; });
     vis.forEach(function (s) {
       var col = CMP_COL[s.an], P = s.pts.filter(function (p) { return p.j >= J0; }), T = s.tr.filter(function (p) { return p.j >= J0; });
-      svg.append('g').selectAll('circle').data(P).join('circle').attr('cx', function (p) { return x(p.j); }).attr('cy', function (p) { return y(p.v); }).attr('r', 2.3).attr('fill', col).attr('fill-opacity', s.meme ? .45 : .28);
-      svg.append('path').datum(T).attr('fill', 'none').attr('stroke', col).attr('stroke-width', s.an === 2027 ? 3 : 2).attr('stroke-dasharray', s.meme ? '5 4' : null).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round')
+      var fin2 = s.an !== 2027 && !s.meme;
+      svg.append('g').selectAll('circle').data(P).join('circle').attr('cx', function (p) { return x(p.j); }).attr('cy', function (p) { return y(p.v); }).attr('r', fin2 ? 1.8 : 2.6).attr('fill', col).attr('fill-opacity', fin2 ? .18 : .5);
+      svg.append('path').datum(T).attr('fill', 'none').attr('stroke', col).attr('stroke-width', s.an === 2027 ? 3 : fin2 ? 1.5 : 2.5).attr('stroke-opacity', fin2 ? .7 : 1).attr('stroke-dasharray', fin2 ? '5 4' : null).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round')
         .attr('d', d3.line().x(function (p) { return x(p.j); }).y(function (p) { return y(p.v); }));
       var fin = T[T.length - 1];
       if (s.res != null) {
         var rx = x(0), ry = y(s.res);
         svg.append('path').attr('d', 'M' + rx + ',' + (ry - 6) + 'l6,6l-6,6l-6,-6z').attr('fill', col).attr('stroke', 'var(--color-panel)').attr('stroke-width', 1.5);
-        labs.push({ y: ry, t: s.an + ' : ' + BX.pct(s.res) + (W < 480 ? '' : ' (résultat)'), col: col });
+        labs.push({ y: ry, t: s.an + (W < 480 ? ' : ' : ' finale : ') + BX.pct(s.res), col: col });
       } else if (fin && s.an === 2027) {
         svg.append('circle').attr('cx', x(fin.j)).attr('cy', y(fin.v)).attr('r', 4).attr('fill', col).attr('stroke', 'var(--color-panel)').attr('stroke-width', 1.5);
         labs.push({ y: y(fin.v), t: s.an + ' : ' + BX.pct(fin.v), col: col, x: x(fin.j) });
       } else if (fin && s.meme) {
-        labs.push({ y: y(fin.v), t: s.an + (W < 480 ? ' même duel' : ' face à ' + s.adv), col: col, x: x(fin.j) });
+        labs.push({ y: y(fin.v), t: s.an + ' : ' + BX.pct(fin.v), col: col, x: x(fin.j) });
       }
     });
     labs.sort(function (a, b) { return a.y - b.y; });
@@ -1178,8 +1178,8 @@ dash.calc('duels_recents', {
     if (memes.length) txt += cmpL('Face à ' + BX.full(CMP2.adv) + ' à la même date : ' + memes.join(', ') + '.');
     document.getElementById('cmp2-phrase').innerHTML = txt;
     var notes = [];
-    var memesAn = S.filter(function (s) { return s.meme; }).map(function (s) { return s.an; });
-    if (CMP2.adv !== 'Macron') notes.push(memesAn.length ? 'En pointillé : le même duel face à ' + BX.full(CMP2.adv) + ', déjà testé en ' + memesAn.join(' et en ') + '.' : 'Ce duel n\'était testé ni en 2017 ni en 2022.');
+    var memesAn = S.filter(function (s) { return s.meme; }).map(function (s) { return s.an; }).sort();
+    notes.push('Trait plein : le même duel, testé en ' + memesAn.join(' et en ') + '. Pointillé : la finale face à Emmanuel Macron, avec son résultat officiel (◆).');
     notes.push('Sous 50 %, Marine Le Pen perd le duel. Un sondage quotidien (rolling) ne compte qu\'une fois par période de terrain.');
     document.getElementById('cmp2-note').textContent = notes.join(' ');
     var cs = CMP.passe.campagnes;
