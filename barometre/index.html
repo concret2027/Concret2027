@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="6d338281e4d4">
+<meta name="concret-version" content="0d2f3f14b87f">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -369,7 +369,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <div class="bx-cmp-c" id="cmp2-cands" role="group" aria-label="Choisir l'adversaire"></div>
       <p class="bx-cmp-phrase" id="cmp2-phrase"></p>
       <div class="bx-cmp-plus">
-        <p class="bx-note">Score de Marine Le Pen dans les duels de second tour déjà testés en 2017 ou en 2022, à la même distance du vote ; en repère, la finale face à Emmanuel Macron (◆ : le résultat officiel). Les autres duels de 2027 (Philippe, Attal, Glucksmann, Retailleau) n'étaient pas testés : ils sont dans « Second tour : l'évolution ».</p>
+        <p class="bx-note">Score de Marine Le Pen dans les duels de second tour déjà testés en 2017 ou en 2022, à la même distance du vote ; en repère, la finale face à Emmanuel Macron (◆ : le résultat officiel). Les autres duels de 2027 (Philippe, Attal, Glucksmann, Retailleau, Hollande) ne se comparent pas : ils n'étaient pas testés, ou l'adversaire n'était pas candidat ; ils sont dans « Second tour : l'évolution ».</p>
         <p class="bx-note" id="cmp2-note"></p>
       </div>
       <button type="button" class="bx-cmp-voir" aria-expanded="false">Voir le détail ▾</button>
@@ -1097,7 +1097,8 @@ dash.calc('duels_recents', {
     var lp = rows2027.filter(function (r) { return r.candidat_rn === 'Le Pen'; }), nb = {};
     lp.forEach(function (r) { nb[r.adversaire] = (nb[r.adversaire] || 0) + 1; });
     // Deux groupes : les duels déjà testés en 2017 ou en 2022, puis ceux qui ne le sont qu'en 2027.
-    var deja = {}; (CMP.passe.campagnes || []).forEach(function (c) { (c.duels || []).forEach(function (p) { deja[p.adversaire] = 1; }); });
+    // Un duel déjà testé en 2017 ou en 2022 avec un adversaire qui a été candidat à l'une de ces élections (Hollande ne l'a pas été).
+    var deja = {}; (CMP.passe.campagnes || []).forEach(function (c) { (c.duels || []).forEach(function (p) { if (CMP.passe.campagnes.some(function (k) { return k.resultats && k.resultats[p.adversaire] != null; })) deja[p.adversaire] = 1; }); });
     // Seuls les duels déjà testés en 2017 ou en 2022 se comparent ; les autres sont dans « Second tour : l'évolution ».
     var advs = Object.keys(nb).filter(function (a) { return nb[a] >= 3 && deja[a]; }).sort(function (a, b) { return nb[b] - nb[a]; });
     if (!advs.length) return;
