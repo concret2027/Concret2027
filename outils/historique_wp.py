@@ -91,10 +91,10 @@ def nom(c):
     return None
 
 
-def main(path, an_def):
+def main(path, an_def, tour='premier', mini=3):
     src = open(path, encoding='utf-8').read()
     L = src.split('\n')
-    a = next(i for i, l in enumerate(L) if l.startswith('== Sondages concernant le premier tour'))
+    a = next(i for i, l in enumerate(L) if l.startswith('== Sondages concernant le ' + tour + ' tour'))
     b = next(i for i, l in enumerate(L) if i > a and l.startswith('== '))
     p = wtp.parse('\n'.join(L[a:b]))
     out, rejets = [], []
@@ -133,7 +133,7 @@ def main(path, an_def):
                 if j < len(r):
                     v = score(r[j])
                     if v is not None: sc[n] = v
-            if len(sc) < 3: rejets.append(('scores', k, i, st, len(sc))); continue
+            if len(sc) < mini: rejets.append(('scores', k, i, st, len(sc))); continue
             out.append({'debut': deb.isoformat(), 'fin': fin.isoformat(), 'institut': st, 'echantillon': ech, 'scores': sc,
                         'url': lien(r[cols['s']]), 'table': k, 'legende': cap})
     return out, rejets

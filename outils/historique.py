@@ -34,9 +34,11 @@ NOMS = {'Marine Le Pen': 'Le Pen', 'Jean-Luc Mélenchon': 'Mélenchon', 'Nicolas
         'François Hollande': 'Hollande'}
 CAMPAGNES = [
     {'annee': 2017, 'premier_tour': '2017-04-23', 'wp': "Liste_de_sondages_sur_l'élection_présidentielle_française_de_2017",
-     'cc': 'https://www.conseil-constitutionnel.fr/decision/2017/2017169PDR.htm', 'decision': 'Décision n° 2017-169 PDR du 26 avril 2017'},
+     'cc': 'https://www.conseil-constitutionnel.fr/decision/2017/2017169PDR.htm', 'decision': 'Décision n° 2017-169 PDR du 26 avril 2017',
+     'second_tour': '2017-05-07', 'cc2': 'https://www.conseil-constitutionnel.fr/decision/2017/2017171PDR.htm', 'decision2': 'Décision n° 2017-171 PDR du 10 mai 2017'},
     {'annee': 2022, 'premier_tour': '2022-04-10', 'wp': "Liste_de_sondages_sur_l'élection_présidentielle_française_de_2022",
-     'cc': 'https://www.conseil-constitutionnel.fr/decision/2022/2022195PDR.htm', 'decision': 'Décision n° 2022-195 PDR du 13 avril 2022'},
+     'cc': 'https://www.conseil-constitutionnel.fr/decision/2022/2022195PDR.htm', 'decision': 'Décision n° 2022-195 PDR du 13 avril 2022',
+     'second_tour': '2022-04-24', 'cc2': 'https://www.conseil-constitutionnel.fr/decision/2022/2022197PDR.htm', 'decision2': 'Décision n° 2022-197 PDR du 27 avril 2022'},
 ]
 NSP = 'https://raw.githubusercontent.com/nsppolls/nsppolls/master/presidentielle.csv'
 MOIS_AVANT = 24  # on garde les sondages des 24 mois avant le premier tour
@@ -85,9 +87,10 @@ def sondages(lignes):
     return garde, ecartes
 
 
-def resultats(url):
+def resultats(url, second=False):
     t = html.unescape(re.sub(r'<[^>]+>', ' ', lire(url))); t = re.sub(r'\s+', ' ', t)
-    i = t.find('Article 1'); t = t[i:t.find('Article 2', i)]
+    if second: i = t.find('Les résultats du second tour'); t = t[i:t.find('Ainsi', i)]
+    else: i = t.find('Article 1'); t = t[i:t.find('Article 2', i)]
     ex = int(re.sub(r'\D', '', re.search(r'Suffrages exprimés : ([\d  ]+)', t).group(1)))
     out = {}
     for m in re.finditer(r"(?:M\.|Mme) ([^:]+?) : ([\d  ]+)", t):
@@ -97,9 +100,34 @@ def resultats(url):
         for full, court in NOMS.items():
             if full.lower() == n.lower().replace('é', 'é'): n = court
         voix = int(re.sub(r'\D', '', m.group(2)))
-        nom = next((c for c in CANDIDATS if c.lower() in n.lower()), None)
+        nom = next((c for c in CANDIDATS + ['Macron'] if c.lower() in n.lower()), None)
         if nom: out[nom] = round(100 * voix / ex, 2)
     return out, ex
+
+
+ADV = {'Bruno Le Maire': 'Le Maire', 'Jean-Luc Mélenchon': 'Mélenchon', 'Emmanuel Macron': 'Macron'}
+
+
+def duels(lignes):
+    """Second tour : les duels avec Marine Le Pen, score de Le Pen et de son adversaire, un par sondage et par duel."""
+    by = defaultdict(list)
+    for r in lignes:
+        if len(r['scores']) != 2 or 'Marine Le Pen' not in r['scores']: continue
+        adv = [c for c in r['scores'] if c != 'Marine Le Pen'][0]
+        by[(institut(r['institut']), r['fin'], r['echantillon'], ADV.get(adv, adv.split()[-1]))].append(r)
+    polls = []
+    for (i, fin, ech, adv), rows in by.items():
+        v = [r['scores']['Marine Le Pen'] for r in rows]
+        polls.append({'institut': i, 'debut': min(r['debut'] for r in rows), 'fin': fin, 'echantillon': ech, 'adversaire': adv,
+                      'score': round(sum(v) / len(v), 2), 'url': rows[0]['url']})
+    polls.sort(key=lambda p: (p['institut'], p['adversaire'], p['fin']))
+    garde, ecartes, der = [], 0, {}
+    for p in polls:
+        d = der.get((p['institut'], p['adversaire']))
+        if d and p['debut'] <= d['fin']: ecartes += 1; continue
+        der[(p['institut'], p['adversaire'])] = p; garde.append(p)
+    garde.sort(key=lambda p: p['fin'])
+    return garde, ecartes
 
 
 def controle_nsp(polls):
@@ -139,6 +167,18 @@ def main():
                 'source': {'titre': 'Wikipédia, ' + c['wp'].replace('_', ' '), 'url': 'https://fr.wikipedia.org/wiki/' + urllib.parse.quote(c['wp'])},
                 'resultats': res, 'resultats_source': {'titre': 'Conseil constitutionnel, ' + c['decision'], 'url': c['cc'], 'exprimes': ex},
                 'sondages': [{'fin': p['fin'], 'institut': p['institut'], 'echantillon': p['echantillon'], 'scores': p['scores'], 'url': p['url']} for p in polls]}
+        l2, r2 = WP.main(tmp, c['annee'], 'second', 2)
+        d2, e2 = duels(l2)
+        t2 = D.date.fromisoformat(c['second_tour'])
+        d2 = [p for p in d2 if (t2 - D.timedelta(days=int(MOIS_AVANT * 30.44))).isoformat() <= p['fin'] < c['second_tour']]
+        res2, ex2 = resultats(c['cc2'], True)
+        from collections import Counter
+        print('   second tour : %d duels avec Le Pen (%s), %d vagues de rolling écartées ; résultat : Le Pen %.2f %%, Macron %.2f %%'
+              % (len(d2), ', '.join('%s %d' % kv for kv in Counter(p['adversaire'] for p in d2).most_common()), e2, res2.get('Le Pen', 0), res2.get('Macron', 0)))
+        camp['second_tour'] = c['second_tour']
+        camp['duels'] = [{'fin': p['fin'], 'institut': p['institut'], 'echantillon': p['echantillon'], 'adversaire': p['adversaire'], 'score': p['score'], 'url': p['url']} for p in d2]
+        camp['resultats_t2'] = res2
+        camp['resultats_t2_source'] = {'titre': 'Conseil constitutionnel, ' + c['decision2'], 'url': c['cc2'], 'exprimes': ex2}
         if c['annee'] == 2022:
             ok, ko = controle_nsp(polls)
             part = ok / max(1, ok + ko)
