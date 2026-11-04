@@ -130,7 +130,7 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-cmp-c { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 2px; }
 .bx-cmp-c button { font: inherit; font-size: 13px; font-weight: 600; color: var(--color-fg); padding: 6px 12px; min-height: 34px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); cursor: pointer; }
 .bx-cmp-c button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-panel); border-color: var(--color-fg); }
-.bx-cmp-phrase { margin: 6px 0 0; }
+.bx-cmp-phrase { margin: 6px 0 0; display: grid; gap: 2px; } .bx-cmp-phrase .l { display: block; } .bx-cmp-phrase .l:first-child { font-weight: 600; }
 .bx-cmp-phrase .y17 { color: var(--cmp-2017); font-weight: 600; } .bx-cmp-phrase .y22 { color: var(--cmp-2022); font-weight: 600; } .bx-cmp-phrase .y27 { color: var(--fr); font-weight: 600; }
 .bx-grouplinks a { font-size: 13px; font-weight: 600; color: var(--color-fg); text-decoration: none; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); }
 .bx-groupnote { grid-column: 1 / -1; margin: -6px 0 0; max-width: 82ch; }
@@ -333,7 +333,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 
     <section class="bx-card wide" id="comparaison">
       <h2>Premier tour : comparé à 2017 et 2022</h2>
-      <p class="bx-note">Chaque campagne à même distance du premier tour : la ligne suit la moyenne des sondages des 30 jours précédents, comme plus haut ; chaque point est un sondage (moyenne de ses hypothèses). Au bout des courbes de 2017 et de 2022, le losange est le résultat officiel du premier tour.</p>
+      <p class="bx-note">Chaque campagne à la même distance du vote : moyenne des sondages des 30 jours, un point par sondage. ◆ : le résultat officiel.</p>
       <div class="bx-cmp-c" id="cmp-cands" role="group" aria-label="Choisir un candidat"></div>
       <p class="bx-cmp-phrase" id="cmp-phrase"></p>
       <div class="bx-chart" id="chart-cmp"></div>
@@ -358,7 +358,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 
     <section class="bx-card wide" id="comparaison-t2">
       <h2>Second tour : comparé à 2017 et 2022</h2>
-      <p class="bx-note">Score de Marine Le Pen au second tour, à même distance du scrutin : la ligne suit la moyenne des sondages des 30 jours précédents ; chaque point est un sondage. En 2017 et en 2022, son adversaire au second tour était Emmanuel Macron : le losange est le résultat officiel. En 2026-2027, choisissez l'adversaire testé.</p>
+      <p class="bx-note">Score de Marine Le Pen au second tour, à la même distance du vote. En 2017 et en 2022, face à Emmanuel Macron (◆ : le résultat officiel) ; en 2027, choisissez l'adversaire.</p>
       <div class="bx-cmp-c" id="cmp2-cands" role="group" aria-label="Choisir l'adversaire"></div>
       <p class="bx-cmp-phrase" id="cmp2-phrase"></p>
       <div class="bx-chart" id="chart-cmp2"></div>
@@ -985,6 +985,10 @@ dash.calc('duels_recents', {
     S.forEach(function (s) { s.pts.sort(function (a, b) { return a.j - b.j; }); s.tr = cmpTendance(s.pts); });
     return S;
   }
+  // Phrases courtes : « À 6 mois du vote », « En octobre 2021 ».
+  var cmpDist = function (j) { var m = Math.round(-j / 30.44); return m >= 2 ? m + ' mois' : (-j) + ' jours'; };
+  var cmpMois = function (j, t) { return new Date(Date.parse(t + 'T12:00:00Z') + j * 864e5).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); };
+  var cmpL = function (t) { return '<span class="l">' + t + ' </span>'; };
   function drawCmp(rows2027) {
     if (!CMP.passe) return;
     var box = document.getElementById('chart-cmp'); box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
@@ -1042,27 +1046,26 @@ dash.calc('duels_recents', {
     var fd = function (j, t1) { return new Date(Date.parse(t1 + 'T12:00:00Z') + j * 864e5).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); };
     var at = function (s, j) { var w = s.pts.filter(function (p) { return p.j <= j && p.j >= j - 30; }); return w.length ? { v: Math.round(w.reduce(function (a, p) { return a + p.v; }, 0) / w.length * 10) / 10, n: w.length } : null; };
     var nf2 = function (v) { return v.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %'; };
-    var txt = '', abs = [], parts = [];
-    var ns = function (n) { return n + ' sondage' + (n > 1 ? 's' : ''); };
+    var txt = '', abs = [];
+    var peu = function (a) { return a.n < 3 ? ' (seulement ' + a.n + ' sondage' + (a.n > 1 ? 's' : '') + ')' : ''; };
     if (cur.pts.length) {
       var j0 = cur.pts[cur.pts.length - 1].j, a0 = at(cur, j0);
-      txt = 'À ' + (-j0) + ' jours du premier tour (' + fd(j0, CMP.T1) + '), ' + nom + ' : <span class="y27">' + BX.pct(a0.v) + '</span> en moyenne (' + ns(a0.n) + ' des 30 jours précédents).';
+      txt = cmpL('À ' + cmpDist(j0) + ' du premier tour, ' + nom + ' : <span class="y27">' + BX.pct(a0.v) + '</span> dans les sondages.');
       S.slice(1).forEach(function (s) {
         var a = at(s, j0), cl = s.an === 2022 ? 'y22' : 'y17';
         if (!s.pts.length) { abs.push(s.an); return; }
-        parts.push('en ' + (s.an - 1) + '-' + s.an + ', ' + (a ? '<span class="' + cl + '">' + BX.pct(a.v) + '</span> (' + fd(j0, s.t1) + ', ' + ns(a.n) + ')' : 'pas de sondage le ' + fd(j0, s.t1)) +
-          (s.res != null ? ', pour <span class="' + cl + '">' + nf2(s.res) + '</span> au premier tour' : ''));
+        txt += cmpL('En ' + cmpMois(j0, s.t1) + ', à la même date : ' + (a ? '<span class="' + cl + '">' + BX.pct(a.v) + '</span>' + peu(a) : 'pas de sondage') + '. ' +
+          (s.res != null ? 'Le jour du vote : <span class="' + cl + '">' + nf2(s.res) + '</span>.' : 'Pas candidat en ' + s.an + '.'));
       });
-      if (parts.length) txt += ' À la même distance du premier tour : ' + parts.join(' ; ') + '.';
-    } else txt = nom + ' n\'est pas encore testé dans les sondages de 2026-2027.';
+    } else txt = cmpL(nom + ' n\'est pas encore testé dans les sondages de 2026-2027.');
     ph.innerHTML = txt;
     var notes = [];
-    if (abs.length) notes.push(nom + ' n\'était pas testé dans les sondages de ' + abs.map(function (a) { return (a - 1) + '-' + a; }).join(' ni de ') + ' : pas de courbe pour ' + (abs.length > 1 ? 'ces campagnes' : 'cette campagne') + '.');
+    if (abs.length) notes.push('Pas testé en ' + abs.join(' ni en ') + ' : pas de courbe.');
     S.slice(1).forEach(function (s) {
-      if (s.pts.length && s.res == null) { var dj = s.pts[s.pts.length - 1].j; notes.push(nom + ' n\'a pas été candidat au premier tour de ' + s.an + ' : testé dans les sondages jusqu\'au ' + fd(dj, s.t1) + ', pas de résultat.'); }
+      if (s.pts.length && s.res == null) { var dj = s.pts[s.pts.length - 1].j; notes.push('Pas candidat en ' + s.an + ' : testé jusqu\'au ' + fd(dj, s.t1) + ', pas de résultat.'); }
     });
-    if (CMP.cand === 'Le Pen') notes.push('Avant juillet 2026, les sondages testaient surtout Jordan Bardella pour le RN : la courbe de 2026-2027 ne retient que les hypothèses avec Marine Le Pen.');
-    notes.push('Les rollings (enquêtes quotidiennes dont les terrains se chevauchent) ne comptent qu\'une vague par période de terrain, pour ne pas compter plusieurs fois les mêmes personnes interrogées.');
+    if (CMP.cand === 'Le Pen') notes.push('Avant juillet 2026, les sondages testaient surtout Jordan Bardella : seules les hypothèses avec Marine Le Pen sont retenues.');
+    notes.push('Un sondage quotidien (rolling) ne compte qu\'une fois par période de terrain.');
     nt.textContent = notes.join(' ');
     var src = document.getElementById('cmp-src'), cs = CMP.passe.campagnes;
     src.innerHTML = 'Sources : ' + cs.map(function (c) { return '<a href="' + esc(c.source.url) + '" target="_blank" rel="noopener">liste des sondages de ' + c.annee + '</a> (Wikipédia, chaque sondage avec le lien vers son rapport)'; }).join(', ') +
@@ -1144,21 +1147,20 @@ dash.calc('duels_recents', {
     var at = function (s, j) { var w = s.pts.filter(function (p) { return p.j <= j && p.j >= j - 30; }); return w.length ? { v: Math.round(w.reduce(function (a, p) { return a + p.v; }, 0) / w.length * 10) / 10, n: w.length } : null; };
     var nf2 = function (v) { return v.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %'; };
     var ns = function (n) { return n + ' sondage' + (n > 1 ? 's' : ''); };
-    var cur = S[0], j0 = cur.pts[cur.pts.length - 1].j, a0 = at(cur, j0), parts = [], memes = [];
-    var txt = 'À ' + (-j0) + ' jours du second tour (' + fd(j0, CMP2.T2) + '), Marine Le Pen face à ' + BX.full(CMP2.adv) + ' : <span class="y27">' + BX.pct(a0.v) + '</span> en moyenne (' + ns(a0.n) + ' des 30 jours précédents).';
+    var cur = S[0], j0 = cur.pts[cur.pts.length - 1].j, a0 = at(cur, j0), memes = [];
+    var peu = function (a) { return a.n < 3 ? ' (seulement ' + a.n + ' sondage' + (a.n > 1 ? 's' : '') + ')' : ''; };
+    var txt = cmpL('À ' + cmpDist(j0) + ' du second tour, Marine Le Pen face à ' + BX.full(CMP2.adv) + ' : <span class="y27">' + BX.pct(a0.v) + '</span>.');
     S.slice(1).forEach(function (s) {
       var a = at(s, j0), cl = s.an === 2022 ? 'y22' : 'y17';
-      if (s.meme) { if (a) memes.push('en ' + (s.an - 1) + '-' + s.an + ', <span class="' + cl + '">' + BX.pct(a.v) + '</span> (' + ns(a.n) + ')'); return; }
-      parts.push('en ' + (s.an - 1) + '-' + s.an + ', face à Emmanuel Macron, ' + (a ? '<span class="' + cl + '">' + BX.pct(a.v) + '</span> (' + fd(j0, s.t) + ', ' + ns(a.n) + ')' : 'duel pas encore testé au ' + fd(j0, s.t)) + (s.res != null ? ', pour <span class="' + cl + '">' + nf2(s.res) + '</span> au second tour' : ''));
+      if (s.meme) { if (a) memes.push('<span class="' + cl + '">' + BX.pct(a.v) + '</span> en ' + cmpMois(j0, s.t) + peu(a)); return; }
+      txt += cmpL('En ' + cmpMois(j0, s.t) + ', face à Emmanuel Macron : ' + (a ? '<span class="' + cl + '">' + BX.pct(a.v) + '</span>' + peu(a) : 'pas encore de sondage') + '. ' + (s.res != null ? 'Le jour du vote : <span class="' + cl + '">' + nf2(s.res) + '</span>.' : ''));
     });
-    if (parts.length) txt += ' À la même distance du second tour : ' + parts.join(' ; ') + '.';
-    if (memes.length) txt += ' Le même duel face à ' + BX.full(CMP2.adv) + ', à la même distance : ' + memes.join(' ; ') + '.';
+    if (memes.length) txt += cmpL('Face à ' + BX.full(CMP2.adv) + ' à la même date : ' + memes.join(', ') + '.');
     document.getElementById('cmp2-phrase').innerHTML = txt;
     var notes = [];
     var memesAn = S.filter(function (s) { return s.meme; }).map(function (s) { return s.an; });
-    if (CMP2.adv !== 'Macron') notes.push(memesAn.length ? 'En pointillé : le même duel face à ' + BX.full(CMP2.adv) + ', testé en ' + memesAn.map(function (a) { return (a - 1) + '-' + a; }).join(' et en ') + '.' : 'Le duel face à ' + BX.full(CMP2.adv) + ' n\'était testé ni en 2016-2017 ni en 2021-2022 : pas de pointillé.');
-    notes.push('En 2017 et en 2022, l\'adversaire était le même, Emmanuel Macron ; en 2026-2027, le score dépend de l\'adversaire testé : la comparaison porte sur le score de Marine Le Pen. Sous 50 %, elle perd le duel.');
-    notes.push('Les rollings ne comptent qu\'une vague par période de terrain.');
+    if (CMP2.adv !== 'Macron') notes.push(memesAn.length ? 'En pointillé : le même duel face à ' + BX.full(CMP2.adv) + ', déjà testé en ' + memesAn.join(' et en ') + '.' : 'Ce duel n\'était testé ni en 2017 ni en 2022.');
+    notes.push('Sous 50 %, Marine Le Pen perd le duel. Un sondage quotidien (rolling) ne compte qu\'une fois par période de terrain.');
     document.getElementById('cmp2-note').textContent = notes.join(' ');
     var cs = CMP.passe.campagnes;
     document.getElementById('cmp2-src').innerHTML = 'Sources : ' + cs.map(function (c) { return '<a href="' + esc(c.source.url) + '" target="_blank" rel="noopener">liste des sondages de ' + c.annee + '</a>'; }).join(', ') + ' (Wikipédia, chaque sondage avec le lien vers son rapport) ; résultats : ' +
