@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="35b0aedf69e8">
+<meta name="concret-version" content="7da339724f29">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1047,7 +1047,10 @@ dash.calc('duels_recents', {
     } else txt = nom + ' n\'est pas encore testé dans les sondages de 2026-2027.';
     ph.innerHTML = txt;
     var notes = [];
-    if (abs.length) notes.push(nom + ' n\'était pas candidat en ' + abs.join(' ni en ') + ' : pas de courbe pour ' + (abs.length > 1 ? 'ces campagnes' : 'cette campagne') + '.');
+    if (abs.length) notes.push(nom + ' n\'était pas testé dans les sondages de ' + abs.map(function (a) { return (a - 1) + '-' + a; }).join(' ni de ') + ' : pas de courbe pour ' + (abs.length > 1 ? 'ces campagnes' : 'cette campagne') + '.');
+    S.slice(1).forEach(function (s) {
+      if (s.pts.length && s.res == null) { var dj = s.pts[s.pts.length - 1].j; notes.push(nom + ' n\'a pas été candidat au premier tour de ' + s.an + ' : testé dans les sondages jusqu\'au ' + fd(dj, s.t1) + ', pas de résultat.'); }
+    });
     if (CMP.cand === 'Le Pen') notes.push('Avant juillet 2026, les sondages testaient surtout Jordan Bardella pour le RN : la courbe de 2026-2027 ne retient que les hypothèses avec Marine Le Pen.');
     notes.push('Les rollings (enquêtes quotidiennes dont les terrains se chevauchent) ne comptent qu\'une vague par période de terrain, pour ne pas compter plusieurs fois les mêmes personnes interrogées.');
     nt.textContent = notes.join(' ');
@@ -1349,7 +1352,7 @@ window.addEventListener('baro:data', function () {
   // Mentions de la loi du 19 juillet 1977 pour les sondages d'un graphique partagé : le dernier sondage en entier, puis
   // l'ensemble (nombre, période, instituts, marges d'erreur) avec le renvoi vers la liste complète et les notices.
   function mentions(card) {
-    var src = card.id === 'second-tour' ? 'sondages_t2' : card.id === 'premier-tour' ? 'sondages_t1' : null;
+    var src = card.id === 'second-tour' ? 'sondages_t2' : card.id === 'premier-tour' || card.id === 'comparaison' ? 'sondages_t1' : null;
     if (!src) return [];
     var rows = dash.data(src).data || [], N = dash.data('sondages_notices').data || [], cle = function (d, i) { return d + '|' + String(i).replace(/ Interactive$/, ''); }, idx = {};
     N.forEach(function (n) { idx[cle(n.date, n.institut)] = n; });
@@ -1391,10 +1394,11 @@ window.addEventListener('baro:data', function () {
       x.fillStyle = fg; x.globalAlpha = .65; x.font = '600 32px "Inter Tight", system-ui, sans-serif';
       x.fillText('CONCRET · BAROMÈTRE 2027 · ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase(), 70, 100);
       x.globalAlpha = 1; x.font = '400 62px Newsreader, Georgia, serif';
-      var y = wrap(x, card.querySelector('h2').textContent, 70, 190, W - 140, 72);
-      var note = card.querySelector('.bx-note');
+      var cmp = card.id === 'comparaison', bp = cmp && card.querySelector('#cmp-cands [aria-pressed="true"]');
+      var y = wrap(x, card.querySelector('h2').textContent + (bp ? ' · ' + BX.full(bp.textContent) : ''), 70, 190, W - 140, 72);
+      var note = cmp ? card.querySelector('#cmp-phrase') : card.querySelector('.bx-note');
       if (chart) { note = null; for (var pv = chart.previousElementSibling; pv; pv = pv.previousElementSibling) if (pv.classList.contains('bx-note')) { note = pv; break; } }
-      if (note) { x.globalAlpha = .7; x.font = '400 28px "Inter Tight", system-ui, sans-serif'; y = wrap(x, note.textContent.split('. ')[0].replace(/\.$/, '') + '.', 70, y + 4, W - 140, 38); x.globalAlpha = 1; }
+      if (note) { x.globalAlpha = .7; x.font = '400 28px "Inter Tight", system-ui, sans-serif'; y = wrap(x, cmp ? note.textContent : note.textContent.split('. ')[0].replace(/\.$/, '') + '.', 70, y + 4, W - 140, 38); x.globalAlpha = 1; }
       // Mentions légales des sondages, en bas de l'image : on mesure leur hauteur avant de placer les graphiques.
       var ML = mentions(card), mh = 0;
       if (ML.length) { x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var mc = document.createElement('canvas').getContext('2d'); mc.font = x.font; ML.forEach(function (t) { var line = '', n = 1; t.split(' ').forEach(function (w) { var u = line ? line + ' ' + w : w; if (mc.measureText(u).width > W - 140 && line) { n++; line = w; } else line = u; }); mh += n * 29 + 8; }); mh += 16; }
@@ -1407,7 +1411,7 @@ window.addEventListener('baro:data', function () {
       });
       if (ML.length) { x.fillStyle = fg; x.globalAlpha = .75; x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var my = H - 150 - mh + 16; ML.forEach(function (t) { my = wrap(x, t, 70, my + 22, W - 140, 29) - 22 + 8; }); x.globalAlpha = 1; }
       x.fillStyle = '#2f5bd3'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText('concret2027.fr', 70, H - 90);
-      x.fillStyle = fg; x.globalAlpha = .6; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; x.fillText(/^(parieurs-t1|polymarket)$/.test(card.id) ? 'Source : Polymarket' : 'Sources : Commission des sondages, instituts', 70, H - 48); x.globalAlpha = 1;
+      x.fillStyle = fg; x.globalAlpha = .6; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; x.fillText(/^(parieurs-t1|polymarket)$/.test(card.id) ? 'Source : Polymarket' : cmp ? 'Sources : Commission des sondages, Wikipédia, Conseil constitutionnel' : 'Sources : Commission des sondages, instituts', 70, H - 48); x.globalAlpha = 1;
       var show = function () { document.getElementById('bx-sheet-img').src = c.toDataURL('image/png'); document.getElementById('bx-sheet').hidden = false; document.getElementById('bx-sheet-close').focus(); };
       try {
         c.toBlob(function (blob) {
@@ -1418,7 +1422,7 @@ window.addEventListener('baro:data', function () {
       } catch (e) { show(); }
     }).catch(function () {});
   }
-  ['premier-tour', 'second-tour', 'parieurs-t1', 'polymarket'].forEach(function (id) {
+  ['premier-tour', 'comparaison', 'second-tour', 'parieurs-t1', 'polymarket'].forEach(function (id) {
     var card = document.getElementById(id); if (!card) return;
     var charts = card.querySelectorAll('.bx-chart');
     if (charts.length > 1) Array.prototype.forEach.call(charts, function (ch) {

@@ -198,6 +198,23 @@ if (S.politique) {
     if ((Date.now() - Date.parse(pj.maj)) / 864e5 > 45) alertes.push('pays à ajouter : chiffres relus il y a plus de 45 jours (relancer python3 outils/pays.py --ecrire)');
   } catch (e) { err('donnees/pays.json illisible (relancer python3 outils/pays.py --ecrire)'); }
 })();
+// Comparaison du Baromètre avec 2017 et 2022 (outils/historique.py → donnees/sondages_passes.json) : deux campagnes, chacune
+// avec ses sondages (date, institut, scores plausibles), son résultat officiel et sa source.
+(function () {
+  try {
+    var H = JSON.parse(fs.readFileSync(path.join(ROOT, 'donnees', 'sondages_passes.json'), 'utf8')), jo = /^\d{4}-\d{2}-\d{2}$/;
+    if (!H.campagnes || H.campagnes.length !== 2) err('donnees/sondages_passes.json : il faut les campagnes 2017 et 2022 (relancer python3 outils/historique.py --ecrire)');
+    (H.campagnes || []).forEach(function (c) {
+      if (!c.source || !c.source.url || !c.resultats_source || !c.resultats_source.url) err('donnees/sondages_passes.json ' + c.annee + ' : source manquante');
+      if (!c.sondages || c.sondages.length < 50) err('donnees/sondages_passes.json ' + c.annee + ' : moins de 50 sondages');
+      (c.sondages || []).forEach(function (p) {
+        if (!jo.test(p.fin) || p.fin >= c.premier_tour) err('donnees/sondages_passes.json ' + c.annee + ' : date de sondage invalide (' + p.fin + ')');
+        Object.keys(p.scores || {}).forEach(function (k) { var v = p.scores[k]; if (!(v >= 0 && v <= 60)) err('donnees/sondages_passes.json ' + c.annee + ' : score hors plage (' + k + ' ' + v + ', ' + p.fin + ')'); });
+      });
+      if (!c.resultats || !(c.resultats['Le Pen'] > 0)) err('donnees/sondages_passes.json ' + c.annee + ' : résultats officiels manquants');
+    });
+  } catch (e) { err('donnees/sondages_passes.json illisible (relancer python3 outils/historique.py --ecrire)'); }
+})();
 // Votez les lois (outils/parlement.py → donnees/votes.json) : chaque vote a sa date, son numéro, son résultat et la position
 // d'au moins un groupe ; chaque position et chaque décompte sont lisibles ; relu depuis moins de trois jours.
 (function () {

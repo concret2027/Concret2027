@@ -27,9 +27,11 @@ import historique_wp as WP  # noqa: E402
 RACINE = os.path.dirname(ICI)
 SORTIE = os.path.join(RACINE, 'donnees', 'sondages_passes.json')
 UA = {'User-Agent': 'Concret/1.0 (https://concret2027.fr)'}
-CANDIDATS = ['Le Pen', 'Mélenchon', 'Zemmour', 'Dupont-Aignan', 'Roussel', 'Arthaud']
+# Les candidats testés pour 2027 (au moins 10 sondages) qui l'ont aussi été en 2016-2017 ou en 2021-2022.
+CANDIDATS = ['Le Pen', 'Mélenchon', 'Zemmour', 'Dupont-Aignan', 'Roussel', 'Arthaud', 'Hollande']
 NOMS = {'Marine Le Pen': 'Le Pen', 'Jean-Luc Mélenchon': 'Mélenchon', 'Nicolas Dupont-Aignan': 'Dupont-Aignan',
-        'Nathalie Arthaud': 'Arthaud', 'Fabien Roussel': 'Roussel', 'Éric Zemmour': 'Zemmour', 'Eric Zemmour': 'Zemmour'}
+        'Nathalie Arthaud': 'Arthaud', 'Fabien Roussel': 'Roussel', 'Éric Zemmour': 'Zemmour', 'Eric Zemmour': 'Zemmour',
+        'François Hollande': 'Hollande'}
 CAMPAGNES = [
     {'annee': 2017, 'premier_tour': '2017-04-23', 'wp': "Liste_de_sondages_sur_l'élection_présidentielle_française_de_2017",
      'cc': 'https://www.conseil-constitutionnel.fr/decision/2017/2017169PDR.htm', 'decision': 'Décision n° 2017-169 PDR du 26 avril 2017'},
