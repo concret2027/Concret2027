@@ -91,7 +91,8 @@ def nom(c):
     return None
 
 
-def main(path, an_def, tour='premier', mini=3):
+def main(path, an_def, tour='premier', mini=3, nom_cellule=False):
+    # nom_cellule : une case peut nommer un autre candidat que sa colonne (2027 : « 6,5 Hollande (PS) » dans la colonne de Glucksmann).
     src = open(path, encoding='utf-8').read()
     L = src.split('\n')
     # Section « Sondages concernant le premier tour » (2017, 2022) ou « Premier tour » (2012).
@@ -139,8 +140,13 @@ def main(path, an_def, tour='premier', mini=3):
             sc = {}
             for j, n in noms.items():
                 if j < len(r):
-                    v = score(r[j])
-                    if v is not None: sc[n] = v
+                    v = score(r[j]); nc = None
+                    if nom_cellule:
+                        cel = re.sub(r'<ref[^>]*/>|<ref[^>]*>.*?</ref>', '', r[j] or ''); nc = nom(cel)
+                        if v is None and nc:  # « 6,5 Hollande (PS) » : le chiffre en tête de la case
+                            m = re.match(r'\s*(\d+(?:[.,]\d+)?)\b', nettoie(cel)); v = float(m.group(1).replace(',', '.')) if m else None
+                    if v is None: continue
+                    sc[nc or n] = v
             if len(sc) < mini: rejets.append(('scores', k, i, st, len(sc))); continue
             out.append({'debut': deb.isoformat(), 'fin': fin.isoformat(), 'institut': st, 'echantillon': ech, 'scores': sc,
                         'url': lien(r[cols['s']]), 'table': k, 'legende': cap})

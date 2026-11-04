@@ -129,6 +129,11 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-grouplinks { display: flex; flex-wrap: wrap; gap: 6px; }
 .bx-cmp-c { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; }
 .bx-cmp-c button { flex: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--color-fg); padding: 3px 10px; min-height: 30px; border-radius: 8px; border: 1px solid var(--color-border-line); background: var(--color-bg); cursor: pointer; }
+.bx-hyp { display: grid; gap: 8px; margin: 12px 0 0; }
+.bx-hyp-g { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.bx-hyp-l { margin: 0; font-size: 13px; color: var(--cds-text-secondary); min-width: 0; }
+.bx-hyp-l + .bx-cmp-c { margin: 0; }
+.bx-cmp-c button:disabled { opacity: .4; cursor: default; }
 .bx-cmp-c button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-panel); border-color: var(--color-fg); }
 .bx-cmp-qui { margin-top: -2px; } #chart-cmp { min-height: 330px; } #cmp-exc { font-size: 12px; line-height: 1.4; }
 .bx-cmp-t table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
@@ -343,7 +348,9 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <!-- Pas de légende : le nom de chaque candidat est écrit au bout de sa courbe. -->
       <div class="bx-legend" id="legend-t1" hidden></div>
       <div class="bx-cmp-c bx-per" role="group" aria-label="Période affichée"><button type="button" data-p="tout" aria-pressed="true">Tout</button><button type="button" data-p="1an" aria-pressed="false">1 an</button><button type="button" data-p="6mois" aria-pressed="false">6 mois</button><button type="button" data-p="3mois" aria-pressed="false">3 mois</button></div>
+      <div class="bx-hyp" id="hyp-t1" hidden></div>
       <div class="bx-chart" id="chart-t1" data-source="sondages_t1 tendance_t1 evenements"></div>
+      <p class="bx-note mentions" id="hyp-note" hidden></p>
       <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
       <ol class="bx-events replie" id="events-list" data-source="evenements" data-n="0" data-voir="Voir les {n} événements numérotés sur la courbe"></ol>
     </section>
@@ -523,6 +530,61 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
   BX.borne = function (rows, per) { var last = rows.reduce(function (m, r) { return r.date > m ? r.date : m; }, ''); return new Date(Date.parse(last) - BX.JOURS[per] * 864e5).toISOString().slice(0, 10); };
   BX.coupe = function (rows) { if (BX.PER === 'tout' || !rows.length) return ''; return BX.borne(rows, BX.PER); };
   // Une période qui garderait tous les sondages (ils ont tous moins d'un an, par exemple) ne changerait rien : son bouton est caché.
+  // Choisir une hypothèse : le détail des hypothèses de chaque sondage (donnees/hypotheses_t1.json, outils/hypotheses.py).
+  var HYP = { data: null, choix: {}, charge: 0 };
+  var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); };
+  BX.HYP = HYP;
+  var hypSous = function (h, g) { return g.candidats.filter(function (c) { return h[c] != null; }).join(' + '); };
+  var hypLab = function (g, k) { var sub = k.split(' + '); return g.candidats.length === 2 ? (sub.length === 2 ? sub.join(' et ') : sub[0] + ' sans ' + g.candidats.filter(function (c) { return c !== sub[0]; })[0]) : sub.join(' et '); };
+  HYP.actif = function () { return !!HYP.data && HYP.data.groupes.some(function (g) { return HYP.choix[g.id]; }); };
+  var hypOk = function (h, ch) { return HYP.data.groupes.every(function (g) { var c = ch[g.id]; return !c || hypSous(h, g) === c; }); };
+  var hypPolls = function (ch) { return HYP.data.sondages.filter(function (p) { return p.hyp.some(function (h) { return hypOk(h, ch); }); }); };
+  HYP.label = function () { return HYP.data.groupes.filter(function (g) { return HYP.choix[g.id]; }).map(function (g) { var l = hypLab(g, HYP.choix[g.id]); return g.candidats.length > 2 ? l + ' ' + g.titre.charAt(0).toLowerCase() + g.titre.slice(1) : l; }).join(', '); };
+  // Pour chaque sondage qui la teste : la moyenne des hypothèses qui correspondent au choix.
+  HYP.rows = function () {
+    var out = [];
+    hypPolls(HYP.choix).forEach(function (p) {
+      var sc = {};
+      p.hyp.filter(function (h) { return hypOk(h, HYP.choix); }).forEach(function (h) { Object.keys(h).forEach(function (c) { (sc[c] = sc[c] || []).push(h[c]); }); });
+      Object.keys(sc).forEach(function (c) { out.push({ date: p.date, institut: p.institut, candidat: c, score: String(Math.round(sc[c].reduce(function (a, v) { return a + v; }, 0) / sc[c].length * 100) / 100), hypotheses: String(sc[c].length) }); });
+    });
+    return out;
+  };
+  HYP.ui = function () {
+    var box = document.getElementById('hyp-t1'); box.textContent = '';
+    HYP.data.groupes.forEach(function (g) {
+      var n = {}; HYP.data.sondages.forEach(function (p) { var vu = {}; p.hyp.forEach(function (h) { var k = hypSous(h, g); if (k && !vu[k]) { vu[k] = 1; n[k] = (n[k] || 0) + 1; } }); });
+      var opts = Object.keys(n).filter(function (k) { return n[k] >= 3; }).sort(function (a, b) { return n[b] - n[a]; });
+      if (opts.length < 2) return;
+      var d = document.createElement('div'); d.className = 'bx-hyp-g';
+      d.innerHTML = '<p class="bx-hyp-l">' + esc(g.titre) + ' :</p><div class="bx-cmp-c" role="group" aria-label="' + esc(g.titre) + '"></div>';
+      var bt = d.lastChild;
+      [''].concat(opts).forEach(function (k) {
+        var b = document.createElement('button'); b.type = 'button'; b.dataset.g = g.id; b.dataset.v = k; b.textContent = k ? hypLab(g, k) : 'Toutes';
+        b.setAttribute('aria-pressed', (HYP.choix[g.id] || '') === k ? 'true' : 'false');
+        b.addEventListener('click', function () { HYP.choix[g.id] = k; dash.refresh(); });
+        bt.appendChild(b);
+      });
+      box.appendChild(d);
+    });
+    box.hidden = !box.childNodes.length;
+  };
+  // Boutons à jour ; une option qu'aucun sondage (moins de 3) ne teste avec l'autre choix est grisée.
+  HYP.etat = function () {
+    document.querySelectorAll('#hyp-t1 button').forEach(function (b) {
+      var ch = Object.assign({}, HYP.choix); ch[b.dataset.g] = b.dataset.v;
+      b.setAttribute('aria-pressed', (HYP.choix[b.dataset.g] || '') === b.dataset.v ? 'true' : 'false');
+      b.disabled = !!b.dataset.v && hypPolls(ch).length < 3;
+      b.title = b.disabled ? 'Moins de 3 sondages testent cette hypothèse avec l\'autre choix' : '';
+    });
+    var nt = document.getElementById('hyp-note');
+    if (!HYP.actif()) { nt.hidden = true; return; }
+    var np = hypPolls(HYP.choix).length, tot = HYP.data.sondages.length + HYP.data.ecartes.length, ne = HYP.data.ecartes.length;
+    nt.innerHTML = '<b>Hypothèse : ' + esc(HYP.label()) + '.</b> ' + np + ' sondage' + (np > 1 ? 's' : '') + ' sur ' + tot + ' la testent (pour chacun, la moyenne de ses hypothèses qui y correspondent).' +
+      (ne ? ' ' + ne + ' sondage' + (ne > 1 ? 's ne sont pas comptés' : ' n\'est pas compté') + ' : le détail de leurs hypothèses, lu sur Wikipédia, ne redonne pas exactement leurs chiffres publiés.' : '') +
+      ' Détail des hypothèses : <a href="' + esc(HYP.data.source.url) + '" target="_blank" rel="noopener">Wikipédia</a>.';
+    nt.hidden = false;
+  };
   BX.perVis = function (id, rows) {
     if (!rows.length) return; var prem = rows.reduce(function (m, r) { return r.date < m ? r.date : m; }, '9999');
     document.querySelectorAll('#' + id + ' .bx-per button').forEach(function (b) { b.hidden = b.dataset.p !== 'tout' && BX.borne(rows, b.dataset.p) <= prem; });
@@ -554,11 +616,8 @@ dash.calc('moyenne_t1', {
   }
 });
 
-dash.calc('tendance_t1', {
-  inputs: ['sondages_t1'],
-  title: 'Tendance premier tour',
-  description: 'Pour chaque candidat et chaque date de sondage, moyenne de ses scores sur les 30 jours précédents (comme « L\'essentiel ») ; le RN est suivi sans mélanger Bardella et Le Pen.',
-  fn: function (sondages_t1) {
+// La même moyenne pour toutes les hypothèses et pour une hypothèse choisie (« choisir une hypothèse »).
+BX.tendanceT1 = function (sondages_t1) {
     var rows = sondages_t1.map(function (r) { return { date: r.date, c: r.candidat === 'Le Pen' || r.candidat === 'Bardella' ? 'RN' : r.candidat, seg: r.candidat, v: Number(r.score) }; });
     var out = [];
     var keys = {};
@@ -575,7 +634,12 @@ dash.calc('tendance_t1', {
       });
     });
     return out;
-  }
+};
+dash.calc('tendance_t1', {
+  inputs: ['sondages_t1'],
+  title: 'Tendance premier tour',
+  description: 'Pour chaque candidat et chaque date de sondage, moyenne de ses scores sur les 30 jours précédents (comme « L\'essentiel ») ; le RN est suivi sans mélanger Bardella et Le Pen.',
+  fn: function (sondages_t1) { return BX.tendanceT1(sondages_t1); }
 });
 
 dash.calc('tableau_t1', {
@@ -987,7 +1051,7 @@ dash.calc('duels_recents', {
         svg.append('path').datum(pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('stroke-opacity', g[0] === 'Bardella' ? .45 : 1)
           .attr('d', d3.line().x(function (t) { return x(t.d); }).y(function (t) { return y(t.v); }));
         // Le trait pâle du RN avant juillet 2026 : son nom au bout, pour qu'on sache qui c'est.
-        if (g[0] === 'Bardella' && pts.length) { var lb = pts[pts.length - 1]; var tb = svg.append('text').attr('x', x(lb.d) - 4).attr('y', y(lb.v) - 7).attr('text-anchor', 'end').attr('fill', c.col).style('font-size', '11px').style('font-weight', 600).text('Jordan Bardella'); if (x(lb.d) - 4 - tb.node().getComputedTextLength() < mL + 2) tb.attr('x', mL + 2).attr('text-anchor', 'start'); }
+        if (g[0] === 'Bardella' && pts.length) { var lb = pts[pts.length - 1]; var tb = svg.append('text').attr('x', x(lb.d) - 4).attr('y', y(lb.v) - 7).attr('text-anchor', 'end').attr('fill', c.col).style('font-size', '11px').style('font-weight', 600).text('Jordan Bardella'); if (x(lb.d) - 4 - tb.node().getComputedTextLength() < mL + 2) tb.attr('x', mL + 8).attr('text-anchor', 'start'); }
       });
       var lastAll = tr.sort(function (a, b) { return a.d - b.d; })[tr.length - 1];
       if (lastAll && lastAll.seg !== 'Bardella') labs.push({ c: c, y: y(lastAll.v), v: lastAll.v, x: x(lastAll.d) });
@@ -1347,7 +1411,11 @@ dash.calc('duels_recents', {
     var events = ev.status === 'ok' ? ev.data.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }).map(function (e, i) { return Object.assign({ n: i + 1 }, e); }) : [];
     var cd = Math.ceil((Date.parse('2027-04-18T00:00:00+02:00') - Date.now()) / 86400000);
     document.getElementById('countdown').textContent = 'J-' + Math.max(0, cd);
-    chart('chart-t1', t1.status === 'ok' && tr.status === 'ok' && moy.status === 'ok' && ev.status !== 'loading', t1.status === 'error' || tr.status === 'error', function () { drawT1(t1.data, tr.data, events); });
+    chart('chart-t1', t1.status === 'ok' && tr.status === 'ok' && moy.status === 'ok' && ev.status !== 'loading', t1.status === 'error' || tr.status === 'error', function () {
+      if (BX.HYP.actif()) { var hr = BX.HYP.rows(); drawT1(hr, BX.tendanceT1(hr), events); } else drawT1(t1.data, tr.data, events);
+      if (BX.HYP.data) BX.HYP.etat();
+    });
+    if (t1.status === 'ok' && !BX.HYP.charge) { BX.HYP.charge = 1; fetch('../donnees/hypotheses_t1.json').then(function (r) { return r.json(); }).then(function (j) { BX.HYP.data = j; BX.HYP.ui(); BX.HYP.etat(); }).catch(function (e) { console.error(e); }); }
     if (t1.status === 'ok') {
       if (CMP.passe) { drawCmp(t1.data); drawRythme(t1.data); }
       else if (!CMP.charge) { CMP.charge = 1; fetch('../donnees/sondages_passes.json').then(function (r) { return r.json(); }).then(function (j) { CMP.passe = j; drawCmp(t1.data); drawRythme(t1.data); }).catch(function () { failLine(document.getElementById('chart-cmp')); }); }
@@ -1533,7 +1601,7 @@ window.addEventListener('baro:data', function () {
       x.globalAlpha = 1; x.font = '400 62px Newsreader, Georgia, serif';
       var cmp = card.id === 'comparaison', bp = cmp && card.querySelector('.bx-cmp-c [aria-pressed="true"]');
       if (cmp) x.font = '400 50px Newsreader, Georgia, serif';
-      var y = wrap(x, cmp ? (bp ? BX.full(bp.textContent) + ' · ' : '') + 'premier tour, comparé à 2012, 2017 et 2022' : card.querySelector('h2').textContent, 70, cmp ? 172 : 190, W - 140, cmp ? 58 : 72);
+      var y = wrap(x, cmp ? (bp ? BX.full(bp.textContent) + ' · ' : '') + 'premier tour, comparé à 2012, 2017 et 2022' : card.querySelector('h2').textContent + (card.id === 'premier-tour' && BX.HYP.actif() ? ' · hypothèse ' + BX.HYP.label() : ''), 70, cmp ? 172 : 190, W - 140, cmp ? 58 : 72);
       var note = cmp ? null : card.querySelector('.bx-note');
       // Comparaison : le tableau-légende en grand (à la même distance du vote, résultat), puis les exceptions.
       if (cmp) {
