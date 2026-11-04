@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="0d2f3f14b87f">
+<meta name="concret-version" content="bc9a6a1a188a">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -850,11 +850,16 @@ dash.calc('duels_recents', {
     });
     if (ecart) {
       var j = function (x) { return new Date(x + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
+      // Replié : la première phrase (et ce qui n'est pas compté, toujours visible) ; « Voir le détail » ouvre la méthode et l'exemple.
       var en = document.createElement('p'); en.className = 'bx-note';
-      en.textContent = 'Écart, en points : par rapport à la moyenne des ' + nAv + ' sondage' + (nAv > 1 ? 's' : '') + ' dont le terrain finit entre le ' + j(deb) + ' et le ' + j(new Date(Date.parse(fin) - 864e5).toISOString().slice(0, 10)) + ' (pour chacun, moyenne de ses hypothèses). Les instituts ne posent pas tous les mêmes hypothèses : l\'écart compare des enquêtes différentes.' +
-        (ex ? ' Par exemple, ' + ex.c + ' : ' + nf1(ex.m) + ' % en moyenne avant ce sondage, ' + nf1(ex.s) + ' % dans ce sondage (écart ' + (ex.d > 0 ? '+' : ex.d < 0 ? '−' : '') + nf1(Math.abs(ex.d)) + '), ' + nf1(ex.avec) + ' % en moyenne en l\'incluant, le chiffre de « L\'essentiel » et de la fin de la courbe.' : '') +
-        (sansMoy.length ? ' ' + et(sansMoy) + ' : non compté, ' + (sansMoy.length > 1 ? 'pas testés' : 'pas testé') + ' dans ces sondages.' : '');
-      box.appendChild(en);
+      var court = document.createElement('span');
+      court.textContent = 'Écart, en points : avec la moyenne des ' + nAv + ' sondage' + (nAv > 1 ? 's' : '') + ' des 30 jours précédents.' + (sansMoy.length ? ' ' + et(sansMoy) + ' : non compté, ' + (sansMoy.length > 1 ? 'pas testés' : 'pas testé') + ' dans ces sondages.' : '') + ' ';
+      var plus = document.createElement('span'); plus.hidden = true;
+      plus.textContent = 'Terrains finis entre le ' + j(deb) + ' et le ' + j(new Date(Date.parse(fin) - 864e5).toISOString().slice(0, 10)) + ', pour chacun la moyenne de ses hypothèses. Les instituts ne posent pas tous les mêmes hypothèses : l\'écart compare des enquêtes différentes.' +
+        (ex ? ' Par exemple, ' + ex.c + ' : ' + nf1(ex.m) + ' % en moyenne avant ce sondage, ' + nf1(ex.s) + ' % dans ce sondage (écart ' + (ex.d > 0 ? '+' : ex.d < 0 ? '−' : '') + nf1(Math.abs(ex.d)) + '), ' + nf1(ex.avec) + ' % en moyenne en l\'incluant, le chiffre de « L\'essentiel » et de la fin de la courbe.' : '') + ' ';
+      var bv = document.createElement('button'); bv.type = 'button'; bv.className = 'bx-cmp-voir'; bv.textContent = 'Voir le détail ▾'; bv.setAttribute('aria-expanded', 'false');
+      bv.addEventListener('click', function () { plus.hidden = !plus.hidden; bv.textContent = plus.hidden ? 'Voir le détail ▾' : 'Masquer ▴'; bv.setAttribute('aria-expanded', plus.hidden ? 'false' : 'true'); });
+      en.appendChild(court); en.appendChild(plus); box.appendChild(en); box.appendChild(bv);
     }
     var part = rows.filter(function (r) { return r.score >= 1 && r.n < P.length; });
     if (part.length) { var w = document.createElement('p'); w.className = 'bx-note'; w.textContent = '* ' + et(part.map(function (r) { return r.candidat + ' (' + r.n + ' sur ' + P.length + ')'; })) + ' : ' + (part.length > 1 ? 'testés' : 'testé') + ' dans une partie de ces sondages seulement ; moyenne des sondages où ' + (part.length > 1 ? 'ils figurent' : 'il figure') + '.'; box.appendChild(w); }
