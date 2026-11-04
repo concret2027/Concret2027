@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="948509394fec">
+<meta name="concret-version" content="6c02be4fe36a">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -35,7 +35,7 @@
 /* Layout: one centered column of cards; tokens mirror the dashboard kit so the page reads the same, in both themes. */
 :root {
   --color-bg: #f6f6f3; --color-panel: #ffffff; --color-fg: #1c1d22; --color-fg-muted: #62646d;
-  --color-border-line: #e2e2dc; --color-ok: #1f8a4c; --color-bad: #c43d3d; --fr: #2f5bd3; --cmp-2022: #b86a12; --cmp-2017: #7b7f89;
+  --color-border-line: #e2e2dc; --color-ok: #1f8a4c; --color-bad: #c43d3d; --fr: #2f5bd3; --cmp-2022: #b86a12; --cmp-2017: #5d6270;
   --cds-chart-grid: #ececE6; --cds-chart-axis: #c9c9c2; --cds-chart-reference: #9a9ca3; --cds-chart-muted: #c9cad0;
   --cds-surface-popover: #ffffff; --cds-border: #dcdcd5; --cds-shadow-popover: 0 4px 16px rgba(20, 22, 30, .12); --cds-text-secondary: #62646d;
   --cds-radius: 10px; --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 14px; --cds-pad-lg: 20px;
@@ -130,7 +130,7 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-cmp-c { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; }
 .bx-cmp-c button { flex: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--color-fg); padding: 3px 10px; min-height: 30px; border-radius: 8px; border: 1px solid var(--color-border-line); background: var(--color-bg); cursor: pointer; }
 .bx-cmp-c button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-panel); border-color: var(--color-fg); }
-.bx-cmp-qui { margin-top: -2px; } #chart-cmp { min-height: 300px; } #cmp-exc { font-size: 12px; line-height: 1.4; }
+.bx-cmp-qui { margin-top: -2px; } #chart-cmp { min-height: 330px; } #cmp-exc { font-size: 12px; line-height: 1.4; }
 .bx-cmp-t table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .bx-cmp-t { max-width: 420px; }
 .bx-cmp-t th, .bx-cmp-t td { text-align: left; padding: 3px 6px 3px 0; vertical-align: baseline; font-size: 13.5px; line-height: 1.35; }
@@ -1053,9 +1053,12 @@ dash.calc('duels_recents', {
     tb.setAttribute('aria-label', nom + ', au premier tour : ' + S.map(function (s) { var a = A[s.an]; return CMP_LAB[s.an] + ' ' + (a ? BX.pct(a.v) : 'non mesuré') + (s.res != null ? ', résultat ' + nf2(s.res) : ''); }).join(' ; '));
 
     // Graphique.
-    var W = box.clientWidth || 600, tel = W < 480, H = tel ? 300 : 340, J0 = -540, T0 = 26, B0 = H - 40;
+    var W = box.clientWidth || 600, tel = W < 480, H = tel ? 330 : 360, J0 = -540, T0 = 26, B0 = H - 40;
     var maxV = d3.max(vis, function (s) { return d3.max(s.pts.concat(s.res != null ? [{ v: s.res }] : []), function (p) { return p.v; }); }) || 10;
-    var y = d3.scaleLinear([0, Math.ceil((maxV + 2) / 5) * 5], [B0, T0]);
+    // L'axe vertical se resserre autour des courbes (il ne part pas forcément de 0) pour qu'on les distingue.
+    var minV = d3.min(vis, function (s) { return d3.min(s.tr.filter(function (p) { return p.j >= J0; }).concat(s.res != null ? [{ v: s.res }] : []), function (p) { return p.v; }); });
+    var lo = Math.max(0, Math.floor(((minV == null ? 0 : minV) - 3) / 5) * 5);
+    var y = d3.scaleLinear([lo, Math.ceil((maxV + 1) / 5) * 5], [B0, T0]);
     var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Intentions de vote de ' + nom + ' au premier tour, campagnes 2016-2017, 2021-2022 et 2026-2027, selon le nombre de mois avant le premier tour, et résultats officiels');
     var gy = svg.append('g').call(d3.axisLeft(y).ticks(5).tickFormat(function (v) { return v + ' %'; }).tickSize(0)); styleAxis(gy);
     var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); }); mL = Math.ceil(mL) + 8; var mR = tel ? 66 : 90;
@@ -1071,12 +1074,12 @@ dash.calc('duels_recents', {
     svg.append('text').attr('x', x(0) + 7).attr('y', T0 - 9).attr('fill', 'var(--color-fg-muted)').style('font-size', '10.5px').text('Résultat');
     vis.forEach(function (s) {
       var col = CMP_COL[s.an], past = s.an !== 2027, P = s.pts.filter(function (p) { return p.j >= J0; }), T = s.tr.filter(function (p) { return p.j >= J0; });
-      svg.append('g').selectAll('circle').data(P).join('circle').attr('cx', function (p) { return x(p.j); }).attr('cy', function (p) { return y(p.v); }).attr('r', past ? 1.6 : 2.5).attr('fill', col).attr('fill-opacity', past ? .16 : .35);
+      svg.append('g').selectAll('circle').data(P).join('circle').attr('cx', function (p) { return x(p.j); }).attr('cy', function (p) { return y(p.v); }).attr('r', past ? 1.5 : 2.3).attr('fill', col).attr('fill-opacity', past ? .12 : .28);
       var line = d3.line().x(function (p) { return x(p.j); }).y(function (p) { return y(p.v); });
       if (past && j0 != null) {
-        svg.append('path').datum(T.filter(function (p) { return p.j <= j0; })).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('d', line);
-        svg.append('path').datum(T.filter(function (p) { return p.j >= j0 - 30; })).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2).attr('stroke-opacity', .55).attr('stroke-linejoin', 'round').attr('d', line);
-      } else svg.append('path').datum(T).attr('fill', 'none').attr('stroke', col).attr('stroke-width', past ? 2 : 3).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('d', line);
+        svg.append('path').datum(T.filter(function (p) { return p.j <= j0; })).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2.6).attr('stroke-linejoin', 'round').attr('d', line);
+        svg.append('path').datum(T.filter(function (p) { return p.j >= j0 - 30; })).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2.2).attr('stroke-opacity', .7).attr('stroke-linejoin', 'round').attr('d', line);
+      } else svg.append('path').datum(T).attr('fill', 'none').attr('stroke', col).attr('stroke-width', past ? 2.6 : 3.4).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('d', line);
       // Résultat : un carré dans la colonne, relié au bout de la courbe par un pointillé fin.
       var fin = T[T.length - 1];
       if (past && s.res != null) {
