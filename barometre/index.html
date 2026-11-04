@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c68c8706918e">
+<meta name="concret-version" content="948509394fec">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1038,12 +1038,12 @@ dash.calc('duels_recents', {
     var row = function (s) {
       var a = A[s.an], lab = CMP_LAB[s.an], d = j0 != null ? (s.an === 2027 ? fdc(j0, CMP.T1) + ' ' + (new Date(Date.parse(CMP.T1) + j0 * 864e5).getFullYear()) : cmpMois(j0, s.t1)) : '';
       var v = !s.pts.length ? '<span class="nc">pas testé</span>' : a ? '<b style="color:' + CMP_COL[s.an] + '">' + BX.pct(a.v) + '</b>' + (a.n < 3 ? '<sup>1</sup>' : '') : '<span class="nc">pas de sondage</span>';
-      if (a && a.n < 3) peuN = a.n;
+      if (a && a.n < 3) peuN = { n: a.n, s: s };
       var r = s.an === 2027 ? '<span class="nc">18 avril 2027</span>' : s.res != null ? '<b>' + nf2(s.res) + '</b>' : '<span class="nc">pas candidat</span>';
       return '<tr><th scope="row"><i style="background:' + CMP_COL[s.an] + '"></i>' + lab + '<small>' + d + '</small></th><td>' + v + '</td><td>' + r + '</td></tr>';
     };
     tb.innerHTML = '<table><thead><tr><th></th><th scope="col">' + (j0 != null ? 'À ' + cmpDist(j0) + ' du vote' : 'À la même date') + '</th><th scope="col">Résultat</th></tr></thead><tbody>' + S.map(row).join('') + '</tbody></table>';
-    if (peuN) notesV.push('<sup>1</sup> Seulement ' + peuN + ' sondage' + (peuN > 1 ? 's' : '') + ' à cette date.');
+    if (peuN) notesV.push('<sup>1</sup> Moyenne de ' + peuN.n + ' sondage' + (peuN.n > 1 ? 's' : '') + ' seulement, ceux du ' + fd(j0 - 30, peuN.s.t1).replace(/ \d{4}$/, '') + ' au ' + fd(j0, peuN.s.t1) + ' : il y en avait peu à cette époque.');
     var abs = S.slice(1).filter(function (s) { return !s.pts.length; }).map(function (s) { return s.an; });
     if (abs.length) notesV.push('Pas testé en ' + abs.join(' ni en ') + ' : pas de courbe.');
     S.slice(1).forEach(function (s) { if (s.pts.length && s.res == null) notesV.push('Pas candidat en ' + s.an + ' : testé jusqu\'au ' + fd(s.pts[s.pts.length - 1].j, s.t1) + '.'); });
