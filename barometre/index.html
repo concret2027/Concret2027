@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="bc9a6a1a188a">
+<meta name="concret-version" content="dc7652b9aac3">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -362,19 +362,6 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <div class="bx-legend" id="legend-t2"></div>
       <div class="bx-chart small" id="chart-t2" data-source="sondages_t2"></div>
       <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
-    </section>
-
-    <section class="bx-card wide bx-cmp" id="comparaison-t2">
-      <h2>Second tour : comparé à 2017 et 2022</h2>
-      <div class="bx-cmp-c" id="cmp2-cands" role="group" aria-label="Choisir l'adversaire"></div>
-      <p class="bx-cmp-phrase" id="cmp2-phrase"></p>
-      <div class="bx-cmp-plus">
-        <p class="bx-note">Score de Marine Le Pen dans les duels de second tour déjà testés en 2017 ou en 2022, à la même distance du vote ; en repère, la finale face à Emmanuel Macron (◆ : le résultat officiel). Les autres duels de 2027 (Philippe, Attal, Glucksmann, Retailleau, Hollande) ne se comparent pas : ils n'étaient pas testés, ou l'adversaire n'était pas candidat ; ils sont dans « Second tour : l'évolution ».</p>
-        <p class="bx-note" id="cmp2-note"></p>
-      </div>
-      <button type="button" class="bx-cmp-voir" aria-expanded="false">Voir le détail ▾</button>
-      <div class="bx-chart" id="chart-cmp2"></div>
-      <p class="bx-note mentions" id="cmp2-src"></p>
     </section>
 
     <div class="bx-group" id="parieurs"><h2>Les parieurs</h2><nav class="bx-grouplinks" aria-label="Parieurs"><a href="#parieurs-t1">Premier tour ↓</a><a href="#polymarket">Second tour ↓</a></nav></div>
@@ -1093,106 +1080,6 @@ dash.calc('duels_recents', {
       cs.map(function (c) { return '<a href="' + esc(c.resultats_source.url) + '" target="_blank" rel="noopener">' + c.annee + '</a>'; }).join(', ') + ').';
   }
 
-  // Second tour comparé : score de Marine Le Pen ; 2026-2027 face à l'adversaire choisi, 2017 et 2022 face à Macron (la finale),
-  // et le même duel en pointillé s'il était testé à l'époque.
-  var CMP2 = { adv: null, T2: '2027-05-02' };
-  function drawCmp2(rows2027) {
-    if (!CMP.passe) return;
-    var box = document.getElementById('chart-cmp2'); if (!box) return; box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
-    var lp = rows2027.filter(function (r) { return r.candidat_rn === 'Le Pen'; }), nb = {};
-    lp.forEach(function (r) { nb[r.adversaire] = (nb[r.adversaire] || 0) + 1; });
-    // Deux groupes : les duels déjà testés en 2017 ou en 2022, puis ceux qui ne le sont qu'en 2027.
-    // Un duel déjà testé en 2017 ou en 2022 avec un adversaire qui a été candidat à l'une de ces élections (Hollande ne l'a pas été).
-    var deja = {}; (CMP.passe.campagnes || []).forEach(function (c) { (c.duels || []).forEach(function (p) { if (CMP.passe.campagnes.some(function (k) { return k.resultats && k.resultats[p.adversaire] != null; })) deja[p.adversaire] = 1; }); });
-    // Seuls les duels déjà testés en 2017 ou en 2022 se comparent ; les autres sont dans « Second tour : l'évolution ».
-    var advs = Object.keys(nb).filter(function (a) { return nb[a] >= 3 && deja[a]; }).sort(function (a, b) { return nb[b] - nb[a]; });
-    if (!advs.length) return;
-    if (!CMP2.adv || advs.indexOf(CMP2.adv) < 0) CMP2.adv = advs[0];
-    var bt = document.getElementById('cmp2-cands');
-    if (bt.querySelectorAll('button').length !== advs.length) { bt.textContent = ''; var grp = null;
-      advs.forEach(function (c) {
-        var b = document.createElement('button'); b.type = 'button'; b.textContent = 'Face à ' + c; b.dataset.adv = c;
-        b.addEventListener('click', function () { CMP2.adv = c; drawCmp2(rows2027); });
-        bt.appendChild(b);
-      }); }
-    bt.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.adv === CMP2.adv ? 'true' : 'false'); });
-    var jour = function (d, t) { return Math.round((Date.parse(d + 'T12:00:00Z') - Date.parse(t + 'T12:00:00Z')) / 864e5); };
-    var S = [{ an: 2027, t: CMP2.T2, adv: CMP2.adv, pts: lp.filter(function (r) { return r.adversaire === CMP2.adv; }).map(function (r) { return { j: jour(r.date, CMP2.T2), v: +r.score_rn }; }) }];
-    (CMP.passe.campagnes || []).slice().reverse().forEach(function (c) {
-      var pick = function (a) { return (c.duels || []).filter(function (p) { return p.adversaire === a; }).map(function (p) { return { j: jour(p.fin, c.second_tour), v: p.score }; }); };
-      S.push({ an: c.annee, t: c.second_tour, adv: 'Macron', res: c.resultats_t2 && c.resultats_t2['Le Pen'], pts: pick('Macron') });
-      if (CMP2.adv !== 'Macron') { var m = pick(CMP2.adv); if (m.length) S.push({ an: c.annee, t: c.second_tour, adv: CMP2.adv, meme: 1, pts: m }); }
-    });
-    S.forEach(function (s) { s.pts.sort(function (a, b) { return a.j - b.j; }); s.tr = cmpTendance(s.pts); });
-    var W = box.clientWidth || 600, H = 340, J0 = -540;
-    var all = []; S.forEach(function (s) { s.pts.forEach(function (p) { if (p.j >= J0) all.push(p.v); }); if (s.res != null) all.push(s.res); });
-    var lo = Math.max(0, Math.floor((d3.min(all) - 3) / 10) * 10), hi = Math.min(100, Math.ceil((d3.max(all) + 3) / 10) * 10);
-    if (hi < 55) hi = 60;
-    var y = d3.scaleLinear([lo, hi], [H - 30, 14]);
-    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Score de Marine Le Pen au second tour, campagnes 2016-2017 et 2021-2022 face à Emmanuel Macron, 2026-2027 face à ' + BX.full(CMP2.adv) + ', selon le nombre de mois avant le second tour');
-    var gy = svg.append('g').call(d3.axisLeft(y).ticks(5).tickFormat(function (v) { return v + ' %'; }).tickSize(0)); styleAxis(gy);
-    var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); }); mL = Math.ceil(mL) + 10; var mR = W < 480 ? 92 : 168;
-    gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
-    var x = d3.scaleLinear([J0, 0], [mL, W - mR]);
-    svg.insert('g', ':first-child').selectAll('line').data(y.ticks(5)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
-    if (lo < 50 && hi > 50) svg.append('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y(50)).attr('y2', y(50)).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-width', 1.5);
-    var ticks = [-540, -450, -360, -270, -180, -90, 0].filter(function (t) { return W >= 480 || t % 180 === 0; });
-    var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 30) + ')').call(d3.axisBottom(x).tickValues(ticks).tickFormat(function (t) { return t === 0 ? '2nd tour' : Math.round(-t / 30) + ' mois'; }).tickSizeOuter(0)); styleAxis(gx);
-    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 14).attr('y2', H - 30).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '3 3');
-    var labs = [], vis = S.filter(function (s) { return s.pts.length; });
-    vis.forEach(function (s) {
-      var col = CMP_COL[s.an], P = s.pts.filter(function (p) { return p.j >= J0; }), T = s.tr.filter(function (p) { return p.j >= J0; });
-      var fin2 = s.an !== 2027 && !s.meme;
-      svg.append('g').selectAll('circle').data(P).join('circle').attr('cx', function (p) { return x(p.j); }).attr('cy', function (p) { return y(p.v); }).attr('r', fin2 ? 1.8 : 2.6).attr('fill', col).attr('fill-opacity', fin2 ? .18 : .5);
-      svg.append('path').datum(T).attr('fill', 'none').attr('stroke', col).attr('stroke-width', s.an === 2027 ? 3 : fin2 ? 1.5 : 2.5).attr('stroke-opacity', fin2 ? .7 : 1).attr('stroke-dasharray', fin2 ? '5 4' : null).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round')
-        .attr('d', d3.line().x(function (p) { return x(p.j); }).y(function (p) { return y(p.v); }));
-      var fin = T[T.length - 1];
-      if (s.res != null) {
-        var rx = x(0), ry = y(s.res);
-        svg.append('path').attr('d', 'M' + rx + ',' + (ry - 6) + 'l6,6l-6,6l-6,-6z').attr('fill', col).attr('stroke', 'var(--color-panel)').attr('stroke-width', 1.5);
-        labs.push({ y: ry, t: s.an + (W < 480 ? ' : ' : ' finale : ') + BX.pct(s.res), col: col });
-      } else if (fin && s.an === 2027) {
-        svg.append('circle').attr('cx', x(fin.j)).attr('cy', y(fin.v)).attr('r', 4).attr('fill', col).attr('stroke', 'var(--color-panel)').attr('stroke-width', 1.5);
-        labs.push({ y: y(fin.v), t: s.an + ' : ' + BX.pct(fin.v), col: col, x: x(fin.j) });
-      } else if (fin && s.meme) {
-        labs.push({ y: y(fin.v), t: s.an + ' : ' + BX.pct(fin.v), col: col, x: x(fin.j) });
-      }
-    });
-    labs.sort(function (a, b) { return a.y - b.y; });
-    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
-    svg.append('g').selectAll('text').data(labs).join('text').attr('x', function (l) { return (l.x != null ? Math.max(l.x, x(0)) : x(0)) + 9; }).attr('y', function (l) { return l.y + 4; })
-      .attr('fill', function (l) { return l.col; }).style('font-size', W < 480 ? '11px' : 'var(--cds-font-size-caption)').style('font-weight', 600).text(function (l) { return l.t; });
-    xhair(svg, box, W, 14, H - 30, function (sx) {
-      var j = Math.round(x.invert(sx)); if (j > 0 || j < J0) return null;
-      var rows = vis.map(function (s) { var q = null; s.tr.forEach(function (p) { if (p.j <= j && p.j >= j - 30) q = p; });
-        return q ? { c: CMP_COL[s.an], n: CMP_LAB[s.an] + ' face à ' + s.adv + ' · sondages', v: q.v, py: y(q.v), s: BX.pct(q.v) } : null; }).filter(Boolean)
-        .concat(cmpRes(vis, j, y, function (s) { return CMP_LAB[s.an] + ' face à ' + s.adv; }));
-      return { px: x(j), head: cmpTete(j, 'second tour') + ' · score de Marine Le Pen', rows: rows };
-    });
-    var fd = function (j, t) { return new Date(Date.parse(t + 'T12:00:00Z') + j * 864e5).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); };
-    var at = function (s, j) { var w = s.pts.filter(function (p) { return p.j <= j && p.j >= j - 30; }); return w.length ? { v: Math.round(w.reduce(function (a, p) { return a + p.v; }, 0) / w.length * 10) / 10, n: w.length } : null; };
-    var nf2 = function (v) { return v.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %'; };
-    var ns = function (n) { return n + ' sondage' + (n > 1 ? 's' : ''); };
-    var cur = S[0], j0 = cur.pts[cur.pts.length - 1].j, a0 = at(cur, j0), memes = [];
-    var peu = function (a) { return a.n < 3 ? ' (seulement ' + a.n + ' sondage' + (a.n > 1 ? 's' : '') + ')' : ''; };
-    var txt = cmpL('À ' + cmpDist(j0) + ' du second tour, Marine Le Pen face à ' + BX.full(CMP2.adv) + ' : <span class="y27">' + BX.pct(a0.v) + '</span>.');
-    S.slice(1).forEach(function (s) {
-      var a = at(s, j0), cl = s.an === 2022 ? 'y22' : 'y17';
-      if (s.meme) { if (a) memes.push('<span class="' + cl + '">' + BX.pct(a.v) + '</span> en ' + cmpMois(j0, s.t) + peu(a)); return; }
-      txt += cmpL('En ' + cmpMois(j0, s.t) + ', face à Emmanuel Macron : ' + (a ? '<span class="' + cl + '">' + BX.pct(a.v) + '</span>' + peu(a) : 'pas encore de sondage') + '. ' + (s.res != null ? 'Le jour du vote : <span class="' + cl + '">' + nf2(s.res) + '</span>.' : ''));
-    });
-    if (memes.length) txt += cmpL('Face à ' + BX.full(CMP2.adv) + ' à la même date : ' + memes.join(', ') + '.');
-    document.getElementById('cmp2-phrase').innerHTML = txt;
-    var notes = [];
-    var memesAn = S.filter(function (s) { return s.meme; }).map(function (s) { return s.an; }).sort();
-    notes.push('Trait plein : le même duel, testé en ' + memesAn.join(' et en ') + '. Pointillé : la finale face à Emmanuel Macron, avec son résultat officiel (◆).');
-    notes.push('Sous 50 %, Marine Le Pen perd le duel. Un sondage quotidien (rolling) ne compte qu\'une fois par période de terrain.');
-    document.getElementById('cmp2-note').textContent = notes.join(' ');
-    var cs = CMP.passe.campagnes;
-    document.getElementById('cmp2-src').innerHTML = 'Sources : sondages, Wikipédia (' + cs.map(function (c) { return '<a href="' + esc(c.source.url) + '" target="_blank" rel="noopener">' + c.annee + '</a>'; }).join(', ') + ') ; résultats, Conseil constitutionnel (' +
-      cs.map(function (c) { return c.resultats_t2_source ? '<a href="' + esc(c.resultats_t2_source.url) + '" target="_blank" rel="noopener">' + c.annee + '</a>' : ''; }).join(', ') + ').';
-  }
-
   // Les parieurs : l'évolution des chances des 6 favoris d'un marché, toutes les courbes sur le même graphique.
   // o (facultatif) : fmt (chiffre écrit), tick (axe), n (nombre de courbes), aria, tete (titre de l'info-bulle) ; sans o, les parieurs.
   function drawPMLines(id, hist, pmr, quoi, o) {
@@ -1345,8 +1232,8 @@ dash.calc('duels_recents', {
     document.getElementById('countdown').textContent = 'J-' + Math.max(0, cd);
     chart('chart-t1', t1.status === 'ok' && tr.status === 'ok' && moy.status === 'ok' && ev.status !== 'loading', t1.status === 'error' || tr.status === 'error', function () { drawT1(t1.data, tr.data, events); });
     if (t1.status === 'ok') {
-      if (CMP.passe) { drawCmp(t1.data); if (t2.status === 'ok') drawCmp2(t2.data); }
-      else if (!CMP.charge) { CMP.charge = 1; fetch('../donnees/sondages_passes.json').then(function (r) { return r.json(); }).then(function (j) { CMP.passe = j; drawCmp(t1.data); if (dash.data('sondages_t2').status === 'ok') drawCmp2(dash.data('sondages_t2').data); }).catch(function () { failLine(document.getElementById('chart-cmp')); }); }
+      if (CMP.passe) drawCmp(t1.data);
+      else if (!CMP.charge) { CMP.charge = 1; fetch('../donnees/sondages_passes.json').then(function (r) { return r.json(); }).then(function (j) { CMP.passe = j; drawCmp(t1.data); }).catch(function () { failLine(document.getElementById('chart-cmp')); }); }
     }
     var el = document.getElementById('events-list'); el.textContent = '';
     events.forEach(function (e) {
@@ -1485,7 +1372,7 @@ window.addEventListener('baro:data', function () {
   // Mentions de la loi du 19 juillet 1977 pour les sondages d'un graphique partagé : le dernier sondage en entier, puis
   // l'ensemble (nombre, période, instituts, marges d'erreur) avec le renvoi vers la liste complète et les notices.
   function mentions(card) {
-    var src = card.id === 'second-tour' || card.id === 'comparaison-t2' ? 'sondages_t2' : card.id === 'premier-tour' || card.id === 'comparaison' ? 'sondages_t1' : null;
+    var src = card.id === 'second-tour' ? 'sondages_t2' : card.id === 'premier-tour' || card.id === 'comparaison' ? 'sondages_t1' : null;
     if (!src) return [];
     var rows = dash.data(src).data || [], N = dash.data('sondages_notices').data || [], cle = function (d, i) { return d + '|' + String(i).replace(/ Interactive$/, ''); }, idx = {};
     N.forEach(function (n) { idx[cle(n.date, n.institut)] = n; });
@@ -1527,7 +1414,7 @@ window.addEventListener('baro:data', function () {
       x.fillStyle = fg; x.globalAlpha = .65; x.font = '600 32px "Inter Tight", system-ui, sans-serif';
       x.fillText('CONCRET · BAROMÈTRE 2027 · ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase(), 70, 100);
       x.globalAlpha = 1; x.font = '400 62px Newsreader, Georgia, serif';
-      var cmp = card.id === 'comparaison' || card.id === 'comparaison-t2', bp = cmp && card.querySelector('.bx-cmp-c [aria-pressed="true"]');
+      var cmp = card.id === 'comparaison', bp = cmp && card.querySelector('.bx-cmp-c [aria-pressed="true"]');
       if (cmp) x.font = '400 50px Newsreader, Georgia, serif';
       var y = wrap(x, card.querySelector('h2').textContent + (bp ? ' · ' + (card.id === 'comparaison-t2' ? 'Le Pen ' + bp.textContent.replace('Face à ', 'face à ').replace(/à (\S+)$/, function (m, n) { return 'à ' + BX.full(n); }) : BX.full(bp.textContent)) : ''), 70, cmp ? 172 : 190, W - 140, cmp ? 58 : 72);
       var note = cmp ? card.querySelector('.bx-cmp-phrase') : card.querySelector('.bx-note');
@@ -1569,7 +1456,7 @@ window.addEventListener('baro:data', function () {
       } catch (e) { show(); }
     }).catch(function () {});
   }
-  ['premier-tour', 'comparaison', 'second-tour', 'comparaison-t2', 'parieurs-t1', 'polymarket'].forEach(function (id) {
+  ['premier-tour', 'comparaison', 'second-tour', 'parieurs-t1', 'polymarket'].forEach(function (id) {
     var card = document.getElementById(id); if (!card) return;
     var charts = card.querySelectorAll('.bx-chart');
     if (charts.length > 1) Array.prototype.forEach.call(charts, function (ch) {
