@@ -1499,9 +1499,9 @@ window.addEventListener('baro:data', function () {
       x.fillStyle = fg; x.globalAlpha = .65; x.font = '600 32px "Inter Tight", system-ui, sans-serif';
       x.fillText('CONCRET · BAROMÈTRE 2027 · ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase(), 70, 100);
       x.globalAlpha = 1; x.font = '400 62px Newsreader, Georgia, serif';
-      var cmp = card.id === 'comparaison' || card.id === 'comparaison-t2', bp = card.id === 'comparaison' && card.querySelector('#cmp-cands [aria-pressed="true"]');
+      var cmp = card.id === 'comparaison' || card.id === 'comparaison-t2', bp = cmp && card.querySelector('.bx-cmp-c [aria-pressed="true"]');
       if (cmp) x.font = '400 50px Newsreader, Georgia, serif';
-      var y = wrap(x, card.querySelector('h2').textContent + (bp ? ' · ' + BX.full(bp.textContent) : ''), 70, cmp ? 172 : 190, W - 140, cmp ? 58 : 72);
+      var y = wrap(x, card.querySelector('h2').textContent + (bp ? ' · ' + (card.id === 'comparaison-t2' ? 'Le Pen ' + bp.textContent.replace('Face à ', 'face à ').replace(/à (\S+)$/, function (m, n) { return 'à ' + BX.full(n); }) : BX.full(bp.textContent)) : ''), 70, cmp ? 172 : 190, W - 140, cmp ? 58 : 72);
       var note = cmp ? card.querySelector('.bx-cmp-phrase') : card.querySelector('.bx-note');
       if (chart) { note = null; for (var pv = chart.previousElementSibling; pv; pv = pv.previousElementSibling) if (pv.classList.contains('bx-note')) { note = pv; break; } }
       if (note) { x.globalAlpha = .7; x.font = (cmp ? '400 25px' : '400 28px') + ' "Inter Tight", system-ui, sans-serif'; y = wrap(x, cmp ? note.textContent : note.textContent.split('. ')[0].replace(/\.$/, '') + '.', 70, y + 4, W - 140, cmp ? 33 : 38); x.globalAlpha = 1; }
