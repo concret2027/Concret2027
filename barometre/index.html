@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="dc7652b9aac3">
+<meta name="concret-version" content="86f5b5fdefd4">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -341,7 +341,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <div class="bx-cmp-c" id="cmp-cands" role="group" aria-label="Choisir un candidat"></div>
       <p class="bx-cmp-phrase" id="cmp-phrase"></p>
       <div class="bx-cmp-plus">
-        <p class="bx-note">Chaque campagne à la même distance du vote : moyenne des sondages des 30 jours, un point par sondage. ◆ : le résultat officiel ; l'écart avec le bout de la courbe est l'écart entre les sondages des dernières semaines et le vote.</p>
+        <p class="bx-note">Chaque campagne à la même distance du vote : moyenne des sondages des 30 jours, un point par sondage. Au bout de chaque courbe, la date du dernier sondage et la moyenne ; le trait à droite, le résultat officiel du vote. La moyenne sur 30 jours suit avec retard les mouvements des dernières semaines.</p>
         <p class="bx-note" id="cmp-note"></p>
       </div>
       <button type="button" class="bx-cmp-voir" aria-expanded="false">Voir le détail ▾</button>
@@ -1013,7 +1013,7 @@ dash.calc('duels_recents', {
     var y = d3.scaleLinear([0, Math.ceil((maxV + 2) / 5) * 5], [H - 30, 14]);
     var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Intentions de vote de ' + BX.full(CMP.cand) + ' au premier tour, campagnes 2016-2017, 2021-2022 et 2026-2027, selon le nombre de mois avant le premier tour');
     var gy = svg.append('g').call(d3.axisLeft(y).ticks(5).tickFormat(function (v) { return v + ' %'; }).tickSize(0)); styleAxis(gy);
-    var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); }); mL = Math.ceil(mL) + 10; var mR = W < 480 ? 92 : 168;
+    var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); }); mL = Math.ceil(mL) + 10; var mR = W < 480 ? 134 : 210;
     gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
     var x = d3.scaleLinear([J0, 0], [mL, W - mR]);
     svg.insert('g', ':first-child').selectAll('line').data(y.ticks(5)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
@@ -1026,20 +1026,23 @@ dash.calc('duels_recents', {
       svg.append('g').selectAll('circle').data(P).join('circle').attr('cx', function (p) { return x(p.j); }).attr('cy', function (p) { return y(p.v); }).attr('r', 2.3).attr('fill', col).attr('fill-opacity', .28);
       svg.append('path').datum(T).attr('fill', 'none').attr('stroke', col).attr('stroke-width', s.an === 2027 ? 3 : 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round')
         .attr('d', d3.line().x(function (p) { return x(p.j); }).y(function (p) { return y(p.v); }));
+      // Bout de chaque courbe : la moyenne des derniers sondages ; à droite, un trait au niveau du résultat officiel.
       var fin = T[T.length - 1];
-      if (s.res != null) {
-        var rx = x(0), ry = y(s.res);
-        svg.append('path').attr('d', 'M' + rx + ',' + (ry - 6) + 'l6,6l-6,6l-6,-6z').attr('fill', col).attr('stroke', 'var(--color-panel)').attr('stroke-width', 1.5);
-        labs.push({ y: ry, t: s.an + ' : ' + BX.pct(s.res) + (W < 480 ? '' : ' (résultat)'), col: col });
-      } else if (fin) {
+      if (fin) {
         svg.append('circle').attr('cx', x(fin.j)).attr('cy', y(fin.v)).attr('r', 4).attr('fill', col).attr('stroke', 'var(--color-panel)').attr('stroke-width', 1.5);
-        labs.push({ y: y(fin.v), t: s.an + ' : ' + BX.pct(fin.v), col: col, x: x(fin.j) });
+        var jd = new Date(Date.parse((s.an === 2027 ? CMP.T1 : s.t1) + 'T12:00:00Z') + fin.j * 864e5).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        labs.push({ y: y(fin.v), t: s.an + ', ' + jd + ' : ' + BX.pct(fin.v), col: col });
+      }
+      if (s.res != null) {
+        var ry = y(s.res);
+        svg.append('line').attr('x1', x(0) - 1).attr('x2', x(0) + 16).attr('y1', ry).attr('y2', ry).attr('stroke', col).attr('stroke-width', 3.5).attr('stroke-linecap', 'round');
+        labs.push({ y: ry, t: s.an + (W < 480 ? ' vote : ' : ' résultat : ') + s.res.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %', col: col, bold: 1 });
       }
     });
     labs.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
-    svg.append('g').selectAll('text').data(labs).join('text').attr('x', function (l) { return (l.x != null ? Math.max(l.x, x(0)) : x(0)) + 9; }).attr('y', function (l) { return l.y + 4; })
-      .attr('fill', function (l) { return l.col; }).style('font-size', W < 480 ? '11px' : 'var(--cds-font-size-caption)').style('font-weight', 600).text(function (l) { return l.t; });
+    svg.append('g').selectAll('text').data(labs).join('text').attr('x', x(0) + 21).attr('y', function (l) { return l.y + 4; })
+      .attr('fill', function (l) { return l.col; }).style('font-size', W < 480 ? '10.5px' : 'var(--cds-font-size-caption)').style('font-weight', function (l) { return l.bold ? 700 : 500; }).text(function (l) { return l.t; });
     // Info-bulle : la moyenne de chaque campagne à ce nombre de jours du premier tour.
     xhair(svg, box, W, 14, H - 30, function (sx) {
       var j = Math.round(x.invert(sx)); if (j > 0 || j < J0) return null;
@@ -1062,7 +1065,9 @@ dash.calc('duels_recents', {
       S.slice(1).forEach(function (s) {
         var a = at(s, j0), cl = s.an === 2022 ? 'y22' : 'y17';
         if (!s.pts.length) { abs.push(s.an); return; }
+        var dn = s.tr[s.tr.length - 1];
         txt += cmpL('En ' + cmpMois(j0, s.t1) + ', à la même date : ' + (a ? '<span class="' + cl + '">' + BX.pct(a.v) + '</span>' + peu(a) : 'pas de sondage') + '. ' +
+          (dn ? 'Derniers sondages (' + fd(dn.j, s.t1).replace(/ \d{4}$/, '') + ') : ' + BX.pct(dn.v) + '. ' : '') +
           (s.res != null ? 'Le jour du vote : <span class="' + cl + '">' + nf2(s.res) + '</span>.' : 'Pas candidat en ' + s.an + '.'));
       });
     } else txt = cmpL(nom + ' n\'est pas encore testé dans les sondages de 2026-2027.');
