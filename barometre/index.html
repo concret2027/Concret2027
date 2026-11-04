@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="7da339724f29">
+<meta name="concret-version" content="58d63b4cf49a">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1395,20 +1395,34 @@ window.addEventListener('baro:data', function () {
       x.fillText('CONCRET · BAROMÈTRE 2027 · ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase(), 70, 100);
       x.globalAlpha = 1; x.font = '400 62px Newsreader, Georgia, serif';
       var cmp = card.id === 'comparaison', bp = cmp && card.querySelector('#cmp-cands [aria-pressed="true"]');
-      var y = wrap(x, card.querySelector('h2').textContent + (bp ? ' · ' + BX.full(bp.textContent) : ''), 70, 190, W - 140, 72);
+      if (cmp) x.font = '400 50px Newsreader, Georgia, serif';
+      var y = wrap(x, card.querySelector('h2').textContent + (bp ? ' · ' + BX.full(bp.textContent) : ''), 70, cmp ? 172 : 190, W - 140, cmp ? 58 : 72);
       var note = cmp ? card.querySelector('#cmp-phrase') : card.querySelector('.bx-note');
       if (chart) { note = null; for (var pv = chart.previousElementSibling; pv; pv = pv.previousElementSibling) if (pv.classList.contains('bx-note')) { note = pv; break; } }
-      if (note) { x.globalAlpha = .7; x.font = '400 28px "Inter Tight", system-ui, sans-serif'; y = wrap(x, cmp ? note.textContent : note.textContent.split('. ')[0].replace(/\.$/, '') + '.', 70, y + 4, W - 140, 38); x.globalAlpha = 1; }
+      if (note) { x.globalAlpha = .7; x.font = (cmp ? '400 25px' : '400 28px') + ' "Inter Tight", system-ui, sans-serif'; y = wrap(x, cmp ? note.textContent : note.textContent.split('. ')[0].replace(/\.$/, '') + '.', 70, y + 4, W - 140, cmp ? 33 : 38); x.globalAlpha = 1; }
       // Mentions légales des sondages, en bas de l'image : on mesure leur hauteur avant de placer les graphiques.
       var ML = mentions(card), mh = 0;
       if (ML.length) { x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var mc = document.createElement('canvas').getContext('2d'); mc.font = x.font; ML.forEach(function (t) { var line = '', n = 1; t.split(' ').forEach(function (w) { var u = line ? line + ' ' + w : w; if (mc.measureText(u).width > W - 140 && line) { n++; line = w; } else line = u; }); mh += n * 29 + 8; }); mh += 16; }
       if (LEG.length) { x.font = '500 26px "Inter Tight", system-ui, sans-serif'; var lx = 70, ly = y + 14; LEG.forEach(function (g) { var w = 30 + x.measureText(g.t).width + 30; if (lx + w > W - 70) { lx = 70; ly += 40; } x.fillStyle = g.c; x.beginPath(); x.arc(lx + 10, ly - 9, 10, 0, 7); x.fill(); x.fillStyle = fg; x.fillText(g.t, lx + 28, ly); lx += w; }); y = ly + 22; }
-      var top = y + 20, avail = H - 170 - top - mh, cols = imgs.length > 1 ? 2 : 1, rows = Math.ceil(imgs.length / cols), gw = (W - 140 - (cols - 1) * 30) / cols, gh = (avail - (rows - 1) * 24) / rows;
+      // Comparaison : la rangée des candidats sous la courbe (celui de l'image surligné), pour montrer qu'on peut en choisir un autre sur le site.
+      var CH = cmp ? Array.prototype.map.call(card.querySelectorAll('#cmp-cands button'), function (b) { return { t: b.textContent, on: b.getAttribute('aria-pressed') === 'true' }; }) : [], chH = 0;
+      if (CH.length) { x.font = '600 22px "Inter Tight", system-ui, sans-serif'; var cw = 70, rg = 1; CH.forEach(function (c) { var w = x.measureText(c.t).width + 32; if (cw + w > W - 70) { rg++; cw = 70; } cw += w + 10; }); chH = 44 + rg * 48; }
+      var top = y + 20, avail = H - 170 - top - mh - chH, cols = imgs.length > 1 ? 2 : 1, rows = Math.ceil(imgs.length / cols), gw = (W - 140 - (cols - 1) * 30) / cols, gh = (avail - (rows - 1) * 24) / rows;
       imgs.forEach(function (im, i) {
         var lh = labels[i] ? 40 : 0, s = Math.min(gw / im.w, (gh - lh) / im.h), dw = im.w * s, dh = im.h * s, cx = 70 + (i % cols) * (gw + 30) + (gw - dw) / 2, cy = top + Math.floor(i / cols) * (gh + 24);
         if (lh) { x.fillStyle = fg; x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.fillText(labels[i], 70 + (i % cols) * (gw + 30), cy + 28); }
         x.drawImage(im.img, cx, cy + lh, dw, dh);
       });
+      if (CH.length) {
+        var cy0 = top + avail + 18; x.fillStyle = fg; x.globalAlpha = .8; x.font = '500 23px "Inter Tight", system-ui, sans-serif'; x.fillText('Choisissez un autre candidat sur concret2027.fr/barometre :', 70, cy0 + 4); x.globalAlpha = 1;
+        var px = 70, py = cy0 + 16; x.font = '600 22px "Inter Tight", system-ui, sans-serif';
+        CH.forEach(function (c) {
+          var w = x.measureText(c.t).width + 32; if (px + w > W - 70) { px = 70; py += 48; }
+          x.beginPath(); if (x.roundRect) x.roundRect(px, py, w, 38, 19); else x.rect(px, py, w, 38);
+          if (c.on) { x.fillStyle = fg; x.fill(); x.fillStyle = bg; } else { x.strokeStyle = fg; x.globalAlpha = .35; x.lineWidth = 2; x.stroke(); x.globalAlpha = 1; x.fillStyle = fg; }
+          x.fillText(c.t, px + 16, py + 26); px += w + 10;
+        });
+      }
       if (ML.length) { x.fillStyle = fg; x.globalAlpha = .75; x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var my = H - 150 - mh + 16; ML.forEach(function (t) { my = wrap(x, t, 70, my + 22, W - 140, 29) - 22 + 8; }); x.globalAlpha = 1; }
       x.fillStyle = '#2f5bd3'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText('concret2027.fr', 70, H - 90);
       x.fillStyle = fg; x.globalAlpha = .6; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; x.fillText(/^(parieurs-t1|polymarket)$/.test(card.id) ? 'Source : Polymarket' : cmp ? 'Sources : Commission des sondages, Wikipédia, Conseil constitutionnel' : 'Sources : Commission des sondages, instituts', 70, H - 48); x.globalAlpha = 1;
@@ -1416,7 +1430,7 @@ window.addEventListener('baro:data', function () {
       try {
         c.toBlob(function (blob) {
           var f = blob && new File([blob], 'concret-' + (chart ? chart.id : card.id) + '.png', { type: 'image/png' });
-          if (f && navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: 'Concret', text: 'concret2027.fr' }).catch(show);
+          if (f && navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: 'Concret', text: cmp ? 'Choisissez un candidat et comparez avec 2017 et 2022 : https://concret2027.fr/barometre/#comparaison' : 'concret2027.fr' }).catch(show);
           else show();
         });
       } catch (e) { show(); }

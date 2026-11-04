@@ -17,5 +17,8 @@ Tu fais la mise à jour du matin du site Concret (https://concret2027.fr, dépô
 2. Lance `node outils/controle.js verifier --compte-rendu <fichier hors du dépôt>` (compte rendu : sources lues, valeurs ancienne → nouvelle). S'il sort en erreur, ne publie rien.
 3. Sinon : git add data.json donnees journal ; commit « Baromètre du matin (<date heure>) » ; git fetch origin main ; si origin/main a avancé, repars de origin/main, réapplique tes changements et relance verifier ; puis git push origin HEAD:main.
 
+## 3 bis. Tableau d'audience (au passage de 8 h 47 seulement, après la publication ; sans effet sur elle)
+Ce passage tourne dans la conversation de l'éditeur, qui a les outils Artifact et ArtifactData (la tâche de midi ne les a pas). Si `datasets/resume` de l'artifact « Concret, audience » (https://claude.ai/artifact/KhsRYd7bAecNAm4E9qjgo5) n'a pas déjà le relevé du jour, suis les étapes 1 à 4 de la section 4 bis de outils/prompt_tache.md (historique de la veille, `node outils/audience.js`, envoi des sept fichiers, mise à jour des sept `datasets` en un seul batch). Rien de tout cela n'entre dans le dépôt. Les anciens fichiers restent si leur suppression est refusée. Si une étape échoue, ajoute à la notification « Audience non mise à jour : <erreur> » et n'arrête rien.
+
 ## 4. Notification
-Une seule ligne : « Baromètre du matin : » suivi de ce qui a changé (nouveaux sondages, mouvement de Polymarket), ou « rien de nouveau ». Précédée d'une ligne « ÉCHEC GitHub : <erreur exacte> » si le push a échoué.
+Une seule ligne : « Baromètre du matin : » suivi de ce qui a changé (nouveaux sondages, mouvement de Polymarket), ou « rien de nouveau » ; au passage de 8 h 47, ajoute « audience à jour » (ou l'erreur). Précédée d'une ligne « ÉCHEC GitHub : <erreur exacte> » si le push a échoué.

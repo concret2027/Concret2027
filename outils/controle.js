@@ -361,8 +361,14 @@ if (!bloquant.length) {
 // ===== 4. Calendrier =====
 var problemes = [], nonFaites = 0;
 cal.indicateurs.forEach(function (i) {
-  if (i.statut === 'en_retard') problemes.push(i.libelle + ' : publication attendue' + (i.publication_attendue ? ' le ' + i.publication_attendue : '') + ' introuvable (tentative ' + i.tentatives + ')');
-  else if (i.prochaine_verification <= today && i.derniere_verification !== today) {
+  // Une actualité ou un agenda n'est jamais « en retard » : chercher est toujours possible ; un jour sans nouvelle, l'indicateur est vérifié.
+  var actu = /_actu$|^baro_(evenements|agenda)$/.test(i.id);
+  if (i.statut === 'en_retard') {
+    problemes.push(i.libelle + ' : publication attendue' + (i.publication_attendue ? ' le ' + i.publication_attendue : '') + ' introuvable (tentative ' + i.tentatives + ')' + (i.erreur ? ' : ' + i.erreur : ''));
+    if (quotidienne && actu) err(i.libelle + ' (' + i.id + ') marquée « en retard » : une actualité se cherche chaque jour ; s\'il n\'y a rien de nouveau, marque-la vérifiée (statut a_jour, tentatives 0, prochaine_verification demain).');
+    else if (quotidienne && i.derniere_verification === today && !i.erreur) err(i.libelle + ' (' + i.id + ') marquée « en retard » sans l\'erreur lue : écris dans « erreur » l\'adresse lue et ce qu\'elle a répondu (donnée absente, erreur 403…).');
+  }
+  if (i.prochaine_verification <= today && i.derniere_verification !== today) {
     // La promesse du site : tout ce qui est dû est vérifié chaque jour. La tâche quotidienne ne publie pas en en laissant de côté.
     if (quotidienne) { err('Vérification due non faite : ' + i.libelle + ' (' + i.id + ', prévue le ' + i.prochaine_verification + ')'); nonFaites++; }
     else problemes.push(i.libelle + ' : vérification prévue le ' + i.prochaine_verification + ' non faite');
