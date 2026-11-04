@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c3289bfa8794">
+<meta name="concret-version" content="4e73901f9f41">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -133,6 +133,7 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-cmp-phrase { margin: 6px 0 0; display: grid; gap: 2px; }
 /* Replié par défaut : la première ligne, puis « Voir le détail » ouvre les autres lignes et les notes. */
 .bx-cmp:not(.ouvert) .bx-cmp-phrase .l:not(:first-child), .bx-cmp:not(.ouvert) .bx-cmp-plus { display: none; }
+.bx-cmp-g { flex-basis: 100%; font-size: 12.5px; color: var(--color-fg-muted); margin-top: 4px; }
 .bx-cmp-voir { font: inherit; font-size: 14px; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 0; min-height: 36px; cursor: pointer; justify-self: start; text-align: left; }
 .bx-cmp-plus { display: grid; gap: var(--cds-gap-sm); } .bx-cmp-phrase .l { display: block; } .bx-cmp-phrase .l:first-child { font-weight: 600; }
 .bx-cmp-phrase .y17 { color: var(--cmp-2017); font-weight: 600; } .bx-cmp-phrase .y22 { color: var(--cmp-2022); font-weight: 600; } .bx-cmp-phrase .y27 { color: var(--fr); font-weight: 600; }
@@ -1093,15 +1094,20 @@ dash.calc('duels_recents', {
     var box = document.getElementById('chart-cmp2'); if (!box) return; box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
     var lp = rows2027.filter(function (r) { return r.candidat_rn === 'Le Pen'; }), nb = {};
     lp.forEach(function (r) { nb[r.adversaire] = (nb[r.adversaire] || 0) + 1; });
-    var advs = Object.keys(nb).filter(function (a) { return nb[a] >= 3; }).sort(function (a, b) { return nb[b] - nb[a]; });
+    // Deux groupes : les duels déjà testés en 2017 ou en 2022, puis ceux qui ne le sont qu'en 2027.
+    var deja = {}; (CMP.passe.campagnes || []).forEach(function (c) { (c.duels || []).forEach(function (p) { deja[p.adversaire] = 1; }); });
+    var advs = Object.keys(nb).filter(function (a) { return nb[a] >= 3; }).sort(function (a, b) { return (deja[b] ? 1 : 0) - (deja[a] ? 1 : 0) || nb[b] - nb[a]; });
     if (!advs.length) return;
     if (!CMP2.adv || advs.indexOf(CMP2.adv) < 0) CMP2.adv = advs[0];
     var bt = document.getElementById('cmp2-cands');
-    if (bt.childNodes.length !== advs.length) { bt.textContent = ''; advs.forEach(function (c) {
-      var b = document.createElement('button'); b.type = 'button'; b.textContent = 'Face à ' + c; b.dataset.adv = c;
-      b.addEventListener('click', function () { CMP2.adv = c; drawCmp2(rows2027); });
-      bt.appendChild(b);
-    }); }
+    if (bt.querySelectorAll('button').length !== advs.length) { bt.textContent = ''; var grp = null;
+      advs.forEach(function (c) {
+        var g = deja[c] ? 'Déjà testés en 2017 ou en 2022 :' : 'Testés seulement en 2027 (en 2017 et 2022, la courbe est la finale face à Macron) :';
+        if (g !== grp) { grp = g; var t = document.createElement('span'); t.className = 'bx-cmp-g'; t.textContent = g; bt.appendChild(t); }
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = 'Face à ' + c; b.dataset.adv = c;
+        b.addEventListener('click', function () { CMP2.adv = c; drawCmp2(rows2027); });
+        bt.appendChild(b);
+      }); }
     bt.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.adv === CMP2.adv ? 'true' : 'false'); });
     var jour = function (d, t) { return Math.round((Date.parse(d + 'T12:00:00Z') - Date.parse(t + 'T12:00:00Z')) / 864e5); };
     var S = [{ an: 2027, t: CMP2.T2, adv: CMP2.adv, pts: lp.filter(function (r) { return r.adversaire === CMP2.adv; }).map(function (r) { return { j: jour(r.date, CMP2.T2), v: +r.score_rn }; }) }];
