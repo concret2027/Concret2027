@@ -203,7 +203,7 @@ if (S.politique) {
 (function () {
   try {
     var H = JSON.parse(fs.readFileSync(path.join(ROOT, 'donnees', 'sondages_passes.json'), 'utf8')), jo = /^\d{4}-\d{2}-\d{2}$/;
-    if (!H.campagnes || H.campagnes.length !== 2) err('donnees/sondages_passes.json : il faut les campagnes 2017 et 2022 (relancer python3 outils/historique.py --ecrire)');
+    if (!H.campagnes || [2012, 2017, 2022].some(function (a) { return !H.campagnes.some(function (c) { return c.annee === a; }); })) err('donnees/sondages_passes.json : il faut les campagnes 2012, 2017 et 2022 (relancer python3 outils/historique.py --ecrire)');
     (H.campagnes || []).forEach(function (c) {
       if (!c.source || !c.source.url || !c.resultats_source || !c.resultats_source.url) err('donnees/sondages_passes.json ' + c.annee + ' : source manquante');
       if (!c.sondages || c.sondages.length < 50) err('donnees/sondages_passes.json ' + c.annee + ' : moins de 50 sondages');
@@ -212,9 +212,9 @@ if (S.politique) {
         Object.keys(p.scores || {}).forEach(function (k) { var v = p.scores[k]; if (!(v >= 0 && v <= 60)) err('donnees/sondages_passes.json ' + c.annee + ' : score hors plage (' + k + ' ' + v + ', ' + p.fin + ')'); });
       });
       if (!c.resultats || !(c.resultats['Le Pen'] > 0)) err('donnees/sondages_passes.json ' + c.annee + ' : résultats officiels manquants');
-      if (!c.duels || c.duels.filter(function (p) { return p.adversaire === 'Macron'; }).length < 50) err('donnees/sondages_passes.json ' + c.annee + ' : moins de 50 duels Le Pen–Macron au second tour');
+      if (c.second_tour && (!c.duels || c.duels.filter(function (p) { return p.adversaire === 'Macron'; }).length < 50)) err('donnees/sondages_passes.json ' + c.annee + ' : moins de 50 duels Le Pen–Macron au second tour');
       (c.duels || []).forEach(function (p) { if (!jo.test(p.fin) || p.fin >= c.second_tour || !(p.score > 0 && p.score < 100)) err('donnees/sondages_passes.json ' + c.annee + ' : duel invalide (' + p.fin + ', ' + p.adversaire + ')'); });
-      if (!c.resultats_t2 || !(c.resultats_t2['Le Pen'] > 0) || !c.resultats_t2_source) err('donnees/sondages_passes.json ' + c.annee + ' : résultat officiel du second tour manquant');
+      if (c.second_tour && (!c.resultats_t2 || !(c.resultats_t2['Le Pen'] > 0) || !c.resultats_t2_source)) err('donnees/sondages_passes.json ' + c.annee + ' : résultat officiel du second tour manquant');
     });
   } catch (e) { err('donnees/sondages_passes.json illisible (relancer python3 outils/historique.py --ecrire)'); }
 })();

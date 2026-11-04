@@ -94,15 +94,23 @@ def nom(c):
 def main(path, an_def, tour='premier', mini=3):
     src = open(path, encoding='utf-8').read()
     L = src.split('\n')
-    a = next(i for i, l in enumerate(L) if l.startswith('== Sondages concernant le ' + tour + ' tour'))
-    b = next(i for i, l in enumerate(L) if i > a and l.startswith('== '))
-    p = wtp.parse('\n'.join(L[a:b]))
+    # Section « Sondages concernant le premier tour » (2017, 2022) ou « Premier tour » (2012).
+    a = next(i for i, l in enumerate(L) if re.match(r'^==\s*(Sondages concernant le )?' + tour + r' tour\s*==\s*$', l, re.I))
+    b = next((i for i, l in enumerate(L) if i > a and re.match(r'^==[^=]', l)), len(L))
+    sec = '\n'.join(L[a:b]); p = wtp.parse(sec)
+    # Intertitres (« ==== Avril 2012 ==== », « === Année 2011 === ») : mois et année des tableaux sans légende.
+    titres = [(m.start(), nettoie(m.group(1))) for m in re.finditer(r'^={3,5}\s*(.*?)\s*={3,5}\s*$', sec, re.M)]
     out, rejets = [], []
     an_courant = an_def
     for k, t in enumerate(p.tables):
         try: d = t.data(span=True)
         except Exception as e: rejets.append(('table', k, str(e))); continue
         ml, yl, cap = legende(t)
+        if not yl:
+            avant = [x for x in titres if x[0] < t.span[0]]
+            if avant:
+                c2 = avant[-1][1]; ys = re.findall(r'(20\d\d)', c2); ms = [MOIS[m.lower().rstrip('.')] for m in re.findall(RM, c2, flags=re.I)]
+                if ys: yl = int(ys[-1]); ml = ms[-1] if len(ms) == 1 else None; cap = c2
         if yl: an_courant = yl
         # Ligne des noms : celle qui a le plus de liens [[Nom]] ; colonnes Sondeur / Date / Échantillon.
         hi = None; best = 0

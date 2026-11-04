@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sondages de premier tour des campagnes 2016-2017 et 2021-2022, pour comparer la campagne en cours (Baromètre).
+"""Sondages de premier tour des campagnes 2011-2012, 2016-2017 et 2021-2022, pour comparer la campagne en cours (Baromètre).
 
 Sources, lues par l'outil :
 - les listes de sondages de Wikipédia en français (« Liste de sondages sur l'élection présidentielle française de 2017 »,
@@ -33,6 +33,8 @@ NOMS = {'Marine Le Pen': 'Le Pen', 'Jean-Luc Mélenchon': 'Mélenchon', 'Nicolas
         'Nathalie Arthaud': 'Arthaud', 'Fabien Roussel': 'Roussel', 'Éric Zemmour': 'Zemmour', 'Eric Zemmour': 'Zemmour',
         'François Hollande': 'Hollande'}
 CAMPAGNES = [
+    {'annee': 2012, 'premier_tour': '2012-04-22', 'wp': "Liste_de_sondages_sur_l'élection_présidentielle_française_de_2012",
+     'cc': 'https://www.conseil-constitutionnel.fr/decision/2012/2012152PDR.htm', 'decision': 'Décision n° 2012-152 PDR du 25 avril 2012'},
     {'annee': 2017, 'premier_tour': '2017-04-23', 'wp': "Liste_de_sondages_sur_l'élection_présidentielle_française_de_2017",
      'cc': 'https://www.conseil-constitutionnel.fr/decision/2017/2017169PDR.htm', 'decision': 'Décision n° 2017-169 PDR du 26 avril 2017',
      'second_tour': '2017-05-07', 'cc2': 'https://www.conseil-constitutionnel.fr/decision/2017/2017171PDR.htm', 'decision2': 'Décision n° 2017-171 PDR du 10 mai 2017'},
@@ -167,6 +169,8 @@ def main():
                 'source': {'titre': 'Wikipédia, ' + c['wp'].replace('_', ' '), 'url': 'https://fr.wikipedia.org/wiki/' + urllib.parse.quote(c['wp'])},
                 'resultats': res, 'resultats_source': {'titre': 'Conseil constitutionnel, ' + c['decision'], 'url': c['cc'], 'exprimes': ex},
                 'sondages': [{'fin': p['fin'], 'institut': p['institut'], 'echantillon': p['echantillon'], 'scores': p['scores'], 'url': p['url']} for p in polls]}
+        if 'second_tour' not in c:  # 2012 : Marine Le Pen n'était pas au second tour ; pas de duels relevés
+            out['campagnes'].append(camp); continue
         l2, r2 = WP.main(tmp, c['annee'], 'second', 2)
         d2, e2 = duels(l2)
         t2 = D.date.fromisoformat(c['second_tour'])
@@ -188,8 +192,11 @@ def main():
         out['campagnes'].append(camp)
     ancien = json.load(open(SORTIE, encoding='utf-8')) if os.path.exists(SORTIE) else None
     if ancien:
-        for a, b in zip(ancien['campagnes'], out['campagnes']):
-            if a['sondages'] != b['sondages'] or a['resultats'] != b['resultats']: print('%d : changé depuis le relevé du %s' % (b['annee'], ancien['releve']))
+        av = {c['annee']: c for c in ancien['campagnes']}
+        for b in out['campagnes']:
+            a = av.get(b['annee'])
+            if not a: print('%d : nouvelle campagne' % b['annee'])
+            elif a['sondages'] != b['sondages'] or a['resultats'] != b['resultats']: print('%d : changé depuis le relevé du %s' % (b['annee'], ancien['releve']))
     if ecrire:
         json.dump(out, open(SORTIE, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
         print('Écrit :', os.path.relpath(SORTIE, RACINE), os.path.getsize(SORTIE), 'octets')
