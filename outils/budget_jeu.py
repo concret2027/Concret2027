@@ -328,6 +328,43 @@ QUI_TITRE = {'cufpa-plafond': 'Reçoit moins', 'franchises-x2': 'Paient plus', '
              'retraites-fin-suspension': 'Ne peuvent plus partir aussi tôt'}
 
 
+def _date_fr(d):
+    a, m, j = d.split('-'); return '%d %s %s' % (int(j), ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'][int(m) - 1], a)
+
+
+SENAT = None
+
+
+def senat_statut(c):
+    """Ce que le Sénat a voté sur la mesure (donnees/budget_sources/senat_2027.json, outils/senat.py) : le vote sur l'article
+    entier ou sur sa suppression, puis le vote sur l'ensemble du texte. Rien quand le Sénat n'a pas voté par scrutin public."""
+    global SENAT
+    if SENAT is None:
+        f = os.path.join(SRC, 'senat_2027.json')
+        SENAT = json.load(open(f, encoding='utf-8'))['scrutins'] if os.path.exists(f) else []
+    m = re.search(r'article (\d+)', c.get('texte') or ''); tx = 'plf' if (c.get('texte') or '').startswith('PLF ') else 'plfss'
+    if not m: return None
+    art, L = m.group(1), [x for x in SENAT if x.get('texte') == tx]
+    rx = re.compile(r"(de suppression de |sur )l'article %s(?:er)?\b(?! (?:bis|ter|quater))" % art)
+    sur = [x for x in L if rx.search(x['t']) and 'après l\'article' not in x['t'] and 'avant l\'article' not in x['t']]
+    ens = [x for x in L if re.search(r"sur l'ensemble du projet de loi|sur la première partie|sur l'ensemble de la première partie", x['t'])]
+    if not sur and not ens: return None
+    out, court, retire = [], [], False
+    for x in sur:
+        sup = 'de suppression' in x['t']
+        if sup and x['s'] == 'adopté': court.append('Les sénateurs ont retiré cette mesure du texte'); retire = True
+        elif sup: court.append('Les sénateurs ont refusé de retirer cette mesure')
+        elif x['s'] == 'adopté': court.append('Les sénateurs ont adopté cette mesure')
+        else: court.append('Les sénateurs ont rejeté cette mesure'); retire = True
+        out.append('%s (scrutin n° %d, %s, %d pour, %d contre)' % (x['t'][0].upper() + x['t'][1:], x['n'], _date_fr(x['d']), x['pour'], x['contre']))
+    for x in ens:
+        court.append('puis ont %s tout le texte' % ('adopté' if x['s'] == 'adopté' else 'rejeté'))
+        out.append('%s : %s (scrutin n° %d, %s)' % (x['t'][0].upper() + x['t'][1:], x['s'], x['n'], _date_fr(x['d'])))
+    d = max(x['d'] for x in sur + ens)
+    return {'statut': ' ; '.join(out) + '.', 'court': (', '.join(court) if court else '') + ' (1re lecture)', 'retire': retire, 'd': d,
+            'n': [x['n'] for x in sur + ens], 'url': 'https://www.senat.fr/scrutin-public/scr2026.html'}
+
+
 def statut_court(t, i=None, texte=''):
     """Ce que les députés ont fait de la mesure, en mots courants."""
     t = t or ''
@@ -762,12 +799,17 @@ def construire():
             st = c.get('statut') or ''
             retire = bool(re.search(r"Supprimée|Article rejeté|n'a pas rete", st))
             c['preset'] = {'gouv': True, 'an': not retire, 'modifie': (not retire) and bool(re.search(r'Modifiée|modification', st))}
+            sn = senat_statut(c)
+            if sn: c['preset']['senat'] = not sn['retire']
         c['sens'] = 'depense' if c['sens'] in ('dépense', 'depense') else c['sens']
         c['titre'] = COURT.get(c['id'], c['l'])
         if c['id'] in CLAIR:
             c['clair'] = {'a': CLAIR[c['id']][0], 'p': CLAIR[c['id']][1]}
         if c['id'] in PAR_QUI: c['par'] = PAR_QUI[c['id']]
         c['statut_court'] = statut_court(c.get('statut'), c['id'], c.get('texte') or '')
+        if c.get('origine') in ('plf', 'plfss'):
+            sn = senat_statut(c)
+            if sn: c['senat'] = sn
         if c['id'] in QUI_CLAIR: c['qui_texte'] = QUI_CLAIR[c['id']]
         if c['id'] in QUI_TITRE: c['qui_titre'] = QUI_TITRE[c['id']]
         ks = sorted(c['effet'])
