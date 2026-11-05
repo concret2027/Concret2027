@@ -606,13 +606,15 @@ def eurostat_pays(an):
 # le Premier ministre en fonction au milieu du mandat ; deux points français de la même année n'en font qu'un.
 # Les noms écrits sur le graphique, dans l'ordre où on essaie de les placer (sur le point le plus récent de la personne ; pour la
 # France, celui de son propre mandat) ; les autres points gardent leur nom au toucher. Noms d'affichage seulement : aucune donnée.
-DIR_ETIQ = [('Emmanuel Macron', 'Macron'), ('François Hollande', 'Hollande'), ('Nicolas Sarkozy', 'Sarkozy'), ('Jacques Chirac', 'Chirac'),
-            ('François Mitterrand', 'Mitterrand'), ('Charles de Gaulle', 'De Gaulle'), ('Angela Merkel', 'Merkel'), ('Margaret Thatcher', 'Thatcher'),
-            ('Ronald Reagan', 'Reagan'), ('Donald Trump', 'Trump'), ('Barack Obama', 'Obama'), ('Tony Blair', 'Blair'), ('Xi Jinping', 'Xi Jinping'),
-            ('Giorgia Meloni', 'Meloni'), ('Gerhard Schröder', 'Schröder'), ('Viktor Orbán', 'Orbán'), ('Pedro Sánchez', 'Sánchez'),
-            ('Bill Clinton', 'Clinton'), ('Shinzō Abe', 'Abe'), ('Silvio Berlusconi', 'Berlusconi'), ('Joe Biden', 'Biden'), ('Boris Johnson', 'Johnson'),
-            ('Luiz Inácio Lula da Silva', 'Lula'), ('Justin Trudeau', 'Trudeau'), ('Recep Tayyip Erdoğan', 'Erdoğan'), ('Mario Draghi', 'Draghi'),
-            ('Olaf Scholz', 'Scholz'), ('Mark Rutte', 'Rutte'), ('David Cameron', 'Cameron'), ('Jair Bolsonaro', 'Bolsonaro'), ('Benjamin Netanyahou', 'Netanyahou')]
+# Autant de dirigeants de gauche que de droite, dans un ordre qui les alterne, pour qu'un écran étroit, qui en écrit moins, reste
+# équilibré ; bord lu comme pour reformes.json (ParlGov, sinon Global Party Survey ; budget_sources/dirigeants.json, « bords »).
+# Le contrôle (dirigeants()) vérifie l'équilibre.
+DIR_ETIQ = [('François Hollande', 'Hollande'), ('Emmanuel Macron', 'Macron'), ('Charles de Gaulle', 'de Gaulle'), ('François Mitterrand', 'Mitterrand'),
+            ('Nicolas Sarkozy', 'Sarkozy'), ('Barack Obama', 'Obama'), ('Jacques Chirac', 'Chirac'), ('Justin Trudeau', 'Trudeau'), ('Tony Blair', 'Blair'),
+            ('Angela Merkel', 'Merkel'), ('Gerhard Schröder', 'Schröder'), ('Margaret Thatcher', 'Thatcher'), ('Li Keqiang', 'Li Keqiang'), ('Bill Clinton', 'Clinton'),
+            ('Ronald Reagan', 'Reagan'), ('Pedro Sánchez', 'Sánchez'), ('Donald Trump', 'Trump'), ('Mario Draghi', 'Draghi'), ('Luiz Inácio Lula da Silva', 'Lula'),
+            ('Giorgia Meloni', 'Meloni'), ('António Costa', 'Costa'), ('Viktor Orbán', 'Orbán'), ('Sanna Marin', 'Marin'), ('Shinzō Abe', 'Abe'),
+            ('Jacinda Ardern', 'Ardern'), ('Boris Johnson', 'Johnson'), ('Romano Prodi', 'Prodi'), ('Mark Rutte', 'Rutte'), ('Joe Biden', 'Biden'), ('Jair Bolsonaro', 'Bolsonaro')]
 # « de la France », « du Japon », « des Pays-Bas », « d'Israël » : la grammaire du nom du pays.
 DIR_DU = {'Brésil', 'Canada', 'Chili', 'Costa Rica', 'Danemark', 'Japon', 'Luxembourg', 'Portugal', 'Royaume-Uni'}
 DIR_DES = {'Pays-Bas', 'États-Unis'}
@@ -624,6 +626,15 @@ def _de_pays(p):
     if p in DIR_DES: return 'des ' + p
     if p in DIR_DU: return 'du ' + p
     return ("de l'" if p[0] in 'AEIOUÉÈÊÎÔ' else 'de la ') + p
+
+
+def _en_pays(p):
+    """« en Argentine », « au Canada », « aux États-Unis », « à Singapour » ; « Royaume-Uni (Angleterre) » suit « Royaume-Uni »."""
+    b = p.split(' (')[0]
+    if b in DIR_DES: return 'aux ' + p
+    if b in DIR_DU: return 'au ' + p
+    if b in ('Singapour', 'Israël', 'Malte', 'Chypre'): return 'à ' + p
+    return 'en ' + p
 
 
 def _fonction(f, femme):
@@ -674,17 +685,30 @@ def dirigeants():
                 if pr['qid'] == p['wikidata']: propre[id(o)] = 1
                 continue
             if pr['qid'] == p['wikidata']: propre[id(x)] = 1
+        elif p['pays'] == 'Chine' and src.get('chine'):
+            CH = src['chine']; pm = en_fonction(CH['premiers_ministres'], _milieu(p['debut'], p['fin']))
+            x['pm'] = pm['nom']; x['f'] = CH['fonction_president']; x['fpm'] = CH['fonction_pm']; x['qp'] = pm['nom']
+            assert k not in vus, k
         else:
             x['f'] = _fonction(FO[p['office']], femme(p['wikidata']))
             assert k not in vus, k
+        x['b'] = (src.get('bords') or {}).get(p['nom'] + '|' + str(p['annee']), {}).get('bord', 'non classé')
         vus[k] = x; pts.append(x)
     # Le nom sur le graphique : sur le point le plus récent de la personne (pour un président français, celui de son mandat).
     for i, (n, e) in enumerate(DIR_ETIQ):
-        L = [x for x in pts if x['nom'] == n and (x['pays'] != 'France' or id(x) in propre)]
+        L = [x for x in pts if (x['nom'] == n or x.get('qp') == n) and (x['pays'] != 'France' or id(x) in propre)]
         if not L: print('  dirigeant à nommer absent :', n); continue
         m = max(L, key=lambda x: x['an']); m['e'] = e; m['o'] = i
+    # Équilibre des noms écrits : autant de gauche que de droite (à un près), dans la liste entière et dans sa première moitié.
+    for L in (DIR_ETIQ, DIR_ETIQ[:len(DIR_ETIQ) // 2]):
+        noms = {n for n, _ in L}; c = {}
+        for x in pts:
+            if x.get('e') and (x['nom'] in noms or x.get('qp') in noms): c[x['b']] = c.get(x['b'], 0) + 1
+        assert abs(c.get('gauche', 0) - c.get('droite', 0)) <= 1, c
+    for x in pts: x.pop('qp', None)
     return {'pts': pts, 'courts': courts, 'releve': src['releve'], 'etude': src['etude'], 'regle': src['regle'], 'note_extras': src['note_extras'],
             'sources': src['sources'], 'liste': src['liste_des_dirigeants'], 'fonctions_source': src['fonctions_source'],
+            'chine': {k: src['chine'][k] for k in ('source', 'url', 'pourquoi')} if src.get('chine') else None, 'bords_source': src.get('bords_source'),
             'cohabitations': [{'noms': c['noms'], 'de': c['de'], 'a': c['a'], 'source': c['source'], 'url': c['url'], 'citation': c['citation']} for c in src['cohabitations']]}
 
 
@@ -698,8 +722,7 @@ NICHES_IMPOT = ['niche-200302', 'niche-110246', 'niche-120401', 'niche-520110', 
                 'niche-800229', 'niche-120202', 'niche-800401', 'niche-210326', 'niche-800221', 'niche-940102']
 REF_LEVIERS = {
     # Cartes (Voter) : adoptées, toujours dans le même sens
-    'ir-indexation-bareme': ['impot_revenu', 'hausse'], 'ir-indemnites-rupture': ['impot_revenu', 'hausse'], 'ir-indemnites-journalieres': ['impot_revenu', 'hausse'],
-    'csg-indemnites-journalieres': ['csg', 'hausse'], 'ir-abattement-retraites': ['niches_fiscales', 'baisse'],
+    'ir-indemnites-rupture': ['niches_fiscales', 'baisse'], 'ir-indemnites-journalieres': ['niches_fiscales', 'baisse'], 'ir-abattement-retraites': ['niches_fiscales', 'baisse'],
     'contribution-grandes-entreprises': ['impot_societes', 'hausse'], 'contribution-transport-maritime': ['impot_societes', 'hausse'],
     'tva-television': ['tva', 'hausse'], 'niche-730213': ['tva', 'hausse'], 'niche-730221': ['tva', 'hausse'], 'niche-730223': ['tva', 'hausse'], 'niche-710103': ['tva', 'hausse'],
     'allegements-complements-salaire': ['allegements_cotisations', 'baisse'], 'allegements-moins-10': ['allegements_cotisations', 'baisse'],
@@ -708,23 +731,37 @@ REF_LEVIERS = {
     'retraites-fin-suspension': ['age_retraite', 'hausse'], 'retraite-65': ['age_retraite', 'hausse'], 'retraite-62': ['age_retraite', 'baisse'], 'retraite-63': ['age_retraite', 'baisse'],
     'etrangers-residence-prestations': ['residence_prestations', 'hausse_duree'], 'univ-master-doctorat': ['droits_inscription', 'hausse'], 'univ-30': ['droits_inscription', 'hausse'],
     'carence-3-jours': ['arrets_travail', 'hausse_carence'], 'isf': ['patrimoine', 'hausse'], 'taxe-zucman': ['patrimoine', 'hausse'],
-    'franchises-x2': ['reste_a_charge_sante', 'hausse'], 'fonctionnaires-1-sur-2': ['fonction_publique', 'baisse'], 'point-indice-plus-1': ['fonction_publique', 'hausse'],
+    'franchises-x2': ['reste_a_charge_sante', 'hausse'], 'fonctionnaires-1-sur-2': ['fonction_publique_effectifs', 'baisse'], 'point-indice-plus-1': ['fonction_publique_remunerations', 'hausse'],
     **{k: ['niches_fiscales', 'baisse'] for k in NICHES_IMPOT},
     # Lignes de Créer : sens si la ligne augmente, sens si elle baisse
     'ir': ['impot_revenu', 'hausse', 'baisse'], 'is': ['impot_societes', 'hausse', 'baisse'], 'tva': ['tva', 'hausse', 'baisse'], 'csg': ['csg', 'hausse', 'baisse'],
     'defense': ['defense', 'hausse', 'baisse'], 'chomage': ['assurance_chomage', 'hausse', 'baisse'], 'chomage-duree': ['assurance_chomage', 'baisse', 'hausse'],
     'ij-maladie': ['arrets_travail', 'hausse_depense_publique', 'baisse_depense_publique'], 'fp-carence': ['arrets_travail', 'hausse_carence', 'baisse_carence'],
     'franchises': ['reste_a_charge_sante', 'hausse', 'baisse'], 'tm-dm': ['reste_a_charge_sante', 'hausse', 'baisse'],
-    'operateurs': ['agences_operateurs', 'baisse', 'hausse'], 'capitalisation': ['retraite_capitalisation', 'hausse', 'baisse'],
+    'capitalisation': ['retraite_capitalisation', 'hausse', 'baisse'],
     'allegements': ['allegements_cotisations', 'hausse_allegement', 'baisse'], 'tva-sociale': ['tva_sociale', 'hausse', 'baisse'],
-    'quotient-familial': ['impot_revenu', {'1': 'hausse', '2': 'baisse'}], 'pfu-bareme': ['impot_revenu', {'1': 'hausse'}],
-    'remunerations': ['fonction_publique', 'hausse', 'baisse'], 'fp-non-remplacement': ['fonction_publique', 'baisse', 'hausse'],
-    'fp-categorielles': ['fonction_publique', 'baisse', 'hausse'], 'fp-avancements': ['fonction_publique', 'baisse', 'hausse'],
-    'collectivites-effectifs': ['fonction_publique', {'1': 'baisse', '2': 'baisse'}], 'tout-depense': ['depense_generale', 'hausse', 'baisse'],
+    'pfu-bareme': ['impot_revenu', {'1': 'hausse'}],
+    'remunerations': ['fonction_publique_remunerations', 'hausse', 'baisse'], 'fp-non-remplacement': ['fonction_publique_effectifs', 'baisse', 'hausse'],
+    'fp-categorielles': ['fonction_publique_remunerations', 'baisse', 'hausse'], 'fp-avancements': ['fonction_publique_remunerations', 'baisse', 'hausse'],
+    'collectivites-effectifs': ['fonction_publique_effectifs', {'1': 'baisse', '2': 'baisse'}], 'tout-depense': ['depense_generale', 'hausse', 'baisse'],
     **{k: ['aide_developpement', 'hausse', 'baisse'] for k in APD},
     # Recrutements de Créer (policiers, gendarmes, enseignants…) : plus ou moins d'agents publics
-    'unites:emploi': ['fonction_publique', 'hausse', 'baisse'],
+    'unites:emploi': ['fonction_publique_effectifs', 'hausse', 'baisse'],
 }
+# Le levier « fonction publique » des fiches mêle deux leviers du jeu : les effectifs (Chrétien, postes supprimés) et les
+# rémunérations (Rajoy, prime supprimée). La défense de Cameron (2010) porte sur les effectifs, pas sur le budget, qui monte :
+# elle n'est rattachée à aucune ligne (la ligne « Défense » de Créer change le budget).
+REF_SOUS = {'ca_fonction_publique_1995': 'fonction_publique_effectifs', 'es_fonction_publique_2012': 'fonction_publique_remunerations'}
+# Périmètre de la réforme, quand il n'est pas celui de tout le pays, lu dans la citation de la fiche.
+REF_PERIMETRE = {'ar_depense_2024': "dépense primaire du gouvernement, en caisse (« cash »), selon le FMI",
+                 'ca_depense_1995': "dépenses de programmes du budget fédéral (« program spending »)"}
+# La mesure telle qu'affichée, quand la fiche ajoute un résultat : on garde la seule mesure (texte de la fiche, coupé).
+REF_MESURE = {'ar_depense_2024': "Dépense primaire en baisse de 30 % sur un an en 2024 (subventions, pensions, transferts aux provinces, investissement)."}
+
+
+def _fonction_ref(t):
+    t = t.strip()
+    return t if re.match(r'^(Premier|Première) ministre|^Taoiseach', t) else t[0].lower() + t[1:]
 
 
 def reformes_jeu(cartes, assiettes, unites):
@@ -734,14 +771,17 @@ def reformes_jeu(cartes, assiettes, unites):
     lev = {k: v for k, v in REF_LEVIERS.items() if k in ids}
     absentes = sorted(k for k in REF_LEVIERS if k not in ids and not k.startswith('niche-'))
     if absentes: print('  réformes : mesures du jeu absentes :', ', '.join(absentes))
-    noms = {r['levier'] for r in src['reformes']}
+    noms = {REF_SOUS.get(r['id'], r['levier']) for r in src['reformes']}
     for k, v in lev.items(): assert v[0] in noms, (k, v)
     L = []
     for r in src['reformes']:
         if r['levier'] == 'deficit_dette': continue   # pas un levier du jeu
         assert r.get('url') and r.get('citation') and r.get('date_lecture'), r['id']
-        x = {'id': r['id'], 'nom': r['dirigeant'], 'f': r['fonction'], 'pays': r['pays'], 'an': r['annee'], 'lev': r['levier'], 'levl': r['levier_libelle'], 'sens': r['sens'],
-             'mesure': r['mesure'], 'source': r['source'], 'url': r['url'], 'lu': r['date_lecture']}
+        x = {'id': r['id'], 'nom': r['dirigeant'], 'f': _fonction_ref(r['fonction']), 'pays': r['pays'], 'an': r['annee'], 'lev': REF_SOUS.get(r['id'], r['levier']), 'levl': r['levier_libelle'], 'sens': r['sens'],
+             'mesure': REF_MESURE.get(r['id'], r['mesure']), 'source': r['source'], 'url': r['url'], 'lu': r['date_lecture']}
+        if r['id'] in REF_MESURE: assert REF_MESURE[r['id']].rstrip('.') in r['mesure'], r['id']
+        if r['id'] in REF_PERIMETRE: x['perimetre'] = REF_PERIMETRE[r['id']]
+        x['en'] = _en_pays(r['pays'])
         a = r.get('axes_personnages')
         if a and a.get('depense_pib') is not None and a.get('solde_pib') is not None:
             x['dep'] = a['depense_pib']; x['rec'] = round(a['depense_pib'] + a['solde_pib'], 2)

@@ -815,7 +815,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       <p class="q-note">Exemples calculés par Concret avec les règles citées sur chaque carte ; votre situation peut être différente.</p>
     </section>
     <section class="card" aria-labelledby="q-pays-t" id="q-pays-c"><h2 id="q-pays-t"><span class="eyebrow">À quel pays ressemble votre budget</span>Vos dépenses et vos recettes publiques, parmi les pays d'Europe</h2><div id="q-pays"></div><button type="button" class="q-lien q-pcourbe" data-c="q-pays">Partager ce graphique</button></section>
-    <section class="card" aria-labelledby="q-dir-t" id="q-dir-c" hidden><h2 id="q-dir-t"><span class="eyebrow">À quel dirigeant ressemble votre budget</span>Vos dépenses et vos recettes publiques, à côté de celles des pays au milieu du mandat de leurs dirigeants</h2><div id="q-dir"></div><button type="button" class="q-lien q-pcourbe" data-c="q-dir">Partager ce graphique</button><div id="q-dir-r"></div></section>
+    <section class="card" aria-labelledby="q-dir-t" id="q-dir-c" hidden><h2 id="q-dir-t"><span class="eyebrow">À quel pays, quelle année, ressemble votre budget</span>Vos dépenses et vos recettes publiques, à côté de celles des pays au milieu d'un mandat</h2><div id="q-dir"></div><button type="button" class="q-lien q-pcourbe" data-c="q-dir">Partager ce graphique</button><div id="q-dir-r"></div></section>
     <section class="card" aria-labelledby="q-vm-t" id="q-vm-c">
       <h2 id="q-vm-t"><span class="eyebrow">Vos mesures</span>Ce que chacune change au déficit</h2>
       <div class="q-chips q-ans" id="q-vm-an" role="group" aria-label="Année"></div>
@@ -1051,13 +1051,14 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   var nbChoix = function () { return adoptees().length + Object.keys(S.perso).length + Object.keys(S.unites).length; };
   // ---------- À quel pays ressemble votre budget ----------
   // Dépenses et recettes publiques des pays, en % du PIB, l'année du point de départ (Eurostat, donnees/budget_jeu.json).
-  // Votre budget : les dépenses de la France cette année-là, intérêts mis à part, moins vos économies (plus vos dépenses
-  // nouvelles), plus les intérêts de l'année ; les recettes = dépenses + solde. L'effet sur l'activité est donc compté avec
-  // les recettes (les impôts et cotisations suivent l'activité). Le plus proche : le plus petit écart, dépenses et recettes comptées pareil.
+  // Votre budget : les recettes de la France cette année-là, en % du PIB, plus vos mesures de recettes (rapportées au PIB de
+  // l'année, effet sur l'activité compris) ; sans mesure, elles restent la même part du PIB (hypothèse de Concret, la même que le
+  // départ du jeu). Les dépenses = recettes − solde du Bilan : l'effet sur l'activité, le PIB qui change et les intérêts passent
+  // dans la part des dépenses, comme dans les comptes d'un pays. Le plus proche : le plus petit écart, dépenses et recettes comptées pareil.
   var PE = null, FR0 = null, RESS = null;
   var ISO2 = { FRA: 'FR', DEU: 'DE', ESP: 'ES', ITA: 'IT', BEL: 'BE', BGR: 'BG', CZE: 'CZ', DNK: 'DK', EST: 'EE', IRL: 'IE', GRC: 'EL', HRV: 'HR', CYP: 'CY', LVA: 'LV', LTU: 'LT', LUX: 'LU', HUN: 'HU', MLT: 'MT', NLD: 'NL', AUT: 'AT', POL: 'PL', PRT: 'PT', ROU: 'RO', SVN: 'SI', SVK: 'SK', FIN: 'FI', SWE: 'SE', NOR: 'NO', ISL: 'IS', CHE: 'CH', GBR: 'UK', USA: 'US', JPN: 'JP', CAN: 'CA' };
   var ART = { UK: 'le', US: 'les', JP: 'le', CA: 'le', FR: 'la', DE: "l'", ES: "l'", IT: "l'", BE: 'la', BG: 'la', CZ: 'la', DK: 'le', EE: "l'", IE: "l'", EL: 'la', HR: 'la', CY: '', LV: 'la', LT: 'la', LU: 'le', HU: 'la', MT: '', NL: 'les', AT: "l'", PL: 'la', PT: 'le', RO: 'la', SI: 'la', SK: 'la', FI: 'la', SE: 'la', NO: 'la', IS: "l'", CH: 'la' };
-  function structure(r) { var dp = FR0.dep - D0.interets - r.dep + r.interets; return { dep: dp, rec: dp + r.solde }; }
+  function structure(r) { var rc = FR0.rec + r.rec / (1 + (r.L || 0) / 100); return { dep: rc - r.solde, rec: rc }; }
   function ressemble(r) {
     if (!FR0 || !r) return null; var s = structure(r);
     var L = PE.pays.filter(function (p) { return p.code !== 'EU27_2020'; }).map(function (p) { return { p: p, e: Math.sqrt(Math.pow(p.dep - s.dep, 2) + Math.pow(p.rec - s.rec, 2)) }; }).sort(function (a, b) { return a.e - b.e; });
@@ -2264,7 +2265,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   function bilan() { bilan0(); serrer($('p-bilan')); sommaire(); }
   // Sommaire du Bilan : les parties dans leur ordre, celle qu'on lit mise en avant.
   // Huit entrées, chacune vers la première partie de son groupe ; la partie en cours met son groupe en avant.
-  var SOM = [['q-rc-t', 'Résumé', []], ['q-pv-c', 'Pour votre foyer', []], ['q-pays-c', 'Le pays le plus proche', []], ['q-dir-c', 'Le dirigeant le plus proche', []], ['q-vm-c', 'Vos mesures, poste par poste', ['q-ou-c']], ['q-int-t', 'Dette et intérêts', ['q-bi-t', 'q-def-t']],
+  var SOM = [['q-rc-t', 'Résumé', []], ['q-pv-c', 'Pour votre foyer', []], ['q-pays-c', 'Le pays le plus proche', []], ['q-dir-c', 'Le pays et l\'année les plus proches', []], ['q-vm-c', 'Vos mesures, poste par poste', ['q-ou-c']], ['q-int-t', 'Dette et intérêts', ['q-bi-t', 'q-def-t']],
     ['q-grp-c', 'Votes des députés, défi du jour', ['q-defi']], ['q-cmp-c', 'Comparer avec le Gouvernement', []], ['q-crc-t', 'Activité et emploi', ['q-eco-t']], ['q-qui-t', 'Qui paie, qui reçoit', []]], SOM_OBS = false;
   function partie(id) { var e = $(id); return e && (e.tagName === 'H2' ? e.closest('section') : e); }
   function sommaire() {
@@ -2498,7 +2499,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       (function () { var D = procheDeficit(an1(R)); return D.length ? '<p class="q-gros" style="font-size:15.5px">Par le déficit : le vôtre en ' + AN0 + ' (' + defic(an1(R).solde) + ') est le plus proche de celui que le FMI prévoit cette année-là pour ' + drapeau(D[0].p.code) + ' <b>' + esc(aPays(D[0].p).replace(/^à |^au |^aux /, function (m) { return { 'à ': '', 'au ': 'le ', 'aux ': 'les ' }[m]; })) + '</b> (' + defic(D[0].v) + ')' + (D[1] ? ', puis ' + drapeau(D[1].p.code) + ' ' + esc(lePays(D[1].p)) + ' (' + defic(D[1].v) + ')' : '') + '.</p>' : ''; })() +
       // Ce qui manque sur la carte reste écrit en clair ; la méthode est repliée sous « Comment c'est calculé ».
       ((hors.length || PE.absents.length) ? '<p class="q-note">' + [PE.absents.length ? esc(PE.absents.join(', ')) + ' : pas encore publié pour ' + PE.an + ', absent de la carte' : '', hors.length ? 'hors du cadre : ' + hors.map(function (p) { return esc(p.nom) + ' (dépenses ' + pc(p.dep) + ', recettes ' + pc(p.rec) + ')'; }).join(', ') : ''].filter(Boolean).join(' ; ').replace(/^./, function (c) { return c.toUpperCase(); }) + '.</p>' : '') +
-      '<details class="q-plie"><summary>Comment c\'est calculé</summary><p class="q-note">Les pays : chiffres de ' + PE.an + ', les derniers publiés par Eurostat ; touchez un point pour son nom. Votre budget : calcul de Concret à partir de la France de ' + PE.an + ' (dépenses ' + pc(fr.dep) + ', recettes ' + pc(fr.rec) + ') : vos économies baissent les dépenses, vos dépenses nouvelles les augmentent, vos hausses d\'impôt montent les recettes, les intérêts suivent votre dette, et l\'effet sur l\'activité est compté avec les recettes. « Le plus proche » : le plus petit écart, dépenses et recettes comptées pareil. Sous la diagonale, les dépenses dépassent les recettes : c\'est un déficit. Par le déficit : prévisions du FMI pour ' + AN0 + ', les mêmes que le tableau « Se comparer ». <a href="' + esc(PE.url) + '">' + esc(PE.source.split(' :')[0]) + '</a>.</p></details>';
+      '<details class="q-plie"><summary>Comment c\'est calculé</summary><p class="q-note">Les pays : chiffres de ' + PE.an + ', les derniers publiés par Eurostat ; touchez un point pour son nom. Votre budget : calcul de Concret à partir de la France de ' + PE.an + ' (dépenses ' + pc(fr.dep) + ', recettes ' + pc(fr.rec) + ') : vos hausses d\'impôt montent les recettes, qui restent sinon la même part du PIB (hypothèse de Concret, la même que le départ du jeu) ; les dépenses sont les recettes moins votre déficit : vos économies, vos dépenses nouvelles, les intérêts de votre dette et l\'effet sur l\'activité (le PIB qui change) y sont comptés. « Le plus proche » : le plus petit écart, dépenses et recettes comptées pareil. Sous la diagonale, les dépenses dépassent les recettes : c\'est un déficit. Par le déficit : prévisions du FMI pour ' + AN0 + ', les mêmes que le tableau « Se comparer ». <a href="' + esc(PE.url) + '">' + esc(PE.source.split(' :')[0]) + '</a>.</p></details>';
     var sv = el.querySelector('.q-paysvg'), bu = sv && sv.querySelector('.q-bulle');
     if (sv && bu) {
       var montrer = function (ev) {
@@ -2515,21 +2516,25 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     }
   }
 
-  // ---------- À quel dirigeant ressemble votre budget : le nuage des mandats ----------
+  // ---------- À quel pays, quelle année, ressemble votre budget : le nuage des mandats ----------
   // Chaque point est un pays à une année (le milieu du mandat d'un dirigeant) : dépenses publiques vers la droite, recettes vers le
-  // haut, comme la carte des pays (donnees/budget_jeu.json, « dirigeants »). Votre point : le même calcul que pour le pays le plus proche.
+  // haut, comme la carte des pays (donnees/budget_jeu.json, « dirigeants »). Votre point : le même calcul que pour le pays le plus proche
+  // (structure()). Le pays et l'année passent toujours avant la personne : le point mesure le pays, pas les décisions d'une personne.
   function procheDir(r) {
     var D = J.dirigeants; if (!D || !D.pts || !D.pts.length || !FR0 || !r) return null; var s = structure(r);
     var L = D.pts.map(function (p) { return { p: p, e: Math.sqrt(Math.pow(p.dep - s.dep, 2) + Math.pow(p.rec - s.rec, 2)) }; }).sort(function (a, b) { return a.e - b.e; });
     return { s: s, p: L[0].p, L: L };
   }
-  // « sous Viktor Orbán (Premier ministre de Hongrie) » ; pour la France, le président et le Premier ministre, et la cohabitation.
-  function sousDir(p) { return p.pm ? 'sous ' + p.nom + ', ' + p.f + ', et ' + p.pm + ', ' + p.fpm + (p.cohab ? ' (cohabitation)' : '') : 'sous ' + p.nom + ' (' + p.f + ')'; }
-  function phraseDir(rd) { return 'Votre budget ressemble le plus à celui ' + rd.p.de + ' en ' + rd.p.an + ', ' + sousDir(rd.p); }
+  // « quand Viktor Orbán était Premier ministre de Hongrie » ; pour la France et la Chine, le président et le Premier ministre.
+  function quandDir(p) { return p.pm ? 'quand ' + p.nom + ' était ' + p.f + ' et ' + p.pm + ' ' + p.fpm + (p.cohab ? ' (cohabitation)' : '') : 'quand ' + p.nom + ' était ' + p.f; }
+  function phraseDir(rd) { return 'Votre budget ressemble le plus à celui ' + rd.p.de + ' en ' + rd.p.an + ', ' + quandDir(rd.p); }
+  // Les noms de la personne, après le pays et l'année : « François Hollande, président, et Manuel Valls, Premier ministre ».
+  var nomsDir = function (p) { return p.pm ? p.nom + ', ' + p.f + ', et ' + p.pm + ', ' + p.fpm + (p.cohab ? ' (cohabitation)' : '') : p.nom + ', ' + p.f; };
   var dateLue = function (d) { var p = String(d || '').split('-'); return p.length === 3 ? (+p[2] === 1 ? '1er' : +p[2]) + ' ' + ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'][p[1] - 1] + ' ' + p[0] : ''; };
   // Le levier que vous utilisez le plus en AN0 : chaque mesure en Md€ (valeur absolue), celles d'un même levier et d'un même sens
-  // additionnées ; une mesure sans levier rattaché compte seule. Puis une réforme de ce levier, dans le même sens : celle du
-  // dirigeant dont le point est le plus proche du vôtre, sinon la plus récente. Aucune : rien.
+  // additionnées ; une mesure sans levier rattaché compte seule. Puis une réforme de ce levier, dans le même sens. Les fiches n'ont
+  // pas de mesure commune de leur ampleur : quand plusieurs conviennent, le choix tourne selon votre budget (le même budget donne
+  // toujours la même), pour qu'aucune ne revienne d'office. Aucune : rien.
   function reformeProche() {
     var RF = J.reformes; if (!RF || !nbChoix()) return null; var M = RF.leviers, G = {}, an = AN0;
     var aj = function (k, se, v) { var key = se && M[k] ? M[k][0] + '|' + se : 'x:' + k; G[key] = (G[key] || 0) + Math.abs(v || 0); };
@@ -2543,43 +2548,49 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     var best = null; Object.keys(G).forEach(function (k) { if (best === null || G[k] > G[best]) best = k; });
     if (best === null || G[best] < 0.05 || best.indexOf('x:') === 0) return null;
     var lv = best.split('|'), L = RF.liste.filter(function (r) { return r.lev === lv[0] && r.sens === lv[1]; }); if (!L.length) return null;
-    var s = structure(an1(R)), d = function (r) { return r.dep != null ? Math.sqrt(Math.pow(r.dep - s.dep, 2) + Math.pow(r.rec - s.rec, 2)) : 1e9; };
-    L.sort(function (a, b) { return d(a) - d(b) || b.an - a.an; });
-    return { r: L[0], v: G[best] };
+    L.sort(function (a, b) { return a.an - b.an || (a.id < b.id ? -1 : 1); });
+    var cle = JSON.stringify([Object.keys(S.v).filter(function (k) { return S.v[k] === 1; }).sort(), Object.keys(S.perso).sort().map(function (k) { return k + S.perso[k]; }), Object.keys(S.unites).sort().map(function (k) { return k + S.unites[k]; })]), hh = 0;
+    for (var i = 0; i < cle.length; i++) hh = (hh * 31 + cle.charCodeAt(i)) % 1000003;
+    return { r: L[hh % L.length], v: G[best], n: L.length };
   }
   function dirCarte() {
     var el = $('q-dir'), sec = $('q-dir-c'); if (!el || !sec) return;
     var D = J.dirigeants, rd = procheDir(an1(R)); sec.hidden = !rd; if (!rd) return;
-    var s = rd.s, P = D.pts, fr = FR0, pc = function (v) { return nf(v, 1) + ' %'; };
-    // Le cadre : tous les points, le vôtre et la France de départ, arrondis à 5 points ; un peu plus haut que large, pour que les
-    // points serrés se séparent (la diagonale reste celle où recettes = dépenses).
+    var s = rd.s, P = D.pts, fr = FR0, pc = function (v) { return nf(v, 1) + ' % du PIB'; }, pcc = function (v) { return nf(v, 1) + ' %'; };
+    // Le cadre : tous les points, le vôtre et la France de départ, arrondis à 5 points.
     var Vx = P.map(function (p) { return p.dep; }).concat([s.dep, fr.dep]), Vy = P.map(function (p) { return p.rec; }).concat([s.rec, fr.rec]);
     var x0 = Math.floor(Math.min.apply(null, Vx) / 5) * 5, x1 = Math.ceil(Math.max.apply(null, Vx) / 5) * 5, y0 = Math.floor(Math.min.apply(null, Vy) / 5) * 5, y1 = Math.ceil(Math.max.apply(null, Vy) / 5) * 5;
-    // Largeur : celle de l'écran (de 300 à 560) ; sur un téléphone, moins de place, donc moins de noms écrits.
-    var W = Math.round(Math.max(300, Math.min(560, el.clientWidth || 340)) / TS()), l = 34, t = 14, w = W - l - 16, k = w / (x1 - x0), ky = Math.max(k, w * 1.1 / (y1 - y0)), h = Math.round((y1 - y0) * ky), H = t + h + 40;
+    // Largeur en unités du dessin : celle de l'écran divisée par la taille du texte (réglage du téléphone ou zoom) : les noms
+    // grandissent avec le texte, et un écran étroit en écrit moins. Hauteur : un peu plus haute que large, sans dépasser l'écran.
+    var cw = el.clientWidth || 340, W = Math.round(Math.max(230, Math.min(560, cw / TS()))), sc = cw / W, l = 30, t = 14, w = W - l - 12, k = w / (x1 - x0);
+    var hmax = Math.max(160, (window.innerHeight || 700) * 0.6 / sc - t - 40), h = Math.round(Math.min(w * 1.1, hmax)), ky = h / (y1 - y0), H = t + h + 40;
     var X = function (v) { return l + (v - x0) * k; }, Y = function (v) { return t + h - (v - y0) * ky; }, pas = k < 7 ? 10 : 5, g = '';
-    for (var v = Math.ceil(x0 / pas) * pas; v <= x1; v += pas) g += '<line x1="' + X(v) + '" y1="' + t + '" x2="' + X(v) + '" y2="' + (t + h) + '" stroke="var(--line)"/><text x="' + X(v) + '" y="' + (t + h + 15) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + v + ' %</text>';
-    for (v = Math.ceil(y0 / pas) * pas; v <= y1; v += pas) g += '<line x1="' + l + '" y1="' + Y(v) + '" x2="' + (l + w) + '" y2="' + Y(v) + '" stroke="var(--line)"/><text x="' + (l - 5) + '" y="' + (Y(v) + 4) + '" text-anchor="end" font-size="11" fill="var(--muted)">' + v + '</text>';
+    // Sous la diagonale (recettes plus basses que les dépenses) : le déficit, en teinte légère.
     var e0 = Math.max(x0, y0), e1 = Math.min(x1, y1);
+    g += '<path d="M' + X(e0) + ' ' + Y(e0) + 'L' + X(e1) + ' ' + Y(e1) + 'L' + X(x1) + ' ' + Y(Math.min(x1, y1)) + 'L' + X(x1) + ' ' + Y(y0) + 'L' + X(Math.max(x0, y0)) + ' ' + Y(y0) + 'Z" fill="var(--c-ecole)" opacity=".08"/>';
+    for (var v = Math.ceil(x0 / pas) * pas; v <= x1; v += pas) g += '<line x1="' + X(v) + '" y1="' + t + '" x2="' + X(v) + '" y2="' + (t + h) + '" stroke="var(--line)"/><text x="' + X(v) + '" y="' + (t + h + 15) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + v + '</text>';
+    for (v = Math.ceil(y0 / pas) * pas; v <= y1; v += pas) g += '<line x1="' + l + '" y1="' + Y(v) + '" x2="' + (l + w) + '" y2="' + Y(v) + '" stroke="var(--line)"/><text x="' + (l - 5) + '" y="' + (Y(v) + 4) + '" text-anchor="end" font-size="11" fill="var(--muted)">' + v + '</text>';
     g += '<line x1="' + X(e0) + '" y1="' + Y(e0) + '" x2="' + X(e1) + '" y2="' + Y(e1) + '" stroke="var(--muted)" stroke-dasharray="4 4"/>' +
-      '<text x="' + (X(e1) - 4) + '" y="' + (Y(e1) + 14) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">budget à l\'équilibre</text>' +
-      '<text x="' + (l + w - 4) + '" y="' + (t + h - 8) + '" text-anchor="end" font-size="11" fill="var(--muted)">déficit ↓</text>' +
-      '<text x="' + (l + 6) + '" y="' + (t + 14) + '" font-size="11" fill="var(--muted)">↑ excédent</text>' +
+      '<text x="' + (X(e1) - 4) + '" y="' + (Y(e1) + 14) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">recettes = dépenses</text>' +
+      '<text x="' + (l + w - 6) + '" y="' + (t + h - 22) + '" text-anchor="end" font-size="12.5" font-weight="700" fill="var(--c-ecole)">Déficit</text>' +
+      '<text x="' + (l + w - 6) + '" y="' + (t + h - 8) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">dépenses plus hautes que les recettes</text>' +
+      '<text x="' + (l + 6) + '" y="' + (t + 16) + '" font-size="12.5" font-weight="700" fill="var(--fg)">Excédent</text>' +
       '<text x="' + (l + w / 2) + '" y="' + (H - 4) + '" text-anchor="middle" font-size="11.5" fill="var(--fg)">Dépenses publiques, % du PIB →</text>' +
-      '<text x="' + (l + 2) + '" y="' + (t - 3) + '" font-size="11.5" fill="var(--fg)">↑ Recettes, % du PIB</text>';
-    // Les noms : vous, le dirigeant le plus proche (avec son année), la France de départ, puis les noms connus dans un ordre fixe.
+      '<text x="' + (l - 26) + '" y="' + (t - 3) + '" font-size="11.5" fill="var(--fg)">↑ Recettes publiques, % du PIB</text>';
+    // Les noms : vous, le point le plus proche, la France de départ, puis les noms de la liste (autant de gauche que de droite,
+    // dans un ordre qui les alterne) : toujours le pays et l'année d'abord, le nom ensuite (« France 1964 (de Gaulle) »).
     // Chaque nom essaie huit places autour de son point, de plus en plus loin (un trait le relie alors au point), et prend la
-    // première qui ne chevauche ni un autre nom ni un point nommé ; sinon il n'est pas écrit (le point garde son nom au toucher) :
-    // sur un écran étroit, moins de noms. Votre nom et celui du plus proche sont toujours écrits.
+    // première qui ne chevauche ni un autre nom ni un point nommé ; sinon il n'est pas écrit (le point garde son nom au toucher).
+    // Votre nom et celui du point le plus proche sont toujours écrits.
     var boites = [], etiq = [], traits = [];
     var chevauche = function (b) { return boites.some(function (o) { return !(b[2] < o[0] || b[0] > o[2] || b[3] < o[1] || b[1] > o[3]); }); };
     var poser = function (x, y, txt, fs, coul, gras, force) {
-      var lw = txt.length * fs * 0.56, lh = fs + 2, prem = null, ok = false;
+      var lw = txt.length * fs * 0.55, lh = fs + 2, prem = null, ok = false;
       for (var d = 0; d < (force ? 3 : 2) && !ok; d++) {
-        var r = [7, 15, 25][d], essais = [[x + r, y + fs / 2 - 1, 'start'], [x - r, y + fs / 2 - 1, 'end'], [x, y - r, 'middle'], [x, y + fs + r - 1, 'middle'], [x + r * .8, y - r * .8, 'start'], [x - r * .8, y - r * .8, 'end'], [x + r * .8, y + fs + r * .8 - 2, 'start'], [x - r * .8, y + fs + r * .8 - 2, 'end']];
+        var r = [8, 15, 25][d], essais = [[x + r, y + fs / 2 - 1, 'start'], [x - r, y + fs / 2 - 1, 'end'], [x, y - r, 'middle'], [x, y + fs + r - 1, 'middle'], [x + r * .8, y - r * .8, 'start'], [x - r * .8, y - r * .8, 'end'], [x + r * .8, y + fs + r * .8 - 2, 'start'], [x - r * .8, y + fs + r * .8 - 2, 'end']];
         for (var i = 0; i < essais.length; i++) {
           var e = essais[i], xa = e[2] === 'start' ? e[0] : e[2] === 'end' ? e[0] - lw : e[0] - lw / 2, b = [xa, e[1] - lh + 2, xa + lw, e[1] + 2];
-          if (b[0] < l || b[2] > W - 2 || b[1] < t || b[3] > t + h) continue;
+          if (b[0] < 2 || b[2] > W - 2 || b[1] < t || b[3] > t + h) continue;
           if (!prem) prem = [e, b, r];
           if (chevauche(b)) continue;
           prem = [e, b, r]; ok = true; break;
@@ -2587,57 +2598,63 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       }
       if (!prem || (!ok && !force)) return false;
       var E = prem[0], B = prem[1];
-      if (prem[2] > 7) { var cx = Math.max(B[0], Math.min(B[2], x)), cy = Math.max(B[1], Math.min(B[3], y)); traits.push('<line x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + cx.toFixed(1) + '" y2="' + cy.toFixed(1) + '" stroke="' + coul + '" stroke-width="0.8" opacity=".7"/>'); }
+      if (prem[2] > 8) { var cx = Math.max(B[0], Math.min(B[2], x)), cy = Math.max(B[1], Math.min(B[3], y)); traits.push('<line x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + cx.toFixed(1) + '" y2="' + cy.toFixed(1) + '" stroke="' + coul + '" stroke-width="0.8" opacity=".7"/>'); }
       boites.push(B); etiq.push('<text class="q-nom" stroke="var(--panel)" stroke-width="3" stroke-linejoin="round" paint-order="stroke" x="' + E[0].toFixed(1) + '" y="' + E[1].toFixed(1) + '" text-anchor="' + E[2] + '" font-size="' + fs + '" font-weight="' + (gras ? 700 : 600) + '" fill="' + coul + '">' + esc(txt) + '</text>'); return true;
     };
     var pr = rd.p, NOM = P.filter(function (p) { return p.e && p !== pr; }).sort(function (a, b) { return a.o - b.o; });
-    var court = function (p) { return p.e || p.nom.split(' ').slice(-1)[0]; };
-    var grp = []; NOM.forEach(function (p) { var o = grp.filter(function (q) { return Math.abs(X(q.p.dep) - X(p.dep)) < 4 && Math.abs(Y(q.p.rec) - Y(p.rec)) < 4; })[0]; if (o) { if (o.n.indexOf(court(p)) < 0) o.n.push(court(p)); } else grp.push({ p: p, n: [court(p)] }); });
-    var fx = X(fr.dep), fy = Y(fr.rec), vx = X(s.dep), vy = Y(s.rec);
-    NOM.concat([pr]).forEach(function (p) { boites.push([X(p.dep) - 3, Y(p.rec) - 3, X(p.dep) + 3, Y(p.rec) + 3]); });
-    boites.push([vx - 8, vy - 8, vx + 8, vy + 8], [fx - 6, fy - 6, fx + 6, fy + 6]);
-    // Les points : gris, les points nommés plus foncés, le plus proche en noir.
-    P.forEach(function (p) { var n = p.e || p === pr, x = X(p.dep), y = Y(p.rec); g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (p === pr ? 5 : n ? 3.4 : 2.3) + '" fill="' + (n ? 'var(--fg)' : 'var(--muted)') + '" opacity="' + (p === pr ? 1 : n ? .75 : .4) + '"/>'; });
+    var court = function (p) { return p.e || (p.pm && p.pays === 'Chine' ? p.pm : p.nom).split(' ').slice(-1)[0]; };
+    var etiqDe = function (L) { var pays = L[0].pays; return L.every(function (p) { return p.pays === pays; }) ? pays + ' ' + L.map(function (p) { return p.an; }).join(', ') + ' (' + L.map(court).join(', ') + ')' : L.map(function (p) { return p.pays + ' ' + p.an + ' (' + court(p) + ')'; }).join(' · '); };
+    var grp = []; NOM.forEach(function (p) { var o = grp.filter(function (q) { return Math.abs(X(q.L[0].dep) - X(p.dep)) < 4 && Math.abs(Y(q.L[0].rec) - Y(p.rec)) < 4; })[0]; if (o) o.L.push(p); else grp.push({ L: [p] }); });
+    var fx = X(fr.dep), fy = Y(fr.rec), vx = X(s.dep), vy = Y(s.rec), px0 = X(pr.dep), py0 = Y(pr.rec);
+    NOM.forEach(function (p) { boites.push([X(p.dep) - 3, Y(p.rec) - 3, X(p.dep) + 3, Y(p.rec) + 3]); });
+    boites.push([vx - 8, vy - 8, vx + 8, vy + 8], [fx - 6, fy - 6, fx + 6, fy + 6], [px0 - 8, py0 - 8, px0 + 8, py0 + 8]);
+    // Les points : gris, les points nommés plus foncés ; le plus proche, un anneau noir dessiné par-dessus votre point, pour qu'il se voie toujours.
+    P.forEach(function (p) { var n = p.e, x = X(p.dep), y = Y(p.rec); if (p !== pr) g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (n ? 3.4 : 2.3) + '" fill="' + (n ? 'var(--fg)' : 'var(--muted)') + '" opacity="' + (n ? .75 : .4) + '"/>'; });
     if (Math.abs(vx - fx) + Math.abs(vy - fy) > 6) g += '<line x1="' + fx + '" y1="' + fy + '" x2="' + vx + '" y2="' + vy + '" stroke="var(--fr)" stroke-width="1.5" stroke-dasharray="3 3"/>';
     g += '<circle cx="' + fx + '" cy="' + fy + '" r="5" fill="none" stroke="var(--fr)" stroke-width="1.5"/>';
     g += '<circle cx="' + vx + '" cy="' + vy + '" r="7" fill="var(--fr)" stroke="var(--panel)" stroke-width="2"/>';
-    poser(vx, vy, 'Vous, ' + AN0, 12.5, 'var(--fr)', true, true); poser(X(pr.dep), Y(pr.rec), court(pr) + ', ' + pr.an, 11.5, 'var(--fg)', true, true); poser(fx, fy, 'France ' + PE.an, 11, 'var(--fr)');
-    grp.forEach(function (q) { poser(X(q.p.dep), Y(q.p.rec), q.n.join(' · '), 11, 'var(--fg)'); });
-    g += traits.join('');
-    g += etiq.join('');
-    // Au toucher : le nom (le président et le Premier ministre pour la France), le pays, l'année, la dépense et les recettes.
-    var ligneP = function (p) { return p.pays + ', ' + p.an + (p.mc ? ' (mandat en cours)' : '') + ' : dépenses ' + pc(p.dep) + ', recettes ' + pc(p.rec); };
-    var nomP = function (p) { return p.pm ? p.nom + ', ' + p.f + ', et ' + p.pm + ', ' + p.fpm + (p.cohab ? ' (cohabitation)' : '') : p.nom + ' (' + p.f + ')'; };
-    var PTS = P.map(function (p) { return { x: X(p.dep), y: Y(p.rec), a: nomP(p), b: ligneP(p) }; })
-      .concat([{ x: fx, y: fy, a: 'France ' + PE.an + ' (Eurostat)', b: 'dépenses ' + pc(fr.dep) + ', recettes ' + pc(fr.rec) }, { x: vx, y: vy, a: 'Votre budget ' + AN0, b: 'dépenses ' + pc(s.dep) + ', recettes ' + pc(s.rec) }]);
+    g += '<circle cx="' + px0.toFixed(1) + '" cy="' + py0.toFixed(1) + '" r="4" fill="var(--fg)"/><circle cx="' + px0.toFixed(1) + '" cy="' + py0.toFixed(1) + '" r="8.5" fill="none" stroke="var(--fg)" stroke-width="2"/>';
+    poser(vx, vy, 'Vous, ' + AN0, 12.5, 'var(--fr)', true, true); poser(px0, py0, etiqDe([pr]), 11.5, 'var(--fg)', true, true); poser(fx, fy, 'France ' + PE.an, 11, 'var(--fr)');
+    grp.forEach(function (q) { poser(X(q.L[0].dep), Y(q.L[0].rec), etiqDe(q.L), 10.5, 'var(--fg)'); });
+    g += traits.join('') + etiq.join('');
+    // Au toucher : le pays et l'année, puis la personne (le président et le Premier ministre pour la France), la dépense et les recettes.
+    var PTS = P.map(function (p) { return { x: X(p.dep), y: Y(p.rec), a: p.pays + ', ' + p.an + (p.mc ? ' (mandat en cours)' : ''), b: nomsDir(p), c: 'dépenses ' + pcc(p.dep) + ', recettes ' + pcc(p.rec) + ' du PIB' }; })
+      .concat([{ x: fx, y: fy, a: 'France, ' + PE.an + ' (Eurostat)', b: 'le point de départ du jeu', c: 'dépenses ' + pcc(fr.dep) + ', recettes ' + pcc(fr.rec) + ' du PIB' }, { x: vx, y: vy, a: 'Votre budget, ' + AN0, b: 'calcul de Concret', c: 'dépenses ' + pcc(s.dep) + ', recettes ' + pcc(s.rec) + ' du PIB' }]);
     g += '<g class="q-bulle" style="pointer-events:none" visibility="hidden"><circle r="9" fill="none" stroke="var(--fr)" stroke-width="2"/><rect rx="6" fill="var(--panel)" stroke="var(--line)"/><text font-size="11.5" fill="var(--fg)"></text></g>';
     var nPays = {}; P.forEach(function (p) { nPays[p.pays] = 1; });
     var an0 = Math.min.apply(null, P.map(function (p) { return p.an; })), an1v = Math.max.apply(null, P.map(function (p) { return p.an; }));
     var SRC = D.sources || {}, lien = function (c) { var x = SRC[c]; if (!x) return ''; var u = Array.isArray(x.url) ? x.url[0] : x.url; return u ? '<a href="' + esc(u) + '">' + esc(x.l.split(' (')[0]) + '</a>' : esc(x.l); };
     var cohab = (D.cohabitations || []).map(function (c) { return esc(c.noms.join(' et ')) + ' (' + c.de + '-' + c.a + ', <a href="' + esc(c.url) + '">' + esc(c.source.split(' ;')[0]) + '</a>)'; });
-    el.innerHTML = '<p class="q-gros">' + esc(phraseDir(rd)) + ' (dépenses ' + pc(rd.p.dep) + ', recettes ' + pc(rd.p.rec) + ' ; votre budget ' + AN0 + ' : ' + pc(s.dep) + ' et ' + pc(s.rec) + ').</p>' +
-      '<svg class="q-dirsvg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc('Dépenses et recettes publiques de ' + Object.keys(nPays).length + ' pays au milieu du mandat de leurs dirigeants, de ' + an0 + ' à ' + an1v + ', et votre budget ' + AN0) + '">' + g + '</svg>' +
-      '<p class="q-ligne m">Ensuite : ' + rd.L.slice(1, 4).map(function (x) { return esc(x.p.pm ? x.p.nom + ' et ' + x.p.pm : x.p.nom) + ' (' + esc(x.p.pays) + ', ' + x.p.an + ')'; }).join(' · ') + '.</p>' +
-      '<p class="q-note">Chaque point est un pays à une année, celle du milieu du mandat d\'un dirigeant : les dépenses et les recettes de toutes ses administrations publiques (État, collectivités, sécurité sociale), pas les seules décisions de cette personne. Le nom est celui du chef du gouvernement, qui présente le budget (le président là où il dirige l\'exécutif) ; pour la France, le président et le Premier ministre. Les mandats de moins d\'un an ne sont pas placés (' + D.courts + ') : leur année porte surtout les budgets du prédécesseur.</p>' +
-      '<details class="q-plie"><summary>Comment c\'est calculé</summary><p class="q-note">' + P.length + ' points, ' + Object.keys(nPays).length + ' pays, de ' + an0 + ' à ' + an1v + ' : un point par mandat continu, l\'année du milieu du mandat (pour un mandat en cours, à la date du ' + esc(dateLue(D.releve)) + ' : le point avancera). Dépenses : toutes les dépenses des administrations publiques, en % du PIB ; recettes : dépenses plus solde, comme pour la carte des pays. Sources, dans cet ordre (la première qui a le chiffre ; dépense et solde toujours de la même source) : ' + ['es_main', 'insee', 'oecd_t12', 'oecd_eo', 'imf_fm'].filter(function (c) { return SRC[c]; }).map(lien).join(', ') + '. Charles de Gaulle, François Mitterrand et Margaret Thatcher sont placés sur ces deux chiffres. Dirigeants : ' + esc(D.liste) + ' ; leur fonction : Wikidata. Pour la France : le président et le Premier ministre en fonction au milieu du mandat ; deux points de la même année n\'en font qu\'un. Cohabitations : ' + cohab.join(', ') + '. Votre budget : le même calcul que pour le pays le plus proche, à partir de la France de ' + PE.an + ' (dépenses ' + pc(fr.dep) + ', recettes ' + pc(fr.rec) + '). « Le plus proche » : le plus petit écart, dépenses et recettes comptées pareil. Touchez un point pour son nom.</p></details>';
-    // « Comme… » : une réforme d'un autre dirigeant sur le levier que vous utilisez le plus, dans le même sens.
+    var sol = an1(R).solde, hm = horsModele(R) ? '<p class="q-ligne">Au-delà de 1 point de PIB par type de mesure, l\'effet sur l\'activité est prolongé en ligne droite : la place de votre point est un ordre de grandeur.</p>' : '';
+    el.innerHTML = '<p class="q-gros">' + esc(phraseDir(rd)) + '.</p>' +
+      '<p class="q-ligne">Dépenses ' + pc(rd.p.dep) + ', recettes ' + pc(rd.p.rec) + ' ; votre budget ' + AN0 + ' : dépenses ' + pc(s.dep) + ', recettes ' + pc(s.rec) + ', ' + (Math.abs(sol) < 0.05 ? 'à l\'équilibre' : sol < 0 ? 'un déficit de ' + pc(-sol) : 'un excédent de ' + pc(sol)) + '.</p>' + hm +
+      '<svg class="q-dirsvg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc('Dépenses et recettes publiques de ' + Object.keys(nPays).length + ' pays au milieu d\'un mandat, de ' + an0 + ' à ' + an1v + ', et votre budget ' + AN0) + '">' + g + '</svg>' +
+      '<p class="q-ligne">Chaque point : un pays une année, au milieu d\'un mandat. Ce sont les dépenses et recettes de tout le pays, pas les seules décisions de la personne.</p>' +
+      '<p class="q-ligne">Pour changer de place : baissez ou montez la dépense ou les impôts. <button type="button" class="q-lien" data-aller="creer">Aller dans Créer</button></p>' +
+      '<details class="q-plie"><summary>Comment c\'est calculé</summary><p class="q-note">Ensuite, les plus proches : ' + rd.L.slice(1, 3).map(function (x) { return esc(x.p.pays + ' ' + x.p.an) + ' (' + esc(x.p.pm ? x.p.nom + ' et ' + x.p.pm : x.p.nom) + ')'; }).join(', ') + '. ' +
+      P.length + ' points, ' + Object.keys(nPays).length + ' pays, de ' + an0 + ' à ' + an1v + ' : un point par mandat continu, l\'année du milieu du mandat (pour un mandat en cours, à la date du ' + esc(dateLue(D.releve)) + ' : le point avancera). Cette année peut être une année de crise (2009, 2020), où la dépense monte sans décision nouvelle. Les mandats de moins d\'un an ne sont pas placés (' + D.courts + ') : leur année porte surtout les budgets du prédécesseur. Le nom est celui du chef du gouvernement, qui présente le budget (le président là où il dirige l\'exécutif) ; pour la France, le président et le Premier ministre en fonction au milieu du mandat, et deux points de la même année n\'en font qu\'un ; cohabitations : ' + cohab.join(', ') + '. ' + (D.chine ? 'Chine : ' + esc(D.chine.pourquoi) + ' (<a href="' + esc(D.chine.url) + '">Wikidata</a>). ' : '') + 'Noms écrits sur le graphique : autant de chefs de gouvernement de gauche que de droite, selon le parti (' + (D.bords_source ? '<a href="' + esc(D.bords_source.urls[0]) + '">ParlGov</a>, sinon <a href="' + esc(D.bords_source.urls[2]) + '">Global Party Survey</a>' : 'ParlGov') + ').</p>' +
+      '<p class="q-note">Dépenses : toutes les dépenses des administrations publiques (État, collectivités, sécurité sociale), en % du PIB ; recettes : dépenses plus solde. Sources, dans cet ordre (la première qui a le chiffre ; dépense et solde toujours de la même source) : ' + ['es_main', 'insee', 'oecd_t12', 'oecd_eo', 'imf_fm'].filter(function (c) { return SRC[c]; }).map(lien).join(', ') + ' ; hors de l\'Union européenne, l\'OCDE et le FMI suivent des règles proches, pas identiques. Charles de Gaulle, François Mitterrand et Margaret Thatcher sont placés sur ces deux chiffres. Dirigeants : ' + esc(D.liste) + ' ; leur fonction : Wikidata.</p>' +
+      '<p class="q-note">Votre budget : le même calcul que pour le pays le plus proche. Recettes : celles de la France de ' + PE.an + ' (' + pcc(fr.rec) + ' du PIB), plus vos mesures de recettes ; sans mesure, elles restent la même part du PIB (hypothèse de Concret, la même que le départ du jeu, où le solde hors intérêts reste la même part du PIB). Dépenses : les recettes moins le solde du Bilan ; l\'effet de vos choix sur l\'activité, le PIB plus grand ou plus petit et les intérêts y sont donc comptés. « Le plus proche » : le plus petit écart, dépenses et recettes comptées pareil. Touchez un point pour son nom.</p></details>';
+    // Une réforme du même type ailleurs : la réforme d'abord, puis le pays et l'année, la personne ensuite (sans gras).
     var rr = reformeProche(), x = rr && rr.r;
-    $('q-dir-r').innerHTML = x ? '<p class="q-gros">Comme <b>' + esc(x.nom) + '</b> (' + esc(x.pays) + ', ' + x.an + ') : ' + esc(x.mesure) + '</p>' +
-      '<p class="q-note">Votre levier le plus utilisé en ' + AN0 + ' : ' + esc(String(x.levl || x.lev).toLowerCase()) + ', ' + mdt(rr.v) + '. ' + esc(x.nom) + ' : ' + esc(x.f) + '. <a href="' + esc(x.url) + '">' + esc(x.source) + '</a>, lu le ' + esc(dateLue(x.lu)) + '.</p>' : '';
+    $('q-dir-r').innerHTML = x ? '<p class="q-gros">Une réforme du même type, ' + esc(x.en) + ' en ' + x.an + ' (' + esc(x.nom) + ', ' + esc(x.f) + ') : ' + esc(x.mesure.replace(/\.$/, '')) + '.</p>' +
+      '<p class="q-ligne">Même levier et même sens que votre mesure la plus forte (' + esc(String(x.levl || x.lev).toLowerCase()) + ', ' + mdt(rr.v) + ' en ' + AN0 + ', ' + nf(rr.v / PIBY[AN0] * 100, 1) + ' % du PIB) ; l\'ampleur, le pays et l\'époque ne sont pas les mêmes.' + (x.perimetre ? ' Périmètre de la réforme : ' + esc(x.perimetre) + '.' : '') + '</p>' +
+      '<p class="q-note"><a href="' + esc(x.url) + '">' + esc(x.source) + '</a>, lu le ' + esc(dateLue(x.lu)) + (rr.n > 1 ? ' ; ' + rr.n + ' réformes de ce type dans la liste de Concret : une autre peut s\'afficher pour un autre budget' : '') + '.</p>' : '';
     var sv = el.querySelector('.q-dirsvg'), bu = sv && sv.querySelector('.q-bulle');
     if (sv && bu) {
+      // Le point le plus proche du doigt (le zoom et la taille du texte comptés par la matrice de l'écran).
       var montrer = function (ev) {
-        var r = sv.getBoundingClientRect(), kk = W / r.width, px = (ev.clientX - r.left) * kk, py = (ev.clientY - r.top) * kk, best = null, dmin = 1e9;
-        PTS.forEach(function (q) { var d = Math.hypot(q.x - px, q.y - py); if (d < dmin) { dmin = d; best = q; } });
-        if (!best || dmin > 24) { bu.setAttribute('visibility', 'hidden'); return; }
-        var c = bu.querySelector('circle'), re = bu.querySelector('rect'), tx = bu.querySelector('text'), n = Math.max(24, Math.floor((W - 20) / 6.3));
-        var L = lignes2(best.a, n).map(function (x) { return [x, 700]; }).concat(lignes2(best.b, n).map(function (x) { return [x, 400]; }));
+        var m = sv.getScreenCTM(); if (!m) return; var pt = sv.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY; pt = pt.matrixTransform(m.inverse());
+        var best = null, dmin = 1e9; PTS.forEach(function (q) { var d = Math.hypot(q.x - pt.x, q.y - pt.y); if (d < dmin) { dmin = d; best = q; } });
+        if (!best || dmin > 22) { bu.setAttribute('visibility', 'hidden'); return; }
+        var c = bu.querySelector('circle'), re = bu.querySelector('rect'), tx = bu.querySelector('text'), n = Math.max(22, Math.floor((W - 20) / 6.3));
+        var L = lignes2(best.a, n).map(function (x) { return [x, 700]; }).concat(lignes2(best.b, n).map(function (x) { return [x, 400]; }), lignes2(best.c, n).map(function (x) { return [x, 400]; }));
         tx.innerHTML = L.map(function (x, i) { return '<tspan x="0" dy="' + (i ? 14 : 0) + '" font-weight="' + x[1] + '">' + esc(x[0]) + '</tspan>'; }).join('');
         var tw = Math.min(W - 8, Math.max.apply(null, L.map(function (x) { return x[0].length; })) * 6.3 + 14), th = 10 + 14 * L.length, bx = Math.max(4, Math.min(W - tw - 4, best.x - tw / 2)), by = best.y - th - 12 < 2 ? best.y + 14 : best.y - th - 12;
         c.setAttribute('cx', best.x); c.setAttribute('cy', best.y); re.setAttribute('x', bx); re.setAttribute('y', by); re.setAttribute('width', tw); re.setAttribute('height', th);
         Array.prototype.forEach.call(tx.querySelectorAll('tspan'), function (ts) { ts.setAttribute('x', bx + 7); }); tx.setAttribute('x', bx + 7); tx.setAttribute('y', by + 16); bu.setAttribute('visibility', 'visible');
       };
-      sv.addEventListener('pointermove', montrer); sv.addEventListener('pointerdown', montrer);
+      sv.addEventListener('pointermove', montrer); sv.addEventListener('pointerdown', montrer); sv.addEventListener('click', montrer);
       sv.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') bu.setAttribute('visibility', 'hidden'); });
     }
   }
@@ -2750,7 +2767,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       if (id === 'q-ou') { var VQ = variationsPostes(); g.fillStyle = '#1c1d22'; g.font = '400 26px ' + sans; y = ecrire('Les deux budgets ne s\'additionnent pas : l\'État verse aussi de l\'argent à la Sécurité sociale.' + (Math.abs(VQ.attente) >= 0.05 ? ' En pointillé : économies du Gouvernement pas encore votées.' : '') + (Math.abs(VQ.hors) >= 0.05 ? ' Hors du graphique : ' + mdt(VQ.hors, true) + ' de mes changements (retraites de toutes les caisses, fonctionnaires…).' : ''), 80, y + 6, W - 160, 34); }
       if (id === 'q-crc') { g.fillStyle = '#1c1d22'; g.font = '400 26px ' + sans; y = ecrire('Modèle Mésange (direction du Trésor et Insee), à taux d\'intérêt réels constants.' + (sansEffet() >= 0.05 ? ' Non compté : l\'effet de ' + mdt(sansEffet()) + ' de mesures (impôt sur les sociétés, patrimoine…).' : ''), 80, y + 6, W - 160, 34); }
       if (id === 'q-int') { g.fillStyle = '#1c1d22'; g.font = '400 26px ' + sans; y = ecrire('Trait bleu : intérêts de toutes les administrations publiques (État, Sécurité sociale, collectivités). Traits fins : d\'autres budgets de l\'État, pensions comprises, pour comparer.', 80, y + 6, W - 160, 34); }
-      g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; var yS = ecrire(id === 'q-pays' ? 'Sources : Eurostat, dépenses et recettes publiques des pays (' + (PE ? PE.an : '') + ') ; votre budget : calcul de Concret.' : id === 'q-dir' ? 'Chaque point est un pays à une année, celle du milieu du mandat d\'un dirigeant : toutes ses administrations publiques, pas les seules décisions de cette personne. Sources : Eurostat, OCDE, FMI, Insee ; dirigeants : Wikidata ; votre budget : calcul de Concret.' : id === 'q-ou' ? 'Sources : projets de loi de finances et de financement de la sécurité sociale pour ' + AN0 + ' (crédits de chaque mission de l\'État, dépenses de chaque branche de la Sécurité sociale) ; vos choix : calcul de Concret.' : id === 'q-vm' ? 'Sources : chiffrages des projets de loi pour ' + AN0 + ' (évaluations préalables), Cour des comptes, Évaluation des voies et moyens ; calcul de Concret.' : 'Sources : FMI, Eurostat, direction du Trésor et Insee (modèle Mésange), projet de loi de finances ' + AN0 + '. Calcul de Concret.', 80, y + 16, W - 160, 34);
+      g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; var yS = ecrire(id === 'q-pays' ? 'Sources : Eurostat, dépenses et recettes publiques des pays (' + (PE ? PE.an : '') + ') ; votre budget : calcul de Concret.' : id === 'q-dir' ? 'Chaque point : un pays une année, au milieu d\'un mandat. Ce sont les dépenses et recettes de tout le pays, pas les seules décisions de la personne. Sources : Eurostat, OCDE, FMI, Insee ; dirigeants : Wikidata ; votre budget : calcul de Concret.' : id === 'q-ou' ? 'Sources : projets de loi de finances et de financement de la sécurité sociale pour ' + AN0 + ' (crédits de chaque mission de l\'État, dépenses de chaque branche de la Sécurité sociale) ; vos choix : calcul de Concret.' : id === 'q-vm' ? 'Sources : chiffrages des projets de loi pour ' + AN0 + ' (évaluations préalables), Cour des comptes, Évaluation des voies et moyens ; calcul de Concret.' : 'Sources : FMI, Eurostat, direction du Trésor et Insee (modèle Mésange), projet de loi de finances ' + AN0 + '. Calcul de Concret.', 80, y + 16, W - 160, 34);
       // Recoupe : la signature juste sous le dernier texte, sans grand vide ni texte par-dessus un autre.
       var Hf = Math.max(1080, Math.round(yS + 90)), c2 = document.createElement('canvas'); c2.width = W; c2.height = Hf; var g2 = c2.getContext('2d');
       g2.drawImage(c, 0, 0); g2.fillStyle = '#2f5bd3'; g2.font = '600 36px ' + sans; g2.fillText('À votre tour : concret2027.fr/budget', 80, Hf - 50); c = c2;
@@ -2784,7 +2801,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     c.toBlob(function (b) { fin(b); }, 'image/png');
   }
   function partager(tx, rep) { if (typeof tx !== 'string') tx = null; stat('partages-' + isoJ());
-    var r1 = an1(R), f = R[R.length - 1], t = 'Mon budget ' + AN0 + ' : déficit ' + deficO(r1, AN0) + ', dette ' + nf(f.d, 1) + '\u00a0% en ' + f.an + (ressemble(r1) ? ', il ressemble ' + aPays(ressemble(r1).p) : '') + '.' + (procheDir(r1) ? ' ' + phraseDir(procheDir(r1)).replace(/^Votre budget/, 'Mon budget') + '.' : '') + ' À votre tour, avec les mêmes cartes :', u = lienBudget(rep); if (tx) t = tx;
+    var r1 = an1(R), f = R[R.length - 1], t = 'Mon budget ' + AN0 + ' : ' + (r1.solde >= 0 ? 'excédent de ' + nf(r1.solde, 1) + '\u00a0%' : 'déficit ' + deficO(r1, AN0)) + ', dette ' + nf(f.d, 1) + '\u00a0% en ' + f.an + (ressemble(r1) ? ', il ressemble ' + aPays(ressemble(r1).p) : '') + '.' + (procheDir(r1) ? ' ' + phraseDir(procheDir(r1)).replace(/^Votre budget/, 'Mon budget') + '.' : '') + ' À votre tour, avec les mêmes cartes :', u = lienBudget(rep); if (tx) t = tx;
     var dit = function (m) { var p = $('q-partage-t') || document.createElement('p'); p.id = 'q-partage-t'; p.className = 'q-partage-t'; p.innerHTML = m; $('q-partager').parentNode.after(p); };
     var copier = function () { if (navigator.clipboard) navigator.clipboard.writeText(t + ' ' + u).then(function () { dit('Texte et lien copiés : collez-les où vous voulez. Celui qui ouvre le lien voit votre budget à côté du sien.'); }, function () { dit(esc(t + ' ' + u)); }); else dit(esc(t + ' ' + u)); };
     (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () { image(function (b) {
