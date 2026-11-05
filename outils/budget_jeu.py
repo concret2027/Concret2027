@@ -65,15 +65,15 @@ M2027 = {
     'avoirs-desherence': {'theme': 'patrimoine', 'qui': ['patrimoine'], 'macro': None},
     'cpeb': {'theme': 'collectivites', 'qui': ['collectivites'], 'macro': None},
     'cufpa-plafond': {'theme': 'travail', 'qui': ['formation'], 'macro': 'depense'},
-    'prime-activite-gel': {'theme': 'solidarite', 'qui': ['prime_activite'], 'macro': 'depense'},
+    'prime-activite-gel': {'theme': 'solidarite', 'qui': ['prime_activite'], 'macro': 'csg'},
     'formation-pric-cfa': {'theme': 'travail', 'qui': ['formation'], 'macro': 'depense'},
     'cpf-participation': {'theme': 'travail', 'qui': ['formation'], 'macro': 'depense'},
     'allegements-complements-salaire': {'theme': 'entreprises', 'qui': ['entreprises'], 'macro': 'cotis_emp'},
     'taxe-produits-sucres': {'theme': 'sante', 'qui': ['consommateurs'], 'macro': None},
     'contribution-complementaires-sante': {'theme': 'sante', 'qui': ['complementaires'], 'macro': None},
-    'pensions-revalorisation-2027': {'theme': 'retraites', 'qui': ['retraites'], 'macro': 'depense'},
-    'prestations-familiales-gel': {'theme': 'solidarite', 'qui': ['familles'], 'macro': 'depense'},
-    'allocation-rentree-scolaire': {'theme': 'solidarite', 'qui': ['familles'], 'macro': 'depense'},
+    'pensions-revalorisation-2027': {'theme': 'retraites', 'qui': ['retraites'], 'macro': 'csg'},
+    'prestations-familiales-gel': {'theme': 'solidarite', 'qui': ['familles'], 'macro': 'csg'},
+    'allocation-rentree-scolaire': {'theme': 'solidarite', 'qui': ['familles'], 'macro': 'csg'},
 }
 EXCLUES = {'fctva-taux': "versement de l'État aux collectivités : le document ne chiffre que l'économie de l'État, pas l'effet sur l'ensemble du déficit public",
            'tva-collectivites': "part de TVA conservée par l'État au lieu d'être versée aux collectivités : transfert entre administrations publiques",
@@ -129,6 +129,8 @@ DEFIS_FAISABLES = [
     {'id': 'd4-2027', 't': "Ramenez le déficit de 2027 à 4 % du PIB ou moins (un palier choisi par Concret, pour le jeu).", 'c': [{'type': 'deficit_an1', 'v': 4}]},
     {'id': 'gouv-sans-sante', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) sans mesure sur la santé.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': 'CIBLE'},
     {'id': 'dette-130', 't': "Gardez la dette de la dernière année sous 130 % du PIB (un palier choisi par Concret, pour le jeu).", 'c': [{'type': 'dette_fin', 'v': 130}]},
+    {'id': 'd45-2027', 't': "Ramenez le déficit de 2027 à 4,5 % du PIB ou moins (un palier choisi par Concret, pour le jeu).", 'c': [{'type': 'deficit_an1', 'v': 4.5}]},
+    {'id': 'gouv-sans-retraites-sante', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) sans toucher aux retraites ni à la santé.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_theme', 'theme': 'retraites'}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': 'CIBLE'},
     {'id': 'gouv-10-mesures', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) avec 10 mesures adoptées au plus.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'max_mesures', 'v': 10}], 'src': 'CIBLE'},
 ]
 # Un défi faisable avec les cartes un jour sur deux environ.
@@ -448,9 +450,12 @@ def eurostat_depart():
     m = lire('gov_10a_main', geo='FR', sector='S13', unit='PC_GDP', na_item=['B9', 'D41PAY', 'D41REC'], time=ans)
     an = max(a for (g, a, k) in m if k == 'B9' and ('FR', a, 'D41PAY') in m and ('FR', a, 'D41REC') in m)
     pib = lire('nama_10_gdp', geo='FR', unit='CP_MEUR', na_item='B1GQ', time=[an])
+    # Solde primaire calculé à partir des montants en millions d'euros (pas des pourcentages déjà arrondis).
+    me = lire('gov_10a_main', geo='FR', sector='S13', unit='MIO_EUR', na_item=['B9', 'D41PAY', 'D41REC'], time=[an])
+    prim = (me[('FR', an, 'B9')] + me[('FR', an, 'D41PAY')] - me[('FR', an, 'D41REC')]) / pib[('FR', an)] * 100
     return {'an': int(an), 'solde': m[('FR', an, 'B9')], 'interets': m[('FR', an, 'D41PAY')], 'pib_md': round(pib[('FR', an)] / 1000, 1),
             'interets_recus': m[('FR', an, 'D41REC')],
-            'primaire': round(m[('FR', an, 'B9')] + m[('FR', an, 'D41PAY')] - m[('FR', an, 'D41REC')], 2),
+            'primaire': round(prim, 2),
             'source': "Eurostat, principaux agrégats des administrations publiques (gov_10a_main) : solde, intérêts payés et intérêts reçus",
             'url': 'https://ec.europa.eu/eurostat/databrowser/view/gov_10a_main/default/table'}
 
@@ -491,11 +496,16 @@ COURT_MISSIONS = {'Enseignement scolaire': 'Écoles, collèges et lycées', 'Dé
          'Régimes sociaux et de retraite': 'Régimes spéciaux de retraite (SNCF, RATP…)', 'Administration générale et territoriale de l’État': 'Préfectures, élections, ministère de l’Intérieur', 'Santé': "Santé (budget de l'État)"}
 # Ce que paie chaque poste : les mesures du jeu dont le payeur est clair y sont rattachées ; les autres (fonctionnaires des trois
 # fonctions publiques, SMIC, prestations de plusieurs branches, assurance chômage, collectivités) sont comptées à part.
+# Les cartes d'âge de la retraite sont chiffrées tous régimes (complémentaires comprises) : hors du graphique. Une liste
+# [poste, part] répartit une carte comme la source (Commission des comptes de la Sécurité sociale, octobre 2026, tableau 2, p. 8 :
+# ONDAM « 2 250 / 70 / 330 » M€ ; revalorisation d'un point « 90 / 50 / 1 710 / 300 / 20 », et « 1 200 » pour les autres régimes).
+ONDAM_PARTS = [['secu:maladie', 2250 / 2650], ['secu:atmp', 70 / 2650], ['secu:autonomie', 330 / 2650]]
+REVALO_PARTS = [['secu:maladie', 90 / 3370], ['secu:atmp', 50 / 3370], ['secu:vieillesse', 1710 / 3370], ['secu:famille', 300 / 3370], ['secu:autonomie', 20 / 3370]]
 POSTE_CARTES = {'prime-activite-gel': 'mi:solidarité-insertion-et-égalité-des-chan', 'formation-pric-cfa': 'mi:travail-emploi-et-administration-des-min',
-                'pensions-revalorisation-2027': 'secu:vieillesse', 'retraites-fin-suspension': 'secu:vieillesse', 'retraite-62': 'secu:vieillesse',
-                'retraite-63': 'secu:vieillesse', 'retraite-65': 'secu:vieillesse', 'prestations-familiales-gel': 'secu:famille',
-                'allocation-rentree-scolaire': 'secu:famille', 'ondam-moins-1': 'secu:maladie', 'ondam-plus-1': 'secu:maladie', 'franchises-x2': 'secu:maladie'}
-POSTE_ASSIETTES = {'enseignement': 'mi:enseignement-scolaire', 'defense': 'mi:défense', 'retraites': 'secu:vieillesse', 'ondam': 'secu:maladie',
+                'pensions-revalorisation-2027': 'secu:vieillesse', 'prestations-familiales-gel': 'secu:famille',
+                'allocation-rentree-scolaire': 'secu:famille', 'ondam-moins-1': ONDAM_PARTS, 'ondam-plus-1': ONDAM_PARTS,
+                'revalo-moins-1': REVALO_PARTS, 'revalo-plus-1': REVALO_PARTS, 'franchises-x2': 'secu:maladie'}
+POSTE_ASSIETTES = {'enseignement': 'mi:enseignement-scolaire', 'defense': 'mi:défense', 'ondam': ONDAM_PARTS,
                    'alloc-familiales': 'secu:famille', 'apl': 'mi:cohésion-des-territoires', 'aah': 'mi:solidarité-insertion-et-égalité-des-chan',
                    'prime-activite': 'mi:solidarité-insertion-et-égalité-des-chan', 'ij-maladie': 'secu:maladie', 'ij-atmp': 'secu:atmp',
                    'ame': 'mi:santé', 'c2s': 'secu:maladie', 'aspa': 'secu:vieillesse'}
@@ -569,7 +579,7 @@ def repartition(T, MISSIONS, cartes, assiettes, unites):
             dette = next(r for r in m['programmes'] if r['nom'].startswith('Charge de la dette et trésorerie'))
             lignes.append({'k': 'pr:charge-dette', 'l': "Intérêts de la dette de l'État", 'officiel': re.sub(r'\s*\(crédits évaluatifs\)', '', dette['nom']) + ' (programme de la mission « Engagements financiers de l’État »)',
                            'v27': round(dette['cp27'] / 1e9, 3), 'v26': round(dette['cp26'] / 1e9, 3), 'page': dette['page']})
-            lignes.append({'k': mk_mission(m['nom']), 'l': 'Engagements financiers hors intérêts', 'officiel': m['nom'] + ', autres programmes',
+            lignes.append({'k': mk_mission(m['nom']), 'l': 'Engagements financiers hors charge de la dette de l’État', 'officiel': m['nom'] + ', autres programmes (dont la charge de la dette de SNCF Réseau reprise par l’État)',
                            'v27': round((m['cp27'] - dette['cp27']) / 1e9, 3), 'v26': round((m['cp26'] - dette['cp26']) / 1e9, 3), 'page': m['page']})
             continue
         lignes.append({'k': mk_mission(m['nom']), 'l': COURT_MISSIONS.get(m['nom'], m['nom']), 'officiel': m['nom'], 'v27': round(m['cp27'] / 1e9, 3), 'v26': round(m['cp26'] / 1e9, 3), 'page': m['page']})
@@ -589,16 +599,47 @@ def repartition(T, MISSIONS, cartes, assiettes, unites):
     cles = {l['k'] for l in lignes} | {l['k'] for l in secu['lignes']}
     for c in cartes:
         if c['id'] in POSTE_CARTES:
-            assert POSTE_CARTES[c['id']] in cles, c['id']
-            c['poste'] = POSTE_CARTES[c['id']]
+            v = POSTE_CARTES[c['id']]
+            assert all(k in cles for k, _ in v) if isinstance(v, list) else v in cles, c['id']
+            c['poste'] = v
     par = {a['k']: a for a in assiettes}
     for a in assiettes:
         k = POSTE_ASSIETTES.get(a['k']) or (a['k'] if a['k'] in cles else a.get('parent') if a.get('parent') in cles else None)
-        if k: assert k in cles, a['k']; a['poste'] = k
+        if k: assert all(x in cles for x, _ in k) if isinstance(k, list) else k in cles, a['k']; a['poste'] = k
     for u in unites:
         a = par.get(u.get('ligne'))
         if a and a.get('poste'): u['poste'] = a['poste']
+    # Les lignes de Créer « Écoles » et « Défense » sont hors pensions, les barres pensions comprises.
+    for a in assiettes:
+        if a['k'] in ('enseignement', 'defense'): a['poste_note'] = 'ligne hors pensions, la barre pensions comprises'
     return {'an': an, 'groupes': [secu, etat]}
+
+# Effets sur l'activité non comptés faute de profil année par année : ce que disent d'autres sources officielles, écrit sur les cartes.
+NC_CARTES = {'contribution-grandes-entreprises': 'is', 'contribution-transport-maritime': 'is', 'isf': 'patrimoine', 'taxe-zucman': 'patrimoine',
+             'retraite-62': 'retraite_age', 'retraite-63': 'retraite_age', 'retraite-65': 'retraite_age', 'retraites-fin-suspension': 'retraite_age'}
+NC_ASSIETTES = {'is': 'is'}
+
+
+def non_comptes(P, cartes, assiettes):
+    out = {}
+    x = P.get('non_compte_is')
+    if x:
+        v = x['valeurs']
+        out['is'] = {'t': "Effet sur l'activité non compté : aucun chiffre année par année n'est publié. À long terme, une étude de la direction du Trésor (2007) estime qu'une hausse de l'impôt sur les sociétés d'un point du PIB marchand réduirait ce PIB de %s %% (de %s à %s %%), plus que la TVA (%s %%) dans la même étude." % (fr_nb(-v['IS']), fr_nb(-v['IS'] - v['IS_marge']), fr_nb(-v['IS'] + v['IS_marge']), fr_nb(-v['TVA'])),
+                     'src': {k: x[k] for k in ('document', 'page', 'url', 'citation')}}
+    x = P.get('non_compte_patrimoine')
+    if x:
+        out['patrimoine'] = {'t': "Effet sur l'activité non compté : aucun chiffre année par année n'est publié. L'évaluation officielle de la suppression de l'ISF en 2018 (France Stratégie, 2023) conclut à « un impact nul, précisément estimé » sur l'investissement des entreprises.",
+                             'src': {k: x[k] for k in ('document', 'page', 'url', 'citation')}}
+    x = P.get('non_compte_retraite_age')
+    if x:
+        out['retraite_age'] = {'t': "Effet sur l'activité non compté : le modèle utilisé pour les autres mesures ne mesure que la consommation. L'étude d'impact de la réforme de 2023 estime qu'un âge de départ plus élevé augmente l'emploi et le PIB (+%s %% en 2030), sans profil comparable à ceux du jeu." % fr_nb(x['valeurs']['2030']),
+                               'src': {k: x[k] for k in ('document', 'page', 'url', 'citation')}}
+    for c in cartes:
+        if NC_CARTES.get(c['id']) in out: c['nc'] = NC_CARTES[c['id']]
+    for a in assiettes:
+        if NC_ASSIETTES.get(a['k']) in out: a['nc'] = NC_ASSIETTES[a['k']]
+    return out
 
 
 def construire():
@@ -673,13 +714,13 @@ def construire():
     lev = [
         ('ondam-moins-1', "Faire progresser les dépenses d'assurance maladie (ONDAM) de 1 % de moins en " + an1, "Les dépenses remboursées par l'assurance maladie (soins de ville, hôpitaux, médico-social) augmentent de 1 % de moins que l'objectif prévu.", 'sante', ['assures', 'soignants'], 'depense', 2.65, ondam, ['ondam-plus-1'], "Objectif proposé pour " + an1 + " : +2,0 %, soit 278,7 Md€ (projet de loi de financement de la sécurité sociale, article 43)."),
         ('ondam-plus-1', "Faire progresser les dépenses d'assurance maladie (ONDAM) de 1 % de plus en " + an1, "Les dépenses remboursées par l'assurance maladie augmentent de 1 % de plus que l'objectif prévu.", 'sante', ['assures', 'soignants'], 'depense', -2.65, ondam, ['ondam-moins-1'], ''),
-        ('revalo-moins-1', "Revaloriser toutes les prestations de sécurité sociale d'un point de moins que l'inflation en " + an1, "Pensions de base, prestations familiales et autres prestations des régimes de base augmentent d'un point de moins que la hausse des prix.", 'retraites', ['retraites', 'familles'], 'depense', 3.37, revalo, ['revalo-plus-1', 'pensions-revalorisation-2027', 'prestations-familiales-gel'], "Régimes de base seulement (pas les retraites complémentaires Agirc-Arrco)."),
-        ('revalo-plus-1', "Revaloriser toutes les prestations de sécurité sociale d'un point de plus que l'inflation en " + an1, "Pensions de base, prestations familiales et autres prestations des régimes de base augmentent d'un point de plus que la hausse des prix.", 'retraites', ['retraites', 'familles'], 'depense', -3.37, revalo, ['revalo-moins-1', 'pensions-revalorisation-2027', 'prestations-familiales-gel'], "Régimes de base seulement (pas les retraites complémentaires Agirc-Arrco)."),
+        ('revalo-moins-1', "Revaloriser toutes les prestations de sécurité sociale d'un point de moins que l'inflation en " + an1, "Pensions de base, prestations familiales et autres prestations des régimes de base augmentent d'un point de moins que la hausse des prix.", 'retraites', ['retraites', 'familles'], 'csg', 3.37, revalo, ['revalo-plus-1', 'pensions-revalorisation-2027', 'prestations-familiales-gel'], "Régimes de base seulement (pas les retraites complémentaires Agirc-Arrco)."),
+        ('revalo-plus-1', "Revaloriser toutes les prestations de sécurité sociale d'un point de plus que l'inflation en " + an1, "Pensions de base, prestations familiales et autres prestations des régimes de base augmentent d'un point de plus que la hausse des prix.", 'retraites', ['retraites', 'familles'], 'csg', -3.37, revalo, ['revalo-moins-1', 'pensions-revalorisation-2027', 'prestations-familiales-gel'], "Régimes de base seulement (pas les retraites complémentaires Agirc-Arrco)."),
         ('allegements-moins-10', "Faire payer plus de cotisations aux employeurs sur les salaires proches du SMIC (allègements réduits de 10 %)", "Les réductions générales de cotisations patronales baissent de 10 % : les employeurs paient plus de cotisations sur ces salaires.", 'entreprises', ['entreprises'], 'cotis_emp', 5.6, ag, [], "La source chiffre 1 % ; Concret multiplie par 10. Coût des allègements généraux prévu pour " + an1 + " : 72,8 Md€ (même rapport, p. 67), régimes de base, Unédic, Agirc-Arrco et FNAL compris. Le chiffrage de 1 % porte sur le solde des régimes de base de la Sécurité sociale : c'est pourquoi 10 % donnent 5,6 Md€ et non 7,3 Md€ (10 % de 72,8) ; selon la même source, ce chiffrage comprend déjà 180 M€ de charges en plus par point pour les mécanismes qui compensent les allègements de l'Agirc-Arrco et de l'Unédic. Effet sur l'emploi : compté par le modèle Mésange (cotisations des employeurs)."),
     ]
     for i, l, q, th, qui, mac, v, cit, exc, note in lev:
         cartes.append({'id': i, 'origine': 'levier', 'l': l, 'quoi': q, 'theme': th, 'qui': qui, 'qui_texte': '', 'macro': mac,
-                       'sens': 'depense' if mac == 'depense' else 'recette', 'effet': {an1: v}, 'exclut': exc,
+                       'sens': 'recette' if i.startswith('allegements') else 'depense', 'effet': {an1: v}, 'exclut': exc,
                        'note': (note + ' ' if note else '') + "Effet en année pleine, gardé chaque année ensuite.", 'src': dict(CCSS, citation=cit)})
     pi = P.get('cout_1pct_point_indice')
     if pi:
@@ -697,22 +738,22 @@ def construire():
         assiettes.append({'k': k, 'l': l, 'groupe': groupe, 'md': round(md, 3), 'an': an, 'qui': qui, 'macro': macro, 'exclut': list(exclut),
                           'note': note, 'src': {'doc': x.get('l', ''), 'page': x.get('page'), 'url': x['url'], 'citation': x['citation']}})
     if LV:
-        ass('retraites', 'Retraites (toutes les pensions)', 'depense', LV['retraites-depense']['montant']['2025, ensemble du système de retraite (Md€)'], 2025, ['retraites'], 'depense', LV['retraites-depense'],
+        ass('retraites', 'Retraites (toutes les pensions)', 'depense', LV['retraites-depense']['montant']['2025, ensemble du système de retraite (Md€)'], 2025, ['retraites'], 'csg', LV['retraites-depense'],
             "Ensemble du système de retraite, régimes de base et complémentaires (Conseil d'orientation des retraites).", ['pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'])
         ass('ondam', "Assurance maladie (soins remboursés, hôpitaux)", 'depense', 278.7, 2027, ['assures', 'soignants'], 'depense', LV['sante-ondam'], "Objectif de dépenses de l'assurance maladie (ONDAM) proposé par le Gouvernement pour 2027.", ['ondam-moins-1', 'ondam-plus-1'])
         ass('remunerations', 'Salaires des agents publics (État, collectivités, hôpitaux, sécurité sociale)', 'depense', LV['fp-masse-salariale-apu']['montant']['2025 (Md€, toutes administrations publiques)'], 2025, ['agents_publics'], 'depense', LV['fp-masse-salariale-apu'], "Rémunérations versées par l'ensemble des administrations publiques (Insee), enseignants et militaires compris.", ['point-indice-plus-1', 'enseignement', 'defense'])
         ass('enseignement', "Enseignement scolaire (écoles, collèges, lycées)", 'depense', LV['education-enseignement-scolaire']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['ecoles'], 'depense', LV['education-enseignement-scolaire'], "Crédits de la mission Enseignement scolaire du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
         ass('defense', 'Défense', 'depense', LV['defense-credits']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['defense'], 'depense', LV['defense-credits'], "Crédits de la mission Défense du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
-        ass('chomage', "Allocations chômage", 'depense', LV['chomage-depense']['montant']['allocations brutes et aides (Md€)']['2027'], 2027, ['chomeurs'], 'depense', LV['chomage-depense'], "Allocations et aides versées par l'Unédic (prévision).")
-        ass('apl', 'Aides au logement (APL)', 'depense', LV['prestations-apl']['montant']["dépense d'aides personnelles au logement (Md€)"]['2025'], 2025, ['familles'], 'depense', LV['prestations-apl'], '')
-        ass('alloc-familiales', 'Allocations familiales', 'depense', LV['prestations-allocations-familiales']['montant']['allocations familiales (M€)']['2027 prévision'] / 1000, 2027, ['familles'], 'depense', LV['prestations-allocations-familiales'], '', ['prestations-familiales-gel'])
-        ass('aah', "Allocation aux adultes handicapés (AAH)", 'depense', LV['prestations-aah']['montant']['2027, PLF 2027 (Md€)'], 2027, ['handicap'], 'depense', LV['prestations-aah'], '')
+        ass('chomage', "Allocations chômage", 'depense', LV['chomage-depense']['montant']['allocations brutes et aides (Md€)']['2027'], 2027, ['chomeurs'], 'csg', LV['chomage-depense'], "Allocations et aides versées par l'Unédic (prévision).")
+        ass('apl', 'Aides au logement (APL)', 'depense', LV['prestations-apl']['montant']["dépense d'aides personnelles au logement (Md€)"]['2025'], 2025, ['familles'], 'csg', LV['prestations-apl'], '')
+        ass('alloc-familiales', 'Allocations familiales', 'depense', LV['prestations-allocations-familiales']['montant']['allocations familiales (M€)']['2027 prévision'] / 1000, 2027, ['familles'], 'csg', LV['prestations-allocations-familiales'], '', ['prestations-familiales-gel'])
+        ass('aah', "Allocation aux adultes handicapés (AAH)", 'depense', LV['prestations-aah']['montant']['2027, PLF 2027 (Md€)'], 2027, ['handicap'], 'csg', LV['prestations-aah'], '')
         ass('allegements', "Baisses de cotisations accordées aux employeurs (les réduire = les employeurs paient plus)", 'depense', LV['entreprises-allegements-generaux']['montant']['coût des allègements généraux, champ régimes de base, Unédic, Agirc-Arrco et FNAL (M€)']['2027 prévision'] / 1000, 2027, ['entreprises'], 'cotis_emp', LV['entreprises-allegements-generaux'],
             "Réductions de cotisations sur les salaires : les réduire, c'est faire payer plus de cotisations aux employeurs.", ['allegements-moins-10'])
     if LV:
         ij = LV['sante-indemnites-journalieres']
-        ass('ij-maladie', "Indemnités journalières maladie (arrêts maladie)", 'depense', ij['montant']['dont maladie (M€)']['2025'] / 1000, 2025, ['malades'], 'depense', ij, "Régime général (y compris anciens indépendants), Commission des comptes de la Sécurité sociale.")
-        ass('ij-atmp', "Indemnités journalières des accidents du travail et maladies professionnelles", 'depense', ij['montant']['dont accidents du travail et maladies professionnelles (M€)']['2025'] / 1000, 2025, ['malades'], 'depense', ij, "Régime général, Commission des comptes de la Sécurité sociale.")
+        ass('ij-maladie', "Indemnités journalières maladie (arrêts maladie)", 'depense', ij['montant']['dont maladie (M€)']['2025'] / 1000, 2025, ['malades'], 'csg', ij, "Régime général (y compris anciens indépendants), Commission des comptes de la Sécurité sociale.")
+        ass('ij-atmp', "Indemnités journalières des accidents du travail et maladies professionnelles", 'depense', ij['montant']['dont accidents du travail et maladies professionnelles (M€)']['2025'] / 1000, 2025, ['malades'], 'csg', ij, "Régime général, Commission des comptes de la Sécurité sociale.")
     asd = charger('assiettes.json')
     AE = {x['cle']: x for x in asd['elements']} if asd else {}
     def asx(cle):
@@ -731,9 +772,9 @@ def construire():
         ass('ame', "Aide médicale de l'État (AME)", 'depense', AE['ame_credits_2027']['valeurs']['2027_plf_CP'] / 1e9, an2, ['etrangers'], 'depense', asx('ame_credits_2027'),
             "Crédits prévus. En 2025, la dépense réelle a été de 1,47 Md€ pour 1,21 Md€ de crédits ; " + '{:,}'.format(AE['ame_beneficiaires']['valeurs']['31_12_2025']).replace(',', ' ') + " bénéficiaires fin 2025.")
         ass('c2s', "Complémentaire santé solidaire (C2S, ex-CMU complémentaire)", 'depense', AE['c2s_depense']['valeurs']['2024_depense_nette'], 2024, ['assures'], 'depense', asx('c2s_depense'), "Dépense nette 2024, dernier chiffre publié ; 7,79 millions de bénéficiaires fin 2024.")
-        ass('rsa', "RSA (versé par les départements)", 'depense', AE['rsa_departements']['valeurs']['2025'] / 1000, 2025, ['solidarite'], 'depense', asx('rsa_departements'), "Dépense des départements en 2025. Dans certains départements, c'est l'État qui verse le RSA : cette part n'est pas comptée.")
-        ass('prime-activite', "Prime d'activité", 'depense', AE['prime_activite']['valeurs']['2027_plf'], an2, ['prime_activite'], 'depense', asx('prime_activite'), "Dépense prévue de l'État.", ['prime-activite-gel'])
-        ass('aspa', "Minimum vieillesse (ASPA, régime général)", 'depense', AE['aspa_minimum_vieillesse']['valeurs']['2027_p_cnav'] / 1000, an2, ['retraites'], 'depense', asx('aspa_minimum_vieillesse'), "Dépense prévue de la caisse nationale d'assurance vieillesse seule (pas tous les régimes).")
+        ass('rsa', "RSA (versé par les départements)", 'depense', AE['rsa_departements']['valeurs']['2025'] / 1000, 2025, ['solidarite'], 'csg', asx('rsa_departements'), "Dépense des départements en 2025. Dans certains départements, c'est l'État qui verse le RSA : cette part n'est pas comptée.")
+        ass('prime-activite', "Prime d'activité", 'depense', AE['prime_activite']['valeurs']['2027_plf'], an2, ['prime_activite'], 'csg', asx('prime_activite'), "Dépense prévue de l'État.", ['prime-activite-gel'])
+        ass('aspa', "Minimum vieillesse (ASPA, régime général)", 'depense', AE['aspa_minimum_vieillesse']['valeurs']['2027_p_cnav'] / 1000, an2, ['retraites'], 'csg', asx('aspa_minimum_vieillesse'), "Dépense prévue de la caisse nationale d'assurance vieillesse seule (pas tous les régimes).")
         # l'APL du projet de loi de finances remplace le chiffre de 2025
         for a in assiettes:
             if a['k'] == 'apl':
@@ -741,7 +782,7 @@ def construire():
         x = AE['etrangers_carence_prestations_familiales_apl']['valeurs']
         cartes.append({'id': 'etrangers-residence-prestations', 'origine': 'plfss', 'texte': 'PLFSS 2027, article 37', 'l': "Exiger un an de résidence aux étrangers hors Union européenne pour les prestations familiales et les aides au logement",
                        'quoi': "Les étrangers venus d'un pays hors de l'Union européenne doivent résider en France depuis au moins un an pour toucher les prestations familiales et les aides au logement.",
-                       'theme': 'solidarite', 'qui': ['etrangers'], 'qui_texte': '', 'macro': 'depense', 'sens': 'depense',
+                       'theme': 'solidarite', 'qui': ['etrangers'], 'qui_texte': '', 'macro': 'csg', 'sens': 'depense',
                        'effet': {str(an2): round((x['famille_2027'] + x['apl_2027']) / 1000, 4), str(an2 + 1): round((x['famille_annee_pleine'] + x['apl_annee_pleine']) / 1000, 4)},
                        'statut': "Projet de loi rejeté par l'Assemblée en première lecture le 23 octobre 2026.",
                        'note': "Sous le seuil de 300 M€ des autres cartes du budget de la Sécurité sociale : ajoutée parce que c'est la seule mesure chiffrée officiellement sur l'accès des étrangers aux prestations.",
@@ -852,6 +893,13 @@ def construire():
         # La mission exclut ses programmes (et inversement).
         M = next(a for a in assiettes if a['k'] == mk)
         M['exclut'] = [a['k'] for a in assiettes if a.get('parent') == mk]
+    # Allègements dans Créer : même base que la carte (effet d'un point sur le solde, Commission des comptes de la Sécurité sociale),
+    # au lieu de 1 % du coût total, qui compte aussi les allègements que la Sécurité sociale compense déjà à d'autres organismes.
+    ca = next((c for c in cartes if c['id'] == 'allegements-moins-10'), None)
+    for a in assiettes:
+        if a['k'] == 'allegements' and ca:
+            a['par_pt'] = round(list(ca['effet'].values())[0] / 10, 3)
+            a['note'] = (a.get('note') or '') + " Effet d'un changement : %s Md€ par point de pourcentage, comme la carte des allègements (Commission des comptes de la Sécurité sociale, effet sur le solde des régimes de base, compensations comprises) ; 1 %% du coût total donnerait davantage, parce que ce coût compte aussi des allègements que la Sécurité sociale compense déjà à l'Unédic et à l'Agirc-Arrco." % fr_nb(a['par_pt'])
     # Recoupements avec les autres montants : APL = programme « Aide à l'accès au logement » ; AAH dans « Handicap et dépendance ».
     A = {a['k']: a for a in assiettes}
     for a in assiettes:
@@ -975,6 +1023,7 @@ def construire():
         'pays_eurostat': eurostat_pays(dep['an']),
         'reperes_etat': (lambda e: {'valeurs': {k: round(v / 1e9, 1) for k, v in e['valeurs'].items()}, 'page': e['page'], 'url': e['url'], 'citation': e['citation']} if e else None)(next((x for x in (json.load(open(os.path.join(SRC, 'mesures_debattues.json'), encoding='utf-8'))['elements']) if x['cle'] == 'credits_etat_2027_reperes'), None)),
         'repartition': repartition(T_PLF, MISSIONS, cartes, assiettes, unites),
+        'non_comptes': non_comptes(P, cartes, assiettes),
         'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'unites': unites, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
         'variantes': var, 'regle': REGLE,
