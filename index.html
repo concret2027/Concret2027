@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="fc1d5e1909eb">
+<meta name="concret-version" content="1fa2617e8789">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -388,6 +388,44 @@ footer p { margin: 0; } footer a { color: inherit; }
 .rank .n { display: inline-block; min-width: 2.6em; padding: 2px 6px; border-radius: 6px; font-weight: 600; text-align: center; }
 .rank .g { background: var(--s-good); color: var(--ok); } .rank .m { background: var(--s-mid); color: var(--mid); } .rank .b { background: var(--s-bad); color: var(--bad); }
 .rank .avg .n { font-weight: 700; } .rank .na { color: var(--axis); }
+/* De la couleur sans code : des fonds de blocs teintés, à tour de rôle, et une pastille douce sous l'icône de chaque page.
+   Ces teintes ne veulent rien dire : pas de vert, de rouge ni d'or (qui disent déjà « au-dessus », « en dessous » et « autour » de la moyenne
+   de l'UE), pas les couleurs des pays, des thèmes ni des présidents de la toile, et aucune ne revient ailleurs pour désigner une mission
+   (sur la toile, toutes les icônes restent du même bleu). Les pastilles reprennent les teintes des fonds de blocs : un décor, pas une légende. */
+:root { --fd-bleu: #e8eefc; --fd-peche: #fbeee2; --fd-lilas: #efeafb; --fd-ciel: #e6f1f6; --fd-brume: #e6e9f6;
+  --pa-1: #dce5fc; --pa-2: #fbe2d2; --pa-3: #e6defa; --pa-4: #d8eaf3; --pa-5: #f5e0ea; --pa-6: #e8e4dc; --pa-ic: #1c1d22; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --fd-bleu: #1f2638; --fd-peche: #2e2620; --fd-lilas: #272336; --fd-ciel: #1d2a30; --fd-brume: #262940;
+  --pa-1: #2b3a5e; --pa-2: #4a3628; --pa-3: #3a3159; --pa-4: #25434f; --pa-5: #4a2c3c; --pa-6: #3d3a33; --pa-ic: #eef0f5; } }
+:root[data-theme="dark"] { --fd-bleu: #1f2638; --fd-peche: #2e2620; --fd-lilas: #272336; --fd-ciel: #1d2a30; --fd-brume: #262940;
+  --pa-1: #2b3a5e; --pa-2: #4a3628; --pa-3: #3a3159; --pa-4: #25434f; --pa-5: #4a2c3c; --pa-6: #3d3a33; --pa-ic: #eef0f5; }
+section.hero { background: linear-gradient(135deg, var(--fd-bleu), var(--fd-lilas) 55%, var(--fd-peche)); border-radius: 18px; padding: 18px 16px 16px; margin-top: 14px !important; }
+#profil { background: var(--fd-bleu); border-color: transparent; }
+#aujourdhui { background: var(--fd-peche); border-color: transparent; }
+#pouls, #fonctionnement { background: var(--fd-ciel); border-color: transparent; }
+#pouls-analyse { background: var(--fd-lilas); border-color: transparent; }
+/* La toile posée sur une carte claire dans son bloc. */
+#radar svg { background: color-mix(in srgb, var(--panel) 72%, transparent); border-radius: 14px; }
+/* Les pages : une carte blanche par page sur le fond du bloc ; l'icône à droite du titre, dans la carte, la flèche au bord. */
+#missions, #reperes { border-color: transparent; border-radius: 18px; padding: 16px 12px 12px; }
+#missions, #reperes { background: var(--fd-brume); }
+#missions h2, #reperes h2 { padding: 0 6px; }
+#reperes .note { padding: 0 6px; margin: 10px 0 2px; }
+#missions .pg, #reperes .pg { background: var(--panel); border-radius: 14px; padding: 14px 34px 14px 16px; }
+#missions .pg + .pg, #reperes .pg + .pg { border-top: 0; margin-top: 8px; }
+#missions .pg::after, #reperes .pg::after { right: 10px; }
+#missions .pg:focus-visible, #reperes .pg:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+#missions .pg.mn-avec, #reperes .pg.mn-avec { grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; }
+#missions .pg.mn-avec > *, #reperes .pg.mn-avec > * { grid-column: 1 / -1; }
+#missions .pg.mn-avec > b, #reperes .pg.mn-avec > b { grid-column: 1; grid-row: 1; align-self: center; }
+#missions .pg.mn-avec > .mn-ic, #reperes .pg.mn-avec > .mn-ic { grid-column: 2; grid-row: 1; align-self: center; margin: 0; color: var(--pa-ic); }
+#missions a.pg:nth-of-type(6n+1) .mn-ic { background: var(--pa-1); } #missions a.pg:nth-of-type(6n+2) .mn-ic { background: var(--pa-2); }
+#missions a.pg:nth-of-type(6n+3) .mn-ic { background: var(--pa-3); } #missions a.pg:nth-of-type(6n+4) .mn-ic { background: var(--pa-4); }
+#missions a.pg:nth-of-type(6n+5) .mn-ic { background: var(--pa-5); } #missions a.pg:nth-of-type(6n) .mn-ic { background: var(--pa-6); }
+#reperes a.pg:nth-of-type(2n+1) .mn-ic { background: var(--pa-3); } #reperes a.pg:nth-of-type(2n) .mn-ic { background: var(--pa-4); }
+/* Sur grand écran, deux cartes par ligne : l'icône reste près du titre et du texte. */
+@media (min-width: 900px) { #missions, #reperes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
+  #missions h2, #reperes h2, #reperes .note { grid-column: 1 / -1; } #missions .pg + .pg, #reperes .pg + .pg { margin-top: 0; } #reperes .note { margin-top: 0; } }
+@media (max-width: 400px) { #missions .pg, #reperes .pg { padding-left: 14px; padding-right: 30px; } #missions .pg.mn-avec, #reperes .pg.mn-avec { column-gap: 10px; } #missions .pg::after, #reperes .pg::after { right: 8px; } }
 </style>
 </head>
 <body>
