@@ -323,6 +323,8 @@
       rev.innerHTML = '<p class="vz-sort">À l\'Assemblée : <b>' + esc(q.sort) + '</b><small>' + q.compte + '</small></p>' +
         '<p class="vz-comme">Vous avez voté comme <b>' + comme + ' groupe' + (comme > 1 ? 's' : '') + ' sur ' + n + '</b> (encadrés ci-dessous).' + (q.k === 'censure' ? ' Un groupe est compté pour si la majorité de ses membres a voté la censure.' : '') + '</p>' +
         '<p class="vz-change">Pour changer votre vote, touchez une autre réponse.</p>' +
+        // Un budget 2027 : le jeu permet de le voter mesure par mesure.
+        (/(loi de finances|financement de la sécurité sociale) pour 2027/i.test(q.titre || '') ? '<p class="vz-comme"><a href="/budget/">Votre budget 2027</a> : votez ce budget mesure par mesure, et voyez ce que deviennent le déficit et la dette.</p>' : '') +
         (q.avant ? '<p class="vz-comme">Vous aviez voté le ' + dateFr(q.avant.le) + ', avant l\'Assemblée. Les députés ont pu modifier le texte pendant le débat.</p>' : '') +
         (o.suivant ? '<button type="button" class="vz-suite">' + esc(o.suivantLabel || 'Vote suivant →') + '</button>' : '') +
         (q.unanime ? '<p class="vz-comme">Tous les groupes ont voté pareil : ce vote ne compte pas dans votre accord avec chaque groupe, il ne dit pas de qui vous êtes proche.</p>' : '') +
