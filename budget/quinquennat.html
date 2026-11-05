@@ -677,7 +677,7 @@ body.q-vote { padding-bottom: 92px; }
       <div id="q-rc-p"></div>
       <div class="q-actions"><button type="button" class="q-go" id="q-partager">Partager mon budget</button></div>
     </section>
-    <section class="card" aria-labelledby="q-pays-t" id="q-pays-c"><h2 id="q-pays-t"><span class="eyebrow">À quel pays ressemble votre budget</span>Vos dépenses et vos recettes publiques, parmi les pays d'Europe</h2><div id="q-pays"></div></section>
+    <section class="card" aria-labelledby="q-pays-t" id="q-pays-c"><h2 id="q-pays-t"><span class="eyebrow">À quel pays ressemble votre budget</span>Vos dépenses et vos recettes publiques, parmi les pays d'Europe</h2><div id="q-pays"></div><button type="button" class="q-lien q-pcourbe" data-c="q-pays">Partager ce graphique</button></section>
     <section class="card" aria-labelledby="q-cmp-t" id="q-cmp-c"><h2 id="q-cmp-t"><span class="eyebrow">Se comparer</span>Votre budget, celui du Gouvernement et les pays voisins</h2><div id="q-cmp"></div></section>
     <section class="card" aria-labelledby="q-df-t" id="q-defi"></section>
     <section class="card" aria-labelledby="q-gp-t" id="q-grp-c">
@@ -1844,14 +1844,16 @@ body.q-vote { padding-bottom: 92px; }
       // Texte sur plusieurs lignes dans la largeur de l'image.
       var ecrire = function (t, x, y, l, h) { var ligne = ''; t.split(' ').forEach(function (m) { var u = ligne ? ligne + ' ' + m : m; if (g.measureText(u).width > l && ligne) { g.fillText(ligne, x, y); y += h; ligne = m; } else ligne = u; }); if (ligne) g.fillText(ligne, x, y); return y + h; };
       g.fillStyle = '#1c1d22'; g.font = '700 54px ' + sans; var yt = ecrire(tt, 80, 180, W - 160, 64);
-      var y0 = yt + 10; g.drawImage(im, 80, y0);
+      var gros = box.querySelector('.q-gros'); if (gros && id === 'q-pays') { g.fillStyle = '#1c1d22'; g.font = '400 30px ' + sans; yt = ecrire(gros.textContent.trim(), 80, yt + 6, W - 160, 40); }
+      var k2 = Math.min(k, (1180 - yt - 140) / vb.height); if (k2 < k) { clone.setAttribute('width', vb.width * k2); clone.setAttribute('height', vb.height * k2); }
+      var y0 = yt + 10; g.drawImage(im, (W - vb.width * k2) / 2, y0, vb.width * k2, vb.height * k2); k = k2;
       var y = y0 + vb.height * k + 50;
       Array.prototype.forEach.call(sec.querySelectorAll('.q-leg span'), function (sp) {
         var i = sp.querySelector('i'), st = i ? getComputedStyle(i) : null, bg = st && st.backgroundColor !== 'rgba(0, 0, 0, 0)' ? st.backgroundColor : st ? st.borderTopColor : '#62646d', trait = st && st.borderTopStyle !== 'none' && st.borderTopWidth !== '0px';
         g.fillStyle = bg; g.strokeStyle = bg; g.lineWidth = 6; if (trait) { g.setLineDash([12, 8]); g.beginPath(); g.moveTo(80, y - 10); g.lineTo(130, y - 10); g.stroke(); g.setLineDash([]); } else g.fillRect(80, y - 16, 50, 12);
         g.fillStyle = '#1c1d22'; g.font = '500 30px ' + sans; g.fillText(sp.textContent.trim(), 150, y); y += 46;
       });
-      g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; ecrire('Sources : FMI, Eurostat, direction du Trésor et Insee (modèle Mésange), projet de loi de finances ' + AN0 + '. Calcul de Concret.', 80, Math.min(y + 16, 1180), W - 160, 34);
+      g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; ecrire(id === 'q-pays' ? 'Sources : Eurostat, dépenses et recettes publiques des pays (' + (PE ? PE.an : '') + ') ; votre budget : calcul de Concret.' : 'Sources : FMI, Eurostat, direction du Trésor et Insee (modèle Mésange), projet de loi de finances ' + AN0 + '. Calcul de Concret.', 80, Math.min(y + 16, 1180), W - 160, 34);
       g.fillStyle = '#2f5bd3'; g.font = '600 36px ' + sans; g.fillText('Faites le vôtre : concret2027.fr/budget/quinquennat.html', 80, 1290);
       c.toBlob(function (b) {
         var t = tt + ', avec mon budget ' + AN0 + ' sur Concret. Et vous ?', u = lienBudget(), fi = b && typeof File === 'function' ? new File([b], 'courbe-' + id + '.png', { type: 'image/png' }) : null;
