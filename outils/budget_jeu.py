@@ -469,6 +469,127 @@ def eurostat_pays(an):
             'url': 'https://ec.europa.eu/eurostat/databrowser/view/gov_10a_main/default/table'}
 
 
+# ---------- Où va l'argent public : budget de l'État par mission, Sécurité sociale par branche ----------
+PLFSS_URL = 'https://www.assemblee-nationale.fr/dyn/17/textes/l17b3211_projet-loi.pdf'
+# Libellés courts pour le graphique (le nom officiel reste affiché au toucher et dans le détail).
+COURT_MISSIONS = {'Enseignement scolaire': 'Écoles, collèges et lycées', 'Défense': 'Défense (armées)',
+         'Recherche et enseignement supérieur': 'Universités et recherche', 'Solidarité, insertion et égalité des chances': "Solidarité (prime d'activité, handicap)",
+         'Sécurités': 'Police, gendarmerie, secours', 'Cohésion des territoires': 'Logement et territoires',
+         'Écologie, développement et mobilité durables': 'Écologie, transports, énergie', 'Travail, emploi et administration des ministères sociaux': 'Travail et emploi',
+         'Justice': 'Justice et prisons', 'Gestion des finances publiques et lutte contre les fraudes': 'Impôts et douanes (leurs services)',
+         'Régimes sociaux et de retraite': 'Régimes spéciaux de retraite (SNCF, RATP…)', 'Administration générale et territoriale de l’État': 'Préfectures, élections, ministère de l’Intérieur', 'Santé': "Santé (budget de l'État)"}
+# Ce que paie chaque poste : les mesures du jeu dont le payeur est clair y sont rattachées ; les autres (fonctionnaires des trois
+# fonctions publiques, SMIC, prestations de plusieurs branches, assurance chômage, collectivités) sont comptées à part.
+POSTE_CARTES = {'prime-activite-gel': 'mi:solidarité-insertion-et-égalité-des-chan', 'formation-pric-cfa': 'mi:travail-emploi-et-administration-des-min',
+                'pensions-revalorisation-2027': 'secu:vieillesse', 'retraites-fin-suspension': 'secu:vieillesse', 'retraite-62': 'secu:vieillesse',
+                'retraite-63': 'secu:vieillesse', 'retraite-65': 'secu:vieillesse', 'prestations-familiales-gel': 'secu:famille',
+                'allocation-rentree-scolaire': 'secu:famille', 'ondam-moins-1': 'secu:maladie', 'ondam-plus-1': 'secu:maladie', 'franchises-x2': 'secu:maladie'}
+POSTE_ASSIETTES = {'enseignement': 'mi:enseignement-scolaire', 'defense': 'mi:défense', 'retraites': 'secu:vieillesse', 'ondam': 'secu:maladie',
+                   'alloc-familiales': 'secu:famille', 'apl': 'mi:cohésion-des-territoires', 'aah': 'mi:solidarité-insertion-et-égalité-des-chan',
+                   'prime-activite': 'mi:solidarité-insertion-et-égalité-des-chan', 'ij-maladie': 'secu:maladie', 'ij-atmp': 'secu:atmp',
+                   'ame': 'mi:santé', 'c2s': 'secu:maladie', 'aspa': 'secu:vieillesse'}
+
+
+def mk_mission(nom):
+    return 'mi:' + re.sub(r'\W+', '-', nom.lower())[:40]
+
+
+def secu_branches(T):
+    """Dépenses par branche des régimes obligatoires de base : 2027 (article « Tableau d'équilibre 2027 ») et 2026 rectifié
+    (article 1er), lues dans le texte du projet de loi de financement de la sécurité sociale."""
+    pages = T.split('\f')
+    BR = [('secu:maladie', 'Maladie', 'Santé : Assurance maladie'), ('secu:atmp', 'Accidents du travail et maladies', 'Accidents du travail, maladies professionnelles'),
+          ('secu:vieillesse', 'Vieillesse', 'Retraites de base (branche vieillesse)'), ('secu:famille', 'Famille', 'Familles (prestations familiales)'),
+          ('secu:autonomie', 'Autonomie', 'Autonomie (personnes âgées, handicap)'), ('total', 'Toutes branches (hors transferts', '')]
+    def lire(titre):
+        for i, p in enumerate(pages):
+            j = p.find(titre)
+            if j < 0: continue
+            q = p[j:]
+            out = {}
+            for k, deb, _ in BR:
+                m = re.search(re.escape(deb) + r'[^\n]*?\s(-?\d+,\d)\s+(-?\d+,\d)\s+(-?\d+,\d)', q)
+                if not m: break
+                out[k] = (float(m.group(1).replace(',', '.')), float(m.group(2).replace(',', '.')), m.group(0))
+            else:
+                return out, i + 1
+        raise ValueError('PLFSS : tableau introuvable : ' + titre)
+    v27, p27 = lire('Tableau d’équilibre ' + str(date.today().year + 1))
+    v26, p26 = lire('Rectification des tableaux d’équilibre')
+    somme = round(sum(v27[k][1] for k, _, _ in BR[:-1]), 1)
+    assert somme >= v27['total'][1], (somme, v27['total'])
+    return {'k': 'secu', 'l': 'Sécurité sociale', 'sous': 'régimes obligatoires de base : dépenses de chaque branche',
+            'lignes': [{'k': k, 'l': l, 'officiel': d.rstrip(), 'v27': v27[k][1], 'v26': v26[k][1]} for k, d, l in BR[:-1]],
+            'total': {'v27': v27['total'][1], 'v26': v26['total'][1], 'somme_branches': somme},
+            'src': {'doc': "Projet de loi de financement de la sécurité sociale pour 2027, n° 3211", 'url': PLFSS_URL,
+                    'page': 'p. %d (article 16, tableau d’équilibre 2027) et p. %d (article 1er, 2026 rectifié)' % (p27, p26),
+                    'citation': ' […] '.join(re.sub(r'[ .]{3,}', ' ', v27[k][2]).replace('\n', ' ') for k, _, _ in BR)}}
+
+
+def psr(T):
+    """Prélèvements sur les recettes de l'État (collectivités, Union européenne), état « Évaluation des recettes du budget général »,
+    en millions d'euros : LFI de l'année en cours, révisé, année à venir."""
+    pages = T.split('\f')
+    for i, p in enumerate(pages):
+        if 'Évaluation des recettes du budget général' not in p: continue
+        out = []
+        for k, deb, l in (('psr:collectivites', '1. Prélèvements sur les recettes de l’État au profit des collectivités territoriales', 'Collectivités locales (dotations)'),
+                          ('psr:ue', '2. Prélèvement sur les recettes de l’État au profit de l’Union européenne', "Union européenne (contribution)")):
+            m = re.search(re.escape(deb) + r'\s+(\d{1,3}(?: \d{3})*)\s+(\d{1,3}(?: \d{3})*)\s+(\d{1,3}(?: \d{3})*)', p)
+            if not m: break
+            n = lambda g: int(m.group(g).replace(' ', '')) / 1000
+            out.append({'k': k, 'l': l, 'officiel': deb[3:], 'v26': round(n(1), 1), 'v27': round(n(3), 1), 'page': i + 1,
+                        'citation': re.sub(r'\s+', ' ', m.group(0)) + ' (millions d’euros : LFI 2026, révisé 2026, 2027)'})
+        if len(out) == 2: return out
+    raise ValueError('PLF : prélèvements sur recettes introuvables')
+
+
+def repartition(T, MISSIONS, cartes, assiettes, unites):
+    import budget_missions
+    an = date.today().year + 1
+    lignes, exclus = [], []
+    for m in MISSIONS:
+        if not m['cp27'] and not m['cp26']: continue
+        if m['nom'].startswith('Remboursements et dégrèvements'):
+            exclus.append({'l': m['nom'], 'v27': round(m['cp27'] / 1e9, 1), 'v26': round(m['cp26'] / 1e9, 1), 'page': m['page'],
+                           'pourquoi': "des impôts rendus ou annulés (trop-perçus, crédits d'impôt) : de l'argent qui revient aux contribuables, pas une dépense pour un service"})
+            continue
+        if m['nom'].startswith('Engagements financiers'):
+            dette = next(r for r in m['programmes'] if r['nom'].startswith('Charge de la dette et trésorerie'))
+            lignes.append({'k': 'pr:charge-dette', 'l': "Intérêts de la dette de l'État", 'officiel': re.sub(r'\s*\(crédits évaluatifs\)', '', dette['nom']) + ' (programme de la mission « Engagements financiers de l’État »)',
+                           'v27': round(dette['cp27'] / 1e9, 3), 'v26': round(dette['cp26'] / 1e9, 3), 'page': dette['page']})
+            lignes.append({'k': mk_mission(m['nom']), 'l': 'Engagements financiers hors intérêts', 'officiel': m['nom'] + ', autres programmes',
+                           'v27': round((m['cp27'] - dette['cp27']) / 1e9, 3), 'v26': round((m['cp26'] - dette['cp26']) / 1e9, 3), 'page': m['page']})
+            continue
+        lignes.append({'k': mk_mission(m['nom']), 'l': COURT_MISSIONS.get(m['nom'], m['nom']), 'officiel': m['nom'], 'v27': round(m['cp27'] / 1e9, 3), 'v26': round(m['cp26'] / 1e9, 3), 'page': m['page']})
+    tot27 = sum(m['cp27'] for m in MISSIONS if m['cp27']); tot26 = sum(m['cp26'] for m in MISSIONS if m['cp26'])
+    P = psr(T)
+    etat = {'k': 'etat', 'l': "Budget de l'État", 'sous': 'crédits de paiement de chaque mission, salaires et retraites des agents compris ; et ce que l’État prélève sur ses recettes pour les collectivités et l’Union européenne',
+            'lignes': lignes + [dict(x, page=x['page']) for x in P], 'exclus': exclus,
+            'total': {'v27': round(tot27 / 1e9, 1), 'v26': round(tot26 / 1e9, 1)},
+            'src': {'doc': budget_missions.TITRE, 'url': budget_missions.PLF_URL, 'page': 'p. %d à %d (tableau 1, crédits de paiement) ; p. %d (prélèvements sur recettes)' % (min(l['page'] for l in lignes), max(l['page'] for l in lignes), P[0]['page']),
+                    'citation': "Total du budget général, crédits de paiement %d : %s € (somme des missions, égale au total de l’état B)" % (an, '{:,}'.format(tot27).replace(',', ' '))}}
+    # La somme des missions doit retomber sur le total voté de l'état B (article des crédits du budget général).
+    m = re.search(r'respectivement aux montants de ([\d ]+) € et de ([\d ]+) €', T)
+    if m: assert int(m.group(2).replace(' ', '')) == tot27, ('total état B', m.group(2), tot27)
+    T2 = budget_missions.texte(PLFSS_URL)
+    secu = secu_branches(T2)
+    # Rattachement des mesures du jeu aux postes.
+    cles = {l['k'] for l in lignes} | {l['k'] for l in secu['lignes']}
+    for c in cartes:
+        if c['id'] in POSTE_CARTES:
+            assert POSTE_CARTES[c['id']] in cles, c['id']
+            c['poste'] = POSTE_CARTES[c['id']]
+    par = {a['k']: a for a in assiettes}
+    for a in assiettes:
+        k = POSTE_ASSIETTES.get(a['k']) or (a['k'] if a['k'] in cles else a.get('parent') if a.get('parent') in cles else None)
+        if k: assert k in cles, a['k']; a['poste'] = k
+    for u in unites:
+        a = par.get(u.get('ligne'))
+        if a and a.get('poste'): u['poste'] = a['poste']
+    return {'an': an, 'groupes': [secu, etat]}
+
+
 def construire():
     mes, nic, mac = charger('mesures_2027.json'), charger('depenses_fiscales.json'), charger('parametres_macro.json')
     P = {x['cle']: x for x in mac['parametres']}
@@ -699,7 +820,9 @@ def construire():
              'Sécurités': ['securite'], 'Sport': ['associations'], 'Médias': ['culture'], 'Santé': ['assures'], 'Économie': ['entreprises'],
              'Investir pour la France': ['entreprises'], 'Monde combattant': ['anciens_combattants']}
     an_plf = date.today().year + 1
-    for m in budget_missions.missions():
+    T_PLF = budget_missions.texte()
+    MISSIONS = budget_missions.grouper(budget_missions.lire(T_PLF))
+    for m in MISSIONS:
         if m['nom'].startswith(HORS) or not m['cp27']:
             continue
         qui = next((v for k, v in QUI_M.items() if m['nom'].startswith(k)), ['etat'])
@@ -840,6 +963,7 @@ def construire():
         'depart': (dep := eurostat_depart()),
         'pays_eurostat': eurostat_pays(dep['an']),
         'reperes_etat': (lambda e: {'valeurs': {k: round(v / 1e9, 1) for k, v in e['valeurs'].items()}, 'page': e['page'], 'url': e['url'], 'citation': e['citation']} if e else None)(next((x for x in (json.load(open(os.path.join(SRC, 'mesures_debattues.json'), encoding='utf-8'))['elements']) if x['cle'] == 'credits_etat_2027_reperes'), None)),
+        'repartition': repartition(T_PLF, MISSIONS, cartes, assiettes, unites),
         'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'unites': unites, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
         'variantes': var, 'regle': REGLE,
