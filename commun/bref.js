@@ -28,7 +28,7 @@
     '.som-l small .som-hors{display:block}' +
     '.bref-cache{display:none!important}' +
     '.bref-deux{color:var(--fg);margin-bottom:6px}' +
-    // Sur ordinateur, la toile se range à côté d'« En bref » ; sur téléphone, sous les thèmes.
+    // Sur ordinateur, la toile se range à côté d'« En bref » ; sur téléphone, après le dernier thème.
     '.bref-grille{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}.bref-grille>*{margin:0!important}' +
     // Thèmes des pages Finances et Éducation (sans ligne ✓ ✗ écrite par la page) : la même ligne que sur les autres pages.
     '.theme>.t-sum.bref-tsum{margin:0;font-size:14px;color:var(--muted)}.t-sum.bref-tsum .ic{display:inline-flex;gap:4px;margin-right:8px}.t-sum.bref-tsum .ic i{font-style:normal;font-weight:700}.t-sum.bref-tsum .ic i.g{color:var(--ok)}.t-sum.bref-tsum .ic i.b{color:var(--bad)}.t-sum.bref-tsum .ic i.m{color:var(--mid)}' +
@@ -97,10 +97,11 @@
       ' (dernier chiffre connu)' + (n > 1 ? ' : ' + it.map(function (x) { return esc(x.l); }).join(', ') : '') + '.' + (t.note ? ' ' + esc(t.note) : '');
     var h = el.querySelector(':scope > h2'); el.insertBefore(p, h ? h.nextSibling : el.firstChild);
   }
-  // La toile : à côté d'« En bref » sur ordinateur ; sur téléphone, sous les thèmes et le détail par président, avant « L'actualité ».
+  // La toile : à côté d'« En bref » sur ordinateur ; sur téléphone, juste après le dernier thème, avant « Le détail, président
+  // par président » (sans ce bloc, comme en Démographie : avant « L'actualité »).
   var LARGE = window.matchMedia ? matchMedia('(min-width: 900px)') : null;
   function placerToile() {
-    var rep = document.getElementById('reponse'), to = document.getElementById('toile'), act = document.getElementById('actualite'), g = document.getElementById('bref-grille');
+    var rep = document.getElementById('reponse'), to = document.getElementById('toile'), act = document.getElementById('bulletin') || document.getElementById('actualite'), g = document.getElementById('bref-grille');
     if (!rep || !to) return;
     var avant = to.parentNode && to.parentNode.id === 'bref-grille';
     if (LARGE && LARGE.matches) {
