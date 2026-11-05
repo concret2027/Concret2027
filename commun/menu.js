@@ -96,6 +96,7 @@
     { u: '/barometre/', l: 'Baromètre 2027', t: 'Sondages et parieurs', ic: 'barometre', g: 'Chaque jour' },
     { u: '/quiz/', l: 'Quiz du jour', t: 'Huit questions sourcées', ic: 'quiz', g: 'Chaque jour' },
     { u: '/votez/', l: 'Votez les lois', t: 'Les vrais votes de l\'Assemblée, à votre tour', ic: 'votez', g: 'Chaque jour' },
+    { u: '/budget/', l: 'Votre budget 2027', t: 'Le budget mesure par mesure, et le défi du jour', ic: 'budget', g: 'Chaque jour' },
     { u: '/vie/', l: 'Vie des Français', t: 'Pouvoir d\'achat, logement, travail', ic: 'vie', g: 'Les missions mesurées' },
     { u: '/finances/', l: 'Finances publiques', t: 'Dette, déficit, impôts', ic: 'finances', g: 'Les missions mesurées' },
     { u: '/sante/', l: 'Santé', t: 'Espérance de vie, soins, prévention', ic: 'sante', g: 'Les missions mesurées' },
@@ -116,6 +117,7 @@
     education: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/>',
     securite: '<path d="M12 4v16"/><path d="M8 20h8"/><path d="M5 7h14"/><path d="M5 7l-3 6a3 3 0 0 0 6 0z"/><path d="M19 7l-3 6a3 3 0 0 0 6 0z"/>',
     defense: '<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/>',
+    budget: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h2"/><path d="M14 11h2"/><path d="M8 15h2"/><path d="M14 15h2"/>',
     votez: '<path d="M4 12h16v8H4z"/><path d="M7 12V4h10v8"/><path d="M9.5 8l2 2 3.5-3.5"/>',
     politique: '<path d="M3 9l9-5 9 5"/><path d="M5 9v8"/><path d="M10 9v8"/><path d="M14 9v8"/><path d="M19 9v8"/><path d="M3 20h18"/>',
     demographie: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.8.2 5 2.6 5 5.8"/>',
@@ -194,7 +196,7 @@
     // Sur toutes les pages, les dépliants qui cachent des courbes (« Voir 2 autres courbes… ») se voient : fond bleu, gras, trait à gauche.
     '.fold>summary,details.plus>summary{font-weight:700;color:' + V.fr + ';background:rgba(47,91,211,.10);background:color-mix(in srgb,' + V.fr + ' 13%,transparent);border-left:4px solid ' + V.fr + ';border-radius:12px;justify-content:space-between;gap:10px}' +
     '.fold>summary:hover,details.plus>summary:hover,.fold[open]>summary,details.plus[open]>summary{background:rgba(47,91,211,.16);background:color-mix(in srgb,' + V.fr + ' 20%,transparent)}';
-  var ici = location.pathname.replace(/index\.html$/, '');
+  var ici = location.pathname.replace(/index\.html$/, '').replace(/^\/budget\/quinquennat\.html$/, '/budget/');
   // Concret ouvert depuis l'écran d'accueil (web app) : pas de lien vers l'explication pour l'y mettre.
   // Le message des étapes pour installer Concret (le même que sur /application/), à envoyer sur WhatsApp d'un toucher ;
   // un seul lien, celui de /application/ : c'est sa carte (les étapes) que WhatsApp montre en aperçu,

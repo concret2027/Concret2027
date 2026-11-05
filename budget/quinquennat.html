@@ -2268,7 +2268,7 @@ body.q-vote { padding-bottom: 92px; }
     v = v.replace(/A+$/, '');
     var K = Object.keys(AS).sort(), U = Object.keys(UN).sort();
     var p = Object.keys(S.perso).map(function (k) { return K.indexOf(k).toString(36) + '~' + S.perso[k]; }).join('_'), u = Object.keys(S.unites).map(function (k) { return U.indexOf(k).toString(36) + '~' + S.unites[k]; }).join('_');
-    return 'https://concret2027.fr/budget/quinquennat.html#b=' + empreinte() + '.' + v + (p || u ? '.' + p : '') + (u ? '.' + u : '') + (S.obj && S.obj !== 'aucun' ? '!o' + S.obj : '') + (rep ? '!r' : '');
+    return 'https://concret2027.fr/budget/#b=' + empreinte() + '.' + v + (p || u ? '.' + p : '') + (u ? '.' + u : '') + (S.obj && S.obj !== 'aucun' ? '!o' + S.obj : '') + (rep ? '!r' : '');
   }
   function lireLien() {
     var c2 = /#b=([0-9a-z]+)\.([A-Za-z0-9_-]*)(?:\.([0-9a-z~_-]*))?(?:\.([0-9a-z~_-]*))?/.exec(location.hash || '');
@@ -2330,7 +2330,7 @@ body.q-vote { padding-bottom: 92px; }
       g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; var yS = ecrire(id === 'q-pays' ? 'Sources : Eurostat, dépenses et recettes publiques des pays (' + (PE ? PE.an : '') + ') ; votre budget : calcul de Concret.' : id === 'q-ou' ? 'Sources : projets de loi de finances et de financement de la sécurité sociale pour ' + AN0 + ' (crédits de chaque mission de l\'État, dépenses de chaque branche de la Sécurité sociale) ; vos choix : calcul de Concret.' : id === 'q-vm' ? 'Sources : chiffrages des projets de loi pour ' + AN0 + ' (évaluations préalables), Cour des comptes, Évaluation des voies et moyens ; calcul de Concret.' : 'Sources : FMI, Eurostat, direction du Trésor et Insee (modèle Mésange), projet de loi de finances ' + AN0 + '. Calcul de Concret.', 80, y + 16, W - 160, 34);
       // Recoupe : la signature juste sous le dernier texte, sans grand vide ni texte par-dessus un autre.
       var Hf = Math.max(1080, Math.round(yS + 90)), c2 = document.createElement('canvas'); c2.width = W; c2.height = Hf; var g2 = c2.getContext('2d');
-      g2.drawImage(c, 0, 0); g2.fillStyle = '#2f5bd3'; g2.font = '600 36px ' + sans; g2.fillText('Faites le vôtre : concret2027.fr/budget/quinquennat.html', 80, Hf - 50); c = c2;
+      g2.drawImage(c, 0, 0); g2.fillStyle = '#2f5bd3'; g2.font = '600 36px ' + sans; g2.fillText('Faites le vôtre : concret2027.fr/budget', 80, Hf - 50); c = c2;
       c.toBlob(function (b) {
         var t = tt + ', avec mon budget ' + AN0 + ' sur Concret. Et vous ?', u = lienBudget(), fi = b && typeof File === 'function' ? new File([b], 'courbe-' + id + '.png', { type: 'image/png' }) : null;
         if (fi && navigator.canShare && navigator.canShare({ files: [fi] })) return navigator.share({ files: [fi], text: t + ' ' + u }).catch(function () {});
@@ -2357,7 +2357,7 @@ body.q-vote { padding-bottom: 92px; }
     g.font = '400 32px ' + sans; L.forEach(function (x, i) { var dr = (x.m >= 0 ? 'rapporte ' : 'coûte ') + mds(Math.abs(x.m)), place = W - 160 - g.measureText(dr).width - 30, t = x.t; if (g.measureText('• ' + t).width > place) { while (t.length > 8 && g.measureText('• ' + t + '…').width > place) t = t.slice(0, -1); t = t.replace(/\s+\S*$/, '') + '…'; } g.fillStyle = '#1c1d22'; g.fillText('• ' + t, 80, 1015 + i * 48); g.fillStyle = '#2f5bd3'; g.textAlign = 'right'; g.fillText((x.m >= 0 ? 'rapporte ' : 'coûte ') + mds(Math.abs(x.m)), W - 80, 1015 + i * 48); g.textAlign = 'left'; });
     g.fillStyle = '#2f5bd3'; g.fillRect(80, 1170, W - 160, 4);
     g.fillStyle = '#1c1d22'; g.font = '700 44px ' + sans; g.fillText('Et vous, avec les mêmes cartes ?', 80, 1245);
-    g.fillStyle = '#2f5bd3'; g.font = '600 36px ' + sans; g.fillText('concret2027.fr/budget/quinquennat.html', 80, 1300);
+    g.fillStyle = '#2f5bd3'; g.font = '600 36px ' + sans; g.fillText('concret2027.fr/budget', 80, 1300);
     c.toBlob(function (b) { fin(b); }, 'image/png');
   }
   function partager(tx, rep) { if (typeof tx !== 'string') tx = null;

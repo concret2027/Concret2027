@@ -406,6 +406,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card auj" id="aujourdhui" data-partage="non" aria-labelledby="auj-t">
     <span id="auj-t" class="eyebrow" style="margin:0">Aujourd'hui sur Concret</span>
+    <a class="auj-l" href="/budget/"><b>Votre budget 2027</b><span id="auj-budget">Votez les mesures du budget, une par une, et voyez le déficit bouger</span><i id="auj-budget-s">Jouer</i></a>
     <a class="auj-l" href="/quiz/"><b>Quiz du jour</b><span id="auj-quiz">8 questions sur la France face à ses voisins</span><i id="auj-quiz-s">À faire</i></a>
     <a class="auj-l" href="/votez/"><b>Votez les lois</b><span id="auj-vote">Les vrais votes de l'Assemblée, expliqués</span><i id="auj-vote-s">À voter</i></a>
     <a class="auj-l" href="/barometre/"><b>Baromètre 2027</b><span id="auj-baro">Sondages et parieurs, mis à jour vers 8 h, 9 h et midi</span><i id="auj-baro-s">Voir</i></a>
@@ -499,6 +500,14 @@ footer p { margin: 0; } footer a { color: inherit; }
   var jour = function (x) { var p = x.split('-'); return +p[2] + (+p[2] === 1 ? 'er' : '') + ' ' + MOIS[p[1] - 1]; };
   var q = lire('quiz-histo-' + iso);
   if (q) { $('auj-quiz').textContent = 'Fait aujourd\'hui : ' + q.replace('/', ' sur ') + '. Nouvelles questions à minuit.'; $('auj-quiz-s').textContent = 'Fait'; $('auj-quiz-s').className = 'ok'; }
+  // Votre budget 2027 : le défi du jour (même tirage que le jeu) et, s'il est réussi sur cet appareil, « Réussi ».
+  fetch('/donnees/budget_defis.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (B) {
+    var L = B.defis || []; if (!L.length) return;
+    var k = Math.round((new Date(iso + 'T12:00:00') - new Date(B.debut + 'T12:00:00')) / 864e5), x = L[((k % L.length) + L.length) % L.length];
+    $('auj-budget').textContent = 'Défi du jour : ' + x.t;
+    var S = {}; try { S = JSON.parse(lire('concret-quinquennat') || '{}') || {}; } catch (e) {}
+    if (S.defis && S.defis[iso]) { $('auj-budget-s').textContent = 'Réussi'; $('auj-budget-s').className = 'ok'; } else $('auj-budget-s').textContent = S.v && Object.keys(S.v).length ? 'Reprendre' : 'Jouer';
+  }).catch(function () {});
   fetch('/donnees/votes.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (J) {
     var a = (J.AVENIR || [])[0]; if (!a) return;
     var avant = {}; try { avant = JSON.parse(lire('concret-votez-avant') || '{}') || {}; } catch (e) {}

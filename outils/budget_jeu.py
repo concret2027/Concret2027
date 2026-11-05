@@ -1061,6 +1061,8 @@ def main():
     fr = [x for x in pe['pays'] if x['code'] == 'FR'][0]; assert abs(fr['solde'] - d['solde']) < 0.05, (fr, d)
     if '--ecrire' in sys.argv:
         json.dump(o, open(SORTIE, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+        # Petit fichier pour l'accueil : le texte des défis du jour (même ordre que le jeu, sans le reste des données).
+        json.dump({'debut': '2026-01-01', 'defis': [{'id': d['id'], 't': d['t']} for d in o['defis']]}, open(os.path.join(RACINE, 'donnees', 'budget_defis.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
         print('Écrit :', SORTIE)
 
 
