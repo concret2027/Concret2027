@@ -47,6 +47,11 @@
 .q-clair .q-prop { display: grid; gap: 4px; margin-top: 4px; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--fr); background: color-mix(in srgb, var(--fr) 9%, var(--panel)); }
 .q-prop-l { font-size: 12.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--fr); }
 .q-prop-t { font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--fg); }
+/* Fin des votes : l'étape suivante (le Bilan) tout de suite, en grand. */
+.q-fin-suite { display: grid; justify-items: center; gap: 6px; margin: 4px 0 14px; padding: 16px 14px; border-radius: 14px; background: color-mix(in srgb, var(--fr) 10%, var(--panel)); border: 1.5px solid color-mix(in srgb, var(--fr) 40%, var(--line)); text-align: center; }
+.q-fin-l { margin: 0; font-size: 12.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--fr); }
+.q-fin-go { font-size: 18px !important; min-height: 54px; padding: 0 30px !important; width: 100%; max-width: 340px; }
+.q-fin-s { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.4; max-width: 34ch; }
 </style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -1662,7 +1667,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     var n = nbDecisions(), c = suivante(), et = etapeDue(), prochaine = ETAPES.filter(function (e) { return e > n; })[0], sp = speciale();
     var rest = uneParQ(C.filter(aVoir)).length, NQ = uneParQ(C).length;
     var dots = '<span class="q-dots">' + [0, 1, 2, 3, 4].map(function (i) { return '<i class="' + (i < Math.min(n, 5) ? 'on' : '') + '"></i>'; }).join('') + '</span>';
-    $('q-prog').innerHTML = n < 5 ? dots + 'Votre résultat dans ' + (5 - n) + ' vote' + (5 - n > 1 ? 's' : '') : n + ' votées · <b>' + (rest ? rest + ' restante' + (rest > 1 ? 's' : '') : 'toutes vues') + '</b>' + (prochaine ? ' · prochain point à ' + prochaine + ' votes' : '') + (S.obj && S.reussi && S.reussi[cleRec(S.obj)] ? ' · record : ' + S.reussi[cleRec(S.obj)] + ' votes' : '');
+    $('q-prog').innerHTML = n < 5 ? dots + 'Votre résultat dans ' + (5 - n) + ' vote' + (5 - n > 1 ? 's' : '') : n + ' votées · <b>' + (rest ? rest + ' restante' + (rest > 1 ? 's' : '') : 'toutes vues') + '</b>' + (prochaine && rest ? ' · prochain point à ' + prochaine + ' votes' : '') + (S.obj && S.reussi && S.reussi[cleRec(S.obj)] ? ' · record : ' + S.reussi[cleRec(S.obj)] + ' votes' : '');
     $('q-ptot').querySelector('span').style.width = (100 * (NQ - rest) / NQ) + '%';
     if (sp && c) carteSpeciale(sp, entree);
     else if (et && c) {
@@ -1675,8 +1680,9 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       $('b-suite').textContent = 'Continuer : ' + $('q-suite').textContent.toLowerCase();
     } else if (c) (c.q ? carteQ : carte)(c, entree);
     else {
-      $('q-deck').innerHTML = '<section class="card q-etape"><span class="eyebrow">Vous avez vu toutes les mesures' + (S.filtre !== 'tout' ? ' de ce filtre' : '') + '</span><h2>Votre quinquennat</h2>' + resume() +
-        '<div class="q-actions"><button type="button" class="q-go" id="q-voirb2">Voir tout le bilan</button><button type="button" class="q-lien" id="q-cr2">Créer vos propres mesures</button></div>' +
+      $('q-deck').innerHTML = '<section class="card q-etape"><span class="eyebrow">Vous avez vu toutes les mesures' + (S.filtre !== 'tout' ? ' de ce filtre' : '') + '</span><h2>Bravo, votre budget est prêt</h2>' +
+        '<div class="q-fin-suite"><p class="q-fin-l">Étape suivante</p><button type="button" class="q-go q-fin-go" id="q-voirb2">Voir mon bilan →</button><p class="q-fin-s">Déficit, dette, croissance jusqu\'en 2031, ce que vos choix changent pour vous, et le pays qui vous ressemble.</p><button type="button" class="q-lien" id="q-cr2">Ou créer vos propres mesures</button></div>' +
+        resume('etape') +
         (function () { if (!S.ami) return ''; var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), a1 = an1(Am), r1 = an1(R), x = accordAmi();
           return '<div class="q-ami" style="margin-top:12px"><p><b>Vous et le budget reçu</b> : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' carte' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + '. ' : '') + 'Déficit ' + AN0 + ' : ' + defic(r1.solde) + ' pour vous, ' + defic(a1.solde) + ' pour le budget reçu' + (Math.abs(r1.solde - a1.solde) < 0.05 ? ', à égalité.' : -r1.solde < -a1.solde ? ' : le vôtre est plus bas.' : ' : le sien est plus bas.') + '</p><div class="q-chips"><button type="button" id="q-ami-r">Renvoyer ma réponse</button></div></div>'; })() +
         '<p class="q-note" style="margin-top:12px">Pour changer d\'avis : revoyez vos votes un par un, revotez toutes les mesures depuis le début (vos mesures créées restent), ou effacez tout.</p>' +
