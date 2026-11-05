@@ -520,7 +520,7 @@ def secu_branches(T):
     (article 1er), lues dans le texte du projet de loi de financement de la sécurité sociale."""
     pages = T.split('\f')
     BR = [('secu:maladie', 'Maladie', 'Santé : Assurance maladie'), ('secu:atmp', 'Accidents du travail et maladies', 'Accidents du travail, maladies professionnelles'),
-          ('secu:vieillesse', 'Vieillesse', 'Retraites de base (branche vieillesse)'), ('secu:famille', 'Famille', 'Familles (prestations familiales)'),
+          ('secu:vieillesse', 'Vieillesse', 'Retraites de base'), ('secu:famille', 'Famille', 'Familles (prestations familiales)'),
           ('secu:autonomie', 'Autonomie', 'Autonomie (personnes âgées, handicap)'), ('total', 'Toutes branches (hors transferts', '')]
     def lire(titre):
         for i, p in enumerate(pages):

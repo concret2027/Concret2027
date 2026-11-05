@@ -335,9 +335,16 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-plie[open] > summary::after { content: " ▴"; }
 .q-plie > :not(summary) { margin: 0 0 8px; }
 .q-grands { display: grid; gap: 8px; }
-.q-grands button { font: inherit; text-align: left; display: grid; gap: 2px; padding: 10px 14px; min-height: 56px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
-.q-grands button b { font-size: 16px; }
-.q-grands button span { font-size: 13.5px; color: var(--muted); }
+.q-grands button { font: inherit; text-align: left; display: grid; gap: 1px; padding: 7px 12px; min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
+.q-grands button b { font-size: 15.5px; }
+.q-grands button span { font-size: 12.5px; color: var(--muted); line-height: 1.3; }
+.q-grands2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.q-grands2 button { min-height: 0; padding: 7px 10px; align-content: start; }
+.q-grands2 button b { font-size: 14.5px; line-height: 1.25; }
+.q-grands2 button span { font-size: 12px; }
+.q-foy-l { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.q-foy-l > span { font-size: 14px; font-weight: 700; }
+.q-foy-l .q-chips button { min-height: 38px; padding: 4px 11px; font-size: 13.5px; }
 .q-grands button .q-rec { color: var(--ok); font-weight: 600; }
 .q-grands button:hover, .q-grands button:focus-visible { border-color: var(--fr); }
 .q-etape.q-bravo { border-color: var(--ok); animation: q-bravo .6s cubic-bezier(.2,.8,.2,1); }
@@ -443,7 +450,7 @@ details.card.fold > summary { min-height: 44px; display: flex; align-items: cent
 .q-tags { display: flex; gap: 8px; align-items: center; min-width: 0; }
 .q-chip { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fr); background: var(--band); border-radius: 999px; padding: 4px 10px; }
 .q-tags .q-vous { white-space: nowrap; }
-.q-org { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.q-org { font-size: 12.5px; color: var(--muted); white-space: normal; min-width: 0; }
 .q-chip { flex: none; }
 .q-card h2 { margin: 0; font-size: 21px; line-height: 1.25; text-wrap: balance; }
 .q-mt { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
@@ -982,12 +989,13 @@ body.q-vote { padding-bottom: 92px; }
     }
     if (!POP) {
       var nx = o.ok && SUITE[S.obj];
-      $('q-hs').innerHTML = o.t + (nx ? ' <button type="button" id="q-suiv">Viser ' + (nx === 'quatre' ? '4\u00a0% en ' + AN0 : nf(PAR.regle, 0) + '\u00a0% en ' + (J.echeance_ue ? J.echeance_ue.an : AN0)) + ' →</button>' : '') + ' <button type="button" id="q-chobj" aria-expanded="' + !$('q-hobj').hidden + '">' + (S.obj === 'aucun' || !S.obj ? 'Choisir un objectif' : 'Changer d\'objectif') + '</button>';
+      var recH = !o.ok && S.reussi && S.reussi[S.obj] ? ' <span class="q-rec">Record : ' + S.reussi[S.obj] + ' votes</span>' : '';
+      $('q-hs').innerHTML = o.t + recH + (nx ? ' <button type="button" id="q-suiv">Viser ' + (nx === 'quatre' ? '4\u00a0% en ' + AN0 : nf(PAR.regle, 0) + '\u00a0% en ' + (J.echeance_ue ? J.echeance_ue.an : AN0)) + ' →</button>' : '') + ' <button type="button" id="q-chobj" aria-expanded="' + !$('q-hobj').hidden + '">' + (S.obj === 'aucun' || !S.obj ? 'Choisir un objectif' : 'Changer d\'objectif') + '</button>';
       if (nx) $('q-suiv').onclick = function () { S.obj = nx; garder(); objectifs(); tout(); };
       $('q-hs').className = 'q-hs' + (o.ok ? ' ok' : '');
       $('q-chobj').onclick = function () { $('q-hobj').hidden = !$('q-hobj').hidden; hud(); };
     }
-    if (DEFI_NEUF && nbChoix()) { var dn = DEFI_NEUF; DEFI_NEUF = null; setTimeout(function () { pop('🏅 Défi du jour réussi : ' + esc(dn), true); }, 900); }
+    if (DEFI_NEUF && nbChoix()) { var dn = DEFI_NEUF; DEFI_NEUF = null; setTimeout(function () { pop('🏅 Défi du jour réussi : ' + esc(dn), true, '🏅 Défi du jour réussi'); }, 900); }
     $('q-intro').hidden = nbDecisions() > 0 || nbChoix() > 0;
     $('q-tabexp').hidden = (ONG === 'voter' && !$('q-intro').hidden) || !!(S.vu && S.vu[ONG] > 1);
     if (!$('p-bilan').hidden) bilan();
@@ -1032,7 +1040,9 @@ body.q-vote { padding-bottom: 92px; }
       // Ce qui manque pour l'objectif, en Md€, et l'écart avec avant : un vote de 2 Md€ se voit même si le déficit en % ne bouge pas.
       // Si l'écart n'est pas le montant voté, on dit pourquoi (l'effet sur l'activité, ou l'année de l'objectif).
       var m0 = (-r0.solde - T) / 100 * r0.pib, m1 = (-r1.solde - T) / 100 * r1.pib, d = m1 - m0, pq = attendu != null && Math.abs(Math.abs(d) - Math.abs(attendu)) >= Math.max(0.01, 0.1 * Math.abs(attendu)) ? (AO !== AN0 ? ' en ' + AO : S.macro ? ' après l\'effet sur l\'activité' : '') : '', ds = sec || Math.abs(d) < 0.05 || (attendu != null && !pq) ? '' : ' (' + (d < 0 ? '−' : '+') + mdt(Math.abs(d)) + pq + ')';
-      return m1 <= 0 ? 'objectif atteint : déficit ' + AO + ' à ' + b : 'il reste ' + mdt(m1) + ' à trouver' + ds;
+      var manq = S.obj === 'defi' && m1 <= 0 ? (defiDuJour() || { cond: [] }).cond.filter(function (c) { return !c.ok && !/^Déficit/.test(c.t); })[0] : null;
+      if (manq) return 'seuil atteint, mais : ' + manq.t.charAt(0).toLowerCase() + manq.t.slice(1);
+      return m1 <= 0 ? (S.obj === 'defi' ? 'défi réussi : déficit ' : 'objectif atteint : déficit ') + AO + ' à ' + b : 'il reste ' + mdt(m1) + ' à trouver' + ds;
     }
     var dd = (r1.solde - r0.solde) / 100 * r1.pib;
     return 'déficit ' + AN0 + ' : ' + (a === b ? b + (Math.abs(dd) < 0.05 || sec ? '' : ' (' + (dd > 0 ? '−' : '+') + mdt(Math.abs(dd)) + (S.macro && attendu != null && Math.abs(Math.abs(dd) - Math.abs(attendu)) >= Math.max(0.01, 0.1 * Math.abs(attendu)) ? ' après l\'effet sur l\'activité' : '') + ')') : a + ' → ' + b);
@@ -1228,6 +1238,10 @@ body.q-vote { padding-bottom: 92px; }
     }
     // Le détail en points, un par ligne : le montant, ce qui reste, l'économie, le pays, le budget reçu, l'Assemblée, le Sénat.
     var L = plein.concat([pays.replace(/^ · /, ''), dl.replace(/^ · /, '')], echoAssemblee(c, v).split('<br>')).filter(function (t) { return t && t.replace(/<[^>]+>/g, '').trim(); });
+    // Défi du jour : une carte qui casse une de ses conditions le dit tout de suite.
+    var casse = S.obj === 'defi' && v === 1 ? ((defiDuJour() || { cond: [] }).cond.filter(function (x) { return !x.ok && !/^Déficit|^Dette/.test(x.t); })[0]) : null;
+    if (casse) { court += ' · ⚠ défi : ' + casse.t.charAt(0).toLowerCase() + casse.t.slice(1); L.unshift('⚠ <b>Défi du jour</b> : ' + casse.t + '.'); }
+    if (pays) { var rp = ressemble(an1(A1)); if (rp) court += ' · ' + drapeau(rp.p.code) + ' ' + esc(rp.p.nom); }
     return { plein: '<ul class="q-pl">' + L.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>', court: court + dl };
   }
   function voter(c, v) {
@@ -1267,24 +1281,25 @@ body.q-vote { padding-bottom: 92px; }
     var o = objectif(); if (o.ok && S.obj !== 'aucun' && !(S.atteint && S.atteint[S.obj])) return 'reussite';
     return null;
   }
-  var OBJS = function () { var DJx = null; try { DJx = R ? defiDuJour() : null; } catch (e) {} return [['aucun', 'Sans objectif', 'voter librement et voir le résultat']].concat(DJx ? [['defi', 'Le défi du jour', DJx.x.t + (DJx.faisable ? ' (faisable avec les cartes)' : ' (il faudra aussi l\'onglet Créer)')]] : [], J.cible ? [['gouv', nf(J.cible.v, 1).replace(',0', '') + '\u00a0% de déficit en ' + AN0, 'la cible du Gouvernement (projet de loi de finances)']] : [], [['quatre', '4\u00a0% de déficit en ' + AN0, 'un palier choisi par Concret, pour le jeu'], ['trois', nf(PAR.regle, 0) + '\u00a0% de déficit en ' + (J.echeance_ue ? J.echeance_ue.an : AN0), 'l\'engagement européen de la France'], ['dette', 'Une dette stable en ' + AN1, 'pas plus haute qu\'à la fin ' + PJ.depart.an], ['neutre', 'Changer le budget sans changer le déficit', 'au moins 5 mesures, déficit ' + AN0 + ' à 0,1 point près de son niveau sans mesure : vous choisissez quoi financer et comment']]); };
+  var OBJS = function () { var DJx = null; try { DJx = R ? defiDuJour() : null; } catch (e) {} return [['aucun', 'Sans objectif', 'voter librement et voir le résultat']].concat(DJx && DJx.faisable ? [['defi', 'Le défi du jour', DJx.x.t +  ' (faisable avec les cartes)']] : [], J.cible ? [['gouv', nf(J.cible.v, 1).replace(',0', '') + '\u00a0% de déficit en ' + AN0, 'la cible du Gouvernement (projet de loi de finances)']] : [], [['quatre', '4\u00a0% de déficit en ' + AN0, 'un palier choisi par Concret, pour le jeu'], ['trois', nf(PAR.regle, 0) + '\u00a0% de déficit en ' + (J.echeance_ue ? J.echeance_ue.an : AN0), 'l\'engagement européen de la France'], ['dette', 'Une dette stable en ' + AN1, 'pas plus haute qu\'à la fin ' + PJ.depart.an], ['neutre', 'Changer le budget sans changer le déficit', 'au moins 5 mesures, déficit ' + AN0 + ' à 0,1 point près de son niveau sans mesure : vous choisissez quoi financer et comment']], DJx && !DJx.faisable ? [['defi', 'Le défi du jour', DJx.x.t + ' (il faudra aussi l\'onglet Créer)']] : []); };
   function carteSpeciale(k, entree) {
     if (k === 'objectif') {
       $('q-deck').innerHTML = '<section class="card q-etape' + (entree ? ' in' : '') + '"><span class="eyebrow">Pour commencer</span>' +
-        '<div class="q-obj"><span>Vous êtes… ? Les mesures qui vous touchent passeront en premier, avec un exemple pour vous.</span><div class="q-chips q-foy">' + Object.keys(FOYERS).map(function (k) { return '<button type="button" data-f="' + k + '" aria-pressed="' + (S.foyer === k) + '">' + FOYERS[k].l + '</button>'; }).join('') + '</div></div>' +
-        '<h2 style="margin-top:14px">Quel est votre objectif ?</h2>' +
-        '<p class="q-note">Le jeu vous dira, vote après vote, combien il manque. Vous pourrez en changer à tout moment.</p><div class="q-grands">' +
+        '<div class="q-foy-l"><span>Vous êtes :</span><div class="q-chips q-foy">' + Object.keys(FOYERS).map(function (k) { return '<button type="button" data-f="' + k + '" aria-pressed="' + (S.foyer === k) + '">' + FOYERS[k].l + '</button>'; }).join('') + '</div></div>' +
+        '<p class="q-note" style="margin:4px 0 0">Les mesures qui vous touchent passeront en premier.</p><h2 style="margin-top:10px">Quel est votre objectif ?</h2>' +
+        '<p class="q-note">Vous pourrez en changer à tout moment.</p><div class="q-grands q-grands2">' +
         OBJS().map(function (o) { var r = S.reussi && S.reussi[o[0]]; return '<button type="button" data-o="' + o[0] + '"><b>' + esc(o[1]) + '</b><span>' + esc(o[2]) + '</span>' + (r && o[0] !== 'aucun' ? '<span class="q-rec">✓ Votre record : ' + r + ' vote' + (r > 1 ? 's' : '') + ' · à battre ?</span>' : '') + '</button>'; }).join('') + '</div></section>';
       Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-foy button'), function (b) { b.onclick = function () { S.foyer = S.foyer === b.dataset.f ? '' : b.dataset.f; garder(); Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-foy button'), function (x) { x.setAttribute('aria-pressed', x.dataset.f === S.foyer); }); enHaut(); }; });
-      Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-grands button'), function (b) { b.onclick = function () { S.obj = b.dataset.o; garder(); objectifs(); tout(true); pop(b.dataset.o === 'aucun' ? 'Sans objectif : votez librement' : 'Objectif choisi : ' + esc(b.querySelector('b').textContent)); }; });
+      Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-grands button'), function (b) { b.onclick = function () { S.obj = b.dataset.o; garder(); objectifs(); tout(true); pop(b.dataset.o === 'aucun' ? 'Sans objectif : votez librement' : 'Objectif choisi : ' + esc(b.querySelector('b').textContent)); setTimeout(function () { sousBandeau($('q-prog')); }, 30); setTimeout(function () { sousBandeau($('q-prog')); }, 350); }; });
       return;
     }
     var r1 = an1(R), f = R[R.length - 1], rs = ressemble(r1), n = nbDecisions(), nx = SUITE[S.obj], AO = anObj(), ra = ligneAn(R, AO);
     // Record : le moins de votes pour atteindre cet objectif, gardé sur l'appareil (« Tout recommencer » ne l'efface pas).
     var rec = S.reussi && S.reussi[S.obj], nouveau = !rec || n < rec;
     var fini = function () { S.reussi = S.reussi || {}; S.atteint = S.atteint || {}; S.atteint[S.obj] = 1; if (nouveau) S.reussi[S.obj] = n || 1; garder(); };
-    $('q-deck').innerHTML = '<section class="card q-etape q-bravo"><span class="eyebrow">' + esc(OBJS().filter(function (o) { return o[0] === S.obj; })[0][1]) + '</span><h2>Objectif atteint en ' + n + ' vote' + (n > 1 ? 's' : '') + '</h2>' +
-      (rec ? '<p class="q-gros"><b>' + (nouveau ? '🏆 Nouveau record' : 'Votre record : ' + rec + ' votes') + '</b>' + (nouveau ? ' (avant : ' + rec + ' votes)' : ' · à battre avec d\'autres cartes') + '</p>' : '') +
+    $('q-deck').innerHTML = '<section class="card q-etape q-bravo"><span class="eyebrow">' + esc(OBJS().filter(function (o) { return o[0] === S.obj; })[0][1]) + '</span><h2>' + (S.obj === 'defi' ? '🏅 Défi du jour réussi en ' : 'Objectif atteint en ') + n + ' vote' + (n > 1 ? 's' : '') + '</h2>' +
+      (S.obj === 'defi' ? (function () { var D = defiDuJour(); return D ? '<p class="q-gros"><b>' + (D.serie > 1 ? D.serie + ' jours de suite' : 'Premier jour de série') + '</b>' + (D.record > D.serie ? ' · votre record : ' + D.record + ' jours' : '') + '. Un nouveau défi demain.</p>' : ''; })() : '') +
+      (rec ? '<p class="q-gros"><b>' + (nouveau ? '🏆 Nouveau record' : 'Votre record : ' + rec + ' votes') + '</b>' + (nouveau ? ' (avant : ' + rec + ' votes)' : ' · à battre avec d\'autres cartes') + ' <small>(les cartes remises à plus tard ne comptent pas comme des votes)</small></p>' : '') +
       '<p class="q-chiffres"><span>Déficit ' + AO + '<b>' + defic(ra.solde) + '</b></span><span>Dette ' + f.an + '<b>' + nf(f.d, 1) + '\u00a0%</b></span></p>' +
       (rs ? '<p class="q-gros">Votre budget ressemble <b>' + esc(aPays(rs.p)) + '</b> ' + drapeau(rs.p.code) + ' (dépenses et recettes publiques).</p>' : '') +
       (-f.solde > (seuil() || 0) + 0.05 && AO === AN0 ? '<p class="q-note">En ' + f.an + ', le déficit remonte à ' + defic(f.solde) + ' : le détail est dans le Bilan.</p>' : '') +
@@ -1318,7 +1333,7 @@ body.q-vote { padding-bottom: 92px; }
         '<p class="q-note" style="margin-top:12px">Pour changer d\'avis : revoyez vos votes un par un, revotez toutes les mesures depuis le début (vos mesures créées restent), ou effacez tout.</p>' +
         '<div class="q-actions"><button type="button" class="q-danger" id="q-chg2">Changer mes votes</button><button type="button" class="q-danger" id="q-rev2">Revoter toutes les mesures</button><button type="button" class="q-danger" id="q-raz2">Tout recommencer</button></div></section>';
       $('q-voirb2').onclick = function () { onglet('bilan'); }; $('q-cr2').onclick = function () { onglet('creer'); };
-      $('q-chg2').onclick = ouvrirVotes; if ($('q-ami-r')) $('q-ami-r').onclick = partager; $('q-rev2').onclick = function () { confirmer($('q-rev2'), 'Confirmer : revoter les ' + nbDecisions() + ' mesures', revoter); }; $('q-raz2').onclick = function () { confirmer($('q-raz2'), 'Confirmer : effacer tous vos votes et vos mesures', toutEffacer); };
+      $('q-chg2').onclick = ouvrirVotes; if ($('q-ami-r')) $('q-ami-r').onclick = function () { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), x = accordAmi(); partager('Mon budget face au tien sur Concret : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' cartes sur ' + x.n + ' ; ' : '') + 'déficit ' + AN0 + ' : ' + defic(an1(R).solde) + ' pour moi, ' + defic(an1(Am).solde) + ' pour toi. À toi de rejouer :'); }; $('q-rev2').onclick = function () { confirmer($('q-rev2'), 'Confirmer : revoter les ' + nbDecisions() + ' mesures', revoter); }; $('q-raz2').onclick = function () { confirmer($('q-raz2'), 'Confirmer : effacer tous vos votes et vos mesures', toutEffacer); };
     }
     vos();
   }
@@ -1415,7 +1430,7 @@ body.q-vote { padding-bottom: 92px; }
     var G = P.G.slice().sort(function (a, b) { return b.v - a.v; }), top = G.filter(function (x) { return Math.abs(x.v - G[0].v) < 0.5; });
     var peu = P.peu.length ? '<p class="q-note">Pas montré' + (P.peu.length > 1 ? 's' : '') + ' : ' + esc(P.peu.join(', ')) + '. Sur vos votes, leurs députés ont assez voté sur moins de ' + MIN_GROUPE + ' mesures (au moins 5 votants et un quart du groupe).</p>' : '';
     if (!G.length) return '<p class="q-note">Pas encore assez de mesures comparables avec les groupes de députés (il en faut ' + MIN_GROUPE + '). Votez-en d\'autres.</p>';
-    if (G[0].v < 50) return '<p class="q-gros">Aucun groupe de députés n\'a voté comme vous sur la plupart de ces mesures. Le plus proche : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b> (' + nf(G[0].v, 0) + '\u00a0% d\'accord, sur ' + G[0].nb + ' mesures).</p>' + peu +
+    if (G[0].v < 50) return '<p class="q-gros">Aucun groupe de députés n\'a voté comme vous sur la plupart de ces mesures' + (G[0].v >= 20 ? '. Le plus proche : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b> (' + nf(G[0].v, 0) + '\u00a0% d\'accord, sur ' + G[0].nb + ' mesures).' : ' (aucun au-dessus de 20\u00a0% d\'accord).') + '</p>' + peu +
       '<div class="q-hemi">' + hemicycle(P) + '</div>' + (court ? '<details class="q-tous"><summary>Voir les ' + G.length + ' groupes</summary><div class="q-barres">' + G.map(barreG).join('') + '</div></details>' : '<div class="q-barres">' + G.map(barreG).join('') + '</div>');
     return '<p class="q-gros">' + (top.length > 1 ? 'À égalité, vos votes ressemblent le plus à ceux de : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b>' : 'Vos votes ressemblent le plus à ceux du groupe <b>' + esc(G[0].g.n) + '</b>') + ' (' + nf(G[0].v, 0) + '\u00a0% d\'accord, sur ' + G[0].nb + ' mesure' + (G[0].nb > 1 ? 's' : '') + ' où ' + (top.length > 1 ? 'leurs' : 'ses') + ' députés ont assez voté ; vous avez voté ' + P.n + ' des ' + P.tot + ' mesures sur lesquelles les groupes n\'ont pas tous voté pareil).</p>' + peu +
       '<div class="q-hemi">' + hemicycle(P) + '</div>' + (court ? '<div class="q-barres">' + G.slice(0, 3).map(barreG).join('') + '</div><details class="q-tous"><summary>Voir les ' + G.length + ' groupes</summary><div class="q-barres">' + G.slice(3).map(barreG).join('') + '</div></details>' : '<div class="q-barres">' + G.map(barreG).join('') + '</div>') +
@@ -1445,7 +1460,7 @@ body.q-vote { padding-bottom: 92px; }
     return '<div class="q-res"><p class="q-gros">' + (nbChoix() ? 'Vos mesures ' + (net >= 0 ? 'rapportent <b>' + mdt(net) + '</b>' : 'coûtent <b>' + mdt(-net) + '</b>') + ' en ' + AN0 + '.' : 'Vous n\'avez encore adopté aucune mesure.') +
       ' Le déficit de ' + AN0 + (defic(z1.solde) === defic(r1.solde) ? ' reste à <b>' + defic(r1.solde) + '</b> du PIB' + (nbChoix() && r1.solde !== z1.solde ? ' (moins de 0,1 point d\'écart)' : '') + ',' : ' passe de ' + defic(z1.solde) + ' à <b>' + defic(r1.solde) + '</b> du PIB,') + ' la dette de ' + f.an + ' serait de <b>' + nf(f.d, 1) + '\u00a0%</b>' + (nf(f.d, 1) === nf(zf.d, 1) ? ', comme sans vos mesures' : ' au lieu de ' + nf(zf.d, 1) + '\u00a0%') + '.</p>' +
       (prec ? '<p class="q-depuis">Depuis l\'étape des ' + prec + ' votes : ' + chg('le déficit ' + AN0, defic(S.hist[prec].s), defic(r1.solde)) + ' ; ' + chg('la dette ' + AN1, nf(S.hist[prec].d, 1) + '\u00a0%', nf(f.d, 1) + '\u00a0%') + '.</p>' : '') +
-      barresE + act + (S.obj && S.obj !== 'aucun' ? '<p class="q-gros" style="font-size:15px">' + o.t + '</p>' : '') +
+      barresE + act + (mode === 'etape' && S.ami ? (function () { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), x = accordAmi(); return '<p class="q-ligne"><b>Budget reçu</b> : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' carte' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + ' ; ' : '') + 'son déficit ' + AN0 + ' : ' + defic(an1(Am).solde) + ', le vôtre : ' + defic(r1.solde) + '.</p>'; })() : '') + (S.obj && S.obj !== 'aucun' ? '<p class="q-gros" style="font-size:15px">' + o.t + '</p>' : '') +
       (function () {
         if (mode === 'bilan') return ''; var rs = ressemble(r1), D = procheDeficit(r1); if (!rs) return '';
         return '<p class="q-ligne">Votre budget ressemble <b>' + esc(aPays(rs.p)) + '</b> ' + drapeau(rs.p.code) + ' (dépenses et recettes publiques)' + (D.length ? ' ; votre déficit ' + AN0 + ' est proche de celui que le FMI prévoit pour ' + esc(lePays(D[0].p)) + ' ' + drapeau(D[0].p.code) + ' (' + defic(D[0].v) + ')' : '') + '. <button type="button" class="q-lien" data-pays="1">Voir la carte des pays</button></p>';
@@ -1749,9 +1764,9 @@ body.q-vote { padding-bottom: 92px; }
     if (!x) return null;
     {
       var cond = x.c.map(function (c) {
-        if (c.type === 'deficit_an1') return { ok: -r1.solde <= c.v + 1e-9, t: 'Déficit ' + AN0 + ' : ' + defic(r1.solde) + ', pour ' + nf(c.v, 0) + '\u00a0% au plus' };
-        if (c.type === 'deficit_fin') return { ok: -f.solde <= c.v + 1e-9, t: 'Déficit ' + f.an + ' : ' + defic(f.solde) + ', pour ' + nf(c.v, 0) + '\u00a0% au plus' };
-        if (c.type === 'deficit_an') { var ry = ligneAn(R, c.an); return { ok: -ry.solde <= c.v + 1e-9, t: 'Déficit ' + c.an + ' : ' + defic(ry.solde) + ', pour ' + nf(c.v, 0) + '\u00a0% au plus' }; }
+        if (c.type === 'deficit_an1') return { ok: -r1.solde <= c.v + 1e-9, t: 'Déficit ' + AN0 + ' : ' + defic(r1.solde) + ', pour ' + nf(c.v, 1).replace(',0', '') + '\u00a0% au plus' };
+        if (c.type === 'deficit_fin') return { ok: -f.solde <= c.v + 1e-9, t: 'Déficit ' + f.an + ' : ' + defic(f.solde) + ', pour ' + nf(c.v, 1).replace(',0', '') + '\u00a0% au plus' };
+        if (c.type === 'deficit_an') { var ry = ligneAn(R, c.an); return { ok: -ry.solde <= c.v + 1e-9, t: 'Déficit ' + c.an + ' : ' + defic(ry.solde) + ', pour ' + nf(c.v, 1).replace(',0', '') + '\u00a0% au plus' }; }
         if (c.type === 'sans_baisse_depense') { var bd = adoptees().some(function (y) { return y.sens !== 'recette' && montant(y, AN0) > 0; }) || Object.keys(S.perso).some(function (k) { return AS[k].groupe === 'depense' && S.perso[k] < 0 && k !== 'allegements'; }) || Object.keys(S.unites).some(function (k) { return S.unites[k] < 0; }); return { ok: !bd, t: bd ? 'Vous avez adopté une baisse de dépense' : 'Aucune baisse de dépense' }; }
         if (c.type === 'dette_fin') return { ok: f.d <= c.v + 1e-9, t: 'Dette ' + f.an + ' : ' + nf(f.d, 1) + '\u00a0%, pour ' + nf(c.v, 0) + '\u00a0% au plus' };
         if (c.type === 'max_mesures') { var na = adoptees().length + Object.keys(S.perso).length + Object.keys(S.unites).length; return { ok: na <= c.v, t: na + ' mesure' + (na > 1 ? 's' : '') + ' adoptée' + (na > 1 ? 's' : '') + ', pour ' + c.v + ' au plus' }; }
@@ -2165,7 +2180,7 @@ body.q-vote { padding-bottom: 92px; }
     var cs = getComputedStyle(document.documentElement), clone = svg.cloneNode(true);
     var res = function (v) { return String(v).replace(/var\((--[a-z0-9-]+)\)/gi, function (m, n) { return cs.getPropertyValue(n).trim() || '#62646d'; }); };
     clone.querySelectorAll('*').forEach(function (n) { ['stroke', 'fill', 'style'].forEach(function (a) { if (n.getAttribute(a)) n.setAttribute(a, res(n.getAttribute(a))); }); });
-    var vb = svg.viewBox.baseVal, W = 1080, k = (W - 160) / vb.width, nLeg = sec.querySelectorAll('.q-leg span').length, H = Math.min(2400, Math.max(1350, Math.round(400 + vb.height * k + nLeg * 46 + 220)));
+    var vb = svg.viewBox.baseVal, W = 1080, k = (W - 160) / vb.width, nLeg = sec.querySelectorAll('.q-leg span').length, H = Math.min(2400, Math.max(1350, Math.round(400 + vb.height * k + nLeg * 46 + 220 + (id === 'q-ou' || id === 'q-int' ? 110 : 0))));
     clone.setAttribute('width', vb.width * k); clone.setAttribute('height', vb.height * k); clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     clone.setAttribute('font-family', 'Inter Tight, system-ui, sans-serif');
     var im = new Image();
@@ -2219,8 +2234,8 @@ body.q-vote { padding-bottom: 92px; }
     g.fillStyle = '#2f5bd3'; g.font = '600 36px ' + sans; g.fillText('concret2027.fr/budget/quinquennat.html', 80, 1300);
     c.toBlob(function (b) { fin(b); }, 'image/png');
   }
-  function partager() {
-    var r1 = an1(R), f = R[R.length - 1], t = 'Mon budget ' + AN0 + ' sur Concret : déficit ' + deficO(r1, AN0) + ' en ' + AN0 + ', dette ' + nf(f.d, 1) + ' % en ' + f.an + ', avec ' + nbChoix() + ' mesure' + (nbChoix() > 1 ? 's' : '') + '.' + (ressemble(r1) ? ' Il ressemble ' + aPays(ressemble(r1).p) + '.' : '') + ' Et vous, avec les mêmes cartes ?', u = lienBudget();
+  function partager(tx) { if (typeof tx !== 'string') tx = null;
+    var r1 = an1(R), f = R[R.length - 1], t = 'Mon budget ' + AN0 + ' sur Concret : déficit ' + deficO(r1, AN0) + ' en ' + AN0 + ', dette ' + nf(f.d, 1) + ' % en ' + f.an + ', avec ' + nbChoix() + ' mesure' + (nbChoix() > 1 ? 's' : '') + '.' + (ressemble(r1) ? ' Il ressemble ' + aPays(ressemble(r1).p) + '.' : '') + ' Et vous, avec les mêmes cartes ?', u = lienBudget(); if (tx) t = tx;
     var dit = function (m) { var p = $('q-partage-t') || document.createElement('p'); p.id = 'q-partage-t'; p.className = 'q-partage-t'; p.innerHTML = m; $('q-partager').parentNode.after(p); };
     var copier = function () { if (navigator.clipboard) navigator.clipboard.writeText(t + ' ' + u).then(function () { dit('Texte et lien copiés : collez-les où vous voulez. Celui qui ouvre le lien voit votre budget à côté du sien.'); }, function () { dit(esc(t + ' ' + u)); }); else dit(esc(t + ' ' + u)); };
     (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () { image(function (b) {
@@ -2263,7 +2278,7 @@ body.q-vote { padding-bottom: 92px; }
     if (S.obj && S.foyer && !FOYOUV) h += '<p class="q-defm">Vous êtes : <b>' + FOYERS[S.foyer].l + '</b> <button type="button" id="q-foy-ch">changer</button></p>';
     else if (S.obj) h += '<div class="q-obj"><span>Vous êtes… ? Les mesures qui vous touchent passeront en premier, avec un exemple pour vous.</span><div class="q-chips" id="q-foyers">' + Object.keys(FOYERS).map(function (k) { return '<button type="button" data-f="' + k + '" aria-pressed="' + (S.foyer === k) + '">' + FOYERS[k].l + '</button>'; }).join('') + '</div></div>';
     $('q-top').innerHTML = h;
-    var ai = $('q-ami-i'); if (S.ami && !nbDecisions()) { var Ai = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), ri = ressemble(an1(Ai)); ai.hidden = false; ai.innerHTML = '<b>On vous a envoyé un budget</b> : déficit ' + AN0 + ' à ' + defic(an1(Ai).solde) + (ri ? ', il ressemble ' + esc(aPays(ri.p)) + ' ' + drapeau(ri.p.code) : '') + '. Votez les mêmes cartes : après chacun de vos votes, vous verrez le sien, et à la fin, qui a le déficit le plus bas.'; $('q-voir').textContent = 'Relever le défi ↓'; } else { ai.hidden = true; $('q-voir').textContent = 'Commencer ↓'; }
+    var ai = $('q-ami-i'); if (S.ami && !nbDecisions()) { var Ai = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), ri = ressemble(an1(Ai)); ai.hidden = false; ai.innerHTML = '<b>On vous a envoyé un budget</b> : déficit ' + AN0 + ' à ' + defic(an1(Ai).solde) + (ri ? ', il ressemble ' + esc(aPays(ri.p)) + ' ' + drapeau(ri.p.code) : '') + '. Votez les mêmes cartes : après chacun de vos votes, vous verrez le sien, et à la fin, vos deux budgets côte à côte.'; $('q-voir').textContent = 'Relever le défi ↓'; } else { ai.hidden = true; $('q-voir').textContent = 'Commencer ↓'; }
     if ($('q-ami-p')) $('q-ami-p').onclick = function () { var A0 = simuler(); S.v = JSON.parse(JSON.stringify(S.ami.v)); S.perso = JSON.parse(JSON.stringify(S.ami.perso)); S.unites = JSON.parse(JSON.stringify(S.ami.unites)); S.pile = []; S.etape = ETAPES.filter(function (e) { return e <= nbDecisions(); }).pop() || 0; garder(); mesCreer(); tout(true); pop('Vous partez du budget reçu · ' + avantApres(A0, R)); };
     if ($('q-ami-x')) $('q-ami-x').onclick = function () { delete S.ami; garder(); enHaut(); };
     if ($('q-dep-x')) $('q-dep-x').onclick = function () { DEPUIS = []; enHaut(); };
