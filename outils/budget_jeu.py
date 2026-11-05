@@ -400,7 +400,117 @@ def statut_court(t, i=None, texte=''):
     return t.split(' (')[0].split(' ; ')[0]
 
 
-THEMES = {'etudes': 'Études', 'retraites': 'Retraites', 'sante': 'Santé', 'travail': 'Travail et formation', 'solidarite': 'Familles et solidarité', 'impots': 'Impôts des ménages',
+# ---------- Un levier, une question ----------
+# Chaque carte est rattachée à son levier : le même impôt, le même tarif, la même prestation ou le même poste. Deux cartes du
+# même levier ne passent jamais comme deux questions séparées : elles forment une seule question à plusieurs réponses
+# (QUESTIONS), et la réponse donne le vote de chaque carte (Pour pour celles de la réponse choisie, Contre pour les autres).
+# Les identifiants de carte ne changent pas : les votes déjà gardés sur l'appareil et le compteur quiz-budget-<carte> restent lisibles.
+# Contrôle (controle_sujets) : une carte sans levier, deux cartes du même levier sans question commune, ou deux cartes qui
+# s'excluent (« exclusif », « exclut ») rattachées à des leviers différents arrêtent le script.
+SUJETS = {
+    'ir-indexation-bareme': 'ir-bareme', 'ir-indemnites-rupture': 'indemnites-depart', 'secu-indemnites-rupture': 'indemnites-depart',
+    'ir-indemnites-journalieres': 'ij-prelevements', 'csg-indemnites-journalieres': 'ij-prelevements',
+    'ir-abattement-retraites': 'abattement-retraites', 'niche-120401': 'abattement-retraites',
+    'apport-cession': 'apport-cession', 'contribution-grandes-entreprises': 'surtaxe-is', 'contribution-transport-maritime': 'surtaxe-maritime',
+    'tva-television': 'tva-television', 'taxe-infrastructures-transport': 'taxe-infrastructures', 'avoirs-desherence': 'avoirs-desherence',
+    'cpeb': 'contribution-collectivites', 'cufpa-plafond': 'france-competences', 'prime-activite-gel': 'prime-activite',
+    'formation-pric-cfa': 'formation-etat', 'cpf-participation': 'cpf', 'allegements-complements-salaire': 'allegements', 'allegements-moins-10': 'allegements',
+    'taxe-produits-sucres': 'taxe-sucre', 'contribution-complementaires-sante': 'taxe-mutuelles',
+    'pensions-revalorisation-2027': 'revalorisation', 'prestations-familiales-gel': 'revalorisation', 'revalo-moins-1': 'revalorisation', 'revalo-plus-1': 'revalorisation',
+    'allocation-rentree-scolaire': 'allocation-rentree', 'niche-200302': 'credit-impot-recherche', 'niche-110246': 'emploi-domicile',
+    'niche-520110': 'transmission-entreprise', 'niche-120108': 'epargne-salariale', 'niche-730213': 'tva-travaux', 'niche-730223': 'tva-travaux',
+    'niche-730221': 'tva-restauration', 'niche-120146': 'heures-sup', 'niche-110201': 'dons', 'niche-210309': 'dons', 'niche-110203': 'garde-enfants',
+    'niche-800229': 'accise-agricole', 'niche-120202': 'impot-prestations', 'niche-800401': 'accise-outre-mer', 'niche-710103': 'tva-outre-mer',
+    'niche-210326': 'brevets', 'niche-800221': 'accise-camions', 'niche-940102': 'malus-poids',
+    'retraites-fin-suspension': 'age-retraite', 'retraite-62': 'age-retraite', 'retraite-63': 'age-retraite', 'retraite-65': 'age-retraite',
+    'smic-2': 'smic', 'smic-5': 'smic', 'ondam-moins-1': 'ondam', 'ondam-plus-1': 'ondam', 'point-indice-plus-1': 'point-indice',
+    'etrangers-residence-prestations': 'etrangers-prestations', 'univ-master-doctorat': 'droits-universite', 'univ-30': 'droits-universite',
+    'carence-3-jours': 'carence-fonction-publique', 'isf': 'grandes-fortunes', 'taxe-zucman': 'grandes-fortunes', 'franchises-x2': 'franchises',
+    'fonctionnaires-1-sur-2': 'non-remplacement',
+}
+# Une question par levier qui a plusieurs cartes : son titre, la question, les réponses (chacune : les cartes adoptées) et la
+# réponse « rien ne change ». Une réponse qui adopte plusieurs cartes les additionne (ex. 65 ans : le calendrier de 2023, puis 65 ans).
+QUESTIONS = {
+    'age-retraite': {'t': "Âge minimum de départ à la retraite", 'q': "Quel âge minimum de départ choisissez-vous ?",
+                     'o': [("62 ans pour tous", ['retraite-62']), ("S'arrêter à 63 ans", ['retraite-63']),
+                           ("64 ans, avec le calendrier de la réforme de 2023", ['retraites-fin-suspension']),
+                           ("65 ans à terme (64 ans avec le calendrier de 2023, puis 65 ans)", ['retraites-fin-suspension', 'retraite-65'])],
+                     'aucune': "Garder la règle d'aujourd'hui (hausse de l'âge en pause)"},
+    'abattement-retraites': {'t': "Déduction de 10 % sur les retraites (impôt sur le revenu)", 'q': "Que faire de cette déduction ?",
+                             'o': [("La limiter à 3 000 € par foyer", ['ir-abattement-retraites']), ("La supprimer", ['niche-120401'])],
+                             'aucune': "La garder comme aujourd'hui (au plus 4 439 € par foyer)"},
+    'revalorisation': {'t': "Hausse des retraites de base et des prestations en 2027", 'q': "De combien les augmenter en 2027 ?",
+                       'o': [("Toutes : 1 point de plus que les prix", ['revalo-plus-1']), ("Toutes : 1 point de moins que les prix", ['revalo-moins-1']),
+                             ("Retraites de base : comme les prix seulement sous 1 260 € par mois", ['pensions-revalorisation-2027']),
+                             ("Prestations familiales : pas de hausse", ['prestations-familiales-gel']),
+                             ("Les deux précédentes (budget du Gouvernement)", ['pensions-revalorisation-2027', 'prestations-familiales-gel'])],
+                       'aucune': "Toutes comme les prix (règle d'aujourd'hui)"},
+    'droits-universite': {'t': "Droits d'inscription à l'université", 'q': "Les augmenter ?",
+                          'o': [("Master à 965 €, doctorat à 781 €", ['univ-master-doctorat']), ("+30 % pour tous les diplômes", ['univ-30'])],
+                          'aucune': "Les garder comme aujourd'hui"},
+    'grandes-fortunes': {'t': "Impôt sur les grands patrimoines", 'q': "Lequel choisissez-vous ?",
+                         'o': [("Rétablir l'impôt sur la fortune (ISF)", ['isf']), ("Impôt minimum de 2 % au-delà de 100 M€ (« taxe Zucman »)", ['taxe-zucman'])],
+                         'aucune': "Ni l'un ni l'autre"},
+    'smic': {'t': "SMIC en 2027", 'q': "L'augmenter en plus de sa hausse automatique ?",
+             'o': [("+2 % en plus", ['smic-2']), ("+5 % en plus", ['smic-5'])], 'aucune': "Seulement la hausse automatique"},
+    'ondam': {'t': "Dépenses d'assurance maladie en 2027", 'q': "Par rapport à l'objectif prévu (+2,0 %) ?",
+              'o': [("1 % de moins", ['ondam-moins-1']), ("1 % de plus", ['ondam-plus-1'])], 'aucune': "L'objectif prévu"},
+    'indemnites-depart': {'t': "Indemnités de départ au-delà de 48 060 €", 'q': "Que leur faire payer ?",
+                          'o': [("L'impôt sur le revenu", ['ir-indemnites-rupture']), ("Les cotisations sociales", ['secu-indemnites-rupture']),
+                                ("Les deux (budget du Gouvernement)", ['ir-indemnites-rupture', 'secu-indemnites-rupture'])],
+                          'aucune': "Rien de plus qu'aujourd'hui"},
+    'ij-prelevements': {'t': "Impôts sur les indemnités d'arrêt de travail", 'q': "Que leur faire payer ?",
+                        'o': [("L'impôt sur le revenu sur une partie", ['ir-indemnites-journalieres']), ("La CSG à 9,2 % au lieu de 6,2 %", ['csg-indemnites-journalieres']),
+                              ("Les deux (budget du Gouvernement)", ['ir-indemnites-journalieres', 'csg-indemnites-journalieres'])],
+                        'aucune': "Rien de plus qu'aujourd'hui"},
+    'dons': {'t': "Réductions d'impôt pour les dons", 'q': "Lesquelles supprimer ?",
+             'o': [("Celle des particuliers", ['niche-110201']), ("Celle des entreprises", ['niche-210309']), ("Les deux", ['niche-110201', 'niche-210309'])],
+             'aucune': "Les garder"},
+    'tva-travaux': {'t': "TVA sur les travaux dans les logements", 'q': "Appliquer le taux normal de 20 % ?",
+                    'o': [("Aux travaux d'entretien et d'amélioration (aujourd'hui 10 %)", ['niche-730213']), ("À la rénovation énergétique (aujourd'hui 5,5 %)", ['niche-730223']),
+                          ("Aux deux", ['niche-730213', 'niche-730223'])],
+                    'aucune': "Garder les taux réduits"},
+    'allegements': {'t': "Baisses de cotisations des employeurs sur les bas salaires", 'q': "Les réduire ?",
+                    'o': [("Compter certaines primes dans le salaire (budget du Gouvernement)", ['allegements-complements-salaire']), ("Les réduire de 10 %", ['allegements-moins-10']),
+                          ("Les deux", ['allegements-complements-salaire', 'allegements-moins-10'])],
+                    'aucune': "Ne rien changer"},
+}
+
+
+def controle_sujets(cartes, assiettes=()):
+    """Refuse deux cartes du même levier non regroupées. Renvoie les questions prêtes pour la page."""
+    ids = {c['id'] for c in cartes}
+    err = ['carte sans levier dans SUJETS : ' + i for i in sorted(ids - set(SUJETS))]
+    par = {}
+    for c in cartes:
+        par.setdefault(SUJETS.get(c['id']), []).append(c['id'])
+    for c in cartes:
+        for o in cartes:
+            if o is c: continue
+            lie = (c.get('exclusif') and c.get('exclusif') == o.get('exclusif')) or o['id'] in (c.get('exclut') or [])
+            if lie and SUJETS.get(c['id']) != SUJETS.get(o['id']):
+                err.append('%s et %s portent sur le même argent mais pas sur le même levier' % (c['id'], o['id']))
+    qs = []
+    for s, L in sorted(par.items(), key=lambda x: str(x[0])):
+        if s is None or len(L) < 2:
+            if s in QUESTIONS: err.append('question %s : moins de deux cartes' % s)
+            continue
+        Q = QUESTIONS.get(s)
+        if not Q:
+            err.append('levier %s : %d cartes (%s) sans question commune' % (s, len(L), ', '.join(L))); continue
+        dans = {i for _, x in Q['o'] for i in x}
+        if dans != set(L):
+            err.append('question %s : réponses %s, cartes %s' % (s, sorted(dans), sorted(L)))
+        qs.append({'k': s, 't': Q['t'], 'q': Q['q'], 'ids': [i for i in L], 'o': [{'l': l, 'ids': x} for l, x in Q['o']], 'aucune': Q['aucune']})
+    if err:
+        raise SystemExit('Leviers des cartes :\n  ' + '\n  '.join(err))
+    for c in cartes:
+        c['sujet'] = SUJETS[c['id']]
+        if len(par[c['sujet']]) > 1: c['q'] = c['sujet']
+    return qs
+
+
+THEMES = {'etudes': 'Études','retraites': 'Retraites', 'sante': 'Santé', 'travail': 'Travail et formation', 'solidarite': 'Familles et solidarité', 'impots': 'Impôts des ménages',
           'entreprises': 'Entreprises', 'patrimoine': 'Patrimoine', 'collectivites': 'Collectivités', 'etat': 'État et fonctionnaires', 'economie': 'Économie'}
 
 
@@ -508,7 +618,8 @@ POSTE_CARTES = {'prime-activite-gel': 'mi:solidarité-insertion-et-égalité-des
 POSTE_ASSIETTES = {'enseignement': 'mi:enseignement-scolaire', 'defense': 'mi:défense', 'ondam': ONDAM_PARTS,
                    'alloc-familiales': 'secu:famille', 'apl': 'mi:cohésion-des-territoires', 'aah': 'mi:solidarité-insertion-et-égalité-des-chan',
                    'prime-activite': 'mi:solidarité-insertion-et-égalité-des-chan', 'ij-maladie': 'secu:maladie', 'ij-atmp': 'secu:atmp',
-                   'ame': 'mi:santé', 'c2s': 'secu:maladie', 'aspa': 'secu:vieillesse'}
+                   'ame': 'mi:santé', 'c2s': 'secu:maladie', 'aspa': 'secu:vieillesse',
+                   'franchises': 'secu:maladie', 'tm-dm': 'secu:maladie'}
 
 
 def mk_mission(nom):
@@ -595,6 +706,21 @@ def repartition(T, MISSIONS, cartes, assiettes, unites):
     if m: assert int(m.group(2).replace(' ', '')) == tot27, ('total état B', m.group(2), tot27)
     T2 = budget_missions.texte(PLFSS_URL)
     secu = secu_branches(T2)
+    # Les branches de la Sécurité sociale dans Créer (la maladie l'est déjà par l'objectif de dépenses, ONDAM) : chaque branche
+    # exclut les lignes et les cartes qui portent sur une partie de son argent.
+    EXB = {'secu:vieillesse': (['retraites', 'aspa', 'pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'], 'csg', ['retraites']),
+           'secu:famille': (['alloc-familiales', 'prestations-familiales-gel', 'allocation-rentree-scolaire', 'revalo-moins-1', 'revalo-plus-1'], 'csg', ['familles']),
+           'secu:atmp': (['ij-atmp'], 'csg', ['malades']), 'secu:autonomie': ([], 'depense', ['solidarite'])}
+    for l in secu['lignes']:
+        if l['k'] not in EXB: continue
+        ex, mac, qui = EXB[l['k']]
+        assiettes.append({'k': l['k'], 'l': 'Sécurité sociale : ' + l['l'][0].lower() + l['l'][1:] + ' (toute la branche)', 'groupe': 'depense', 'md': l['v27'], 'an': an,
+                          'qui': qui, 'macro': mac, 'exclut': list(ex), 'poste': l['k'],
+                          'note': "Dépenses prévues pour %d par le projet de loi de financement de la sécurité sociale (régimes obligatoires de base), transferts entre branches compris. Chaque branche compte ici en entier : à 100 %% de baisse, elle ne verse plus rien." % an,
+                          'src': {'doc': secu['src']['doc'], 'page': secu['src']['page'], 'url': secu['src']['url'], 'citation': l['officiel'] + ' : ' + str(l['v27']).replace('.', ',') + ' Md€ (' + str(an) + ')'}})
+        for k in ex:
+            for a in assiettes:
+                if a['k'] == k: a['exclut'] = sorted(set(a['exclut'] + [l['k']]))
     # Rattachement des mesures du jeu aux postes.
     cles = {l['k'] for l in lignes} | {l['k'] for l in secu['lignes']}
     for c in cartes:
@@ -644,11 +770,106 @@ def non_comptes(P, cartes, assiettes):
     if x:
         out['ame'] = {'t': "Pas compté : les soins qui, sans l'AME, se reporteraient sur l'hôpital. Pour une AME limitée aux soins urgents, le rapport remis au Gouvernement en décembre 2023 écrit qu'une partie des consultations « basculerait sur l'hôpital, à un stade qui pourrait être plus dégradé », et qu'il « n'est pas acquis » que l'État y fasse des économies ; il ne chiffre pas ce coût.",
                       'src': {k: x[k] for k in ('document', 'page', 'url', 'citation')}}
+    lc = charger('leviers_creer.json')
+    E = {x['cle']: x for x in lc['elements']} if lc else {}
+    s4 = lambda x, cit=None, page=None: {'document': x['document'], 'page': page or x['page'], 'url': x['url'], 'citation': cit or x['citation']}
+    if 'chomage_duree_reforme_2023' in E:
+        x = E['chomage_duree_reforme_2023']
+        out['chomage_duree'] = {'t': "Compté : l'effet d'allocations plus faibles sur la consommation (modèle Mésange, variante « CSG », la plus proche pour une prestation). Pas compté : l'effet sur l'emploi d'une durée plus courte. L'Unédic écrit que les études « ne permettent pas de conclure sur l'effet total d'un tel dispositif sur l'emploi ». Pas compté non plus : les personnes qui passeraient au RSA ou à l'allocation de solidarité spécifique, un effet que l'Unédic juge « très certain » sans le chiffrer.",
+                                'src': s4(x, x['citations_complementaires'][2]['citation'] + ' […] ' + x['citations_complementaires'][3]['citation'], '3 et 4')}
+    if 'cotisations_retraite_2025' in E:
+        x = E['cotisations_retraite_2025']
+        out['capitalisation'] = {'t': "Pas compté : l'effet sur l'activité, qu'aucune variante publiée du modèle Mésange ne chiffre (l'argent reste prélevé sur les salaires, mais placé au lieu de payer des retraites). Pas comptés non plus : le rendement des fonds, et les retraites qu'ils verseront, seulement quand les cotisants d'aujourd'hui partiront à la retraite, bien après les cinq ans du jeu ; pendant tout ce temps, les retraites d'aujourd'hui restent à payer. Aucune source officielle lue ne chiffre une telle bascule : le jeu compte seulement les cotisations qui manquent.",
+                                 'src': s4(x)}
+    if 'tm_dispositifs_medicaux_2027' in E:
+        x = E['tm_dispositifs_medicaux_2027']
+        out['reste_charge'] = {'t': "Ce que l'assurance maladie ne rembourse plus est payé par les patients ou par leur complémentaire santé (mutuelle), selon leur contrat. Pas compté : une hausse des cotisations des complémentaires qui pourrait suivre, et les soins auxquels certains patients renonceraient.",
+                               'src': s4(x)}
+    if 'mesange2017_taille_choc' in E:
+        x = E['mesange2017_taille_choc']
+        out['grand'] = {'t': "Pas compté : la réaction des taux d'intérêt de la dette (le modèle garde les taux inchangés ; le curseur des taux, dans le Bilan, permet de la tester), et ce que deviennent les services, les aides et les agents publics quand un poste est fortement réduit ou supprimé : aucun modèle publié ne le chiffre. L'effet sur l'activité est compté avec l'effet moyen d'une dépense publique, testé par la direction du Trésor et l'Insee pour 1 point de PIB ; au-delà, il est prolongé en ligne droite.",
+                        'src': s4(x)}
     for c in cartes:
         if NC_CARTES.get(c['id']) in out: c['nc'] = NC_CARTES[c['id']]
     for a in assiettes:
         if NC_ASSIETTES.get(a['k']) in out: a['nc'] = NC_ASSIETTES[a['k']]
+        if a.get('nc') and a['nc'] not in out: del a['nc']
     return out
+
+
+def eurostat_grands(an):
+    """Grands montants pour l'onglet Créer, année an (Eurostat, millions d'euros) : dépense totale moins intérêts payés,
+    cotisations sociales effectives des employeurs (D611) et des ménages (D613), impôts en capital (D91)."""
+    from budget import lire
+    m = lire('gov_10a_main', geo='FR', sector='S13', unit='MIO_EUR', na_item=['TE', 'D41PAY'], time=[str(an)])
+    t = lire('gov_10a_taxag', geo='FR', sector='S13', unit='MIO_EUR', na_item=['D611', 'D613', 'D91'], time=[str(an)])
+    g = lambda d, k: d[('FR', str(an), k)]
+    return {'TE': g(m, 'TE'), 'D41PAY': g(m, 'D41PAY'), 'D611': g(t, 'D611'), 'D613': g(t, 'D613'), 'D91': g(t, 'D91')}
+
+
+def leviers_creer(assiettes, P, MD):
+    """Lignes ajoutées à Créer le 5 novembre 2026 : grands changements (toute la dépense, cotisations, impôts en capital) et
+    règles chiffrées par une source (capitalisation, durée du chômage, carence des agents publics, reste à charge en santé).
+    Une ligne à unité propre a « u » (nom, bornes, pas, raccourcis) et « par_u » (Md€ gagnés sur le solde par unité, positif =
+    déficit plus bas) ou « par_pib » (une unité = un point de PIB de l'année du budget)."""
+    lc = charger('leviers_creer.json')
+    if not lc: return
+    E = {x['cle']: x for x in lc['elements']}
+    def src(x, cit=None, page=None):
+        return {'doc': x.get('document') or x['l'], 'page': page or x.get('page'), 'url': x['url'], 'citation': cit or x['citation']}
+    def cc(x, i): return x['citations_complementaires'][i]
+    an = int(eurostat_depart()['an'])
+    G = eurostat_grands(an)
+    ES = lambda k, l: {'doc': "Eurostat, " + l, 'page': None, 'url': 'https://ec.europa.eu/eurostat/databrowser/view/' + ('gov_10a_main' if k in ('TE', 'D41PAY') else 'gov_10a_taxag') + '/default/table',
+                       'citation': 'France, administrations publiques (S13), %d, %s : %s millions d’euros' % (an, k, '{:,.1f}'.format(G[k]).replace(',', ' ').replace('.', ','))}
+    def a(k, **kw):
+        d = {'k': k, 'groupe': 'depense', 'an': an, 'qui': [], 'macro': None, 'exclut': [], 'note': ''}
+        d.update(kw); d['md'] = round(d['md'], 3); assiettes.append(d)
+    # Toute la dépense publique, en points de PIB : un grand changement d'un geste, en plus des autres lignes.
+    prim = (G['TE'] - G['D41PAY']) / 1000
+    a('tout-depense', l="Toute la dépense publique (hors intérêts de la dette)", md=prim, qui=['etat'], macro='depense', nc='grand', par_pib=True,
+      u={'n': 'point de PIB', 'np': 'points de PIB', 'c': 'points', 'q': 'Changement, en points de PIB', 'min': -30, 'max': 15, 'pas': 0.5, 'p': [-20, -10, -5, -1, 1, 5]},
+      note="Dépenses de l'État, de la Sécurité sociale et des collectivités en %d, moins les intérêts de la dette : %s Md€ (Eurostat). Un point de PIB, c'est 1 %% de la richesse produite en un an. Ce changement s'ajoute à vos autres lignes, réparti sur tous les postes en proportion de leur montant (calcul de Concret)." % (an, '{:,.0f}'.format(prim).replace(',', ' ')),
+      src=dict(ES('TE', "principaux agrégats des administrations publiques (gov_10a_main), dépenses totales (TE) moins intérêts payés (D41PAY)"),
+               citation='France, administrations publiques (S13), %d : dépenses totales (TE) %s M€ ; intérêts payés (D41PAY) %s M€' % (an, '{:,.1f}'.format(G['TE']).replace(',', ' ').replace('.', ','), '{:,.1f}'.format(G['D41PAY']).replace(',', ' ').replace('.', ','))))
+    a('cotis-emp', l="Cotisations sociales des employeurs", groupe='recette', md=G['D611'] / 1000, qui=['entreprises'], macro='cotis_emp',
+      note="Cotisations versées par tous les employeurs, publics compris, à la Sécurité sociale, aux retraites complémentaires et à l'assurance chômage, en %d (Eurostat, D611). Effet sur l'activité : variante « cotisations des employeurs » du modèle Mésange." % an,
+      src=ES('D611', "recettes fiscales et cotisations des administrations publiques (gov_10a_taxag), cotisations sociales effectives des employeurs (D611)"))
+    a('cotis-sal', l="Cotisations sociales des salariés et des indépendants", groupe='recette', md=G['D613'] / 1000, qui=['salaries'], macro='cotis_sal',
+      note="Cotisations payées par les salariés, les indépendants et les autres ménages, en %d (Eurostat, D613). Effet sur l'activité : variante « cotisations des salariés » du modèle Mésange, la plus proche (le modèle n'en publie pas pour les indépendants)." % an,
+      src=ES('D613', "recettes fiscales et cotisations des administrations publiques (gov_10a_taxag), cotisations sociales effectives à la charge des ménages (D613)"))
+    a('impots-capital', l="Droits de succession, de donation et autres impôts en capital", groupe='recette', md=G['D91'] / 1000, qui=['patrimoine'], nc='patrimoine',
+      note="Impôts en capital perçus en %d (Eurostat, D91) : surtout les droits payés sur ce qu'on reçoit par héritage ou par donation." % an,
+      src=ES('D91', "recettes fiscales et cotisations des administrations publiques (gov_10a_taxag), impôts en capital (D91)"))
+    x = E['cotisations_retraite_2025']; v = x['valeurs']['2025 (Md€)']
+    a('capitalisation', l="Retraite par capitalisation : une part des cotisations placée dans des fonds", groupe='recette', md=v, an=2025, qui=['salaries', 'retraites'], nc='capitalisation',
+      u={'n': '% des cotisations de retraite', 'np': '% des cotisations de retraite', 'c': '%', 'q': 'Part des cotisations placée', 'min': 0, 'max': 100, 'pas': 1, 'p': [1, 5, 10, 20, 50]}, par_u=-round(v / 100, 3), lib='des cotisations placées dans des fonds',
+      note="Cotisations de retraite versées en 2025 : %s Md€ (Conseil d'orientation des retraites). Chaque %% placé dans des fonds manque aux retraites d'aujourd'hui, qui restent à payer : %s Md€ par an. Concret suppose des fonds hors des comptes publics (épargne retraite des salariés) ; un fonds public, comme le Fonds de réserve pour les retraites, serait compté autrement." % (fr_nb(v), fr_nb(v / 100)),
+      src=src(x))
+    x = E['chomage_duree_reforme_2023']; e = x['valeurs']['moindres dépenses d\'allocation en régime de croisière (Md€ par an)']; b = x['valeurs']['baisse de durée (%)']
+    dm = E['chomage_duree_max_2026']['valeurs']
+    a('chomage-duree', l="Assurance chômage : durée d'indemnisation plus courte", md=e, an=2027, qui=['chomeurs'], macro='csg', nc='chomage_duree',
+      u={'n': '% de durée en moins', 'np': '% de durée en moins', 'c': '%', 'q': 'Durée en moins', 'min': 0, 'max': b, 'pas': 1, 'p': [5, 10, b]}, par_u=round(e / b, 4), rampe=[0.25, 0.5, 0.75, 1], lib='de durée d\'indemnisation en moins', duree_max=dm['jours calendaires'],
+      note="Aujourd'hui, au plus %d jours d'indemnisation avant 55 ans (%d avant la baisse de 25 %% de février 2023). L'Unédic a chiffré cette baisse de 2023 : %s Md€ d'allocations en moins par an une fois en place. Concret compte une nouvelle baisse en proportion (10 %% de durée en moins = 10/25 de %s Md€), montant en quatre ans comme celle de 2023 (un quart de l'effet la première année). La durée étant déjà plus courte qu'en 2023, l'économie réelle peut être plus faible. Les %s Md€ versés en moins aux retraites complémentaires ne sont pas comptés : ils restent dans les comptes publics." % (dm['jours calendaires'], dm['avant février 2023 (jours)'], fr_nb(e), fr_nb(e), fr_nb(x['valeurs']['moindres versements aux retraites complémentaires (Md€ par an)'])),
+      src=src(x), src2={'doc': E['chomage_duree_max_2026']['document'], 'url': E['chomage_duree_max_2026']['url'], 'citation': E['chomage_duree_max_2026']['citation']})
+    x = E['fp_carence_deuxieme_jour']; e = x['valeurs']['toute la fonction publique (M€ par an)'] / 1000
+    a('fp-carence', l="Arrêts maladie des agents publics : un jour de carence de plus", md=e, an=2025, qui=['agents_publics'], macro='depense', exclut=['carence-3-jours'],
+      u={'n': 'jour de carence en plus', 'np': 'jours de carence en plus', 'c': 'jour', 'q': 'Jours non payés en plus', 'min': 0, 'max': 1, 'pas': 1, 'p': [1]}, par_u=round(e, 3), lib='jour non payé en plus',
+      note="Aujourd'hui, le premier jour d'un arrêt maladie n'est pas payé aux agents publics (État, collectivités, hôpitaux). Un deuxième jour non payé : %d M€ d'économies par an, d'après la direction du budget citée par le Gouvernement (amendement au budget 2025). Pas de chiffrage officiel lu pour un troisième jour dans les trois fonctions publiques, ni pour les salariés du privé (dont les trois jours de carence sont souvent payés par l'employeur)." % round(e * 1000),
+      src=src(x))
+    f = MD.get('franchises_doublement')
+    if f:
+        e = f['valeurs']['doublement des montants et plafonds, année pleine (Md€)']
+        a('franchises', l="Franchises médicales et participations forfaitaires (ce que le patient paie sur les boîtes, consultations, transports)", md=e, an=2026, qui=['assures'], macro='depense', exclut=['franchises-x2'], nc='reste_charge',
+          u={'n': '% de hausse', 'np': '% de hausse', 'c': '%', 'q': 'Hausse des montants et des plafonds', 'min': 0, 'max': 100, 'pas': 5, 'p': [25, 50, 100]}, par_u=round(e / 100, 4), lib='de hausse des franchises et participations',
+          note="Les doubler (montants et plafonds) rapporterait %s Md€ par an d'après la Cour des comptes (2026). Une hausse plus petite est comptée en proportion (calcul de Concret)." % fr_nb(e),
+          src={'doc': f.get('document') or f['l'], 'page': f.get('page'), 'url': f['url'], 'citation': f['citation']})
+    x = E['tm_dispositifs_medicaux_2027']; e = x['valeurs']['économie (Md€ par an)'] / x['valeurs']['baisse (points)']
+    a('tm-dm', l="Ticket modérateur : rembourser moins les dispositifs médicaux (pansements, appareils, matériel)", md=x['valeurs']['économie (Md€ par an)'], an=2027, qui=['assures'], macro='depense', nc='reste_charge',
+      u={'n': 'point de remboursement en moins', 'np': 'points de remboursement en moins', 'c': 'points', 'q': 'Remboursement en moins', 'min': 0, 'max': 10, 'pas': 1, 'p': [5, 10]}, par_u=round(e, 4), lib='de remboursement en moins',
+      note="L'assurance maladie rembourse 50 %% de la plupart des dispositifs médicaux à partir de janvier 2027, au lieu de 60 %% : une baisse de 10 points, chiffrée à 0,4 Md€ par an (Commission des comptes de la Sécurité sociale, octobre 2026), déjà comptée au départ. Chaque point de plus : %s Md€, à dépense inchangée. Les personnes en affection de longue durée ne sont pas concernées." % fr_nb(round(e, 2)),
+      src=src(x))
+
 
 
 def construire():
@@ -909,6 +1130,7 @@ def construire():
         if a['k'] == 'allegements' and ca:
             a['par_pt'] = round(list(ca['effet'].values())[0] / 10, 3)
             a['note'] = (a.get('note') or '') + " Effet d'un changement : %s Md€ par point de pourcentage, comme la carte des allègements (Commission des comptes de la Sécurité sociale, effet sur le solde des régimes de base, compensations comprises) ; 1 %% du coût total donnerait davantage, parce que ce coût compte aussi des allègements que la Sécurité sociale compense déjà à l'Unédic et à l'Agirc-Arrco." % fr_nb(a['par_pt'])
+    leviers_creer(assiettes, P, MD)
     # Recoupements avec les autres montants : APL = programme « Aide à l'accès au logement » ; AAH dans « Handicap et dépendance ».
     A = {a['k']: a for a in assiettes}
     for a in assiettes:
@@ -1033,6 +1255,8 @@ def construire():
         'reperes_etat': (lambda e: {'valeurs': {k: round(v / 1e9, 1) for k, v in e['valeurs'].items()}, 'page': e['page'], 'url': e['url'], 'citation': e['citation']} if e else None)(next((x for x in (json.load(open(os.path.join(SRC, 'mesures_debattues.json'), encoding='utf-8'))['elements']) if x['cle'] == 'credits_etat_2027_reperes'), None)),
         'repartition': repartition(T_PLF, MISSIONS, cartes, assiettes, unites),
         'non_comptes': non_comptes(P, cartes, assiettes),
+        'questions': controle_sujets(cartes),
+        'mesange_choc': (lambda x: {'v': x['valeurs']['taille du choc testé (% du PIB ex ante)'], 'url': x['url'], 'page': x['page'], 'citation': x['citation'], 'citation2': x['citations_complementaires'][0]['citation'], 'citation3': x['citations_complementaires'][1]['citation'], 'page3': x['citations_complementaires'][1]['page']} if x else None)({e['cle']: e for e in (charger('leviers_creer.json') or {'elements': []})['elements']}.get('mesange2017_taille_choc')),
         'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'unites': unites, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
         'variantes': var, 'regle': REGLE,
@@ -1057,6 +1281,8 @@ def main():
     for c in o['cartes']:
         print('  %-36s %-6s %-12s %s' % (c['id'], c['origine'], c['macro'] or '—', c['effet']))
     print('Variantes :', ', '.join(o['variantes']))
+    print(len(o['questions']), 'questions à plusieurs réponses :', ', '.join('%s (%s)' % (q['k'], ', '.join(q['ids'])) for q in o['questions']))
+    print('Lignes de Créer :', len(o['assiettes']), '; nouvelles :', ', '.join(a['k'] for a in o['assiettes'] if a.get('u') or a['k'].startswith('secu:') or a['k'] in ('cotis-emp', 'cotis-sal', 'impots-capital')))
     pe = o['pays_eurostat']; print('Pays (Eurostat, %d) :' % pe['an'], len(pe['pays']), '; absents :', ', '.join(pe['absents']) or 'aucun')
     fr = [x for x in pe['pays'] if x['code'] == 'FR'][0]; assert abs(fr['solde'] - d['solde']) < 0.05, (fr, d)
     if '--ecrire' in sys.argv:
