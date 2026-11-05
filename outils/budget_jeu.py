@@ -619,7 +619,7 @@ def repartition(T, MISSIONS, cartes, assiettes, unites):
 # celle de l'ISF (que l'évaluation de France Stratégie ne permet pas de transposer).
 NC_CARTES = {'contribution-grandes-entreprises': 'is_temp', 'contribution-transport-maritime': 'is_temp', 'isf': 'patrimoine',
              'retraite-62': 'retraite_age', 'retraite-63': 'retraite_age', 'retraite-65': 'retraite_age', 'retraites-fin-suspension': 'retraite_age'}
-NC_ASSIETTES = {'is': 'is'}
+NC_ASSIETTES = {'is': 'is', 'ame': 'ame'}
 
 
 def non_comptes(P, cartes, assiettes):
@@ -640,6 +640,10 @@ def non_comptes(P, cartes, assiettes):
     if x:
         out['retraite_age'] = {'t': "Effet sur l'activité non compté : le modèle utilisé pour les autres mesures (Mésange) ne publie pas de variante sur l'âge de la retraite. L'étude d'impact de la réforme de 2023 estime qu'un âge de départ plus élevé augmente l'emploi et le PIB (+%s %% en 2030), sans profil comparable à ceux du jeu." % ('%g' % x['valeurs']['2030']).replace('.', ','),
                                'src': {k: x[k] for k in ('document', 'page', 'url', 'citation')}}
+    x = P.get('non_compte_ame')
+    if x:
+        out['ame'] = {'t': "Pas compté : les soins qui, sans l'AME, se reporteraient sur l'hôpital. Pour une AME limitée aux soins urgents, le rapport remis au Gouvernement en décembre 2023 écrit qu'une partie des consultations « basculerait sur l'hôpital, à un stade qui pourrait être plus dégradé », et qu'il « n'est pas acquis » que l'État y fasse des économies ; il ne chiffre pas ce coût.",
+                      'src': {k: x[k] for k in ('document', 'page', 'url', 'citation')}}
     for c in cartes:
         if NC_CARTES.get(c['id']) in out: c['nc'] = NC_CARTES[c['id']]
     for a in assiettes:
