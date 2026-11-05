@@ -155,22 +155,26 @@
     'nav.jump.jx a.th-a.mn-ici{background:var(--th);color:' + V.bg + ';border-color:var(--th)}nav.jump.jx a.th-a.mn-ici::before{background:' + V.bg + '}' +
     // Fond opaque : rien de la page ne se lit à travers la barre. Le fondu de droite est posé sur la barre, pas sur la page.
     'nav.site,nav.jump{background:' + V.bg + '!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}' +
-    // Toute rangée de raccourcis qui défile (barre des thèmes, accueil, vie politique) : à gauche, un bloc figé (« Par président »
-    // sur les pages de mission, vide ailleurs) dont le fond couvre ce qui défile dessous ; tant qu'il reste des raccourcis d'un côté,
-    // un fondu et une flèche (‹ juste après le bloc figé, › au bord droit), qu'on peut toucher pour faire défiler d'un écran.
-    // Au début de la rangée, pas de ‹ ; au bout, pas de ›. Rien n'ajoute de hauteur : les flèches sont posées sur la barre.
+    // Toute rangée de raccourcis qui défile (barre des thèmes, accueil, vie politique) : tant qu'il reste des raccourcis d'un côté,
+    // une flèche (‹ au bord gauche, › au bord droit), qu'on peut toucher pour faire défiler d'un écran. Chaque flèche a sa zone
+    // à toucher de 44 px de large sur toute la hauteur de la barre, au fond plein (rien ne s'y pose), puis 12 px de fondu : la
+    // flèche ne se pose jamais sur une puce. Au début de la rangée, pas de ‹ ; au bout, pas de ›. Le bloc .jx-fixe (vide, au bord
+    // gauche) porte la flèche ‹. Rien n'ajoute de hauteur : les flèches sont posées sur la barre.
     'nav.jump.jf .jx-fixe{flex:none;display:flex;align-items:center;position:sticky;left:calc(-1 * max(16px, env(safe-area-inset-left, 0px)));z-index:3;margin-left:calc(-1 * max(16px, env(safe-area-inset-left, 0px)));padding-left:max(16px, env(safe-area-inset-left, 0px));background:' + V.bg + '}' +
     'nav.jump.jf .jx-fixe.jx-vide{margin-right:-6px}' +
-    'nav.jump.jf .jx-moins,nav.jump.jf .jx-plus{display:flex;align-items:center;align-self:stretch;width:46px;box-sizing:border-box;opacity:0;pointer-events:none;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;transition:opacity .15s}' +
-    'nav.jump.jf .jx-moins{position:absolute;top:0;bottom:0;left:100%;justify-content:flex-start;padding-left:4px;background:linear-gradient(to left,transparent,' + V.bg + ' 60%)}' +
-    'nav.jump.jf .jx-plus{flex:none;position:sticky;right:calc(-1 * max(16px, env(safe-area-inset-right, 0px)));margin-left:-46px;z-index:2;justify-content:flex-end;padding-right:6px;background:linear-gradient(to right,transparent,' + V.bg + ' 45%)}' +
-    'nav.jump.jf .jx-moins b,nav.jump.jf .jx-plus b{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1.5px solid ' + V.fg + ';background:' + V.panel + ';color:' + V.fg + ';font-size:20px;font-weight:700;line-height:1;padding-bottom:2px;box-sizing:border-box}' +
+    'nav.jump.jf .jx-moins,nav.jump.jf .jx-plus{display:flex;align-items:center;justify-content:center;align-self:stretch;width:56px;min-height:44px;box-sizing:border-box;opacity:0;pointer-events:none;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;transition:opacity .15s}' +
+    'nav.jump.jf .jx-moins{position:absolute;top:0;bottom:0;left:100%;padding-right:12px;background:linear-gradient(to left,transparent,' + V.bg + ' 12px)}' +
+    'nav.jump.jf .jx-fixe.jx-vide .jx-moins{left:0}' +
+    'nav.jump.jf .jx-plus{flex:none;position:sticky;right:calc(-1 * max(16px, env(safe-area-inset-right, 0px)));margin-left:-56px;z-index:2;padding-left:12px;background:linear-gradient(to right,transparent,' + V.bg + ' 12px)}' +
+    // Barre des thèmes (marges de 5 px en haut et en bas) : la zone de la flèche couvre toute la hauteur de la barre.
+    'nav.jump.jx.jf .jx-moins{top:-5px;bottom:-5px}nav.jump.jx.jf .jx-plus{margin-top:-5px;margin-bottom:-5px}' +
+    'nav.jump.jf .jx-moins b,nav.jump.jf .jx-plus b{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1.5px solid ' + V.fg + ';background:' + V.panel + ';color:' + V.fg + ';font-size:21px;font-weight:700;line-height:1;padding-bottom:2px;box-sizing:border-box}' +
     'nav.jump.jf.jx-defile .jx-plus,nav.jump.jf.jx-gauche .jx-moins{opacity:1;pointer-events:auto}' +
-    // Sur téléphone, des flèches plus petites, et les puces des thèmes sans leur carré (la bordure garde la couleur du thème) :
-    // « Par président » et deux thèmes tiennent sur un écran de 390 px.
-    '@media (max-width:600px){nav.jump.jf .jx-moins{width:36px;padding-left:2px}nav.jump.jf .jx-plus{width:36px;margin-left:-36px;padding-right:0}' +
-      'nav.jump.jf .jx-moins b,nav.jump.jf .jx-plus b{width:26px;height:26px;font-size:18px}' +
-      'nav.jump.jx a.th-a{padding-left:11px}nav.jump.jx a.th-a::before{display:none}}' +
+    // Une puce plus large que la place entre les deux flèches (texte agrandi, petit écran) passe sur deux lignes : elle se lit en
+    // entier, jamais sous une flèche (--jx-max, mesuré par fixeLarg).
+    'nav.jump.jf a{max-width:var(--jx-max,none);white-space:normal;text-align:center;line-height:1.2}' +
+    // Sur téléphone, les puces des thèmes sans leur carré (la bordure garde la couleur du thème) : plus de thèmes sur un écran.
+    '@media (max-width:600px){nav.jump.jx a.th-a{padding-left:11px}nav.jump.jx a.th-a::before{display:none}}' +
     // L'icône de la mission à gauche du titre de sa page (la même que dans le Menu et sur l'accueil).
     '.brand .mn-tic{display:inline-grid;place-items:center;flex:none;width:38px;height:38px;border-radius:11px;margin-right:10px;vertical-align:middle;color:' + V.fr + ';background:color-mix(in srgb,' + V.fr + ' 11%,transparent)}.brand .mn-tic svg{width:22px;height:22px}' +
     '.brand h1.mn-avec-ic,.brand b.mn-avec-ic{display:inline-flex;align-items:center}' +
@@ -629,15 +633,16 @@
     Array.prototype.forEach.call(jp.querySelectorAll('.jx-th, .jx-sep, a[href="#courbes"]'), function (e) { e.remove(); });
     // Un raccourci vers un thème déjà écrit dans la page (Démographie) : remplacé par celui de la rangée des thèmes.
     Array.prototype.forEach.call(jp.querySelectorAll('a[href^="#"]'), function (e) { if (th.some(function (t) { return e.getAttribute('href') === '#' + t.id; })) e.remove(); });
-    // En tête, figé à gauche, « Par président » (couleur neutre) : les résultats des présidents (bloc « Par président » d'« En bref »,
-    // et le lien vers les gouvernements), à un toucher de partout. Le détail, plus bas, garde son propre raccourci, sous le nom de
-    // son bloc : « Le détail, président par président ». Un seul nom partout : « par président ».
+    // En tête, la première puce, « Résultats » (couleur neutre) : les résultats des présidents (bloc « La France sous chaque
+    // président » d'« En bref », et le lien vers les gouvernements). Elle défile avec les autres (choix de l'éditeur, 5 novembre
+    // 2026 : les thèmes ont toute la largeur). Le détail, plus bas, garde son propre raccourci, sous le nom de son bloc :
+    // « Le détail, président par président ».
     Array.prototype.forEach.call(jp.querySelectorAll('a[href="#bulletin"]'), function (a) { a.textContent = 'Le détail, président par président'; });
     Array.prototype.forEach.call(jp.querySelectorAll('a.jx-pres, .jx-fixe, .jx-plus'), function (a) { a.remove(); });
     var fx = document.createElement('span'); fx.className = 'jx-fixe';
-    if (document.getElementById('bref-pres')) { var ap = document.createElement('a'); ap.className = 'jx-pres'; ap.href = '#bref-pres'; ap.textContent = 'Résultats'; fx.appendChild(ap); }
     jp.insertBefore(fx, jp.firstChild);
-    var ref = fx.nextSibling;
+    if (document.getElementById('bref-pres')) { var ap = document.createElement('a'); ap.className = 'jx-pres'; ap.href = '#bref-pres'; ap.textContent = 'Résultats'; jp.insertBefore(ap, fx.nextSibling); }
+    var ref = (ap || fx).nextSibling;
     th.forEach(function (t) {
       var a = document.createElement('a'), h = t.querySelector(':scope > h2');
       a.className = 'jx-th'; a.href = '#' + t.id; a.textContent = t.dataset.court || (h ? h.textContent.trim() : t.id);
@@ -659,9 +664,9 @@
     document.documentElement.classList.add('jx-page');
     teinter(); fondu(jp); hauteurBarre(jp); fixeLarg(jp);
   }
-  // Les flèches ‹ et › d'une rangée de raccourcis qui défile (voir la feuille de style, nav.jump.jf). Le bloc figé de gauche est
-  // celui de la barre des thèmes, sinon un bloc vide. Flèches cachées aux lecteurs d'écran, qui ont les liens ; un toucher fait
-  // défiler d'un écran de raccourcis (la largeur visible, moins le bloc figé et les flèches).
+  // Les flèches ‹ et › d'une rangée de raccourcis qui défile (voir la feuille de style, nav.jump.jf). La flèche ‹ est portée par
+  // un bloc vide, figé au bord gauche. Flèches cachées aux lecteurs d'écran, qui ont les liens ; un toucher fait défiler d'un
+  // écran de raccourcis (la largeur visible, moins les deux flèches).
   function fleches(jp) {
     Array.prototype.forEach.call(jp.querySelectorAll('.jx-moins, .jx-plus'), function (e) { e.remove(); });
     var fx = jp.querySelector(':scope > .jx-fixe');
@@ -669,14 +674,31 @@
     fx.classList.toggle('jx-vide', !fx.querySelector('a'));
     var fl = function (cl, t, sens) {
       var e = document.createElement('span'); e.className = cl; e.setAttribute('aria-hidden', 'true'); e.innerHTML = '<b>' + t + '</b>';
-      e.addEventListener('click', function () { jp.scrollBy({ left: sens * Math.max(120, jp.clientWidth - fx.offsetWidth - 80), behavior: doux() }); });
+      // Le pas : la première puce coupée à droite vient juste après la flèche ‹ (ou la dernière coupée à gauche, juste avant ›).
+      e.addEventListener('click', function () {
+        var g = zoneG(jp), d = zoneD(jp), x = jp.scrollLeft, vw = jp.clientWidth, cible = null;
+        var ls = Array.prototype.filter.call(jp.querySelectorAll(':scope > a'), function (a) { return a.offsetWidth; });
+        if (sens > 0) { ls.some(function (a) { if (a.offsetLeft + a.offsetWidth > x + vw - d + 1) { cible = a.offsetLeft - g; return true; } return false; }); }
+        else { ls.slice().reverse().some(function (a) { if (a.offsetLeft < x + g - 1) { cible = a.offsetLeft + a.offsetWidth - (vw - d); return true; } return false; }); }
+        if (cible == null || (sens > 0 ? cible <= x + 8 : cible >= x - 8)) cible = x + sens * Math.max(120, vw - g - d);
+        jp.scrollTo({ left: Math.max(0, cible), behavior: doux() });
+      });
       return e;
     };
     fx.appendChild(fl('jx-moins', '‹', -1)); jp.appendChild(fl('jx-plus', '›', 1));
     jp.classList.add('jf'); fondu(jp); fixeLarg(jp);
   }
-  // Un lien atteint au clavier ne passe pas sous « Par président » ni sous la flèche de droite.
-  function fixeLarg(jp) { var fx = jp && jp.querySelector('.jx-fixe'); if (!fx) return; var mo = fx.querySelector('.jx-moins'); jp.style.scrollPaddingLeft = (fx.offsetWidth + (mo ? mo.offsetWidth : 0)) + 'px'; jp.style.scrollPaddingRight = '50px'; }
+  // La place prise à gauche et à droite de la rangée par les flèches (zone à toucher et fondu), et 6 px de marge : une puce
+  // ramenée à gauche, ou atteinte au clavier, ne passe jamais dessous.
+  function zoneG(r) { var fx = r.querySelector('.jx-fixe'), mo = fx && fx.querySelector('.jx-moins'); if (!fx) return 40; return (fx.classList.contains('jx-vide') ? 0 : fx.offsetWidth) + (mo ? mo.offsetWidth : 0) + 6; }
+  function zoneD(r) { var pl = r.querySelector(':scope > .jx-plus'); return (pl ? pl.offsetWidth : 40) + 6; }
+  // Le défilement au clavier (scroll-padding) et la largeur la plus grande d'une puce (--jx-max : au-delà, elle passe sur deux lignes).
+  function fixeLarg(jp) {
+    if (!jp || !jp.querySelector('.jx-fixe')) return;
+    var g = zoneG(jp), d = zoneD(jp);
+    jp.style.scrollPaddingLeft = g + 'px'; jp.style.scrollPaddingRight = d + 'px';
+    if (jp.clientWidth) jp.style.setProperty('--jx-max', Math.max(120, jp.clientWidth - g - d) + 'px');
+  }
   // La hauteur de la barre des thèmes, pour l'arrêt des défilements juste dessous (--jxh).
   function hauteurBarre(jp) { jp = jp || document.querySelector('nav.jump.jx'); if (jp && jp.offsetHeight) document.documentElement.style.setProperty('--jxh', jp.offsetHeight + 'px'); }
   // Un toucher sur « Thème suivant » ou « Tous les thèmes » : le bloc posé juste sous les deux barres collées.
@@ -696,14 +718,14 @@
       if (l === cur) return; cur = l;
       var ls = liens();
       ls.forEach(function (x) { x.classList.toggle('mn-ici', x === l); if (x === l) x.setAttribute('aria-current', 'true'); else x.removeAttribute('aria-current'); });
-      // Le raccourci de la partie en cours est ramené à gauche (juste après « Par président », figé) : on voit ce qui suit.
-      // Après un toucher, la barre ne bouge pas si le lien touché est déjà visible en entier (un second toucher vise juste).
+      // Le raccourci de la partie en cours est ramené à gauche, juste après la zone de la flèche ‹ : on voit ce qui suit.
+      // Après un toucher, la barre ne bouge pas si le lien touché est déjà visible en entier entre les deux flèches (un second
+      // toucher vise juste). Au début de la rangée, la flèche ‹ n'est pas là : le premier lien reste à sa place.
       if (l) {
-        var r = l.closest('.jump-l1') || jp, fx = r.querySelector('.jx-fixe'), mo = fx && fx.querySelector('.jx-moins'), g = fx ? fx.offsetWidth + (mo ? mo.offsetWidth + 4 : 0) : 40;
-        if (l.closest('.jx-fixe')) { if (r.scrollLeft) r.scrollLeft = 0; }
-        else if (r.scrollWidth > r.clientWidth) {
-          var x0 = l.offsetLeft - r.scrollLeft, vu = x0 >= g - 8 && x0 + l.offsetWidth <= r.clientWidth - 40;
-          if (!(viaToucher && vu)) r.scrollLeft = Math.max(0, l.offsetLeft - (r.classList.contains('jf') ? g : 40));
+        var r = l.closest('.jump-l1') || jp, jf = r.classList.contains('jf'), g = jf ? zoneG(r) : 40, d = jf ? zoneD(r) : 40;
+        if (r.scrollWidth > r.clientWidth) {
+          var x0 = l.offsetLeft - r.scrollLeft, vu = (x0 >= g || r.scrollLeft <= 4) && x0 + l.offsetWidth <= r.clientWidth - (r.scrollWidth - r.clientWidth - r.scrollLeft > 4 ? d : 0);
+          if (!(viaToucher && vu)) { r.scrollLeft = Math.max(0, l.offsetLeft - g); }
         }
       }
       fondu(jp);
@@ -743,7 +765,9 @@
     barre();
     // Les autres rangées (accueil, vie politique) ont aussi leurs flèches ; le Baromètre (deux rangées, .jump-l1) garde les siennes.
     if (jp && !jp.querySelector('.jump-l1') && !jp.classList.contains('jf')) fleches(jp);
-    if (jp && !jp.querySelector('.jump-l1')) { suivre(jp, cib); addEventListener('load', function () { fondu(jp); fixeLarg(jp); }); jp.addEventListener('scroll', function () { fondu(jp); }, { passive: true }); addEventListener('resize', function () { fondu(jp); hauteurBarre(jp); fixeLarg(jp); }); }
+    if (jp && !jp.querySelector('.jump-l1')) { suivre(jp, cib); addEventListener('load', function () { fondu(jp); fixeLarg(jp); }); jp.addEventListener('scroll', function () { fondu(jp); }, { passive: true }); addEventListener('resize', function () { fondu(jp); hauteurBarre(jp); fixeLarg(jp); });
+      // Zoom de la page ou texte agrandi après coup (la fenêtre ne change pas) : la place entre les flèches est remesurée.
+      if (window.ResizeObserver) new ResizeObserver(function () { fondu(jp); hauteurBarre(jp); fixeLarg(jp); }).observe(jp); }
     // L'icône de la mission à gauche du titre de sa page.
     var pm = PAGES.filter(function (p) { return p.u === ici && (p.g === 'Les missions de l\'État' || p.ic === 'demographie'); })[0], tt = document.querySelector('.brand h1, .brand b');
     if (pm && tt && !tt.querySelector('.mn-tic')) { tt.classList.add('mn-avec-ic'); tt.insertAdjacentHTML('afterbegin', '<span class="mn-tic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + IC[pm.ic] + '</svg></span>'); }
@@ -807,6 +831,13 @@
       });
     };
     barreAjuste(); addEventListener('resize', barreAjuste); addEventListener('load', barreAjuste); setTimeout(barreAjuste, 600);
+    // Aussi quand la barre ou un de ses liens change de taille sans que la fenêtre change (zoom de la page, texte agrandi, police
+    // chargée après coup) : un lien qui ne tient plus est retiré, jamais caché sous le bouton Menu.
+    if (nav && window.ResizeObserver) {
+      var roT = 0, ro = new ResizeObserver(function () { if (!roT) roT = requestAnimationFrame(function () { roT = 0; barreAjuste(); }); });
+      ro.observe(nav); Array.prototype.forEach.call(nav.querySelectorAll('a, .mn-btn'), function (e) { ro.observe(e); });
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(barreAjuste);
     // Sur l'accueil : la même icône devant chaque page de la liste des missions, des repères, du Baromètre et du Quiz.
     Array.prototype.forEach.call(document.querySelectorAll('#missions a.pg, #reperes a.pg, #rendez-vous a.pg'), function (a) {
       var p = PAGES.filter(function (x) { return x.u === a.getAttribute('href'); })[0];
