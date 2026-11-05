@@ -27,6 +27,7 @@
     '.som-l small{grid-column:1/-1;font-size:14px;line-height:1.4;color:var(--muted)}.som-l small i{font-style:normal;font-weight:700}' +
     '.som-l small .som-hors{display:block}' +
     '.bref-cache{display:none!important}' +
+    '.bref-deux{color:var(--fg);margin-bottom:6px}.bref-deux span{display:block}.bref-deux span+span{margin-top:4px}' +
     // Sur ordinateur, la toile se range à côté d'« En bref » ; sur téléphone, sous les thèmes.
     '.bref-grille{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}.bref-grille>*{margin:0!important}' +
     // Thèmes des pages Finances et Éducation (sans ligne ✓ ✗ écrite par la page) : la même ligne que sur les autres pages.
@@ -49,14 +50,15 @@
     if (!el) { var mini = document.querySelector('.mini[data-courbe="' + id + '"]'); if (mini) { mini.click(); el = document.getElementById(id); } }
     if (!el) return;
     for (var d = el; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
-    // « Le détail, président par président » : replié en bas de page, il s'ouvre quand on y va depuis les cartes des présidents.
+    // « Le détail par président » : replié en bas de page, il s'ouvre quand on y va depuis les cartes des présidents.
     if (el.id === 'bulletin') { var bp = el.querySelector('details.bul-pli'); if (bp && !bp.open) bp.open = true; }
     // Défilement dès l'image suivante (le bloc ouvert a pris sa place), sans attente.
     requestAnimationFrame(function () {
       // Un chiffre du jour ou du mois : la tuile entière, en tête de son thème.
       var c = el.closest('.dc') || el.closest('.card, .mo') || el.closest('section') || el;
       // Avec commun/menu.js : le bloc posé juste sous les barres collées, et gardé là pendant que les courbes se dessinent.
-      if (window.ConcretMenu && ConcretMenu.poser) { ConcretMenu.poser(c); c.classList.remove('bref-flash'); void c.offsetWidth; c.classList.add('bref-flash'); return; }
+      // Le focus va au titre du bloc, comme depuis la barre des thèmes (clavier, lecteur d'écran).
+      if (window.ConcretMenu && ConcretMenu.poser) { if (ConcretMenu.focaliser) ConcretMenu.focaliser(c); ConcretMenu.poser(c); c.classList.remove('bref-flash'); void c.offsetWidth; c.classList.add('bref-flash'); return; }
       c.scrollIntoView({ behavior: window.ConcretMenu ? ConcretMenu.doux() : 'smooth', block: 'start' });
       c.classList.remove('bref-flash'); void c.offsetWidth; c.classList.add('bref-flash');
       // La page bouge encore (courbes qui se dessinent au-dessus) : une fois posée, on remet la courbe en haut.
@@ -134,7 +136,10 @@
         var c = p.v == null ? '' : p.v >= 10 ? 'g' : p.v >= 6 ? 'm' : 'b';
         return '<a class="' + c + '" href="#bulletin"><span>' + esc(p.n.split(' ').slice(-1)[0]) + '</span><b>' + (p.v == null ? '—' : fmt(p.v)) + '</b><i style="width:' + (p.v == null ? 0 : 5 * p.v) + '%"></i></a>';
       }).join('') + '</div>' +
-      '<p class="note">Sur 20 ; 10 = aussi bien que la moyenne de l\'UE. Le résultat compte, année par année, si la France progresse mieux que la moyenne de l\'UE (ou garde son avance) ; le chiffre du haut compare seulement le dernier niveau connu. Ce n\'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l\'UE pendant le mandat. <a class="pt-hors" href="#bulletin">Le détail et les gouvernements ↓</a></p>';
+      // Deux chiffres, deux mesures, une ligne chacun : le « n/N » du haut (dernier chiffre connu) et le résultat sur 20 (le mandat,
+      // année par année). Puis la phrase qui suit chaque résultat sur le site.
+      '<p class="note bref-deux"><span><b>' + ok + '/' + l.length + '</b> : le dernier chiffre de chaque indicateur, comparé à ' + esc(ref) + '.</span><span><b>Sur 20</b> : le résultat de chaque président compte l\'évolution, année par année, pendant le mandat (10 = aussi bien que ' + esc(ref) + ').</span></p>' +
+      '<p class="note">Ce n\'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l\'UE pendant le mandat. <a class="pt-hors" href="#bulletin">Le détail par président ↓</a></p>';
     // Le bouton « Partager » (commun/partage.js) a pu être posé sur le bloc encore vide : on le laisse le reposer.
     box.removeAttribute('data-partage');
     box.querySelectorAll('.bref-chips a').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); });

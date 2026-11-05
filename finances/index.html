@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="fc1d5e1909eb">
+<meta name="concret-version" content="b94c7b2b9172">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261105v"></script>
+<script src="/commun/bref.js?v=20261105w"></script>
 <script src="/commun/toile.js?v=20261105n"></script>
 <script src="/commun/pays.js?v=20261105v"></script>
 <script src="/commun/quiz.js?v=20261031j"></script>
@@ -536,7 +536,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       </div>
     </details>
     <details class="gov-pli bul-pli" id="bul-pli">
-      <summary><span>Le détail, président par président<small>Le résultat de chaque mandat en barres, son détail thème par thème, et les gouvernements</small></span></summary>
+      <summary><span>Le détail par président<small>Le résultat de chaque mandat en barres, son détail thème par thème, et les gouvernements</small></span></summary>
       <div class="gov-pli-body">
         <p class="note" style="margin:0">Critères comptés dans le résultat : touchez-en un pour le retirer (ou le remettre) et voir les résultats changer.</p>
         <div class="chips" role="group" aria-label="Critères pris en compte" id="crit"></div>
@@ -955,8 +955,8 @@ function main(FEED) {
     // Chaque critère dans un thème (le calcul ne change pas : les thèmes rangent seulement les critères). L'emploi et le commerce avec la
     // richesse, le coût de la dette avec les taux. Commerce et coût de la dette n'ont pas de courbe sur la page : c'est dit sous le thème.
     var TH = [['t-dette', 'Dette et déficit', ['dette', 'deficit']], ['t-depenses', 'Dépenses et prélèvements', ['dep', 'po']],
-      ['t-richesse', 'Richesse et emploi', ['pib', 'emploi', 'com'], 'Commerce (exportations rapportées aux importations) : pas de courbe sur la page ; son détail, année par année, est dans « Le détail, président par président ».'],
-      ['t-taux', 'Taux et prix', ['int'], 'Coût de la dette (intérêts, en % du PIB) : pas de courbe sur la page ; son détail, année par année, est dans « Le détail, président par président ».']];
+      ['t-richesse', 'Richesse et emploi', ['pib', 'emploi', 'com'], 'Commerce (exportations rapportées aux importations) : pas de courbe sur la page ; son détail, année par année, est dans « Le détail par président ».'],
+      ['t-taux', 'Taux et prix', ['int'], 'Coût de la dette (intérêts, en % du PIB) : pas de courbe sur la page ; son détail, année par année, est dans « Le détail par président ».']];
     ConcretBref.render({ items: items, lignes: true, themes: TH.map(function (t) { return { id: t[0], l: t[1], items: t[2].map(function (k) { return IT[k]; }), note: t[3] }; }), pres: PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; }) });
   })();
   var cls = function (n) { return n >= 10 ? 'g' : n >= 6 ? 'm' : 'b'; };
@@ -1510,7 +1510,7 @@ function main(FEED) {
   document.getElementById('sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') this.hidden = true; });
 
   function drawAll() { drawMonth(); spark(); four(); manque(); pibChart(); retraitesChart(); spreadChart(); rankChart(); }
-  // « Le détail, président par président » est replié : ses barres sont dessinées à l'ouverture, à la largeur réelle.
+  // « Le détail par président » est replié : ses barres sont dessinées à l'ouverture, à la largeur réelle.
   document.getElementById('bul-pli').addEventListener('toggle', function () { if (this.open) { rankOne('pres'); if (document.getElementById('gov-pli').open) rankOne('gov'); } });
   renderGov(); drawAll();
   // Toutes les courbes sont visibles d'emblée, secondaires comprises (choix de l'éditeur : on ne cache pas les courbes).
@@ -1553,6 +1553,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261105t"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261031i"></script>
-<script src="/commun/menu.js?v=20261105x"></script>
+<script src="/commun/menu.js?v=20261105y"></script>
 </body>
 </html>
