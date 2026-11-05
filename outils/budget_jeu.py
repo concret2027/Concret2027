@@ -380,14 +380,16 @@ def positions(nums):
         n = int(s['numero'])
         if n not in nums:
             continue
-        g = {}
+        g, dg = {}, {}
         for x in parlement.liste(((s.get('ventilationVotes') or {}).get('organe') or {}).get('groupes', {}).get('groupe')):
             if x['organeRef'] in gp:
                 v = x['vote']; d = v.get('decompteVoix') or {}
                 tot = parlement.nb(d.get('pour')) + parlement.nb(d.get('contre')) + parlement.nb(d.get('abstentions'))
                 g[gp[x['organeRef']]['c']] = v.get('positionMajoritaire') if tot else 'nv'
+                # Décompte du groupe (pour, contre, abstentions, membres) : même calcul d'accord que Votez les lois.
+                dg[gp[x['organeRef']]['c']] = [parlement.nb(d.get('pour')), parlement.nb(d.get('contre')), parlement.nb(d.get('abstentions')), parlement.nb(x.get('nombreMembresGroupe'))]
         dec = s['syntheseVote']['decompte']
-        out[n] = {'d': s['dateScrutin'], 's': s['sort']['code'], 't': s['titre'].rstrip('.'), 'g': g,
+        out[n] = {'d': s['dateScrutin'], 's': s['sort']['code'], 't': s['titre'].rstrip('.'), 'g': g, 'dg': dg,
                   'pour': parlement.nb(dec.get('pour')), 'contre': parlement.nb(dec.get('contre')), 'abst': parlement.nb(dec.get('abstentions'))}
     return out
 
@@ -603,7 +605,7 @@ def construire():
         z = MD['taxe_zucman_chiffrages']['valeurs']
         debat('taxe-zucman', "Créer un impôt plancher de 2 % sur les patrimoines de plus de 100 millions d'euros (« taxe Zucman »)", "Les foyers dont le patrimoine dépasse 100 M€ paient au moins 2 % de ce patrimoine par an, impôts déjà payés compris.", 'patrimoine', ['patrimoine'], None, 'recette',
               {str(a1): z['scénario prudent (40 % des fortunes hors dispositif, Md€)']}, 'taxe_zucman_chiffrages',
-              "Compté : le scénario prudent du rapport de la commission des finances de l'Assemblée (%s Md€). Les économistes auditionnés donnent %d à %d Md€ ; l'administration fiscale dit ne pas pouvoir simuler cet impôt, et le Gouvernement n'a publié aucun montant." % (str(z['scénario prudent (40 % des fortunes hors dispositif, Md€)']).replace('.', ','), z['économistes auditionnés, fourchette (Md€ par an)'][0], z['économistes auditionnés, fourchette (Md€ par an)'][1]))
+              "Compté : le scénario prudent du rapport de la commission des finances de l'Assemblée (%s Md€). Les économistes auditionnés donnent %d à %d Md€ ; l'administration fiscale dit ne pas pouvoir simuler cet impôt, et le Gouvernement n'a publié aucun montant. Le rapport du Sénat cite deux autres calculs : 2 ou 3 Md€ si l'impôt sur les sociétés déjà payé compte dans le minimum de 2 %%, et un rendement réduit de moitié si les trois personnes les plus riches quittaient la France." % (str(z['scénario prudent (40 % des fortunes hors dispositif, Md€)']).replace('.', ','), z['économistes auditionnés, fourchette (Md€ par an)'][0], z['économistes auditionnés, fourchette (Md€ par an)'][1]))
         debat('franchises-x2', "Doubler les franchises médicales et les participations forfaitaires", "Ce qui reste à payer par le patient sur les médicaments, consultations et transports (franchises et participations) double, plafonds compris.", 'sante', ['assures'], 'depense', 'depense',
               {str(a1): MD['franchises_doublement']['valeurs']['doublement des montants et plafonds, année pleine (Md€)']}, 'franchises_doublement', "Chiffrage en année pleine (Cour des comptes, 2026) ; ce doublement avait été annoncé puis abandonné.")
         ra = MD['retraite_age_cour_comptes_2025']['valeurs']
@@ -614,6 +616,15 @@ def construire():
             if debut > 2031: return {str(a1): 0.0}
             return {str(a): (round(v35 * (a - debut + 1) / (2035 - debut + 1), 3) if a >= debut else 0.0) for a in range(a1, 2032)}
         age = ['retraite-62', 'retraite-63', 'retraite-65', 'retraites-fin-suspension']
+        # La Cour compare à 64 ans ; le départ du jeu garde la suspension, dont le coût (chiffrage du Gouvernement, dernier montant
+        # gardé ensuite) est déjà compté : on le retire chaque année du coût de 62 ou 63 ans, sans passer sous zéro.
+        sp = (P.get('retraites2023_suspension_cout_gouvernement') or {}).get('valeurs', {}).get('ensemble du système de retraite (Md€)') or {}
+        def sans_susp(eff):
+            if not sp: return eff
+            v = lambda a: sp.get(a, sp[max(sp)])
+            return {a: round(min(0.0, x + v(a)), 3) for a, x in eff.items()}
+        nsp = ("Le jeu part de l'âge d'aujourd'hui (suspension de la réforme, dont le coût est déjà compté au départ : %s Md€ par an, chiffrage du Gouvernement) : "
+               "Concret retire ce coût chaque année du chiffrage de la Cour, sans passer sous zéro. ") % str(sp[max(sp)]).replace('.', ',') if sp else ''
         noteR = "Chiffrage de la Cour des comptes pour 2035 (système de retraite). "
         cal = "D'après ce calendrier, l'âge minimum passe 63 ans pour les personnes nées en 1966 (en 2029) et atteint 64 ans pour celles nées en 1969 (en 2033). "
         n62 = noteR + "L'âge de 62 ans change les départs dès %d (aujourd'hui, 62 ans et 9 mois) ; Concret fait monter l'effet en ligne droite de %d à 2035 (hypothèse). " % (a1, a1)
@@ -621,9 +632,9 @@ def construire():
         n65 = noteR + cal + "Passer à 65 ans ne change donc les départs qu'après 2031 : rien n'est compté dans les cinq ans du jeu. "
 
         debat('retraite-63', "Ramener l'âge légal de départ à la retraite à 63 ans", "L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026). La hausse s'arrête à 63 ans au lieu de 64 ans. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], 'depense', 'depense',
-              rampe(-ra['âge ramené de 64 à 63 ans : dépense supplémentaire en 2035 (Md€)'], 2029), 'retraite_age_cour_comptes_2025', n63 + "Dépense en plus en 2035 : 5,8 Md€.", [x for x in age if x != 'retraite-63'], 'Qui reçoit')
+              sans_susp(rampe(-ra['âge ramené de 64 à 63 ans : dépense supplémentaire en 2035 (Md€)'], 2029)), 'retraite_age_cour_comptes_2025', n63 + nsp + "Dépense en plus en 2035, par rapport à 64 ans : 5,8 Md€.", [x for x in age if x != 'retraite-63'], 'Qui reçoit')
         debat('retraite-62', "Revenir à la retraite à 62 ans", "L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026). L'âge minimum est ramené à 62 ans pour tous, au lieu de 64 ans à terme. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], 'depense', 'depense',
-              rampe(-ra['retour à 62 ans : « en gros, deux fois plus » (Md€, ordre de grandeur)'], a1), 'retraite_age_cour_comptes_2025', n62 + "Pour 62 ans, la Cour dit « en gros, deux fois plus » que pour 63 ans : 11,6 Md€ en 2035 (ordre de grandeur).", [x for x in age if x != 'retraite-62'], 'Qui reçoit')
+              sans_susp(rampe(-ra['retour à 62 ans : « en gros, deux fois plus » (Md€, ordre de grandeur)'], a1)), 'retraite_age_cour_comptes_2025', n62 + nsp + "Pour 62 ans, la Cour dit « en gros, deux fois plus » que pour 63 ans : 11,6 Md€ en 2035 (ordre de grandeur).", [x for x in age if x != 'retraite-62'], 'Qui reçoit')
         debat('retraite-65', "Porter l'âge légal de départ à la retraite à 65 ans", "L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026). L'âge minimum est porté à 65 ans à terme, au lieu de 64 ans. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], 'depense', 'depense',
               rampe(ra['âge porté à 65 ans : gain en 2035 (Md€)'], 2032), 'retraite_age_cour_comptes_2025', n65 + "Économie en 2035 : 8,4 Md€, après les cinq ans du jeu. Se vote avec « Revenir à la réforme des retraites », qui accélère la hausse jusqu'à 64 ans.", ['retraite-62', 'retraite-63'])
         cartes[-1]['hors_jeu'] = {'an': 2035, 'md': ra['âge porté à 65 ans : gain en 2035 (Md€)']}
