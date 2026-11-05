@@ -2,7 +2,7 @@
 // Audience de Concret pour le tableau de bord de l'éditeur (artifact « Concret, audience »), jamais dans le dépôt :
 // lit les totaux du compteur (comme outils/vues_stats.js) et écrit des fichiers JSON dans un dossier HORS du dépôt.
 //   node outils/audience.js <dossier> [<historique précédent .json>]
-// Écrit : d_jours, d_pages, d_temps, d_chemins, d_visites, d_resume, d_hist (.json). d_hist garde une ligne par jour
+// Écrit : d_jours, d_pages, d_temps, d_chemins, d_visites, d_resume, d_hist, d_budget (.json). d_hist garde une ligne par jour
 // (totaux cumulés du jour) : on la reprend de la veille (2e argument) pour en tirer les visites par jour.
 var cp = require('child_process'), fs = require('fs'), path = require('path');
 var API = 'https://compteur.square-brook-9d65.workers.dev/';
@@ -19,7 +19,7 @@ function lire(k, n) {
 }
 async function tout(ks, n) { var o = []; for (var i = 0; i < ks.length; i += 24) o = o.concat(await Promise.all(ks.slice(i, i + 24).map(function (k) { return lire(k, n); }))); return o; }
 var jour = function (n) { return new Date(Date.now() - n * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }); };
-var PAGES = ['accueil', 'finances', 'education', 'sante', 'securite', 'defense', 'vie', 'demographie', 'politique', 'barometre', 'quiz', 'votez', 'contact', 'mentions-legales', 'application'];
+var PAGES = ['accueil', 'finances', 'education', 'sante', 'securite', 'defense', 'vie', 'demographie', 'politique', 'barometre', 'quiz', 'votez', 'contact', 'mentions-legales', 'application', 'budget'];
 var Q = ['courbe', 'chiffres', 'replis', 'detail', 'defs'];
 var ecrire = function (n, v) { fs.writeFileSync(path.join(out, n + '.json'), JSON.stringify(v)); };
 (async function () {
@@ -35,6 +35,11 @@ var ecrire = function (n, v) { fs.writeFileSync(path.join(out, n + '.json'), JSO
     return r;
   });
   ecrire('d_jours', jours);
+  // Jeu « Votre budget 2027 » : totaux du jour comptés par la page du jeu (rien avant sa mise en ligne, tout à 0).
+  var BQ = ['joueurs', 'joueurs-nouveaux', 'joueurs-revenus', 'votes', 'creer', 'defis', 'partages', 'liens', 'reponses'];
+  var bk = []; ds.forEach(function (d) { BQ.forEach(function (q) { bk.push('vue-budget-' + q + '-' + d); }); });
+  var bv = await tout(bk);
+  ecrire('d_budget', ds.map(function (d, i) { var o = { jour: d }; BQ.forEach(function (q, j) { o[q.replace('-', '_')] = bv[i * BQ.length + j] || 0; }); return o; }));
   var pk = []; PAGES.forEach(function (p) { pk.push('vue-' + p); Q.forEach(function (q) { pk.push('vue-' + p + '-' + q); }); });
   var pv = await tout(pk), k = 0, pages = [];
   PAGES.forEach(function (p) { var r = { page: p, visites: pv[k++] }; Q.forEach(function (q) { r[q] = pv[k++]; }); pages.push(r); });
@@ -43,6 +48,7 @@ var ecrire = function (n, v) { fs.writeFileSync(path.join(out, n + '.json'), JSO
   var tv = await tout(PAGES.map(function (p) { return 'vue-temps-' + p; }), 6);
   PAGES.forEach(function (p, i) { (tv[i] || []).forEach(function (n, j) { if (n) t.push({ page: p, tranche: TR[j], ordre: j, n: n }); }); });
   ecrire('d_temps', t);
+  var bj = await tout(['vue-budget-joueurs']);
   var vs = await tout(['vue-visite-10s', 'vue-visite-30s', 'vue-visite-60s', 'vue-visite-180s', 'vue-visite-600s', 'vue-visite-pages-2', 'vue-visite-pages-3', 'vue-visite-pages-5', 'vue-visite-pages-10', 'vue-appareils']);
   var pairs = []; ['entree'].concat(PAGES).forEach(function (a) { PAGES.forEach(function (b) { if (a !== b) pairs.push([a, b]); }); });
   var cv = await tout(pairs.map(function (x) { return 'vue-chemin-' + x[0] + '-' + x[1]; }));
@@ -52,7 +58,9 @@ var ecrire = function (n, v) { fs.writeFileSync(path.join(out, n + '.json'), JSO
   var noms = [['au moins 10 s', 'duree'], ['au moins 30 s', 'duree'], ['au moins 1 min', 'duree'], ['au moins 3 min', 'duree'], ['au moins 10 min', 'duree'], ['au moins 2 pages', 'pages'], ['au moins 3 pages', 'pages'], ['au moins 5 pages', 'pages'], ['au moins 10 pages', 'pages']];
   ecrire('d_visites', noms.map(function (x, i) { return { critere: x[0], genre: x[1], n: vs[i] || 0, visites: ent }; }));
   var auj = jour(0);
-  ecrire('d_resume', [{ releve: auj, appareils_total: vs[9] || 0, visites_suivies: ent }]);
+  // L'heure du relevé (heure de Paris), affichée en tête du tableau : « Relevé du 5 novembre 2026 à 9 h 17 ».
+  var hp = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: 'numeric', minute: '2-digit' }).formatToParts(new Date()), hh = hp.filter(function (x) { return x.type === 'hour'; })[0].value, mm = hp.filter(function (x) { return x.type === 'minute'; })[0].value;
+  ecrire('d_resume', [{ releve: auj, heure: (+hh) + ' h ' + mm, appareils_total: vs[9] || 0, visites_suivies: ent, budget_joueurs_total: bj[0] || 0 }]);
   // Historique : une ligne par jour, totaux cumulés (reprise de la veille).
   var hist = []; try { if (prev) hist = JSON.parse(fs.readFileSync(prev, 'utf8')); } catch (e) {}
   hist = hist.filter(function (r) { return r.jour !== auj; });

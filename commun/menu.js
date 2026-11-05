@@ -93,18 +93,18 @@
 (function () {
   var PAGES = [
     { u: '/', l: 'Accueil', t: 'La France mandat par mandat, et son pouls', ic: 'accueil', large: 1 },
-    { u: '/barometre/', l: 'Baromètre 2027', t: 'Sondages et parieurs', ic: 'barometre', g: 'Chaque jour' },
+    { u: '/barometre/', l: 'Baromètre 2027', t: 'Présidentielle : sondages, parieurs, Wikipédia', ic: 'barometre', g: 'Chaque jour' },
     { u: '/quiz/', l: 'Quiz du jour', t: 'Huit questions sourcées', ic: 'quiz', g: 'Chaque jour' },
     { u: '/votez/', l: 'Votez les lois', t: 'Les vrais votes de l\'Assemblée, à votre tour', ic: 'votez', g: 'Chaque jour' },
     { u: '/budget/', l: 'Faites le budget 2027', t: 'Choisissez les mesures, voyez déficit et dette jusqu\'en 2031', ic: 'budget', g: 'Chaque jour' },
-    { u: '/vie/', l: 'Vie des Français', t: 'Pouvoir d\'achat, logement, travail', ic: 'vie', g: 'Les missions mesurées' },
-    { u: '/finances/', l: 'Finances publiques', t: 'Dette, déficit, impôts', ic: 'finances', g: 'Les missions mesurées' },
-    { u: '/sante/', l: 'Santé', t: 'Espérance de vie, soins, prévention', ic: 'sante', g: 'Les missions mesurées' },
-    { u: '/education/', l: 'Éducation', t: 'PISA, diplômes, décrochage', ic: 'education', g: 'Les missions mesurées' },
-    { u: '/securite/', l: 'Sécurité et justice', t: 'Homicides, prisons, justice', ic: 'securite', g: 'Les missions mesurées' },
-    { u: '/defense/', l: 'Défense', t: 'Budget, OTAN, effectifs', ic: 'defense', g: 'Les missions mesurées' },
-    { u: '/politique/', l: 'La vie politique', t: 'Lois, votes, grandes dates', ic: 'politique', g: 'Repères, sans calcul' },
-    { u: '/demographie/', l: 'Démographie', t: 'Naissances, âges, migrations', ic: 'demographie', g: 'Repères, sans calcul' }
+    { u: '/vie/', l: 'Vie des Français', t: 'Pouvoir d\'achat, logement, travail', ic: 'vie', g: 'Les missions de l\'État' },
+    { u: '/finances/', l: 'Finances publiques', t: 'Dette, déficit, impôts', ic: 'finances', g: 'Les missions de l\'État' },
+    { u: '/sante/', l: 'Santé', t: 'Espérance de vie, soins, prévention', ic: 'sante', g: 'Les missions de l\'État' },
+    { u: '/education/', l: 'Éducation', t: 'PISA, diplômes, décrochage', ic: 'education', g: 'Les missions de l\'État' },
+    { u: '/securite/', l: 'Sécurité et justice', t: 'Homicides, prisons, justice', ic: 'securite', g: 'Les missions de l\'État' },
+    { u: '/defense/', l: 'Défense', t: 'Budget, OTAN, effectifs', ic: 'defense', g: 'Les missions de l\'État' },
+    { u: '/demographie/', l: 'Démographie', t: 'Naissances, âges, migrations', ic: 'demographie', g: 'Repères, sans calcul' },
+    { u: '/politique/', l: 'La vie politique', t: 'Lois, votes, grandes dates', ic: 'politique', g: 'Repères, sans calcul' }
   ];
   // Icônes des pages, au trait, dans la couleur d'accent.
   var IC = {
@@ -140,6 +140,14 @@
     'nav.jump a,.jump-l1>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}' +
     'nav.jump a.mn-ici{background:' + V.fg + ';color:' + V.bg + ';border-color:' + V.fg + '}' +
     '.mn-btn:focus-visible span{outline:2px solid ' + V.fr + ';outline-offset:2px}' +
+    // Une couleur par thème des pages de mission (titre et raccourci), dans le même ordre sur chaque page : violet, bleu canard,
+    // lie-de-vin, olive, brun. Aucune n'est celle d'un pays sur les courbes (France bleu, UE or, Allemagne gris, Espagne orange,
+    // États-Unis magenta), ni le vert et le rouge des ✓ et ✗ ; contraste de 3 au moins sur le fond, en clair comme en sombre.
+    ':root{--th1:#5b3fb5;--th2:#0b6e86;--th3:#8a1f5c;--th4:#56620a;--th5:#6b3a12}' +
+    '@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--th1:#b5a1ff;--th2:#4fd0e6;--th3:#f3a6cf;--th4:#c8d96a;--th5:#e6c3b0}}' +
+    ':root[data-theme="dark"]{--th1:#b5a1ff;--th2:#4fd0e6;--th3:#f3a6cf;--th4:#c8d96a;--th5:#e6c3b0}' +
+    '.th-c>h2{border-left:5px solid var(--th);padding:5px 10px 5px 12px;border-radius:0 8px 8px 0;background:color-mix(in srgb,var(--th) 9%,transparent)}' +
+    '.t-pills a.th-a,nav.jump a.th-a{border:1.5px solid var(--th);gap:7px}.t-pills a.th-a::before,nav.jump a.th-a::before{content:"";flex:none;width:10px;height:10px;border-radius:3px;background:var(--th)}' +
     '.mn-btn{display:inline-flex}' +
     '.mn-voile{position:fixed;inset:0;z-index:50;background:rgba(10,12,18,.5);display:flex;justify-content:flex-end}' +
     '.mn-panneau{background:' + V.bg + ';width:min(100%,420px);height:100%;overflow:auto;padding:max(14px,env(safe-area-inset-top,0px)) 16px max(20px,env(safe-area-inset-bottom,0px));display:grid;align-content:start;gap:10px;box-sizing:border-box}' +
@@ -209,7 +217,7 @@
   var WA = 'https://wa.me/?text=' + encodeURIComponent(APP_MSG);
   var appli = function () { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; };
   var lien = function (p) { return '<a href="' + p.u + '"' + (p.large ? ' class="mn-large"' : '') + (p.u === ici ? ' aria-current="page"' : '') + '>' + icone(p.ic) + '<b>' + p.l + '</b><span>' + p.t + '</span></a>'; };
-  // Les pages par groupe (« Chaque jour », « Les missions mesurées », « Repères, sans calcul ») : un intitulé avant chaque groupe.
+  // Les pages par groupe (« Chaque jour », « Les missions de l'État », « Repères, sans calcul ») : un intitulé avant chaque groupe.
   var liste = function (L) { var g = null; return L.map(function (p) { var h = p.g && p.g !== g ? '<h3 class="mn-g">' + p.g + '</h3>' : ''; g = p.g || g; return h + lien(p); }).join(''); };
 
   // Fenêtre ouverte (Menu, Partager) : le Tab tourne dans la fenêtre, sans passer derrière le voile.
@@ -381,7 +389,17 @@
     });
   }
   var plierPrevu = 0;
-  function plierBientot() { if (!plierPrevu) plierPrevu = setTimeout(function () { plierPrevu = 0; plier(); }, 120); }
+  function plierBientot() { if (!plierPrevu) plierPrevu = setTimeout(function () { plierPrevu = 0; plier(); teinter(); }, 120); }
+  // La couleur de chaque thème (pages de mission, Démographie) : posée sur le thème et sur ses raccourcis, dans l'ordre de la page.
+  // Les thèmes sont écrits par la page après le chargement des données : revu à chaque changement de la page, comme plier().
+  function teinter() {
+    Array.prototype.forEach.call(document.querySelectorAll('section.theme[id], div.theme[id]'), function (t, i) {
+      var c = 'var(--th' + (i % 5 + 1) + ')';
+      [t].concat(Array.prototype.slice.call(document.querySelectorAll('.t-pills a[href="#' + t.id + '"], nav.jump a[href="#' + t.id + '"]'))).forEach(function (e, j) {
+        if (e.style.getPropertyValue('--th') !== c) { e.style.setProperty('--th', c); e.classList.add(j ? 'th-a' : 'th-c'); }
+      });
+    });
+  }
 
   // Nouvelle version du site : la page connaît sa version (<meta name="concret-version">, écrite par outils/version.js) et la compare
   // à celle en ligne (donnees/version.json), à l'ouverture et à chaque retour au premier plan (la web app reste ouverte en arrière-plan).
@@ -587,7 +605,7 @@
     document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') verifierVersion(); });
     addEventListener('pageshow', function (e) { if (e.persisted) verifierVersion(); });
     hauteur();
-    plier();
+    plier(); teinter();
     if (window.MutationObserver) new MutationObserver(function (ms) {
       for (var i = 0; i < ms.length; i++) { var t = ms[i].target; if (t.nodeType !== 1) t = t.parentNode; if (t && t.closest && t.closest('p.note, .chart') || ms[i].addedNodes.length) { plierBientot(); return; } }
     }).observe(document.body, { childList: true, characterData: true, subtree: true });
@@ -601,6 +619,19 @@
       var b = document.createElement('button'); b.type = 'button'; b.className = 'mn-btn'; b.setAttribute('aria-haspopup', 'dialog');
       b.innerHTML = '<span>☰ Menu</span>'; b.addEventListener('click', function () { ouvrir(b); }); nav.appendChild(b);
     }
+    // Barre du haut : si les liens ne tiennent pas avant le bouton Menu (texte agrandi, petit écran), on retire d'abord
+    // La vie politique, puis Votez, puis Quiz, puis Baromètre ; ils restent dans le Menu. Jamais de mot coupé ou caché sous le bouton.
+    var barreAjuste = function () {
+      if (!nav) return; var mb = nav.querySelector('.mn-btn'); if (!mb) return;
+      Array.prototype.forEach.call(nav.querySelectorAll('a[data-mn-cache]'), function (a) { a.style.removeProperty('display'); a.removeAttribute('data-mn-cache'); });
+      ['/politique/', '/votez/', '/quiz/', '/barometre/'].some(function (u) {
+        var vis = Array.prototype.filter.call(nav.querySelectorAll('a:not(.logo)'), function (a) { return a.offsetParent && a.getBoundingClientRect().width; });
+        var last = vis[vis.length - 1]; if ((!last || last.getBoundingClientRect().right <= mb.getBoundingClientRect().left - 4) && mb.getBoundingClientRect().right <= document.documentElement.clientWidth) return true;
+        var a = nav.querySelector('a[href="' + u + '"]'); if (a && a.offsetParent && a.getAttribute('aria-current') !== 'page') { a.style.setProperty('display', 'none', 'important'); a.setAttribute('data-mn-cache', '1'); }
+        return false;
+      });
+    };
+    barreAjuste(); addEventListener('resize', barreAjuste); addEventListener('load', barreAjuste); setTimeout(barreAjuste, 600);
     // Sur l'accueil : la même icône devant chaque page de la liste des missions, des repères, du Baromètre et du Quiz.
     Array.prototype.forEach.call(document.querySelectorAll('#missions a.pg, #reperes a.pg, #rendez-vous a.pg'), function (a) {
       var p = PAGES.filter(function (x) { return x.u === a.getAttribute('href'); })[0];

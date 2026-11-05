@@ -52,6 +52,9 @@
     x.fillStyle = bg; x.fillRect(0, 0, c.width, c.height);
     var y = pad;
     x.fillStyle = '#2f5bd3'; x.font = '700 28px "Inter Tight", system-ui, sans-serif'; x.fillText('Concret', pad, y + 10); y += 50;
+    // Un thème de page de mission : sa couleur (commun/menu.js) en barre devant le titre, comme sur la page.
+    var th = card.classList.contains('th-c') ? getComputedStyle(card).getPropertyValue('--th').trim() : '';
+    if (th) { x.fillStyle = th; x.fillRect(pad - 26, y - 6, 9, tl.length * 54 - 2); }
     x.fillStyle = fg; x.font = '700 44px "Inter Tight", system-ui, sans-serif'; tl.forEach(function (l) { x.fillText(l, pad, y + 30); y += 54; });
     x.font = '400 36px "Inter Tight", system-ui, sans-serif'; ml.forEach(function (l) { x.fillText(l, pad, y + 28); y += 46; }); y += 24;
     x.drawImage(shot, 0, 0, shot.width, shot.height, (W - sw) / 2, y, sw, sh); y += sh + 30;

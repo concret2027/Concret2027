@@ -11,6 +11,11 @@
     '.toile-svg{display:block;width:100%;max-width:560px;height:auto;margin:4px auto 0;overflow:visible}' +
     '.toile-svg .ax{stroke:var(--line);stroke-width:1;fill:none}.toile-svg .ri{stroke:var(--line);stroke-width:1;fill:none}' +
     '.toile-svg .lb{fill:var(--fg);font-weight:600}.toile-svg .rg{fill:var(--muted);font-size:10px}' +
+    // Les noms des indicateurs sont des liens vers leur courbe : une zone à toucher autour de chaque nom, et le bout de son axe.
+    '.toile-svg .lbk{cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}.toile-svg .lbk .hit{fill:transparent;stroke:none}' +
+    '.toile-svg .lbk:hover .lb,.toile-svg .lbk:focus-visible .lb{fill:var(--fr);text-decoration:underline}.toile-svg .lbk:focus-visible .hit{stroke:var(--fr);stroke-width:2}' +
+    '@keyframes toile-flash{0%{box-shadow:0 0 0 3px var(--fr)}100%{box-shadow:0 0 0 3px transparent}}.toile-flash{animation:toile-flash 1.6s ease-out}' +
+    '@media (prefers-reduced-motion:reduce){.toile-flash{animation:none;box-shadow:0 0 0 3px var(--fr)}}' +
     '.toile-tab{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;margin-top:6px}' +
     '.toile-tab th,.toile-tab td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}' +
     '.toile-tab th:first-child,.toile-tab td:first-child{text-align:left;white-space:normal}.toile-tab th{font-size:11.5px;color:var(--muted);font-weight:600}' +
@@ -38,6 +43,45 @@
     return { axes: axes, omis: omis, notes: notes };
   }
 
+  // Aller à un indicateur depuis la toile : sa courbe (a.cible, sinon « ch- » suivi de la fin de a.cle). Une petite courbe est
+  // agrandie, un bloc replié ouvert ; sans courbe sur la page, le thème ou la partie « Les thèmes ». La cible est posée juste
+  // sous les bandeaux collés du haut et brièvement entourée.
+  function trouver(a) {
+    var ids = [a.cible, a.cle ? 'ch-' + String(a.cle).split('.').pop() : null].filter(Boolean);
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]); if (el) return el;
+      // Petite courbe (pages de mission) : un toucher l'agrandit, la courbe prend son identifiant.
+      var mi = document.querySelector('.mini[data-courbe="' + ids[i] + '"]');
+      if (mi) { mi.click(); return document.getElementById(ids[i]) || mi; }
+    }
+    return document.getElementById('courbes');
+  }
+  function aller(a, clavier) {
+    var el = trouver(a); if (!el) return;
+    for (var d = el; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
+    // Le cadre de la courbe ; la courbe principale d'un thème : le thème entier (son titre juste au-dessus de la courbe).
+    // Un indicateur sans courbe (Finances : échanges, intérêts) mène à son critère, un bouton : on le montre, lui seul.
+    var c = el.matches('button, a') ? el : el.closest('.grand > .card, .card.courbe-p, .card, .mo, .theme') || el, pose = c;
+    if (c.classList.contains('courbe-p')) pose = c.closest('.theme') || c;
+    while (pose.parentElement && !pose.getClientRects().length) pose = pose.parentElement;
+    if (!c.getClientRects().length) c = pose;
+    var aller1 = function (doux) {
+      var n = document.querySelector('nav.site'), jp = document.querySelector('nav.jump');
+      var haut = (n ? n.offsetHeight : 0) + (jp ? jp.offsetHeight : 0) + 12;
+      window.scrollTo({ top: Math.max(0, window.pageYOffset + pose.getBoundingClientRect().top - haut), behavior: doux ? (window.ConcretMenu ? ConcretMenu.doux() : 'smooth') : 'auto' });
+      return haut;
+    };
+    // Dès l'image suivante (le bloc ouvert ou la courbe agrandie a pris sa place).
+    requestAnimationFrame(function () {
+      var haut = aller1(true);
+      c.classList.remove('toile-flash'); void c.offsetWidth; c.classList.add('toile-flash');
+      setTimeout(function () { c.classList.remove('toile-flash'); }, 1700);
+      if (clavier && window.ConcretMenu) ConcretMenu.focaliser(c);
+      // La page bouge encore (courbes qui se dessinent au-dessus) : une fois posée, on remet la cible en place.
+      setTimeout(function () { var h = pose.getBoundingClientRect().top; if (Math.abs(h - haut) > 40) aller1(false); }, 1300);
+    });
+  }
+
   function dessiner(id, o) {
     var box = document.getElementById(id); if (!box) return;
     if (!document.getElementById('toile-css')) { var st = document.createElement('style'); st.id = 'toile-css'; st.textContent = css; document.head.appendChild(st); }
@@ -47,7 +91,8 @@
     // sans la plage de l'axe (elle est dans « Les chiffres »), et la toile un peu plus petite pour leur laisser la place.
     var pt = (box.clientWidth || 440) < 500, FS = pt ? 15 : 11.5, LH = pt ? 17 : 13;
     var W = 440, R = pt ? (n > 9 ? 92 : 100) : (n > 9 ? 108 : 118), cx = W / 2, cy = pt ? 200 : 195, H = 400;
-    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'toile-svg', role: 'img', 'aria-label': o.titre || 'Toile des indicateurs' });
+    // Un groupe (et pas une image) : les noms des indicateurs sont des liens, atteignables au clavier et par les lecteurs d'écran.
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'toile-svg', role: 'group', 'aria-label': o.titre || 'Toile des indicateurs' });
     var ang = function (i) { return -Math.PI / 2 + 2 * Math.PI * i / n; };
     // Échelle de chaque axe : de 0 (ou du plus bas, s'il est négatif) au plus haut des pays affichés.
     axes.forEach(function (a) {
@@ -65,24 +110,48 @@
       var anc = Math.abs(c) < (n > 9 ? 0.1 : 0.25) ? 'middle' : c > 0 ? 'start' : 'end';
       var L = lignes(a.lt || a.l, pt ? 12 : n > 9 ? 13 : 15) /* lt : libellé court sur la toile, nom complet dans « Les chiffres » */, rg = fmt(a.lo, a.dec) + ' à ' + fmt(a.hi, a.dec) + (a.u || '');
       var RG = pt ? [] : lignes(rg, 17), tot = L.length + RG.length, y0 = ly + (s < -0.25 ? -(tot - 1) * LH : s > 0.25 ? 4 : -(tot - 1) * LH / 2 + 4);
-      LB.push({ x: lx, y: y0, anc: anc, L: L, rg: RG, h: tot * LH });
+      LB.push({ x: lx, y: y0, anc: anc, L: L, rg: RG, h: tot * LH, i: i, ex: x, ey: y });
     });
     // Chevauchements : de chaque côté, de haut en bas, un libellé descend sous le précédent s'il le touche.
     ['start', 'end'].forEach(function (cote) {
       var l = LB.filter(function (b) { return b.anc === cote; }).sort(function (a, b) { return a.y - b.y; }), bas = -Infinity;
       l.forEach(function (b) { if (b.y < bas + LH + 3) b.y = bas + LH + 3; bas = b.y + b.h - LH; });
     });
-    var Hmax = 0;
+    var Hmax = 0, LG = [];
     LB.forEach(function (b) {
+      var a = axes[b.i], lien = !!(a.cible || a.cle);
       var t = el('text', { x: b.x, y: b.y, 'text-anchor': b.anc, class: 'lb', 'font-size': FS });
       b.L.forEach(function (m, j) { var ts = el('tspan', { x: b.x, dy: j ? LH : 0 }); ts.textContent = m; t.appendChild(ts); });
       b.rg.forEach(function (m) { var r = el('tspan', { x: b.x, dy: LH, class: 'rg' }); r.textContent = m; t.appendChild(r); });
-      svg.appendChild(t); Hmax = Math.max(Hmax, b.y + b.h);
+      Hmax = Math.max(Hmax, b.y + b.h);
+      if (!lien) { svg.appendChild(t); return; }
+      // Le nom mène à la courbe de l'indicateur : une zone à toucher autour du nom (quelques signes de marge), et le bout de l'axe.
+      var g = el('g', { class: 'lbk', role: 'link', tabindex: '0', 'data-i': b.i, 'aria-label': 'Aller à : ' + a.l });
+      var w = Math.max.apply(null, b.L.concat(b.rg).map(function (m) { return m.length; })) * FS * 0.56, p = 9;
+      var hx0 = b.anc === 'end' ? b.x - w : b.anc === 'start' ? b.x : b.x - w / 2, hy0 = b.y - FS * 0.85;
+      g.appendChild(el('circle', { class: 'hit', cx: b.ex, cy: b.ey, r: 16 }));
+      g.appendChild(el('rect', { class: 'hit', x: hx0 - p, y: hy0 - p, width: w + 2 * p, height: (b.L.length + b.rg.length - 1) * LH + FS * 1.1 + 2 * p, rx: 8 }));
+      g.tb = [hx0, hy0, hx0 + w, hy0 + (b.L.length + b.rg.length - 1) * LH + FS * 1.1]; // le nom lui-même
+      g.appendChild(t); LG.push(g);
     });
     // Libellés qui dépassent à gauche ou à droite : la vue s'élargit pour les montrer en entier.
     var x0 = 0, x1 = W; LB.forEach(function (b) { var w = Math.max.apply(null, b.L.concat(b.rg).map(function (m) { return m.length; })) * FS * 0.56; if (b.anc === 'end') x0 = Math.min(x0, b.x - w - 4); else if (b.anc === 'start') x1 = Math.max(x1, b.x + w + 4); else { x0 = Math.min(x0, b.x - w / 2 - 4); x1 = Math.max(x1, b.x + w / 2 + 4); } });
     var top = Math.min(0, Math.min.apply(null, LB.map(function (b) { return b.y - LH; })));
     svg.setAttribute('viewBox', x0 + ' ' + top + ' ' + (x1 - x0) + ' ' + (Math.max(H, Hmax + 6) - top));
+    // Zones à toucher de 44 px au moins à l'écran (la toile est réduite sur téléphone) : agrandies autour de leur centre,
+    // sans jamais couvrir le nom d'un indicateur voisin (un toucher sur un nom mène toujours à cet indicateur).
+    var mn = 44 * (x1 - x0) / Math.max(200, Math.min(560, (window.innerWidth || 440) - 70));
+    LG.forEach(function (g) {
+      var r = g.querySelector('rect'), q = [+r.getAttribute('x'), +r.getAttribute('y')], z = [q[0] + +r.getAttribute('width'), q[1] + +r.getAttribute('height')];
+      if (z[1] - q[1] < mn) { var dy = (mn - (z[1] - q[1])) / 2; q[1] -= dy; z[1] += dy; }
+      if (z[0] - q[0] < mn) { var dx = (mn - (z[0] - q[0])) / 2; q[0] -= dx; z[0] += dx; }
+      var m = (g.tb[1] + g.tb[3]) / 2;
+      LG.forEach(function (h) {
+        if (h === g || h.tb[2] < q[0] || h.tb[0] > z[0] || h.tb[3] < q[1] || h.tb[1] > z[1]) return;
+        if ((h.tb[1] + h.tb[3]) / 2 > m) z[1] = Math.max(g.tb[3], Math.min(z[1], h.tb[1] - 2)); else q[1] = Math.min(g.tb[1], Math.max(q[1], h.tb[3] + 2));
+      });
+      r.setAttribute('x', q[0]); r.setAttribute('y', q[1]); r.setAttribute('width', z[0] - q[0]); r.setAttribute('height', z[1] - q[1]);
+    });
     // Les pays : le premier de la liste est dessiné en dernier (la France au-dessus).
     S.slice().reverse().forEach(function (s) {
       var P = axes.map(function (a, i) { var v = a.v[s.k]; if (v == null) return null; var f = 0.1 + 0.9 * (v - a.lo) / (a.hi - a.lo); return [cx + R * f * Math.cos(ang(i)), cy + R * f * Math.sin(ang(i))]; });
@@ -99,6 +168,8 @@
       }
       P.forEach(function (p) { if (p) svg.appendChild(el('circle', { cx: p[0], cy: p[1], r: s.main ? 3.6 : 2.8, fill: s.c })); });
     });
+    // Les noms-liens par-dessus les formes des pays (le bout d'un axe reste touchable même sous un point).
+    LG.forEach(function (g) { svg.appendChild(g); });
     var ys = {}; axes.forEach(function (a) { ys[a.y] = 1; });
     var annees = Object.keys(ys).sort(), an = annees.length === 1 ? annees[0] : annees[0] + ' à ' + annees[annees.length - 1];
     var manque = S.filter(function (s) { return axes.some(function (a) { return a.v[s.k] == null; }); }).map(function (s) {
@@ -109,6 +180,14 @@
     box.innerHTML = '<h2 class="inv"><span class="eyebrow">' + esc((nomPage && nomPage.length < 40 ? nomPage + ' : ' : '') + (o.titre || 'La France et ses voisins')).replace(/ : La France/, ' : la France') + '</span>Dernier chiffre connu de chaque indicateur (' + esc(an) + ')</h2>' +
       '<div class="toile-l">' + S.map(function (s) { return '<span><i class="' + (s.dash ? 'd' : '') + '" style="border-top-color:' + s.c + (s.pointille ? ';border-top-style:dotted' : '') + '"></i>' + esc(s.n) + '</span>'; }).join('') + '</div>';
     box.appendChild(svg);
+    box.toileAxes = axes;
+    if (LG.length) { var nl = document.createElement('p'); nl.className = 'note toile-lien'; nl.textContent = o.lien || 'Touchez le nom d\'un indicateur pour voir sa courbe.'; box.appendChild(nl); }
+    if (!box.dataset.toileLien) {
+      box.dataset.toileLien = '1';
+      var ouvrir = function (e, clavier) { var g = e.target.closest && e.target.closest('.lbk'), a = g && box.toileAxes && box.toileAxes[+g.getAttribute('data-i')]; if (!a) return; e.preventDefault(); aller(a, clavier); };
+      box.addEventListener('click', function (e) { ouvrir(e, e.detail === 0); });
+      box.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') ouvrir(e, true); });
+    }
     var note = document.createElement('p'); note.className = 'note';
     var ax0 = (o.axes || []).filter(function (a) { return a && a.l; })[0];
     note.textContent = 'Plus loin du centre : un chiffre plus élevé, pas forcément mieux' + (ax0 ? ' (par exemple « ' + ax0.l + ' »)' : '') + '. Chaque axe va du plus bas (0, ou moins pour un chiffre négatif) au plus haut des pays affichés ; la plage de chaque axe est dans « Les chiffres ». Aucun résultat sur 20 ici : ils sont calculés année par année, plus bas.' +
