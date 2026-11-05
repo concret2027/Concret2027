@@ -96,7 +96,7 @@
     { u: '/barometre/', l: 'Baromètre 2027', t: 'Sondages et parieurs', ic: 'barometre', g: 'Chaque jour' },
     { u: '/quiz/', l: 'Quiz du jour', t: 'Huit questions sourcées', ic: 'quiz', g: 'Chaque jour' },
     { u: '/votez/', l: 'Votez les lois', t: 'Les vrais votes de l\'Assemblée, à votre tour', ic: 'votez', g: 'Chaque jour' },
-    { u: '/budget/', l: 'Votre budget 2027', t: 'Le budget mesure par mesure, et le défi du jour', ic: 'budget', g: 'Chaque jour' },
+    { u: '/budget/', l: 'Votre budget 2027', t: 'Des mesures pour 2027, une par une, et le défi du jour', ic: 'budget', g: 'Chaque jour' },
     { u: '/vie/', l: 'Vie des Français', t: 'Pouvoir d\'achat, logement, travail', ic: 'vie', g: 'Les missions mesurées' },
     { u: '/finances/', l: 'Finances publiques', t: 'Dette, déficit, impôts', ic: 'finances', g: 'Les missions mesurées' },
     { u: '/sante/', l: 'Santé', t: 'Espérance de vie, soins, prévention', ic: 'sante', g: 'Les missions mesurées' },
