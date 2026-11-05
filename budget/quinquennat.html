@@ -985,7 +985,7 @@ body.q-vote { padding-bottom: 92px; }
       '<p>Source : ' + esc(c.src.doc) + (c.src.page ? ', page ' + esc(String(c.src.page).replace(/^p\. ?/, '')) : '') + '. <a href="' + esc(c.src.url) + '">Lire le document</a></p>' +
       '<details class="q-extrait"><summary>Extrait exact du document</summary><p>« ' + esc(c.src.citation) + ' »</p></details>' +
       (J.population && !exemplesCarte(c).L.length ? '<p>Repère : ' + nf(Math.abs(m) * 1e9 / J.population.v, Math.abs(m) * 1e9 / J.population.v < 10 ? 1 : 0) + '\u00a0€ par habitant et par an (calcul de Concret : ' + mdt(Math.abs(m)) + ' divisés par ' + nf(J.population.v / 1e6, 1) + ' millions d\'habitants, Insee ; pour comparer, ce n\'est pas forcément ce que paie ou reçoit chacun).</p>' : '') +
-      '<p>' + (c.macro && J.variantes[c.macro] ? 'Son effet sur l\'activité et l\'emploi est compté, d\'après le modèle de la direction du Trésor et de l\'Insee.' : 'Son effet sur l\'activité n\'est pas compté : le modèle de la direction du Trésor et de l\'Insee ne le publie pas pour ce type de mesure.') + '</p></details>' +
+      '<p>' + (c.macro && J.variantes[c.macro] ? (S.macro ? 'Son effet sur l\'activité et l\'emploi est compté, d\'après le modèle de la direction du Trésor et de l\'Insee.' : 'Son effet sur l\'activité et l\'emploi n\'est pas compté : la case « Compter l\'effet de vos choix sur l\'activité » est décochée (Bilan, « Changer les hypothèses »). Le modèle de la direction du Trésor et de l\'Insee le publie pour ce type de mesure.') : 'Son effet sur l\'activité n\'est pas compté : le modèle de la direction du Trésor et de l\'Insee ne le publie pas pour ce type de mesure.') + '</p></details>' +
       '<p class="q-question">Êtes-vous pour ce qui est proposé ?</p><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
     glisser($('q-card'), c);
     $('b-tard').onclick = function () { passer(); };
@@ -1112,12 +1112,14 @@ body.q-vote { padding-bottom: 92px; }
   // Accord avec chaque groupe : même calcul que Votez les lois (depuis le 28 octobre 2026). Sur chaque mesure, la part des députés
   // du groupe qui ont voté comme vous, une abstention comptant pour moitié d'un côté comme de l'autre ; pas compté : un groupe
   // dont moins de 5 députés, ou moins d'un quart des membres, ont voté ; les mesures que tous les groupes ont votées pareil.
-  var VOTANTS_MIN = 5, PART_MIN = 0.25;
+  var VOTANTS_MIN = 5, PART_MIN = 0.25, MIN_GROUPE = 3;
   function unanime(c) { var p = null, ok = true; J.groupes.forEach(function (g) { if (g.c === 'NI') return; var x = c.an.g[g.c]; if (!x || x === 'nv') return; if (p == null) p = x; else if (x !== p) ok = false; }); return ok; }
   function proches() {
-    var acc = {}, n = 0, un = 0;
+    var acc = {}, n = 0, un = 0, vu = {};
     C.forEach(function (c) {
       var v = S.v[c.id]; if (!c.an || (v !== 1 && v !== -1 && v !== 3)) return;
+      // Deux cartes peuvent porter sur le même vote des députés (un amendement qui retire deux mesures) : il ne compte qu'une fois.
+      if (vu[c.an.n]) return; vu[c.an.n] = 1;
       if (unanime(c)) { un++; return; }
       n++;
       // Votre choix dit dans le sens du scrutin (le scrutin peut porter sur la suppression de la mesure : sens −1).
@@ -1128,7 +1130,9 @@ body.q-vote { padding-bottom: 92px; }
         var x = (u === 'p' ? p + a / 2 : u === 'k' ? k + a / 2 : a + (p + k) / 2) / t, o = acc[g.c] = acc[g.c] || { p: 0, n: 0 }; o.n++; o.p += x;
       });
     });
-    return { n: n, un: un, tot: C.filter(function (c) { return c.an && !unanime(c); }).length, G: J.groupes.filter(function (g) { return acc[g.c]; }).map(function (g) { return { g: g, v: 100 * acc[g.c].p / acc[g.c].n, nb: acc[g.c].n }; }) };
+    var tv = {}; C.forEach(function (c) { if (c.an && !unanime(c)) tv[c.an.n] = 1; });
+    // Un groupe n'est montré que s'il a assez voté sur au moins 3 de ces mesures.
+    return { n: n, un: un, tot: Object.keys(tv).length, peu: J.groupes.filter(function (g) { return acc[g.c] && acc[g.c].n < MIN_GROUPE; }).map(function (g) { return g.n; }), G: J.groupes.filter(function (g) { return acc[g.c] && acc[g.c].n >= MIN_GROUPE; }).map(function (g) { return { g: g, v: 100 * acc[g.c].p / acc[g.c].n, nb: acc[g.c].n }; }) };
   }
   // L'hémicycle : chaque groupe à sa place (plan officiel de l'Assemblée), sa part proportionnelle à ses sièges ;
   // la partie colorée va du centre vers le bord selon votre accord avec lui.
@@ -1150,7 +1154,9 @@ body.q-vote { padding-bottom: 92px; }
   function proximite(P, min, court) {
     if (P.n < min) return '<p class="q-note">Votez encore ' + (min - P.n) + ' mesure' + (min - P.n > 1 ? 's' : '') + ' sur lesquelles les groupes de députés n\'ont pas tous voté pareil, et vous verrez desquels vos votes sont le plus proches.</p>';
     var G = P.G.slice().sort(function (a, b) { return b.v - a.v; }), top = G.filter(function (x) { return Math.abs(x.v - G[0].v) < 0.5; });
-    return '<p class="q-gros">' + (top.length > 1 ? 'À égalité, vos votes ressemblent le plus à ceux de : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b>' : 'Vos votes ressemblent le plus à ceux du groupe <b>' + esc(G[0].g.n) + '</b>') + ' (' + nf(G[0].v, 0) + '\u00a0% d\'accord, sur ' + P.n + ' des ' + P.tot + ' mesures sur lesquelles les groupes de députés n\'ont pas tous voté pareil).</p>' +
+    var peu = P.peu.length ? '<p class="q-note">Pas montré' + (P.peu.length > 1 ? 's' : '') + ' : ' + esc(P.peu.join(', ')) + '. Sur vos votes, leurs députés ont assez voté sur moins de 3 mesures (au moins 5 votants et un quart du groupe).</p>' : '';
+    if (!G.length) return '<p class="q-note">Sur les mesures que vous avez votées, aucun groupe de députés n\'a assez voté sur au moins 3 d\'entre elles (au moins 5 votants et un quart du groupe). Votez d\'autres mesures pour voir desquels vos votes sont le plus proches.</p>';
+    return '<p class="q-gros">' + (top.length > 1 ? 'À égalité, vos votes ressemblent le plus à ceux de : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b>' : 'Vos votes ressemblent le plus à ceux du groupe <b>' + esc(G[0].g.n) + '</b>') + ' (' + nf(G[0].v, 0) + '\u00a0% d\'accord, sur ' + G[0].nb + ' mesure' + (G[0].nb > 1 ? 's' : '') + ' où ses députés ont assez voté ; vous avez voté ' + P.n + ' des ' + P.tot + ' mesures sur lesquelles les groupes n\'ont pas tous voté pareil).</p>' + peu +
       '<div class="q-hemi">' + hemicycle(P) + '</div>' + (court ? '<div class="q-barres">' + G.slice(0, 3).map(barreG).join('') + '</div><details class="q-tous"><summary>Voir les ' + G.length + ' groupes</summary><div class="q-barres">' + G.slice(3).map(barreG).join('') + '</div></details>' : '<div class="q-barres">' + G.map(barreG).join('') + '</div>') +
       '<p class="q-note">Chaque groupe de députés est à sa place dans l\'Assemblée ; plus la part foncée est grande, plus ses députés ont voté comme vous. Sur chaque mesure : la part des députés du groupe qui ont voté comme vous, une abstention comptant pour moitié (même calcul que Votez les lois). Ne comptent pas : un groupe dont moins de 5 députés, ou moins d\'un quart des membres, ont voté' + (P.un ? ' ; ' + P.un + ' de vos votes, sur des mesures que tous les groupes ont votées pareil' : ' ; les mesures que tous les groupes ont votées pareil') + ' ; les députés sans groupe.</p>';
   }
@@ -1208,7 +1214,7 @@ body.q-vote { padding-bottom: 92px; }
     var pc = +$('q-pc').value, e = effetPerso(choisi, pc);
     $('q-pc-v').textContent = (pc > 0 ? '+' : pc < 0 ? '−' : '') + Math.abs(pc) + '\u00a0%';
     $('q-effet').innerHTML = pc ? '<b>' + mdt(Math.abs(e)) + '</b> ' + phrase(e, { sens: choisi.groupe === 'depense' ? 'depense' : 'recette' }) + ' par an, à partir de ' + AN0 : 'Choisissez de combien baisser ou augmenter cette ligne.';
-    $('q-ch-h').textContent = pc ? 'Calcul de Concret : ' + Math.abs(pc) + '\u00a0% de ' + mdt(choisi.md) + ' en ' + choisi.an + ' ; le montant suit ensuite la croissance de l\'économie. On suppose que les comportements ne changent pas' + (choisi.macro && J.variantes[choisi.macro] ? ', sauf l\'effet sur l\'activité et l\'emploi, qui est compté : ' + (e >= 0 ? 'une partie de ce gain ne réduit pas le déficit, parce que l\'activité ralentit (modèle de la direction du Trésor et de l\'Insee).' : 'une partie de ce coût est compensée, parce que l\'activité accélère (modèle de la direction du Trésor et de l\'Insee).') : ' ; aucun effet sur l\'activité n\'est compté pour ce type de ligne.') : '';
+    $('q-ch-h').textContent = pc ? 'Calcul de Concret : ' + Math.abs(pc) + '\u00a0% de ' + mdt(choisi.md) + ' en ' + choisi.an + ' ; le montant suit ensuite la croissance de l\'économie. On suppose que les comportements ne changent pas' + (choisi.macro && J.variantes[choisi.macro] && S.macro ? ', sauf l\'effet sur l\'activité et l\'emploi, qui est compté : ' + (e >= 0 ? 'une partie de ce gain ne réduit pas le déficit, parce que l\'activité ralentit (modèle de la direction du Trésor et de l\'Insee).' : 'une partie de ce coût est compensée, parce que l\'activité accélère (modèle de la direction du Trésor et de l\'Insee).') : (choisi.macro && J.variantes[choisi.macro] ? ' ; l\'effet sur l\'activité n\'est pas compté (case décochée, Bilan, « Changer les hypothèses »).' : ' ; aucun effet sur l\'activité n\'est compté pour ce type de ligne.')) : '';
     parPersonne(pc);
     // Aperçu : le bandeau tel qu'il serait avec ce choix.
     var av = S.perso[choisi.k], A1, gV = JSON.stringify(S.v), gP = JSON.stringify(S.perso);
@@ -1584,7 +1590,9 @@ body.q-vote { padding-bottom: 92px; }
   function simPreset(k) { return simuler({ vote: etatPreset(k), perso: {}, unites: {} }); }
   function infoPreset(k) {
     var L = C.filter(function (c) { return c.preset && c.preset[k]; }), t = L.reduce(function (a, c) { return a + montant(c, AN0); }, 0), mo = k === 'an' ? L.filter(function (c) { return c.preset.modifie; }).length : 0;
-    return L.length + ' mesure' + (L.length > 1 ? 's' : '') + ' du projet chiffrées à au moins 300 millions d\'euros, ' + mdt(t) + ' en ' + AN0 + (mo ? ' (' + mo + ' modifiée' + (mo > 1 ? 's' : '') + ' par les députés : montants du texte d\'origine, le nouveau n\'est pas chiffré)' : '');
+    // La règle de choix : les mesures du projet d'au moins 300 M€ ; la carte sur l'accès des étrangers aux prestations, plus petite, est comptée à part.
+    var pt = L.filter(function (c) { return Math.abs(montant(c, AN0)) < 0.295; }).length, gd = L.length - pt;
+    return gd + ' mesure' + (gd > 1 ? 's' : '') + ' du projet chiffrées à au moins 300 millions d\'euros' + (pt ? ' et ' + pt + ' plus petite' + (pt > 1 ? 's' : '') + ' (l\'accès des étrangers aux prestations, seule mesure chiffrée sur ce sujet)' : '') + ', ' + mdt(t) + ' en ' + AN0 + (mo ? ' (' + mo + ' modifiée' + (mo > 1 ? 's' : '') + ' par les députés : montants du texte d\'origine, le nouveau n\'est pas chiffré)' : '');
   }
   var confPreset = null;
   function presets() {
@@ -1683,7 +1691,7 @@ body.q-vote { padding-bottom: 92px; }
     var moi = -an1(R).solde, mieux = classe.filter(function (c) { return c.v < moi - 0.05; }).map(function (c) { return (DE[c.n] || c.n) + ' (' + nf(c.v, 1) + '\u00a0%)'; }), moins = classe.filter(function (c) { return c.v >= moi - 0.05; }).map(function (c) { return DE[c.n] || c.n; });
     $('q-cmp').innerHTML = '<p class="q-gros">En ' + a + ', votre déficit (' + defic(an1(R).solde) + ') serait ' + (mieux.length ? 'plus haut que celui ' + et(mieux) + (moins.length ? ', et pas plus haut que celui ' + et(moins) : '') : 'pas plus haut que celui ' + et(moins)) + ', d\'après les prévisions du FMI pour ces pays.</p>' +
       '<div style="overflow-x:auto"><table class="q-cmp"><thead><tr><th></th><th>Déficit ' + a + '</th><th>Déficit ' + z + '</th><th>Dette ' + z + '</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' +
-      '<p class="q-note">¹ ' + infoPreset('gouv') + '. L\'Assemblée a rejeté les deux projets de loi en première lecture : le budget de la Sécurité sociale le 23 octobre 2026, le budget de l\'État le 4 novembre 2026. Les votes des députés sur chaque mesure, avant ce rejet : ' + infoPreset('an') + ' ; les mesures sur lesquelles ils n\'ont pas voté sont comptées comme dans le texte du Gouvernement ; les mesures ajoutées par les députés ne sont pas comptées. Calcul de Concret pour ' + a + ', avec les mêmes hypothèses que votre budget : le point de départ n\'est pas celui du Gouvernement, et seules ses mesures chiffrées d\'au moins 300 M€ comptent ; un résultat égal à sa cible ne veut donc pas dire que ses mesures l\'atteignent ; rien après ' + a + ' : la trajectoire du Gouvernement pour les années suivantes n\'est pas dans le jeu. <button type="button" class="q-lien" data-p="gouv">Jouer le budget du Gouvernement</button> · <button type="button" class="q-lien" data-p="an">Jouer les votes des députés</button></p>' +
+      '<p class="q-note">¹ ' + infoPreset('gouv') + '. L\'Assemblée a rejeté les deux projets de loi en première lecture : le budget de la Sécurité sociale le 23 octobre 2026, le budget de l\'État le 4 novembre 2026. Les votes des députés sur chaque mesure, avant ce rejet : ' + infoPreset('an') + ' ; les mesures sur lesquelles ils n\'ont pas voté sont comptées comme dans le texte du Gouvernement ; les mesures ajoutées par les députés ne sont pas comptées. Calcul de Concret pour ' + a + ', avec les mêmes hypothèses que votre budget : le point de départ n\'est pas celui du Gouvernement, et seules ses mesures chiffrées d\'au moins 300 M€ comptent ; l\'écart ou l\'égalité avec sa cible ne dit donc pas si ses mesures l\'atteignent : sa cible part de sa propre prévision ; rien après ' + a + ' : la trajectoire du Gouvernement pour les années suivantes n\'est pas dans le jeu. <button type="button" class="q-lien" data-p="gouv">Jouer le budget du Gouvernement</button> · <button type="button" class="q-lien" data-p="an">Jouer les votes des députés</button></p>' +
       (J.cible ? '<p class="q-note">² Tout le projet de loi de finances, toutes ses mesures comprises : <a href="' + esc(J.cible.url) + '">' + esc(J.cible.source) + '</a>.</p>' : '') +
       (F ? '<p class="q-note">³ Prévisions du FMI, qui comptent les mesures déjà annoncées par chaque gouvernement : <a href="' + esc(F.url) + '">' + esc(F.source.split(',')[0]) + '</a> (édition d\'octobre 2026, la même que la courbe de la dette). Les autres pays ne sont pas des choix de joueurs : ce sont leurs propres prévisions.</p>' : '');
     Array.prototype.forEach.call($('q-cmp').querySelectorAll('button[data-p]'), function (b) { b.onclick = function () { chargerPreset(b.dataset.p); onglet('voter'); window.scrollTo({ top: 0 }); }; });
