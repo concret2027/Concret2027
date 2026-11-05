@@ -561,6 +561,13 @@ body.q-vote { padding-bottom: 92px; }
 .q-effet { margin: 0; font-size: 15px; }
 .q-effet b { font-family: var(--serif); font-weight: 400; font-size: 26px; color: var(--fr); }
 .q-apercu { margin: 0; font-size: 14.5px; font-weight: 600; }
+.q-minis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+.q-mini { margin: 0; padding: 6px 8px 2px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); min-width: 0; }
+.q-mini figcaption { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.q-mini svg { display: block; width: 100%; height: auto; }
+.q-mini-l { margin: 4px 0 0; font-size: 12.5px; font-weight: 400; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.q-mini-l i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; background: var(--fr); }
+.q-mini-l i.s { background: none; border-top: 2px dashed var(--muted); height: 0; margin-left: 8px; }
 /* Bilan */
 .q-tuiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .q-tuile { padding: 10px 12px; border-radius: 12px; background: var(--band); display: grid; gap: 2px; }
@@ -647,7 +654,7 @@ body.q-vote { padding-bottom: 92px; }
         <p class="q-note" id="q-un-n"></p>
         <div class="q-sl"><div class="h"><span>Combien ?</span><b id="q-un-v">0</b></div><input type="number" class="q-recherche" id="q-un-i" step="100" value="0" inputmode="numeric" aria-label="Nombre"><div class="q-presets" id="q-un-p"></div></div>
         <p class="q-effet" id="q-un-e"></p>
-        <p class="q-apercu" id="q-un-a" aria-live="polite"></p>
+        <div class="q-apercu" id="q-un-a" aria-live="polite"></div>
         <p class="q-note" id="q-un-h"></p>
         <button type="button" class="q-go" id="q-un-ok" disabled>Ajouter à mon budget</button>
       </div>
@@ -655,7 +662,7 @@ body.q-vote { padding-bottom: 92px; }
         <div class="q-ch-top"><h3 id="q-ch-t"></h3><button type="button" class="q-ferme" id="q-ch-x" aria-label="Fermer sans rien changer">✕</button></div>
         <div class="q-sl"><div class="h"><span>De combien ?</span><b id="q-pc-v">0 %</b></div><div class="q-presets" id="q-pc-p"></div><input type="range" id="q-pc" min="-100" max="100" step="1" value="0" aria-label="Pourcentage de baisse ou de hausse"><div class="b"><span>−100 %</span><span>0</span><span>+100 %</span></div></div>
         <p class="q-effet" id="q-effet"></p>
-        <p class="q-apercu" id="q-apercu" aria-live="polite"></p>
+        <div class="q-apercu" id="q-apercu" aria-live="polite"></div>
         <button type="button" class="q-go" id="q-ajout" disabled>Ajouter à mon budget</button>
         <details class="q-plie q-ch-det"><summary>Le montant officiel, le calcul et des exemples</summary>
           <p class="q-note" id="q-ch-n"></p>
@@ -1070,8 +1077,24 @@ body.q-vote { padding-bottom: 92px; }
     if (!S.macro) return ' · effet sur la croissance non compté (case décochée : Bilan, « Changer les hypothèses »)';
     var a = an1(A1).L - an1(A0).L, z = A1[A1.length - 1].L - A0[A0.length - 1].L;
     if (Math.abs(a) < 0.005 && Math.abs(z) < 0.005) return '';
-    var f = function (v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + nf(Math.abs(v), 2) + '\u00a0%'; };
+    var f = function (v) { return Math.abs(v) < 0.005 ? '0\u00a0%' : (v > 0 ? '+' : '−') + nf(Math.abs(v), 2) + '\u00a0%'; };
     return ' · activité (PIB) : ' + f(a) + ' en ' + AN0 + ', ' + f(z) + ' en ' + AN1;
+  }
+  function miniCourbes(A0, A1) {
+    var ans = A1.filter(function (r) { return r.an >= AN0; }).map(function (r) { return r.an; });
+    var un = function (titre, f, fmt) {
+      var a = ans.map(function (an) { return f(A0, an); }), b = ans.map(function (an) { return f(A1, an); }), T = a.concat(b);
+      var lo = Math.min.apply(null, T), hi = Math.max.apply(null, T); if (hi - lo < 0.4) { var m = (hi + lo) / 2; lo = m - 0.2; hi = m + 0.2; }
+      var W = 150, H = 74, gx = 6, dx = 40, top = 16, bot = 14, X = function (i) { return gx + (W - gx - dx) * i / (ans.length - 1); }, Y = function (v) { return top + (H - top - bot) * (hi - v) / (hi - lo); };
+      var l = function (V) { return V.map(function (v, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' '); };
+      var ya = Y(a[a.length - 1]), yb = Y(b[b.length - 1]); if (Math.abs(ya - yb) < 11) { if (yb <= ya) yb = ya - 11; else yb = ya + 11; }
+      return '<figure class="q-mini"><figcaption>' + titre + '</figcaption><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(titre) + ' de ' + ans[0] + ' à ' + ans[ans.length - 1] + ', sans et avec ce choix">' +
+        '<path d="' + l(a) + '" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="4 3"/><path d="' + l(b) + '" fill="none" stroke="var(--fr)" stroke-width="2.6"/>' +
+        '<text x="' + (W - dx + 4) + '" y="' + (ya + 4) + '" font-size="10.5" fill="var(--muted)">' + fmt(a[a.length - 1]) + '</text><text x="' + (W - dx + 4) + '" y="' + (yb + 4) + '" font-size="10.5" font-weight="700" fill="var(--fr)">' + fmt(b[b.length - 1]) + '</text>' +
+        '<text x="' + gx + '" y="' + (H - 2) + '" font-size="9.5" fill="var(--muted)">' + ans[0] + '</text><text x="' + (W - dx) + '" y="' + (H - 2) + '" font-size="9.5" text-anchor="end" fill="var(--muted)">' + ans[ans.length - 1] + '</text></svg></figure>';
+    };
+    var pcf = function (v) { return (v < 0 ? '−' : '') + nf(Math.abs(v), 1) + '\u00a0%'; };
+    return '<div class="q-minis">' + un('Déficit', function (L, an) { return -ligneAn(L, an).solde; }, pcf) + un('Croissance', function (L, an) { return croiss(L, an); }, pcf) + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>sans</p>';
   }
   function premiere(c) { for (var a = AN0; a <= AN1; a++) if (montant(c, a)) return 'rien avant ' + a + ', puis ' + mdt(montant(c, a), true) + ' en ' + a; return 'rien avant ' + (AN1 + 1); }
   // Ce que votent les joueurs : le compteur de Concret (le même que pour le quiz, un total par choix, rien qui identifie la
@@ -1108,7 +1131,8 @@ body.q-vote { padding-bottom: 92px; }
   // Amène un élément juste sous le bandeau du haut (il ne passe plus dessous).
   function sousBandeau(el) { var h = $('q-collant').getBoundingClientRect().bottom, t = el.getBoundingClientRect().top; if (Math.abs(t - h - 8) > 4) window.scrollBy({ top: t - h - 8 }); }
   // Le bandeau se réduit quand on fait défiler vers le bas (les onglets se cachent), et revient en entier en remontant.
-  (function () { var y0 = window.scrollY; window.addEventListener('scroll', function () { var y = window.scrollY, c = $('q-collant'); if (!c) return; if (y > y0 + 6 && y > 400) c.classList.add('q-mini'); else if (y < y0 - 6 || y < 400) c.classList.remove('q-mini'); y0 = y; }, { passive: true }); })();
+  (function () { var y0 = window.scrollY, t0 = 0; window.addEventListener('scroll', function () { var y = window.scrollY, c = $('q-collant'), now = Date.now(); if (!c) return; if (now - t0 < 400) { y0 = y; return; } var bas = y + innerHeight > document.documentElement.scrollHeight - 80, mini = c.classList.contains('q-mini');
+      if (!mini && y > y0 + 30 && y > 400 && !bas) { c.classList.add('q-mini'); t0 = now; } else if (mini && (y < y0 - 30 || y < 400)) { c.classList.remove('q-mini'); t0 = now; } if (Math.abs(y - y0) > 30 || y < 400) y0 = y; }, { passive: true }); })();
   function remonter() { var k = $('q-prog') || $('q-deck'), h = $('q-collant').getBoundingClientRect().bottom, t = k.getBoundingClientRect().top; if (t < h + 8 || t > innerHeight * 0.55) window.scrollBy({ top: t - h - 12, behavior: 'smooth' }); }
   function filtres() {
     var F = [['tout', 'Toutes'], ['recette', 'Recettes'], ['depense', 'Dépenses']].concat(Object.keys(J.themes).filter(function (t) { return C.some(function (c) { return c.theme === t; }); }).map(function (t) { return [t, J.themes[t]]; }));
@@ -1246,7 +1270,7 @@ body.q-vote { padding-bottom: 92px; }
     var ligneE = function (t, v, cl, det) { return '<div><span class="t">' + t + ' : <b>' + mdt(v) + '</b>' + (det ? ' <small style="color:var(--muted)">(' + det + ')</small>' : '') + '</span><span class="r"><em class="' + cl + '" style="left:0;width:' + (v / mx * 100) + '%"></em></span><span class="v"></span></div>'; };
     var det = function (a, la, b, lb) { return [a ? la + ' ' + mdt(a) : '', b ? lb + ' ' + mdt(b) : ''].filter(Boolean).join(', '); };
     var barresE = (red || aug) ? '<div class="q-barres e1">' + (red ? ligneE('Ce qui réduit le déficit', red, '', det(E.imp, 'recettes en plus', E.eco, 'dépenses en moins')) : '') + (aug ? ligneE('Ce qui l\'augmente', aug, 'b2', det(E.baisse, 'recettes en moins', E.dep, 'dépenses en plus')) : '') + '</div>' : '';
-    var act = S.macro && nbChoix() && Math.abs(apres - net) >= 0.1 ? '<p class="q-note">Avec l\'effet sur l\'activité, vos mesures ' + (apres >= 0 ? 'baissent' : 'augmentent') + ' le déficit de ' + AN0 + ' de ' + mdt(Math.abs(apres)) + ', au lieu de ' + mdt(Math.abs(net)) + ' : l\'activité ' + (apres < net ? 'ralentit' : 'accélère') + ' cette année-là (modèle de la direction du Trésor et de l\'Insee).</p>' : '';
+    var act = S.macro && nbChoix() && Math.abs(apres - net) >= 0.1 ? '<p class="q-note">Sur le papier, vos mesures ' + (net >= 0 ? 'baissent' : 'augmentent') + ' le déficit de ' + AN0 + ' de ' + mdt(Math.abs(net)) + ' ; avec leur effet sur l\'activité, elles l\'' + (apres >= 0 ? 'abaissent' : 'augmentent') + ' de ' + mdt(Math.abs(apres)) + ' : l\'activité ' + (apres < net ? 'ralentit' : 'accélère') + ' cette année-là (modèle de la direction du Trésor et de l\'Insee).</p>' : '';
     var prec = mode === 'etape' && S.hist ? Object.keys(S.hist).map(Number).filter(function (k) { return k < nbDecisions(); }).sort(function (a, b) { return b - a; })[0] : null;
     return '<div class="q-res"><p class="q-gros">' + (nbChoix() ? 'Vos mesures ' + (net >= 0 ? 'rapportent <b>' + mdt(net) + '</b>' : 'coûtent <b>' + mdt(-net) + '</b>') + ' en ' + AN0 + '.' : 'Vous n\'avez encore adopté aucune mesure.') +
       ' Le déficit de ' + AN0 + (defic(z1.solde) === defic(r1.solde) ? ' reste à <b>' + defic(r1.solde) + '</b> du PIB (moins de 0,1 point d\'écart),' : ' passe de ' + defic(z1.solde) + ' à <b>' + defic(r1.solde) + '</b> du PIB,') + ' la dette de ' + f.an + ' serait de <b>' + nf(f.d, 1) + '\u00a0%</b>' + (nf(f.d, 1) === nf(zf.d, 1) ? ', comme sans vos mesures' : ' au lieu de ' + nf(zf.d, 1) + '\u00a0%') + '.</p>' +
@@ -1290,7 +1314,7 @@ body.q-vote { padding-bottom: 92px; }
     if (pc) S.perso[choisi.k] = pc; else delete S.perso[choisi.k];
     A1 = simuler(); S.v = JSON.parse(gV); S.perso = JSON.parse(gP);
     $('q-apercu').innerHTML = (pc !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1, effetPerso(choisi, pc) - effetPerso(choisi, av || 0)) + (choisi.macro && J.variantes[choisi.macro] ? effetPIB(R, A1) : (S.macro ? ' (effet sur l\'activité non publié pour ce type de ligne : non compté)' : '')) : '') +
-      (remp.length ? '<br>Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' »' : ''; }).join(', ') + ' (les deux portent sur le même argent).' : '');
+      (pc !== (av || 0) ? miniCourbes(R, A1) : '') + (remp.length ? '<br>Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' »' : ''; }).join(', ') + ' (les deux portent sur le même argent).' : '');
     $('q-ajout').disabled = !pc || pc === av; $('q-ajout').textContent = S.perso[choisi.k] != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
   }
   // ---------- Concrètement : des cas types calculés par Concret avec les règles officielles en vigueur ----------
@@ -1469,7 +1493,7 @@ body.q-vote { padding-bottom: 92px; }
     else $('q-un-e').innerHTML = '<b>' + mdp(m) + '</b> ' + (m < 0 ? 'de dépenses en plus' : 'de dépenses en moins') + ' par an, à partir de ' + AN0 +
       (u.effectif && u.effectif.v ? '<br>Sur le terrain : ' + (n > 0 ? '+' : '−') + nf(100 * Math.abs(n) / u.effectif.v, 1) + '\u00a0% par rapport aux ' + nf(Math.round(u.effectif.v), 0) + ' emplois prévus pour ' + u.effectif.annee + ' (' + esc(String(u.effectif.unite).split(' (')[0].split(' ;')[0]) + ').' : '');
     var av = S.unites[u.k], A1; if (n) S.unites[u.k] = n; else delete S.unites[u.k]; A1 = simuler(); if (av == null) delete S.unites[u.k]; else S.unites[u.k] = av;
-    $('q-un-a').textContent = n !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1) + effetPIB(R, A1) : '';
+    $('q-un-a').innerHTML = n !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1) + effetPIB(R, A1) + miniCourbes(R, A1) : '';
     var jd = u.journee_detention;
     $('q-un-h').innerHTML = !n ? '' : u.type === 'construction'
       ? 'Calcul de Concret : nombre de places × ' + eu(u.cout) + ', réparti également sur les ' + nb + ' années (hypothèse de Concret, la durée des chantiers n\'étant pas fixée).' + (jd ? ' Une fois ouverte, une place occupée coûte ' + eu(jd.v * 365) + ' par an (' + eu(jd.v, 2) + ' par jour, ' + esc(String(jd.annee)) + ') : ce coût n\'est pas compté ici, faute de date d\'ouverture connue.' : '')
@@ -1480,11 +1504,13 @@ body.q-vote { padding-bottom: 92px; }
     tuiles();
     var norm = function (t) { return t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
     $('q-cherche').oninput = function () {
-      var q = norm($('q-cherche').value.trim()), L = q.length < 2 ? [] : J.assiettes.filter(function (x) { return norm(x.l + ' ' + (x.note || '')).indexOf(q) >= 0; }).slice(0, 40);
-      $('q-vide').hidden = !(q.length >= 2 && !L.length);
-      $('q-resultats').hidden = !L.length; if (L.length) sousBandeau($('q-cherche'));
-      $('q-resultats').innerHTML = L.map(function (x) { return '<li><button type="button" data-k="' + esc(x.k) + '">' + esc(x.l) + '<span>' + md(x.md) + '\u00a0Md€</span></button></li>'; }).join('');
-      Array.prototype.forEach.call($('q-resultats').querySelectorAll('button'), function (b) { b.onclick = function () { choisir(b.dataset.k); $('q-resultats').hidden = true; $('q-cherche').value = ''; }; });
+      var q = norm($('q-cherche').value.trim()), dansTitre = function (x) { return norm(x.l).indexOf(q) >= 0; }, dansNote = function (x) { return !dansTitre(x) && norm(x.note || '').indexOf(q) >= 0; };
+      var U = q.length < 2 ? [] : (J.unites || []).filter(function (u) { return norm(u.l + ' ' + (u.k || '')).indexOf(q) >= 0 || (q.length >= 4 && norm(u.l).indexOf(q.slice(0, -1)) >= 0); });
+      var LT = q.length < 2 ? [] : J.assiettes.filter(dansTitre), L = (LT.length || U.length ? LT : J.assiettes.filter(dansNote)).slice(0, 40);
+      $('q-vide').hidden = !(q.length >= 2 && !L.length && !U.length);
+      $('q-resultats').hidden = !(L.length || U.length); if (L.length || U.length) sousBandeau($('q-cherche'));
+      $('q-resultats').innerHTML = U.map(function (u) { return '<li><button type="button" data-u="' + esc(u.k) + '">' + esc(u.l) + '<span>recruter ou construire</span></button></li>'; }).join('') + L.map(function (x) { return '<li><button type="button" data-k="' + esc(x.k) + '">' + esc(x.l) + '<span>' + mdt(x.md) + '</span></button></li>'; }).join('');
+      Array.prototype.forEach.call($('q-resultats').querySelectorAll('button'), function (b) { b.onclick = function () { if (b.dataset.u) choisirUnite(b.dataset.u); else choisir(b.dataset.k); $('q-resultats').hidden = true; $('q-cherche').value = ''; }; });
     };
     $('q-pc-p').innerHTML = [-20, -10, -5, 0, 5, 10, 20].map(function (v) { return '<button type="button" data-v="' + v + '">' + (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + '\u00a0%</button>'; }).join('');
     Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.onclick = function () { $('q-pc').value = b.dataset.v; majCreer(); }; });
