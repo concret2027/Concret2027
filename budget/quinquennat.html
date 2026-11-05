@@ -411,6 +411,10 @@ details.card.fold > summary { min-height: 44px; display: flex; align-items: cent
 .q-top .q-chips button { min-height: 40px; font-size: 13.5px; }
 .q-ami { padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--fr); background: var(--panel); display: grid; gap: 8px; }
 .q-ami .q-chips button { min-height: 44px; }
+.q-suite { display: inline; }
+.q-suite summary { display: inline; cursor: pointer; color: var(--fr); font-weight: 600; font-size: .92em; }
+.q-suite[open] summary { display: none; }
+.q-clair > div { margin: 0 0 6px; }
 .q-ami-i { margin: 0; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--fr); background: var(--panel); }
 .q-defm { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); }
 .q-defm button { font: inherit; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 10px 0; margin: -10px 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
@@ -496,6 +500,7 @@ details.card.fold > summary { min-height: 44px; display: flex; align-items: cent
 .q-pl b { font-weight: 700; }
 .q-det-ouvert .q-ress { display: none; }
 body.q-grand nav.site a:not(.logo) { display: none; }
+body.q-grand .q-hs.q-msg { max-height: calc(3 * 1.35em + 2px); -webkit-line-clamp: 3; line-clamp: 3; }
 body.q-grand.q-vote .q-ress, body.q-grand.q-vote .q-hd-s, body.q-grand.q-vote .q-jauge { display: none; }
 body.q-grand.q-vote .q-hud { padding-top: 5px; padding-bottom: 5px; }
 .q-hs:not(.q-msg) { max-height: none; display: block; -webkit-line-clamp: unset; line-clamp: unset; }
@@ -1005,7 +1010,7 @@ body.q-vote { padding-bottom: 92px; }
     var AO = anObj(), r = ligneAn(R, AO), f = R[R.length - 1], g1 = croiss(R, AN0), gz = croiss(R, AN1), p1 = croiss(R0, AN0), pz = croiss(R0, AN1), t;
     if (x === 'd') t = 'Déficit ' + AO + ' : ce que l\'État, la Sécurité sociale et les collectivités dépensent de plus qu\'ils ne reçoivent dans l\'année, rapporté au PIB, la richesse produite en France en un an (' + mdt(r.pib) + ' en ' + AO + '). ' + defic(r.solde) + ' du PIB, c\'est ' + mdt(Math.max(0, -r.solde) / 100 * r.pib) + '.';
     else if (x === 't') t = 'Dette ' + f.an + ' : ce que doivent l\'État, la Sécurité sociale et les collectivités, rapporté au PIB, la richesse produite en un an. ' + nf(f.d, 1) + '\u00a0% du PIB, c\'est ' + mdt(f.d / 100 * f.pib) + ' (fin ' + PJ.depart.an + ' : ' + nf(PJ.depart.dette, 1) + '\u00a0%).';
-    else t = 'Croissance : la hausse du PIB, hors hausse des prix. Prévision du FMI : ' + pcs(p1) + ' en ' + AN0 + ', ' + pcs(pz) + ' en ' + AN1 + (Math.abs(g1 - p1) >= 0.05 || Math.abs(gz - pz) >= 0.05 ? ' ; avec l\'effet de vos choix sur l\'économie (modèle de la direction du Trésor et de l\'Insee) : ' + pcs(g1) + ' et ' + pcs(gz) + '.' : ' ; vos choix ne la changent presque pas pour l\'instant.') + (sansEffet() >= 0.05 ? ' Pas compté : l\'effet de ' + mdt(sansEffet()) + ' de vos mesures (impôt sur les sociétés, patrimoine, âge de la retraite…), faute de chiffre publié année par année.' : '');
+    else t = '<ul class="q-pl"><li><b>Croissance</b> : la hausse du PIB, hors hausse des prix.</li><li>Prévision du FMI : ' + pcs(p1) + ' en ' + AN0 + ', ' + pcs(pz) + ' en ' + AN1 + '.</li><li>' + (Math.abs(g1 - p1) >= 0.05 || Math.abs(gz - pz) >= 0.05 ? 'Avec vos choix (modèle de la direction du Trésor et de l\'Insee) : ' + pcs(g1) + ' et ' + pcs(gz) + '.' : 'Vos choix ne la changent presque pas pour l\'instant.') + '</li>' + (sansEffet() >= 0.05 ? '<li>Pas compté : l\'effet de ' + mdt(sansEffet()) + ' de vos mesures (impôt sur les sociétés, patrimoine, âge de la retraite…).</li>' : '') + '</ul>';
     pop(t, true, t);
     var h = $('q-hs'); h.querySelector('.q-det').click(); var hb = $('q-hud').getBoundingClientRect(); if (hb.bottom > innerHeight || hb.top < 0) $('q-hud').scrollIntoView({ block: 'nearest' });
   }
@@ -1013,7 +1018,7 @@ body.q-vote { padding-bottom: 92px; }
   var popT = null, POP = false, ONG = 'voter';
   // Avec « court » : le bandeau garde une ligne (le résultat), et « Détail » ouvre le message entier ; il reste ouvert tant qu'on le lit.
   function pop(t, long, court) {
-    clearTimeout(popT); POP = true; var el = $('q-hs'); el.className = 'q-hs'; $('q-hud').classList.remove('q-det-ouvert'); void el.offsetWidth; el.className = 'q-hs q-msg';
+    clearTimeout(popT); POP = true; var el = $('q-hs'); el.className = 'q-hs'; el.scrollTop = 0; $('q-hud').classList.remove('q-det-ouvert'); void el.offsetWidth; el.className = 'q-hs q-msg';
     var fin = function (ms) { clearTimeout(popT); popT = setTimeout(function () { POP = false; hud(); }, ms); };
     if (court) {
       el.innerHTML = '<span class="q-court">' + court + '</span><span class="q-plein" hidden>' + t + '</span> <button type="button" class="q-det" aria-expanded="false">Détail</button>';
@@ -1158,7 +1163,8 @@ body.q-vote { padding-bottom: 92px; }
     var di = CAS('droits_inscription') || {}, fr = CAS('franchises') || {};
     var T = { licence: di.licence_eur, master: di.master_eur, doctorat: di.doctorat_eur, boite: fr.franchise_par_boite_medicament_eur, consultation: fr.participation_forfaitaire_par_consultation_ou_acte_eur, transport: fr.franchise_par_transport_sanitaire_eur, plafond: fr.plafond_annuel_total_eur };
     var r = function (t) { return nb(t).replace(/\{(\w+)\}/g, function (m, k) { return T[k] != null ? eu(T[k]) : m; }); };
-    return '<div class="q-clair">' + (c.clair.a ? '<p><b>Aujourd\'hui :</b> ' + r(c.clair.a) + '</p>' : '') + '<p><b>Proposé :</b> ' + r(c.clair.p) + '</p></div>';
+    var court = function (t) { var m = /^([\s\S]{30,}?[.;:])\s+(?=[A-ZÉÀÈÊÔ«])/.exec(t); if (!m || t.length - m[0].length < 25) return t; return m[1] + ' <details class="q-suite"><summary>Lire la suite</summary>' + t.slice(m[0].length) + '</details>'; };
+    return '<div class="q-clair">' + (c.clair.a ? '<div><b>Aujourd\'hui :</b> ' + court(r(c.clair.a)) + '</div>' : '') + '<div><b>Proposé :</b> ' + court(r(c.clair.p)) + '</div></div>';
   }
   // Sur la carte : le premier cas type, en clair ; les autres et le montant par habitant dans le dépliant « Concrètement ».
   function concretCarte(c, m) {
@@ -1221,20 +1227,21 @@ body.q-vote { padding-bottom: 92px; }
     }).catch(function () {});
   }
   // Le message d'un vote : la version courte du bandeau et le détail (montant et sens, ce qui reste, l'effet sur l'économie).
-  function msgVote(c, v, A0, A1, retirees) {
+  function msgVote(c, v, A0, A1, retirees, retP) { retP = retP || [];
     var m0 = montant(c, AN0);
     var reste = avantApres(A0, A1, null, true), ma = c.effet ? montant(c, anObj()) : 0, pays = chgPays(A0, A1), dl = duel(c, v);
     var hors = m0 ? quoi(c.sens, m0) : premiere(c), plein, court;
     if (v === 1) {
-      var RO = retirees.map(function (id) { return C.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean), rem = RO.map(function (o) { return esc(o.titre || o.l); });
+      var RO = retirees.map(function (id) { return C.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean), rem = RO.map(function (o) { return esc(o.titre || o.l); }).concat(retP.map(function (x) { return 'votre mesure « ' + esc(AS[x.k].l.split(' (')[0]) + ' ' + (x.pc > 0 ? '+' : '−') + Math.abs(x.pc) + '\u00a0% »'; }));
+      var pP = retP.reduce(function (t, x) { return t + effetPerso(AS[x.k], x.pc); }, 0), kPo = (PIBY[anObj()] || PIBY[AN0]) / PIBY[AN0];
       // Une mesure qui en remplace une autre : le montant net (cette mesure moins celle qu'elle remplace), l'année du budget.
-      var net = m0 - RO.reduce(function (t, o) { return t + montant(o, AN0); }, 0), netA = ma - RO.reduce(function (t, o) { return t + montant(o, anObj()); }, 0);
+      var net = m0 - RO.reduce(function (t, o) { return t + montant(o, AN0); }, 0) - pP, netA = ma - RO.reduce(function (t, o) { return t + montant(o, anObj()); }, 0) - pP * kPo;
       plein = rem.length ? ['<b>Adoptée</b>, à la place de : ' + rem.join(', ') + '.', 'Au total : ' + (Math.abs(net) < 0.05 ? 'presque rien ne change' : quoi(c.sens, net)) + ' en ' + AN0 + ' (cette mesure seule : ' + (m0 ? quoi(c.sens, m0) : premiere(c)) + ').', maj1(reste) + '.', ecoPhrase(A0, A1, netA, !!c.macro)]
         : ['<b>Adoptée</b> : ' + (m0 ? quoi(c.sens, m0) + ' en ' + AN0 : premiere(c)) + '.', maj1(reste) + '.', m0 || ma ? ecoPhrase(A0, A1, ma, !!c.macro) : ''];
       var mc = rem.length ? net : m0; court = '✓ Adoptée' + (Math.abs(mc) >= 0.05 ? (mc > 0 ? ', rapporte ' : ', coûte ') + mdt(Math.abs(mc)).replace(' d\'euros', '') : '') + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver');
     } else {
       plein = [(v === -1 ? '<b>Contre</b> : la règle actuelle reste.' : '<b>Abstention</b> : la mesure n\'est pas adoptée.'), m0 ? maj1(hors) + ' : pas dans votre budget.' : '', maj1(reste) + '.'];
-      court = (v === -1 ? '✗ Contre' : 'Abstention') + (m0 ? ', ' + mdt(Math.abs(m0)).replace(' d\'euros', '') + (Math.abs(m0) >= 1.95 ? ' non retenus' : ' non retenu') : '') + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver');
+      court = (v === -1 ? '✗ Contre' : 'Abstention') + (m0 ? ' · sans ces ' + quoi(c.sens, m0).replace(' d\'euros', '') : '') + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver');
     }
     // Le détail en points, un par ligne : le montant, ce qui reste, l'économie, le pays, le budget reçu, l'Assemblée, le Sénat.
     var L = plein.concat([pays.replace(/^ · /, ''), dl.replace(/^ · /, '')], echoAssemblee(c, v).split('<br>')).filter(function (t) { return t && t.replace(/<[^>]+>/g, '').trim(); });
@@ -1245,15 +1252,15 @@ body.q-vote { padding-bottom: 92px; }
     return { plein: '<ul class="q-pl">' + L.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>', court: court + dl };
   }
   function voter(c, v) {
-    var A0 = simuler(), r1 = an1(A0).solde, avant = S.v[c.id], retirees = [];
+    var A0 = simuler(), r1 = an1(A0).solde, avant = S.v[c.id], retirees = [], retP = [];
     // Mesures qui se recouvrent : en adopter une retire les autres (même groupe, ou liste « exclut » dans un sens ou dans l'autre).
     if (v === 1) C.forEach(function (o) { if (o !== c && S.v[o.id] === 1 && ((c.exclusif && o.exclusif === c.exclusif) || (c.exclut || []).indexOf(o.id) >= 0 || (o.exclut || []).indexOf(c.id) >= 0)) { S.v[o.id] = 2; retirees.push(o.id); } });
-    if (v === 1) Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(c.id) >= 0) { delete S.perso[k]; } });
+    if (v === 1) Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(c.id) >= 0) { retP.push({ k: k, pc: S.perso[k] }); delete S.perso[k]; } });
     S.v[c.id] = v; S.pile.push({ id: c.id, avant: avant == null ? null : avant, retirees: retirees }); garder();
     var el = $('q-card'); if (el) el.classList.add(v === 1 ? 'out-r' : 'out-l');
     var A1 = simuler(), echo = duel(c, v) + echoAssemblee(c, v), m0 = montant(c, AN0);
-    var MV = msgVote(c, v, A0, A1, retirees);
-    pop(MV.plein, true, MV.court); $('q-hs').dataset.carte = c.id; joueurs(c, v);
+    var MV = msgVote(c, v, A0, A1, retirees, retP);
+    pop(MV.plein, true, MV.court); $('q-hs').dataset.carte = c.id; joueurs(c, v); if (retP.length) mesCreer();
     if (v === 3) { setTimeout(function () { tout(true, true); remonter(); }, 260); return; }
     setTimeout(function () { tout(true, true); remonter(); }, 260);
   }
@@ -1357,12 +1364,12 @@ body.q-vote { padding-bottom: 92px; }
   // Changer un vote déjà donné, depuis la liste (sans passer par la carte).
   function changerVote(c, v) {
     if (S.v[c.id] === v) return;
-    var A0 = simuler(), avant = S.v[c.id], retirees = [];
+    var A0 = simuler(), avant = S.v[c.id], retirees = [], retP = [];
     if (v === 1) C.forEach(function (o) { if (o !== c && S.v[o.id] === 1 && ((c.exclusif && o.exclusif === c.exclusif) || (c.exclut || []).indexOf(o.id) >= 0 || (o.exclut || []).indexOf(c.id) >= 0)) { S.v[o.id] = 2; retirees.push(o.id); } });
-    if (v === 1) Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(c.id) >= 0) delete S.perso[k]; });
+    if (v === 1) Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(c.id) >= 0) { retP.push({ k: k, pc: S.perso[k] }); delete S.perso[k]; } });
     S.v[c.id] = v; S.pile.push({ id: c.id, avant: avant == null ? null : avant, retirees: retirees }); garder();
-    var A1 = simuler(), MV = msgVote(c, v, A0, A1, retirees), t = esc(c.titre || c.l);
-    pop('<b>' + t + '</b> : ' + MV.plein, true, MV.court);
+    var A1 = simuler(), MV = msgVote(c, v, A0, A1, retirees, retP), t = esc(c.titre || c.l);
+    pop('<b>' + t + '</b> : ' + MV.plein, true, MV.court); if (retP.length) mesCreer();
     tout(); if (!$('p-bilan').hidden) bilan();
   }
   // Un bouton qui efface demande une confirmation : premier appui, le texte change ; second appui dans les 5 secondes, l'action.
@@ -1380,7 +1387,7 @@ body.q-vote { padding-bottom: 92px; }
   function ajusterBoutons() { var b = $('b-abst'); if (!b) return; b.textContent = 'Abstention'; b.removeAttribute('aria-label'); if (b.scrollWidth > b.clientWidth + 1) { b.textContent = 'Abst.'; b.setAttribute('aria-label', 'Abstention'); } }
   window.addEventListener('resize', function () { ajusterBoutons(); });
   function grand() { document.body.classList.toggle('q-grand', TS() > 1.15); }
-  function barre() { grand(); var v = !$('p-voter').hidden && !!suivante() && CARTE_VUE && !speciale(), on = v && !etapeDue(), et = v && !!etapeDue(); $('q-bar').hidden = !on; $('q-bar2').hidden = !et; if (on && !barre.aj) { barre.aj = 1; setTimeout(ajusterBoutons, 50); } document.body.classList.toggle('q-vote', on || et); $('b-undo').disabled = $('b-undo2').disabled = !S.pile.length; }
+  function barre() { grand(); var v = !$('p-voter').hidden && !!suivante() && CARTE_VUE && !speciale(), on = v && !etapeDue(), et = v && !!etapeDue(); $('q-bar').hidden = !on; $('q-bar2').hidden = !et; if (on) setTimeout(ajusterBoutons, 50); document.body.classList.toggle('q-vote', on || et); $('b-undo').disabled = $('b-undo2').disabled = !S.pile.length; }
 
   // ---------- Le résumé (étapes, fin, bilan) ----------
   // Accord avec chaque groupe : même calcul que Votez les lois (depuis le 28 octobre 2026). Sur chaque mesure, la part des députés
@@ -1428,7 +1435,7 @@ body.q-vote { padding-bottom: 92px; }
   function proximite(P, min, court) {
     if (P.n < min) return '<p class="q-note">Votez encore ' + (min - P.n) + ' mesure' + (min - P.n > 1 ? 's' : '') + ' sur lesquelles les groupes de députés n\'ont pas tous voté pareil, et vous verrez desquels vos votes sont le plus proches.</p>';
     var G = P.G.slice().sort(function (a, b) { return b.v - a.v; }), top = G.filter(function (x) { return Math.abs(x.v - G[0].v) < 0.5; });
-    var peu = P.peu.length ? '<p class="q-note">Pas montré' + (P.peu.length > 1 ? 's' : '') + ' : ' + esc(P.peu.join(', ')) + '. Sur vos votes, leurs députés ont assez voté sur moins de ' + MIN_GROUPE + ' mesures (au moins 5 votants et un quart du groupe).</p>' : '';
+    var peu = P.peu.length ? '<p class="q-note">Pas assez de votes comparables pour : ' + esc(P.peu.join(', ')) + '.</p>' : '';
     if (!G.length) return '<p class="q-note">Pas encore assez de mesures comparables avec les groupes de députés (il en faut ' + MIN_GROUPE + '). Votez-en d\'autres.</p>';
     if (G[0].v < 50) return '<p class="q-gros">Aucun groupe de députés n\'a voté comme vous sur la plupart de ces mesures' + (G[0].v >= 20 ? '. Le plus proche : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b> (' + nf(G[0].v, 0) + '\u00a0% d\'accord, sur ' + G[0].nb + ' mesures).' : ' (aucun au-dessus de 20\u00a0% d\'accord).') + '</p>' + peu +
       '<div class="q-hemi">' + hemicycle(P) + '</div>' + (court ? '<details class="q-tous"><summary>Voir les ' + G.length + ' groupes</summary><div class="q-barres">' + G.map(barreG).join('') + '</div></details>' : '<div class="q-barres">' + G.map(barreG).join('') + '</div>');
@@ -1501,7 +1508,7 @@ body.q-vote { padding-bottom: 92px; }
     var dP = effetPerso(choisi, pc) - effetPerso(choisi, av || 0), sP = choisi.k === 'allegements' ? 'recette' : choisi.groupe, kP = (PIBY[anObj()] || PIBY[AN0]) / PIBY[AN0];
     // Les votes que ce choix remplace sortent du budget : le montant net, et l'effet sur l'économie mesuré sur ce net.
     var RC = remp.map(function (id) { return C.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean), r0 = RC.reduce(function (t, c) { return t + montant(c, AN0); }, 0), rA = RC.reduce(function (t, c) { return t + montant(c, anObj()); }, 0), nD = dP - r0;
-    $('q-apercu').innerHTML = (pc !== (av || 0) ? '<p class="q-ap-t">Avec ce choix : ' + (RC.length ? 'au total ' + (Math.abs(nD) < 0.05 ? 'presque rien ne change' : quoi(sP, nD)) + ' en ' + AN0 + ' (cette ligne seule : ' + quoi(sP, dP) + ')' : quoi(sP, dP) + ' en ' + AN0) + '. ' + maj1(avantApres(R, A1, null, true)) + '. ' + ecoPhrase(R, A1, dP * kP - rA, !!(choisi.macro && J.variantes[choisi.macro])) + '</p>' : '') +
+    $('q-apercu').innerHTML = (pc !== (av || 0) ? '<ul class="q-pl q-ap-t"><li><b>Avec ce choix</b> : ' + (RC.length ? 'au total ' + (Math.abs(nD) < 0.05 ? 'presque rien ne change' : quoi(sP, nD)) + ' en ' + AN0 + ' (cette ligne seule : ' + quoi(sP, dP) + ')' : quoi(sP, dP) + ' en ' + AN0) + '.</li><li>' + maj1(avantApres(R, A1, null, true)) + '.</li><li>' + ecoPhrase(R, A1, dP * kP - rA, !!(choisi.macro && J.variantes[choisi.macro])) + '</li></ul>' : '') +
       (pc !== (av || 0) ? miniCourbes(R, A1) : '') + (remp.length ? '<br>Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' » (' + quoi(o.sens, montant(o, AN0)) + ')' : ''; }).join(', ') + ' : les deux portent sur le même argent, ce montant sort de votre budget.' : '');
     $('q-ajout').disabled = !pc || pc === av; $('q-ajout').textContent = S.perso[choisi.k] != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
   }
@@ -1686,7 +1693,7 @@ body.q-vote { padding-bottom: 92px; }
       (u.effectif && u.effectif.v ? '<br>Sur le terrain : ' + (n > 0 ? '+' : '−') + nf(100 * Math.abs(n) / u.effectif.v, 1) + '\u00a0% par rapport aux ' + nf(Math.round(u.effectif.v), 0) + ' emplois prévus pour ' + u.effectif.annee + ' (' + esc(String(u.effectif.unite).split(' (')[0].split(' ;')[0]) + ').' : '');
     var av = S.unites[u.k], A1; if (n) S.unites[u.k] = n; else delete S.unites[u.k]; A1 = simuler(); if (av == null) delete S.unites[u.k]; else S.unites[u.k] = av;
     var dU = unMd(u, n, AN0) - unMd(u, av || 0, AN0);
-    $('q-un-a').innerHTML = n !== (av || 0) ? '<p class="q-ap-t">Avec ce choix : ' + quoi('depense', dU) + ' en ' + AN0 + '. ' + maj1(avantApres(R, A1, null, true)) + '. ' + ecoPhrase(R, A1, unMd(u, n, anObj()) - unMd(u, av || 0, anObj()), true) + '</p>' + miniCourbes(R, A1) : '';
+    $('q-un-a').innerHTML = n !== (av || 0) ? '<ul class="q-pl q-ap-t"><li><b>Avec ce choix</b> : ' + quoi('depense', dU) + ' en ' + AN0 + '.</li><li>' + maj1(avantApres(R, A1, null, true)) + '.</li><li>' + ecoPhrase(R, A1, unMd(u, n, anObj()) - unMd(u, av || 0, anObj()), true) + '</li></ul>' + miniCourbes(R, A1) : '';
     var jd = u.journee_detention;
     $('q-un-h').innerHTML = !n ? '' : u.type === 'construction'
       ? 'Calcul de Concret : nombre de places × ' + eu(u.cout) + ', réparti également sur les ' + nb + ' années (hypothèse de Concret, la durée des chantiers n\'étant pas fixée).' + (jd ? ' Une fois ouverte, une place occupée coûte ' + eu(jd.v * 365) + ' par an (' + eu(jd.v, 2) + ' par jour, ' + esc(String(jd.annee)) + ') : ce coût n\'est pas compté ici, faute de date d\'ouverture connue.' : '')
@@ -1697,7 +1704,9 @@ body.q-vote { padding-bottom: 92px; }
     tuiles();
     var norm = function (t) { return t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
     $('q-cherche').oninput = function () {
-      var q = norm($('q-cherche').value.trim()), dansTitre = function (x) { return norm(x.l).indexOf(q) >= 0; }, dansNote = function (x) { return !dansTitre(x) && norm(x.note || '').indexOf(q) >= 0; };
+      // Mots courants qui mènent à la bonne ligne (« hôpital » → l'assurance maladie, « école » → l'enseignement scolaire…).
+      var SYN = { hopital: 'assurance maladie', hopitaux: 'assurance maladie', medecin: 'assurance maladie', soins: 'assurance maladie', sante: 'assurance maladie', ecole: 'enseignement scolaire', ecoles: 'enseignement scolaire', college: 'enseignement scolaire', lycee: 'enseignement scolaire', armee: 'defense', militaire: 'defense', fonctionnaire: 'salaires des agents', fonctionnaires: 'salaires des agents', chomage: 'allocations chomage', logement: 'logement', pension: 'retraites', pensions: 'retraites', essence: 'carburants', gazole: 'carburants' };
+      var q0 = norm($('q-cherche').value.trim()), q = SYN[q0] || q0, dansTitre = function (x) { return norm(x.l).indexOf(q) >= 0; }, dansNote = function (x) { return !dansTitre(x) && norm(x.note || '').indexOf(q) >= 0; };
       var U = q.length < 2 ? [] : (J.unites || []).filter(function (u) { return norm(u.l + ' ' + (u.k || '')).indexOf(q) >= 0 || (q.length >= 4 && norm(u.l).indexOf(q.slice(0, -1)) >= 0); });
       var LT = q.length < 2 ? [] : J.assiettes.filter(dansTitre), L = (LT.length || U.length ? LT : J.assiettes.filter(dansNote)).slice(0, 40);
       $('q-vide').hidden = !(q.length >= 2 && !L.length && !U.length);
@@ -1747,7 +1756,7 @@ body.q-vote { padding-bottom: 92px; }
   // ---------- Le bilan ----------
   function courbe(series, o) {
     o = o || {}; var pas = o.pas || 5, un = o.unite || '\u00a0%', dec = o.dec || 0, refs = o.refs || [];
-    var W = Math.round(340 / TS()), H = Math.round((o.h || 180) / Math.sqrt(TS())), g = o.g || 34, dr = o.dr || 46, top = 14, bot = 24, tous = [];
+    var W = Math.round(320 / TS()), H = Math.round((o.h || 180) / Math.sqrt(TS())), g = o.g || 34, dr = o.dr || 46, top = 14, bot = 24, tous = [];
     series.forEach(function (s) { s.L.forEach(function (p) { tous.push(p.d); }); }); refs.forEach(function (r) { tous.push(r.v); });
     var lo = Math.floor(Math.min.apply(null, tous) / pas) * pas, hi = Math.ceil(Math.max.apply(null, tous) / pas) * pas; if (o.zero != null) lo = Math.min(lo, o.zero); if (hi - lo < 2 * pas) hi = lo + 2 * pas;
     var a0 = series[0].L[0].an, a1 = series[0].L[series[0].L.length - 1].an;
@@ -1760,7 +1769,7 @@ body.q-vote { padding-bottom: 92px; }
     var ys = [], fins = series.map(function (s) { var p = s.L[s.L.length - 1], y = Y(p.d) + 4; ys.forEach(function (o) { if (Math.abs(o - y) < 12) y = o + (y >= o ? 12 : -12); }); ys.push(y); return '<text x="' + (X(p.an) + 5) + '" y="' + y + '" font-size="11.5" font-weight="700" fill="' + s.c + '">' + nf(p.d, o.decFin != null ? o.decFin : 0) + un + '</text>'; }).join('');
     var zone = series.filter(function (s) { return s.zone; })[0];
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(o.aria || 'Dette publique en % du PIB') + '">' + gr +
-      (a1 - a0 <= 6 ? (function () { var t = ''; for (var a = a0; a <= a1; a++) t += '<text x="' + X(a) + '" y="' + (H - 6) + '" text-anchor="' + (a === a0 ? 'start' : a === a1 ? 'end' : 'middle') + '" font-size="10.5" fill="var(--muted)">' + a + '</text>'; return t; })() : '<text x="' + X(a0) + '" y="' + (H - 6) + '" font-size="10.5" fill="var(--muted)">' + a0 + '</text><text x="' + X(a1) + '" y="' + (H - 6) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' + a1 + '</text>') +
+      (a1 - a0 <= 6 && (W - g - dr) / (a1 - a0) >= 36 ? (function () { var t = ''; for (var a = a0; a <= a1; a++) t += '<text x="' + X(a) + '" y="' + (H - 6) + '" text-anchor="' + (a === a0 ? 'start' : a === a1 ? 'end' : 'middle') + '" font-size="10.5" fill="var(--muted)">' + a + '</text>'; return t; })() : '<text x="' + X(a0) + '" y="' + (H - 6) + '" font-size="10.5" fill="var(--muted)">' + a0 + '</text><text x="' + X(a1) + '" y="' + (H - 6) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' + a1 + '</text>') +
       (zone ? '<path d="' + ligne(zone.zone[0]) + ' ' + zone.zone[1].slice().reverse().map(function (p) { return 'L' + X(p.an).toFixed(1) + ' ' + Y(p.d).toFixed(1); }).join(' ') + ' Z" fill="var(--band2)"/>' : '') +
       series.map(function (s) { return '<path d="' + ligne(s.L) + '" fill="none" stroke="' + s.c + '" stroke-width="' + (s.w || 2) + '"' + (s.dash ? ' stroke-dasharray="' + s.dash + '"' : '') + '/>'; }).join('') + lab + fins + '</svg>';
   }
@@ -1819,7 +1828,7 @@ body.q-vote { padding-bottom: 92px; }
   function ppLigne(x, pc) {
     var m = x.pp && x.pp.moyenne; if (!m || !x.pp.proportion || !pc) return ''; var v = +m.v; if (!isFinite(v)) return '';
     var calc = function (z) { return nf(z >= 1000 ? Math.round(z / 10) * 10 : Math.round(z), 0) + '\u00a0€'; }, u = esc(String(m.unite).replace(/^€\s*/, '').replace(/\s*\(.*\)\s*$/, ''));
-    return 'en moyenne, environ <b>' + calc(v * (1 + pc / 100)) + '</b> ' + u + ' au lieu de ' + calc(v) + ', si le changement est le même pour chacun';
+    return 'en moyenne, environ <b>' + calc(v * (1 + pc / 100)) + '</b> ' + u + ' au lieu de ' + calc(v) + ' ; pour la vôtre : ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%, si le changement est le même pour chacun';
   }
   function pourVous() {
     var F = FOY(), sec = $('q-pv-c'); if (!sec) return;
@@ -1827,10 +1836,11 @@ body.q-vote { padding-bottom: 92px; }
     var L = adoptees().map(function (c) { var o = exemplesCarte(c); return { t: c.titre || c.l, e: (o.L || []).filter(function (t) { return F.re.test(t); })[0] }; }).filter(function (x) { return x.e; })
       .concat(Object.keys(S.perso).filter(function (k) { return (AS[k].qui || []).some(function (q) { return F.q.indexOf(q) >= 0; }); }).map(function (k) { var pc = S.perso[k]; return { t: AS[k].l.split(' (')[0] + ' ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%', e: ppLigne(AS[k], pc) }; }).filter(function (x) { return x.e; }));
     $('q-pv-h').textContent = 'Ce que vos mesures changent pour vous (' + F.l.toLowerCase() + ')';
-    $('q-pv').innerHTML = L.length ? L.map(function (x) { return '<li><b>' + esc(x.t) + '</b> : ' + x.e + '</li>'; }).join('') : '<li>Aucune de vos mesures n\'a encore d\'exemple pour vous. Les cartes marquées « Vous concerne » en donnent un ; dans Créer, les lignes qui ont une moyenne publiée aussi.</li>';
+    var Rf = C.filter(function (c) { return S.v[c.id] === -1 && vousConcerne(c); }).map(function (c) { var o = exemplesCarte(c); return { t: c.titre || c.l, e: (o.L || []).filter(function (t) { return F.re.test(t); })[0] }; }).filter(function (x) { return x.e; }).slice(0, 4);
+    $('q-pv').innerHTML = (L.length ? L.map(function (x) { return '<li><b>' + esc(x.t) + '</b> : ' + x.e + '</li>'; }).join('') : '') + (Rf.length ? '<li class="q-pv-r">Vous avez refusé, et cela ne change donc pas pour vous : ' + Rf.map(function (x) { return '<b>' + esc(x.t) + '</b> (' + x.e.replace(/<[^>]+>/g, '') + ')'; }).join(' ; ') + '</li>' : '') ||  '<li>Aucune de vos mesures n\'a encore d\'exemple pour vous. Les cartes marquées « Vous concerne » en donnent un ; dans Créer, les lignes qui ont une moyenne publiée aussi.</li>';
   }
   function vosMesuresG() {
-    var an = VMAN || AN0, M = mesuresAn(an), W = Math.round(340 / TS()), rows = [], y = 0, NMAX = 8;
+    var an = VMAN || AN0, M = mesuresAn(an), W = Math.round(320 / TS()), rows = [], y = 0, NMAX = 8;
     $('q-vm-an').innerHTML = [AN0, AN1].map(function (a) { return '<button type="button" data-a="' + a + '" aria-pressed="' + (a === an) + '">En ' + a + '</button>'; }).join('');
     Array.prototype.forEach.call($('q-vm-an').querySelectorAll('button'), function (b) { b.onclick = function () { VMAN = +b.dataset.a; vosMesuresG(); }; });
     if (!M.length) { $('q-vm').innerHTML = '<p class="q-note">Adoptez des mesures dans l\'onglet Voter, ou créez les vôtres : chacune apparaîtra ici avec ce qu\'elle change au déficit.</p>'; $('q-vm-l').innerHTML = ''; $('q-vm-n').innerHTML = ''; $('q-vm-p').hidden = true; $('q-vm-an').hidden = true; return; }
@@ -1844,7 +1854,7 @@ body.q-vote { padding-bottom: 92px; }
       var garde = L.slice(0, L.length > NMAX ? NMAX - 1 : NMAX), reste = L.slice(garde.length);
       if (reste.length) garde.push({ t: reste.length + ' autres mesures', v: reste.reduce(function (a, x) { return a + x.v; }, 0), autres: true });
       garde.forEach(function (x) {
-        var l = lignes2(x.t, Math.round(50 * W / 340)), val = mdt(Math.abs(x.v)).replace(' d\'euros', ''), w = Math.max(2, (W - 100) * Math.abs(x.v) / mx);
+        var l = lignes2(x.t, Math.round(50 * W / 340)), val = mdt(Math.abs(x.v)).replace(' d\'euros', ''), w = Math.max(2, (W - 115) * Math.abs(x.v) / mx);
         l.forEach(function (li, i) { o += '<text x="0" y="' + (y + 11 + i * 13) + '" font-size="11" fill="var(--fg)"' + (x.autres ? ' font-style="italic"' : '') + '>' + esc(li) + '</text>'; });
         y += 13 * l.length + 2;
         o += '<rect x="0" y="' + y + '" width="' + w.toFixed(1) + '" height="10" rx="3" fill="' + c + '"/><text x="' + (w + 5).toFixed(1) + '" y="' + (y + 9) + '" font-size="11" font-weight="700" fill="' + c + '">' + val + '</text>';
@@ -1873,7 +1883,7 @@ body.q-vote { padding-bottom: 92px; }
   }
   function ouVa() {
     var RP = J.repartition; if (!RP) { $('q-ou-c').hidden = true; return; }
-    var VP = variationsPostes(), W = Math.round(340 / TS()), y = 0, rows = [], NETAT = 12, o = '';
+    var VP = variationsPostes(), W = Math.round(320 / TS()), y = 0, rows = [], NETAT = 12, o = '';
     RP.groupes.forEach(function (g) {
       var L = g.lignes.slice().sort(function (a, b) { return b.v27 - a.v27; }), garde = g.k === 'secu' ? L : L.filter(function (l, i) { return i < NETAT || l.k === 'mi:santé' || VP.V[l.k] || VP.P[l.k]; }), autres = L.filter(function (l) { return garde.indexOf(l) < 0; });
       rows.push({ h: g.l + (g.k === 'secu' ? ' (régimes de base)' : '') });
@@ -1885,15 +1895,16 @@ body.q-vote { padding-bottom: 92px; }
       if (r.h) { o += '<text x="0" y="' + (y + (i ? 26 : 14)) + '" font-size="12.5" font-weight="700" fill="var(--fg)">' + esc(r.h) + '</text>'; y += i ? 34 : 22; return; }
       var nv = r.v + r.d, ch = Math.abs(r.d) >= 0.05, pa = Math.abs(r.p) >= 0.05;
       o += '<g><title>' + esc(r.o + ' : ' + nf(r.v, 1) + ' Md€ en ' + RP.an + ' ; ' + nf(r.v0, 1) + ' Md€ en ' + (RP.an - 1) + (ch ? ' ; avec vos choix : ' + nf(nv, 1) + ' Md€' : '')) + '</title>';
-      o += '<text x="0" y="' + (y + 11) + '" font-size="11" fill="var(--fg)"' + (r.autres ? ' font-style="italic"' : '') + '>' + esc((function (n) { n = Math.round(n * W / 340); return r.l.length > n ? r.l.slice(0, n - 1) + '…' : r.l; })(pa ? 28 : ch ? 40 : 52)) + '</text>';
-      o += '<text x="' + W + '" y="' + (y + 11) + '" text-anchor="end" font-size="11" font-weight="700" fill="var(--fg)">' + nf(r.v, 1) + (ch ? '<tspan fill="' + (r.d > 0 ? 'var(--c-ecole)' : 'var(--fr)') + '"> → ' + nf(nv, 1) + '</tspan>' : '') + (pa ? '<tspan fill="var(--muted)" font-weight="400"> (+' + nf(r.p, 1) + ' pas voté)</tspan>' : '') + '</text>';
-      var yb = y + 15;
+      var LL = lignes2(r.l, Math.round((pa ? 28 : ch ? 40 : 52) * W / 340)), dy = (LL.length - 1) * 13;
+      LL.forEach(function (li, i) { o += '<text x="0" y="' + (y + 11 + i * 13) + '" font-size="11" fill="var(--fg)"' + (r.autres ? ' font-style="italic"' : '') + '>' + esc(li) + '</text>'; });
+      o += '<text x="' + W + '" y="' + (y + 11) + '" text-anchor="end" font-size="11" font-weight="700" fill="var(--fg)">' + nf(r.v, 1) + (ch ? '<tspan fill="' + (r.d > 0 ? 'var(--c-ecole)' : 'var(--fr)') + '"> → ' + nf(nv, 1) + '</tspan>' : '') + (pa ? '<tspan fill="var(--muted)" font-weight="400"> (+' + nf(r.p, 1) + ' en attente)</tspan>' : '') + '</text>';
+      var yb = y + 15 + dy;
       o += '<rect x="0" y="' + yb + '" width="' + X(Math.max(0, Math.min(r.v, nv))).toFixed(1) + '" height="9" rx="2" fill="var(--fr)"/>';
       if (ch && r.d < 0) o += '<rect x="' + X(Math.max(0, nv)).toFixed(1) + '" y="' + yb + '" width="' + X(r.v - Math.max(0, nv)).toFixed(1) + '" height="9" fill="var(--c-baisse)"/>';
       if (ch && r.d > 0) o += '<rect x="' + X(r.v).toFixed(1) + '" y="' + yb + '" width="' + X(r.d).toFixed(1) + '" height="9" fill="var(--c-ecole)"/>';
       if (pa && r.p > 0) o += '<rect x="' + X(r.v + Math.max(r.d, 0)).toFixed(1) + '" y="' + yb + '" width="' + X(r.p).toFixed(1) + '" height="9" fill="none" stroke="var(--muted)" stroke-dasharray="2 2"/>';
       o += '<rect x="' + (X(r.v0) - 1).toFixed(1) + '" y="' + (yb - 1) + '" width="2" height="11" fill="var(--fg)"/></g>';
-      y += 30;
+      y += 30 + dy;
     });
     $('q-ou').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + (y + 2) + '" role="img" aria-label="' + esc('Dépenses prévues pour ' + RP.an + ', poste par poste, en milliards d\'euros') + '">' + o + '</svg>';
     var aVous = Object.keys(VP.V).some(function (k) { return Math.abs(VP.V[k]) >= 0.05; }), aP = Object.keys(VP.P).some(function (k) { return Math.abs(VP.P[k]) >= 0.05; });
@@ -1921,7 +1932,7 @@ body.q-vote { padding-bottom: 92px; }
     var DJ = defiDuJour(), x = DJ && DJ.x, cond = DJ && DJ.cond, ok = DJ && DJ.ok, faisable = DJ && DJ.faisable;
     if (x) {
       $('q-defi').innerHTML = '<h2 id="q-df-t"><span class="eyebrow">Défi du jour</span>' + esc(x.t) + '</h2><p><span class="q-etat' + (ok ? ' ok' : '') + '">' + (ok ? '✓ Réussi' : 'En cours') + '</span>' + (DJ.serie > 1 ? ' <b>' + DJ.serie + ' jours de suite</b>' : '') + '</span></p><ul class="q-hyp" style="color:var(--fg)">' + cond.map(function (c) { return '<li>' + (c.ok ? '✓ ' : '') + esc(c.t) + '</li>'; }).join('') + '</ul>' +
-        '<p class="q-note">' + (faisable ? 'Faisable avec les seules cartes de l\'onglet Voter.' : 'Les cartes seules n\'y suffisent pas : il faudra aussi créer vos propres mesures (onglet Créer).') + (x.src ? ' <a href="' + esc(x.src.url) + '" title="' + esc(x.src.source) + '">Source du chiffre</a>.' : '') + ' Un nouveau défi chaque jour.</p>';
+        '<p class="q-note">' + (faisable ? 'Faisable avec les seules cartes de l\'onglet Voter.' : 'Les cartes seules n\'y suffisent pas : il faudra aussi créer vos propres mesures. <button type="button" class="q-lien" data-aller="creer">Aller dans Créer</button>') + (x.src ? ' <a href="' + esc(x.src.url) + '" title="' + esc(x.src.source) + '">Source du chiffre</a>.' : '') + ' Un nouveau défi chaque jour.</p>';
     }
     paysCarte();
     comparer();
@@ -2224,7 +2235,7 @@ body.q-vote { padding-bottom: 92px; }
     };
     im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(clone));
   }
-  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.q-pcourbe'); if (b) partagerCourbe(b.dataset.c); });
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.q-pcourbe'); if (b) partagerCourbe(b.dataset.c); var a = e.target.closest && e.target.closest('[data-aller]'); if (a) onglet(a.dataset.aller); });
   function image(fin) {
     var c = document.createElement('canvas'), W = 1080, H = 1350; c.width = W; c.height = H; var g = c.getContext('2d');
     var r1 = an1(R), f = R[R.length - 1], z1 = an1(R0), zf = R0[R0.length - 1], sans = 'Inter Tight, system-ui, sans-serif', serif = 'Newsreader, Georgia, serif';
