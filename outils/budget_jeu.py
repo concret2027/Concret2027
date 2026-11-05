@@ -841,7 +841,7 @@ def construire():
         nsp = ("Le jeu part de l'âge d'aujourd'hui (suspension de la réforme, dont le coût est déjà compté au départ : %s Md€ par an, chiffrage du Gouvernement) : "
                "Concret retire ce coût chaque année du chiffrage de la Cour, sans passer sous zéro. ") % str(sp[max(sp)]).replace('.', ',') if sp else ''
         noteR = "Chiffrage de la Cour des comptes pour 2035 (système de retraite). "
-        cal = "D'après ce calendrier, l'âge minimum passe 63 ans pour les personnes nées en 1966 (en 2029) et atteint 64 ans pour celles nées en 1969 (en 2033). "
+        cal = "D'après ce calendrier, l'âge minimum passe à 63 ans pour les personnes nées en 1966 (en 2029) et atteint 64 ans pour celles nées en 1969 (en 2033). "
         c62 = ra.get('retour à 62 ans : coût selon la Cour des comptes (Md€, horizon 2030 selon un député)')
         n62 = ("Chiffrage de la Cour des comptes : « un abaissement à 62 ans de l'âge du départ à la retraite coûterait 10,4 milliards d'euros », à l'horizon 2030 selon un député (même compte rendu) ; "
                "la Cour ajoute que l'effet d'un changement d'âge « monte rapidement en puissance – cela rapporte ou coûte vite ». L'âge de 62 ans change les départs dès %d (aujourd'hui, 62 ans et 9 mois) ; "
