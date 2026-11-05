@@ -26,7 +26,14 @@
 <meta name="description" content="Faites le budget 2027 : choisissez les mesures, une par une, et voyez le déficit, la dette et la croissance jusqu'en 2031. Chaque mesure est chiffrée par sa source.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
-<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }</style>
+<style>html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }/* « Vos votes » : un titre et une ligne de détail, avec de l'air et une flèche qui montre que le bloc s'ouvre. */
+#q-vos-d > summary { list-style: none; position: relative; display: grid; gap: 3px; padding: 14px 44px 14px 16px; border-radius: 12px; background: color-mix(in srgb, var(--fr) 8%, var(--panel)); cursor: pointer; }
+#q-vos-d > summary::-webkit-details-marker { display: none; }
+#q-vos-d > summary::after { content: "›"; position: absolute; right: 16px; top: 50%; transform: translateY(-50%) rotate(90deg); font-size: 26px; line-height: 1; color: var(--fr); }
+#q-vos-d[open] > summary::after { transform: translateY(-50%) rotate(-90deg); }
+#q-vos-d .vos-t { font-size: 17px; font-weight: 700; color: var(--fg); }
+#q-vos-d .vos-s { font-size: 14px; font-weight: 400; color: var(--muted); line-height: 1.35; }
+</style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
 :root {
@@ -1671,7 +1678,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     var L = C.filter(function (c) { var v = S.v[c.id]; return v === 1 || v === -1 || v === 3 || v === 2; }), A = adoptees(), t = A.reduce(function (s, c) { return s + montant(c, AN0); }, 0);
     var nb = function (v) { return L.filter(function (c) { return S.v[c.id] === v; }).length; };
     var nv = nb(1) + nb(-1) + nb(3);
-    $('q-vos-n').textContent = L.length ? 'Vos ' + nv + ' vote' + (nv > 1 ? 's' : '') + ' (' + nb(1) + ' pour, ' + nb(-1) + ' contre, ' + nb(3) + ' abstention' + (nb(3) > 1 ? 's' : '') + ') : les revoir ou en changer' : 'Vos votes apparaîtront ici';
+    $('q-vos-n').innerHTML = L.length ? '<span class="vos-t">Vos ' + nv + ' vote' + (nv > 1 ? 's' : '') + '</span><span class="vos-s">' + nb(1) + ' pour · ' + nb(-1) + ' contre · ' + nb(3) + ' abstention' + (nb(3) > 1 ? 's' : '') + ' · touchez pour les revoir ou les changer</span>' : '<span class="vos-t">Vos votes</span><span class="vos-s">Ils apparaîtront ici dès votre premier vote</span>';
     // Dans l'ordre où les cartes ont été votées : une ligne qu'on change reste à sa place.
     var ord = {}; S.pile.forEach(function (x, i) { if (ord[x.id] == null) ord[x.id] = i; }); L.sort(function (a, b) { return (ord[a.id] == null ? 1e9 : ord[a.id]) - (ord[b.id] == null ? 1e9 : ord[b.id]); });
     $('q-vos').innerHTML = L.map(function (c) {
