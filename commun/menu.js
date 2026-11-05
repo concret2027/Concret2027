@@ -190,6 +190,16 @@
     'nav.site>a{flex-shrink:0;white-space:nowrap}@media (max-width:860px){nav.site>a .lg{display:none}nav.site .rech-b{display:none}nav.site>a[href="/politique/"]:not([aria-current]),nav.site>a[aria-current]:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]){display:none}}' +
     '@media (max-width:520px){nav.site>a[href="/politique/"]:not([aria-current]),nav.site>a[aria-current]:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]){display:none}nav.site>a{padding-block:8px}nav.site{gap:9px!important}nav.site a.logo{margin-right:0!important}.mn-btn{padding-left:8px}nav.site .rech-b{display:none}}' +
     '@media (max-width:380px){nav.site{gap:8px!important}nav.site a.logo{font-size:17px!important}.mn-btn span{padding:4px 9px}}' +
+    // Logo et bouton Menu (choix de l'éditeur, 5 novembre 2026, avis de deux UX et du marketing) : sur ordinateur, le mot « Concret » ;
+    // sur téléphone, le « C » blanc sur carré bleu de l'icône de l'application, seul (lu « Concret, accueil »), et un bouton Menu plus étroit
+    // et plus haut (icône et mot « Menu » dessous) : la place gagnée garde Quiz et Votez, et laisse « Budget » quand il tient.
+    'nav.site a.logo .lc{display:none}.mn-btn svg{width:18px;height:14px;flex:none}' +
+    'nav.site>a[href="/budget/"]{display:block!important;color:' + V.fg + ';font-weight:600}' +
+    '@media (max-width:520px){nav.site a.logo{display:inline-flex;flex-direction:column;align-items:center;gap:2px;font-size:inherit!important;line-height:1;padding-block:2px}' +
+    'nav.site a.logo .lc{display:grid;place-items:center;width:36px;height:36px;border-radius:9px;background:#2f5bd3;color:#fff;font-family:var(--serif,Georgia,serif);font-size:28px;font-weight:500;line-height:1}' +
+    'nav.site a.logo .ln{display:none}' +
+    '.mn-btn{padding-left:6px!important}.mn-btn span{flex-direction:column;justify-content:center;gap:3px!important;min-width:56px;min-height:52px;box-sizing:border-box;padding:6px 8px!important;border-radius:12px!important;font-size:12px;line-height:1}' +
+    'nav.site{gap:6px!important}}' +
     // Les trois rendez-vous quotidiens ressortent dans le bandeau.
     'nav.site>a[href="/barometre/"],nav.site>a[href="/quiz/"],nav.site>a[href="/votez/"]{color:' + V.fg + ';font-weight:600}' +
     // Lisibilité commune à toutes les pages : textes d'appoint pas trop petits, graduations des graphiques lisibles, zones à toucher assez grandes.
@@ -656,16 +666,27 @@
     document.addEventListener('click', function (e) { var su = e.target.closest && e.target.closest('details.acc-fixe > summary'); if (su && !e.target.closest('button, a')) e.preventDefault(); }, true);
     if (!document.getElementById('mn-css')) { var st = document.createElement('style'); st.id = 'mn-css'; st.textContent = css; document.head.appendChild(st); }
     var nav = document.querySelector('nav.site');
+    if (nav) {
+      var lgo = nav.querySelector('a.logo');
+      if (lgo && !lgo.querySelector('.lc')) { lgo.innerHTML = '<span class="lc" aria-hidden="true">C</span><span class="ln">Concret</span>'; lgo.setAttribute('aria-label', 'Concret, accueil'); }
+      // Le jeu du budget dans la barre, après Votez ; retiré le premier quand la place manque (barreAjuste).
+      if (!nav.querySelector('a[href="/budget/"]')) {
+        var ab = document.createElement('a'); ab.href = '/budget/'; ab.innerHTML = 'Budget<span class="lg"> 2027</span>';
+        if (pageNom === 'budget') ab.setAttribute('aria-current', 'page');
+        var vz = nav.querySelector('a[href="/votez/"]'), ap = vz ? vz.nextSibling : null;
+        if (vz) nav.insertBefore(ab, ap); else nav.appendChild(ab);
+      }
+    }
     if (nav && !nav.querySelector('.mn-btn')) {
       var b = document.createElement('button'); b.type = 'button'; b.className = 'mn-btn'; b.setAttribute('aria-haspopup', 'dialog');
-      b.innerHTML = '<span>☰ Menu</span>'; b.addEventListener('click', function () { ouvrir(b); }); nav.appendChild(b);
+      b.innerHTML = '<span><svg viewBox="0 0 18 14" aria-hidden="true"><path d="M1 1.5h16M1 7h16M1 12.5h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Menu</span>'; b.addEventListener('click', function () { ouvrir(b); }); nav.appendChild(b);
     }
     // Barre du haut : si les liens ne tiennent pas avant le bouton Menu (texte agrandi, petit écran), on retire d'abord
-    // La vie politique, puis Votez, puis Quiz, puis Baromètre ; ils restent dans le Menu. Jamais de mot coupé ou caché sous le bouton.
+    // le jeu du budget, puis La vie politique, puis Votez, puis Quiz, puis Baromètre ; ils restent dans le Menu. Jamais de mot coupé ou caché sous le bouton.
     var barreAjuste = function () {
       if (!nav) return; var mb = nav.querySelector('.mn-btn'); if (!mb) return;
       Array.prototype.forEach.call(nav.querySelectorAll('a[data-mn-cache]'), function (a) { a.style.removeProperty('display'); a.removeAttribute('data-mn-cache'); });
-      ['/politique/', '/votez/', '/quiz/', '/barometre/'].some(function (u) {
+      ['/budget/', '/politique/', '/votez/', '/quiz/', '/barometre/'].some(function (u) {
         var vis = Array.prototype.filter.call(nav.querySelectorAll('a:not(.logo)'), function (a) { return a.offsetParent && a.getBoundingClientRect().width; });
         var last = vis[vis.length - 1], pil = mb.querySelector('span') || mb; // le bord visible du bouton (sa marge de gauche n'est qu'un fondu)
         if ((!last || last.getBoundingClientRect().right <= pil.getBoundingClientRect().left - 6) && mb.getBoundingClientRect().right <= document.documentElement.clientWidth) return true;
