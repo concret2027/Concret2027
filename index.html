@@ -504,7 +504,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   fetch('/donnees/budget_defis.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (B) {
     var L = B.defis || []; if (!L.length) return;
     var k = Math.round((new Date(iso + 'T12:00:00') - new Date(B.debut + 'T12:00:00')) / 864e5), x = L[((k % L.length) + L.length) % L.length];
-    $('auj-budget').textContent = 'Défi du jour : ' + x.t;
+    $('auj-budget').textContent = 'Défi du jour : ' + x.t.replace(/(\d) (%|€)/g, '$1\u00a0$2');
     var S = {}; try { S = JSON.parse(lire('concret-quinquennat') || '{}') || {}; } catch (e) {}
     if (S.defis && S.defis[iso]) { $('auj-budget-s').textContent = 'Réussi'; $('auj-budget-s').className = 'ok'; } else $('auj-budget-s').textContent = S.v && Object.keys(S.v).length ? 'Reprendre' : 'Jouer';
   }).catch(function () {});
