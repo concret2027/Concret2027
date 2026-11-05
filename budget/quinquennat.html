@@ -1054,12 +1054,19 @@ body.q-vote { padding-bottom: 92px; }
   }
   // Ce que l'effet sur l'économie change, en une phrase : la croissance de l'année, et le déficit de l'année visée quand il ne bouge
   // pas du montant de la mesure (direct : ce montant cette année-là, positif = déficit plus bas). Rien d'écrit sous 0,05 point.
-  function ecoPhrase(A0, A1, direct, compte) {
+  function ecoPhrase(A0, A1, direct, compte, macro) {
     if (compte === false) return 'Effet sur l\'économie : non compté (la raison est sur la carte).';
     var AO = anObj(), r0 = ligneAn(A0, AO), r1 = ligneAn(A1, AO), d = (r1.solde - r0.solde) / 100 * r1.pib, g0 = croiss(A0, AN0), g1 = croiss(A1, AN0);
     var gc = g0 != null && pcs(g0) !== pcs(g1) ? 'croissance ' + AN0 + ' : ' + pcs(g0) + ' → ' + pcs(g1) : '';
-    if (direct != null && Math.abs(d - direct) >= Math.max(0.05, 0.1 * Math.abs(direct))) return 'Avec l\'effet sur l\'économie' + (gc ? ' (' + gc + ')' : '') + ', le déficit ' + AO + (Math.abs(d) < 0.05 ? ' ne bouge presque pas' : (d > 0 ? ' baisse' : ' augmente') + ' finalement de ' + mdt(Math.abs(d))) + (d * direct > 0 && Math.abs(d) < Math.abs(direct) ? (direct < 0 ? ' : l\'activité accélère, ce qui fait rentrer des impôts et des cotisations' : ' : l\'activité ralentit, ce qui fait rentrer moins d\'impôts et de cotisations') : '') + '.';
+    if (direct != null && Math.abs(d - direct) >= Math.max(0.05, 0.1 * Math.abs(direct))) return 'Avec l\'effet sur l\'économie' + (gc ? ' (' + gc + ')' : '') + ', le déficit ' + AO + (Math.abs(d) < 0.05 ? ' ne bouge presque pas' : (d > 0 ? ' baisse' : ' augmente') + ' finalement de ' + mdt(Math.abs(d))) + (d * direct > 0 && Math.abs(d) < Math.abs(direct) ? pourquoiEco(direct, macro) : '') + '.' + (macro === 'depense' ? ' C\'est l\'effet moyen d\'une dépense publique dans le modèle, pas un calcul propre à cette mesure.' : '');
     return gc ? gc.charAt(0).toUpperCase() + gc.slice(1) + '.' : 'Effet sur l\'économie : presque nul.';
+  }
+  // Pourquoi le déficit bouge moins que la mesure, selon ce que la mesure change dans l'économie.
+  function pourquoiEco(direct, macro) {
+    if (macro === 'depense') return direct > 0 ? ' : cet argent ne paie plus des aides, des salaires, des achats ou des soins ; ceux qui le recevaient dépensent moins, et il rentre moins d\'impôts et de cotisations' : ' : cet argent paie des aides, des salaires, des achats ou des soins ; ceux qui le reçoivent le dépensent à leur tour, et il rentre des impôts et des cotisations';
+    if (macro === 'csg' || macro === 'ir' || macro === 'tva' || macro === 'carbone' || macro === 'cotis_sal') return direct > 0 ? ' : les ménages ont moins à dépenser, l\'activité ralentit et rapporte moins d\'impôts et de cotisations' : ' : les ménages ont plus à dépenser, l\'activité accélère et rapporte des impôts et des cotisations';
+    if (macro === 'cotis_emp') return direct > 0 ? ' : le travail coûte plus cher aux entreprises, elles embauchent moins, et rentrent moins d\'impôts et de cotisations' : ' : le travail coûte moins cher aux entreprises, elles embauchent plus, et rentrent des impôts et des cotisations';
+    return direct < 0 ? ' : l\'activité accélère, ce qui fait rentrer des impôts et des cotisations' : ' : l\'activité ralentit, ce qui fait rentrer moins d\'impôts et de cotisations';
   }
   var maj1 = function (t) { return t.charAt(0).toUpperCase() + t.slice(1); };
   // « 1,1 milliard d'euros de recettes en plus », « d'économies », « de dépenses en plus », « de recettes en moins ».
@@ -1237,7 +1244,7 @@ body.q-vote { padding-bottom: 92px; }
       // Une mesure qui en remplace une autre : le montant net (cette mesure moins celle qu'elle remplace), l'année du budget.
       var net = m0 - RO.reduce(function (t, o) { return t + montant(o, AN0); }, 0) - pP, netA = ma - RO.reduce(function (t, o) { return t + montant(o, anObj()); }, 0) - pP * kPo;
       plein = rem.length ? ['<b>Adoptée</b>, à la place de : ' + rem.join(', ') + '.', 'Au total : ' + (Math.abs(net) < 0.05 ? 'presque rien ne change' : quoi(c.sens, net)) + ' en ' + AN0 + ' (cette mesure seule : ' + (m0 ? quoi(c.sens, m0) : premiere(c)) + ').', maj1(reste) + '.', ecoPhrase(A0, A1, netA, !!c.macro)]
-        : ['<b>Adoptée</b> : ' + (m0 ? quoi(c.sens, m0) + ' en ' + AN0 : premiere(c)) + '.', maj1(reste) + '.', m0 || ma ? ecoPhrase(A0, A1, ma, !!c.macro) : ''];
+        : ['<b>Adoptée</b> : ' + (m0 ? quoi(c.sens, m0) + ' en ' + AN0 : premiere(c)) + '.', maj1(reste) + '.', m0 || ma ? ecoPhrase(A0, A1, ma, !!c.macro, c.macro) : ''];
       var mc = rem.length ? net : m0; court = '✓ Adoptée' + (Math.abs(mc) >= 0.05 ? (mc > 0 ? ', rapporte ' : ', coûte ') + mdt(Math.abs(mc)).replace(' d\'euros', '') : '') + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver');
     } else {
       plein = [(v === -1 ? '<b>Contre</b> : la règle actuelle reste.' : '<b>Abstention</b> : la mesure n\'est pas adoptée.'), m0 ? maj1(hors) + ' : pas dans votre budget.' : '', maj1(reste) + '.'];
@@ -1508,7 +1515,7 @@ body.q-vote { padding-bottom: 92px; }
     var dP = effetPerso(choisi, pc) - effetPerso(choisi, av || 0), sP = choisi.k === 'allegements' ? 'recette' : choisi.groupe, kP = (PIBY[anObj()] || PIBY[AN0]) / PIBY[AN0];
     // Les votes que ce choix remplace sortent du budget : le montant net, et l'effet sur l'économie mesuré sur ce net.
     var RC = remp.map(function (id) { return C.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean), r0 = RC.reduce(function (t, c) { return t + montant(c, AN0); }, 0), rA = RC.reduce(function (t, c) { return t + montant(c, anObj()); }, 0), nD = dP - r0;
-    $('q-apercu').innerHTML = (pc !== (av || 0) ? '<ul class="q-pl q-ap-t"><li><b>Avec ce choix</b> : ' + (RC.length ? 'au total ' + (Math.abs(nD) < 0.05 ? 'presque rien ne change' : quoi(sP, nD)) + ' en ' + AN0 + ' (cette ligne seule : ' + quoi(sP, dP) + ')' : quoi(sP, dP) + ' en ' + AN0) + '.</li><li>' + maj1(avantApres(R, A1, null, true)) + '.</li><li>' + ecoPhrase(R, A1, dP * kP - rA, !!(choisi.macro && J.variantes[choisi.macro])) + '</li></ul>' : '') +
+    $('q-apercu').innerHTML = (pc !== (av || 0) ? '<ul class="q-pl q-ap-t"><li><b>Avec ce choix</b> : ' + (RC.length ? 'au total ' + (Math.abs(nD) < 0.05 ? 'presque rien ne change' : quoi(sP, nD)) + ' en ' + AN0 + ' (cette ligne seule : ' + quoi(sP, dP) + ')' : quoi(sP, dP) + ' en ' + AN0) + '.</li><li>' + maj1(avantApres(R, A1, null, true)) + '.</li><li>' + ecoPhrase(R, A1, dP * kP - rA, !!(choisi.macro && J.variantes[choisi.macro]), choisi.macro) + '</li></ul>' : '') +
       (pc !== (av || 0) ? miniCourbes(R, A1) : '') + (remp.length ? '<br>Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' » (' + quoi(o.sens, montant(o, AN0)) + ')' : ''; }).join(', ') + ' : les deux portent sur le même argent, ce montant sort de votre budget.' : '');
     $('q-ajout').disabled = !pc || pc === av; $('q-ajout').textContent = S.perso[choisi.k] != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
   }
@@ -1693,7 +1700,7 @@ body.q-vote { padding-bottom: 92px; }
       (u.effectif && u.effectif.v ? '<br>Sur le terrain : ' + (n > 0 ? '+' : '−') + nf(100 * Math.abs(n) / u.effectif.v, 1) + '\u00a0% par rapport aux ' + nf(Math.round(u.effectif.v), 0) + ' emplois prévus pour ' + u.effectif.annee + ' (' + esc(String(u.effectif.unite).split(' (')[0].split(' ;')[0]) + ').' : '');
     var av = S.unites[u.k], A1; if (n) S.unites[u.k] = n; else delete S.unites[u.k]; A1 = simuler(); if (av == null) delete S.unites[u.k]; else S.unites[u.k] = av;
     var dU = unMd(u, n, AN0) - unMd(u, av || 0, AN0);
-    $('q-un-a').innerHTML = n !== (av || 0) ? '<ul class="q-pl q-ap-t"><li><b>Avec ce choix</b> : ' + quoi('depense', dU) + ' en ' + AN0 + '.</li><li>' + maj1(avantApres(R, A1, null, true)) + '.</li><li>' + ecoPhrase(R, A1, unMd(u, n, anObj()) - unMd(u, av || 0, anObj()), true) + '</li></ul>' + miniCourbes(R, A1) : '';
+    $('q-un-a').innerHTML = n !== (av || 0) ? '<ul class="q-pl q-ap-t"><li><b>Avec ce choix</b> : ' + quoi('depense', dU) + ' en ' + AN0 + '.</li><li>' + maj1(avantApres(R, A1, null, true)) + '.</li><li>' + ecoPhrase(R, A1, unMd(u, n, anObj()) - unMd(u, av || 0, anObj()), true, 'depense') + '</li></ul>' + miniCourbes(R, A1) : '';
     var jd = u.journee_detention;
     $('q-un-h').innerHTML = !n ? '' : u.type === 'construction'
       ? 'Calcul de Concret : nombre de places × ' + eu(u.cout) + ', réparti également sur les ' + nb + ' années (hypothèse de Concret, la durée des chantiers n\'étant pas fixée).' + (jd ? ' Une fois ouverte, une place occupée coûte ' + eu(jd.v * 365) + ' par an (' + eu(jd.v, 2) + ' par jour, ' + esc(String(jd.annee)) + ') : ce coût n\'est pas compté ici, faute de date d\'ouverture connue.' : '')
