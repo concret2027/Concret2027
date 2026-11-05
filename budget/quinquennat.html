@@ -376,6 +376,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-ress b { font-weight: 600; }
 .q-ress.q-flash { animation: q-flash .7s ease; }
 .q-hs { grid-column: 1 / -1; margin: 0; font-size: 14px; line-height: 1.35; color: var(--muted); min-height: calc(2 * 1.35em); max-height: calc(2 * 1.35em + 2px); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.q-points { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 15.5px; line-height: 1.4; font-weight: 400; }
+.q-points b { font-weight: 700; }
 .q-hs b { color: var(--fg); font-variant-numeric: tabular-nums; }
 .q-hs button { font: inherit; font-size: 13.5px; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 12px 4px; margin: -12px 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .q-hobj { grid-column: 1 / -1; }
@@ -483,6 +485,8 @@ details.card.fold > summary { min-height: 44px; display: flex; align-items: cent
 .q-hs.q-msg span { font-weight: 400; color: var(--muted); }
 .q-hs.q-msg .q-court, .q-hs.q-msg .q-plein { font-weight: 600; color: var(--fg); }
 .q-hs.q-msg .q-plein span { font-weight: 400; color: var(--muted); }
+.q-pl { margin: 0; padding-left: 18px; display: grid; gap: 3px; font-weight: 400; }
+.q-pl b { font-weight: 700; }
 .q-det-ouvert .q-ress { display: none; }
 .q-hs.ouvert { -webkit-line-clamp: unset; line-clamp: unset; display: block; max-height: 55vh; overflow-y: auto; }
 .q-extrait summary { cursor: pointer; font-weight: 600; color: var(--fr); min-height: 44px; display: flex; align-items: center; }
@@ -634,7 +638,7 @@ body.q-vote { padding-bottom: 92px; }
   <section class="card" data-partage="non" aria-labelledby="q-titre" id="q-intro">
     <p class="q-brouillon">Brouillon à tester : cette page n'est pas en ligne.</p>
     <h1 id="q-titre">Votre quinquennat : votre budget 2027 et ses effets jusqu’en 2031</h1>
-    <p class="q-lead" id="q-lead"></p>
+    <div class="q-lead" id="q-lead"></div>
     <p class="q-ami-i" id="q-ami-i" hidden></p>
     <details class="q-plie"><summary id="q-conv-s">Si rien ne change</summary><p class="q-note" id="q-conv"></p></details>
     <details class="q-plie"><summary>Partir d'un budget tout prêt</summary><div class="q-chips" id="q-presets"></div></details>
@@ -1199,7 +1203,7 @@ body.q-vote { padding-bottom: 92px; }
       if (!j || !j.v) return; var t = j.v[0] + j.v[1] + j.v[2]; if (t < 10) return;
       var el = $('q-hs'); if (!el || el.dataset.carte !== c.id) return; el = el.querySelector('.q-plein') || el;
       var p = function (x) { return nf(100 * x / t, 0) + '\u00a0%'; };
-      el.insertAdjacentHTML('beforeend', '<br><span>Les joueurs de Concret : ' + p(j.v[0]) + ' pour, ' + p(j.v[1]) + ' contre, ' + p(j.v[2]) + ' abstention (' + nf(t, 0) + ' votes).</span>');
+      var ul = el.querySelector('ul.q-pl'); (ul || el).insertAdjacentHTML('beforeend', (ul ? '<li>' : '<br>') + '<span>Les joueurs de Concret : ' + p(j.v[0]) + ' pour, ' + p(j.v[1]) + ' contre, ' + p(j.v[2]) + ' abstention (' + nf(t, 0) + ' votes).</span>');
     }).catch(function () {});
   }
   // Le message d'un vote : la version courte du bandeau et le détail (montant et sens, ce qui reste, l'effet sur l'économie).
@@ -1211,14 +1215,16 @@ body.q-vote { padding-bottom: 92px; }
       var RO = retirees.map(function (id) { return C.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean), rem = RO.map(function (o) { return esc(o.titre || o.l); });
       // Une mesure qui en remplace une autre : le montant net (cette mesure moins celle qu'elle remplace), l'année du budget.
       var net = m0 - RO.reduce(function (t, o) { return t + montant(o, AN0); }, 0), netA = ma - RO.reduce(function (t, o) { return t + montant(o, anObj()); }, 0);
-      plein = rem.length ? 'Adoptée à la place de : ' + rem.join(', ') + '. Au total : ' + (Math.abs(net) < 0.05 ? 'presque rien ne change' : quoi(c.sens, net)) + ' en ' + AN0 + ' (cette mesure seule : ' + (m0 ? quoi(c.sens, m0) : premiere(c)) + '). ' + maj1(reste) + '. ' + ecoPhrase(A0, A1, netA, !!c.macro)
-        : 'Adoptée : ' + (m0 ? quoi(c.sens, m0) + ' en ' + AN0 : premiere(c)) + '. ' + maj1(reste) + '. ' + (m0 || ma ? ecoPhrase(A0, A1, ma, !!c.macro) : '');
+      plein = rem.length ? ['<b>Adoptée</b>, à la place de : ' + rem.join(', ') + '.', 'Au total : ' + (Math.abs(net) < 0.05 ? 'presque rien ne change' : quoi(c.sens, net)) + ' en ' + AN0 + ' (cette mesure seule : ' + (m0 ? quoi(c.sens, m0) : premiere(c)) + ').', maj1(reste) + '.', ecoPhrase(A0, A1, netA, !!c.macro)]
+        : ['<b>Adoptée</b> : ' + (m0 ? quoi(c.sens, m0) + ' en ' + AN0 : premiere(c)) + '.', maj1(reste) + '.', m0 || ma ? ecoPhrase(A0, A1, ma, !!c.macro) : ''];
       court = '✓ Adoptée · ' + reste;
     } else {
-      plein = (v === -1 ? 'Contre : la règle actuelle reste' : 'Abstention : la mesure n\'est pas adoptée') + (m0 ? ' ; ces ' + hors + ' ne sont pas dans votre budget' : '') + '. ' + maj1(reste) + '.';
+      plein = [(v === -1 ? '<b>Contre</b> : la règle actuelle reste.' : '<b>Abstention</b> : la mesure n\'est pas adoptée.'), m0 ? maj1(hors) + ' : pas dans votre budget.' : '', maj1(reste) + '.'];
       court = (v === -1 ? '✗ Contre' : 'Abstention') + (m0 ? ' : ' + mds(Math.abs(m0)) + (m0 > 0 ? (c.sens === 'recette' ? ' de recettes écartés' : ' d\'économies écartés') : (c.sens === 'recette' ? ' de baisse d\'impôt écartés' : ' de dépenses écartés')) : '') + ' · ' + reste;
     }
-    return { plein: plein + pays + dl + echoAssemblee(c, v), court: court + dl };
+    // Le détail en points, un par ligne : le montant, ce qui reste, l'économie, le pays, le budget reçu, l'Assemblée, le Sénat.
+    var L = plein.concat([pays.replace(/^ · /, ''), dl.replace(/^ · /, '')], echoAssemblee(c, v).split('<br>')).filter(function (t) { return t && t.replace(/<[^>]+>/g, '').trim(); });
+    return { plein: '<ul class="q-pl">' + L.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>', court: court + dl };
   }
   function voter(c, v) {
     var A0 = simuler(), r1 = an1(A0).solde, avant = S.v[c.id], retirees = [];
@@ -1403,7 +1409,7 @@ body.q-vote { padding-bottom: 92px; }
     if (P.n < min) return '<p class="q-note">Votez encore ' + (min - P.n) + ' mesure' + (min - P.n > 1 ? 's' : '') + ' sur lesquelles les groupes de députés n\'ont pas tous voté pareil, et vous verrez desquels vos votes sont le plus proches.</p>';
     var G = P.G.slice().sort(function (a, b) { return b.v - a.v; }), top = G.filter(function (x) { return Math.abs(x.v - G[0].v) < 0.5; });
     var peu = P.peu.length ? '<p class="q-note">Pas montré' + (P.peu.length > 1 ? 's' : '') + ' : ' + esc(P.peu.join(', ')) + '. Sur vos votes, leurs députés ont assez voté sur moins de ' + MIN_GROUPE + ' mesures (au moins 5 votants et un quart du groupe).</p>' : '';
-    if (!G.length) return '<p class="q-note">Sur les mesures que vous avez votées, aucun groupe de députés n\'a assez voté sur au moins ' + MIN_GROUPE + ' d\'entre elles (au moins 5 votants et un quart du groupe). Votez d\'autres mesures pour voir desquels vos votes sont le plus proches.</p>';
+    if (!G.length) return '<p class="q-note">Pas encore assez de mesures comparables avec les groupes de députés (il en faut ' + MIN_GROUPE + '). Votez-en d\'autres.</p>';
     if (G[0].v < 50) return '<p class="q-gros">Aucun groupe de députés n\'a voté comme vous sur la plupart de ces mesures. Le plus proche : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b> (' + nf(G[0].v, 0) + '\u00a0% d\'accord, sur ' + G[0].nb + ' mesures).</p>' + peu +
       '<div class="q-hemi">' + hemicycle(P) + '</div>' + (court ? '<details class="q-tous"><summary>Voir les ' + G.length + ' groupes</summary><div class="q-barres">' + G.map(barreG).join('') + '</div></details>' : '<div class="q-barres">' + G.map(barreG).join('') + '</div>');
     return '<p class="q-gros">' + (top.length > 1 ? 'À égalité, vos votes ressemblent le plus à ceux de : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b>' : 'Vos votes ressemblent le plus à ceux du groupe <b>' + esc(G[0].g.n) + '</b>') + ' (' + nf(G[0].v, 0) + '\u00a0% d\'accord, sur ' + G[0].nb + ' mesure' + (G[0].nb > 1 ? 's' : '') + ' où ' + (top.length > 1 ? 'leurs' : 'ses') + ' députés ont assez voté ; vous avez voté ' + P.n + ' des ' + P.tot + ' mesures sur lesquelles les groupes n\'ont pas tous voté pareil).</p>' + peu +
@@ -1429,7 +1435,7 @@ body.q-vote { padding-bottom: 92px; }
     var ligneE = function (t, v, cl, det) { return '<div><span class="t">' + t + ' : <b>' + mdt(v) + '</b>' + (det ? ' <small style="color:var(--muted)">(' + det + ')</small>' : '') + '</span><span class="r"><em class="' + cl + '" style="left:0;width:' + (v / mx * 100) + '%"></em></span><span class="v"></span></div>'; };
     var det = function (a, la, b, lb) { return [a ? la + ' ' + mdt(a) : '', b ? lb + ' ' + mdt(b) : ''].filter(Boolean).join(', '); };
     var barresE = mode === 'etape' ? '' : (red || aug) ? '<div class="q-barres e1">' + (red ? ligneE('Ce qui réduit le déficit', red, '', det(E.imp, 'recettes en plus', E.eco, 'dépenses en moins')) : '') + (aug ? ligneE('Ce qui l\'augmente', aug, 'b2', det(E.baisse, 'recettes en moins', E.dep, 'dépenses en plus')) : '') + '</div>' : '';
-    var act = mode !== 'etape' && S.macro && nbChoix() && Math.abs(apres - net) >= 0.1 ? '<p class="q-note">Sur le papier, vos mesures ' + (net >= 0 ? 'baissent' : 'augmentent') + ' le déficit de ' + AN0 + ' de ' + mdt(Math.abs(net)) + ' ; avec leur effet sur l\'activité, elles l\'' + (apres >= 0 ? 'abaissent' : 'augmentent') + ' de ' + mdt(Math.abs(apres)) + ' : l\'activité ' + (apres < net ? 'ralentit' : 'accélère') + ' cette année-là (modèle de la direction du Trésor et de l\'Insee).</p>' : '';
+    var act = mode !== 'etape' && S.macro && nbChoix() && Math.abs(apres - net) >= 0.1 ? '<ul class="q-points q-note"><li>Sur le papier : déficit ' + AN0 + (net >= 0 ? ' plus bas' : ' plus haut') + ' de ' + mdt(Math.abs(net)) + '.</li><li>Avec l\'effet sur l\'économie, qui ' + (apres < net ? 'ralentit' : 'accélère') + ' : ' + (apres >= 0 ? 'plus bas' : 'plus haut') + ' de ' + mdt(Math.abs(apres)) + '.</li></ul>' : '';
     var prec = mode === 'etape' && S.hist ? Object.keys(S.hist).map(Number).filter(function (k) { return k < nbDecisions(); }).sort(function (a, b) { return b - a; })[0] : null;
     return '<div class="q-res"><p class="q-gros">' + (nbChoix() ? 'Vos mesures ' + (net >= 0 ? 'rapportent <b>' + mdt(net) + '</b>' : 'coûtent <b>' + mdt(-net) + '</b>') + ' en ' + AN0 + '.' : 'Vous n\'avez encore adopté aucune mesure.') +
       ' Le déficit de ' + AN0 + (defic(z1.solde) === defic(r1.solde) ? ' reste à <b>' + defic(r1.solde) + '</b> du PIB' + (nbChoix() && r1.solde !== z1.solde ? ' (moins de 0,1 point d\'écart)' : '') + ',' : ' passe de ' + defic(z1.solde) + ' à <b>' + defic(r1.solde) + '</b> du PIB,') + ' la dette de ' + f.an + ' serait de <b>' + nf(f.d, 1) + '\u00a0%</b>' + (nf(f.d, 1) === nf(zf.d, 1) ? ', comme sans vos mesures' : ' au lieu de ' + nf(zf.d, 1) + '\u00a0%') + '.</p>' +
@@ -1856,7 +1862,7 @@ body.q-vote { padding-bottom: 92px; }
     var aVous = Object.keys(VP.V).some(function (k) { return Math.abs(VP.V[k]) >= 0.05; }), aP = Object.keys(VP.P).some(function (k) { return Math.abs(VP.P[k]) >= 0.05; });
     $('q-ou-l').innerHTML = '<span><i style="background:var(--fr)"></i>Projet ' + RP.an + ' (milliards d\'euros)</span><span><i style="width:3px;height:14px;border-radius:0;background:var(--fg)"></i>' + (RP.an - 1) + '</span>' + (aVous ? '<span><i style="background:var(--c-ecole)"></i>Vos choix : en plus</span><span><i style="background:var(--c-baisse)"></i>en moins</span>' : '') + (aP ? '<span><i style="background:none;border:1.5px dashed var(--muted);height:6px"></i>Économies du Gouvernement pas encore votées</span>' : '');
     var se = RP.groupes.filter(function (g) { return g.k === 'secu'; })[0], et = RP.groupes.filter(function (g) { return g.k === 'etat'; })[0], ex = (et && et.exclus || [])[0];
-    var vis = 'La santé est surtout payée par l\'Assurance maladie (Sécurité sociale) : le budget de l\'État n\'en porte qu\'une petite part.' + (Math.abs(VP.attente) >= 0.05 ? ' En pointillé : ' + mdt(VP.attente) + ' d\'économies prévues par le Gouvernement que vous n\'avez pas encore votées ; tant que vous ne les adoptez pas, votre budget ne les compte pas, comme votre déficit.' : '') + (Math.abs(VP.hors) >= 0.05 ? ' Vos autres changements de dépenses touchent plusieurs postes à la fois ou d\'autres budgets (fonctionnaires des trois fonctions publiques, SMIC, assurance chômage, collectivités) : ' + mdt(VP.hors, true) + ', hors de ce graphique.' : '');
+    var vis = '<ul class="q-points">' + '<li>La santé est surtout payée par l\'Assurance maladie (Sécurité sociale), pas par le budget de l\'État.</li>' + (Math.abs(VP.attente) >= 0.05 ? '<li>En pointillé : ' + mdt(VP.attente) + ' d\'économies du Gouvernement que vous n\'avez pas encore votées.</li>' : '') + (Math.abs(VP.hors) >= 0.05 ? '<li>Hors du graphique : ' + mdt(VP.hors, true) + ' de vos changements, qui touchent plusieurs budgets à la fois (fonctionnaires, SMIC, chômage…).</li>' : '') + '</ul>';
     $('q-ou-n').innerHTML = plie(
       (se ? 'Sécurité sociale : dépenses de chaque branche des régimes obligatoires de base, projet de loi de financement de la sécurité sociale pour ' + RP.an + ' (<a href="' + esc(se.src.url) + '">' + esc(se.src.page) + '</a>) ; ' + (RP.an - 1) + ' : prévision révisée du même texte. Les branches se versent entre elles ' + mdt(se.total.somme_branches - se.total.v27) + ' : sans ces transferts, la Sécurité sociale dépense ' + mdt(se.total.v27) + '. ' : '') +
       (et ? 'Budget de l\'État : crédits de paiement de chaque mission (salaires et retraites des agents compris) et prélèvements sur les recettes pour les collectivités et l\'Union européenne, projet de loi de finances pour ' + RP.an + ' (<a href="' + esc(et.src.url) + '">' + esc(et.src.page) + '</a>) ; ' + (RP.an - 1) + ' : crédits votés. ' + (ex ? 'Non compté : ' + mdt(ex.v27) + ' de « ' + esc(ex.l) + ' », ' + esc(ex.pourquoi) + '. ' : '') : '') +
@@ -1938,8 +1944,8 @@ body.q-vote { padding-bottom: 92px; }
 
   // Ce que veut dire chaque onglet, en une phrase sous les onglets.
   var EXPL = {
-    voter: '<b>Voter :</b> pour ou contre des mesures déjà chiffrées par une source officielle : celles du budget 2027 proposé par le Gouvernement à l\'Assemblée, des avantages fiscaux existants et des mesures débattues (ISF, âge de la retraite…).',
-    creer: '<b>Créer :</b> faites vos propres mesures, que personne ne propose au vote : baissez ou augmentez n\'importe quelle ligne du budget, du pourcentage de votre choix.',
+    voter: '<b>Voter :</b> pour ou contre des mesures chiffrées par une source officielle (budget 2027, avantages fiscaux, ISF, âge de la retraite…).',
+    creer: '<b>Créer :</b> baissez ou augmentez n\'importe quelle ligne du budget, du pourcentage de votre choix.',
     bilan: '<b>Bilan :</b> le résultat de vos votes et de vos mesures, de ' + '{AN0} à {AN1} : déficit, dette, qui est concerné, effet sur l\'activité.'
   };
   function onglet(t) {
@@ -2138,7 +2144,7 @@ body.q-vote { padding-bottom: 92px; }
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
   }
   // Une explication repliée sous « Comment c'est calculé » ; « visible » reste toujours affiché (ce qui n'est pas compté).
-  function plie(t, visible) { return (visible ? '<p style="margin:0 0 4px">' + visible + '</p>' : '') + '<details class="q-plie"><summary>Comment c\'est calculé</summary><p style="margin:6px 0 0">' + t + '</p></details>'; }
+  function plie(t, visible) { return (visible ? (/^<ul/.test(visible) ? visible : '<p style="margin:0 0 4px">' + visible + '</p>') : '') + '<details class="q-plie"><summary>Comment c\'est calculé</summary><p style="margin:6px 0 0">' + t + '</p></details>'; }
   // Partager une courbe du Bilan : une image avec le titre, la courbe, la légende et la source.
   function partagerCourbe(id) {
     var box = $(id), sec = box.closest('section'), svg = box.querySelector('svg'); if (!svg) return;
@@ -2270,7 +2276,11 @@ body.q-vote { padding-bottom: 92px; }
     C.slice().sort(tri).forEach(function (c) { if (montant(c, AN0) <= 0 && Object.keys(c.effet).every(function (k) { return c.effet[k] <= 0; })) return; var g = c.exclusif || ''; if (g && pris[g]) return; if ((c.exclut || []).some(function (o) { return V[o]; })) return; V[c.id] = 1; if (g) pris[g] = 1; });
     var Rb = simuler({ vote: V, macro: true }); BEST = { a: an1(Rb).solde, f: Rb[Rb.length - 1].solde, d: Rb[Rb.length - 1].d, L: Rb };
     R0 = simuler({ rien: true });
-    $('q-lead').innerHTML = '<b>Vous votez pour ou contre les mesures du budget ' + AN0 + ', une par une, ou vous créez les vôtres.</b> À chaque vote, vous voyez de combien l\'État, la Sécurité sociale et les collectivités dépensent plus qu\'ils ne reçoivent (le déficit), où en est leur dette, ce que devient la croissance de l\'économie, et à quel pays d\'Europe votre budget ressemble. Un impôt en plus ou une dépense en moins freine un peu l\'activité, l\'inverse la soutient : cela change aussi les recettes. Le jeu le compte quand le modèle de la direction du Trésor et de l\'Insee le publie pour ce type de mesure, et le dit sur la carte quand il ne le compte pas. La plupart des cartes rapportent de l\'argent : ce sont les mesures du projet de budget ' + AN0 + ' et la suppression d\'avantages fiscaux existants ; pour baisser un impôt ou augmenter une dépense, utilisez « Créer ».';
+    $('q-lead').innerHTML = '<b>Vous votez les mesures du budget ' + AN0 + ', une par une, ou vous créez les vôtres.</b><ul class="q-points">' +
+      '<li>À chaque vote, trois chiffres bougent : le <b>déficit</b> (ce que l\'État, la Sécurité sociale et les collectivités dépensent de plus qu\'ils ne reçoivent), la <b>dette</b> et la <b>croissance</b>.</li>' +
+      '<li>Un impôt en plus ou une dépense en moins freine un peu l\'économie ; l\'inverse la soutient. Le jeu le compte quand le modèle de la direction du Trésor et de l\'Insee le publie, et le dit sur la carte sinon.</li>' +
+      '<li>La plupart des cartes rapportent de l\'argent. Pour baisser un impôt ou augmenter une dépense : l\'onglet <b>Créer</b>.</li>' +
+      '<li>À la fin : à quel pays d\'Europe votre budget ressemble, et quels députés ont voté comme vous.</li></ul>';
     $('q-conv-s').textContent = 'Si rien ne change : déficit à ' + defic(an1(R0).solde) + ' en ' + AN0;
     $('q-conv').innerHTML = 'Convention de Concret : l\'écart de ' + D0.an + ' entre recettes et dépenses publiques, intérêts mis à part, reste le même (détail en bas du Bilan). Le déficit public (ce que les administrations dépensent de plus qu\'elles ne reçoivent) passerait alors de ' + nf(-D0.solde, 1) + '\u00a0% du PIB (la richesse produite en un an) en ' + D0.an + ' (Eurostat) à ' + defic(an1(R0).solde) + ' en ' + AN0 + ', parce que les intérêts de la dette augmentent.';
     $('q-hyp').innerHTML = [
