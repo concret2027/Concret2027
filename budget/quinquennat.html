@@ -487,6 +487,7 @@ details.card.fold > summary { min-height: 44px; display: flex; align-items: cent
 .q-bar button { font: inherit; font-weight: 700; font-size: 15px; line-height: 1.15; min-height: 52px; padding: 4px 6px; border-radius: 14px; border: 1.5px solid var(--fg); background: var(--panel); color: var(--fg); cursor: pointer; overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; }
 #b-abst { border-color: var(--muted); font-weight: 600; }
 .q-bar button { overflow-wrap: normal; word-break: keep-all; hyphens: none; }
+body.q-grand .q-bar button { font-size: 13.5px; padding: 4px 2px; white-space: nowrap; }
 .q-tard { margin: 0; text-align: center; }
 .q-tard button { font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; padding: 0 6px; cursor: pointer; }
 .q-bar button.passe { border: 0; background: none; font-size: 13.5px; font-weight: 600; color: var(--muted); text-decoration: underline; min-height: 44px; padding: 0 4px; }
@@ -960,7 +961,7 @@ body.q-vote { padding-bottom: 92px; }
   function objectif() {
     var r1 = an1(R), f = R[R.length - 1], z1 = an1(R0), zf = R0[R0.length - 1], cl = function (v) { return Math.max(0, Math.min(1, v)); };
     if (S.obj === 'defi') {
-      var DJo = defiDuJour(); if (DJo) { var nok = DJo.cond.filter(function (c) { return c.ok; }).length; return { ok: DJo.ok, prog: nok / DJo.cond.length, t: (DJo.ok ? '✓ Défi du jour réussi : ' : 'Défi du jour (' + nok + ' condition' + (nok > 1 ? 's' : '') + ' remplie' + (nok > 1 ? 's' : '') + ' sur ' + DJo.cond.length + ', la barre les compte) : ') + DJo.cond.map(function (c) { return (c.ok ? '✓ ' : '') + esc(c.t); }).join(' · ') }; }
+      var DJo = defiDuJour(); if (DJo) { var nok = DJo.cond.filter(function (c) { return c.ok; }).length; return { ok: DJo.ok, prog: nok / DJo.cond.length, t: (DJo.ok ? '✓ Défi du jour réussi : ' : (DJo.cond.length > 1 ? 'Défi du jour (' + nok + ' condition' + (nok > 1 ? 's' : '') + ' sur ' + DJo.cond.length + ' remplie' + (nok > 1 ? 's' : '') + ') : ' : 'Défi du jour : ')) + DJo.cond.map(function (c) { return (c.ok ? '✓ ' : '') + esc(c.t); }).join(' · ') }; }
     }
     var T = seuil(), AO = anObj();
     if (T != null) {
@@ -1410,7 +1411,7 @@ body.q-vote { padding-bottom: 92px; }
     var ord = {}; S.pile.forEach(function (x, i) { if (ord[x.id] == null) ord[x.id] = i; }); L.sort(function (a, b) { return (ord[a.id] == null ? 1e9 : ord[a.id]) - (ord[b.id] == null ? 1e9 : ord[b.id]); });
     $('q-vos').innerHTML = L.map(function (c) {
       var v = S.v[c.id], m = montant(c, AN0);
-      return '<li><span class="q-vt"><span>' + esc(c.titre || c.l) + '</span><span class="m">' + (m ? mds(m, true) : '—') + '</span></span><span class="q-vb" role="group" aria-label="' + esc('Votre vote : ' + (c.titre || c.l)) + '">' +
+      return '<li><span class="q-vt"><span>' + esc(c.titre || c.l) + '</span><span class="m">' + (m ? (m > 0 ? (c.sens === 'recette' ? 'rapporte ' : 'économise ') : 'coûte ') + nf(Math.abs(m), 1) + '\u00a0milliard' + (Math.abs(m) >= 1.95 ? 's' : '') : '—') + '</span></span><span class="q-vb" role="group" aria-label="' + esc('Votre vote : ' + (c.titre || c.l)) + '">' +
         [1, -1, 3].map(function (x) { return '<button type="button" data-id="' + esc(c.id) + '" data-v="' + x + '" aria-pressed="' + (v === x) + '">' + (x === 1 ? '✓ ' : x === -1 ? '✗ ' : '') + NOMV[x] + '</button>'; }).join('') +
         (v === 2 ? '<span class="q-vr">remplacée par une mesure proche</span>' : '') +
         // Avant de toucher : un « Pour » qui retirerait une de vos mesures créées le dit.
@@ -1769,7 +1770,7 @@ body.q-vote { padding-bottom: 92px; }
     var norm = function (t) { return t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
     $('q-cherche').oninput = function () {
       // Mots courants qui mènent à la bonne ligne (« hôpital » → l'assurance maladie, « école » → l'enseignement scolaire…).
-      var SYN = { hopital: 'assurance maladie', hopitaux: 'assurance maladie', medecin: 'assurance maladie', soins: 'assurance maladie', sante: 'assurance maladie', ecole: 'enseignement scolaire', ecoles: 'enseignement scolaire', college: 'enseignement scolaire', lycee: 'enseignement scolaire', armee: 'defense', militaire: 'defense', fonctionnaire: 'salaires des agents', fonctionnaires: 'salaires des agents', chomage: 'allocations chomage', logement: 'logement', pension: 'retraites', pensions: 'retraites', essence: 'carburants', gazole: 'carburants', train: 'transports', trains: 'transports', sncf: 'transports', route: 'transports', routes: 'transports', 'personnes agees': 'dependance', 'personne agee': 'dependance', ehpad: 'dependance', vieillesse: 'retraites', prof: 'enseignement scolaire', profs: 'enseignement scolaire', professeur: 'enseignement scolaire', professeurs: 'enseignement scolaire', enseignant: 'enseignement scolaire', enseignants: 'enseignement scolaire' };
+      var SYN = { hopital: 'assurance maladie', hopitaux: 'assurance maladie', medecin: 'assurance maladie', soins: 'assurance maladie', sante: 'assurance maladie', ecole: 'enseignement scolaire', ecoles: 'enseignement scolaire', college: 'enseignement scolaire', lycee: 'enseignement scolaire', armee: 'defense', militaire: 'defense', fonctionnaire: 'salaires des agents', fonctionnaires: 'salaires des agents', chomage: 'allocations chomage', logement: 'logement', pension: 'retraites', pensions: 'retraites', essence: 'carburants', gazole: 'carburants', train: 'transports', trains: 'transports', sncf: 'transports', route: 'transports', routes: 'transports', 'personnes agees': 'dependance', 'personne agee': 'dependance', ehpad: 'dependance', vieillesse: 'retraites', cheminot: 'retraites', cheminots: 'retraites', prof: 'enseignement scolaire', profs: 'enseignement scolaire', professeur: 'enseignement scolaire', professeurs: 'enseignement scolaire', enseignant: 'enseignement scolaire', enseignants: 'enseignement scolaire' };
       // Un pluriel (« impôts », « retraites ») cherche aussi le singulier.
       var q0 = norm($('q-cherche').value.trim()), q1 = q0.length > 3 ? q0.replace(/[sx]$/, '') : q0, q = SYN[q0] || SYN[q1] || (q1 !== q0 && !J.assiettes.some(function (x) { return norm(x.l).indexOf(q0) >= 0; }) ? q1 : q0), dansTitre = function (x) { return norm(x.l).indexOf(q) >= 0; }, dansNote = function (x) { return !dansTitre(x) && norm(x.note || '').indexOf(q) >= 0; };
       var U = q.length < 2 ? [] : (J.unites || []).filter(function (u) { return norm(u.l + ' ' + (u.k || '')).indexOf(q) >= 0 || norm(u.l + ' ' + (u.k || '')).indexOf(q1) >= 0 || (q.length >= 4 && norm(u.l).indexOf(q.slice(0, -1)) >= 0); });
@@ -1923,7 +1924,7 @@ body.q-vote { padding-bottom: 92px; }
       .concat(Object.keys(S.perso).filter(function (k) { return (AS[k].qui || []).some(function (q) { return F.q.indexOf(q) >= 0; }); }).map(function (k) { var pc = S.perso[k]; return { t: AS[k].l.split(' (')[0] + ' ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%', e: ppLigne(AS[k], pc) || ((exemplesLigne(k, pc).L || []).filter(function (t) { return F.re.test(t) && /<b>/.test(t); })[0]) }; }).filter(function (x) { return x.e; }));
     $('q-pv-h').textContent = 'Ce que vos mesures changent pour vous (' + F.l.toLowerCase() + ')';
     var Rf = C.filter(function (c) { return S.v[c.id] === -1 && vousConcerne(c); }).map(function (c) { var o = exemplesCarte(c); return { t: c.titre || c.l, e: (o.L || []).filter(function (t) { return F.re.test(t); })[0] }; }).filter(function (x) { return x.e; }).slice(0, 4);
-    $('q-pv').innerHTML = (L.length ? L.map(function (x) { return '<li><b>' + esc(x.t) + '</b> : ' + x.e + '</li>'; }).join('') : '') + (Rf.length ? '<li class="q-pv-r">Vous avez refusé ces cartes : pour vous, rien ne change.<ul class="q-pl">' + Rf.map(function (x) { return '<li><b>' + esc(x.t) + '</b> : ' + x.e.replace(/<[^>]+>/g, '').replace(/\.$/, '') + '</li>'; }).join('') + '</ul></li>' : '') ||  '<li>Aucune de vos mesures n\'a d\'exemple chiffré pour ce foyer : les sources ne donnent pas toujours de cas type. Les cartes marquées « Vous concerne » le disent quand elles en ont un.</li>';
+    $('q-pv').innerHTML = (L.length ? L.map(function (x) { return '<li><b>' + esc(x.t) + '</b> : ' + x.e + '</li>'; }).join('') : '') + (Rf.length ? '<li class="q-pv-r">Vous avez refusé ces cartes : la règle actuelle reste pour vous. Si elles avaient été adoptées :<ul class="q-pl">' + Rf.map(function (x) { return '<li><b>' + esc(x.t) + '</b> : ' + x.e.replace(/<[^>]+>/g, '').replace(/\.$/, '') + '</li>'; }).join('') + '</ul></li>' : '') ||  '<li>Aucune de vos mesures n\'a d\'exemple chiffré pour ce foyer : les sources ne donnent pas toujours de cas type. Les cartes marquées « Vous concerne » le disent quand elles en ont un.</li>';
   }
   function vosMesuresG() {
     var an = VMAN || AN0, M = mesuresAn(an), W = Math.round(320 / TS()), rows = [], y = 0, NMAX = 8;
@@ -2484,7 +2485,8 @@ body.q-vote { padding-bottom: 92px; }
     if (window.IntersectionObserver) { CARTE_VUE = false; new IntersectionObserver(function (E) { var v = E.some(function (x) { return x.isIntersecting; }); if (v !== CARTE_VUE) { CARTE_VUE = v; barre(); } }, { rootMargin: '0px 0px -25% 0px' }).observe($('q-deck')); }
     // Le haut collant (bandeau et onglets) une fois collé : sa hauteur, plus le bandeau du site.
     $('q-voir').onclick = function () { var k = $('q-deck'), nav = document.querySelector('nav.site'), h = $('q-collant').offsetHeight + (nav ? nav.offsetHeight : 0); window.scrollTo({ top: Math.max(0, k.getBoundingClientRect().top + window.scrollY - h - 8), behavior: 'instant' }); setTimeout(function () { sousBandeau(k); }, 60); setTimeout(function () { sousBandeau(k); }, 400); };
-    lireLien(); depuisVisite(); presetsAvecSenat(); presets(); objectifs(); filtres(); hypotheses(); creer(); tout(true);
+    lireLien(); if (location.hash === '#defi') { S.obj = 'defi'; S.defiJour = S.defiJour || 'avant'; garder(); try { history.replaceState(null, '', location.pathname); } catch (e) {} }
+    depuisVisite(); presetsAvecSenat(); presets(); objectifs(); filtres(); hypotheses(); creer(); tout(true);
     if (S.ami && !nbChoix()) window.scrollTo({ top: 0 });
   }
   if (window.QUINQUENNAT) demarrer(window.QUINQUENNAT.jeu, window.QUINQUENNAT.budget);
@@ -2492,6 +2494,6 @@ body.q-vote { padding-bottom: 92px; }
 })();
 </script>
 
-<script src="/commun/menu.js?v=20261105c"></script>
+<script src="/commun/menu.js?v=20261105d"></script>
 </body>
 </html>
