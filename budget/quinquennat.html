@@ -840,6 +840,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       <h2 id="q-mes-t"><span class="eyebrow">Dans votre budget</span><span id="q-mes-n">Aucune mesure créée</span></h2>
       <ul class="q-liste" id="q-mes"></ul>
     </section>
+    <div class="q-fin-suite" id="q-cr-suite"><p class="q-fin-l">Étape suivante</p><button type="button" class="q-go q-fin-go" id="q-cr-bilan">Voir mon bilan →</button><p class="q-fin-s">Déficit, dette, croissance jusqu'en 2031, ce que vos choix changent pour vous, et le pays qui vous ressemble.</p></div>
   </div>
 
   <div class="q-pane" id="p-bilan" role="tabpanel" aria-labelledby="t-bilan" hidden>
@@ -1694,8 +1695,8 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       $('b-suite').textContent = 'Continuer : ' + $('q-suite').textContent.toLowerCase();
     } else if (c) (c.q ? carteQ : carte)(c, entree);
     else {
-      $('q-deck').innerHTML = '<section class="card q-etape"><span class="eyebrow">Vous avez vu toutes les mesures' + (S.filtre !== 'tout' ? ' de ce filtre' : '') + '</span><h2>Bravo, votre budget est prêt</h2>' +
-        '<div class="q-fin-suite"><p class="q-fin-l">Étape suivante</p><button type="button" class="q-go q-fin-go" id="q-voirb2">Voir mon bilan →</button><p class="q-fin-s">Déficit, dette, croissance jusqu\'en 2031, ce que vos choix changent pour vous, et le pays qui vous ressemble.</p><button type="button" class="q-lien" id="q-cr2">Ou créer vos propres mesures</button></div>' +
+      $('q-deck').innerHTML = '<section class="card q-etape"><span class="eyebrow">Vous avez vu toutes les mesures' + (S.filtre !== 'tout' ? ' de ce filtre' : '') + '</span><h2>Bravo, vous avez voté toutes les mesures</h2>' +
+        '<div class="q-fin-suite"><p class="q-fin-l">Étape suivante</p><button type="button" class="q-go q-fin-go" id="q-cr2">Créer vos propres mesures →</button><p class="q-fin-s">Changez ce que vous voulez : toute la dépense, un impôt, une prestation, la retraite par capitalisation… avec l\'effet sur le déficit et la croissance.</p><button type="button" class="q-lien" id="q-voirb2">Ou voir tout de suite mon bilan</button></div>' +
         resume('etape') +
         (function () { if (!S.ami) return ''; var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), a1 = an1(Am), r1 = an1(R), x = accordAmi();
           return '<div class="q-ami" style="margin-top:12px"><p><b>Vous et le budget reçu</b> : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' carte' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + '. ' : '') + 'Déficit ' + AN0 + ' : ' + defic(r1.solde) + ' pour vous, ' + defic(a1.solde) + ' pour le budget reçu' + (Math.abs(r1.solde - a1.solde) < 0.05 ? ', à égalité.' : -r1.solde < -a1.solde ? ' : le vôtre est plus bas.' : ' : le sien est plus bas.') + '</p><div class="q-chips"><button type="button" id="q-ami-r">Renvoyer ma réponse</button></div></div>'; })() +
@@ -2493,6 +2494,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     barre(); if (t === 'bilan') bilan();
     var h = $('q-collant').getBoundingClientRect().bottom, p = $('p-' + t).getBoundingClientRect().top; if (p < h) window.scrollBy({ top: p - h - 70 });
   }
+  document.addEventListener('click', function (e) { if (e.target && e.target.id === 'q-cr-bilan') onglet('bilan'); });
   function tout(entree, anime) { hud(anime); enHaut(); pile(entree); barre(); }
 
   function objectifs() {
