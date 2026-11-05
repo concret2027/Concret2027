@@ -218,6 +218,23 @@ if (S.politique) {
     });
   } catch (e) { err('donnees/sondages_passes.json illisible (relancer python3 outils/historique.py --ecrire)'); }
 })();
+// Jeu « Votre quinquennat » (outils/budget_jeu.py → donnees/budget_jeu.json) : deux cartes du même levier ne passent jamais
+// comme deux questions séparées ; elles partagent une question à plusieurs réponses (même contrôle que budget_jeu.py).
+(function () {
+  var f = path.join(ROOT, 'donnees', 'budget_jeu.json'); if (!fs.existsSync(f)) return;
+  try {
+    var BJ = JSON.parse(fs.readFileSync(f, 'utf8')), Q = {}, par = {};
+    (BJ.questions || []).forEach(function (q) { Q[q.k] = q; });
+    (BJ.cartes || []).forEach(function (c) { if (!c.sujet) err('budget_jeu.json : carte ' + c.id + ' sans levier (relancer python3 outils/budget_jeu.py --ecrire)'); (par[c.sujet] = par[c.sujet] || []).push(c); });
+    Object.keys(par).forEach(function (s) {
+      var L = par[s]; if (L.length < 2) return;
+      var q = Q[s], ids = L.map(function (c) { return c.id; }).sort().join(',');
+      if (!q || L.some(function (c) { return c.q !== s; })) return err('budget_jeu.json : ' + L.length + ' cartes du levier « ' + s + ' » sans question commune (' + ids + ')');
+      var dans = {}; q.o.forEach(function (o) { o.ids.forEach(function (i) { dans[i] = 1; }); });
+      if (Object.keys(dans).sort().join(',') !== ids) err('budget_jeu.json : question « ' + s + ' » : ses réponses ne couvrent pas exactement ses cartes (' + ids + ')');
+    });
+  } catch (e) { err('donnees/budget_jeu.json illisible'); }
+})();
 // Votez les lois (outils/parlement.py → donnees/votes.json) : chaque vote a sa date, son numéro, son résultat et la position
 // d'au moins un groupe ; chaque position et chaque décompte sont lisibles ; relu depuis moins de trois jours.
 (function () {

@@ -400,7 +400,117 @@ def statut_court(t, i=None, texte=''):
     return t.split(' (')[0].split(' ; ')[0]
 
 
-THEMES = {'etudes': 'Études', 'retraites': 'Retraites', 'sante': 'Santé', 'travail': 'Travail et formation', 'solidarite': 'Familles et solidarité', 'impots': 'Impôts des ménages',
+# ---------- Un levier, une question ----------
+# Chaque carte est rattachée à son levier : le même impôt, le même tarif, la même prestation ou le même poste. Deux cartes du
+# même levier ne passent jamais comme deux questions séparées : elles forment une seule question à plusieurs réponses
+# (QUESTIONS), et la réponse donne le vote de chaque carte (Pour pour celles de la réponse choisie, Contre pour les autres).
+# Les identifiants de carte ne changent pas : les votes déjà gardés sur l'appareil et le compteur quiz-budget-<carte> restent lisibles.
+# Contrôle (controle_sujets) : une carte sans levier, deux cartes du même levier sans question commune, ou deux cartes qui
+# s'excluent (« exclusif », « exclut ») rattachées à des leviers différents arrêtent le script.
+SUJETS = {
+    'ir-indexation-bareme': 'ir-bareme', 'ir-indemnites-rupture': 'indemnites-depart', 'secu-indemnites-rupture': 'indemnites-depart',
+    'ir-indemnites-journalieres': 'ij-prelevements', 'csg-indemnites-journalieres': 'ij-prelevements',
+    'ir-abattement-retraites': 'abattement-retraites', 'niche-120401': 'abattement-retraites',
+    'apport-cession': 'apport-cession', 'contribution-grandes-entreprises': 'surtaxe-is', 'contribution-transport-maritime': 'surtaxe-maritime',
+    'tva-television': 'tva-television', 'taxe-infrastructures-transport': 'taxe-infrastructures', 'avoirs-desherence': 'avoirs-desherence',
+    'cpeb': 'contribution-collectivites', 'cufpa-plafond': 'france-competences', 'prime-activite-gel': 'prime-activite',
+    'formation-pric-cfa': 'formation-etat', 'cpf-participation': 'cpf', 'allegements-complements-salaire': 'allegements', 'allegements-moins-10': 'allegements',
+    'taxe-produits-sucres': 'taxe-sucre', 'contribution-complementaires-sante': 'taxe-mutuelles',
+    'pensions-revalorisation-2027': 'revalorisation', 'prestations-familiales-gel': 'revalorisation', 'revalo-moins-1': 'revalorisation', 'revalo-plus-1': 'revalorisation',
+    'allocation-rentree-scolaire': 'allocation-rentree', 'niche-200302': 'credit-impot-recherche', 'niche-110246': 'emploi-domicile',
+    'niche-520110': 'transmission-entreprise', 'niche-120108': 'epargne-salariale', 'niche-730213': 'tva-travaux', 'niche-730223': 'tva-travaux',
+    'niche-730221': 'tva-restauration', 'niche-120146': 'heures-sup', 'niche-110201': 'dons', 'niche-210309': 'dons', 'niche-110203': 'garde-enfants',
+    'niche-800229': 'accise-agricole', 'niche-120202': 'impot-prestations', 'niche-800401': 'accise-outre-mer', 'niche-710103': 'tva-outre-mer',
+    'niche-210326': 'brevets', 'niche-800221': 'accise-camions', 'niche-940102': 'malus-poids',
+    'retraites-fin-suspension': 'age-retraite', 'retraite-62': 'age-retraite', 'retraite-63': 'age-retraite', 'retraite-65': 'age-retraite',
+    'smic-2': 'smic', 'smic-5': 'smic', 'ondam-moins-1': 'ondam', 'ondam-plus-1': 'ondam', 'point-indice-plus-1': 'point-indice',
+    'etrangers-residence-prestations': 'etrangers-prestations', 'univ-master-doctorat': 'droits-universite', 'univ-30': 'droits-universite',
+    'carence-3-jours': 'carence-fonction-publique', 'isf': 'grandes-fortunes', 'taxe-zucman': 'grandes-fortunes', 'franchises-x2': 'franchises',
+    'fonctionnaires-1-sur-2': 'non-remplacement',
+}
+# Une question par levier qui a plusieurs cartes : son titre, la question, les réponses (chacune : les cartes adoptées) et la
+# réponse « rien ne change ». Une réponse qui adopte plusieurs cartes les additionne (ex. 65 ans : le calendrier de 2023, puis 65 ans).
+QUESTIONS = {
+    'age-retraite': {'t': "Âge minimum de départ à la retraite", 'q': "Quel âge minimum de départ choisissez-vous ?",
+                     'o': [("62 ans pour tous", ['retraite-62']), ("S'arrêter à 63 ans", ['retraite-63']),
+                           ("64 ans, avec le calendrier de la réforme de 2023", ['retraites-fin-suspension']),
+                           ("65 ans à terme (64 ans avec le calendrier de 2023, puis 65 ans)", ['retraites-fin-suspension', 'retraite-65'])],
+                     'aucune': "Garder la règle d'aujourd'hui : la hausse de l'âge reste en pause (62 ans et 9 mois pour les personnes nées de 1963 à mars 1965, puis jusqu'à 64 ans pour celles nées à partir de 1969)"},
+    'abattement-retraites': {'t': "Déduction de 10 % sur les retraites (impôt sur le revenu)", 'q': "Que faire de cette déduction ?",
+                             'o': [("La limiter à 3 000 € par foyer", ['ir-abattement-retraites']), ("La supprimer", ['niche-120401'])],
+                             'aucune': "La garder comme aujourd'hui (au plus 4 439 € par foyer)"},
+    'revalorisation': {'t': "Hausse des retraites de base et des prestations en 2027", 'q': "De combien les augmenter en 2027 ?",
+                       'o': [("Toutes : 1 point de plus que les prix", ['revalo-plus-1']), ("Toutes : 1 point de moins que les prix", ['revalo-moins-1']),
+                             ("Retraites de base : comme les prix seulement sous 1 260 € par mois", ['pensions-revalorisation-2027']),
+                             ("Prestations familiales : pas de hausse", ['prestations-familiales-gel']),
+                             ("Les deux précédentes (budget du Gouvernement)", ['pensions-revalorisation-2027', 'prestations-familiales-gel'])],
+                       'aucune': "Toutes comme les prix (règle d'aujourd'hui)"},
+    'droits-universite': {'t': "Droits d'inscription à l'université", 'q': "Les augmenter ?",
+                          'o': [("Master à 965 €, doctorat à 781 €", ['univ-master-doctorat']), ("+30 % pour tous les diplômes", ['univ-30'])],
+                          'aucune': "Les garder comme aujourd'hui"},
+    'grandes-fortunes': {'t': "Impôt sur les grands patrimoines", 'q': "Lequel choisissez-vous ?",
+                         'o': [("Rétablir l'impôt sur la fortune (ISF)", ['isf']), ("Impôt minimum de 2 % au-delà de 100 M€ (« taxe Zucman »)", ['taxe-zucman'])],
+                         'aucune': "Ni l'un ni l'autre"},
+    'smic': {'t': "SMIC en 2027", 'q': "L'augmenter en plus de sa hausse automatique ?",
+             'o': [("+2 % en plus", ['smic-2']), ("+5 % en plus", ['smic-5'])], 'aucune': "Seulement la hausse automatique"},
+    'ondam': {'t': "Dépenses d'assurance maladie en 2027", 'q': "Par rapport à l'objectif prévu (+2,0 %) ?",
+              'o': [("1 % de moins", ['ondam-moins-1']), ("1 % de plus", ['ondam-plus-1'])], 'aucune': "L'objectif prévu"},
+    'indemnites-depart': {'t': "Indemnités de départ au-delà de 48 060 €", 'q': "Que leur faire payer ?",
+                          'o': [("L'impôt sur le revenu", ['ir-indemnites-rupture']), ("Les cotisations sociales", ['secu-indemnites-rupture']),
+                                ("Les deux (budget du Gouvernement)", ['ir-indemnites-rupture', 'secu-indemnites-rupture'])],
+                          'aucune': "Rien de plus qu'aujourd'hui"},
+    'ij-prelevements': {'t': "Impôts sur les indemnités d'arrêt de travail", 'q': "Que leur faire payer ?",
+                        'o': [("L'impôt sur le revenu sur une partie", ['ir-indemnites-journalieres']), ("La CSG à 9,2 % au lieu de 6,2 %", ['csg-indemnites-journalieres']),
+                              ("Les deux (budget du Gouvernement)", ['ir-indemnites-journalieres', 'csg-indemnites-journalieres'])],
+                        'aucune': "Rien de plus qu'aujourd'hui"},
+    'dons': {'t': "Réductions d'impôt pour les dons", 'q': "Lesquelles supprimer ?",
+             'o': [("Celle des particuliers", ['niche-110201']), ("Celle des entreprises", ['niche-210309']), ("Les deux", ['niche-110201', 'niche-210309'])],
+             'aucune': "Les garder"},
+    'tva-travaux': {'t': "TVA sur les travaux dans les logements", 'q': "Appliquer le taux normal de 20 % ?",
+                    'o': [("Aux travaux d'entretien et d'amélioration (aujourd'hui 10 %)", ['niche-730213']), ("À la rénovation énergétique (aujourd'hui 5,5 %)", ['niche-730223']),
+                          ("Aux deux", ['niche-730213', 'niche-730223'])],
+                    'aucune': "Garder les taux réduits"},
+    'allegements': {'t': "Baisses de cotisations des employeurs sur les bas salaires", 'q': "Les réduire ?",
+                    'o': [("Compter certaines primes dans le salaire (budget du Gouvernement)", ['allegements-complements-salaire']), ("Les réduire de 10 %", ['allegements-moins-10']),
+                          ("Les deux", ['allegements-complements-salaire', 'allegements-moins-10'])],
+                    'aucune': "Ne rien changer"},
+}
+
+
+def controle_sujets(cartes, assiettes=()):
+    """Refuse deux cartes du même levier non regroupées. Renvoie les questions prêtes pour la page."""
+    ids = {c['id'] for c in cartes}
+    err = ['carte sans levier dans SUJETS : ' + i for i in sorted(ids - set(SUJETS))]
+    par = {}
+    for c in cartes:
+        par.setdefault(SUJETS.get(c['id']), []).append(c['id'])
+    for c in cartes:
+        for o in cartes:
+            if o is c: continue
+            lie = (c.get('exclusif') and c.get('exclusif') == o.get('exclusif')) or o['id'] in (c.get('exclut') or [])
+            if lie and SUJETS.get(c['id']) != SUJETS.get(o['id']):
+                err.append('%s et %s portent sur le même argent mais pas sur le même levier' % (c['id'], o['id']))
+    qs = []
+    for s, L in sorted(par.items(), key=lambda x: str(x[0])):
+        if s is None or len(L) < 2:
+            if s in QUESTIONS: err.append('question %s : moins de deux cartes' % s)
+            continue
+        Q = QUESTIONS.get(s)
+        if not Q:
+            err.append('levier %s : %d cartes (%s) sans question commune' % (s, len(L), ', '.join(L))); continue
+        dans = {i for _, x in Q['o'] for i in x}
+        if dans != set(L):
+            err.append('question %s : réponses %s, cartes %s' % (s, sorted(dans), sorted(L)))
+        qs.append({'k': s, 't': Q['t'], 'q': Q['q'], 'ids': [i for i in L], 'o': [{'l': l, 'ids': x} for l, x in Q['o']], 'aucune': Q['aucune']})
+    if err:
+        raise SystemExit('Leviers des cartes :\n  ' + '\n  '.join(err))
+    for c in cartes:
+        c['sujet'] = SUJETS[c['id']]
+        if len(par[c['sujet']]) > 1: c['q'] = c['sujet']
+    return qs
+
+
+THEMES = {'etudes': 'Études','retraites': 'Retraites', 'sante': 'Santé', 'travail': 'Travail et formation', 'solidarite': 'Familles et solidarité', 'impots': 'Impôts des ménages',
           'entreprises': 'Entreprises', 'patrimoine': 'Patrimoine', 'collectivites': 'Collectivités', 'etat': 'État et fonctionnaires', 'economie': 'Économie'}
 
 
@@ -508,7 +618,8 @@ POSTE_CARTES = {'prime-activite-gel': 'mi:solidarité-insertion-et-égalité-des
 POSTE_ASSIETTES = {'enseignement': 'mi:enseignement-scolaire', 'defense': 'mi:défense', 'ondam': ONDAM_PARTS,
                    'alloc-familiales': 'secu:famille', 'apl': 'mi:cohésion-des-territoires', 'aah': 'mi:solidarité-insertion-et-égalité-des-chan',
                    'prime-activite': 'mi:solidarité-insertion-et-égalité-des-chan', 'ij-maladie': 'secu:maladie', 'ij-atmp': 'secu:atmp',
-                   'ame': 'mi:santé', 'c2s': 'secu:maladie', 'aspa': 'secu:vieillesse'}
+                   'ame': 'mi:santé', 'c2s': 'secu:maladie', 'aspa': 'secu:vieillesse',
+                   'franchises': 'secu:maladie', 'tm-dm': 'secu:maladie'}
 
 
 def mk_mission(nom):
@@ -595,6 +706,21 @@ def repartition(T, MISSIONS, cartes, assiettes, unites):
     if m: assert int(m.group(2).replace(' ', '')) == tot27, ('total état B', m.group(2), tot27)
     T2 = budget_missions.texte(PLFSS_URL)
     secu = secu_branches(T2)
+    # Les branches de la Sécurité sociale dans Créer (la maladie l'est déjà par l'objectif de dépenses, ONDAM) : chaque branche
+    # exclut les lignes et les cartes qui portent sur une partie de son argent.
+    EXB = {'secu:vieillesse': (['retraites', 'aspa', 'pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'], 'csg', ['retraites']),
+           'secu:famille': (['alloc-familiales', 'prestations-familiales-gel', 'allocation-rentree-scolaire', 'revalo-moins-1', 'revalo-plus-1'], 'csg', ['familles']),
+           'secu:atmp': (['ij-atmp'], 'csg', ['malades']), 'secu:autonomie': ([], 'depense', ['solidarite'])}
+    for l in secu['lignes']:
+        if l['k'] not in EXB: continue
+        ex, mac, qui = EXB[l['k']]
+        assiettes.append({'k': l['k'], 'l': 'Sécurité sociale : ' + l['l'][0].lower() + l['l'][1:] + ' (toute la branche)', 'groupe': 'depense', 'md': l['v27'], 'an': an,
+                          'qui': qui, 'macro': mac, 'exclut': list(ex), 'poste': l['k'],
+                          'note': "Dépenses prévues pour %d par le projet de loi de financement de la sécurité sociale (régimes obligatoires de base), transferts entre branches compris. Chaque branche compte ici en entier : à 100 %% de baisse, elle ne verse plus rien." % an,
+                          'src': {'doc': secu['src']['doc'], 'page': secu['src']['page'], 'url': secu['src']['url'], 'citation': l['officiel'] + ' : ' + str(l['v27']).replace('.', ',') + ' Md€ (' + str(an) + ')'}})
+        for k in ex:
+            for a in assiettes:
+                if a['k'] == k: a['exclut'] = sorted(set(a['exclut'] + [l['k']]))
     # Rattachement des mesures du jeu aux postes.
     cles = {l['k'] for l in lignes} | {l['k'] for l in secu['lignes']}
     for c in cartes:
@@ -622,6 +748,9 @@ NC_CARTES = {'contribution-grandes-entreprises': 'is_temp', 'contribution-transp
 NC_ASSIETTES = {'is': 'is', 'ame': 'ame'}
 
 
+J_MESANGE = ("Insee et DG Trésor, document de travail G2017/04, « Le modèle macroéconométrique Mésange : réestimation et nouveautés », mai 2017", 'https://www.insee.fr/fr/statistiques/fichier/2848300/G2017-04.pdf')
+
+
 def non_comptes(P, cartes, assiettes):
     out = {}
     x = P.get('non_compte_is')
@@ -644,11 +773,201 @@ def non_comptes(P, cartes, assiettes):
     if x:
         out['ame'] = {'t': "Pas compté : les soins qui, sans l'AME, se reporteraient sur l'hôpital. Pour une AME limitée aux soins urgents, le rapport remis au Gouvernement en décembre 2023 écrit qu'une partie des consultations « basculerait sur l'hôpital, à un stade qui pourrait être plus dégradé », et qu'il « n'est pas acquis » que l'État y fasse des économies ; il ne chiffre pas ce coût.",
                       'src': {k: x[k] for k in ('document', 'page', 'url', 'citation')}}
+    lc = charger('leviers_creer.json')
+    E = {x['cle']: x for x in lc['elements']} if lc else {}
+    s4 = lambda x, cit=None, page=None: {'document': x['document'], 'page': page or x['page'], 'url': x['url'], 'citation': cit or x['citation']}
+    if 'chomage_duree_reforme_2023' in E:
+        x = E['chomage_duree_reforme_2023']
+        out['chomage_duree'] = {'t': "Compté : moins d'allocations, donc moins de dépenses des ménages (effet sur l'activité et sur l'emploi par la demande). Pas compté : les allocataires qui retrouveraient un emploi plus vite ; l'Unédic écrit que les études « ne permettent pas de conclure sur l'effet total d'un tel dispositif sur l'emploi ». Pas compté non plus : le passage d'une partie des allocataires au RSA ou à l'allocation de solidarité spécifique ; l'Unédic écrit que la réduction « aura très certainement des effets indirects sur la protection sociale (RSA, ASS…) », sans les chiffrer.",
+                                'src': s4(x, x['citations_complementaires'][2]['citation'] + ' […] ' + x['citations_complementaires'][3]['citation'], '3 et 4')}
+    if 'cotisations_retraite_2025' in E:
+        x = E['cotisations_retraite_2025']
+        out['capitalisation'] = {'t': "Pas compté : l'effet sur l'activité. Le jeu suppose que seul le financement change : les salariés paient les mêmes cotisations et les retraites restent versées ; les retraites d'aujourd'hui sont alors payées en empruntant (les intérêts de cet emprunt sont comptés dans la dette), et l'épargne des fonds augmente d'autant. Aucun chiffrage officiel de cet effet n'a été trouvé. Pas compté non plus : ce que rapporteront les fonds, et les retraites qu'ils verseront, bien après les cinq ans du jeu.",
+                                 'src': s4(x)}
+    if 'tm_dispositifs_medicaux_2027' in E:
+        x = E['tm_dispositifs_medicaux_2027']
+        out['reste_charge'] = {'t': "Ce que l'assurance maladie ne rembourse plus est payé par les patients ou par leur complémentaire santé (mutuelle), selon leur contrat. Pas compté : une hausse des cotisations des complémentaires qui pourrait suivre, et les soins auxquels certains patients renonceraient.",
+                               'src': s4(x)}
+    out['operateurs'] = {'t': "Pas compté : les missions que les opérateurs n'assureraient plus. Le Sénat écrit qu'une baisse de 8 % « ne pourrait être à missions constantes » : il faudrait abandonner certaines missions, sans dire lesquelles.",
+                         'src': {'document': "Sénat, rapport n° 807 (2024-2025), commission d'enquête sur les agences, opérateurs et organismes consultatifs de l'État, juillet 2025", 'page': '19 et 230', 'url': 'https://www.senat.fr/rap/r24-807-1/r24-807-11.pdf', 'citation': "une réduction de 8 % de ces coûts se traduisant par une économie de 2,2 milliards d’euros –, un tel effort ne pourrait être à missions constantes"}}
+    out['transmission'] = {'t': "Effet sur l'activité non compté : le modèle de la direction du Trésor et de l'Insee (Mésange) n'a pas de variante pour les impôts sur ce qu'on reçoit par héritage ou par donation, et aucune variante proche ne s'applique (ces impôts portent sur un patrimoine reçu, pas sur un revenu).",
+                           'src': {'document': J_MESANGE[0], 'page': '100 à 135 (sommaire des variantes)', 'url': J_MESANGE[1], 'citation': "Variantes publiées : investissement public, dépense publique, cotisations employeurs, cotisations salariés, TVA, CSG, impôt sur le revenu, taxe carbone."}}
+    if 'mesange2017_taille_choc' in E:
+        x = E['mesange2017_taille_choc']
+        out['grand'] = {'t': "Pas compté : la réaction des taux d'intérêt de la dette (à tester avec le curseur des taux, dans le Bilan). Pas compté non plus : ce que deviennent les services, les aides et les agents publics quand un poste baisse beaucoup ou disparaît ; aucun modèle publié ne le chiffre.",
+                        'src': s4(x)}
     for c in cartes:
         if NC_CARTES.get(c['id']) in out: c['nc'] = NC_CARTES[c['id']]
     for a in assiettes:
         if NC_ASSIETTES.get(a['k']) in out: a['nc'] = NC_ASSIETTES[a['k']]
+        if a.get('nc') and a['nc'] not in out: del a['nc']
     return out
+
+
+def eurostat_grands(an):
+    """Grands montants pour l'onglet Créer, année an (Eurostat, millions d'euros) : dépense totale moins intérêts payés,
+    cotisations sociales effectives des employeurs (D611) et des ménages (D613), impôts en capital (D91)."""
+    from budget import lire
+    m = lire('gov_10a_main', geo='FR', sector='S13', unit='MIO_EUR', na_item=['TE', 'D41PAY'], time=[str(an)])
+    t = lire('gov_10a_taxag', geo='FR', sector='S13', unit='MIO_EUR', na_item=['D611', 'D613', 'D91'], time=[str(an)])
+    g = lambda d, k: d[('FR', str(an), k)]
+    return {'TE': g(m, 'TE'), 'D41PAY': g(m, 'D41PAY'), 'D611': g(t, 'D611'), 'D613': g(t, 'D613'), 'D91': g(t, 'D91')}
+
+
+def leviers_creer(assiettes, P, MD):
+    """Lignes ajoutées à Créer le 5 novembre 2026 : grands changements (toute la dépense, cotisations, impôts en capital) et
+    règles chiffrées par une source (capitalisation, durée du chômage, carence des agents publics, reste à charge en santé).
+    Une ligne à unité propre a « u » (nom, bornes, pas, raccourcis) et « par_u » (Md€ gagnés sur le solde par unité, positif =
+    déficit plus bas) ou « par_pib » (une unité = un point de PIB de l'année du budget)."""
+    lc = charger('leviers_creer.json')
+    if not lc: return
+    E = {x['cle']: x for x in lc['elements']}
+    def src(x, cit=None, page=None):
+        return {'doc': x.get('document') or x['l'], 'page': page or x.get('page'), 'url': x['url'], 'citation': cit or x['citation']}
+    def cc(x, i): return x['citations_complementaires'][i]
+    an = int(eurostat_depart()['an'])
+    G = eurostat_grands(an)
+    ES = lambda k, l: {'doc': "Eurostat, " + l, 'page': None, 'url': 'https://ec.europa.eu/eurostat/databrowser/view/' + ('gov_10a_main' if k in ('TE', 'D41PAY') else 'gov_10a_taxag') + '/default/table',
+                       'citation': 'France, administrations publiques (S13), %d, %s : %s millions d’euros' % (an, k, '{:,.1f}'.format(G[k]).replace(',', ' ').replace('.', ','))}
+    def a(k, **kw):
+        d = {'k': k, 'groupe': 'depense', 'an': an, 'qui': [], 'macro': None, 'exclut': [], 'note': ''}
+        d.update(kw); d['md'] = round(d['md'], 3); assiettes.append(d)
+    # Toute la dépense publique, en points de PIB : un grand changement d'un geste, en plus des autres lignes.
+    prim = (G['TE'] - G['D41PAY']) / 1000
+    a('tout-depense', l="Toute la dépense publique (hors intérêts de la dette)", md=prim, qui=['etat'], macro='depense', nc='grand', par_pib=True,
+      u={'n': 'point de PIB', 'np': 'points de PIB', 'c': 'points', 'q': 'Changement, en points de PIB', 'min': -30, 'max': 15, 'pas': 0.5, 'p': [-20, -10, -5, -1, 1, 5]},
+      note="Dépenses de l'État, de la Sécurité sociale et des collectivités en %d, moins les intérêts de la dette : %s Md€ (Eurostat). Un point de PIB, c'est 1 %% de la richesse produite en un an. Ce changement s'ajoute à vos autres lignes, réparti sur tous les postes en proportion de leur montant (calcul de Concret)." % (an, '{:,.0f}'.format(prim).replace(',', ' ')),
+      src=dict(ES('TE', "principaux agrégats des administrations publiques (gov_10a_main), dépenses totales (TE) moins intérêts payés (D41PAY)"),
+               citation='France, administrations publiques (S13), %d : dépenses totales (TE) %s M€ ; intérêts payés (D41PAY) %s M€' % (an, '{:,.1f}'.format(G['TE']).replace(',', ' ').replace('.', ','), '{:,.1f}'.format(G['D41PAY']).replace(',', ' ').replace('.', ','))))
+    a('cotis-emp', l="Cotisations sociales des employeurs", groupe='recette', md=G['D611'] / 1000, qui=['entreprises'], macro='cotis_emp',
+      note="Cotisations versées par tous les employeurs, publics compris, à la Sécurité sociale, aux retraites complémentaires et à l'assurance chômage, en %d (Eurostat, D611). Effet sur l'activité : variante « cotisations des employeurs » du modèle Mésange." % an,
+      src=ES('D611', "recettes fiscales et cotisations des administrations publiques (gov_10a_taxag), cotisations sociales effectives des employeurs (D611)"))
+    a('cotis-sal', l="Cotisations sociales des salariés et des indépendants", groupe='recette', md=G['D613'] / 1000, qui=['salaries'], macro='cotis_sal',
+      note="Cotisations payées par les salariés, les indépendants et les autres ménages, en %d (Eurostat, D613). Effet sur l'activité : variante « cotisations des salariés » du modèle Mésange, la plus proche (le modèle n'en publie pas pour les indépendants)." % an,
+      src=ES('D613', "recettes fiscales et cotisations des administrations publiques (gov_10a_taxag), cotisations sociales effectives à la charge des ménages (D613)"))
+    a('impots-capital', l="Droits de succession, de donation et autres impôts en capital", groupe='recette', md=G['D91'] / 1000, qui=['patrimoine'], nc='transmission',
+      note="Impôts en capital perçus en %d (Eurostat, D91) : surtout les droits payés sur ce qu'on reçoit par héritage ou par donation." % an,
+      src=ES('D91', "recettes fiscales et cotisations des administrations publiques (gov_10a_taxag), impôts en capital (D91)"))
+    x = E['cotisations_retraite_2025']; v = x['valeurs']['2025 (Md€)']
+    a('capitalisation', l="Retraite par capitalisation : une part des cotisations placée dans des fonds", groupe='recette', md=v, an=2025, qui=['salaries', 'retraites'], nc='capitalisation',
+      u={'n': '% des cotisations de retraite', 'np': '% des cotisations de retraite', 'c': '%', 'q': 'Part des cotisations placée', 'min': 0, 'max': 100, 'pas': 1, 'p': [1, 5, 10, 20, 50]}, par_u=-round(v / 100, 3), lib='des cotisations placées dans des fonds', exclut=['cotis-emp', 'cotis-sal'],
+      note="Cotisations de retraite versées en 2025 : %s Md€ (Conseil d'orientation des retraites). Chaque %% placé dans des fonds manque aux retraites d'aujourd'hui, qui restent à payer : %s Md€ par an. Concret suppose des fonds hors des comptes publics (épargne retraite des salariés) ; un fonds public, comme le Fonds de réserve pour les retraites, serait compté autrement. Pour les employeurs publics (collectivités, hôpitaux), la cotisation reste une dépense publique : la part placée sort quand même des comptes publics. Montant de 2025, qui suit ensuite la croissance de l'économie. Ne s'ajoute pas aux lignes « Cotisations », qui portent en partie sur le même argent." % (fr_nb(v), fr_nb(v / 100)),
+      src=src(x))
+    x = E['chomage_duree_reforme_2023']; e = x['valeurs']['moindres dépenses d\'allocation en régime de croisière (Md€ par an)']; b = x['valeurs']['baisse de durée (%)']
+    dm = E['chomage_duree_max_2026']['valeurs']
+    a('chomage-duree', l="Assurance chômage : durée d'indemnisation plus courte", md=e, an=2027, qui=['chomeurs'], macro='csg', nc='chomage_duree',
+      u={'n': '% de durée en moins', 'np': '% de durée en moins', 'c': '%', 'q': 'Durée en moins', 'min': 0, 'max': b, 'pas': 1, 'p': [5, 10, b]}, par_u=round(e / b, 4), rampe=[0.25, 0.5, 0.75, 1], lib='de durée d\'indemnisation en moins', duree_max=dm['jours calendaires'],
+      note="Aujourd'hui, au plus %d jours d'indemnisation avant 55 ans (%d avant la baisse de 25 %% de février 2023). L'Unédic a chiffré cette baisse de 2023 : %s Md€ d'allocations en moins par an une fois en place. Concret compte une nouvelle baisse en proportion (10 %% de durée en moins = 10/25 de %s Md€), montant en quatre ans comme celle de 2023 (un quart de l'effet la première année). Une nouvelle baisse part de 548 jours et touche moins de personnes arrivées en fin de droits : la proportion surestime probablement l'économie. Le chiffrage de 2023 vaut aussi « hors retournement de conjoncture ». Les %s Md€ versés en moins aux retraites complémentaires ne sont pas comptés : ils restent dans les comptes publics." % (dm['jours calendaires'], dm['avant février 2023 (jours)'], fr_nb(e), fr_nb(e), fr_nb(x['valeurs']['moindres versements aux retraites complémentaires (Md€ par an)'])),
+      src=src(x), src2={'doc': E['chomage_duree_max_2026']['document'], 'url': E['chomage_duree_max_2026']['url'], 'citation': E['chomage_duree_max_2026']['citation']})
+    x = E['fp_carence_deuxieme_jour']; e = x['valeurs']['toute la fonction publique (M€ par an)'] / 1000
+    a('fp-carence', l="Arrêts maladie des agents publics : un jour de carence de plus", md=e, an=2025, qui=['agents_publics'], macro='csg', exclut=['carence-3-jours', 'remunerations'],
+      u={'n': 'jour de carence en plus', 'np': 'jours de carence en plus', 'c': 'jour', 'q': 'Jours non payés en plus', 'min': 0, 'max': 1, 'pas': 1, 'p': [1]}, par_u=round(e, 3), lib='jour non payé en plus',
+      note="Aujourd'hui, le premier jour d'un arrêt maladie n'est pas payé aux agents publics (État, collectivités, hôpitaux). Un deuxième jour non payé : %d M€ d'économies par an, d'après la direction du budget citée par le Gouvernement (amendement au budget 2025, novembre 2024) ; la source ne dit pas si ce montant compte la baisse des arrêts courts qu'un jour de carence entraîne. Pas de chiffrage officiel lu pour un troisième jour dans les trois fonctions publiques, ni pour les salariés du privé (dont les trois jours de carence sont souvent payés par l'employeur)." % round(e * 1000),
+      src=src(x))
+    f = MD.get('franchises_doublement')
+    if f:
+        e = f['valeurs']['doublement des montants et plafonds, année pleine (Md€)']
+        a('franchises', l="Franchises médicales et participations forfaitaires (ce que le patient paie sur les boîtes, consultations, transports)", md=e, an=2026, qui=['assures'], macro='csg', exclut=['franchises-x2'], nc='reste_charge',
+          u={'n': '% de hausse', 'np': '% de hausse', 'c': '%', 'q': 'Hausse des montants et des plafonds', 'min': 0, 'max': 100, 'pas': 5, 'p': [25, 50, 100]}, par_u=round(e / 100, 4), lib='de hausse des franchises et participations',
+          note="Les doubler (montants et plafonds) rapporterait %s Md€ par an d'après la Cour des comptes (2026). Une hausse plus petite est comptée en proportion (calcul de Concret)." % fr_nb(e),
+          src={'doc': f.get('document') or f['l'], 'page': f.get('page'), 'url': f['url'], 'citation': f['citation']})
+    x = E['tm_dispositifs_medicaux_2027']; e = x['valeurs']['économie (Md€ par an)'] / x['valeurs']['baisse (points)']
+    a('tm-dm', l="Rembourser moins les dispositifs médicaux (pansements, appareils, matériel) : la part laissée au patient, ou « ticket modérateur », augmente", md=x['valeurs']['économie (Md€ par an)'], an=2027, qui=['assures'], macro='csg', nc='reste_charge',
+      u={'n': 'point de remboursement en moins', 'np': 'points de remboursement en moins', 'c': 'points', 'q': 'Remboursement en moins', 'min': 0, 'max': 10, 'pas': 1, 'p': [5, 10]}, par_u=round(e, 4), lib='de remboursement en moins',
+      note="L'assurance maladie rembourse 50 %% de la plupart des dispositifs médicaux à partir de janvier 2027, au lieu de 60 %% : une baisse de 10 points, chiffrée à 0,4 Md€ par an : la Commission des comptes de la Sécurité sociale donne 0,4 Md€ pour cette baisse dans ses deux tableaux (p. 89 et 97, octobre 2026). Ce levier ajoute une baisse en plus de celle de 2027 : %s Md€ par point, à dépense inchangée. Les patients en affection de longue durée (maladie grave ou chronique reconnue) ne sont pas concernés." % fr_nb(round(e, 2)),
+      src=src(x))
+
+
+
+R6 = [round(k / 6, 4) for k in range(1, 6)] + [1]  # chiffre de 2032 atteint en ligne droite depuis 2027 (hypothèse de Concret)
+# L'effet sur l'activité de chaque nouvelle ligne : la variante de Mésange retenue, et pourquoi elle s'applique (écrit dans Créer).
+MACRO_NOTE = {
+    'tout-depense': "calculé avec l'effet moyen d'une dépense publique (salaires, achats, investissement et prestations), comme toute la dépense.",
+    'cotis-emp': "calculé avec l'effet des cotisations des employeurs : c'est le même prélèvement.",
+    'cotis-sal': "calculé avec l'effet des cotisations des salariés : c'est le même prélèvement (pas de calcul propre aux indépendants).",
+    'chomage-duree': "calculé comme un prélèvement sur le revenu des ménages, l'approche la plus proche : des allocations en moins pèsent sur le revenu des ménages ; ce n'est pas un calcul propre à cette mesure.",
+    'fp-carence': "calculé comme un prélèvement sur le revenu des ménages, l'approche la plus proche : les agents travaillent autant et reçoivent moins ; ce n'est pas un calcul propre à cette mesure.",
+    'franchises': "calculé comme un prélèvement sur le revenu des ménages, l'approche la plus proche : ce que les patients paient de leur poche pèse sur leur revenu ; ce n'est pas un calcul propre à cette mesure.",
+    'tm-dm': "calculé comme un prélèvement sur le revenu des ménages, l'approche la plus proche : ce que les patients ou leur complémentaire paient en plus pèse sur le revenu des ménages ; ce n'est pas un calcul propre à cette mesure.",
+    'operateurs': "calculé avec l'effet moyen d'une dépense publique (salaires et achats publics en moins) ; ce n'est pas un calcul propre à cette mesure.",
+    'fp-non-remplacement': "calculé avec l'effet moyen d'une dépense publique (des emplois publics en moins) ; ce n'est pas un calcul propre à cette mesure.",
+    'collectivites-effectifs': "calculé avec l'effet moyen d'une dépense publique (des emplois publics locaux en moins) ; ce n'est pas un calcul propre à cette mesure.",
+    'fp-categorielles': "calculé comme un prélèvement sur le revenu des ménages, l'approche la plus proche : le même nombre d'agents, payés un peu moins ; ce n'est pas un calcul propre à cette mesure.",
+    'fp-avancements': "calculé comme un prélèvement sur le revenu des ménages, l'approche la plus proche : le même nombre d'agents, payés un peu moins ; ce n'est pas un calcul propre à cette mesure.",
+    'quotient-familial': "calculé avec l'effet de l'impôt sur le revenu : c'est le même impôt.",
+    'tva-sociale': "calculé deux fois, chacun pour son montant : l'effet de la TVA pour la hausse de TVA, celui des cotisations des employeurs pour leur baisse. La première freine l'activité tout de suite, la seconde la soutient de plus en plus avec le temps.",
+    'pfu-bareme': "calculé avec l'effet de l'impôt sur le revenu, l'approche la plus proche ; ce n'est pas un calcul propre à ces revenus. Pas compté : un effet sur l'investissement des entreprises ; quand le taux unique a été créé, France Stratégie (2023) n'en a pas trouvé (« aucun effet n’a été détecté sur l’investissement et les salaires »), alors que les dividendes déclarés avaient fortement augmenté. Pas compté non plus : la baisse probable des revenus déclarés si le taux unique disparaît, qui réduirait la recette.",
+    'secu:vieillesse': "calculé comme un prélèvement sur le revenu des ménages, l'approche la plus proche : des retraites en moins pèsent sur le revenu des ménages.",
+    'secu:famille': "calculé comme un prélèvement sur le revenu des ménages, l'approche la plus proche : des prestations en moins pèsent sur le revenu des ménages.",
+    'secu:atmp': "calculé comme un prélèvement sur le revenu des ménages, l'approche la plus proche : surtout des indemnités et des rentes versées aux victimes.",
+    'secu:autonomie': "calculé avec l'effet moyen d'une dépense publique : surtout des soins et de l'aide en établissement et à domicile.",
+}
+
+
+def leviers_plus(assiettes):
+    """Sept leviers chiffrés et relus à part (donnees/budget_sources/leviers_plus.json) : opérateurs de l'État, fonction publique
+    (départs non remplacés, collectivités, mesures par métier, avancements), quotient familial, TVA sociale, revenus du capital.
+    Les leviers qui touchent les mêmes emplois s'excluent (« exclut »). Les chiffres de 2032 de la Cour des comptes montent en
+    ligne droite depuis 2027 (R6, hypothèse de Concret, écrite dans la note)."""
+    lp = charger('leviers_plus.json')
+    if not lp: return
+    L = {x['id']: x for x in lp['leviers']}
+    S = lambda s: {'doc': s['document'], 'page': s.get('page'), 'url': s['url'], 'citation': s['citation']}
+    def a(k, **kw):
+        d = {'k': k, 'groupe': 'depense', 'an': date.today().year + 1, 'qui': [], 'macro': 'depense', 'exclut': [], 'note': ''}
+        d.update(kw); assiettes.append(d)
+    x = L['operateurs-fonctionnement']; v = {y['l'][:12]: y for y in x['variantes']}; v8 = next(y for y in x['variantes'] if y['effet_md'] == 2.2); v2 = next(y for y in x['variantes'] if y['effet_md'] == 0.54)
+    a('operateurs', l="Opérateurs et agences de l'État (comme Météo-France ou les agences régionales de santé) : coûts de personnel et de fonctionnement", md=v8['effet_md'], an=2024, qui=['etat'],
+      u={'n': '% de coûts en moins', 'np': '% de coûts en moins', 'c': '%', 'q': 'Coûts en moins', 'min': 0, 'max': x['curseur']['max_pct'], 'pas': 1, 'p': [2, 5, 8]},
+      par_u=round(v8['effet_md'] / x['curseur']['max_pct'], 4), exclut=['fp-non-remplacement'], rampe=R6, nc='operateurs',
+      note="Les 423 opérateurs de l'État (agences, établissements publics, hors universités et recherche) dépensent environ 27,2 Md€ en personnel et en fonctionnement (calcul de Concret : 14 + 13,2 Md€, Sénat). Le Sénat chiffre une baisse de 8 %% à %s Md€ par an, en précisant qu'elle « ne pourrait être à missions constantes » ; une baisse plus petite est comptée en proportion (calcul de Concret). Repère : réduire de 20 %% les seules fonctions support rapporterait %s M€ (environ 2 %% des coûts). Le Sénat parle de « plusieurs années », sans calendrier : Concret fait monter l'économie en ligne droite sur six ans, comme pour la fonction publique (un sixième en %d). Ne s'ajoute pas aux départs non remplacés dans les trois fonctions publiques, qui touchent en partie les mêmes emplois." % (fr_nb(v8['effet_md']), fr_nb(v2['effet_md'] * 1000), date.today().year + 1),
+      src=S(v8['src']))
+    x = L['quotient-familial']; e1, e2 = x['variantes'][0], x['variantes'][1]
+    a('quotient-familial', l="Quotient familial de l'impôt sur le revenu", groupe='recette', md=x['assiette'][0]['v'], an=date.today().year + 1, qui=['familles', 'menages_imposables'], macro='ir',
+      u={'n': 'choix', 'np': 'choix', 'c': '', 'q': 'Votre choix', 'min': 0, 'max': 2, 'pas': 1, 'p': [1, 2],
+         'choix': [{'v': 1, 'l': "Compter les enfants comme l'Insee pour le niveau de vie (moins de parts : les familles avec enfants paient plus d'impôt)", 'md': e1['effet_md']}, {'v': 2, 'l': "Supprimer la limite de la baisse d'impôt par enfant (le plafond : les familles aux revenus élevés paient moins)", 'md': e2['effet_md']}]},
+      note="Le quotient familial réduit l'impôt des foyers avec enfants (environ %s Md€, estimation de l'Insee reprise par la Cour des comptes) ; l'avantage de chaque demi-part est plafonné. La Cour chiffre deux changements : compter les enfants comme l'échelle de l'Insee, %s Md€ d'impôt en plus (3,75 millions de foyers paient en moyenne 784 € de plus) ; supprimer le plafond, %s Md€ de moins (chiffré sur les revenus de 2020 ; l'échelle de l'Insee, sans année précisée). Montants de la Cour, non actualisés, comptés tels quels en %d. La Cour rappelle que le quotient familial « n'est pas un avantage mais une modalité de calcul de l'impôt »." % (fr_nb(x['assiette'][0]['v']), fr_nb(e1['effet_md']), fr_nb(-e2['effet_md']), date.today().year + 1),
+      src=S(e1['src']), src2={'doc': e2['src']['document'], 'url': e2['src']['url'], 'citation': e2['src']['citation']}, moyenne_perte=784, perdants=3.75)
+    x = L['tva-sociale']; t = x['variantes'][0]
+    a('tva-sociale', l="TVA sociale : plus de TVA, autant de cotisations des employeurs en moins", groupe='recette', md=t['effet_md'], an=date.today().year + 1, qui=['consommateurs', 'entreprises'], macro='tva',
+      u={'n': 'point de TVA', 'np': 'points de TVA', 'c': 'points', 'q': 'TVA en plus', 'min': 0, 'max': x['curseur']['max_points_tva'], 'pas': x['curseur']['pas'], 'p': [0.5, 1, 2]},
+      par_u=0, mix=[{'macro': 'tva', 'par_u': t['effet_md']}, {'macro': 'cotis_emp', 'par_u': -t['effet_md']}],
+      note="Un point de TVA rapporte 12 Md€ et permet de baisser d'autant les cotisations des employeurs (direction de la sécurité sociale, citée par le Sénat) ; au-delà d'un point, en proportion (calcul de Concret). Sur le papier, le déficit ne change pas ; il change ensuite par l'effet sur l'activité. Repère : l'Institut des politiques publiques compte 8,2 Md€ d'effet net pour 13 Md€ de TVA, une fois déduites la TVA payée par les administrations et la hausse des prestations qui suivent les prix ; le modèle utilisé ici compte déjà ces effets à sa façon. Les prix montent et le salaire réel baisse (Sénat) ; la baisse des coûts peut ne pas passer dans les prix.",
+      src=S(t['src']))
+    x = L['pfu-bareme']; t = x['variantes'][0]
+    a('pfu-bareme', l="Revenus du capital (dividendes, intérêts, plus-values) imposés au barème de l'impôt sur le revenu", groupe='recette', md=t['effet_md'], an=date.today().year + 1, qui=['patrimoine'], macro='ir',
+      u={'n': 'choix', 'np': 'choix', 'c': '', 'q': 'Votre choix', 'min': 0, 'max': 1, 'pas': 1, 'p': [1],
+         'choix': [{'v': 1, 'l': "Au barème, comme les salaires", 'md': t['effet_md']}]},
+      effet_suffixe=" (au plus : avant les changements de comportement)",
+      note="Aujourd'hui, ces revenus peuvent être imposés à 12,8 %% (le « prélèvement forfaitaire unique » ; avec 17,2 %% de prélèvements sociaux, 30 %% en tout, la « flat tax »). Les imposer au barème (jusqu'à 45 %%) rapporterait %s Md€ d'après l'Institut des politiques publiques (2025), qui précise ne pas compter les changements de comportement, « potentiellement très importants » . France Stratégie (2023) note que les dividendes déclarés par les ménages ont fortement augmenté après la création du prélèvement forfaitaire (« environ 23 milliards d'euros » par an de 2018 à 2020, « contre 14 milliards de 2013 à 2017 »), comme ils avaient chuté en 2013 quand ces revenus étaient passés au barème. Pas compté : la baisse probable des revenus déclarés, qui réduirait la recette." % fr_nb(t['effet_md']),
+      src=S(t['src']))
+    lc = {e['cle']: e for e in (charger('leviers_creer.json') or {'elements': []})['elements']}; ms = lc.get('masse_salariale_cotisations')
+    HC = round(ms['valeurs']['salaires et traitements bruts (Md€)'] / ms['valeurs']['total (Md€)'], 4) if ms else 1
+    hc = (" Les chiffres de la Cour comprennent les cotisations des employeurs publics, qui vont à des caisses publiques : Concret n'en retient que la part des salaires bruts, %s %% (244,6 Md€ sur 362,1 Md€ en 2024, même note), la même pour les trois versants faute de détail par versant (les taux de cotisation des employeurs publics ne sont pas les mêmes pour l'État, les collectivités et les hôpitaux). Pas compté : les cotisations, la CSG et l'impôt que les agents ne paieraient plus sur ces salaires, qui réduiraient l'économie." % fr_nb(round(HC * 100, 1))) if ms else ''
+    x = L['fp-non-remplacement-3-versants']; sv = x['src_variantes']
+    a('fp-non-remplacement', l="Fonction publique : une partie des départs à la retraite non remplacée (État, collectivités, hôpitaux)", md=round(18.2 * HC, 3), an=2032, qui=['agents_publics'],
+      u={'n': '% des départs non remplacés', 'np': '% des départs non remplacés', 'c': '%', 'q': 'Départs non remplacés', 'min': 0, 'max': 50, 'pas': 10, 'p': [10, 20, 30, 50]},
+      par_u=round(18.2 * HC / 50, 4), rampe=R6, exclut=['fonctionnaires-1-sur-2', 'collectivites-effectifs', 'operateurs', 'remunerations'],
+      note="La Cour des comptes chiffre l'économie en 2032 : 3,6 Md€ pour 10 % des départs non remplacés, 18,2 Md€ pour la moitié (tous agents publics). Elle ne donne pas les années d'avant : Concret fait monter l'économie en ligne droite de 2027 à 2032 (un sixième la première année). Le jeu ne laisse pas cumuler « un fonctionnaire de l'État sur deux », les agents des collectivités ou les opérateurs avec ce choix, parce qu'ils touchent les mêmes postes : votre dernier choix sur ces postes remplace le précédent. Pour l'État, la Cour écrit qu'un départ sur deux non remplacé suppose des gains de productivité d'environ 0,5 % par an." + hc,
+      src=S(sv))
+    x = L['collectivites-effectifs']; c1, c2 = x['variantes']
+    a('collectivites-effectifs', l="Collectivités : moins d'agents (1 607 heures par an, ou retour vers les effectifs de 2014)", md=c2['effet_md']['2032'], an=2032, qui=['collectivites', 'agents_publics'],
+      u={'n': 'choix', 'np': 'choix', 'c': '', 'q': 'Votre choix', 'min': 0, 'max': 2, 'pas': 1, 'p': [1, 2],
+         'choix': [{'v': 1, 'l': "1 607 heures partout et moins d'absences (54 000 agents de moins, selon la Cour)", 'md': round(c1['effet_md']['2032'] * HC, 3)}, {'v': 2, 'l': "Effectifs ramenés vers ceux de 2014 (140 000 agents de moins selon la Cour, économie « maximale »)", 'md': round(c2['effet_md']['2032'] * HC, 3)}]},
+      rampe=R6, exclut=['fp-non-remplacement'],
+      note="Chiffres de la Cour des comptes pour 2032 (note de septembre 2026, p. 28, qui donne aussi les 54 000 et 140 000 agents) : 1,5 Md€ (1 607 heures, la durée légale du travail, déjà en vigueur, appliquée partout, et moins d'absentéisme) ou 3,9 Md€, une économie « maximale » selon la Cour (effectifs ramenés vers ceux de 2014). Concret les fait monter en ligne droite de 2027 à 2032. Chaque collectivité décide de ses effectifs : l'État ne les fixe pas dans son budget. Ne s'ajoute pas aux départs non remplacés dans les trois fonctions publiques." + hc,
+      src=S(c1['src']), src2={'doc': c2['src']['document'], 'url': c2['src']['url'], 'citation': c2['src']['citation']})
+    x = L['fp-remunerations-hors-point']; m1, m2 = x['variantes']
+    a('fp-categorielles', l="Fonction publique : moins de hausses de salaire décidées métier par métier", md=round(m1['effet_md']['50 %'] * HC, 3), an=2032, qui=['agents_publics'],
+      u={'n': '% de hausses en moins', 'np': '% de hausses en moins', 'c': '%', 'q': 'Hausses par métier en moins', 'min': 0, 'max': 50, 'pas': 10, 'p': [10, 20, 30, 50]},
+      par_u=round(m1['effet_md']['50 %'] * HC / 50, 4), rampe=R6, exclut=['remunerations'], macro='csg',
+      note="La Cour des comptes chiffre l'économie en 2032 par rapport au rythme moyen de 2012 à 2024 : 2,0 Md€ pour 10 % de ces hausses en moins, 9,8 Md€ pour la moitié. Concret la fait monter en ligne droite de 2027 à 2032. Le point d'indice n'est pas concerné." + hc,
+      src=S(m1['src']))
+    a('fp-avancements', l="Fonction publique : avancements de grade et d'échelon plus lents", md=round(m2['effet_md']['9 mois'] * HC, 3), an=2032, qui=['agents_publics'],
+      u={'n': 'mois de retard', 'np': 'mois de retard', 'c': 'mois', 'q': 'Avancement retardé de', 'min': 0, 'max': 9, 'pas': 3, 'p': [3, 6, 9]},
+      par_u=round(m2['effet_md']['9 mois'] * HC / 9, 4), rampe=R6, exclut=['remunerations'], macro='csg',
+      note="La Cour des comptes chiffre l'économie en 2032 : 0,8 Md€ pour 3 mois de retard, 1,5 Md€ pour 6 mois, 2,3 Md€ pour 9 mois (trois fonctions publiques). Concret la fait monter en ligne droite de 2027 à 2032." + hc,
+      src=S(m2['src']))
 
 
 def construire():
@@ -815,7 +1134,7 @@ def construire():
               "Scénario de la Cour des comptes (2018) : la recette va aux universités. Si l'État compense davantage l'exonération des boursiers, il lui en coûterait de %d à %d M€ par an selon la Cour ; non compté ici." % tuple(u["surcoût pour l'État de la compensation des boursiers, scénario central (M€ par an)"]), ['univ-30'])
         debat('univ-30', "Augmenter de 30 % tous les droits d'inscription à l'université", "Les droits annuels de licence, master et doctorat augmentent de 30 %. Les boursiers restent exonérés.", 'etudes', ['etudiants'], None, 'recette',
               {str(a1): u['hausse générale de 30 % : recette supplémentaire (M€)'] / 1000}, 'univ_hausse_droits_cour_2018', "Chiffrage de la Cour des comptes pour 2018-2019.", ['univ-master-doctorat'])
-        debat('carence-3-jours', "Passer à 3 jours de carence pour les arrêts maladie des fonctionnaires de l'État", "Les trois premiers jours d'un arrêt maladie ne sont plus payés aux agents de l'État (un seul aujourd'hui).", 'etat', ['agents_publics'], 'depense', 'depense',
+        debat('carence-3-jours', "Passer à 3 jours de carence pour les arrêts maladie des fonctionnaires de l'État", "Les trois premiers jours d'un arrêt maladie ne sont plus payés aux agents de l'État (un seul aujourd'hui).", 'etat', ['agents_publics'], 'csg', 'depense',
               {str(a1): MD['carence_fonction_publique']['valeurs']["3 jours de carence, fonction publique de l'État (M€ par an, IGF-IGAS 2024)"] / 1000}, 'carence_fonction_publique',
               "Chiffrage de l'inspection générale des finances et de l'inspection générale des affaires sociales (2024), cité par la commission des finances du Sénat. Fonction publique de l'État seulement.")
         debat('isf', "Rétablir l'impôt sur la fortune (ISF) à la place de l'impôt sur la fortune immobilière", "L'impôt sur la fortune porte de nouveau sur tout le patrimoine (placements financiers compris), et plus seulement sur l'immobilier.", 'patrimoine', ['patrimoine'], None, 'recette',
@@ -825,7 +1144,7 @@ def construire():
         debat('taxe-zucman', "Créer un impôt plancher de 2 % sur les patrimoines de plus de 100 millions d'euros (« taxe Zucman »)", "Les foyers dont le patrimoine dépasse 100 M€ paient au moins 2 % de ce patrimoine par an, impôts déjà payés compris.", 'patrimoine', ['patrimoine'], None, 'recette',
               {str(a1): z['scénario prudent (40 % des fortunes hors dispositif, Md€)']}, 'taxe_zucman_chiffrages',
               "Compté : le scénario prudent du rapport de la commission des finances de l'Assemblée (%s Md€). Les économistes auditionnés donnent %d à %d Md€ ; l'administration fiscale dit ne pas pouvoir simuler cet impôt, et le Gouvernement n'a publié aucun montant. Le rapport du Sénat cite deux autres calculs : 2 ou 3 Md€ si l'impôt sur les sociétés déjà payé compte dans le minimum de 2 %%, et un rendement réduit de moitié si les trois personnes les plus riches quittaient la France." % (str(z['scénario prudent (40 % des fortunes hors dispositif, Md€)']).replace('.', ','), z['économistes auditionnés, fourchette (Md€ par an)'][0], z['économistes auditionnés, fourchette (Md€ par an)'][1]))
-        debat('franchises-x2', "Doubler les franchises médicales et les participations forfaitaires", "Ce qui reste à payer par le patient sur les médicaments, consultations et transports (franchises et participations) double, plafonds compris.", 'sante', ['assures'], 'depense', 'depense',
+        debat('franchises-x2', "Doubler les franchises médicales et les participations forfaitaires", "Ce qui reste à payer par le patient sur les médicaments, consultations et transports (franchises et participations) double, plafonds compris.", 'sante', ['assures'], 'csg', 'depense',
               {str(a1): MD['franchises_doublement']['valeurs']['doublement des montants et plafonds, année pleine (Md€)']}, 'franchises_doublement', "Chiffrage en année pleine (Cour des comptes, 2026) ; ce doublement avait été annoncé puis abandonné.")
         ra = MD['retraite_age_cour_comptes_2025']['valeurs']
         def rampe(v35, debut):
@@ -909,6 +1228,10 @@ def construire():
         if a['k'] == 'allegements' and ca:
             a['par_pt'] = round(list(ca['effet'].values())[0] / 10, 3)
             a['note'] = (a.get('note') or '') + " Effet d'un changement : %s Md€ par point de pourcentage, comme la carte des allègements (Commission des comptes de la Sécurité sociale, effet sur le solde des régimes de base, compensations comprises) ; 1 %% du coût total donnerait davantage, parce que ce coût compte aussi des allègements que la Sécurité sociale compense déjà à l'Unédic et à l'Agirc-Arrco." % fr_nb(a['par_pt'])
+    leviers_creer(assiettes, P, MD)
+    leviers_plus(assiettes)
+    for a in assiettes:
+        if a['k'] in MACRO_NOTE: a['macro_note'] = MACRO_NOTE[a['k']]
     # Recoupements avec les autres montants : APL = programme « Aide à l'accès au logement » ; AAH dans « Handicap et dépendance ».
     A = {a['k']: a for a in assiettes}
     for a in assiettes:
@@ -1033,6 +1356,8 @@ def construire():
         'reperes_etat': (lambda e: {'valeurs': {k: round(v / 1e9, 1) for k, v in e['valeurs'].items()}, 'page': e['page'], 'url': e['url'], 'citation': e['citation']} if e else None)(next((x for x in (json.load(open(os.path.join(SRC, 'mesures_debattues.json'), encoding='utf-8'))['elements']) if x['cle'] == 'credits_etat_2027_reperes'), None)),
         'repartition': repartition(T_PLF, MISSIONS, cartes, assiettes, unites),
         'non_comptes': non_comptes(P, cartes, assiettes),
+        'questions': controle_sujets(cartes),
+        'mesange_choc': (lambda x: {'v': x['valeurs']['taille du choc testé (% du PIB ex ante)'], 'url': x['url'], 'page': x['page'], 'citation': x['citation'], 'citation2': x['citations_complementaires'][0]['citation'], 'citation3': x['citations_complementaires'][1]['citation'], 'page3': x['citations_complementaires'][1]['page']} if x else None)({e['cle']: e for e in (charger('leviers_creer.json') or {'elements': []})['elements']}.get('mesange2017_taille_choc')),
         'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'unites': unites, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
         'variantes': var, 'regle': REGLE,
@@ -1057,6 +1382,8 @@ def main():
     for c in o['cartes']:
         print('  %-36s %-6s %-12s %s' % (c['id'], c['origine'], c['macro'] or '—', c['effet']))
     print('Variantes :', ', '.join(o['variantes']))
+    print(len(o['questions']), 'questions à plusieurs réponses :', ', '.join('%s (%s)' % (q['k'], ', '.join(q['ids'])) for q in o['questions']))
+    print('Lignes de Créer :', len(o['assiettes']), '; nouvelles :', ', '.join(a['k'] for a in o['assiettes'] if a.get('u') or a['k'].startswith('secu:') or a['k'] in ('cotis-emp', 'cotis-sal', 'impots-capital')))
     pe = o['pays_eurostat']; print('Pays (Eurostat, %d) :' % pe['an'], len(pe['pays']), '; absents :', ', '.join(pe['absents']) or 'aucun')
     fr = [x for x in pe['pays'] if x['code'] == 'FR'][0]; assert abs(fr['solde'] - d['solde']) < 0.05, (fr, d)
     if '--ecrire' in sys.argv:
