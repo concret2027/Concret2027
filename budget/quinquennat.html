@@ -322,9 +322,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 <style>
 /* Votre quinquennat : une carte à la fois, comme Votez les lois. En haut, une ligne collée : le déficit, l'objectif, la dette.
    Résultat dès 5 votes (hémicycle des groupes, façon d'agir, dette), puis à chaque étape. Trois onglets : Voter, Créer, Bilan. */
-:root { --band2: rgba(47, 91, 211, .16); --c-imp: #2f5bd3; --c-eco: #55657a; --c-baisse: #8fa8e8; --c-dep: #b9c0cb; --on-fr: #fff; --piste: #d9dce2; --gmix: 0%; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --band2: rgba(122, 156, 255, .2); --c-imp: #7a9cff; --c-eco: #9aa8bb; --c-baisse: #3f5aa8; --c-dep: #565d69; --on-fr: #0d1430; --piste: #3a3f49; --gmix: 35%; } }
-:root[data-theme="dark"] { --band2: rgba(122, 156, 255, .2); --c-imp: #7a9cff; --c-eco: #9aa8bb; --c-baisse: #3f5aa8; --c-dep: #565d69; --on-fr: #0d1430; --piste: #3a3f49; --gmix: 35%; }
+:root { --c-def: #4d7c0f; --c-ecole: #c2410c; --c-rech: #7c3aed; --c-pol: #0e7490; --band2: rgba(47, 91, 211, .16); --c-imp: #2f5bd3; --c-eco: #55657a; --c-baisse: #8fa8e8; --c-dep: #b9c0cb; --on-fr: #fff; --piste: #d9dce2; --gmix: 0%; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --c-def: #a3d65c; --c-ecole: #fb9a5b; --c-rech: #b89cff; --c-pol: #5ccbe0; --band2: rgba(122, 156, 255, .2); --c-imp: #7a9cff; --c-eco: #9aa8bb; --c-baisse: #3f5aa8; --c-dep: #565d69; --on-fr: #0d1430; --piste: #3a3f49; --gmix: 35%; } }
+:root[data-theme="dark"] { --c-def: #a3d65c; --c-ecole: #fb9a5b; --c-rech: #b89cff; --c-pol: #5ccbe0; --band2: rgba(122, 156, 255, .2); --c-imp: #7a9cff; --c-eco: #9aa8bb; --c-baisse: #3f5aa8; --c-dep: #565d69; --on-fr: #0d1430; --piste: #3a3f49; --gmix: 35%; }
 .q-brouillon { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--draft); color: var(--draft-fg); font-size: 13px; }
 #q-intro { gap: 10px; }
 #q-intro h1 { font-size: 22px; line-height: 1.15; margin: 0; text-wrap: balance; }
@@ -1511,7 +1511,7 @@ body.q-vote { padding-bottom: 92px; }
     var gr = ''; for (var v = lo; v <= hi + 1e-9; v += pas) gr += '<line x1="' + g + '" x2="' + (W - dr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--grid)"/><text x="' + (g - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' + nf(v, dec) + (o.unite ? '' : '\u00a0%') + '</text>';
     // Lignes de repère (budgets comparés) : trait fin, nom écrit au-dessus à gauche.
     // Deux repères proches : le nom du plus bas passe sous son trait.
-    var ly = []; refs.slice().sort(function (a, b) { return b.v - a.v; }).forEach(function (r) { var y = Y(r.v) - 3; if (ly.some(function (o) { return Math.abs(o - y) < 11; })) y = Y(r.v) + 11; ly.push(y); gr += '<line x1="' + g + '" x2="' + (W - dr) + '" y1="' + Y(r.v) + '" y2="' + Y(r.v) + '" stroke="var(--muted)" stroke-dasharray="2 3"/><text x="' + (g + 4) + '" y="' + y + '" font-size="10" fill="var(--muted)">' + esc(r.l) + ' : ' + nf(r.v, 0) + un + '</text>'; });
+    var ly = []; refs.slice().sort(function (a, b) { return b.v - a.v; }).forEach(function (r) { var y = Y(r.v) - 3; if (ly.some(function (o) { return Math.abs(o - y) < 11; })) y = Y(r.v) + 11; ly.push(y); var rc = r.c || 'var(--muted)'; gr += '<line x1="' + g + '" x2="' + (W - dr) + '" y1="' + Y(r.v) + '" y2="' + Y(r.v) + '" stroke="' + rc + '" stroke-width="1.6"/><text x="' + (g + 4) + '" y="' + y + '" font-size="10.5" font-weight="600" fill="' + rc + '">' + esc(r.l) + ' : ' + nf(r.v, 0) + un + '</text>'; });
     var ys = [], fins = series.map(function (s) { var p = s.L[s.L.length - 1], y = Y(p.d) + 4; ys.forEach(function (o) { if (Math.abs(o - y) < 12) y = o + (y >= o ? 12 : -12); }); ys.push(y); return '<text x="' + (X(p.an) + 5) + '" y="' + y + '" font-size="11.5" font-weight="700" fill="' + s.c + '">' + nf(p.d, o.decFin != null ? o.decFin : 0) + un + '</text>'; }).join('');
     var zone = series.filter(function (s) { return s.zone; })[0];
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(o.aria || 'Dette publique en % du PIB') + '">' + gr +
@@ -1584,7 +1584,7 @@ body.q-vote { padding-bottom: 92px; }
     $('q-crc-n').innerHTML = plie('Croissance du PIB hors inflation : la prévision du FMI (octobre 2026), plus l\'effet de vos mesures sur l\'activité d\'après les effets publiés par la direction du Trésor et l\'Insee (modèle Mésange).', 'Les mesures sur l\'impôt sur les sociétés, le patrimoine et le SMIC n\'y comptent pas : le modèle ne publie pas leur effet.');
     // Les intérêts de la dette, en milliards d'euros, à côté des crédits 2027 de quelques budgets de l'État.
     var intr = function (L) { return L.filter(function (r) { return r.an >= AN0; }).map(function (r) { return { an: r.an, d: r.interets * r.pib / 100 }; }); };
-    var REF = [['defense', 'Défense'], ['enseignement', 'Écoles, collèges, lycées'], ['mi:recherche-et-enseignement-supérieur', 'Recherche et universités'], ['mi:sécurités', 'Police, gendarmerie, secours']].filter(function (x) { return AS[x[0]]; }).map(function (x) { return { v: AS[x[0]].md, l: x[1] }; });
+    var REF = [['defense', 'Défense', 'var(--c-def)'], ['enseignement', 'Écoles, collèges, lycées', 'var(--c-ecole)'], ['mi:recherche-et-enseignement-supérieur', 'Recherche et universités', 'var(--c-rech)'], ['mi:sécurités', 'Police, gendarmerie, secours', 'var(--c-pol)']].filter(function (x) { return AS[x[0]]; }).map(function (x) { return { v: AS[x[0]].md, l: x[1], c: x[2] }; });
     $('q-int').innerHTML = courbe([{ L: intr(R0), c: 'var(--muted)', dash: '5 4' }, { L: intr(R), c: 'var(--fr)', w: 3 }], { pas: 20, unite: '\u00a0Md€', zero: 0, refs: REF, g: 40, dr: 58, h: 220, aria: 'Intérêts de la dette chaque année, en milliards d\'euros' });
     $('q-int-l').innerHTML = '<span><i style="background:var(--fr)"></i>Avec vos mesures</span><span><i style="height:0;border-top:2px dashed var(--muted);border-radius:0"></i>Si rien ne change</span>';
     var i1 = intr(R)[0], iz = intr(R).slice(-1)[0];
