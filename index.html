@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="bb68931df7a2">
+<meta name="concret-version" content="0dd3973a3608">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -446,7 +446,7 @@ footer a { display: inline-flex; align-items: center; min-height: 44px; }
 <noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les résultats et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/" aria-current="page">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
-  <nav class="jump" aria-label="Aller à"><a href="#profil">Mandat par mandat</a><a href="#aujourdhui">Aujourd'hui</a><a href="#pouls">En bref</a><a href="#pouls-semaine">Actualité et agenda</a><a href="#missions">Les missions</a><a href="#reperes">Lois et population</a><a href="#fonctionnement">La règle</a><a href="#contact">Contact</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#profil">Mandat par mandat</a><a href="#aujourdhui">Aujourd'hui</a><a href="#pouls">En bref</a><a href="#pouls-semaine">Actualité et agenda</a><a href="#missions">Les missions</a><a href="#reperes">Les lois</a><a href="#fonctionnement">La règle</a><a href="#contact">Contact</a></nav>
 
   <section class="hero" style="display:grid;gap:12px;margin-top:10px">
     <span class="eyebrow" style="margin:0">Concret</span>
@@ -479,6 +479,7 @@ footer a { display: inline-flex; align-items: center; min-height: 44px; }
     <a class="pg" href="/education/"><b>Éducation</b><span>PISA, décrochage, diplômés, chômage des jeunes, universités, depuis 2002.</span></a>
     <a class="pg" href="/securite/"><b>Sécurité et justice</b><span>Homicides, vols avec violence, cambriolages, prisons, moyens de la police et de la justice, éloignements.</span></a>
     <a class="pg" href="/defense/"><b>Défense</b><span>Budget, objectif de l'OTAN, équipement, effectifs.</span></a>
+    <a class="pg" href="/demographie/"><b>L'évolution démographique</b><span>Naissances, âges, personnes nées à l'étranger, étrangers, titres de séjour, asile. Des faits, sans résultat sur 20.</span></a>
   </section>
 
   <section class="card auj" id="aujourdhui" data-partage="non" aria-labelledby="auj-t">
@@ -524,10 +525,9 @@ footer a { display: inline-flex; align-items: center; min-height: 44px; }
   </details>
 
   <section class="pages" id="reperes" aria-labelledby="re-t">
-    <h2 id="re-t"><span class="eyebrow">Repères, sans calcul</span>Les lois et la population</h2>
+    <h2 id="re-t"><span class="eyebrow">Repères, sans calcul</span>Les lois</h2>
     <a class="pg" href="/politique/"><b>La vie politique</b><span>Les grandes lois de chaque gouvernement depuis 2012, les votes de l'Assemblée groupe par groupe, les lois publiées, l'ordre du jour.</span></a>
-    <a class="pg" href="/demographie/"><b>L'évolution démographique</b><span>Naissances, âges, personnes nées à l'étranger, étrangers, titres de séjour, asile : la France face à l'Europe.</span></a>
-    <p class="note">Ces deux pages montrent des faits, sans résultat sur 20 : elles n'entrent pas dans les résultats mandat par mandat.</p>
+    <p class="note">Cette page montre des faits, sans résultat sur 20 : elle n'entre pas dans les résultats mandat par mandat.</p>
   </section>
 
 
@@ -638,7 +638,7 @@ footer a { display: inline-flex; align-items: center; min-height: 44px; }
     var vir = function (v, d) { return v.toFixed(d).replace('.', ','); };
     var MC = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
     var jc = function (s) { var p = s.split('-'); return +p[2] + ' ' + MC[+p[1] - 1]; };
-    var fait = function (k, h) { var a = document.querySelector('#reperes a.pg[href="/' + k + '/"]'); if (!a || !h || a.querySelector('.pg-fait')) return; var r = document.createElement('span'); r.className = 'pg-fait'; r.innerHTML = h; a.appendChild(r); };
+    var fait = function (k, h) { var a = document.querySelector('#missions a.pg[href="/' + k + '/"], #reperes a.pg[href="/' + k + '/"]'); if (!a || !h || a.querySelector('.pg-fait')) return; var r = document.createElement('span'); r.className = 'pg-fait'; r.innerHTML = h; a.appendChild(r); };
     try {
       var SP = S.politique, v0 = SP && SP.VOTES.filter(function (v) { return !v.loi; })[0], l0 = SP && SP.LOIS[0];
       // La prochaine séance : la première du jour ou à venir (l'ordre du jour relevé la veille peut commencer hier).
