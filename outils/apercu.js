@@ -86,7 +86,7 @@ function carte(o) {
   var gen = { titre: 'La France mesurée, mandat par mandat', sous: 'Six missions de l\'État face à la moyenne de l\'UE, depuis 1995', n: [String(nTot), '/' + tTot], nt: 'indicateurs où la France fait mieux que la moyenne de l\'UE, au dernier chiffre connu', missions: Object.keys(bref).map(function (k) { return { l: bref[k].l, n: bref[k].n, t: bref[k].total }; }), pied: 'Page par page : indicateurs où la France fait mieux que la moyenne de l\'UE', adresse: 'concret2027.fr' };
   cartes.push(Object.assign({ f: 'accueil' }, gen));
   // Baromètre : le nombre de jours avant le premier tour (date lue dans l'agenda du baromètre), refait chaque jour.
-  var D = JSON.parse(fs.readFileSync(path.join(ROOT, 'data.json'), 'utf8')).datasets, t1 = (D.agenda_barometre || []).filter(function (a) { return /premier tour/i.test(a.evenement); })[0];
+  var D = JSON.parse(fs.readFileSync(path.join(ROOT, 'data.json'), 'utf8')).datasets, t1 = (D.agenda_barometre || []).filter(function (a) { return /^premier tour/i.test(a.evenement); })[0];
   var t2 = (D.agenda_barometre || []).filter(function (a) { return /second tour/i.test(a.evenement); })[0], jour = function (a) { return new Date(a.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
   var jours = t1 ? Math.ceil((new Date(t1.date + 'T00:00:00+02:00') - new Date()) / 864e5) : null;
   cartes.push({ f: 'barometre', titre: 'Baromètre 2027', sous: 'Sondages et parieurs de la présidentielle, mis à jour chaque jour', n: jours > 0 ? [String(jours), ' jours'] : null, nt: 'avant le premier tour de l\'élection présidentielle', dates: [t1, t2].filter(Boolean).map(function (a) { return [/premier/i.test(a.evenement) ? 'Premier tour' : 'Second tour', jour(a) + ' ' + a.date.slice(0, 4)]; }), pied: 'Sources : Commission des sondages, instituts, Polymarket', adresse: 'concret2027.fr/barometre' });
@@ -112,6 +112,12 @@ function carte(o) {
     var VZ = JSON.parse(fs.readFileSync(FV, 'utf8')), XV = JSON.parse(fs.readFileSync(FX, 'utf8')).explications || {};
     var nx = Object.keys(XV).filter(function (k) { return XV[k].valide && !/^avenir:/.test(k); }).length, av = (VZ.AVENIR || [])[0];
     cartes.push({ f: 'votez', titre: 'Votez les lois', sous: 'Les vrais votes de l\'Assemblée nationale, expliqués, à voter à votre tour', n: [String(nx), ' textes'], nt: 'à voter : voyez de quels groupes de députés vous êtes le plus proche', dates: av ? [['Prochain vote à l\'Assemblée', jl(av.d)]] : [], pied: 'Source : Assemblée nationale, données ouvertes · vos votes restent sur votre appareil', adresse: 'concret2027.fr/votez' });
+  }
+  // Faites le budget 2027 : le nombre de mesures chiffrées à voter (cartes du jeu), sans autre chiffre.
+  var FB = path.join(ROOT, 'donnees', 'budget_jeu.json');
+  if (fs.existsSync(FB) && fs.existsSync(path.join(ROOT, 'budget', 'quinquennat.html'))) {
+    var BJ = JSON.parse(fs.readFileSync(FB, 'utf8')), nb = (BJ.cartes || []).length;
+    cartes.push({ f: 'budget', titre: 'Faites le budget 2027', sous: 'Choisissez les mesures, voyez le déficit et la dette jusqu\'en 2031', n: [String(nb), ' mesures'], nt: 'chiffrées par leur source, à voter une par une, ou créez les vôtres', dates: [], pied: 'Sources : projets de loi de finances et de financement de la sécurité sociale pour 2027, modèle Mésange (Trésor et Insee) · calcul de Concret', adresse: 'concret2027.fr/budget' });
   }
   // Concret sur l'écran d'accueil : les étapes (la carte que montre WhatsApp quand on envoie la page), sans chiffre.
   if (fs.existsSync(path.join(ROOT, 'application', 'index.html'))) cartes.push({ f: 'application', titre: 'Concret sur l\'écran d\'accueil', sous: 'Une icône, comme une application, sur téléphone et ordinateur : rien à télécharger', etapes: [['iPhone, dans Safari', 'Partager (ou ⋯ → Partager) → Sur l\'écran d\'accueil → Ajouter'], ['Android, dans Chrome', '⋮ → Ajouter à l\'écran d\'accueil → Installer'], ['Ordinateur, Chrome ou Edge', 'Icône d\'installation de la barre d\'adresse → Installer']], adresse: 'concret2027.fr/application', pied: 'Concret : la France face à ses voisins, mandat par mandat' });
