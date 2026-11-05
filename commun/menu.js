@@ -413,6 +413,7 @@
   // Compte rendu pour l'éditeur : node outils/vues_stats.js (rien n'est affiché sur le site).
   var VUES = 'https://compteur.square-brook-9d65.workers.dev/hit?n=1&i=0&k=', vuesFaites = {};
   var pageNom = (location.pathname.replace(/index\.html$/, '').replace(/^\/|\/$/g, '') || 'accueil').replace(/[^a-z0-9-]+/g, '-');
+  if (/^budget(-quinquennat-html)?$/.test(pageNom)) pageNom = 'budget'; // le jeu, à son adresse courte ou longue
   // Les appareils de l'éditeur ne sont pas comptés : concret2027.fr/?moi=1 les retire une fois pour toutes (ici et dans GoatCounter),
   // ?moi=0 les compte de nouveau.
   var editeur = false;
