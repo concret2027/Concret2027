@@ -2657,9 +2657,10 @@ body.q-bilan .q-collant { position: relative; top: auto; }
         for (var i = 0; i < essais.length; i++) {
           var e = essais[i], xa = e[2] === 'start' ? e[0] : e[2] === 'end' ? e[0] - lw : e[0] - lw / 2, b = [xa, e[1] - lh + 2, xa + lw, e[1] + 2];
           if (b[0] < 2 || b[2] > W - 2 || b[1] < t || b[3] > t + h) continue;
-          if (!prem) prem = [e, b, r];
-          if (chevauche(b)) continue;
-          prem = [e, b, r]; ok = true; break;
+          var nc = boites.filter(function (o) { return !(b[2] < o[0] || b[0] > o[2] || b[3] < o[1] || b[1] > o[3]); }).length;
+          if (!prem || nc < prem[3]) prem = [e, b, r, nc];
+          if (nc) continue;
+          ok = true; break;
         }
       }
       if (!prem || (!ok && !force)) return false;
@@ -2676,7 +2677,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     boites.push([vx - 10, vy - 10, vx + 10, vy + 10], [fx - 6, fy - 6, fx + 6, fy + 6], [px0 - 9, py0 - 9, px0 + 9, py0 + 9]);
     // D'abord les noms (vous, le point trouvé, la France de départ, puis la liste), ensuite le dessin des points : seuls les points
     // dont le nom est écrit sont pleins et cernés.
-    poser(vx, vy, 'Vous, ' + AN0, 13, C.fr, true, true); poser(px0, py0, etiqDe([pr]), 12, C.fg, true, true); poser(fx, fy, 'France ' + PE.an, 11, C.fr);
+    poser(vx, vy, 'Vous, ' + AN0, 13, C.fr, true, true); if (!poser(px0, py0, etiqDe([pr]), 12, C.fg, true, false)) poser(px0, py0, pr.pays + ' ' + pr.an, 12, C.fg, true, true); poser(fx, fy, 'France ' + PE.an, 11, C.fr);
     var nb = { gauche: 0, droite: 0 }, aj = function (p) { if (nb[p.b] != null) nb[p.b]++; }, ecrit = []; aj(pr);
     grp.forEach(function (q) {
       if (nbn >= max) return;
