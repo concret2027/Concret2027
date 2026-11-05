@@ -52,6 +52,7 @@
 .q-fin-l { margin: 0; font-size: 12.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--fr); }
 .q-fin-go { font-size: 18px !important; min-height: 54px; padding: 0 30px !important; width: 100%; max-width: 340px; }
 .q-fin-s { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.4; max-width: 34ch; }
+.q-mini-x { margin: 6px 0 0; font-size: 14px; line-height: 1.4; color: var(--fg); }
 </style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -1517,7 +1518,14 @@ body.q-bilan .q-collant { position: relative; top: auto; }
         '<text x="' + gx + '" y="' + (H - 2) + '" font-size="9.5" fill="var(--muted)">' + ans[0] + '</text><text x="' + (W - dx) + '" y="' + (H - 2) + '" font-size="9.5" text-anchor="end" fill="var(--muted)">' + ans[ans.length - 1] + '</text></svg></figure>';
     };
     var pcf = function (v) { return (v < 0 ? '−' : '') + nf(Math.abs(v), 1) + '\u00a0%'; };
-    return '<div class="q-minis">' + un('Déficit', function (L, an) { return -ligneAn(L, an).solde; }, pcf) + un('Croissance', function (L, an) { return croiss(L, an); }, pcf) + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>sans</p>';
+    // Quand le choix fait chuter l'activité la première année, la courbe de croissance remonte ensuite : le dire en clair,
+    // avec le niveau du PIB (écart avec « sans ce choix »), pour qu'on ne lise pas un rebond qui effacerait la chute.
+    var niv = function (an) { var x = ligneAn(A1, an), y = ligneAn(A0, an); return x && y ? (x.L || 0) - (y.L || 0) : 0; };
+    var n0 = niv(AN0), n1 = niv(ans[ans.length - 1]), expl = '';
+    if (S.macro && Math.abs(n0) >= 1) expl = '<p class="q-mini-x">' + (n0 < 0
+      ? 'Le PIB baisse de ' + nf(Math.abs(n0), 1) + '\u00a0% dès ' + AN0 + ' par rapport à « sans ce choix », et en ' + ans[ans.length - 1] + ' il reste ' + nf(Math.abs(n1), 1) + '\u00a0% plus bas. Si la croissance des dernières années repasse au-dessus, c\'est qu\'elle repart d\'un niveau plus bas : elle ne rattrape pas la perte.'
+      : 'Le PIB monte de ' + nf(n0, 1) + '\u00a0% dès ' + AN0 + ' par rapport à « sans ce choix », et en ' + ans[ans.length - 1] + ' il reste ' + nf(Math.abs(n1), 1) + '\u00a0% ' + (n1 >= 0 ? 'plus haut' : 'plus bas') + '. Si la croissance des dernières années repasse en dessous, c\'est qu\'elle part d\'un niveau plus haut.') + '</p>';
+    return '<div class="q-minis">' + un('Déficit', function (L, an) { return -ligneAn(L, an).solde; }, pcf) + un('Croissance', function (L, an) { return croiss(L, an); }, pcf) + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>sans</p>' + expl;
   }
   function premiere(c) { for (var a = AN0; a <= AN1; a++) if (montant(c, a)) return 'rien avant ' + a + ', puis ' + quoi(c.sens, montant(c, a)) + ' en ' + a; return 'rien avant ' + (AN1 + 1); }
   // Ce que votent les joueurs : le compteur de Concret (le même que pour le quiz, un total par choix, rien qui identifie la
