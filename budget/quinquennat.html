@@ -507,7 +507,9 @@ body.q-grand .q-hs.q-msg { max-height: calc(3 * 1.35em + 2px); -webkit-line-clam
 body.q-grand.q-vote .q-ress, body.q-grand.q-vote .q-hd-s, body.q-grand.q-vote .q-jauge { display: none; }
 body.q-grand.q-vote .q-hud { padding-top: 5px; padding-bottom: 5px; }
 .q-hs:not(.q-msg) { max-height: none; display: block; -webkit-line-clamp: unset; line-clamp: unset; }
-.q-hs.ouvert { -webkit-line-clamp: unset; line-clamp: unset; display: block; max-height: 55vh; overflow-y: auto; }
+.q-hs.ouvert, body.q-grand .q-hs.q-msg.ouvert { -webkit-line-clamp: unset; line-clamp: unset; display: block; max-height: 55vh; overflow-y: auto; }
+/* Texte agrandi, hors de l'onglet Voter : bandeau réduit aux trois chiffres et à la ligne de l'objectif. */
+body.q-grand.q-hors-vote .q-ress, body.q-grand.q-hors-vote .q-hd-s, body.q-grand.q-hors-vote .q-jauge { display: none; }
 .q-extrait summary { cursor: pointer; font-weight: 600; color: var(--fr); min-height: 44px; display: flex; align-items: center; }
 .q-extrait p { white-space: pre-line; font-size: 12.5px; }
 .q-partage-t { font-size: 13px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); user-select: all; margin: 0; }
@@ -1000,7 +1002,7 @@ body.q-vote { padding-bottom: 92px; }
       var recH = !o.ok && S.reussi && S.reussi[cleRec(S.obj)] ? ' · <span class="q-rec">Record : ' + S.reussi[cleRec(S.obj)] + ' votes</span>' : '';
       $('q-hs').innerHTML = o.t + recH + (nx ? ' <button type="button" id="q-suiv">Viser ' + (nx === 'quatre' ? '4\u00a0% en ' + AN0 : nf(PAR.regle, 0) + '\u00a0% en ' + (J.echeance_ue ? J.echeance_ue.an : AN0)) + ' →</button>' : '') + ' <button type="button" id="q-chobj" aria-expanded="' + !$('q-hobj').hidden + '">' + (S.obj === 'aucun' || !S.obj ? 'Choisir un objectif' : 'Changer d\'objectif') + '</button>';
       if (nx) $('q-suiv').onclick = function () { S.obj = nx; garder(); objectifs(); tout(); };
-      $('q-hs').className = 'q-hs' + (o.ok ? ' ok' : '');
+      $('q-hs').className = 'q-hs' + (o.ok ? ' ok' : ''); $('q-hs').scrollTop = 0;
       $('q-chobj').onclick = function () { $('q-hobj').hidden = !$('q-hobj').hidden; hud(); };
     }
     if (DEFI_NEUF && nbChoix()) { var dn = DEFI_NEUF; DEFI_NEUF = null; setTimeout(function () { pop('🏅 Défi du jour réussi : ' + esc(dn), true, '🏅 Défi du jour réussi'); }, 900); }
@@ -1033,7 +1035,7 @@ body.q-vote { padding-bottom: 92px; }
     if (court) {
       el.innerHTML = '<span class="q-court">' + court + '</span><span class="q-plein" hidden>' + t + '</span> <button type="button" class="q-det" aria-expanded="false">Détail</button>';
       var b = el.querySelector('.q-det');
-      b.onclick = function () { var o = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', o); b.textContent = o ? 'Fermer' : 'Détail'; el.classList.toggle('ouvert', o); $('q-hud').classList.toggle('q-det-ouvert', o); el.querySelector('.q-plein').hidden = !o; el.querySelector('.q-court').hidden = o; if (o) clearTimeout(popT); else fin(6000); };
+      b.onclick = function () { var o = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', o); b.textContent = o ? 'Fermer' : 'Détail'; el.classList.toggle('ouvert', o); $('q-hud').classList.toggle('q-det-ouvert', o); el.querySelector('.q-plein').hidden = !o; el.querySelector('.q-court').hidden = o; el.scrollTop = 0; requestAnimationFrame(function () { el.scrollTop = 0; }); if (o) clearTimeout(popT); else fin(6000); };
     } else el.innerHTML = t;
     serrer(el);
     fin(long ? 15000 : 11000);
@@ -1255,9 +1257,12 @@ body.q-vote { padding-bottom: 92px; }
       var pP = retP.reduce(function (t, x) { return t + effetPerso(AS[x.k], x.pc); }, 0), kPo = (PIBY[anObj()] || PIBY[AN0]) / PIBY[AN0];
       // Une mesure qui en remplace une autre : le montant net (cette mesure moins celle qu'elle remplace), l'année du budget.
       var net = m0 - RO.reduce(function (t, o) { return t + montant(o, AN0); }, 0) - pP, netA = ma - RO.reduce(function (t, o) { return t + montant(o, anObj()); }, 0) - pP * kPo;
-      plein = rem.length ? ['<b>Adoptée</b>, à la place de : ' + rem.join(', ') + '.', 'Au total : ' + (Math.abs(net) < 0.05 ? 'presque rien ne change' : quoi(c.sens, net)) + ' en ' + AN0 + ' (cette mesure seule : ' + (m0 ? quoi(c.sens, m0) : premiere(c)) + ').', maj1(reste) + '.', ecoPhrase(A0, A1, netA, !!c.macro)]
+      plein = rem.length ? ['<b>Adoptée</b>, à la place de : ' + rem.join(', ') + '.', 'Au total : ' + (Math.abs(net) < 0.05 ? 'presque rien ne change' : quoi(c.sens, net)) + ' en ' + AN0 + ' (cette mesure seule : ' + (m0 ? quoi(c.sens, m0) : premiere(c)) + ').', maj1(reste) + '.', ecoPhrase(A0, A1, netA, !!c.macro, c.macro)]
         : ['<b>Adoptée</b> : ' + (m0 ? quoi(c.sens, m0) + ' en ' + AN0 : premiere(c)) + '.', maj1(reste) + '.', m0 || ma ? ecoPhrase(A0, A1, ma, !!c.macro, c.macro) : ''];
-      var mc = rem.length ? net : m0; court = '✓ Adoptée' + (Math.abs(mc) >= 0.05 ? (mc > 0 ? ', rapporte ' : ', coûte ') + mdt(Math.abs(mc)).replace(' d\'euros', '') : '') + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver');
+      // Le message court dit ce que la mesure remplace, et le verbe suit le sens : une dépense en moins « économise », un impôt « rapporte ».
+      var mc = rem.length ? net : m0, verbe = mc > 0 ? (c.sens === 'recette' ? ', rapporte ' : ', économise ') : ', coûte ';
+      court = rem.length ? '✓ Adoptée à la place de ' + rem.join(', ') + ' · au total ' + (Math.abs(net) < 0.05 ? 'presque rien ne change' : quoi(c.sens, net).replace(' d\'euros', '')) + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver')
+        : '✓ Adoptée' + (Math.abs(mc) >= 0.05 ? verbe + mdt(Math.abs(mc)).replace(' d\'euros', '') : '') + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver');
     } else {
       plein = [(v === -1 ? '<b>Contre</b> : la règle actuelle reste.' : '<b>Abstention</b> : la mesure n\'est pas adoptée.'), m0 ? maj1(hors) + ' : pas dans votre budget.' : '', maj1(reste) + '.'];
       court = (v === -1 ? '✗ Contre' : 'Abstention') + (m0 ? ' · sans ces ' + quoi(c.sens, m0).replace(' d\'euros', '') : '') + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver');
@@ -1402,7 +1407,9 @@ body.q-vote { padding-bottom: 92px; }
       var v = S.v[c.id], m = montant(c, AN0);
       return '<li><span class="q-vt"><span>' + esc(c.titre || c.l) + '</span><span class="m">' + (m ? mds(m, true) : '—') + '</span></span><span class="q-vb" role="group" aria-label="' + esc('Votre vote : ' + (c.titre || c.l)) + '">' +
         [1, -1, 3].map(function (x) { return '<button type="button" data-id="' + esc(c.id) + '" data-v="' + x + '" aria-pressed="' + (v === x) + '">' + (x === 1 ? '✓ ' : x === -1 ? '✗ ' : '') + NOMV[x] + '</button>'; }).join('') +
-        (v === 2 ? '<span class="q-vr">remplacée par une mesure proche</span>' : '') + '</span></li>';
+        (v === 2 ? '<span class="q-vr">remplacée par une mesure proche</span>' : '') +
+        // Avant de toucher : un « Pour » qui retirerait une de vos mesures créées le dit.
+        (v !== 1 ? (function () { var P = Object.keys(S.perso).filter(function (k) { return (AS[k].exclut || []).indexOf(c.id) >= 0; }); return P.length ? '<span class="q-vr">« Pour » remplacerait votre mesure ' + P.map(function (k) { return '« ' + esc(AS[k].l.split(' (')[0]) + ' ' + (S.perso[k] > 0 ? '+' : '−') + Math.abs(S.perso[k]) + '\u00a0% »'; }).join(', ') + '</span>' : ''; })() : '') + '</span></li>';
     }).join('') + (L.length ? '<li class="q-note">Montants en ' + AN0 + ' (positif : déficit plus bas). Adoptées : ' + mdt(t, true) + '.</li>' : '');
     Array.prototype.forEach.call($('q-vos').querySelectorAll('button[data-v]'), function (b) { b.onclick = function () { var c = C.filter(function (x) { return x.id === b.dataset.id; })[0]; if (c) changerVote(c, +b.dataset.v); }; });
   }
@@ -1650,7 +1657,7 @@ body.q-vote { padding-bottom: 92px; }
     if (c.id === 'prime-activite-gel' && (m = /revalorisation prévue de ([\d,]+) %/.exec(c.quoi || '')) && AS['prime-activite'] && AS['prime-activite'].pp && AS['prime-activite'].pp.moyenne) { var pa = AS['prime-activite'].pp.moyenne.v, r = +m[1].replace(',', '.'); add('En moyenne <b>' + eu(pa * r / 100, 2) + ' de moins par mois</b> qu\'avec la revalorisation prévue (' + pcx(r) + ' de ' + eu(pa) + ', montant moyen).'); }
     if (c.id === 'ir-abattement-retraites' || c.id === 'niche-120401') {
       var supp = c.id === 'niche-120401';
-      (supp ? [20000, 35000] : [35000, 45000, 20000]).forEach(function (P) { var a0 = abattPension(P); if (a0 == null) return; var a1 = supp ? 0 : Math.min(a0, 3000), i0 = impotSeul(P - a0), i1 = impotSeul(P - a1); if (i1 !== i0) add('Retraité seul, ' + eu(P) + ' de pensions par an : impôt de ' + eu(i0) + ' → <b>' + eu(i1) + '</b>.', ['ir_abattement_10', 'ir_bareme_2026', 'ir_decote']); else add('Retraité seul, ' + eu(P) + ' de pensions par an : impôt inchangé (' + eu(i0) + ').', ['ir_abattement_10']); });
+      (supp ? [20000, 35000] : [20000, 35000, 45000]).forEach(function (P) { var a0 = abattPension(P); if (a0 == null) return; var a1 = supp ? 0 : Math.min(a0, 3000), i0 = impotSeul(P - a0), i1 = impotSeul(P - a1); if (i1 !== i0) add('Retraité seul, ' + eu(P) + ' de pensions par an : impôt de ' + eu(i0) + ' → <b>' + eu(i1) + '</b>.', ['ir_abattement_10', 'ir_bareme_2026', 'ir_decote']); else add('Retraité seul, ' + eu(P) + ' de pensions par an : impôt inchangé (' + eu(i0) + ').', ['ir_abattement_10']); });
     }
     if (c.id === 'franchises-x2') { var fr = CAS('franchises'); if (fr) add('Par boîte de médicament : ' + eu(fr.franchise_par_boite_medicament_eur) + ' → <b>' + eu(2 * fr.franchise_par_boite_medicament_eur) + '</b> ; par consultation : ' + eu(fr.participation_forfaitaire_par_consultation_ou_acte_eur) + ' → <b>' + eu(2 * fr.participation_forfaitaire_par_consultation_ou_acte_eur) + '</b> ; par transport : ' + eu(fr.franchise_par_transport_sanitaire_eur) + ' → <b>' + eu(2 * fr.franchise_par_transport_sanitaire_eur) + '</b> ; au plus ' + eu(fr.plafond_annuel_total_eur) + ' → <b>' + eu(2 * fr.plafond_annuel_total_eur) + ' par an</b>.', ['franchises']); }
     if (c.id === 'univ-30' && di) add('Par an : licence ' + eu(di.licence_eur) + ' → <b>' + eu(di.licence_eur * 1.3, 2) + '</b>, master ' + eu(di.master_eur) + ' → <b>' + eu(di.master_eur * 1.3, 2) + '</b>, doctorat ' + eu(di.doctorat_eur) + ' → <b>' + eu(di.doctorat_eur * 1.3, 2) + '</b> ; les boursiers ne paient pas.', ['droits_inscription']);
@@ -1755,10 +1762,10 @@ body.q-vote { padding-bottom: 92px; }
     var norm = function (t) { return t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
     $('q-cherche').oninput = function () {
       // Mots courants qui mènent à la bonne ligne (« hôpital » → l'assurance maladie, « école » → l'enseignement scolaire…).
-      var SYN = { hopital: 'assurance maladie', hopitaux: 'assurance maladie', medecin: 'assurance maladie', soins: 'assurance maladie', sante: 'assurance maladie', ecole: 'enseignement scolaire', ecoles: 'enseignement scolaire', college: 'enseignement scolaire', lycee: 'enseignement scolaire', armee: 'defense', militaire: 'defense', fonctionnaire: 'salaires des agents', fonctionnaires: 'salaires des agents', chomage: 'allocations chomage', logement: 'logement', pension: 'retraites', pensions: 'retraites', essence: 'carburants', gazole: 'carburants' };
+      var SYN = { hopital: 'assurance maladie', hopitaux: 'assurance maladie', medecin: 'assurance maladie', soins: 'assurance maladie', sante: 'assurance maladie', ecole: 'enseignement scolaire', ecoles: 'enseignement scolaire', college: 'enseignement scolaire', lycee: 'enseignement scolaire', armee: 'defense', militaire: 'defense', fonctionnaire: 'salaires des agents', fonctionnaires: 'salaires des agents', chomage: 'allocations chomage', logement: 'logement', pension: 'retraites', pensions: 'retraites', essence: 'carburants', gazole: 'carburants', train: 'transports', trains: 'transports', sncf: 'transports', route: 'transports', routes: 'transports', 'personnes agees': 'dependance', 'personne agee': 'dependance', ehpad: 'dependance', vieillesse: 'retraites', prof: 'enseignement scolaire', profs: 'enseignement scolaire', professeur: 'enseignement scolaire', professeurs: 'enseignement scolaire', enseignant: 'enseignement scolaire', enseignants: 'enseignement scolaire' };
       // Un pluriel (« impôts », « retraites ») cherche aussi le singulier.
       var q0 = norm($('q-cherche').value.trim()), q1 = q0.length > 3 ? q0.replace(/[sx]$/, '') : q0, q = SYN[q0] || SYN[q1] || (q1 !== q0 && !J.assiettes.some(function (x) { return norm(x.l).indexOf(q0) >= 0; }) ? q1 : q0), dansTitre = function (x) { return norm(x.l).indexOf(q) >= 0; }, dansNote = function (x) { return !dansTitre(x) && norm(x.note || '').indexOf(q) >= 0; };
-      var U = q.length < 2 ? [] : (J.unites || []).filter(function (u) { return norm(u.l + ' ' + (u.k || '')).indexOf(q) >= 0 || (q.length >= 4 && norm(u.l).indexOf(q.slice(0, -1)) >= 0); });
+      var U = q.length < 2 ? [] : (J.unites || []).filter(function (u) { return norm(u.l + ' ' + (u.k || '')).indexOf(q) >= 0 || norm(u.l + ' ' + (u.k || '')).indexOf(q1) >= 0 || (q.length >= 4 && norm(u.l).indexOf(q.slice(0, -1)) >= 0); });
       var LT = q.length < 2 ? [] : J.assiettes.filter(dansTitre), L = (LT.length || U.length ? LT : J.assiettes.filter(dansNote)).slice(0, 40);
       $('q-vide').hidden = !(q.length >= 2 && !L.length && !U.length);
       $('q-resultats').hidden = !(L.length || U.length); if (L.length || U.length) sousBandeau($('q-cherche'));
@@ -1908,7 +1915,7 @@ body.q-vote { padding-bottom: 92px; }
       .concat(Object.keys(S.perso).filter(function (k) { return (AS[k].qui || []).some(function (q) { return F.q.indexOf(q) >= 0; }); }).map(function (k) { var pc = S.perso[k]; return { t: AS[k].l.split(' (')[0] + ' ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%', e: ppLigne(AS[k], pc) || ((exemplesLigne(k, pc).L || []).filter(function (t) { return F.re.test(t) && /<b>/.test(t); })[0]) }; }).filter(function (x) { return x.e; }));
     $('q-pv-h').textContent = 'Ce que vos mesures changent pour vous (' + F.l.toLowerCase() + ')';
     var Rf = C.filter(function (c) { return S.v[c.id] === -1 && vousConcerne(c); }).map(function (c) { var o = exemplesCarte(c); return { t: c.titre || c.l, e: (o.L || []).filter(function (t) { return F.re.test(t); })[0] }; }).filter(function (x) { return x.e; }).slice(0, 4);
-    $('q-pv').innerHTML = (L.length ? L.map(function (x) { return '<li><b>' + esc(x.t) + '</b> : ' + x.e + '</li>'; }).join('') : '') + (Rf.length ? '<li class="q-pv-r">Vous avez refusé, et cela ne change donc pas pour vous : ' + Rf.map(function (x) { return '<b>' + esc(x.t) + '</b> (' + x.e.replace(/<[^>]+>/g, '') + ')'; }).join(' ; ') + '</li>' : '') ||  '<li>Aucune de vos mesures n\'a d\'exemple chiffré pour ce foyer : les sources ne donnent pas toujours de cas type. Les cartes marquées « Vous concerne » le disent quand elles en ont un.</li>';
+    $('q-pv').innerHTML = (L.length ? L.map(function (x) { return '<li><b>' + esc(x.t) + '</b> : ' + x.e + '</li>'; }).join('') : '') + (Rf.length ? '<li class="q-pv-r">Vous avez refusé ces cartes : pour vous, rien ne change.<ul class="q-pl">' + Rf.map(function (x) { return '<li><b>' + esc(x.t) + '</b> : ' + x.e.replace(/<[^>]+>/g, '').replace(/\.$/, '') + '</li>'; }).join('') + '</ul></li>' : '') ||  '<li>Aucune de vos mesures n\'a d\'exemple chiffré pour ce foyer : les sources ne donnent pas toujours de cas type. Les cartes marquées « Vous concerne » le disent quand elles en ont un.</li>';
   }
   function vosMesuresG() {
     var an = VMAN || AN0, M = mesuresAn(an), W = Math.round(320 / TS()), rows = [], y = 0, NMAX = 8;
@@ -2076,6 +2083,7 @@ body.q-vote { padding-bottom: 92px; }
     $('q-tabexp').innerHTML = EXPL[t].replace('{AN0}', AN0).replace('{AN1}', AN1); ONG = t; $('q-tabexp').hidden = (t === 'voter' && !$('q-intro').hidden) || S.vu[t] > 1;
     if (POP) { clearTimeout(popT); POP = false; hud(); }
     ['voter', 'creer', 'bilan'].forEach(function (x) { $('t-' + x).setAttribute('aria-selected', x === t); $('p-' + x).hidden = x !== t; });
+    document.body.classList.toggle('q-hors-vote', t !== 'voter');
     barre(); if (t === 'bilan') bilan();
     var h = $('q-collant').getBoundingClientRect().bottom, p = $('p-' + t).getBoundingClientRect().top; if (p < h) window.scrollBy({ top: p - h - 70 });
   }
@@ -2327,7 +2335,7 @@ body.q-vote { padding-bottom: 92px; }
     var rs = ressemble(r1); if (rs) { g.fillStyle = '#1c1d22'; g.font = '600 38px ' + sans; g.fillText('Il ressemble ' + aPays(rs.p) + ' ' + drapeau(rs.p.code), 80, 850); g.fillStyle = '#62646d'; g.font = '400 28px ' + sans; g.fillText('dépenses et recettes publiques (Eurostat, ' + PE.an + ')', 80, 890); }
     var L = adoptees().map(function (x) { return { t: x.titre || x.l, m: montant(x, AN0) }; }).concat(Object.keys(S.perso).map(function (k) { return { t: AS[k].l.split(' (')[0] + ' ' + (S.perso[k] > 0 ? '+' : '−') + Math.abs(S.perso[k]) + ' %', m: effetPerso(AS[k], S.perso[k]) }; })).sort(function (a, b) { return Math.abs(b.m) - Math.abs(a.m); }).slice(0, 3);
     g.fillStyle = '#1c1d22'; g.font = '700 34px ' + sans; g.fillText(L.length ? 'Mes plus grosses mesures' : 'Aucune mesure pour l\'instant', 80, 965);
-    g.font = '400 32px ' + sans; L.forEach(function (x, i) { var t = x.t.length > 46 ? x.t.slice(0, 45) + '…' : x.t; g.fillStyle = '#1c1d22'; g.fillText('• ' + t, 80, 1015 + i * 48); g.fillStyle = '#2f5bd3'; g.textAlign = 'right'; g.fillText((x.m >= 0 ? 'rapporte ' : 'coûte ') + mds(Math.abs(x.m)), W - 80, 1015 + i * 48); g.textAlign = 'left'; });
+    g.font = '400 32px ' + sans; L.forEach(function (x, i) { var dr = (x.m >= 0 ? 'rapporte ' : 'coûte ') + mds(Math.abs(x.m)), place = W - 160 - g.measureText(dr).width - 30, t = x.t; if (g.measureText('• ' + t).width > place) { while (t.length > 8 && g.measureText('• ' + t + '…').width > place) t = t.slice(0, -1); t = t.replace(/\s+\S*$/, '') + '…'; } g.fillStyle = '#1c1d22'; g.fillText('• ' + t, 80, 1015 + i * 48); g.fillStyle = '#2f5bd3'; g.textAlign = 'right'; g.fillText((x.m >= 0 ? 'rapporte ' : 'coûte ') + mds(Math.abs(x.m)), W - 80, 1015 + i * 48); g.textAlign = 'left'; });
     g.fillStyle = '#2f5bd3'; g.fillRect(80, 1170, W - 160, 4);
     g.fillStyle = '#1c1d22'; g.font = '700 44px ' + sans; g.fillText('Et vous, avec les mêmes cartes ?', 80, 1245);
     g.fillStyle = '#2f5bd3'; g.font = '600 36px ' + sans; g.fillText('concret2027.fr/budget/quinquennat.html', 80, 1300);
