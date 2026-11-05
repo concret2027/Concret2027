@@ -511,6 +511,12 @@ body.q-vote { padding-bottom: 92px; }
 .q-tuiles-c { display: grid; gap: 8px; }
 .q-tuiles-c > div { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); gap: 8px; }
 .q-tuiles-c h3 { margin: 6px 0 0; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.q-tuiles-c h3.q-cat { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 14px 0 0; padding: 9px 12px; font-size: 16px; letter-spacing: 0; text-transform: none; color: var(--fg); background: color-mix(in srgb, var(--cat) 12%, var(--panel)); border-left: 5px solid var(--cat); border-radius: 10px; }
+.q-tuiles-c h3.q-cat small { font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.q-tuiles-c > div[style] > button { border-top: 3px solid var(--cat); }
+.q-cats { display: flex; flex-wrap: wrap; gap: 6px; }
+.q-tuiles-c .q-cats button { font: inherit; font-size: 13.5px; font-weight: 600; min-height: 40px; padding: 6px 12px; border-radius: 999px; border: 1.5px solid var(--cat); background: var(--panel); color: var(--fg); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.q-tuiles-c .q-cats button::before { content: ''; width: 10px; height: 10px; border-radius: 3px; background: var(--cat); }
 .q-tuiles-c button { font: inherit; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; display: grid; gap: 2px; min-height: 58px; }
 .q-tuiles-c button b { font-size: 14px; }
 .q-tuiles-c button span { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -895,8 +901,8 @@ body.q-vote { padding-bottom: 92px; }
   function hud(anime) {
     R = simuler(); R0 = simuler({ rien: true });
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1];
-    $('h-l1').textContent = 'Déficit ' + AN0; $('h-l2').textContent = 'Dette ' + AN1; $('h-l3').textContent = 'Croissance';
-    var g1 = croiss(R, AN0), g0 = croiss(R0, AN0), gz = croiss(R, AN1), v3 = g1 == null ? '—' : nf(g1, 1) + (gz == null ? '\u00a0%' : ' → ' + pcs(gz)); $('h-s3').textContent = AN0 + ' → ' + AN1;
+    var AOh = anObj ? anObj() : AN0, rO = ligneAn(R, AOh); $('h-l1').textContent = 'Déficit ' + AOh; r1 = rO; $('h-l2').textContent = 'Dette ' + AN1; $('h-l3').textContent = 'Croissance';
+    var g1 = croiss(R, AN0), g0 = croiss(R0, AN0), gz = croiss(R, AN1), v3 = g1 == null ? '—' : (g1 < 0 ? '−' : '') + nf(Math.abs(g1), 1) + (gz == null ? '\u00a0%' : ' → ' + pcs(gz)); $('h-s3').textContent = AN0 + ' → ' + AN1;
     $('h-v3').parentNode.title = g0 == null ? '' : 'Prévision du FMI pour ' + AN0 + ' : ' + pcs(g0) + (S.macro ? ' ; avec l\'effet de vos choix sur l\'activité : ' + pcs(g1) : ' (effet de vos choix sur l\'activité non compté)');
     var T0 = seuil(), v1 = T0 != null && anObj() === AN0 && -r1.solde > T0 && -r1.solde - T0 < 0.05 ? nf(-r1.solde, 2) + '\u00a0%' : defic(r1.solde), v2 = nf(f.d, 1) + '\u00a0%';
     [['h-v1', v1], ['h-v2', v2], ['h-v3', v3]].forEach(function (x) { var el = $(x[0]); if (anime && el.textContent !== x[1]) { el.classList.remove('q-flash'); void el.offsetWidth; el.classList.add('q-flash'); } el.textContent = x[1]; });
@@ -1454,9 +1460,12 @@ body.q-vote { padding-bottom: 92px; }
   }
   function tuiles() {
     var v0 = $('q-vide'); v0.parentNode.insertBefore($('q-choisi'), v0.nextSibling); v0.parentNode.insertBefore($('q-un'), v0.nextSibling);
-    var fu = (J.unites || []).length ? '<h3>Recruter ou construire</h3><div>' + J.unites.map(function (u) { var v = S.unites[u.k]; return '<button type="button" data-u="' + esc(u.k) + '" aria-pressed="' + (!!uchoisi && uchoisi.k === u.k) + '"><b>' + esc(u.l) + '</b><span>' + (u.type === 'construction' ? eu(u.cout) + ' la place' : eu(u.entree || u.cout) + ' par an chacun') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + nf(Math.abs(v), 0) + '</i>' : '') + '</button>'; }).join('') + '</div>' : '';
-    $('q-tuiles-c').innerHTML = fu + TUILES.map(function (f) { return '<h3>' + esc(f[0]) + '</h3><div>' + f[1].filter(function (t) { return AS[t[0]]; }).map(function (t) { var k = t[0], x = AS[k], v = S.perso[k]; return '<button type="button" data-k="' + esc(k) + '" aria-pressed="' + (!!choisi && choisi.k === k) + '"><b>' + esc(t[1]) + '</b><span>' + md(x.md) + '\u00a0Md€ en ' + x.an + ' · ' + (x.groupe === 'recette' ? 'recette' : 'dépense') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + Math.abs(v) + '\u00a0%</i>' : '') + '</button>'; }).join('') + '</div>'; }).join('');
-    Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button'), function (b) { b.onclick = function () { if (b.dataset.u) choisirUnite(b.dataset.u); else choisir(b.dataset.k); }; });
+    var fu = (J.unites || []).length ? '<h3 class="q-cat" id="cat-4" style="--cat:var(--c-rech)">Recruter ou construire<small>' + J.unites.length + ' lignes</small></h3><div style="--cat:var(--c-rech)">' + J.unites.map(function (u) { var v = S.unites[u.k]; return '<button type="button" data-u="' + esc(u.k) + '" aria-pressed="' + (!!uchoisi && uchoisi.k === u.k) + '"><b>' + esc(u.l) + '</b><span>' + (u.type === 'construction' ? eu(u.cout) + ' la place' : eu(u.entree || u.cout) + ' par an chacun') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + nf(Math.abs(v), 0) + '</i>' : '') + '</button>'; }).join('') + '</div>' : '';
+    var CATC = ['var(--fr)', 'var(--c-def)', 'var(--c-ecole)'], nbl = function (f) { return f[1].filter(function (t) { return AS[t[0]]; }).length; };
+    var som = '<nav class="q-cats" aria-label="Catégories">' + TUILES.map(function (f, i) { return '<button type="button" data-cat="cat-' + i + '" style="--cat:' + CATC[i % 3] + '">' + esc(f[0]) + '</button>'; }).join('') + ((J.unites || []).length ? '<button type="button" data-cat="cat-4" style="--cat:var(--c-rech)">Recruter ou construire</button>' : '') + '</nav>';
+    $('q-tuiles-c').innerHTML = som + TUILES.map(function (f, i) { return '<h3 class="q-cat" id="cat-' + i + '" style="--cat:' + CATC[i % 3] + '">' + esc(f[0]) + '<small>' + nbl(f) + ' lignes</small></h3><div style="--cat:' + CATC[i % 3] + '">' + f[1].filter(function (t) { return AS[t[0]]; }).map(function (t) { var k = t[0], x = AS[k], v = S.perso[k]; return '<button type="button" data-k="' + esc(k) + '" aria-pressed="' + (!!choisi && choisi.k === k) + '"><b>' + esc(t[1]) + '</b><span>' + md(x.md) + '\u00a0Md€ en ' + x.an + ' · ' + (x.groupe === 'recette' ? 'recette' : 'dépense') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + Math.abs(v) + '\u00a0%</i>' : '') + '</button>'; }).join('') + '</div>'; }).join('') + fu;
+    Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('.q-cats button'), function (b) { b.onclick = function () { var c = $(b.dataset.cat); c.scrollIntoView({ block: 'start' }); setTimeout(function () { sousBandeau(c); }, 30); }; });
+    Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button[data-k], button[data-u]'), function (b) { b.onclick = function () { if (b.dataset.u) choisirUnite(b.dataset.u); else choisir(b.dataset.k); }; });
     placer();
   }
   // Recruter ou construire : un nombre, son coût par an, l'effet sur le bandeau.
@@ -1605,7 +1614,7 @@ body.q-vote { padding-bottom: 92px; }
     var Rs = null; if (S.macro && n) { var mc = S.macro; S.macro = false; Rs = simuler(); S.macro = mc; }
     var rs1 = Rs && an1(Rs), rsf = Rs && Rs[Rs.length - 1], sa = function (v) { return Rs ? ' ; sans l\'effet sur l\'activité : ' + v : ''; };
     $('q-tuiles').innerHTML = tu('Déficit ' + AN0, defic(r1.solde), 'sans vos mesures : ' + defic(z1.solde) + sa(rs1 && defic(rs1.solde))) +
-      tu('Croissance ' + AN0 + ' et ' + f.an, pcs(croiss(R, AN0)) + ' · ' + pcs(croiss(R, f.an)), 'prévision du FMI : ' + pcs(croiss(R0, AN0)) + ' · ' + pcs(croiss(R0, f.an)) + (S.macro ? '' : ' (effet de vos choix non compté)')) + tu('Déficit ' + f.an, defic(f.solde), 'sans vos mesures : ' + defic(zf.solde) + sa(rsf && defic(rsf.solde))) + tu('Dette ' + f.an, nf(f.d, 1) + '\u00a0%', 'sans vos mesures : ' + nf(zf.d, 1) + '\u00a0%' + sa(rsf && nf(rsf.d, 1) + '\u00a0%')) + tu('Intérêts de la dette ' + f.an, mdt(f.interets * f.pib / 100), nf(f.interets, 1) + '\u00a0% du PIB ; sans vos mesures : ' + mdt(zf.interets * zf.pib / 100));
+      tu('Croissance ' + AN0 + ' et ' + f.an, pcs(croiss(R, AN0)) + ' · ' + pcs(croiss(R, f.an)), 'prévision du FMI : ' + pcs(croiss(R0, AN0)) + ' · ' + pcs(croiss(R0, f.an)) + (S.macro ? '' : ' (effet de vos choix non compté)')) + tu('Déficit ' + f.an, defic(f.solde), 'sans vos mesures : ' + defic(zf.solde) + sa(rsf && defic(rsf.solde))) + tu('Dette ' + f.an, nf(f.d, 1) + '\u00a0%', 'sans vos mesures : ' + nf(zf.d, 1) + '\u00a0%' + sa(rsf && nf(rsf.d, 1) + '\u00a0%')) + tu('Intérêts de la dette ' + f.an, mds(f.interets * f.pib / 100), nf(f.interets, 1) + '\u00a0% du PIB ; sans vos mesures : ' + mdt(zf.interets * zf.pib / 100));
     $('q-rc-p').innerHTML = resume('bilan');
     // Défi du jour
     var DJ = defiDuJour(), x = DJ && DJ.x, cond = DJ && DJ.cond, ok = DJ && DJ.ok, faisable = DJ && DJ.faisable;
