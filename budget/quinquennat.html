@@ -360,6 +360,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-hd b { font-family: var(--serif); font-weight: 400; font-size: 22px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .q-hd.d { text-align: right; }
 .q-hd.c { text-align: center; }
+.q-hd-s { font-style: normal; font-size: 11px; color: var(--muted); white-space: nowrap; }
 .q-jauge { grid-column: 1 / -1; }
 .q-jauge { position: relative; height: 8px; border-radius: 4px; background: var(--line); }
 .q-jauge span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--fr); transition: width .45s cubic-bezier(.2,.8,.2,1); }
@@ -609,7 +610,7 @@ body.q-vote { padding-bottom: 92px; }
   <div class="q-collant" id="q-collant">
   <div class="q-hud" id="q-hud">
     <div class="q-hd"><small id="h-l1">Déficit</small><b id="h-v1">—</b></div>
-    <div class="q-hd c"><small id="h-l3">Croissance</small><b id="h-v3">—</b></div>
+    <div class="q-hd c"><small id="h-l3">Croissance</small><b id="h-v3">—</b><i class="q-hd-s" id="h-s3"></i></div>
     <div class="q-hd d"><small id="h-l2">Dette</small><b id="h-v2">—</b></div>
     <div class="q-jauge" id="q-jauge" aria-hidden="true"><span></span><em></em></div>
     <button type="button" class="q-ress" id="q-ress" hidden></button>
@@ -687,19 +688,22 @@ body.q-vote { padding-bottom: 92px; }
       <h2 id="q-bi-t"><span class="eyebrow">La dette</span>Année par année, en part de la richesse produite</h2>
       <div class="q-chart" id="q-chart"></div>
       <p class="q-leg" id="q-leg"></p>
-      <p class="q-note" id="q-chart-n"></p>
+      <div class="q-note" id="q-chart-n"></div>
+      <button type="button" class="q-lien q-pcourbe" data-c="q-chart">Partager cette courbe</button>
     </section>
     <section class="card" aria-labelledby="q-crc-t">
       <h2 id="q-crc-t"><span class="eyebrow">La croissance</span>Année par année</h2>
       <div class="q-chart" id="q-crc"></div>
       <p class="q-leg" id="q-crc-l"></p>
-      <p class="q-note" id="q-crc-n"></p>
+      <div class="q-note" id="q-crc-n"></div>
+      <button type="button" class="q-lien q-pcourbe" data-c="q-crc">Partager cette courbe</button>
     </section>
     <section class="card" aria-labelledby="q-int-t">
       <h2 id="q-int-t"><span class="eyebrow">Les intérêts de la dette</span>Chaque année, à côté d'autres budgets</h2>
       <div class="q-chart" id="q-int"></div>
       <p class="q-leg" id="q-int-l"></p>
-      <p class="q-note" id="q-int-n"></p>
+      <div class="q-note" id="q-int-n"></div>
+      <button type="button" class="q-lien q-pcourbe" data-c="q-int">Partager cette courbe</button>
     </section>
     <section class="card" aria-labelledby="q-def-t">
       <h2 id="q-def-t"><span class="eyebrow">Le déficit</span>Chaque année</h2>
@@ -884,9 +888,9 @@ body.q-vote { padding-bottom: 92px; }
   function hud(anime) {
     R = simuler(); R0 = simuler({ rien: true });
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1];
-    $('h-l1').textContent = 'Déficit ' + AN0; $('h-l2').textContent = 'Dette ' + AN1; $('h-l3').textContent = 'Croissance ' + AN0;
-    var g1 = croiss(R, AN0), g0 = croiss(R0, AN0), v3 = g1 == null ? '—' : pcs(g1);
-    $('h-v3').parentNode.title = g0 == null ? '' : 'Prévision du FMI : ' + pcs(g0) + (S.macro ? ' ; avec l\'effet de vos choix sur l\'activité : ' + pcs(g1) : ' (effet de vos choix sur l\'activité non compté)');
+    $('h-l1').textContent = 'Déficit ' + AN0; $('h-l2').textContent = 'Dette ' + AN1; $('h-l3').textContent = 'Croissance';
+    var g1 = croiss(R, AN0), g0 = croiss(R0, AN0), gz = croiss(R, AN1), v3 = g1 == null ? '—' : nf(g1, 1) + (gz == null ? '\u00a0%' : ' → ' + pcs(gz)); $('h-s3').textContent = AN0 + ' → ' + AN1;
+    $('h-v3').parentNode.title = g0 == null ? '' : 'Prévision du FMI pour ' + AN0 + ' : ' + pcs(g0) + (S.macro ? ' ; avec l\'effet de vos choix sur l\'activité : ' + pcs(g1) : ' (effet de vos choix sur l\'activité non compté)');
     var T0 = seuil(), v1 = T0 != null && anObj() === AN0 && -r1.solde > T0 && -r1.solde - T0 < 0.05 ? nf(-r1.solde, 2) + '\u00a0%' : defic(r1.solde), v2 = nf(f.d, 1) + '\u00a0%';
     [['h-v1', v1], ['h-v2', v2], ['h-v3', v3]].forEach(function (x) { var el = $(x[0]); if (anime && el.textContent !== x[1]) { el.classList.remove('q-flash'); void el.offsetWidth; el.classList.add('q-flash'); } el.textContent = x[1]; });
     // La jauge : le chemin fait vers l'objectif choisi (vide au départ, pleine quand il est atteint).
@@ -1571,20 +1575,20 @@ body.q-vote { padding-bottom: 92px; }
     var e = PJ.ecart_croissance, h = [dep].concat(simuler({ dg: -e })), b = [dep].concat(simuler({ dg: e }));
     $('q-chart').innerHTML = courbe([{ L: [dep].concat(R0), c: 'var(--muted)', dash: '5 4' }, { L: PJ.ans.length ? [dep].concat(PJ.ans.map(function (y) { return { an: y.an, d: y.dette_fmi }; })) : [], c: 'var(--ea)', dash: '2 3' }, { L: [dep].concat(R), c: 'var(--fr)', w: 3, zone: [b, h] }]);
     $('q-leg').innerHTML = '<span><i style="background:var(--fr)"></i>Avec vos mesures</span><span><i style="background:var(--band2)"></i>Croissance d\'un point de plus ou de moins</span><span><i style="height:0;border-top:2px dashed var(--muted);border-radius:0"></i>Si rien ne change</span><span><i style="height:0;border-top:2px dotted var(--ea);border-radius:0"></i>Prévision du FMI</span>';
-    $('q-chart-n').textContent = '« Si rien ne change » garde chaque année l\'écart entre recettes et dépenses, intérêts mis à part, de ' + D0.an + ' ; la prévision du FMI, elle, compte les économies déjà prévues par le Gouvernement. Fin ' + PJ.depart.an + ', la dette était de ' + nf(PJ.depart.dette, 1) + '\u00a0% du PIB.';
+    $('q-chart-n').innerHTML = plie('« Si rien ne change » garde chaque année l\'écart entre recettes et dépenses, intérêts mis à part, de ' + D0.an + ' ; la prévision du FMI, elle, compte les économies déjà prévues par le Gouvernement. Fin ' + PJ.depart.an + ', la dette était de ' + nf(PJ.depart.dette, 1) + '\u00a0% du PIB.');
     // La croissance, année par année : prévision du FMI, et avec l'effet de vos choix sur l'activité.
     var ansJ = R.filter(function (r) { return r.an >= AN0; }).map(function (r) { return r.an; }), p0 = (PJ.ans || []).filter(function (x) { return x.an === AN0 - 1; })[0];
     var dep0 = p0 ? [{ an: p0.an, d: p0.croissance }] : [];
     $('q-crc').innerHTML = courbe([{ L: dep0.concat(ansJ.map(function (a) { return { an: a, d: croiss(R0, a) }; })), c: 'var(--muted)', dash: '5 4' }, { L: dep0.concat(ansJ.map(function (a) { return { an: a, d: croiss(R, a) }; })), c: 'var(--fr)', w: 3 }], { pas: 0.5, dec: 1, decFin: 1, zero: 0, aria: 'Croissance du PIB chaque année, en %' });
     $('q-crc-l').innerHTML = '<span><i style="background:var(--fr)"></i>Avec vos mesures</span><span><i style="height:0;border-top:2px dashed var(--muted);border-radius:0"></i>Prévision du FMI</span>';
-    $('q-crc-n').textContent = 'Croissance du PIB hors inflation. Prévision du FMI (octobre 2026), plus l\'effet de vos mesures sur l\'activité d\'après les effets publiés par la direction du Trésor et l\'Insee (modèle Mésange). Les mesures d\'un type que le modèle ne publie pas (impôt sur les sociétés, patrimoine, SMIC) n\'y comptent pas.';
+    $('q-crc-n').innerHTML = plie('Croissance du PIB hors inflation : la prévision du FMI (octobre 2026), plus l\'effet de vos mesures sur l\'activité d\'après les effets publiés par la direction du Trésor et l\'Insee (modèle Mésange).', 'Les mesures sur l\'impôt sur les sociétés, le patrimoine et le SMIC n\'y comptent pas : le modèle ne publie pas leur effet.');
     // Les intérêts de la dette, en milliards d'euros, à côté des crédits 2027 de quelques budgets de l'État.
     var intr = function (L) { return L.filter(function (r) { return r.an >= AN0; }).map(function (r) { return { an: r.an, d: r.interets * r.pib / 100 }; }); };
     var REF = [['defense', 'Défense'], ['enseignement', 'Écoles, collèges, lycées'], ['mi:recherche-et-enseignement-supérieur', 'Recherche et universités'], ['mi:sécurités', 'Police, gendarmerie, secours']].filter(function (x) { return AS[x[0]]; }).map(function (x) { return { v: AS[x[0]].md, l: x[1] }; });
     $('q-int').innerHTML = courbe([{ L: intr(R0), c: 'var(--muted)', dash: '5 4' }, { L: intr(R), c: 'var(--fr)', w: 3 }], { pas: 20, unite: '\u00a0Md€', zero: 0, refs: REF, g: 40, dr: 58, h: 220, aria: 'Intérêts de la dette chaque année, en milliards d\'euros' });
     $('q-int-l').innerHTML = '<span><i style="background:var(--fr)"></i>Avec vos mesures</span><span><i style="height:0;border-top:2px dashed var(--muted);border-radius:0"></i>Si rien ne change</span>';
     var i1 = intr(R)[0], iz = intr(R).slice(-1)[0];
-    $('q-int-n').textContent = 'En ' + i1.an + ', les intérêts de la dette coûteraient ' + mdt(i1.d) + ', et ' + mdt(iz.d) + ' en ' + iz.an + '. Ce sont les intérêts de toutes les administrations publiques (État, Sécurité sociale, collectivités), calculés par Concret avec le taux moyen de la dette prévu par le FMI. Les autres traits : crédits de l\'État prévus pour ' + AN0 + ' (projet de loi de finances), sans vos changements de l\'onglet Créer.';
+    $('q-int-n').innerHTML = plie('Ce sont les intérêts de toutes les administrations publiques (État, Sécurité sociale, collectivités), calculés par Concret avec le taux moyen de la dette prévu par le FMI. Les autres traits : crédits de l\'État prévus pour ' + AN0 + ' (projet de loi de finances), sans vos changements de l\'onglet Créer.', 'En ' + i1.an + ', les intérêts de la dette coûteraient ' + mdt(i1.d) + ', et ' + mdt(iz.d) + ' en ' + iz.an + '.');
     var mx = Math.max.apply(null, R.concat(R0).map(function (r) { return Math.max(0, -r.solde); }).concat([PAR.regle]));
     $('q-def').innerHTML = R.filter(function (r) { return r.an >= AN0; }).map(function (r) { var v = Math.max(0, -r.solde); return '<div><span class="t">' + r.an + '</span><span class="r"><em style="left:0;width:' + (v / mx * 100) + '%"></em><em style="left:' + (PAR.regle / mx * 100) + '%;width:2px;background:var(--fg)"></em></span><span class="v">' + defic(r.solde) + '</span></div>'; }).join('');
     $('q-def-n').textContent = 'Le trait marque ' + nf(PAR.regle, 0) + '\u00a0% du PIB, la règle européenne. Sans mesure, le déficit augmente chaque année parce que les intérêts de la dette augmentent : ' + mdt(zf.interets * zf.pib / 100) + ' en ' + zf.an + ' (' + nf(zf.interets, 1) + '\u00a0% du PIB)' + (nbChoix() ? ' ; avec vos mesures, ' + mdt(f.interets * f.pib / 100) + '.' : '.') + remonte(Rs);
@@ -1800,6 +1804,46 @@ body.q-vote { padding-bottom: 92px; }
     S.ami = o; garder();
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
   }
+  // Une explication repliée sous « Comment c'est calculé » ; « visible » reste toujours affiché (ce qui n'est pas compté).
+  function plie(t, visible) { return (visible ? '<p style="margin:0 0 4px">' + visible + '</p>' : '') + '<details class="q-plie"><summary>Comment c\'est calculé</summary><p style="margin:6px 0 0">' + t + '</p></details>'; }
+  // Partager une courbe du Bilan : une image avec le titre, la courbe, la légende et la source.
+  function partagerCourbe(id) {
+    var box = $(id), sec = box.closest('section'), svg = box.querySelector('svg'); if (!svg) return;
+    var cs = getComputedStyle(document.documentElement), clone = svg.cloneNode(true);
+    var res = function (v) { return String(v).replace(/var\((--[a-z0-9-]+)\)/gi, function (m, n) { return cs.getPropertyValue(n).trim() || '#62646d'; }); };
+    clone.querySelectorAll('*').forEach(function (n) { ['stroke', 'fill', 'style'].forEach(function (a) { if (n.getAttribute(a)) n.setAttribute(a, res(n.getAttribute(a))); }); });
+    var vb = svg.viewBox.baseVal, W = 1080, H = 1350, k = (W - 160) / vb.width;
+    clone.setAttribute('width', vb.width * k); clone.setAttribute('height', vb.height * k); clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clone.setAttribute('font-family', 'Inter Tight, system-ui, sans-serif');
+    var im = new Image();
+    im.onload = function () {
+      var c = document.createElement('canvas'); c.width = W; c.height = H; var g = c.getContext('2d'), sans = 'Inter Tight, system-ui, sans-serif';
+      g.fillStyle = '#f6f5f1'; g.fillRect(0, 0, W, H); g.fillStyle = '#2f5bd3'; g.fillRect(0, 0, W, 14);
+      var ey = sec.querySelector('.eyebrow'), h2 = sec.querySelector('h2'), tt = h2 ? h2.textContent.replace(ey ? ey.textContent : '', '').trim() : '';
+      g.fillStyle = '#62646d'; g.font = '700 30px ' + sans; g.fillText((ey ? ey.textContent : '').toUpperCase() + ' · MON BUDGET ' + AN0, 80, 110);
+      // Texte sur plusieurs lignes dans la largeur de l'image.
+      var ecrire = function (t, x, y, l, h) { var ligne = ''; t.split(' ').forEach(function (m) { var u = ligne ? ligne + ' ' + m : m; if (g.measureText(u).width > l && ligne) { g.fillText(ligne, x, y); y += h; ligne = m; } else ligne = u; }); if (ligne) g.fillText(ligne, x, y); return y + h; };
+      g.fillStyle = '#1c1d22'; g.font = '700 54px ' + sans; var yt = ecrire(tt, 80, 180, W - 160, 64);
+      var y0 = yt + 10; g.drawImage(im, 80, y0);
+      var y = y0 + vb.height * k + 50;
+      Array.prototype.forEach.call(sec.querySelectorAll('.q-leg span'), function (sp) {
+        var i = sp.querySelector('i'), st = i ? getComputedStyle(i) : null, bg = st && st.backgroundColor !== 'rgba(0, 0, 0, 0)' ? st.backgroundColor : st ? st.borderTopColor : '#62646d', trait = st && st.borderTopStyle !== 'none' && st.borderTopWidth !== '0px';
+        g.fillStyle = bg; g.strokeStyle = bg; g.lineWidth = 6; if (trait) { g.setLineDash([12, 8]); g.beginPath(); g.moveTo(80, y - 10); g.lineTo(130, y - 10); g.stroke(); g.setLineDash([]); } else g.fillRect(80, y - 16, 50, 12);
+        g.fillStyle = '#1c1d22'; g.font = '500 30px ' + sans; g.fillText(sp.textContent.trim(), 150, y); y += 46;
+      });
+      g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; ecrire('Sources : FMI, Eurostat, direction du Trésor et Insee (modèle Mésange), projet de loi de finances ' + AN0 + '. Calcul de Concret.', 80, Math.min(y + 16, 1180), W - 160, 34);
+      g.fillStyle = '#2f5bd3'; g.font = '600 36px ' + sans; g.fillText('Faites le vôtre : concret2027.fr/budget/quinquennat.html', 80, 1290);
+      c.toBlob(function (b) {
+        var t = tt + ', avec mon budget ' + AN0 + ' sur Concret. Et vous ?', u = lienBudget(), fi = b && typeof File === 'function' ? new File([b], 'courbe-' + id + '.png', { type: 'image/png' }) : null;
+        if (fi && navigator.canShare && navigator.canShare({ files: [fi] })) return navigator.share({ files: [fi], text: t + ' ' + u }).catch(function () {});
+        var old = sec.querySelector('.q-pcimg'); if (old) old.remove();
+        var p = document.createElement('p'); p.className = 'q-pcimg'; p.innerHTML = '<img src="' + URL.createObjectURL(b) + '" alt="' + esc(tt) + '" style="width:100%;max-width:360px;border-radius:10px;border:1px solid var(--line);display:block;margin:8px 0">Appuyez longuement sur l\'image pour l\'enregistrer ou la partager.';
+        sec.appendChild(p);
+      }, 'image/png');
+    };
+    im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(clone));
+  }
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.q-pcourbe'); if (b) partagerCourbe(b.dataset.c); });
   function image(fin) {
     var c = document.createElement('canvas'), W = 1080, H = 1350; c.width = W; c.height = H; var g = c.getContext('2d');
     var r1 = an1(R), f = R[R.length - 1], z1 = an1(R0), zf = R0[R0.length - 1], sans = 'Inter Tight, system-ui, sans-serif', serif = 'Newsreader, Georgia, serif';
