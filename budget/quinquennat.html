@@ -383,9 +383,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 @keyframes q-flash { 0% { color: var(--fr); transform: scale(1.06); } 100% { color: inherit; transform: none; } }
 .q-collant.q-mini .q-tabs { display: none; }
 .q-collant.q-mini .q-hud { padding-top: 6px; padding-bottom: 6px; }
-.q-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: var(--line); }
-.q-tabs button { font: inherit; font-size: 15px; font-weight: 700; min-height: 44px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; }
-.q-tabs button[aria-selected="true"] { background: var(--panel); color: var(--fg); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.q-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 4px 0; border-radius: 12px; background: var(--bg); }
+.q-tabs button { font: inherit; font-size: 15px; font-weight: 700; min-height: 44px; border: 1.5px solid var(--fr); border-radius: 9px; background: var(--panel); color: var(--fr); cursor: pointer; }
+.q-tabs button[aria-selected="true"] { background: var(--fr); color: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
 .q-pane { display: grid; gap: 14px; }
 .q-top { display: grid; gap: 8px; }
 .q-lien { font: inherit; color: var(--fr); background: none; border: 0; padding: 0; min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
@@ -722,7 +722,7 @@ body.q-vote { padding-bottom: 92px; }
   var lireLS = function (k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
   var ecrireLS = function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   var CLE = 'concret-quinquennat', J, B, PJ, D0, AN0, AN1, ANS = [], C = [], PAR = {}, AS = {}, PIBY = {}, UN = {};
-  var S = lireLS(CLE) || {}; S.v = S.v || {}; S.perso = S.perso || {}; S.po = {}; if (S.macro == null) S.macro = false; S.taux = S.taux || 0; S.cr = S.cr || 0; S.filtre = S.filtre || 'tout'; S.obj = S.obj || null; S.pile = S.pile || []; S.unites = S.unites || {};
+  var S = lireLS(CLE) || {}; S.v = S.v || {}; S.perso = S.perso || {}; S.po = {}; if (S.macro == null) S.macro = true; S.taux = S.taux || 0; S.cr = S.cr || 0; S.filtre = S.filtre || 'tout'; S.obj = S.obj || null; S.pile = S.pile || []; S.unites = S.unites || {};
   var garder = function () { ecrireLS(CLE, S); };
 
   // ---------- Le modèle ----------
@@ -899,7 +899,7 @@ body.q-vote { padding-bottom: 92px; }
       return m1 <= 0 ? 'objectif atteint : déficit ' + AO + ' à ' + b : 'il reste ' + mdt(m1) + ' à trouver' + ds;
     }
     var dd = (r1.solde - r0.solde) / 100 * r1.pib;
-    return 'déficit ' + AN0 + ' : ' + (a === b ? b + (Math.abs(dd) < 0.05 ? '' : ' (' + (dd > 0 ? '−' : '+') + mdt(Math.abs(dd)) + ')') : a + ' → ' + b);
+    return 'déficit ' + AN0 + ' : ' + (a === b ? b + (Math.abs(dd) < 0.05 ? '' : ' (' + (dd > 0 ? '−' : '+') + mdt(Math.abs(dd)) + (S.macro && attendu != null && Math.abs(Math.abs(dd) - Math.abs(attendu)) >= Math.max(0.01, 0.1 * Math.abs(attendu)) ? ' après l\'effet sur l\'activité' : '') + ')') : a + ' → ' + b);
   }
   // Après une mesure votée par les députés : leur décision et le nombre de groupes qui ont voté comme vous.
   // « Les députés ont retiré cette mesure par 45 voix contre 15, puis ont rejeté tout le budget » : les voix sont celles du vote
@@ -926,8 +926,8 @@ body.q-vote { padding-bottom: 92px; }
   function rivaux(c) { return C.filter(function (o) { return o !== c && ((c.exclusif && o.exclusif === c.exclusif) || (c.exclut || []).indexOf(o.id) >= 0 || (o.exclut || []).indexOf(c.id) >= 0); }); }
   function suivante() {
     var L = filtrees().filter(function (c) { return S.v[c.id] == null || S.v[c.id] === 0; }); if (!L.length) return null;
-    // Une variante d'un sujet déjà tranché (une autre adoptée) passe après les cartes neuves.
-    var tranche = function (c) { return rivaux(c).some(function (o) { return S.v[o.id] === 1; }); };
+    // Une variante d'un sujet déjà voté (« 1 % de plus » après « 1 % de moins », par exemple) passe après les cartes neuves.
+    var tranche = function (c) { return rivaux(c).some(function (o) { return S.v[o.id] != null && S.v[o.id] !== 0; }); };
     var neuves = L.filter(function (c) { return S.v[c.id] == null && !tranche(c); });
     return neuves.filter(vousConcerne)[0] || neuves[0] || L.filter(function (c) { return S.v[c.id] == null; })[0] || L[0];
   }
@@ -1020,6 +1020,14 @@ body.q-vote { padding-bottom: 92px; }
     var fin = function () { if (x0 == null) return; x0 = null; el.style.transition = ''; if (Math.abs(dx) > 90) { S.glisse = 1; voter(c, dx > 0 ? 1 : -1); } else { el.style.transform = ''; sp.style.opacity = sc.style.opacity = 0; } };
     el.addEventListener('pointerup', fin); el.addEventListener('pointercancel', fin);
   }
+  // L'effet sur l'activité de la mesure, en points de PIB (écart avec avant le vote, la première année puis la dernière du jeu).
+  function effetPIB(A0, A1) {
+    if (!S.macro) return '';
+    var a = an1(A1).L - an1(A0).L, z = A1[A1.length - 1].L - A0[A0.length - 1].L;
+    if (Math.abs(a) < 0.005 && Math.abs(z) < 0.005) return '';
+    var f = function (v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + nf(Math.abs(v), 2) + '\u00a0%'; };
+    return ' · activité (PIB) : ' + f(a) + ' en ' + AN0 + ', ' + f(z) + ' en ' + AN1;
+  }
   function premiere(c) { for (var a = AN0; a <= AN1; a++) if (montant(c, a)) return 'rien avant ' + a + ', puis ' + mdt(montant(c, a), true) + ' en ' + a; return 'rien avant ' + (AN1 + 1); }
   function voter(c, v) {
     var A0 = simuler(), r1 = an1(A0).solde, avant = S.v[c.id], retirees = [];
@@ -1030,7 +1038,7 @@ body.q-vote { padding-bottom: 92px; }
     var el = $('q-card'); if (el) el.classList.add(v === 1 ? 'out-r' : 'out-l');
     var A1 = simuler(), echo = duel(c, v) + echoAssemblee(c, v), m0 = montant(c, AN0);
     if (v === 3) { pop('Abstention : la mesure n\'est pas adoptée, votre budget ne change pas.' + echo, true); setTimeout(function () { tout(true, true); remonter(); }, 260); return; }
-    pop((v === 1 ? 'Adoptée : ' + (m0 ? mdt(m0, true) : premiere(c)) + (S.macro && !c.macro && m0 ? ' (effet sur l\'activité non publié pour ce type de mesure : non compté)' : '') + ' · ' + avantApres(A0, A1, m0) + (retirees.length ? ' (remplace : ' + retirees.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? esc(o.titre || o.l) : ''; }).join(', ') + ')' : '') + chgPays(A0, A1) : 'Vous avez voté contre : la règle actuelle reste, votre budget ne change pas.') + echo, !!echo);
+    pop((v === 1 ? 'Adoptée : ' + (m0 ? mdt(m0, true) : premiere(c)) + (S.macro && !c.macro && m0 ? ' (effet sur l\'activité non publié pour ce type de mesure : non compté)' : effetPIB(A0, A1)) + ' · ' + avantApres(A0, A1, m0) + (retirees.length ? ' (remplace : ' + retirees.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? esc(o.titre || o.l) : ''; }).join(', ') + ')' : '') + chgPays(A0, A1) : 'Vous avez voté contre : la règle actuelle reste, votre budget ne change pas.') + echo, !!echo);
     setTimeout(function () { tout(true, true); remonter(); }, 260);
   }
   function annuler() {
@@ -1043,7 +1051,7 @@ body.q-vote { padding-bottom: 92px; }
   function sousBandeau(el) { var h = $('q-collant').getBoundingClientRect().bottom, t = el.getBoundingClientRect().top; if (Math.abs(t - h - 8) > 4) window.scrollBy({ top: t - h - 8 }); }
   // Le bandeau se réduit quand on fait défiler vers le bas (les onglets se cachent), et revient en entier en remontant.
   (function () { var y0 = window.scrollY; window.addEventListener('scroll', function () { var y = window.scrollY, c = $('q-collant'); if (!c) return; if (y > y0 + 6 && y > 400) c.classList.add('q-mini'); else if (y < y0 - 6 || y < 400) c.classList.remove('q-mini'); y0 = y; }, { passive: true }); })();
-  function remonter() { var k = $('q-deck'), h = $('q-collant').getBoundingClientRect().bottom, t = k.getBoundingClientRect().top; if (t < h + 8 || t > innerHeight * 0.55) window.scrollBy({ top: t - h - 12, behavior: 'smooth' }); }
+  function remonter() { var k = $('q-prog') || $('q-deck'), h = $('q-collant').getBoundingClientRect().bottom, t = k.getBoundingClientRect().top; if (t < h + 8 || t > innerHeight * 0.55) window.scrollBy({ top: t - h - 12, behavior: 'smooth' }); }
   function filtres() {
     var F = [['tout', 'Toutes'], ['recette', 'Recettes'], ['depense', 'Dépenses']].concat(Object.keys(J.themes).filter(function (t) { return C.some(function (c) { return c.theme === t; }); }).map(function (t) { return [t, J.themes[t]]; }));
     $('q-filtres').innerHTML = F.map(function (f) { return '<button type="button" data-f="' + f[0] + '" aria-pressed="' + (S.filtre === f[0]) + '">' + esc(f[1]) + '</button>'; }).join('');
@@ -1080,7 +1088,7 @@ body.q-vote { padding-bottom: 92px; }
   function pile(entree) {
     var n = nbDecisions(), c = suivante(), et = etapeDue(), prochaine = ETAPES.filter(function (e) { return e > n; })[0], sp = speciale();
     var dots = '<span class="q-dots">' + [0, 1, 2, 3, 4].map(function (i) { return '<i class="' + (i < Math.min(n, 5) ? 'on' : '') + '"></i>'; }).join('') + '</span>';
-    $('q-prog').innerHTML = n < 5 ? dots + 'Votre résultat dans ' + (5 - n) + ' vote' + (5 - n > 1 ? 's' : '') : n + ' cartes votées sur ' + C.length + (prochaine ? ' · prochain point à ' + prochaine + ' votes' : '');
+    $('q-prog').innerHTML = n < 5 ? dots + 'Votre résultat dans ' + (5 - n) + ' vote' + (5 - n > 1 ? 's' : '') : n + ' votées · <b>' + (C.length - n) + ' restante' + (C.length - n > 1 ? 's' : '') + '</b>' + (prochaine ? ' · prochain point à ' + prochaine + ' votes' : '');
     $('q-ptot').querySelector('span').style.width = (100 * n / C.length) + '%';
     if (sp && c) carteSpeciale(sp, entree);
     else if (et && c) {
@@ -1424,15 +1432,17 @@ body.q-vote { padding-bottom: 92px; }
     Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.onclick = function () { $('q-pc').value = b.dataset.v; majCreer(); }; });
     $('q-pc').oninput = majCreer;
     $('q-un-i').oninput = majUnite;
-    $('q-un-ok').onclick = function () { var u = uchoisi, n = Math.round(+$('q-un-i').value || 0); if (!u || !n) return; var A0 = simuler(); S.unites[u.k] = n; garder(); hud(true); pop(esc(u.l) + ' ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0) + ' · ' + avantApres(A0, R) + chgPays(A0, R)); mesCreer(); majUnite(); pile(); };
+    $('q-un-ok').onclick = function () { var u = uchoisi, n = Math.round(+$('q-un-i').value || 0); if (!u || !n) return; var A0 = simuler(); S.unites[u.k] = n; garder(); hud(true); pop(esc(u.l) + ' ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0) + ' · ' + avantApres(A0, R) + effetPIB(A0, R) + chgPays(A0, R)); mesCreer(); majUnite(); pile(); $('q-un').hidden = true; uchoisi = null; sousBandeau($('q-mes').hidden ? $('q-tuiles-c') : $('q-mes')); };
     $('q-ajout').onclick = function () {
       var pc = +$('q-pc').value; if (!choisi || !pc) return;
       var A0 = simuler();
       choisi.exclut.forEach(function (id) { if (S.v[id] === 1) S.v[id] = 2; if (S.perso[id] != null) delete S.perso[id]; });
       Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(choisi.k) >= 0) delete S.perso[k]; });
       S.perso[choisi.k] = pc; garder(); hud(true);
-      pop(esc(choisi.l.split(' (')[0]) + ' ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0% · ' + avantApres(A0, R, effetPerso(choisi, pc)) + chgPays(A0, R));
+      pop(esc(choisi.l.split(' (')[0]) + ' ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0% · ' + avantApres(A0, R, effetPerso(choisi, pc)) + (choisi.macro && J.variantes[choisi.macro] ? effetPIB(A0, R) : (S.macro ? ' (effet sur l\'activité non publié pour ce type de ligne : non compté)' : '')) + chgPays(A0, R));
       mesCreer(); majCreer(); pile();
+      // Le panneau se replie : on revoit la liste des lignes du budget.
+      $('q-choisi').hidden = true; choisi = null; Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', 'false'); }); sousBandeau($('q-mes').hidden ? $('q-tuiles-c') : $('q-mes'));
     };
     mesCreer();
   }
@@ -1808,7 +1818,7 @@ body.q-vote { padding-bottom: 92px; }
     // qui réduit le déficit est adoptée, une seule par groupe de mesures qui se recouvrent.
     var V = {}, pris = {};
     C.slice().sort(tri).forEach(function (c) { if (montant(c, AN0) <= 0 && Object.keys(c.effet).every(function (k) { return c.effet[k] <= 0; })) return; var g = c.exclusif || ''; if (g && pris[g]) return; if ((c.exclut || []).some(function (o) { return V[o]; })) return; V[c.id] = 1; if (g) pris[g] = 1; });
-    var Rb = simuler({ vote: V, macro: false }); BEST = { a: an1(Rb).solde, f: Rb[Rb.length - 1].solde, d: Rb[Rb.length - 1].d, L: Rb };
+    var Rb = simuler({ vote: V, macro: true }); BEST = { a: an1(Rb).solde, f: Rb[Rb.length - 1].solde, d: Rb[Rb.length - 1].d, L: Rb };
     R0 = simuler({ rien: true });
     $('q-lead').innerHTML = '<b>Vous votez pour ou contre les mesures du budget ' + AN0 + ', une par une, ou vous créez les vôtres.</b> À chaque vote, vous voyez de combien l\'État, la Sécurité sociale et les collectivités dépensent plus qu\'ils ne reçoivent (le déficit), où en est leur dette, et à quel pays d\'Europe votre budget ressemble. La plupart des cartes rapportent de l\'argent : ce sont les mesures du projet de budget ' + AN0 + ' et la suppression d\'avantages fiscaux existants ; pour baisser un impôt ou augmenter une dépense, utilisez « Créer ».';
     $('q-conv-s').textContent = 'Si rien ne change : déficit à ' + defic(an1(R0).solde) + ' en ' + AN0;
@@ -1835,7 +1845,7 @@ body.q-vote { padding-bottom: 92px; }
     var conf = false;
     $('q-reset').onclick = function () {
       if (!conf) { conf = true; $('q-reset').textContent = 'Confirmer : effacer tous vos votes et vos mesures'; setTimeout(function () { conf = false; $('q-reset').textContent = 'Tout recommencer'; }, 5000); return; }
-      conf = false; S = { v: {}, perso: {}, unites: {}, po: {}, macro: false, taux: 0, cr: 0, filtre: 'tout', obj: S.obj, pile: [] }; garder(); hypotheses(); creer(); objectifs(); onglet('voter'); tout(true); window.scrollTo({ top: 0 });
+      conf = false; S = { v: {}, perso: {}, unites: {}, po: {}, macro: true, taux: 0, cr: 0, filtre: 'tout', obj: S.obj, pile: [], graine: 1 + Math.floor(Math.random() * 2147483646) }; garder(); window.scrollTo({ top: 0 }); location.reload();
     };
     $('q-partager').onclick = partager;
     $('q-ress').onclick = function () { onglet('bilan'); setTimeout(function () { $('q-pays-c').scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); };
