@@ -510,9 +510,13 @@ details.card.fold > summary { min-height: 44px; display: flex; align-items: cent
 body.q-grand .q-vin button { font-size: 13.5px; padding: 4px 2px; }
 body.q-grand .q-bar button { font-size: 13.5px; padding: 4px 2px; white-space: nowrap; }
 .q-reps { display: grid; gap: 8px; margin: 4px 0 2px; }
-.q-rep { font: inherit; text-align: left; display: grid; gap: 2px; min-height: 52px; padding: 9px 12px; border-radius: 14px; border: 1.5px solid var(--fr); background: var(--panel); color: var(--fg); cursor: pointer; }
+.q-rep { position: relative; font: inherit; text-align: left; display: grid; gap: 2px; min-height: 52px; padding: 9px 12px 9px 44px; border-radius: 14px; border: 1.5px solid var(--fr); background: var(--panel); color: var(--fg); cursor: pointer; }
 .q-rep:hover, .q-rep:focus-visible { background: color-mix(in srgb, var(--fr) 10%, var(--panel)); }
 .q-rep b { font-size: 15px; line-height: 1.25; }
+/* Un rond à gauche de chaque réponse : on voit qu'il faut en toucher une. */
+.q-rep::before { content: ""; position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; margin-top: -9px; border: 2px solid var(--fr); border-radius: 50%; box-sizing: border-box; background: var(--panel); }
+.q-rep:active::before, .q-rep:hover::before { background: radial-gradient(circle, var(--fr) 45%, var(--panel) 50%); }
+.q-touchez { text-align: center; margin: -2px 0 4px; }
 .q-rep span { font-size: 13px; color: var(--muted); line-height: 1.3; }
 .q-rep.aucune { border-color: var(--line); border-style: dashed; background: var(--panel); }
 .q-vin2 { grid-template-columns: 44px minmax(0, 1fr); }
@@ -1345,11 +1349,11 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   function carteQ(c, entree) {
     var Q = QS[c.q], M = membres(c), vc = vousConcerne(c);
     var org = M.map(function (m) { return ORIG[m.origine]; }).filter(function (x, i, a) { return x && a.indexOf(x) === i; }).join(' · ');
-    var opt = function (i, l, ids, cl) { return '<button type="button" class="q-rep' + (cl ? ' ' + cl : '') + '" data-qo="' + i + '"><b>' + nb(l) + '</b><span>' + (ids ? nb(texteReponse(ids)) : 'rien ne change') + '</span></button>'; };
+    var opt = function (i, l, ids, cl) { return '<button type="button" class="q-rep' + (cl ? ' ' + cl : '') + '" data-qo="' + i + '"><b>' + nb(l) + '</b>' + (ids ? '<span>' + nb(texteReponse(ids)) + '</span>' : '') + '</button>'; };
     $('q-deck').innerHTML = (uneParQ(filtrees().filter(aVoir)).filter(function (o) { return qk(o) !== qk(c); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card q-qcard' + (entree ? ' in' : '') + '" id="q-card">' +
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span>' + (vc ? '<span class="q-vous">Vous concerne</span>' : '') + '<span class="q-org">' + esc(org) + '</span></div>' +
-      '<h2>' + nb(Q.t) + '</h2><p class="q-ligne m">Une seule réponse : garder la règle d\'aujourd\'hui, ou l\'un des ' + Q.o.length + ' changements.</p>' +
-      '<p class="q-question">' + nb(Q.q) + '</p><div class="q-reps" role="group" aria-label="' + esc(Q.q) + '">' +
+      '<h2>' + nb(Q.t) + '</h2>' +
+      '<p class="q-question">' + nb(Q.q) + '</p><p class="q-ligne m q-touchez">Touchez votre réponse (une seule) :</p><div class="q-reps" role="group" aria-label="' + esc(Q.q) + '">' +
       opt('a', Q.aucune, null, 'aucune') + Q.o.map(function (o, i) { return opt(i, o.l, o.ids); }).join('') + '</div>' +
       '<div class="q-vin q-vin2" role="group" aria-label="Autres choix"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button></div>' +
       '<p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette question à la fin</button></p>' +

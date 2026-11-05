@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="99f5e455d15a">
+<meta name="concret-version" content="a17cd837e157">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -100,7 +100,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-s
 .explain { font-size: 13.5px; margin: 0; padding: 10px 12px; border-left: 3px solid var(--fr); background: var(--band); border-radius: 0 6px 6px 0; }
 .explain b { font-weight: 600; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 34px; }
+.chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 44px; }
 .chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 .chip:focus-visible, .opt:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
 
@@ -442,6 +442,21 @@ section.hero { background: var(--fd-brume); border-radius: 18px; padding: 18px 1
 footer a { display: inline-flex; align-items: center; min-height: 44px; }
 .po-actu .d { font-size: 13px; } .po-actu .tag { font-size: 13px; } .po-actu .src { font-size: 13px; }
 .po-actu a { position: relative; } .po-actu a::after { content: ""; position: absolute; inset: -13px -4px; }
+/* Retouches du 5 novembre 2026 (relectures UX et Michel). Le nom de la page devant chaque actualité : 24 px de haut au moins
+   (le remplissage d'un lien en ligne agrandit sa zone sans déplacer le texte), 44 px avec sa marge à toucher. */
+.po-actu .tag { display: inline; padding-block: 4px; } .po-actu a.tag::after { inset: -10px -4px; }
+/* Les en-têtes du tableau « Sur 20 » mènent chacun à sa page : le lien remplit sa case, 44 px de haut ; sur téléphone, les six
+   colonnes des missions ont la même largeur (la première prend la place de ses noms). */
+.rtab thead th:not(.rt-sur) { padding: 0 !important; }
+.rtab thead th a.rt-m { display: grid; justify-items: end; align-content: end; min-height: 44px; width: 100%; box-sizing: border-box; padding: 4px 6px; }
+@media (max-width: 520px) { .rtab thead th:not(.rt-sur) { width: 16.6%; } .rtab thead th a.rt-m { padding: 5px 3px; } }
+@media (max-width: 360px) { .rtab thead th a.rt-m { padding: 5px 2px; } }
+/* Les étiquettes grises en capitales : 13,5 px. */
+body .eyebrow { font-size: 13.5px; }
+/* « Voir les 6 missions » : un bouton contour, du gabarit de « Jouer ». */
+.hero-rep a.hr-m { min-height: 44px; box-sizing: border-box; margin-top: 4px; padding: 8px 16px; border: 1.5px solid var(--fr); border-radius: 999px; background: var(--panel); font-size: 15px; font-weight: 700; }
+.hero-rep a.hr-m:hover, .hero-rep a.hr-m:focus-visible { background: color-mix(in srgb, var(--fr) 8%, var(--panel)); }
+.hero-rep .hr-d { font-size: 14px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -454,7 +469,7 @@ footer a { display: inline-flex; align-items: center; min-height: 44px; }
     <span class="eyebrow" style="margin:0">Concret</span>
     <h1>Ce que font ceux qui gouvernent, en chiffres. <span class="h1-2">Les vrais votes pour vous situer.</span></h1>
     <p class="lead">Chaque président et gouvernement depuis 1995 : la France comparée à ses voisins, avec une même règle. Et les vrais votes de l'Assemblée, à votre tour.</p>
-    <p class="hero-rep"><a id="hero-pouls" href="#pouls" hidden><span><b id="hp-n"></b> indicateurs où la France fait mieux que la moyenne de l'UE · <span class="hr-l">Le détail ›</span></span></a><a class="hr-m" id="hero-miss" href="#missions">Voir les missions ›</a></p>
+    <p class="hero-rep"><a id="hero-pouls" href="#pouls" hidden><span><b id="hp-n"></b> indicateurs où la France fait mieux que la moyenne de l'UE<span class="hr-d">, au dernier chiffre connu</span> · <span class="hr-l">Le détail ›</span></span></a><a class="hr-m" id="hero-miss" href="#missions">Voir les missions ›</a></p>
     <!-- Le jeu du budget au premier écran pendant l'examen du budget au Parlement (à redescendre après le vote). -->
     <a class="une" href="/budget/"><small>Nouveau · le Parlement examine le budget 2027</small><b>Faites le budget 2027</b><span>Choisissez les mesures, voyez le déficit et la dette jusqu'en 2031</span><i>Jouer</i></a>
   </section>
@@ -625,7 +640,8 @@ footer a { display: inline-flex; align-items: center; min-height: 44px; }
         a.appendChild(r);
       });
     } else document.getElementById('pouls').hidden = true;
-    var nm = document.querySelectorAll('#missions a.pg').length; if (nm) document.getElementById('hero-miss').textContent = 'Voir les ' + nm + ' missions ›';
+    // Les missions qui ont un résultat sur 20 (Démographie, dans la même liste, montre des faits, sans résultat).
+    var nm = document.querySelectorAll('#missions a.pg:not([href="/demographie/"])').length; if (nm) document.getElementById('hero-miss').textContent = 'Voir les ' + nm + ' missions ›';
     // Repères sans calcul : les derniers faits de La vie politique et de la page Démographie.
     var nfr = function (v) { return new Intl.NumberFormat('fr-FR').format(v).replace(/\u202f/g, '\u00a0'); };
     var vir = function (v, d) { return v.toFixed(d).replace('.', ','); };
