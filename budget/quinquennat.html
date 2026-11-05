@@ -367,7 +367,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-jauge em { position: absolute; top: -4px; bottom: -4px; right: 0; width: 2px; background: var(--fg); }
 .q-jauge.ok span { background: var(--ok); }
 .q-jauge[hidden] { display: block; visibility: hidden; }
-.q-paysvg { display: block; width: 100%; max-width: 520px; height: auto; margin: 6px auto; touch-action: manipulation; }
+.q-paysvg { display: block; width: 100%; max-width: 520px; height: auto; margin: 6px auto; touch-action: pan-y; }
 .q-ress { grid-column: 1 / -1; justify-self: start; display: flex; align-items: center; gap: 6px; max-width: 100%; min-height: 32px; margin: 2px 0 0; padding: 4px 12px 4px 8px; font: inherit; font-size: 13.5px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 999px; cursor: pointer; position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .q-ress::after { content: ""; position: absolute; inset: -6px 0; }
 .q-ress i { font-style: normal; font-size: 17px; line-height: 1; }
@@ -1773,6 +1773,10 @@ body.q-vote { padding-bottom: 92px; }
     rs.L.slice(0, 3).concat(P.filter(function (p) { return NOMMES[p.code]; }).map(function (p) { return { p: p }; })).forEach(function (x) { var p = x.p; if (p.code === 'FR' || !dedans(p)) return; poser(X(p.dep), Y(p.rec), p.code === 'EU27_2020' ? 'UE' : p.nom, 11, p.code === 'EU27_2020' ? 'var(--ea)' : 'var(--fg)', p.code === rs.p.code); });
     g += etiq.join('');
     var suite = rs.L.slice(1, 4).map(function (x) { return drapeau(x.p.code) + ' ' + esc(nomCourt(x.p)); });
+    // Au doigt (ou à la souris) : le nom du pays le plus proche, avec ses chiffres.
+    var PTS = P.filter(function (p) { return dedans(p) && p.code !== 'FR'; }).map(function (p) { return { x: X(p.dep), y: Y(p.rec), t: (p.code === 'EU27_2020' ? 'Moyenne de l\'UE' : drapeau(p.code) + ' ' + p.nom) + ' : dépenses ' + pc(p.dep) + ', recettes ' + pc(p.rec) }; })
+      .concat([{ x: fx, y: fy, t: drapeau('FR') + ' France ' + PE.an + ' : dépenses ' + pc(fr.dep) + ', recettes ' + pc(fr.rec) }, { x: vx, y: vy, t: 'Votre budget ' + AN0 + ' : dépenses ' + pc(s.dep) + ', recettes ' + pc(s.rec) }]);
+    g += '<g class="q-bulle" style="pointer-events:none" visibility="hidden"><circle r="9" fill="none" stroke="var(--fr)" stroke-width="2"/><rect rx="6" fill="var(--panel)" stroke="var(--line)"/><text font-size="11.5" font-weight="600" fill="var(--fg)"></text></g>';
     el.innerHTML = '<p class="q-gros">En ' + AN0 + ', ' + (nbChoix() ? 'avec vos mesures' : 'sans aucune mesure') + ', les administrations publiques dépenseraient <b>' + pc(s.dep) + '</b> du PIB et recevraient <b>' + pc(s.rec) + '</b>. Le pays le plus proche : ' + drapeau(rs.p.code) + ' <b>' + esc(nomCourt(rs.p)) + '</b> (dépenses ' + pc(rs.p.dep) + ', recettes ' + pc(rs.p.rec) + ' en ' + PE.an + ').</p>' +
       '<svg class="q-paysvg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Dépenses et recettes publiques des pays d\'Europe en ' + PE.an + ', et votre budget ' + AN0 + '">' + g + '</svg>' +
       '<p class="q-ligne">Ensuite : ' + suite.join(' · ') + '.</p>' +
@@ -1780,6 +1784,20 @@ body.q-vote { padding-bottom: 92px; }
       // Ce qui manque sur la carte reste écrit en clair ; la méthode est repliée sous « Comment c'est calculé ».
       ((hors.length || PE.absents.length) ? '<p class="q-note">' + [PE.absents.length ? esc(PE.absents.join(', ')) + ' : pas encore publié pour ' + PE.an + ', absent de la carte' : '', hors.length ? 'hors du cadre : ' + hors.map(function (p) { return esc(p.nom) + ' (dépenses ' + pc(p.dep) + ', recettes ' + pc(p.rec) + ')'; }).join(', ') : ''].filter(Boolean).join(' ; ').replace(/^./, function (c) { return c.toUpperCase(); }) + '.</p>' : '') +
       '<details class="q-plie"><summary>Comment c\'est calculé</summary><p class="q-note">Les pays : chiffres de ' + PE.an + ', les derniers publiés par Eurostat ; touchez un point pour son nom. Votre budget : calcul de Concret à partir de la France de ' + PE.an + ' (dépenses ' + pc(fr.dep) + ', recettes ' + pc(fr.rec) + ') : vos économies baissent les dépenses, vos dépenses nouvelles les augmentent, vos hausses d\'impôt montent les recettes, les intérêts suivent votre dette, et l\'effet sur l\'activité est compté avec les recettes. « Le plus proche » : le plus petit écart, dépenses et recettes comptées pareil. Sous la diagonale, les dépenses dépassent les recettes : c\'est un déficit. Par le déficit : prévisions du FMI pour ' + AN0 + ', les mêmes que le tableau « Se comparer ». <a href="' + esc(PE.url) + '">' + esc(PE.source.split(' :')[0]) + '</a>.</p></details>';
+    var sv = el.querySelector('.q-paysvg'), bu = sv && sv.querySelector('.q-bulle');
+    if (sv && bu) {
+      var montrer = function (ev) {
+        var r = sv.getBoundingClientRect(), k = W / r.width, px = (ev.clientX - r.left) * k, py = (ev.clientY - r.top) * k, best = null, dmin = 1e9;
+        PTS.forEach(function (q) { var d = Math.hypot(q.x - px, q.y - py); if (d < dmin) { dmin = d; best = q; } });
+        if (!best || dmin > 28) { bu.setAttribute('visibility', 'hidden'); return; }
+        var c = bu.querySelector('circle'), re = bu.querySelector('rect'), tx = bu.querySelector('text'); tx.textContent = best.t;
+        var tw = Math.min(W - 8, best.t.length * 6.2 + 12), bx = Math.max(4, Math.min(W - tw - 4, best.x - tw / 2)), by = best.y - 34 < t ? best.y + 14 : best.y - 34;
+        c.setAttribute('cx', best.x); c.setAttribute('cy', best.y); re.setAttribute('x', bx); re.setAttribute('y', by); re.setAttribute('width', tw); re.setAttribute('height', 22);
+        tx.setAttribute('x', bx + 6); tx.setAttribute('y', by + 15); bu.setAttribute('visibility', 'visible');
+      };
+      sv.addEventListener('pointermove', montrer); sv.addEventListener('pointerdown', montrer);
+      sv.addEventListener('pointerleave', function () { bu.setAttribute('visibility', 'hidden'); });
+    }
   }
 
   // ---------- Se comparer : vous, le Gouvernement, le FMI et les pays voisins ----------
