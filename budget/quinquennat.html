@@ -510,10 +510,11 @@ details.card.fold > summary { min-height: 44px; display: flex; align-items: cent
 body.q-grand .q-vin button { font-size: 13.5px; padding: 4px 2px; }
 body.q-grand .q-bar button { font-size: 13.5px; padding: 4px 2px; white-space: nowrap; }
 .q-reps { display: grid; gap: 8px; margin: 4px 0 2px; }
-.q-rep { font: inherit; text-align: left; display: grid; gap: 2px; min-height: 52px; padding: 9px 12px; border-radius: 14px; border: 1.5px solid var(--fr); background: color-mix(in srgb, var(--fr) 10%, var(--panel)); color: var(--fg); cursor: pointer; }
+.q-rep { font: inherit; text-align: left; display: grid; gap: 2px; min-height: 52px; padding: 9px 12px; border-radius: 14px; border: 1.5px solid var(--fr); background: var(--panel); color: var(--fg); cursor: pointer; }
+.q-rep:hover, .q-rep:focus-visible { background: color-mix(in srgb, var(--fr) 10%, var(--panel)); }
 .q-rep b { font-size: 15px; line-height: 1.25; }
 .q-rep span { font-size: 13px; color: var(--muted); line-height: 1.3; }
-.q-rep.aucune { border-color: var(--fg); background: var(--panel); }
+.q-rep.aucune { border-color: var(--line); border-style: dashed; background: var(--panel); }
 .q-vin2 { grid-template-columns: 44px minmax(0, 1fr); }
 .q-vin2 button[data-qo="x"] { background: color-mix(in srgb, var(--muted) 10%, var(--panel)); border-color: var(--muted); font-weight: 600; }
 .q-qdet .q-qm { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 8px; }
@@ -1347,10 +1348,10 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     var opt = function (i, l, ids, cl) { return '<button type="button" class="q-rep' + (cl ? ' ' + cl : '') + '" data-qo="' + i + '"><b>' + nb(l) + '</b><span>' + (ids ? nb(texteReponse(ids)) : 'rien ne change') + '</span></button>'; };
     $('q-deck').innerHTML = (uneParQ(filtrees().filter(aVoir)).filter(function (o) { return qk(o) !== qk(c); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card q-qcard' + (entree ? ' in' : '') + '" id="q-card">' +
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span>' + (vc ? '<span class="q-vous">Vous concerne</span>' : '') + '<span class="q-org">' + esc(org) + '</span></div>' +
-      '<h2>' + nb(Q.t) + '</h2><p class="q-ligne m">' + Q.o.length + ' changements possibles, ou garder la règle d\'aujourd\'hui : une seule réponse.</p>' +
+      '<h2>' + nb(Q.t) + '</h2><p class="q-ligne m">Une seule réponse : garder la règle d\'aujourd\'hui, ou l\'un des ' + Q.o.length + ' changements.</p>' +
       '<p class="q-question">' + nb(Q.q) + '</p><div class="q-reps" role="group" aria-label="' + esc(Q.q) + '">' +
-      Q.o.map(function (o, i) { return opt(i, o.l, o.ids); }).join('') + opt('a', Q.aucune, null, 'aucune') + '</div>' +
-      '<div class="q-vin q-vin2" role="group" aria-label="Autres choix"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button><button type="button" data-qo="x">Abstention</button></div><p class="q-note" style="text-align:center;margin:0">Abstention : vous ne vous prononcez pas. Pour le calcul, cela revient à garder la règle d\'aujourd\'hui.</p>' +
+      opt('a', Q.aucune, null, 'aucune') + Q.o.map(function (o, i) { return opt(i, o.l, o.ids); }).join('') + '</div>' +
+      '<div class="q-vin q-vin2" role="group" aria-label="Autres choix"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button></div>' +
       '<p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette question à la fin</button></p>' +
       '<details class="q-src q-qdet"><summary>Le détail de chaque mesure, et ses sources</summary>' + M.map(function (m) { var mm = montant(m, AN0); return '<div class="q-qm"><h3>' + nb(m.titre || m.l) + '</h3>' + clair(m) + '<p class="q-ligne"><b>' + quiTitre(m, mm) + ' :</b> ' + nb(m.qui_texte || m.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' + concretCarte(m, mm) + detailsSrc(m, mm, (m.statut_court ? 'À l\'Assemblée, ce que ça change, la source' : 'Ce que ça change, et la source')) + '</div>'; }).join('') + '</details>' +
       '</article>';
