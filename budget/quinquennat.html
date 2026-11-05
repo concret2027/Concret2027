@@ -737,7 +737,7 @@ body.q-vote { padding-bottom: 92px; }
   var lireLS = function (k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
   var ecrireLS = function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   var CLE = 'concret-quinquennat', J, B, PJ, D0, AN0, AN1, ANS = [], C = [], PAR = {}, AS = {}, PIBY = {}, UN = {};
-  var S = lireLS(CLE) || {}; S.v = S.v || {}; S.perso = S.perso || {}; S.po = {}; if (S.macro == null) S.macro = true; S.taux = S.taux || 0; S.cr = S.cr || 0; S.filtre = S.filtre || 'tout'; S.obj = S.obj || null; S.pile = S.pile || []; S.unites = S.unites || {};
+  var S = lireLS(CLE) || {}; S.v = S.v || {}; S.perso = S.perso || {}; S.po = {}; if (S.macro == null || S.macroV !== 2) { S.macro = true; S.macroV = 2; } S.taux = S.taux || 0; S.cr = S.cr || 0; S.filtre = S.filtre || 'tout'; S.obj = S.obj || null; S.pile = S.pile || []; S.unites = S.unites || {};
   var garder = function () { ecrireLS(CLE, S); };
 
   // ---------- Le modèle ----------
@@ -774,7 +774,7 @@ body.q-vote { padding-bottom: 92px; }
           var x = AS[k]; if (!x) return; var pts = (x.groupe === 'depense' ? -1 : 1) * perso[k] / 100 * x.md / PIBY[x.an] * 100, t = x.macro || 'aucun';
           A[t] = (A[t] || 0) + pts; tot += pts * pibSans / 100; if (x.groupe === 'recette' || /^cotis/.test(x.macro || '')) rec += pts; else dep += pts;
         });
-        Object.keys(uni).forEach(function (k) { var u = UN[k]; if (!u) return; var m = unMd(u, uni[k], an); A.depense = (A.depense || 0) + m / pibSans * 100; tot += m; dep += m / pibSans * 100; });
+        Object.keys(uni).forEach(function (k) { var u = UN[k]; if (!u) return; var m = unMd(u, uni[k], an), tu = /construction/.test(u.k) && J.variantes.invest ? 'invest' : 'depense'; A[tu] = (A[tu] || 0) + m / pibSans * 100; tot += m; dep += m / pibSans * 100; });
       }
       // Effet sur l'activité et sur le solde : chaque hausse ou baisse du montant agit selon son ancienneté (modèle linéaire).
       var dL = 0, dpb = 0, dE = 0, dU = 0;
@@ -1047,7 +1047,7 @@ body.q-vote { padding-bottom: 92px; }
   }
   // L'effet sur l'activité de la mesure, en points de PIB (écart avec avant le vote, la première année puis la dernière du jeu).
   function effetPIB(A0, A1) {
-    if (!S.macro) return '';
+    if (!S.macro) return ' · effet sur la croissance non compté (case décochée : Bilan, « Changer les hypothèses »)';
     var a = an1(A1).L - an1(A0).L, z = A1[A1.length - 1].L - A0[A0.length - 1].L;
     if (Math.abs(a) < 0.005 && Math.abs(z) < 0.005) return '';
     var f = function (v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + nf(Math.abs(v), 2) + '\u00a0%'; };
@@ -1436,7 +1436,7 @@ body.q-vote { padding-bottom: 92px; }
     else $('q-un-e').innerHTML = '<b>' + mdp(m) + '</b> ' + (m < 0 ? 'de dépenses en plus' : 'de dépenses en moins') + ' par an, à partir de ' + AN0 +
       (u.effectif && u.effectif.v ? '<br>Sur le terrain : ' + (n > 0 ? '+' : '−') + nf(100 * Math.abs(n) / u.effectif.v, 1) + '\u00a0% par rapport aux ' + nf(Math.round(u.effectif.v), 0) + ' emplois prévus pour ' + u.effectif.annee + ' (' + esc(String(u.effectif.unite).split(' (')[0].split(' ;')[0]) + ').' : '');
     var av = S.unites[u.k], A1; if (n) S.unites[u.k] = n; else delete S.unites[u.k]; A1 = simuler(); if (av == null) delete S.unites[u.k]; else S.unites[u.k] = av;
-    $('q-un-a').textContent = n !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1) : '';
+    $('q-un-a').textContent = n !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1) + effetPIB(R, A1) : '';
     var jd = u.journee_detention;
     $('q-un-h').innerHTML = !n ? '' : u.type === 'construction'
       ? 'Calcul de Concret : nombre de places × ' + eu(u.cout) + ', réparti également sur les ' + nb + ' années (hypothèse de Concret, la durée des chantiers n\'étant pas fixée).' + (jd ? ' Une fois ouverte, une place occupée coûte ' + eu(jd.v * 365) + ' par an (' + eu(jd.v, 2) + ' par jour, ' + esc(String(jd.annee)) + ') : ce coût n\'est pas compté ici, faute de date d\'ouverture connue.' : '')
@@ -1872,7 +1872,7 @@ body.q-vote { padding-bottom: 92px; }
     var conf = false;
     $('q-reset').onclick = function () {
       if (!conf) { conf = true; $('q-reset').textContent = 'Confirmer : effacer tous vos votes et vos mesures'; setTimeout(function () { conf = false; $('q-reset').textContent = 'Tout recommencer'; }, 5000); return; }
-      conf = false; S = { v: {}, perso: {}, unites: {}, po: {}, macro: true, taux: 0, cr: 0, filtre: 'tout', obj: S.obj, pile: [], graine: 1 + Math.floor(Math.random() * 2147483646) }; garder(); window.scrollTo({ top: 0 }); location.reload();
+      conf = false; S = { v: {}, perso: {}, unites: {}, po: {}, macro: true, macroV: 2, taux: 0, cr: 0, filtre: 'tout', obj: S.obj, pile: [], graine: 1 + Math.floor(Math.random() * 2147483646) }; garder(); window.scrollTo({ top: 0 }); location.reload();
     };
     $('q-partager').onclick = partager;
     $('q-ress').onclick = function () { onglet('bilan'); setTimeout(function () { $('q-pays-c').scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); };
