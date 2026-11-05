@@ -24,10 +24,12 @@ var Q = ['courbe', 'chiffres', 'replis', 'detail', 'defs'];
 var ecrire = function (n, v) { fs.writeFileSync(path.join(out, n + '.json'), JSON.stringify(v)); };
 (async function () {
   var ds = []; for (var n = 13; n >= 0; n--) ds.push(jour(n));
-  var cles = []; ds.forEach(function (d) { cles.push('vue-appareils-' + d, 'vue-joueurs-nouveaux-' + d, 'vue-joueurs-revenus-' + d, 'votez-jour-' + d, 'votez-personnes-' + d); });
+  var cles = []; ds.forEach(function (d) { cles.push('vue-appareils-' + d, 'vue-joueurs-nouveaux-' + d, 'vue-joueurs-revenus-' + d, 'votez-jour-' + d, 'votez-personnes-' + d, 'vue-appareils-nouveaux-' + d); });
   var v = await tout(cles);
   var jours = ds.map(function (d, i) {
-    var r = { jour: d, appareils: v[i * 5], joueurs_nouveaux: v[i * 5 + 1], joueurs_revenus: v[i * 5 + 2], votes: v[i * 5 + 3], votants: v[i * 5 + 4] };
+    var r = { jour: d, appareils: v[i * 6], joueurs_nouveaux: v[i * 6 + 1], joueurs_revenus: v[i * 6 + 2], votes: v[i * 6 + 3], votants: v[i * 6 + 4], appareils_nouveaux: v[i * 6 + 5] };
+    // Nouveaux et revenus : comptés depuis le 6 novembre 2026 (premier jour complet) ; revenus = appareils du jour moins nouveaux.
+    if (d < '2026-11-06' || r.appareils == null) { r.appareils_nouveaux = null; r.appareils_revenus = null; } else r.appareils_revenus = Math.max(0, r.appareils - (r.appareils_nouveaux || 0));
     if (d < '2026-10-30') r.appareils = null;                                  // comptés depuis le 30 octobre 2026
     if (d < '2026-10-31') { r.joueurs_nouveaux = null; r.joueurs_revenus = null; } // depuis le 31 octobre 2026
     return r;

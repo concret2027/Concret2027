@@ -451,14 +451,16 @@
     });
   }
   // Appareils : le navigateur garde une marque à la première visite du site (et le jour de la dernière visite comptée) ; le compteur
-  // reçoit seulement « un appareil de plus » (depuis le début, et ce jour-là). Rien qui identifie la personne ; deux appareils d'une
+  // reçoit seulement « un appareil de plus » (depuis le début, ce jour-là, et parmi les nouveaux du jour). Rien qui identifie la personne ; deux appareils d'une
   // même personne comptent deux fois, une navigation privée aussi.
   function compterAppareil() {
     if (!compte()) return;
     var jour = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }), vu, dernier;
     try { vu = localStorage.getItem('concret-appareil'); dernier = localStorage.getItem('concret-appareil-jour'); } catch (e) { return; }
     var cles = [];
-    if (!vu) cles.push('quiz-vue-appareils');
+    // Un appareil qui vient pour la première fois compte aussi dans les nouveaux du jour (depuis le 6 novembre 2026, premier jour
+    // complet) : les autres appareils du jour sont des appareils revenus.
+    if (!vu) cles.push('quiz-vue-appareils', 'quiz-vue-appareils-nouveaux-' + jour);
     if (dernier !== jour) cles.push('quiz-vue-appareils-' + jour);
     if (!cles.length) return;
     try { localStorage.setItem('concret-appareil', vu || jour); localStorage.setItem('concret-appareil-jour', jour); } catch (e) { return; }
