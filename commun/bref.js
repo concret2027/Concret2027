@@ -27,7 +27,7 @@
     '.som-l small{grid-column:1/-1;font-size:14px;line-height:1.4;color:var(--muted)}.som-l small i{font-style:normal;font-weight:700}' +
     '.som-l small .som-hors{display:block}' +
     '.bref-cache{display:none!important}' +
-    '.bref-deux{color:var(--fg);margin-bottom:6px}.bref-deux span{display:block}.bref-deux span+span{margin-top:4px}' +
+    '.bref-deux{color:var(--fg);margin-bottom:6px}' +
     // Sur ordinateur, la toile se range à côté d'« En bref » ; sur téléphone, sous les thèmes.
     '.bref-grille{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}.bref-grille>*{margin:0!important}' +
     // Thèmes des pages Finances et Éducation (sans ligne ✓ ✗ écrite par la page) : la même ligne que sur les autres pages.
@@ -50,7 +50,7 @@
     if (!el) { var mini = document.querySelector('.mini[data-courbe="' + id + '"]'); if (mini) { mini.click(); el = document.getElementById(id); } }
     if (!el) return;
     for (var d = el; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
-    // « Le détail par président » : replié en bas de page, il s'ouvre quand on y va depuis les cartes des présidents.
+    // « Le détail, président par président » : replié en bas de page, il s'ouvre quand on y va depuis les cartes des présidents.
     if (el.id === 'bulletin') { var bp = el.querySelector('details.bul-pli'); if (bp && !bp.open) bp.open = true; }
     // Défilement dès l'image suivante (le bloc ouvert a pris sa place), sans attente.
     requestAnimationFrame(function () {
@@ -131,15 +131,15 @@
       // Avec le sommaire, la liste des indicateurs y est répartie thème par thème ; elle reste dans la page, cachée, pour les cartes
       // d'aperçu et « Le pouls de la France » (outils/apercu.js la lit telle quelle).
       (th.length ? sommaire(th) + '<div class="bref-cache" aria-hidden="true">' + chips + '</div>' : '<details class="bref-det"><summary>Voir les ' + l.length + ' indicateurs</summary>' + chips + '</details>') +
-      '<span class="eyebrow" id="bref-pres" style="margin:4px 0 0">La France sous chaque président</span><div class="bref-pres">' +
+      '<span class="eyebrow" id="bref-pres" style="margin:4px 0 0">Par président</span><div class="bref-pres">' +
       o.pres.map(function (p) {
         var c = p.v == null ? '' : p.v >= 10 ? 'g' : p.v >= 6 ? 'm' : 'b';
         return '<a class="' + c + '" href="#bulletin"><span>' + esc(p.n.split(' ').slice(-1)[0]) + '</span><b>' + (p.v == null ? '—' : fmt(p.v)) + '</b><i style="width:' + (p.v == null ? 0 : 5 * p.v) + '%"></i></a>';
       }).join('') + '</div>' +
-      // Deux chiffres, deux mesures, une ligne chacun : le « n/N » du haut (dernier chiffre connu) et le résultat sur 20 (le mandat,
+      // Deux chiffres, deux mesures, en deux phrases : le « n/N » du haut (dernier chiffre connu) et le résultat sur 20 (le mandat,
       // année par année). Puis la phrase qui suit chaque résultat sur le site.
-      '<p class="note bref-deux"><span><b>' + ok + '/' + l.length + '</b> : le dernier chiffre de chaque indicateur, comparé à ' + esc(ref) + '.</span><span><b>Sur 20</b> : le résultat de chaque président compte l\'évolution, année par année, pendant le mandat (10 = aussi bien que ' + esc(ref) + ').</span></p>' +
-      '<p class="note">Ce n\'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l\'UE pendant le mandat. <a class="pt-hors" href="#bulletin">Le détail par président ↓</a></p>';
+      '<p class="note bref-deux">Le <b>' + ok + '/' + l.length + '</b> du haut compare le dernier chiffre connu de chaque indicateur à ' + esc(ref) + '. Le résultat <b>sur 20</b> de chaque président mesure autre chose : l\'évolution, année par année pendant le mandat, face à cette moyenne (10 = aussi bien qu\'elle).</p>' +
+      '<p class="note">Ce n\'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l\'UE pendant le mandat. <a class="pt-hors" href="#bulletin">Le détail, président par président ↓</a></p>';
     // Le bouton « Partager » (commun/partage.js) a pu être posé sur le bloc encore vide : on le laisse le reposer.
     box.removeAttribute('data-partage');
     box.querySelectorAll('.bref-chips a').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); });

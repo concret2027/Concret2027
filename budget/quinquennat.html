@@ -521,10 +521,14 @@ body.q-grand .q-bar button { font-size: 13.5px; padding: 4px 2px; white-space: n
 .q-alerte { border-left: 3px solid var(--c-ecole); padding: 4px 0 4px 10px; margin: 8px 0; }
 /* Sommaire du Bilan : une rangée de raccourcis qui colle sous la barre du site et défile à l'horizontale. */
 .q-som { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 10; background: var(--bg); margin: 0 0 4px; min-width: 0; max-width: 100%; contain: inline-size; }
-.q-som-r { display: flex; gap: 6px; min-width: 0; overflow-x: auto; padding: 3px 0; scrollbar-width: none; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
-.q-som-r.fin { -webkit-mask-image: none; mask-image: none; }
-.q-som::after { content: '›'; position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 24px; font-weight: 700; color: var(--fr); pointer-events: none; }
-.q-som.fin::after { display: none; }
+.q-som-r { display: flex; gap: 6px; min-width: 0; overflow-x: auto; padding: 3px 0; scrollbar-width: none; }
+/* Tant qu'il reste des raccourcis d'un côté : un fondu et une flèche (‹ à gauche, › à droite) ; un toucher fait défiler d'un écran.
+   Au début de la rangée, pas de ‹ ; au bout, pas de ›. */
+.q-som-g, .q-som-d { position: absolute; top: 0; bottom: 0; z-index: 1; width: 40px; display: flex; align-items: center; cursor: pointer; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; transition: opacity .15s; }
+.q-som-g { left: 0; justify-content: flex-start; background: linear-gradient(to left, transparent, var(--bg) 60%); }
+.q-som-d { right: 0; justify-content: flex-end; background: linear-gradient(to right, transparent, var(--bg) 60%); }
+.q-som-g b, .q-som-d b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--fg); background: var(--panel); color: var(--fg); font-size: 18px; font-weight: 700; line-height: 1; padding-bottom: 2px; box-sizing: border-box; }
+.q-som.deb .q-som-g, .q-som.fin .q-som-d { opacity: 0; pointer-events: none; }
 .q-som-r::-webkit-scrollbar { display: none; }
 .q-som-r a { flex: none; box-sizing: border-box; display: inline-flex; align-items: center; min-height: 44px; padding: 0 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); font-size: 15px; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .q-som-r a[aria-current] { background: var(--fr); border-color: var(--fr); color: #fff; }
@@ -789,7 +793,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   </div>
 
   <div class="q-pane" id="p-bilan" role="tabpanel" aria-labelledby="t-bilan" hidden>
-    <nav class="q-som" id="q-som" aria-label="Les parties du Bilan"><div class="q-som-r" id="q-som-r"></div></nav>
+    <nav class="q-som deb" id="q-som" aria-label="Les parties du Bilan"><div class="q-som-r" id="q-som-r"></div><span class="q-som-g" aria-hidden="true"><b>‹</b></span><span class="q-som-d" aria-hidden="true"><b>›</b></span></nav>
     <section class="card" aria-labelledby="q-rc-t">
       <h2 id="q-rc-t"><span class="eyebrow">Votre quinquennat</span><span id="q-rc-h"></span></h2>
       <div class="q-tuiles" id="q-tuiles"></div>
@@ -2261,8 +2265,13 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     r.innerHTML = L.map(function (x) { return '<a href="#' + partie(x[0]).id + '" data-p="' + x[0] + '" data-g="' + x[2].join(' ') + '">' + esc(x[1]) + '</a>'; }).join('');
     Array.prototype.forEach.call(r.querySelectorAll('a'), function (a) { a.onclick = function (ev) { ev.preventDefault(); var e = partie(a.dataset.p), sb = $('q-som').getBoundingClientRect(); window.scrollTo({ top: Math.max(0, e.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle($('q-som')).top) || 0) - sb.height - 8), behavior: 'smooth' }); var h = e.querySelector('h2'); if (h) { h.setAttribute('tabindex', '-1'); setTimeout(function () { h.focus({ preventScroll: true }); }, 400); } }; });
     document.documentElement.style.setProperty('--somh', $('q-som').offsetHeight + 'px');
-    var fin = function () { var f = r.scrollLeft + r.clientWidth >= r.scrollWidth - 4; r.classList.toggle('fin', f); $('q-som').classList.toggle('fin', f); };
-    r.onscroll = fin; fin(); enCours();
+    // Les flèches : leur état suit chaque défilement de la rangée et chaque changement de taille de l'écran.
+    var fin = function () { var n = $('q-som'); n.classList.toggle('fin', r.scrollLeft + r.clientWidth >= r.scrollWidth - 4); n.classList.toggle('deb', r.scrollLeft <= 4); };
+    if (!r.dataset.fl) {
+      r.dataset.fl = '1'; r.addEventListener('scroll', fin, { passive: true }); window.addEventListener('resize', fin);
+      [['.q-som-g', -1], ['.q-som-d', 1]].forEach(function (x) { var e = $('q-som').querySelector(x[0]); if (e) e.addEventListener('click', function () { r.scrollBy({ left: x[1] * Math.max(120, r.clientWidth - 90), behavior: 'smooth' }); }); });
+    }
+    fin(); enCours();
     if (!SOM_OBS) { SOM_OBS = true; window.addEventListener('scroll', function () { if (!$('p-bilan').hidden) enCours(); }, { passive: true }); }
   }
   // La partie en cours : la dernière dont le haut est passé sous la rangée.
@@ -2272,7 +2281,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     cur = cur && cur.a;
     cur = cur || r.querySelector('a');
     Array.prototype.forEach.call(r.querySelectorAll('a'), function (a) { if (a === cur) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current'); });
-    if (cur && (cur.offsetLeft < r.scrollLeft || cur.offsetLeft + cur.offsetWidth > r.scrollLeft + r.clientWidth)) r.scrollLeft = cur.offsetLeft - 16;
+    if (cur && (cur.offsetLeft < r.scrollLeft || cur.offsetLeft + cur.offsetWidth > r.scrollLeft + r.clientWidth)) r.scrollLeft = cur.offsetLeft - 44;
   }
   function bilan0() {
     var dep = { an: PJ.depart.an, d: PJ.depart.dette }, r1 = an1(R), z1 = an1(R0), f = R[R.length - 1], zf = R0[R0.length - 1], n = nbChoix();
@@ -2769,6 +2778,6 @@ body.q-bilan .q-collant { position: relative; top: auto; }
 })();
 </script>
 
-<script src="/commun/menu.js?v=20261105y"></script>
+<script src="/commun/menu.js?v=20261105z"></script>
 </body>
 </html>
