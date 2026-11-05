@@ -487,6 +487,13 @@ details.card.fold > summary { min-height: 44px; display: flex; align-items: cent
 .q-bar button { font: inherit; font-weight: 700; font-size: 15px; line-height: 1.15; min-height: 52px; padding: 4px 6px; border-radius: 14px; border: 1.5px solid var(--fg); background: var(--panel); color: var(--fg); cursor: pointer; overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; }
 #b-abst { border-color: var(--muted); font-weight: 600; }
 .q-bar button { overflow-wrap: normal; word-break: keep-all; hyphens: none; }
+/* Les boutons de vote, juste sous la question de la carte ; la barre fixe en bas ne sert que s'ils sont hors de l'écran. */
+.q-vin { display: grid; grid-template-columns: 44px repeat(3, minmax(0, 1fr)); gap: 8px; align-items: center; margin: 2px 0 0; }
+.q-vin button { font: inherit; font-weight: 700; font-size: 15px; line-height: 1.15; min-height: 52px; padding: 4px 6px; border-radius: 14px; border: 1.5px solid var(--fg); background: var(--panel); color: var(--fg); cursor: pointer; white-space: nowrap; }
+.q-vin button[data-vin="3"] { border-color: var(--muted); font-weight: 600; }
+.q-vin button[data-vin="u"] { min-height: 44px; border-color: var(--line); font-size: 18px; color: var(--muted); }
+.q-vin button[data-vin="u"]:disabled { opacity: .35; cursor: default; }
+body.q-grand .q-vin button { font-size: 13.5px; padding: 4px 2px; }
 body.q-grand .q-bar button { font-size: 13.5px; padding: 4px 2px; white-space: nowrap; }
 .q-tard { margin: 0; text-align: center; }
 .q-tard button { font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; padding: 0 6px; cursor: pointer; }
@@ -1184,8 +1191,11 @@ body.q-vote { padding-bottom: 92px; }
       '<details class="q-extrait"><summary>Extrait exact du document</summary><p>« ' + esc(c.src.citation) + ' »</p></details>' +
       (J.population && m && !exemplesCarte(c).L.length ? '<p>Repère : ' + nf(Math.abs(m) * 1e9 / J.population.v, Math.abs(m) * 1e9 / J.population.v < 10 ? 1 : 0) + '\u00a0€ par habitant et par an (calcul de Concret : ' + mdt(Math.abs(m)) + ' divisés par ' + nf(J.population.v / 1e6, 1) + ' millions d\'habitants, Insee ; pour comparer, ce n\'est pas forcément ce que paie ou reçoit chacun).</p>' : '') +
       '<p>' + (c.macro && J.variantes[c.macro] ? (S.macro ? 'Son effet sur l\'activité et l\'emploi est compté, d\'après le modèle de la direction du Trésor et de l\'Insee' + (c.macro === 'carbone' ? ' (variante publiée la plus proche : une taxe carbone, qui pèse à 70 % sur les entreprises dans le modèle).' : c.macro === 'csg' && c.sens === 'depense' ? ' (variante « CSG » : une prestation en moins pèse sur le revenu des ménages comme un impôt en plus ; le modèle ne publie pas de variante propre aux prestations).' : '.') : 'Son effet sur l\'activité et l\'emploi n\'est pas compté : la case « Compter l\'effet de vos choix sur l\'activité » est décochée (Bilan, « Changer les hypothèses »). Le modèle de la direction du Trésor et de l\'Insee le publie pour ce type de mesure.') : (c.nc && J.non_comptes && J.non_comptes[c.nc] ? esc(J.non_comptes[c.nc].t) + ' <a href="' + esc(J.non_comptes[c.nc].src.url) + '">Source</a>' : 'Son effet sur l\'activité n\'est pas compté : le modèle de la direction du Trésor et de l\'Insee ne le publie pas pour ce type de mesure.')) + '</p></details>' +
-      '<p class="q-question">Êtes-vous pour ce qui est proposé ?</p><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
+      '<p class="q-question">Êtes-vous pour ce qui est proposé ?</p><div class="q-vin" role="group" aria-label="Votre vote"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button><button type="button" data-vin="-1">✗ Contre</button><button type="button" data-vin="3">Abstention</button><button type="button" data-vin="1">✓ Pour</button></div><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
     serrer($('q-deck'));
+    Array.prototype.forEach.call($('q-deck').querySelectorAll('[data-vin]'), function (b) { b.onclick = function () { if (b.dataset.vin === 'u') annuler(); else voter(c, +b.dataset.vin); }; });
+    var vin = $('q-deck').querySelector('.q-vin'); VIN_VU = false;
+    if (vin && window.IntersectionObserver) { if (VIN_OBS) VIN_OBS.disconnect(); VIN_OBS = new IntersectionObserver(function (E) { var v = E.some(function (x) { return x.isIntersecting; }); if (v !== VIN_VU) { VIN_VU = v; barre(); } }, { rootMargin: '0px 0px -60px 0px' }); VIN_OBS.observe(vin); }
     glisser($('q-card'), c);
     $('b-tard').onclick = function () { passer(); };
   }
@@ -1456,12 +1466,12 @@ body.q-vote { padding-bottom: 92px; }
   // Revoter : les votes sont effacés, les cartes reviennent dans un nouvel ordre ; les mesures créées et les hypothèses restent.
   function revoter() { S.v = {}; S.pile = []; S.etape = 0; S.hist = {}; S.atteint = {}; S.filtre = 'tout'; S.graine = 1 + Math.floor(Math.random() * 2147483646); garder(); window.scrollTo({ top: 0 }); location.reload(); }
   function ouvrirVotes() { onglet('voter'); var d = $('q-vos-d'); d.open = true; setTimeout(function () { sousBandeau(d); }, 60); }
-  var CARTE_VUE = true;
+  var CARTE_VUE = true, VIN_VU = false, VIN_OBS = null;
   // Texte agrandi : « Abstention » ne se coupe pas au milieu du mot ; trop large pour son bouton, il devient « Abst. ».
   function ajusterBoutons() { var b = $('b-abst'); if (!b) return; b.textContent = 'Abstention'; b.removeAttribute('aria-label'); if (b.scrollWidth > b.clientWidth + 1) { b.textContent = 'Abst.'; b.setAttribute('aria-label', 'Abstention'); } }
   window.addEventListener('resize', function () { ajusterBoutons(); });
   function grand() { document.body.classList.toggle('q-grand', TS() > 1.15); }
-  function barre() { grand(); var v = !$('p-voter').hidden && !!suivante() && CARTE_VUE && !speciale(), on = v && !etapeDue(), et = v && !!etapeDue(); $('q-bar').hidden = !on; $('q-bar2').hidden = !et; if (on) setTimeout(ajusterBoutons, 50); document.body.classList.toggle('q-vote', on || et); $('b-undo').disabled = $('b-undo2').disabled = !S.pile.length; }
+  function barre() { grand(); var v = !$('p-voter').hidden && !!suivante() && CARTE_VUE && !speciale(), on = v && !etapeDue(), et = v && !!etapeDue(); $('q-bar').hidden = !on || VIN_VU; $('q-bar2').hidden = !et; if (on) setTimeout(ajusterBoutons, 50); document.body.classList.toggle('q-vote', on || et); $('b-undo').disabled = $('b-undo2').disabled = !S.pile.length; }
 
   // ---------- Le résumé (étapes, fin, bilan) ----------
   // Accord avec chaque groupe : même calcul que Votez les lois (depuis le 28 octobre 2026). Sur chaque mesure, la part des députés
