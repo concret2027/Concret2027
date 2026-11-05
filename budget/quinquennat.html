@@ -678,6 +678,10 @@ body.q-bilan .q-collant { position: relative; top: auto; }
 .q-clair p { margin: 0; }
 .q-clair p:last-child { padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--fr); background: var(--band); }
 .q-question { margin: 0; text-align: center; font-weight: 700; font-size: 15px; }
+/* L'énoncé du vote : sur un fond à part, avec ce que l'on vote (comme un député, ou une piste hors des projets du Gouvernement). */
+.q-enonce { display: grid; gap: 4px; margin: 6px 0 4px; padding: 10px 12px; border-radius: 12px; border-left: 4px solid var(--fr); background: color-mix(in srgb, var(--fr) 9%, var(--panel)); }
+.q-enonce .q-question { text-align: left; font-size: 16px; }
+.q-ass { font-size: 12.5px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; color: var(--fr); }
 .q-cc h4 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .q-cc ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
 .q-cc + h4 { padding-top: 8px; border-top: 1px solid var(--line); }
@@ -1344,6 +1348,14 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       '<p>' + (c.macro && J.variantes[c.macro] ? (S.macro ? 'Son effet sur l\'activité et l\'emploi est compté, d\'après le modèle de la direction du Trésor et de l\'Insee' + (c.macro === 'carbone' ? ' (variante publiée la plus proche : une taxe carbone, qui pèse à 70 % sur les entreprises dans le modèle).' : c.macro === 'csg' && c.sens === 'depense' ? ' (variante « CSG » : une prestation en moins pèse sur le revenu des ménages comme un impôt en plus ; le modèle ne publie pas de variante propre aux prestations).' : '.') : 'Son effet sur l\'activité et l\'emploi n\'est pas compté : la case « Compter l\'effet de vos choix sur l\'activité » est décochée (Bilan, « Changer les hypothèses »). Le modèle de la direction du Trésor et de l\'Insee le publie pour ce type de mesure.') : (c.nc && J.non_comptes && J.non_comptes[c.nc] ? esc(J.non_comptes[c.nc].t) + ' <a href="' + esc(J.non_comptes[c.nc].src.url) + '">Source</a>' : 'Son effet sur l\'activité n\'est pas compté : le modèle de la direction du Trésor et de l\'Insee ne le publie pas pour ce type de mesure.')) + '</p></details>';
     return sommaire ? t.replace(/<summary>[^<]*<\/summary>/, '<summary>' + sommaire + '</summary>') : t;
   }
+  // Au-dessus de la question : ce que l'on vote, sur un fond à part. Les mesures des deux projets de budget 2027 sont celles
+  // que le Parlement examine : on vote comme un député ; les autres sont des pistes chiffrées, hors des projets du Gouvernement.
+  function enonce(origines, q) {
+    var t = origines.some(function (o) { return o === 'plf' || o === 'plfss'; }) ? 'Votez comme un député : mesure du budget 2027, examiné par le Parlement'
+      : origines.indexOf('debat') >= 0 ? 'Votez comme un député : mesure débattue, hors des projets du Gouvernement'
+      : 'À vous de voter : piste chiffrée, hors des projets du Gouvernement';
+    return '<div class="q-enonce"><span class="q-ass">' + t + '</span><p class="q-question">' + q + '</p></div>';
+  }
   function carte(c, entree) {
     var m = montant(c, AN0), CC = concretCarte(c, m);
     $('q-deck').innerHTML = (filtrees().filter(function (o) { return o !== c && (S.v[o.id] == null || S.v[o.id] === 0); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card' + (entree ? ' in' : '') + '" id="q-card">' +
@@ -1364,7 +1376,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       '<p class="q-ligne"><b>' + quiTitre(c, m) + ' :</b> ' + nb(c.qui_texte || c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' +
       (CC.indexOf('q-vous') >= 0 ? '' : CC) +
       detailsSrc(c, m) +
-      '<p class="q-question">Êtes-vous pour ce qui est proposé ?</p><div class="q-vin" role="group" aria-label="Votre vote"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button><button type="button" data-vin="-1">✗ Contre</button><button type="button" data-vin="3">Abstention</button><button type="button" data-vin="1">✓ Pour</button></div><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
+      enonce([c.origine], 'Êtes-vous pour ce qui est proposé ?') + '<div class="q-vin" role="group" aria-label="Votre vote"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button><button type="button" data-vin="-1">✗ Contre</button><button type="button" data-vin="3">Abstention</button><button type="button" data-vin="1">✓ Pour</button></div><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
     serrer($('q-deck'));
     Array.prototype.forEach.call($('q-deck').querySelectorAll('[data-vin]'), function (b) { b.onclick = function () { if (b.dataset.vin === 'u') annuler(); else voter(c, +b.dataset.vin); }; });
     var vin = $('q-deck').querySelector('.q-vin'); VIN_VU = false;
@@ -1399,7 +1411,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     $('q-deck').innerHTML = (uneParQ(filtrees().filter(aVoir)).filter(function (o) { return qk(o) !== qk(c); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card q-qcard' + (entree ? ' in' : '') + '" id="q-card">' +
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span>' + (vc ? '<span class="q-vous">Vous concerne</span>' : '') + '<span class="q-org">' + esc(org) + '</span></div>' +
       '<h2>' + nb(Q.t) + '</h2>' +
-      '<p class="q-question">' + nb(Q.q) + '</p><p class="q-ligne m q-touchez">' + (multi ? 'Cochez une ou plusieurs réponses, puis validez (ou « Ne rien changer ») :' : 'Touchez votre réponse (une seule) :') + '</p><div class="q-reps" role="group" aria-label="' + esc(Q.q) + '">' +
+      (function () { var m0 = M.filter(function (m) { return m.clair && m.clair.a; })[0]; return m0 ? clair(m0, true) : ''; })() + enonce(M.map(function (m) { return m.origine; }), nb(Q.q)) + '<p class="q-ligne m q-touchez">' + (multi ? 'Cochez une ou plusieurs réponses, puis validez (ou « Ne rien changer ») :' : 'Touchez votre réponse (une seule) :') + '</p><div class="q-reps" role="group" aria-label="' + esc(Q.q) + '">' +
       opt('a', Q.aucune, null, 'aucune') + reps + '</div>' + (multi ? '<p class="q-valider"><span class="q-combo" id="q-combo"></span><button type="button" class="q-val" id="b-valq" disabled>Valider ma réponse</button></p>' : '') +
       '<div class="q-vin q-vin2" role="group" aria-label="Autres choix"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button></div>' +
       '<p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette question à la fin</button></p>' +
@@ -1450,13 +1462,13 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     setTimeout(function () { tout(true, true); remonter(); }, 260);
   }
   // Ce que dit la carte, en deux phrases : aujourd'hui, ce qui est proposé ; les montants en vigueur viennent de parametres_cas.json.
-  function clair(c) {
+  function clair(c, sansP) {
     if (!c.clair) return '';
     var di = CAS('droits_inscription') || {}, fr = CAS('franchises') || {};
     var T = { licence: di.licence_eur, master: di.master_eur, doctorat: di.doctorat_eur, boite: fr.franchise_par_boite_medicament_eur, consultation: fr.participation_forfaitaire_par_consultation_ou_acte_eur, transport: fr.franchise_par_transport_sanitaire_eur, plafond: fr.plafond_annuel_total_eur };
     var r = function (t) { return nb(t).replace(/\{(\w+)\}/g, function (m, k) { return T[k] != null ? eu(T[k]) : m; }); };
     var court = function (t) { var m = /^([\s\S]{30,}?[.;:])\s+(?=[A-ZÉÀÈÊÔ«])/.exec(t); if (!m || t.length - m[0].length < 25) return t; return m[1] + ' <details class="q-suite"><summary>Lire la suite</summary>' + t.slice(m[0].length) + '</details>'; };
-    return '<div class="q-clair">' + (c.clair.a ? '<div><b>Aujourd\'hui :</b> ' + court(r(c.clair.a)) + '</div>' : '') + '<div><b>Proposé :</b> ' + court(r(c.clair.p)) + '</div></div>';
+    return '<div class="q-clair">' + (c.clair.a ? '<div><b>Aujourd\'hui :</b> ' + (sansP ? r(c.clair.a) : court(r(c.clair.a))) + '</div>' : '') + (sansP ? '' : '<div><b>Proposé :</b> ' + court(r(c.clair.p)) + '</div>') + '</div>';
   }
   // Sur la carte : le premier cas type, en clair ; les autres et le montant par habitant dans le dépliant « Concrètement ».
   function concretCarte(c, m) {
