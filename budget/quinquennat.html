@@ -1250,10 +1250,15 @@ body.q-vote { padding-bottom: 92px; }
     var un = function (titre, f, fmt) {
       var a = ans.map(function (an) { return f(A0, an); }), b = ans.map(function (an) { return f(A1, an); }), T = a.concat(b);
       var lo = Math.min.apply(null, T), hi = Math.max.apply(null, T); if (hi - lo < 0.4) { var m = (hi + lo) / 2; lo = m - 0.2; hi = m + 0.2; }
-      var W = 150, H = 74, gx = 6, dx = 40, top = 16, bot = 14, X = function (i) { return gx + (W - gx - dx) * i / (ans.length - 1); }, Y = function (v) { return top + (H - top - bot) * (hi - v) / (hi - lo); };
+      // Le chiffre de la première année est écrit aussi, à gauche, quand ce choix le change (ex. croissance 2027 : 0,7 % → −1,3 %).
+      var gauche = fmt(a[0]) !== fmt(b[0]);
+      var W = 150, H = 74, gx = gauche ? 36 : 6, dx = 40, top = 16, bot = 14, X = function (i) { return gx + (W - gx - dx) * i / (ans.length - 1); }, Y = function (v) { return top + (H - top - bot) * (hi - v) / (hi - lo); };
       var l = function (V) { return V.map(function (v, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' '); };
       var ya = Y(a[a.length - 1]), yb = Y(b[b.length - 1]); if (Math.abs(ya - yb) < 11) { if (yb <= ya) yb = ya - 11; else yb = ya + 11; }
-      return '<figure class="q-mini"><figcaption>' + titre + '</figcaption><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(titre) + ' de ' + ans[0] + ' à ' + ans[ans.length - 1] + ', sans et avec ce choix">' +
+      var ga = Y(a[0]), gb = Y(b[0]); if (Math.abs(ga - gb) < 11) { if (gb <= ga) gb = ga - 11; else gb = ga + 11; }
+      var zero = lo < 0 && hi > 0 ? '<line x1="' + gx + '" x2="' + (W - dx) + '" y1="' + Y(0).toFixed(1) + '" y2="' + Y(0).toFixed(1) + '" stroke="var(--line)"/>' : '';
+      return '<figure class="q-mini"><figcaption>' + titre + '</figcaption><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(titre) + ' de ' + ans[0] + ' à ' + ans[ans.length - 1] + ', sans et avec ce choix">' + zero +
+        (gauche ? '<text x="' + (gx - 3) + '" y="' + (ga + 4).toFixed(1) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' + fmt(a[0]) + '</text><text x="' + (gx - 3) + '" y="' + (gb + 4).toFixed(1) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="var(--fr)">' + fmt(b[0]) + '</text>' : '') +
         '<path d="' + l(a) + '" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="4 3"/><path d="' + l(b) + '" fill="none" stroke="var(--fr)" stroke-width="2.6"/>' +
         '<text x="' + (W - dx + 4) + '" y="' + (ya + 4) + '" font-size="10.5" fill="var(--muted)">' + fmt(a[a.length - 1]) + '</text><text x="' + (W - dx + 4) + '" y="' + (yb + 4) + '" font-size="10.5" font-weight="700" fill="var(--fr)">' + fmt(b[b.length - 1]) + '</text>' +
         '<text x="' + gx + '" y="' + (H - 2) + '" font-size="9.5" fill="var(--muted)">' + ans[0] + '</text><text x="' + (W - dx) + '" y="' + (H - 2) + '" font-size="9.5" text-anchor="end" fill="var(--muted)">' + ans[ans.length - 1] + '</text></svg></figure>';
