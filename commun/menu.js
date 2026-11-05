@@ -734,7 +734,14 @@
       if (choisi && Date.now() < fin) return montre(choisi);
       choisi = null;
       var lim = jp.getBoundingClientRect().bottom + 80, ici = null;
-      liens().forEach(function (l) { var e = cib(l), r = e && e.getBoundingClientRect(); if (r && r.height && r.top <= lim) ici = l; });
+      // Un raccourci peut viser d'autres blocs plus bas (data-aussi, ids séparés par une espace : au Baromètre, « Sondages »
+      // revient au second tour, après « 2012, 2017, 2022 » et « Le rythme ») : le bloc passé le plus bas désigne son raccourci.
+      var haut = -Infinity;
+      liens().forEach(function (l) {
+        [cib(l)].concat((l.getAttribute('data-aussi') || '').split(' ').filter(Boolean).map(function (id) { return document.getElementById(id); })).forEach(function (e) {
+          var r = e && e.getBoundingClientRect(); if (r && r.height && r.top <= lim && r.top >= haut) { haut = r.top; ici = l; }
+        });
+      });
       montre(ici);
     };
     var t = 0; addEventListener('scroll', function () { if (!t) t = requestAnimationFrame(function () { t = 0; maj(); }); }, { passive: true });
@@ -763,7 +770,7 @@
     // Le raccourci de la partie où l'on se trouve est en noir, comme sur le Baromètre (qui a le sien) : la dernière partie dont
     // le titre est passé sous la rangée. Après un toucher, la partie choisie, posée juste sous la rangée.
     barre();
-    // Les autres rangées (accueil, vie politique) ont aussi leurs flèches ; le Baromètre (deux rangées, .jump-l1) garde les siennes.
+    // Les autres rangées (accueil, vie politique, Baromètre) ont aussi leurs flèches ; une rangée .jump-l1 (deux rangées) garderait les siennes.
     if (jp && !jp.querySelector('.jump-l1') && !jp.classList.contains('jf')) fleches(jp);
     if (jp && !jp.querySelector('.jump-l1')) { suivre(jp, cib); addEventListener('load', function () { fondu(jp); fixeLarg(jp); }); jp.addEventListener('scroll', function () { fondu(jp); }, { passive: true }); addEventListener('resize', function () { fondu(jp); hauteurBarre(jp); fixeLarg(jp); });
       // Zoom de la page ou texte agrandi après coup (la fenêtre ne change pas) : la place entre les flèches est remesurée.
