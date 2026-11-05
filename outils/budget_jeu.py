@@ -43,7 +43,7 @@ QUI = {
 # les droits de succession et les accises : le modèle ne les publie pas).
 MACRO = {'depense': 'mult_mesange2017_depense_publique', 'tva': 'mult_mesange2017_tva', 'csg': 'mult_mesange2017_csg',
          'ir': 'mult_mesange2017_ir', 'cotis_emp': 'mult_mesange2017_cotis_employeurs', 'cotis_sal': 'mult_mesange2017_cotis_salaries',
-         'invest': 'mult_mesange2017_invest_public'}
+         'invest': 'mult_mesange2017_invest_public', 'carbone': 'mult_mesange2017_taxe_carbone'}
 
 # Mesures des projets de loi 2027 : titre de carte (neutre), thème, étiquettes, type d'effet sur l'activité ;
 # exclues : les transferts entre administrations, qui ne changent pas le solde public total selon le document.
@@ -102,13 +102,13 @@ NICHES = {
     '110201': {'l': "Supprimer la réduction d'impôt pour les dons des particuliers", 'theme': 'impots', 'qui': ['donateurs'], 'macro': 'ir'},
     '110203': {'l': "Supprimer le crédit d'impôt pour frais de garde des enfants de moins de 6 ans", 'theme': 'solidarite', 'qui': ['familles'], 'macro': 'ir'},
     '210309': {'l': "Supprimer la réduction d'impôt pour les dons des entreprises", 'theme': 'entreprises', 'qui': ['entreprises'], 'macro': None},
-    '800229': {'l': "Supprimer le tarif réduit d'accise sur le carburant des travaux agricoles et forestiers", 'theme': 'entreprises', 'qui': ['agriculture'], 'macro': None},
+    '800229': {'l': "Supprimer le tarif réduit d'accise sur le carburant des travaux agricoles et forestiers", 'theme': 'entreprises', 'qui': ['agriculture'], 'macro': 'carbone'},
     '120202': {'l': "Soumettre à l'impôt sur le revenu les prestations familiales et l'allocation aux adultes handicapés", 'theme': 'solidarite', 'qui': ['familles', 'handicap'], 'macro': 'ir'},
-    '800401': {'l': "Supprimer le régime particulier de l'accise sur les carburants en Guadeloupe, Guyane, Martinique, à La Réunion et à Mayotte", 'theme': 'impots', 'qui': ['outre_mer'], 'macro': None},
+    '800401': {'l': "Supprimer le régime particulier de l'accise sur les carburants en Guadeloupe, Guyane, Martinique, à La Réunion et à Mayotte", 'theme': 'impots', 'qui': ['outre_mer'], 'macro': 'carbone'},
     '940102': {'l': "Soumettre les voitures électriques et à hydrogène à la taxe sur la masse (malus au poids)", 'theme': 'impots', 'qui': ['automobilistes'], 'macro': None},
     '710103': {'l': "Appliquer en Guadeloupe, en Martinique et à La Réunion les taux de TVA de la métropole", 'theme': 'impots', 'qui': ['outre_mer', 'consommateurs'], 'macro': 'tva'},
     '210326': {'l': "Supprimer le taux d'impôt de 10 % sur les revenus des brevets et de la propriété industrielle", 'theme': 'entreprises', 'qui': ['entreprises'], 'macro': None},
-    '800221': {'l': "Supprimer le remboursement partiel d'accise sur le gazole des camions de 7,5 tonnes et plus", 'theme': 'entreprises', 'qui': ['transport'], 'macro': None},
+    '800221': {'l': "Supprimer le remboursement partiel d'accise sur le gazole des camions de 7,5 tonnes et plus", 'theme': 'entreprises', 'qui': ['transport'], 'macro': 'carbone'},
     '730223': {'l': "Appliquer le taux normal de TVA aux travaux de rénovation énergétique des logements (aujourd'hui 5,5 %)", 'theme': 'impots', 'qui': ['logement'], 'macro': 'tva'},
 }
 # Défis du jour (un par jour, le même pour tous) ; chaque chiffre a sa source.
@@ -558,7 +558,7 @@ def construire():
         else:
             ass('tva', "TVA (part de l'État)", 'recette', AE['tva_nette_etat']['valeurs']['2027_plf'], an2, ['consommateurs'], 'tva', asx('tva_nette_etat'), "Recette nette de l'État ; une autre part de la TVA va à la Sécurité sociale et aux collectivités.")
         ass('csg', "CSG (contribution sociale généralisée)", 'recette', AE['csg_produit']['valeurs']['2027_p'] / 1000, an2, ['salaries', 'retraites'], 'csg', asx('csg_produit'), "Produit prévu (Commission des comptes de la Sécurité sociale) ; un point de CSG rapporte environ 18,4 Md€.")
-        ass('carburants', "Taxes sur les carburants (accise, ex-TICPE)", 'recette', AE['accise_energies_nette']['valeurs']['2027_plf_euros_carburants'] / 1e9, an2, ['automobilistes', 'consommateurs'], None, dict(asx('accise_energies_nette'), citation=AE['accise_energies_nette']['citations_complementaires'][1]['citation'], page=AE['accise_energies_nette']['citations_complementaires'][1]['page']), "Part de l'État seulement : les régions et départements reçoivent aussi une part de cette taxe, que la source ne chiffre pas ici. Le montant d'un changement de tarif est donc un minimum. Le modèle Mésange (direction du Trésor et Insee) ne donne pas l'effet de cette taxe sur l'activité.")
+        ass('carburants', "Taxes sur les carburants (accise, ex-TICPE)", 'recette', AE['accise_energies_nette']['valeurs']['2027_plf_euros_carburants'] / 1e9, an2, ['automobilistes', 'consommateurs'], 'carbone', dict(asx('accise_energies_nette'), citation=AE['accise_energies_nette']['citations_complementaires'][1]['citation'], page=AE['accise_energies_nette']['citations_complementaires'][1]['page']), "Part de l'État seulement : les régions et départements reçoivent aussi une part de cette taxe, que la source ne chiffre pas ici. Le montant d'un changement de tarif est donc un minimum. Le modèle Mésange (direction du Trésor et Insee) ne donne pas l'effet de cette taxe sur l'activité.")
         ass('ame', "Aide médicale de l'État (AME)", 'depense', AE['ame_credits_2027']['valeurs']['2027_plf_CP'] / 1e9, an2, ['etrangers'], 'depense', asx('ame_credits_2027'),
             "Crédits prévus. En 2025, la dépense réelle a été de 1,47 Md€ pour 1,21 Md€ de crédits ; " + '{:,}'.format(AE['ame_beneficiaires']['valeurs']['31_12_2025']).replace(',', ' ') + " bénéficiaires fin 2025.")
         ass('c2s', "Complémentaire santé solidaire (C2S, ex-CMU complémentaire)", 'depense', AE['c2s_depense']['valeurs']['2024_depense_nette'], 2024, ['assures'], 'depense', asx('c2s_depense'), "Dépense nette 2024, dernier chiffre publié ; 7,79 millions de bénéficiaires fin 2024.")
@@ -780,7 +780,7 @@ def construire():
             continue
         # Normalisé : effet d'une mesure qui améliore le solde de 1 point de PIB (baisse de dépense ou hausse d'impôt) ;
         # le modèle est linéaire (source, p. 100) : on inverse le signe des variantes publiées dans l'autre sens.
-        hausse = t == 'tva'
+        hausse = t in ('tva', 'carbone')
         sg = 1 if hausse else -1
         em = E.get(cle.replace('mult_', 'emploi_'))
         if em and em.get('valeurs'):

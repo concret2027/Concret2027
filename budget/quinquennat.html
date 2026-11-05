@@ -689,6 +689,18 @@ body.q-vote { padding-bottom: 92px; }
       <p class="q-leg" id="q-leg"></p>
       <p class="q-note" id="q-chart-n"></p>
     </section>
+    <section class="card" aria-labelledby="q-crc-t">
+      <h2 id="q-crc-t"><span class="eyebrow">La croissance</span>Année par année</h2>
+      <div class="q-chart" id="q-crc"></div>
+      <p class="q-leg" id="q-crc-l"></p>
+      <p class="q-note" id="q-crc-n"></p>
+    </section>
+    <section class="card" aria-labelledby="q-int-t">
+      <h2 id="q-int-t"><span class="eyebrow">Les intérêts de la dette</span>Chaque année, à côté d'autres budgets</h2>
+      <div class="q-chart" id="q-int"></div>
+      <p class="q-leg" id="q-int-l"></p>
+      <p class="q-note" id="q-int-n"></p>
+    </section>
     <section class="card" aria-labelledby="q-def-t">
       <h2 id="q-def-t"><span class="eyebrow">Le déficit</span>Chaque année</h2>
       <div class="q-barres" id="q-def"></div>
@@ -706,7 +718,7 @@ body.q-vote { padding-bottom: 92px; }
     <details class="card fold">
       <summary>Changer les hypothèses : taux d'intérêt, croissance, effet sur l'activité</summary>
       <div style="display:grid;gap:16px;margin-top:10px">
-        <label class="q-sw"><input type="checkbox" id="q-macro"><span><b>Compter l'effet de vos choix sur l'activité et l'emploi</b><br><span class="q-note" id="q-macro-n"></span></span></label>
+        <p class="q-note" id="q-macro-n"></p>
         <div class="q-sl"><div class="h"><span>Taux auquel l'État emprunte à 10 ans</span><b id="q-taux-v"></b></div><input type="range" id="q-taux" min="0" max="8" step="0.05" aria-label="Taux à 10 ans"><div class="b"><span>0 %</span><span>8 %</span></div><p class="q-note" id="q-taux-n"></p><div class="q-presets" id="q-taux-p"></div></div>
         <div class="q-sl"><div class="h"><span>Croissance de l'économie, chaque année</span><b id="q-cr-v"></b></div><input type="range" id="q-cr" min="-2" max="2" step="0.1" aria-label="Écart de croissance par an"><div class="b"><span>2 points de moins</span><span>2 points de plus</span></div><p class="q-note" id="q-cr-n"></p></div>
       </div>
@@ -737,7 +749,7 @@ body.q-vote { padding-bottom: 92px; }
   var lireLS = function (k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
   var ecrireLS = function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   var CLE = 'concret-quinquennat', J, B, PJ, D0, AN0, AN1, ANS = [], C = [], PAR = {}, AS = {}, PIBY = {}, UN = {};
-  var S = lireLS(CLE) || {}; S.v = S.v || {}; S.perso = S.perso || {}; S.po = {}; if (S.macro == null || S.macroV !== 2) { S.macro = true; S.macroV = 2; } S.taux = S.taux || 0; S.cr = S.cr || 0; S.filtre = S.filtre || 'tout'; S.obj = S.obj || null; S.pile = S.pile || []; S.unites = S.unites || {};
+  var S = lireLS(CLE) || {}; S.v = S.v || {}; S.perso = S.perso || {}; S.po = {}; S.macro = true; S.macroV = 2; /* l'effet sur l'activité est toujours compté */ S.taux = S.taux || 0; S.cr = S.cr || 0; S.filtre = S.filtre || 'tout'; S.obj = S.obj || null; S.pile = S.pile || []; S.unites = S.unites || {};
   var garder = function () { ecrireLS(CLE, S); };
 
   // ---------- Le modèle ----------
@@ -1010,7 +1022,7 @@ body.q-vote { padding-bottom: 92px; }
       '<p>Source : ' + esc(c.src.doc) + (c.src.page ? ', page ' + esc(String(c.src.page).replace(/^p\. ?/, '')) : '') + '. <a href="' + esc(c.src.url) + '">Lire le document</a></p>' +
       '<details class="q-extrait"><summary>Extrait exact du document</summary><p>« ' + esc(c.src.citation) + ' »</p></details>' +
       (J.population && !exemplesCarte(c).L.length ? '<p>Repère : ' + nf(Math.abs(m) * 1e9 / J.population.v, Math.abs(m) * 1e9 / J.population.v < 10 ? 1 : 0) + '\u00a0€ par habitant et par an (calcul de Concret : ' + mdt(Math.abs(m)) + ' divisés par ' + nf(J.population.v / 1e6, 1) + ' millions d\'habitants, Insee ; pour comparer, ce n\'est pas forcément ce que paie ou reçoit chacun).</p>' : '') +
-      '<p>' + (c.macro && J.variantes[c.macro] ? (S.macro ? 'Son effet sur l\'activité et l\'emploi est compté, d\'après le modèle de la direction du Trésor et de l\'Insee.' : 'Son effet sur l\'activité et l\'emploi n\'est pas compté : la case « Compter l\'effet de vos choix sur l\'activité » est décochée (Bilan, « Changer les hypothèses »). Le modèle de la direction du Trésor et de l\'Insee le publie pour ce type de mesure.') : 'Son effet sur l\'activité n\'est pas compté : le modèle de la direction du Trésor et de l\'Insee ne le publie pas pour ce type de mesure.') + '</p></details>' +
+      '<p>' + (c.macro && J.variantes[c.macro] ? (S.macro ? 'Son effet sur l\'activité et l\'emploi est compté, d\'après le modèle de la direction du Trésor et de l\'Insee' + (c.macro === 'carbone' ? ' (variante publiée la plus proche : une taxe carbone, qui pèse à 70 % sur les entreprises, alors que les taxes sur les carburants pèsent davantage sur les ménages).' : '.') : 'Son effet sur l\'activité et l\'emploi n\'est pas compté : la case « Compter l\'effet de vos choix sur l\'activité » est décochée (Bilan, « Changer les hypothèses »). Le modèle de la direction du Trésor et de l\'Insee le publie pour ce type de mesure.') : 'Son effet sur l\'activité n\'est pas compté : le modèle de la direction du Trésor et de l\'Insee ne le publie pas pour ce type de mesure.') + '</p></details>' +
       '<p class="q-question">Êtes-vous pour ce qui est proposé ?</p><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
     glisser($('q-card'), c);
     $('b-tard').onclick = function () { passer(); };
@@ -1484,17 +1496,21 @@ body.q-vote { padding-bottom: 92px; }
   }
 
   // ---------- Le bilan ----------
-  function courbe(series) {
-    var W = 340, H = 180, g = 34, dr = 46, top = 14, bot = 24, tous = [];
-    series.forEach(function (s) { s.L.forEach(function (p) { tous.push(p.d); }); });
-    var lo = Math.floor(Math.min.apply(null, tous) / 5) * 5, hi = Math.ceil(Math.max.apply(null, tous) / 5) * 5; if (hi - lo < 10) hi = lo + 10;
+  function courbe(series, o) {
+    o = o || {}; var pas = o.pas || 5, un = o.unite || '\u00a0%', dec = o.dec || 0, refs = o.refs || [];
+    var W = 340, H = o.h || 180, g = o.g || 34, dr = o.dr || 46, top = 14, bot = 24, tous = [];
+    series.forEach(function (s) { s.L.forEach(function (p) { tous.push(p.d); }); }); refs.forEach(function (r) { tous.push(r.v); });
+    var lo = Math.floor(Math.min.apply(null, tous) / pas) * pas, hi = Math.ceil(Math.max.apply(null, tous) / pas) * pas; if (o.zero != null) lo = Math.min(lo, o.zero); if (hi - lo < 2 * pas) hi = lo + 2 * pas;
     var a0 = series[0].L[0].an, a1 = series[0].L[series[0].L.length - 1].an;
     var X = function (a) { return g + (W - g - dr) * (a - a0) / (a1 - a0); }, Y = function (v) { return top + (H - top - bot) * (hi - v) / (hi - lo); };
     var ligne = function (L) { return L.map(function (p, i) { return (i ? 'L' : 'M') + X(p.an).toFixed(1) + ' ' + Y(p.d).toFixed(1); }).join(' '); };
-    var gr = ''; for (var v = lo; v <= hi; v += 5) gr += '<line x1="' + g + '" x2="' + (W - dr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--grid)"/><text x="' + (g - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' + v + '\u00a0%</text>';
-    var ys = [], fins = series.map(function (s) { var p = s.L[s.L.length - 1], y = Y(p.d) + 4; ys.forEach(function (o) { if (Math.abs(o - y) < 12) y = o + (y >= o ? 12 : -12); }); ys.push(y); return '<text x="' + (X(p.an) + 5) + '" y="' + y + '" font-size="11.5" font-weight="700" fill="' + s.c + '">' + nf(p.d, 0) + '\u00a0%</text>'; }).join('');
+    var gr = ''; for (var v = lo; v <= hi + 1e-9; v += pas) gr += '<line x1="' + g + '" x2="' + (W - dr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--grid)"/><text x="' + (g - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' + nf(v, dec) + (o.unite ? '' : '\u00a0%') + '</text>';
+    // Lignes de repère (budgets comparés) : trait fin, nom écrit au-dessus à gauche.
+    // Deux repères proches : le nom du plus bas passe sous son trait.
+    var ly = []; refs.slice().sort(function (a, b) { return b.v - a.v; }).forEach(function (r) { var y = Y(r.v) - 3; if (ly.some(function (o) { return Math.abs(o - y) < 11; })) y = Y(r.v) + 11; ly.push(y); gr += '<line x1="' + g + '" x2="' + (W - dr) + '" y1="' + Y(r.v) + '" y2="' + Y(r.v) + '" stroke="var(--muted)" stroke-dasharray="2 3"/><text x="' + (g + 4) + '" y="' + y + '" font-size="10" fill="var(--muted)">' + esc(r.l) + ' : ' + nf(r.v, 0) + un + '</text>'; });
+    var ys = [], fins = series.map(function (s) { var p = s.L[s.L.length - 1], y = Y(p.d) + 4; ys.forEach(function (o) { if (Math.abs(o - y) < 12) y = o + (y >= o ? 12 : -12); }); ys.push(y); return '<text x="' + (X(p.an) + 5) + '" y="' + y + '" font-size="11.5" font-weight="700" fill="' + s.c + '">' + nf(p.d, o.decFin != null ? o.decFin : 0) + un + '</text>'; }).join('');
     var zone = series.filter(function (s) { return s.zone; })[0];
-    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Dette publique en % du PIB">' + gr +
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(o.aria || 'Dette publique en % du PIB') + '">' + gr +
       '<text x="' + X(a0) + '" y="' + (H - 6) + '" font-size="10.5" fill="var(--muted)">' + a0 + '</text><text x="' + X(a1) + '" y="' + (H - 6) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' + a1 + '</text>' +
       (zone ? '<path d="' + ligne(zone.zone[0]) + ' ' + zone.zone[1].slice().reverse().map(function (p) { return 'L' + X(p.an).toFixed(1) + ' ' + Y(p.d).toFixed(1); }).join(' ') + ' Z" fill="var(--band2)"/>' : '') +
       series.map(function (s) { return '<path d="' + ligne(s.L) + '" fill="none" stroke="' + s.c + '" stroke-width="' + (s.w || 2) + '"' + (s.dash ? ' stroke-dasharray="' + s.dash + '"' : '') + '/>'; }).join('') + fins + '</svg>';
@@ -1556,6 +1572,19 @@ body.q-vote { padding-bottom: 92px; }
     $('q-chart').innerHTML = courbe([{ L: [dep].concat(R0), c: 'var(--muted)', dash: '5 4' }, { L: PJ.ans.length ? [dep].concat(PJ.ans.map(function (y) { return { an: y.an, d: y.dette_fmi }; })) : [], c: 'var(--ea)', dash: '2 3' }, { L: [dep].concat(R), c: 'var(--fr)', w: 3, zone: [b, h] }]);
     $('q-leg').innerHTML = '<span><i style="background:var(--fr)"></i>Avec vos mesures</span><span><i style="background:var(--band2)"></i>Croissance d\'un point de plus ou de moins</span><span><i style="height:0;border-top:2px dashed var(--muted);border-radius:0"></i>Si rien ne change</span><span><i style="height:0;border-top:2px dotted var(--ea);border-radius:0"></i>Prévision du FMI</span>';
     $('q-chart-n').textContent = '« Si rien ne change » garde chaque année l\'écart entre recettes et dépenses, intérêts mis à part, de ' + D0.an + ' ; la prévision du FMI, elle, compte les économies déjà prévues par le Gouvernement. Fin ' + PJ.depart.an + ', la dette était de ' + nf(PJ.depart.dette, 1) + '\u00a0% du PIB.';
+    // La croissance, année par année : prévision du FMI, et avec l'effet de vos choix sur l'activité.
+    var ansJ = R.filter(function (r) { return r.an >= AN0; }).map(function (r) { return r.an; }), p0 = (PJ.ans || []).filter(function (x) { return x.an === AN0 - 1; })[0];
+    var dep0 = p0 ? [{ an: p0.an, d: p0.croissance }] : [];
+    $('q-crc').innerHTML = courbe([{ L: dep0.concat(ansJ.map(function (a) { return { an: a, d: croiss(R0, a) }; })), c: 'var(--muted)', dash: '5 4' }, { L: dep0.concat(ansJ.map(function (a) { return { an: a, d: croiss(R, a) }; })), c: 'var(--fr)', w: 3 }], { pas: 0.5, dec: 1, decFin: 1, zero: 0, aria: 'Croissance du PIB chaque année, en %' });
+    $('q-crc-l').innerHTML = '<span><i style="background:var(--fr)"></i>Avec vos mesures</span><span><i style="height:0;border-top:2px dashed var(--muted);border-radius:0"></i>Prévision du FMI</span>';
+    $('q-crc-n').textContent = 'Croissance du PIB hors inflation. Prévision du FMI (octobre 2026), plus l\'effet de vos mesures sur l\'activité d\'après les effets publiés par la direction du Trésor et l\'Insee (modèle Mésange). Les mesures d\'un type que le modèle ne publie pas (impôt sur les sociétés, patrimoine, SMIC) n\'y comptent pas.';
+    // Les intérêts de la dette, en milliards d'euros, à côté des crédits 2027 de quelques budgets de l'État.
+    var intr = function (L) { return L.filter(function (r) { return r.an >= AN0; }).map(function (r) { return { an: r.an, d: r.interets * r.pib / 100 }; }); };
+    var REF = [['defense', 'Défense'], ['enseignement', 'Écoles, collèges, lycées'], ['mi:recherche-et-enseignement-supérieur', 'Recherche et universités'], ['mi:sécurités', 'Police, gendarmerie, secours']].filter(function (x) { return AS[x[0]]; }).map(function (x) { return { v: AS[x[0]].md, l: x[1] }; });
+    $('q-int').innerHTML = courbe([{ L: intr(R0), c: 'var(--muted)', dash: '5 4' }, { L: intr(R), c: 'var(--fr)', w: 3 }], { pas: 20, unite: '\u00a0Md€', zero: 0, refs: REF, g: 40, dr: 58, h: 220, aria: 'Intérêts de la dette chaque année, en milliards d\'euros' });
+    $('q-int-l').innerHTML = '<span><i style="background:var(--fr)"></i>Avec vos mesures</span><span><i style="height:0;border-top:2px dashed var(--muted);border-radius:0"></i>Si rien ne change</span>';
+    var i1 = intr(R)[0], iz = intr(R).slice(-1)[0];
+    $('q-int-n').textContent = 'En ' + i1.an + ', les intérêts de la dette coûteraient ' + mdt(i1.d) + ', et ' + mdt(iz.d) + ' en ' + iz.an + '. Ce sont les intérêts de toutes les administrations publiques (État, Sécurité sociale, collectivités), calculés par Concret avec le taux moyen de la dette prévu par le FMI. Les autres traits : crédits de l\'État prévus pour ' + AN0 + ' (projet de loi de finances), sans vos changements de l\'onglet Créer.';
     var mx = Math.max.apply(null, R.concat(R0).map(function (r) { return Math.max(0, -r.solde); }).concat([PAR.regle]));
     $('q-def').innerHTML = R.filter(function (r) { return r.an >= AN0; }).map(function (r) { var v = Math.max(0, -r.solde); return '<div><span class="t">' + r.an + '</span><span class="r"><em style="left:0;width:' + (v / mx * 100) + '%"></em><em style="left:' + (PAR.regle / mx * 100) + '%;width:2px;background:var(--fg)"></em></span><span class="v">' + defic(r.solde) + '</span></div>'; }).join('');
     $('q-def-n').textContent = 'Le trait marque ' + nf(PAR.regle, 0) + '\u00a0% du PIB, la règle européenne. Sans mesure, le déficit augmente chaque année parce que les intérêts de la dette augmentent : ' + mdt(zf.interets * zf.pib / 100) + ' en ' + zf.an + ' (' + nf(zf.interets, 1) + '\u00a0% du PIB)' + (nbChoix() ? ' ; avec vos mesures, ' + mdt(f.interets * f.pib / 100) + '.' : '.') + remonte(Rs);
@@ -1572,15 +1601,13 @@ body.q-vote { padding-bottom: 92px; }
     $('q-qui').innerHTML = (plus.length || moins.length) ? liste(plus, 'Paient plus ou reçoivent moins') + liste(moins, 'Paient moins ou reçoivent plus', 'b2') + '<p class="q-note">En ' + AN0 + ', au sens des textes. Une mesure qui concerne plusieurs groupes est sur une seule ligne, qui les nomme : la source ne dit pas comment le montant se partage entre eux.</p>' : '<p class="q-note">Adoptez ou créez des mesures pour voir qui est concerné.</p>';
     $('q-eco').innerHTML = S.macro ? tu('PIB ' + f.an, sg(f.L, 1) + '\u00a0%', 'écart avec « rien ne change »') + tu('Emplois ' + f.an, (Math.round(f.emploi) ? sg(Math.round(f.emploi), 0) + '\u00a0000' : '0'), 'emplois salariés des entreprises') + tu('Chômage ' + f.an, sg(f.chomage, 1) + ' pt', 'écart du taux de chômage') : '';
     var choc = Math.abs(an1(R).mesures || 0) / (an1(R).pib || 1) * 100;
-    $('q-eco-n').textContent = S.macro ? 'D\'après les effets publiés par la direction du Trésor et l\'Insee (modèle Mésange) : baisser une dépense ou monter un impôt freine l\'activité, l\'inverse la soutient. Les mesures d\'un type que le modèle ne publie pas (impôt sur les sociétés, accises, SMIC…) ne comptent pas ici' + (sansEffet() >= 0.05 ? ' : ' + mdt(sansEffet()) + ' de vos mesures en ' + AN0 + ', dont l\'effet sur l\'activité n\'est pas compté.' : '.') + (choc > 1 ? ' Vos mesures représentent ' + nf(choc, 1) + ' point' + (choc >= 2 ? 's' : '') + ' de PIB : le modèle publie ses effets pour 1 point de PIB et Concret les multiplie ; sa source dit ce calcul « valable pour des chocs de quelques points de PIB ».' : '') : 'Effet sur l\'activité non compté (voir « Changer les hypothèses », plus bas).';
+    $('q-eco-n').textContent = S.macro ? 'D\'après les effets publiés par la direction du Trésor et l\'Insee (modèle Mésange) : baisser une dépense ou monter un impôt freine l\'activité, l\'inverse la soutient. Les mesures d\'un type que le modèle ne publie pas (impôt sur les sociétés, patrimoine, SMIC…) ne comptent pas ici' + (sansEffet() >= 0.05 ? ' : ' + mdt(sansEffet()) + ' de vos mesures en ' + AN0 + ', dont l\'effet sur l\'activité n\'est pas compté.' : '.') + (choc > 1 ? ' Vos mesures représentent ' + nf(choc, 1) + ' point' + (choc >= 2 ? 's' : '') + ' de PIB : le modèle publie ses effets pour 1 point de PIB et Concret les multiplie ; sa source dit ce calcul « valable pour des chocs de quelques points de PIB ».' : '') : 'Effet sur l\'activité non compté (voir « Changer les hypothèses », plus bas).';
   }
   // Montant des mesures adoptées dont le type n'a pas d'effet publié par le modèle (non compté dans l'effet sur l'activité).
   function sansEffet() { return adoptees().filter(function (c) { return !c.macro; }).reduce(function (t, c) { return t + Math.abs(montant(c, AN0)); }, 0); }
   function hypotheses() {
     var dm = J.taux.oat10_dernier_mois.valeurs, mois = Object.keys(dm)[0], base = dm[mois], ann = J.taux.oat10_moyenne_annuelle.valeurs;
-    $('q-macro').checked = S.macro;
-    $('q-macro-n').innerHTML = 'Baisser une dépense ou monter un impôt freine un peu l\'activité et l\'emploi, ce qui réduit les recettes. Effets publiés par la direction du Trésor et l\'Insee (modèle Mésange), par type de mesure. <a href="' + esc(J.variantes.depense.url) + '">Le document</a>.';
-    $('q-macro').onchange = function () { S.macro = $('q-macro').checked; garder(); hud(true); bilan(); };
+    $('q-macro-n').innerHTML = '<b>L\'effet de vos choix sur l\'activité et l\'emploi est compté.</b> Baisser une dépense ou monter un impôt freine un peu l\'activité et l\'emploi, ce qui réduit les recettes. Effets publiés par la direction du Trésor et l\'Insee (modèle Mésange), par type de mesure. <a href="' + esc(J.variantes.depense.url) + '">Le document</a>.';
     var t = $('q-taux'); t.value = base + S.taux;
     var maj = function () { $('q-taux-v').textContent = nf(base + S.taux, 2) + '\u00a0%'; };
     t.oninput = function () { S.taux = Math.round((+t.value - base) * 100) / 100; garder(); maj(); hud(); bilan(); }; maj();
