@@ -53,6 +53,9 @@
 .q-fin-go { font-size: 18px !important; min-height: 54px; padding: 0 30px !important; width: 100%; max-width: 340px; }
 .q-fin-s { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.4; max-width: 34ch; }
 .q-mini-x { margin: 6px 0 0; font-size: 14px; line-height: 1.4; color: var(--fg); }
+.q-enonce .q-prop-t { margin: 2px 0 0; display: block; }
+.q-effet { margin: 0; font-size: 15px; line-height: 1.4; color: var(--fg); }
+.q-card .q-effet b { font: inherit; font-weight: 700; font-size: inherit; line-height: inherit; color: var(--fr); }
 </style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -1349,33 +1352,36 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   }
   // Au-dessus de la question : ce que l'on vote, sur un fond à part. Les mesures des deux projets de budget 2027 sont celles
   // que le Parlement examine : on vote comme un député ; les autres sont des pistes chiffrées, hors des projets du Gouvernement.
-  function enonce(origines, q) {
+  function enonce(origines, q, avant) {
     var t = origines.some(function (o) { return o === 'plf' || o === 'plfss'; }) ? 'Votez comme un député : mesure du budget 2027, examiné par le Parlement'
       : origines.indexOf('debat') >= 0 ? 'Votez comme un député : mesure débattue, hors des projets du Gouvernement'
       : 'À vous de voter : piste chiffrée, hors des projets du Gouvernement';
-    return '<div class="q-enonce"><span class="q-ass">' + t + '</span><p class="q-question">' + q + '</p></div>';
+    return '<div class="q-enonce"><span class="q-ass">' + t + '</span>' + (avant || '') + '<p class="q-question">' + q + '</p></div>';
+  }
+  // Le texte « proposé » d'une mesure (mêmes remplacements que dans clair()).
+  function clairP(c) { var x = clair(c); var m = /<span class="q-prop-t">([\s\S]*?)<\/span>/.exec(x); return m ? m[1] : nb(c.clair.p); }
+  // L'effet d'une mesure en une phrase, au même endroit que pour les questions à plusieurs réponses.
+  function effetTexte(c, m) {
+    var prem = 0; for (var y = AN0; y <= AN1 && !prem; y++) if (montant(c, y)) prem = y;
+    if (!m && !prem) return '<b>Effet :</b> rien avant ' + (AN1 + 1) + (c.hors_jeu ? ' (' + mdt(c.hors_jeu.md) + ' ' + phrase(c.hors_jeu.md, c) + ' en ' + c.hors_jeu.an + ')' : '');
+    if (!m) return '<b>Effet :</b> ' + mdt(montant(c, prem)) + ' ' + phrase(montant(c, prem), c) + ' en ' + prem + ' (rien avant), puis davantage';
+    var fin = montant(c, AN1), monte = c.duree !== 'une seule année' && Math.abs(fin) > Math.abs(m) * 1.5 && fin * m > 0;
+    var hab = J.population ? Math.abs(m) * 1e9 / J.population.v : null;
+    return '<b>Effet :</b> ' + mdt(m) + ' ' + phrase(m, c) + ' en ' + AN0 + (c.duree === 'une seule année' ? ', une seule année' : monte ? ', puis ' + mdt(fin) + ' en ' + AN1 : ', chaque année') + (hab ? ' (environ ' + nf(hab, hab < 10 ? 1 : 0) + '\u00a0€ par habitant)' : '') + '.';
   }
   function carte(c, entree) {
     var m = montant(c, AN0), CC = concretCarte(c, m);
     $('q-deck').innerHTML = (filtrees().filter(function (o) { return o !== c && (S.v[o.id] == null || S.v[o.id] === 0); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card' + (entree ? ' in' : '') + '" id="q-card">' +
       '<span class="q-stamp p" id="q-sp">✓ POUR</span><span class="q-stamp c" id="q-sc">✗ CONTRE</span>' +
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span>' + (vousConcerne(c) ? '<span class="q-vous">Vous concerne</span>' : '') + '<span class="q-org">' + esc(origine(c)) + '</span></div>' +
-      '<h2>' + nb(c.titre || c.l) + '</h2>' +
-      (function () {
-        // Rien la première année : le montant de la première année où la mesure joue, ou « rien avant » la fin du jeu.
-        var prem = 0; for (var y = AN0; y <= AN1 && !prem; y++) if (montant(c, y)) prem = y;
-        if (!m && !prem) return '<div class="q-mt"><b>Rien avant ' + (AN1 + 1) + '</b><span>' + (c.hors_jeu ? mdt(c.hors_jeu.md) + ' ' + phrase(c.hors_jeu.md, c) + ' en ' + c.hors_jeu.an + ', après les cinq ans du jeu' : 'pendant les cinq ans du jeu') + '</span></div>';
-        if (!m) return '<div class="q-mt"><b>' + mdt(montant(c, prem)) + '</b><span>' + phrase(montant(c, prem), c) + ' en ' + prem + ' (rien avant)</span><em>puis davantage chaque année</em></div>';
-        var fin = montant(c, AN1), monte = c.duree !== 'une seule année' && Math.abs(fin) > Math.abs(m) * 1.5 && fin * m > 0;
-        var hab = J.population ? Math.abs(m) * 1e9 / J.population.v : null;
-        return '<div class="q-mt"><b>' + mdt(m) + '</b><span>' + phrase(m, c) + ' en ' + AN0 + (hab ? ' · environ ' + nf(hab, hab < 10 ? 1 : 0) + '\u00a0€ par habitant' : '') + '</span><em>' + (c.duree === 'une seule année' ? 'une seule année' : monte ? 'puis davantage : ' + mdt(fin) + ' en ' + AN1 : 'chaque année') + '</em></div>';
-      })() +
-      (CC.indexOf('q-vous') >= 0 ? CC : '') + clair(c) +
+      '<h2>' + nb(c.titre || c.l) + '</h2>' + clair(c, true) +
+      enonce([c.origine], 'Êtes-vous pour ?', (c.clair && c.clair.p ? '<p class="q-prop-t">' + clairP(c) + '</p>' : '') + '<p class="q-effet">' + effetTexte(c, m) + '</p>') +
+      '<div class="q-vin" role="group" aria-label="Votre vote"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button><button type="button" data-vin="-1">✗ Contre</button><button type="button" data-vin="3">Abstention</button><button type="button" data-vin="1">✓ Pour</button></div><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') +
+      (CC.indexOf('q-vous') >= 0 ? CC : '') +
       (rivaux(c).length ? '<p class="q-ligne"><b>Sur le même sujet :</b> ' + rivaux(c).map(function (o) { return nb(o.titre || o.l) + (S.v[o.id] === 1 ? ' (votre choix)' : ''); }).join(' · ') + '. Une seule peut être adoptée.</p>' : '') +
       '<p class="q-ligne"><b>' + quiTitre(c, m) + ' :</b> ' + nb(c.qui_texte || c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' +
       (CC.indexOf('q-vous') >= 0 ? '' : CC) +
-      detailsSrc(c, m) +
-      enonce([c.origine], 'Êtes-vous pour ce qui est proposé ?') + '<div class="q-vin" role="group" aria-label="Votre vote"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button><button type="button" data-vin="-1">✗ Contre</button><button type="button" data-vin="3">Abstention</button><button type="button" data-vin="1">✓ Pour</button></div><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
+      detailsSrc(c, m) + '</article>';
     serrer($('q-deck'));
     Array.prototype.forEach.call($('q-deck').querySelectorAll('[data-vin]'), function (b) { b.onclick = function () { if (b.dataset.vin === 'u') annuler(); else voter(c, +b.dataset.vin); }; });
     var vin = $('q-deck').querySelector('.q-vin'); VIN_VU = false;
