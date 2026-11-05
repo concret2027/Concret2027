@@ -11,6 +11,8 @@
     '.bref-chips a{display:inline-flex;align-items:center;min-height:24px;box-sizing:border-box;font-size:11.5px;font-weight:500;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);text-decoration:none}' +
     '.bref-chips a:hover,.bref-chips a:focus{border-color:var(--fr);color:var(--fg)}' +
     '.bref-chips a i{font-style:normal;font-weight:700;margin-right:3px;color:var(--bad)}.bref-chips a.g i{color:var(--ok)}.bref-chips a.m i{color:var(--mid)}' +
+    // Le lien vers le détail des présidents : un bouton contour, bien visible, sous la phrase.
+    '.bref-detail{display:inline-flex;justify-self:start;width:fit-content;max-width:100%;align-items:center;min-height:44px;padding:0 18px;margin:2px 0 10px;border:1.5px solid var(--fr,#2f5bd3);border-radius:999px;color:var(--fr,#2f5bd3)!important;font-weight:600;font-size:15px;text-decoration:none!important}.bref-detail:hover{background:color-mix(in srgb,var(--fr,#2f5bd3) 8%,transparent)}' +
     '.bref-pres{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 10px}' +
     '.bref-pres a{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--fg);text-decoration:none;overflow:hidden}' +
     '.bref-pres a span{font-size:12.5px;color:var(--muted);font-weight:600}.bref-pres a b{font-family:var(--serif);font-size:clamp(22px,7vw,28px);font-weight:500;line-height:1.1}' +
@@ -28,7 +30,7 @@
     '.som-l small .som-hors{display:block}' +
     '.bref-cache{display:none!important}' +
     '.bref-deux{color:var(--fg);margin-bottom:6px}' +
-    // Sur ordinateur, la toile se range à côté d'« En bref » ; sur téléphone, sous les thèmes.
+    // Sur ordinateur, la toile se range à côté d'« En bref » ; sur téléphone, après le dernier thème.
     '.bref-grille{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}.bref-grille>*{margin:0!important}' +
     // Thèmes des pages Finances et Éducation (sans ligne ✓ ✗ écrite par la page) : la même ligne que sur les autres pages.
     '.theme>.t-sum.bref-tsum{margin:0;font-size:14px;color:var(--muted)}.t-sum.bref-tsum .ic{display:inline-flex;gap:4px;margin-right:8px}.t-sum.bref-tsum .ic i{font-style:normal;font-weight:700}.t-sum.bref-tsum .ic i.g{color:var(--ok)}.t-sum.bref-tsum .ic i.b{color:var(--bad)}.t-sum.bref-tsum .ic i.m{color:var(--mid)}' +
@@ -97,10 +99,11 @@
       ' (dernier chiffre connu)' + (n > 1 ? ' : ' + it.map(function (x) { return esc(x.l); }).join(', ') : '') + '.' + (t.note ? ' ' + esc(t.note) : '');
     var h = el.querySelector(':scope > h2'); el.insertBefore(p, h ? h.nextSibling : el.firstChild);
   }
-  // La toile : à côté d'« En bref » sur ordinateur ; sur téléphone, sous les thèmes et le détail par président, avant « L'actualité ».
+  // La toile : à côté d'« En bref » sur ordinateur ; sur téléphone, juste après le dernier thème, avant « Le détail, président
+  // par président » (sans ce bloc, comme en Démographie : avant « L'actualité »).
   var LARGE = window.matchMedia ? matchMedia('(min-width: 900px)') : null;
   function placerToile() {
-    var rep = document.getElementById('reponse'), to = document.getElementById('toile'), act = document.getElementById('actualite'), g = document.getElementById('bref-grille');
+    var rep = document.getElementById('reponse'), to = document.getElementById('toile'), act = document.getElementById('bulletin') || document.getElementById('actualite'), g = document.getElementById('bref-grille');
     if (!rep || !to) return;
     var avant = to.parentNode && to.parentNode.id === 'bref-grille';
     if (LARGE && LARGE.matches) {
@@ -139,7 +142,7 @@
       // Deux chiffres, deux mesures, en deux phrases : le « n/N » du haut (dernier chiffre connu) et le résultat sur 20 (le mandat,
       // année par année). Puis la phrase qui suit chaque résultat sur le site.
       '<p class="note bref-deux">Le <b>' + ok + '/' + l.length + '</b> du haut compare le dernier chiffre connu de chaque indicateur à ' + esc(ref) + '. Le résultat <b>sur 20</b> de chaque président mesure autre chose : l\'évolution, année par année pendant le mandat, face à cette moyenne (10 = aussi bien qu\'elle).</p>' +
-      '<p class="note">Ce n\'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l\'UE pendant le mandat. <a class="pt-hors" href="#bulletin">Le détail, président par président ↓</a></p>';
+      '<p class="note">Ce n\'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l\'UE pendant le mandat.</p><a class="pt-hors bref-detail" href="#bulletin">Le détail, président par président ↓</a>';
     // Le bouton « Partager » (commun/partage.js) a pu être posé sur le bloc encore vide : on le laisse le reposer.
     box.removeAttribute('data-partage');
     box.querySelectorAll('.bref-chips a').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); });
