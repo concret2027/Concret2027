@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="93165a79e17c">
+<meta name="concret-version" content="0156a8a6521e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261105q"></script>
+<script src="/commun/bref.js?v=20261105t"></script>
 <script src="/commun/toile.js?v=20261105n"></script>
 <script src="/commun/pays.js?v=20261031i"></script>
 <script src="/commun/quiz.js?v=20261031j"></script>
@@ -127,6 +127,17 @@ section[id], details[id], .growth[id] { scroll-margin-top: calc(var(--navh, 44px
 .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .sheet-box { background: var(--panel); border-radius: 14px; padding: 14px; display: grid; gap: 10px; max-width: 420px; width: 100%; max-height: 100%; overflow: auto; }
 .sheet-box img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+/* Le dernier chiffre (du jour, du mois, du trimestre), en tête de son thème : il n'entre pas dans le résultat, la ligne du haut le dit. */
+.dc-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 12px; }
+.dc { gap: 8px; scroll-margin-top: 140px; }
+.dc-l { margin: 0; display: flex; align-items: center; gap: 7px; font-size: 12.5px; line-height: 1.35; font-weight: 600; color: var(--muted); }
+.dc-l::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--th, var(--fr)); }
+.dc .metric { padding: 0; }
+.dc .growth { border-top: 0; margin-top: 0; padding-top: 0; }
+.dc .mo { padding: 0; }
+.dc .dc-eq { border-top: 0; padding: 0; }
+.dc-ancre { display: block; height: 0; }
+.card.chiffre-jour { padding: 0; border: 0; background: none; gap: 6px; }
 /* Menus dépliables */
 .acc { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
 .acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
@@ -343,7 +354,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><h1>Finances publiques</h1><span id="today"></span></div>
   <p class="upd" id="upd">Chargement des données…</p>
   <p class="visit visit-res" id="visit" aria-hidden="true"></p>
-  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Résultats</a><a href="#courbes">Thèmes</a><a href="#acc-today">Aujourd'hui</a><a href="#acc-month">Ce mois-ci</a><a href="#acc-actu">Actualité</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Résultats</a><a href="#courbes">Thèmes</a><a href="#acc-actu">Actualité</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
   <section class="card" id="toile" hidden></section>
@@ -402,13 +413,35 @@ footer p { margin: 0; } footer a { color: inherit; }
   </section>
 
   <h2 class="grp-t" id="courbes">Les thèmes</h2>
-  <nav class="t-pills" aria-label="Aller au thème"><a href="#t-dette">Dette et déficit</a><a href="#t-depenses">Dépenses et prélèvements</a><a href="#t-richesse">Richesse par habitant</a><a href="#t-taux">Taux d'emprunt</a></nav>
+  <nav class="t-pills" aria-label="Aller au thème"><a href="#t-dette">Dette et déficit</a><a href="#t-depenses">Dépenses et prélèvements</a><a href="#t-richesse">Richesse et emploi</a><a href="#t-taux">Taux et prix</a></nav>
   <p class="note t-regle">Sur cette page, les thèmes rangent les courbes ; le résultat de la page se calcule sur ses 8 critères, à poids égal.</p>
 
   <div class="theme" id="t-dette">
     <h2>Dette et déficit</h2>
+    <div class="dc-row">
+      <section class="card dc" id="dc-dette" aria-labelledby="debt-lab">
+        <p class="dc-l">Chiffre du trimestre, non compté dans le résultat</p>
+          <div class="metric">
+            <span class="lab" id="debt-lab">Dette publique</span>
+            <div class="row"><span class="num" id="debt-num">119<small>% du PIB</small></span><span class="delta up" id="debt-dq">▲ +1,5 pt en un trimestre</span></div>
+            <div class="spark" id="spark"></div>
+            <div class="foot"><b id="debt">—</b> au total (estimation), dont <b id="today-debt">—</b> ajoutés depuis minuit · <b id="percap">—</b> par habitant. Chaque jour, la dette prend de quoi payer <b id="smic-day">42 000 salariés au Smic</b> pendant un an.</div>
+            <button class="share" type="button" data-share="dette">Partager ce graphique</button>
+          </div>
+      </section>
+      <section class="card dc" id="dc-deficit" aria-labelledby="def-lab">
+        <p class="dc-l">Chiffre du mois, non compté dans le résultat</p>
+        <span class="dc-ancre" id="acc-month"></span>
+          <div class="mo">
+            <span class="mo-lab" id="def-lab">Budget de l'État</span>
+            <span class="mo-num" id="def-num">—</span>
+            <span class="delta" id="def-delta"></span>
+            <span class="mo-t" id="def-t"></span>
+          </div>
+      </section>
+    </div>
     <div class="charts4">
-    <section class="card" aria-labelledby="c1"><h2 id="c1" class="inv"><span class="eyebrow">Dette, % du PIB</span>De 7 points sous la moyenne de l'UE en 2000 à 34 points au-dessus</h2><div class="chart" id="ch-dette"></div><p class="note">Chiffres de fin d'année : <span id="debt-ye">115,7 % fin 2025</span>. Depuis, la dette a continué de monter : <span id="debt-last">119 % fin juin 2026</span> selon le dernier chiffre trimestriel de l'Insee, celui affiché en haut de page. États-Unis : dette brute des administrations publiques (FMI, Perspectives de l'économie mondiale, octobre 2026), de 2001 à 2024.</p></section>
+    <section class="card" aria-labelledby="c1"><h2 id="c1" class="inv"><span class="eyebrow">Dette, % du PIB</span>De 7 points sous la moyenne de l'UE en 2000 à 34 points au-dessus</h2><div class="chart" id="ch-dette"></div><p class="note">Chiffres de fin d'année : <span id="debt-ye">115,7 % fin 2025</span>. Depuis, la dette a continué de monter : <span id="debt-last">119 % fin juin 2026</span> selon le dernier chiffre trimestriel de l'Insee, celui affiché en tête du thème. États-Unis : dette brute des administrations publiques (FMI, Perspectives de l'économie mondiale, octobre 2026), de 2001 à 2024.</p></section>
     <section class="card" aria-labelledby="c2"><h2 id="c2" class="inv"><span class="eyebrow">Déficit, % du PIB</span>Un déficit plus élevé que la moyenne de l'UE chaque année depuis 2002</h2><div class="chart" id="ch-deficit"></div><p class="note">États-Unis : solde des administrations publiques (FMI, Perspectives de l'économie mondiale, octobre 2026), de 2001 à 2024.</p><p class="jeu-l"><a href="/budget/"><b>Votre budget 2027</b> : votez, une par une, des mesures chiffrées pour le budget de 2027, et voyez ce que deviennent le déficit et la dette →</a></p></section>
     </div>
   </div>
@@ -428,7 +461,37 @@ footer p { margin: 0; } footer a { color: inherit; }
   </div>
 
   <div class="theme" id="t-richesse">
-    <h2>Richesse par habitant</h2>
+    <h2>Richesse et emploi</h2>
+    <div class="dc-row">
+      <section class="card dc" id="dc-croissance" aria-labelledby="g-lab">
+        <p class="dc-l">Chiffre du trimestre, non compté dans le résultat</p>
+        <div class="growth" id="croissance">
+          <div class="mo">
+            <span class="mo-lab" id="g-lab">Croissance du PIB</span>
+            <span class="mo-num" id="g-num">—</span>
+            <span class="delta" id="g-delta"></span>
+            <span class="mo-t" id="g-t"></span>
+          </div>
+          <div class="mo">
+            <span class="mo-lab">Croissance trimestre par trimestre</span>
+            <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--ea)"></i>Moyenne de l'UE</span></div>
+            <div class="chart" id="mo-g"></div>
+          </div>
+        </div>
+      </section>
+      <section class="card dc" id="dc-chomage" aria-labelledby="u-lab">
+        <p class="dc-l">Chiffre du mois, non compté dans le résultat</p>
+          <div class="mo">
+            <span class="mo-lab" id="u-lab">Chômage</span>
+            <span class="mo-num" id="u-num">—</span>
+            <span class="delta" id="u-delta"></span>
+            <span class="mo-t" id="u-t"></span>
+            <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
+            <div class="chart" id="mo-u"></div>
+            <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
+          </div>
+      </section>
+    </div>
     <section class="card" id="richesse" aria-labelledby="pib-title">
       <h2 id="pib-title" class="inv"><span class="eyebrow">Richesse par habitant</span>16 % au-dessus de la moyenne de l'UE en 1990, au même niveau en 2025</h2>
       <p class="insight" id="pib-insight">En 1990, un Français produisait <b>16 % de plus</b> que la moyenne de l'UE. En 2025, <b>autant</b>.</p>
@@ -445,7 +508,44 @@ footer p { margin: 0; } footer a { color: inherit; }
   </div>
 
   <div class="theme" id="t-taux">
-    <h2>Taux d'emprunt</h2>
+    <h2>Taux et prix</h2>
+    <div class="dc-row">
+      <section class="card dc" id="dc-taux" aria-labelledby="rate-lab" data-bref="Ce qui a changé aujourd'hui">
+        <p class="dc-l">Chiffre du jour, non compté dans le résultat</p>
+          <div class="metric">
+            <span class="lab" id="rate-lab">Taux d'emprunt de l'État à 10 ans</span>
+            <div class="row"><span class="num" id="rate-num">4,93<small>%</small></span><span class="delta up" id="rate-d1">▲ +0,08 pt sur la dernière séance</span><span class="delta up" id="rate-y1">▲ +1,5 pt en un an</span></div>
+            <div class="spark" id="spark-rate"></div>
+            <div class="foot" id="rate-foot">—</div>
+            <button class="share" type="button" data-share="taux">Partager ce graphique</button>
+          </div>
+          <span class="dc-bref" id="teaser-today" hidden></span>
+      </section>
+      <section class="card dc" id="dc-interets" aria-labelledby="int-lab">
+        <p class="dc-l">Chiffre de l'année ; le résultat compte les intérêts en % du PIB</p>
+        <span class="dc-ancre" id="acc-today"></span>
+        <div class="equiv-wrap dc-eq">
+          <span class="lab" id="int-lab">Les intérêts de la dette (64,7 Md€ en 2025), c'est…</span>
+          <div class="equiv">
+            <div class="eq"><span class="n" id="eq-edu">100 %</span><span class="t">du budget de l'Éducation nationale</span></div>
+            <div class="eq"><span class="n" id="eq-arm">113 %</span><span class="t">du budget des Armées</span></div>
+            <div class="eq"><span class="n" id="eq-am">24 %</span><span class="t">de l'Assurance maladie</span></div>
+          </div>
+        </div>
+      </section>
+      <section class="card dc" id="dc-inflation" aria-labelledby="i-lab">
+        <p class="dc-l">Chiffre du mois, non compté dans le résultat</p>
+          <div class="mo">
+            <span class="mo-lab" id="i-lab">Inflation</span>
+            <span class="mo-num" id="i-num">—</span>
+            <span class="delta" id="i-delta"></span>
+            <span class="mo-t" id="i-t"></span>
+            <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
+            <div class="chart" id="mo-i"></div>
+            <button class="share" type="button" data-share="inflation">Partager ce graphique</button>
+          </div>
+      </section>
+    </div>
     <section class="card" id="marches" aria-labelledby="sp-title">
       <h2 id="sp-title" class="inv"><span class="eyebrow">Politique et marchés</span>La France emprunte plus cher que l'Italie</h2>
       <p class="explain"><b>À lire ainsi :</b> chaque courbe montre combien un pays paie de plus que l'Allemagne pour emprunter à 10 ans (le « spread », en points de base). Les numéros renvoient aux événements listés dessous.</p>
@@ -456,87 +556,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   </div>
 
 
-  <h2 class="grp-t" id="actualite">Chiffres et actualité</h2>
-
-  <details class="acc acc-fixe" id="acc-today" open>
-    <summary><span class="acc-h">Ce qui a changé aujourd'hui</span><span class="acc-t" id="teaser-today">—</span><span class="acc-actions"><span class="acc-cta"></span><button class="share" id="share-fact-top" type="button" aria-label="Partager le chiffre du jour">Partager</button></span></summary>
-    <div class="acc-body">
-  <section class="summary" aria-label="Aujourd'hui">
-    <p class="daily"><span class="eyebrow" id="daily-lab">Le chiffre du jour</span><span id="daily-text">—</span><span class="since" id="since" hidden></span><button class="share" id="share-fact" type="button" aria-label="Partager le chiffre du jour">Partager ce chiffre</button></p>
-  </section>
-  <section class="today" aria-label="Les chiffres du jour">
-    <div class="today-grid">
-      <div class="metric">
-        <span class="lab" id="rate-lab">Taux d'emprunt de l'État à 10 ans</span>
-        <div class="row"><span class="num" id="rate-num">4,93<small>%</small></span><span class="delta up" id="rate-d1">▲ +0,08 pt sur la dernière séance</span><span class="delta up" id="rate-y1">▲ +1,5 pt en un an</span></div>
-        <div class="spark" id="spark-rate"></div>
-        <div class="foot" id="rate-foot">—</div>
-        <button class="share" type="button" data-share="taux">Partager ce graphique</button>
-      </div>
-      <div class="metric">
-        <span class="lab" id="debt-lab">Dette publique</span>
-        <div class="row"><span class="num" id="debt-num">119<small>% du PIB</small></span><span class="delta up" id="debt-dq">▲ +1,5 pt en un trimestre</span></div>
-        <div class="spark" id="spark"></div>
-        <div class="foot"><b id="debt">—</b> au total (estimation), dont <b id="today-debt">—</b> ajoutés depuis minuit · <b id="percap">—</b> par habitant. Chaque jour, la dette prend de quoi payer <b id="smic-day">42 000 salariés au Smic</b> pendant un an.</div>
-        <button class="share" type="button" data-share="dette">Partager ce graphique</button>
-      </div>
-    </div>
-    <div class="equiv-wrap">
-      <span class="lab" id="int-lab">Les intérêts de la dette (64,7 Md€ en 2025), c'est…</span>
-      <div class="equiv">
-        <div class="eq"><span class="n" id="eq-edu">100 %</span><span class="t">du budget de l'Éducation nationale</span></div>
-        <div class="eq"><span class="n" id="eq-arm">113 %</span><span class="t">du budget des Armées</span></div>
-        <div class="eq"><span class="n" id="eq-am">24 %</span><span class="t">de l'Assurance maladie</span></div>
-      </div>
-    </div>
-  </section>
-    </div>
-  </details>
-
-  <details class="acc acc-fixe" id="acc-month" open>
-    <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card">
-      <div class="month">
-      <div class="mo">
-        <span class="mo-lab" id="def-lab">Budget de l'État</span>
-        <span class="mo-num" id="def-num">—</span>
-        <span class="delta" id="def-delta"></span>
-        <span class="mo-t" id="def-t"></span>
-      </div>
-      <div class="mo">
-        <span class="mo-lab" id="u-lab">Chômage</span>
-        <span class="mo-num" id="u-num">—</span>
-        <span class="delta" id="u-delta"></span>
-        <span class="mo-t" id="u-t"></span>
-        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
-        <div class="chart" id="mo-u"></div>
-        <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
-      </div>
-      <div class="mo">
-        <span class="mo-lab" id="i-lab">Inflation</span>
-        <span class="mo-num" id="i-num">—</span>
-        <span class="delta" id="i-delta"></span>
-        <span class="mo-t" id="i-t"></span>
-        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
-        <div class="chart" id="mo-i"></div>
-        <button class="share" type="button" data-share="inflation">Partager ce graphique</button>
-      </div>
-    </div>
-    <div class="growth" id="croissance">
-      <div class="mo">
-        <span class="mo-lab" id="g-lab">Croissance du PIB</span>
-        <span class="mo-num" id="g-num">—</span>
-        <span class="delta" id="g-delta"></span>
-        <span class="mo-t" id="g-t"></span>
-      </div>
-      <div class="mo">
-        <span class="mo-lab">Croissance trimestre par trimestre</span>
-        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--ea)"></i>Moyenne de l'UE</span></div>
-        <div class="chart" id="mo-g"></div>
-      </div>
-    </div>
-    </div>
-  </details>
+  <h2 class="grp-t" id="actualite">L'actualité</h2>
 
   <details class="acc acc-fixe" id="acc-actu" open>
     <summary><span class="acc-h">L'actualité des finances publiques</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
@@ -548,6 +568,10 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="q" id="quiz-q">—</p>
     <div class="opts" id="quiz-opts"></div>
     <p class="answer" id="quiz-a" hidden></p>
+  </section>
+
+  <section class="card chiffre-jour" id="chiffre-jour" aria-label="Le chiffre du jour">
+    <p class="daily"><span class="eyebrow" id="daily-lab">Le chiffre du jour</span><span id="daily-text">—</span><span class="since" id="since" hidden></span><button class="share" id="share-fact" type="button" aria-label="Partager le chiffre du jour">Partager ce chiffre</button></p>
   </section>
 
   <details class="acc" id="lois">
@@ -578,7 +602,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <footer>
     <details class="pied-src"><summary>Sources et méthode</summary>
       <p><b>Sources.</b> Dette fin T2 2026 : <a href="https://www.insee.fr/fr/statistiques/9053525">Insee, 29 sept. 2026</a>. Comptes 2025 et intérêts : <a href="https://www.insee.fr/fr/statistiques/fichier/version-html/8997691/ip2106.pdf">Insee Première, mai 2026</a>. Budgets 2026 : Défense hors pensions (<a href="https://www.senat.fr/rap/l25-139-38/l25-139-38_mono.html">Sénat, PLF 2026</a>), Éducation nationale hors pensions (PLF 2026), Ondam 2026 (<a href="https://www.banquedesterritoires.fr/loi-de-financement-de-la-securite-sociale-pour-2026-quels-credits-quelles-nouveautes">LFSS 2026</a>). Séries 1995-2025 : Eurostat (gov_10a_main, gov_10dd_edpt1, gov_10a_taxag) ; croissance trimestrielle : Eurostat (namq_10_gdp) ; États-Unis : FMI (dette et solde : Perspectives de l'économie mondiale, octobre 2026 ; dépenses : base des finances publiques historiques, décembre 2025) et OCDE (prélèvements : Statistiques des recettes publiques) ; taux à 10 ans mensuels et annuels : Eurostat (irt_lt_mcby_m, irt_lt_mcby_a) ; taux quotidiens : Idéal Investisseur ; 340 Md€ d'emprunts prévus en 2027 : Agence France Trésor, citée par Boursorama ; PIB par habitant, chômage et balance commerciale : Banque mondiale (NY.GDP.PCAP.PP.KD, SL.UEM.TOTL.ZS, NE.RSB.GNFS.ZS). Taux du 20 oct. 2026 : Idéal Investisseur et ANSA. Publications du mois : déficit de l'État fin août (ministère de l'Action et des Comptes publics, via Boursorama), chômage d'août (Eurostat), inflation de septembre (Eurostat, Insee).</p>
-      <p><b>Méthode.</b> Le taux d'emprunt et la dette sont mis à jour automatiquement chaque jour à midi à partir des dernières publications (Idéal Investisseur pour les taux, Insee pour la dette). Le compteur de la dette (le montant en euros qui augmente chaque seconde, en haut de page) part du dernier chiffre trimestriel de l'Insee et prolonge le rythme d'endettement des six mois précédents : c'est une estimation, recalée à chaque publication. Dette en % du PIB : en haut de page, le dernier chiffre trimestriel de l'Insee ; dans les courbes, le chiffre de fin d'année (Eurostat), pour comparer les pays. Population : 69 millions. Les comparaisons rapportent les intérêts 2025 aux budgets 2026. Smic net : 1 477,93 € par mois depuis le 1er juin 2026. <span id="updated-note"></span></p>
+      <p><b>Méthode.</b> Le taux d'emprunt et la dette sont mis à jour automatiquement chaque jour à midi à partir des dernières publications (Idéal Investisseur pour les taux, Insee pour la dette). Le compteur de la dette (le montant en euros qui augmente chaque seconde, en tête du thème « Dette et déficit ») part du dernier chiffre trimestriel de l'Insee et prolonge le rythme d'endettement des six mois précédents : c'est une estimation, recalée à chaque publication. Dette en % du PIB : en tête du thème « Dette et déficit », le dernier chiffre trimestriel de l'Insee ; dans les courbes, le chiffre de fin d'année (Eurostat), pour comparer les pays. Population : 69 millions. Les comparaisons rapportent les intérêts 2025 aux budgets 2026. Smic net : 1 477,93 € par mois depuis le 1er juin 2026. <span id="updated-note"></span></p>
     </details>
     <p><a href="/mentions-legales/">Mentions légales</a></p>
   </footer>
@@ -741,8 +765,9 @@ function main(FEED) {
   // ===== Menus dépliables : aperçu dans l'en-tête et mémoire de l'état ouvert/fermé =====
   (function () {
     var m = new Date(); m.setHours(0, 0, 0, 0);
-    document.getElementById('teaser-today').innerHTML = 'Taux d\'emprunt <b>' + fmt(LIVE.rate, 2) + '&nbsp;%</b> <i class="' + (dRate > 0 ? 'r' : 'g') + '">' + arrow(dRate).trim() + fmt(Math.abs(dRate), 2) + '</i> · Dette <b>+' + fmt(perDayDebt / 1e6) + '&nbsp;M€</b> par jour · Le chiffre du jour';
-    ['acc-today', 'acc-month', 'acc-actu', 'acc-bilan'].forEach(function (id) {
+    // Pour « Les dernières nouvelles » (commun/bref.js) : le taux du jour et la dette, chacun menant à son chiffre, en tête de son thème.
+    document.getElementById('teaser-today').innerHTML = 'Taux d\'emprunt <b>' + fmt(LIVE.rate, 2) + '&nbsp;%</b> <i class="' + (dRate > 0 ? 'r' : 'g') + '">' + arrow(dRate).trim() + fmt(Math.abs(dRate), 2) + '</i> · <a href="#dc-dette" data-cible="dc-dette">Dette <b>+' + fmt(perDayDebt / 1e6) + '&nbsp;M€</b> par jour</a>';
+    ['acc-actu', 'acc-bilan'].forEach(function (id) {
       var d = document.getElementById(id);
       try { if (localStorage.getItem(id) === 'open') d.open = true; } catch (e) {}
       d.addEventListener('toggle', function () {
@@ -804,7 +829,7 @@ function main(FEED) {
         var when = days >= 1 ? 'il y a ' + days + ' jour' + (days > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lastV.t) / 3600e3)) + ' h';
         var dr = Math.round((LIVE.rate - lastV.r) * 100) / 100;
         var DSF = (FEED && FEED.datasets) || {};
-        var pv = ConcretBref.nouveau({ chiffres: ['<a href="#acc-today" data-cible="acc-today">la dette a pris <b>' + big(dd) + '</b></a>', '<a href="#acc-today" data-cible="acc-today">taux d\'emprunt de l\'État à 10 ans : <b>' + fmt(LIVE.rate, 2) + ' %</b> à la clôture du ' + new Date(LIVE.rateDate + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }).replace(/^1 /, '1er ') + (dr ? ' (' + (dr > 0 ? '+' : '−') + fmt(Math.abs(dr), 2) + ' point depuis votre visite)' : ' (même chiffre qu\'à votre visite)') + '</a>'], actu: DSF.actu_finances, agenda: DSF.agenda_finances, depuis: lastV.t, jour: days >= 1 });
+        var pv = ConcretBref.nouveau({ chiffres: ['<a href="#dc-dette" data-cible="dc-dette">la dette a pris <b>' + big(dd) + '</b></a>', '<a href="#dc-taux" data-cible="dc-taux">taux d\'emprunt de l\'État à 10 ans : <b>' + fmt(LIVE.rate, 2) + ' %</b> à la clôture du ' + new Date(LIVE.rateDate + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }).replace(/^1 /, '1er ') + (dr ? ' (' + (dr > 0 ? '+' : '−') + fmt(Math.abs(dr), 2) + ' point depuis votre visite)' : ' (même chiffre qu\'à votre visite)') + '</a>'], actu: DSF.actu_finances, agenda: DSF.agenda_finances, depuis: lastV.t, jour: days >= 1 });
         ConcretBref.afficher(vis, 'Depuis votre dernière visite (' + when + ')', pv);
       }
       else ConcretBref.premiere(vis, { actu: ((FEED && FEED.datasets) || {}).actu_finances }); // Première visite : les dernières nouvelles de la page.
@@ -1331,7 +1356,6 @@ function main(FEED) {
     set('i-num', fmt(MO.iFr[ni], 1) + ' % <small>sur un an</small>');
     set('i-delta', fmt(Math.abs(gi), 1) + ' pt ' + (gi > 0 ? 'au-dessus' : 'sous') + ' l\'UE', gi > 0 ? 'up' : 'dn');
     set('i-t', 'Contre ' + fmt(MO.iFr[ni - 1], 1) + ' % le mois précédent. UE : ' + fmt(MO.iEu[nie], 1) + ' %. Indice des prix harmonisé (Eurostat).');
-    document.getElementById('teaser-month').innerHTML = 'Déficit de l\'État <b>' + fmt(DEF.valeur, 1) + '&nbsp;Md€</b>' + (dd > 0 ? ' <i class="r">▲</i>' : dd < 0 ? ' <i class="g">▼</i>' : '') + ' · Chômage <b>' + fmt(MO.uFr[nu], 1) + '&nbsp;%</b> · Inflation <b>' + fmt(MO.iFr[ni], 1) + '&nbsp;%</b>';
   }
   renderMonth();
   // ===== Actualité =====
@@ -1437,6 +1461,8 @@ function main(FEED) {
   }
   var CHARTS = {
     taux: function () {
+      // Montant en euros, comme dans « Le chiffre du jour » (la fonction de ce bloc-là n'est pas visible ici).
+      var big = function (v) { return v >= 1e9 ? fmt(v / 1e9, v >= 1e10 ? 0 : 1) + ' Md€' : fmt(v / 1e6) + ' M€'; };
       var firstDaily = DAILY[0][0], v = MONTHLY.filter(function (m) { return new Date(m[0], m[1], 15) < new Date(firstDaily + 'T12:00:00'); }).map(function (d) { return d[2]; }).concat(DAILY.map(function (d) { return d[1]; }));
       return { kicker: 'Taux d\'emprunt de l\'État à 10 ans · ' + dayName(LIVE.rateDate), big: fmt(LIVE.rate, 2) + ' %', delta: arrow(dYear) + fmt(Math.abs(dYear), 1) + ' point en un an', good: dYear < 0, from: 'oct. 2025', to: dayName(LIVE.rateDate), dom: [3, 5.4],
         series: [{ v: v, c: '#2f5bd3', main: 1, label: fmt(LIVE.rate, 2) + ' %' }], line: 'Sur les 340 Md€ que l\'État empruntera en 2027, l\'évolution des taux sur un an représente ≈ ' + big(Math.abs(dYearCost)) + ' d\'intérêts ' + (dYear >= 0 ? 'de plus' : 'de moins') + ' par an.' };
@@ -1467,7 +1493,6 @@ function main(FEED) {
     } catch (e) { show(); }
   }
   document.getElementById('share-fact').addEventListener('click', function () { shareCard('fact'); });
-  document.getElementById('share-fact-top').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); shareCard('fact'); });
   document.getElementById('share-rank').addEventListener('click', function () { shareCard('rank'); });
   document.querySelectorAll('[data-share]').forEach(function (b) { b.addEventListener('click', function () { shareCard(b.dataset.share); }); });
   document.getElementById('sheet-close').addEventListener('click', function () { document.getElementById('sheet').hidden = true; });
@@ -1476,8 +1501,6 @@ function main(FEED) {
   function drawAll() { drawMonth(); spark(); four(); manque(); pibChart(); retraitesChart(); spreadChart(); rankChart(); }
   renderGov(); drawAll();
   // Toutes les courbes sont visibles d'emblée, secondaires comprises (choix de l'éditeur : on ne cache pas les courbes).
-  // Un bloc qui s'ouvre : on ne redessine que ses propres graphiques (ils n'avaient pas de largeur tant qu'il était fermé).
-  window.addEventListener('acc-open', function (e) { var f = { 'acc-today': spark, 'acc-month': drawMonth }[e.detail]; if (f) setTimeout(f, 30); });
   var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });
 }
   var started = false;
@@ -1514,7 +1537,7 @@ function main(FEED) {
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261105n"></script>
+<script src="/commun/partage.js?v=20261105t"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261031i"></script>
 <script src="/commun/menu.js?v=20261105q"></script>

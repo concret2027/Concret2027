@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="93165a79e17c">
+<meta name="concret-version" content="0156a8a6521e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261105q"></script>
+<script src="/commun/bref.js?v=20261105t"></script>
 <script src="/commun/toile.js?v=20261105n"></script>
 <script src="/commun/pays.js?v=20261031i"></script>
 <script src="/commun/quiz.js?v=20261031j"></script>
@@ -126,6 +126,16 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .sheet-box { background: var(--panel); border-radius: 14px; padding: 14px; display: grid; gap: 10px; max-width: 420px; width: 100%; max-height: 100%; overflow: auto; }
 .sheet-box img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+/* Le dernier chiffre (du jour, du mois, du trimestre), en tête de son thème : il n'entre pas dans le résultat, la ligne du haut le dit. */
+.dc-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 12px; }
+.dc { gap: 8px; scroll-margin-top: 140px; }
+section.theme .dc { padding: 12px 12px 10px; border-radius: 12px; box-shadow: none; }
+.dc-l { margin: 0; display: flex; align-items: center; gap: 7px; font-size: 12.5px; line-height: 1.35; font-weight: 600; color: var(--muted); }
+.dc-l::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--th, var(--fr)); }
+.dc .metric { padding: 0; }
+.dc .mo { padding: 0; }
+.dc-ancre { display: block; height: 0; }
+.card.chiffre-jour { padding: 0; border: 0; background: none; gap: 6px; }
 /* Menus dépliables */
 .acc { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
 .acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
@@ -462,7 +472,7 @@ section.theme > *, .autres > * { min-width: 0; }
   <div class="brand"><h1>Santé</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit visit-res" id="visit" aria-hidden="true"></p>
-  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Résultats</a><a href="#courbes">Thèmes</a><a href="#acc-month">Ce mois-ci</a><a href="#acc-actu">Actualité</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a><a href="#annees">Année par année</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Résultats</a><a href="#courbes">Thèmes</a><a href="#acc-actu">Actualité</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a><a href="#annees">Année par année</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
   <section class="card" id="toile" hidden></section>
@@ -500,56 +510,50 @@ section.theme > *, .autres > * { min-width: 0; }
   <h2 class="grp-t" id="courbes">Les thèmes</h2>
 
   <div class="themes" id="questions"></div>
-
-  <h2 class="grp-t" id="actualite">Chiffres et actualité</h2>
-
-  <details class="acc acc-fixe" id="acc-month" open>
-    <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card">
-      <div class="month" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr))">
-        <div class="mo">
-          <span class="mo-lab" id="p-lab">Prix des soins sur un an</span>
-          <span class="mo-num" id="p-num">—</span>
-          <span class="delta" id="p-delta"></span>
-          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
-          <div class="chart" id="mo-p"></div>
-          <span class="mo-t" id="p-ex"></span>
-          <span class="mo-t" id="p-t"></span>
-        </div>
+  <!-- Les derniers chiffres : posés par poserTuiles() en tête de leur thème, une fois les thèmes écrits. -->
+  <div id="dc-tuiles" hidden>
+    <section class="card dc" data-theme="q-cout" id="dc-prix" aria-labelledby="p-lab" data-bref="Ce qui a changé ce mois-ci">
+      <p class="dc-l">Chiffre du mois, non compté dans le résultat</p>
+      <span class="dc-ancre" id="acc-month"></span>
+      <div class="mo">
+        <span class="mo-lab" id="p-lab">Prix des soins sur un an</span>
+        <span class="mo-num" id="p-num">—</span>
+        <span class="delta" id="p-delta"></span>
+        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
+        <div class="chart" id="mo-p"></div>
+        <span class="mo-t" id="p-ex"></span>
+        <span class="mo-t" id="p-t"></span>
       </div>
-    </div>
-  </details>
+      <span class="dc-bref" id="teaser-month" hidden></span>
+    </section>
+    <section class="card dc" data-theme="q-cout" id="dc-secu" aria-labelledby="k-def-lab">
+      <p class="dc-l">Chiffre de l'année ; le résultat compte l'Assurance maladie, en % du PIB</p>
+      <span class="dc-ancre" id="acc-today"></span>
+      <div class="metric">
+        <span class="lab" id="k-def-lab">Déficit de la Sécurité sociale</span>
+        <div class="row"><span class="num" id="k-def">—</span><span class="delta up" id="k-def-y"></span></div>
+        <div class="key"><span><i style="background:var(--muted)"></i>Toute la Sécurité sociale</span><span><i style="background:var(--fr)"></i>Dont Assurance maladie</span></div>
+        <div class="chart" id="sp-def"></div>
+        <div class="foot" id="k-def-t"></div>
+      </div>
+    </section>
+    <section class="card dc" data-theme="q-vie" id="dc-esp" aria-labelledby="k-esp-lab">
+      <p class="dc-l">Dernier chiffre annuel, celui de la courbe du thème</p>
+      <div class="metric">
+        <span class="lab" id="k-esp-lab">Espérance de vie à la naissance</span>
+        <div class="row"><span class="num" id="k-esp">—</span><span class="delta" id="k-esp-d"></span></div>
+        <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
+        <div class="chart" id="sp-esp"></div>
+        <div class="foot" id="k-esp-t"></div>
+      </div>
+    </section>
+  </div>
+
+  <h2 class="grp-t" id="actualite">L'actualité</h2>
 
   <details class="acc acc-fixe" id="acc-actu" open>
     <summary><span class="acc-h">L'actualité de la santé</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body card"><ul class="actu replie" data-n="3" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu replie" data-n="2" id="agenda-list"></ul></div>
-  </details>
-
-  <details class="acc acc-fixe" id="acc-today" open>
-    <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-cta"></span></summary>
-    <div class="acc-body">
-      <section class="summary" aria-label="Un chiffre à retenir">
-        <p class="daily"><span class="eyebrow" id="daily-lab">Un chiffre à retenir</span><span id="daily-text">—</span></p>
-      </section>
-      <section class="today" aria-label="Les chiffres clés">
-        <div class="today-grid">
-          <div class="metric">
-            <span class="lab">Déficit de la Sécurité sociale</span>
-            <div class="row"><span class="num" id="k-def">—</span><span class="delta up" id="k-def-y"></span></div>
-            <div class="key"><span><i style="background:var(--muted)"></i>Toute la Sécurité sociale</span><span><i style="background:var(--fr)"></i>Dont Assurance maladie</span></div>
-            <div class="chart" id="sp-def"></div>
-            <div class="foot" id="k-def-t"></div>
-          </div>
-          <div class="metric">
-            <span class="lab">Espérance de vie à la naissance</span>
-            <div class="row"><span class="num" id="k-esp">—</span><span class="delta" id="k-esp-d"></span></div>
-            <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
-            <div class="chart" id="sp-esp"></div>
-            <div class="foot" id="k-esp-t"></div>
-          </div>
-        </div>
-      </section>
-    </div>
   </details>
 
   <section class="card quiz" id="quiz" aria-labelledby="quiz-q">
@@ -557,6 +561,10 @@ section.theme > *, .autres > * { min-width: 0; }
     <p class="q" id="quiz-q">—</p>
     <div class="opts" id="quiz-opts"></div>
     <p class="answer" id="quiz-a" hidden></p>
+  </section>
+
+  <section class="card chiffre-jour" id="chiffre-jour" aria-label="Un chiffre à retenir">
+    <p class="daily"><span class="eyebrow" id="daily-lab">Un chiffre à retenir</span><span id="daily-text">—</span></p>
   </section>
 
   <details class="acc" id="lois">
@@ -1237,7 +1245,6 @@ function main(FEED) {
       '<b>' + fmt(wf.v) + ' %</b> des nouveaux médicaments autorisés en Europe sont accessibles aux patients en France, contre ' + fmt(SAN.val(wd, 'ue', wf.y)) + ' % en moyenne dans l\'UE (étude W.A.I.T., financée par l\'industrie).'
     ];
     setHtml('daily-text', pick(FACTS));
-    setHtml('teaser-today', 'Déficit de la Sécurité sociale : <b>' + fmt(Math.abs(tt), 1) + '&nbsp;Md€</b> en ' + ks.y + ' · Espérance de vie : <b>' + fmt(ef.v, 1) + '&nbsp;ans</b> en ' + ef.y + ' · Un chiffre à retenir');
   })();
 
   // ===== Ce mois-ci : prix des soins payés par les patients (Eurostat, mensuel) =====
@@ -1283,8 +1290,8 @@ function main(FEED) {
       var lv = st.base;
       if (!lv) { ConcretBref.premiere(vis, { actu: ((FEED && FEED.datasets) || {}).actu_sante }); return; } // Première visite : les dernières nouvelles de la page.
       var dv = Math.round((now - lv.t) / 864e5), when = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((now - lv.t) / 3600e3)) + ' h', pv = [];
-      if (pi > lv.pn) pv.push('prix des soins en ' + moName(P, pi) + ' : <b>' + sg(P.fr[pi], 1) + ' %</b> sur un an (contre ' + sg(lv.p, 1) + ' % au chiffre précédent)');
-      if (sy > lv.dy) pv.push('déficit de la Sécurité sociale en ' + sy + ' : <b>' + fmt(Math.abs(s.tot[s.y.length - 1]), 1) + ' Md€</b>, dont ' + fmt(Math.abs(s.md[s.md.length - 1]), 1) + ' pour l\'Assurance maladie');
+      if (pi > lv.pn) pv.push('<a href="#dc-prix" data-cible="dc-prix">prix des soins en ' + moName(P, pi) + ' : <b>' + sg(P.fr[pi], 1) + ' %</b> sur un an (contre ' + sg(lv.p, 1) + ' % au chiffre précédent)</a>');
+      if (sy > lv.dy) pv.push('<a href="#dc-secu" data-cible="dc-secu">déficit de la Sécurité sociale en ' + sy + ' : <b>' + fmt(Math.abs(s.tot[s.y.length - 1]), 1) + ' Md€</b>, dont ' + fmt(Math.abs(s.md[s.md.length - 1]), 1) + ' pour l\'Assurance maladie</a>');
       pv = ConcretBref.nouveau({ chiffres: pv, actu: DS.actu_sante, agenda: DS.agenda_sante, depuis: lv.t, jour: dv >= 1, prochains: 'prochains chiffres : les prix des soins chaque mois, le déficit de la Sécurité sociale au printemps' });
       ConcretBref.afficher(vis, 'Depuis votre dernière visite (' + when + ')', pv);
       vis.hidden = false;
@@ -1372,12 +1379,23 @@ function main(FEED) {
   }
   renderYears();
 
+  // Les derniers chiffres (du mois, de l'année) : chacun en tête de son thème, sous la ligne ✓ ✗, au-dessus de sa courbe.
+  function poserTuiles() {
+    var h = document.getElementById('dc-tuiles'); if (!h) return;
+    Array.prototype.forEach.call(h.querySelectorAll(':scope > [data-theme]'), function (t) {
+      var th = document.getElementById(t.dataset.theme); if (!th) return;
+      var r = th.querySelector(':scope > .dc-row');
+      if (!r) { var ap = th.querySelector(':scope > .t-sum') || th.querySelector(':scope > h2'); r = document.createElement('div'); r.className = 'dc-row'; ap.parentNode.insertBefore(r, ap.nextSibling); }
+      r.appendChild(t);
+    });
+    h.remove();
+  }
   // ===== Menus, mise à jour, alerte =====
   document.querySelectorAll('.jump a').forEach(function (a) { a.addEventListener('click', function () { var t = document.querySelector(a.getAttribute('href')); if (t && t.tagName === 'DETAILS') t.open = true; }); });
-  ['acc-today', 'acc-month', 'acc-actu', 'acc-bilan'].forEach(function (id) {
+  ['acc-actu', 'acc-bilan'].forEach(function (id) {
     var d = document.getElementById(id);
     try { if (localStorage.getItem('sante-' + id) === 'open') d.open = true; } catch (e) {}
-    d.addEventListener('toggle', function () { try { localStorage.setItem('sante-' + id, d.open ? 'open' : 'closed'); } catch (e) {} if (d.open && id === 'acc-month') setTimeout(drawMonth, 30); if (d.open && id === 'acc-today') setTimeout(drawToday, 30); });
+    d.addEventListener('toggle', function () { try { localStorage.setItem('sante-' + id, d.open ? 'open' : 'closed'); } catch (e) {} });
   });
   (function () {
     var el = document.getElementById('upd'), d = FEED.updated_iso ? new Date(FEED.updated_iso) : null;
@@ -1386,13 +1404,12 @@ function main(FEED) {
     if (Date.now() - d.getTime() > 30 * 3600e3) { var s = document.getElementById('stale'); s.textContent = 'Mise à jour en retard : les données datent du ' + FEED.updated + '.'; s.hidden = false; }
   })();
 
-  buildThemes(); renderGov();
+  buildThemes(); poserTuiles(); renderGov();
   function drawAll() {
     rankOne('pres'); rankOne('gov');
     MAIN.forEach(function (d) { d(); });
     FOLDS.forEach(function (f) { var up = f.el.parentElement.closest('details'); if (f.el.open && (!up || up.open)) f.draw(); });
-    if (document.getElementById('acc-today').open) drawToday();
-    if (document.getElementById('acc-month').open) drawMonth();
+    drawToday(); drawMonth();
   }
   drawAll();
   var rt, lastW = window.innerWidth; window.addEventListener('resize', function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(drawAll, 150); });
@@ -1408,7 +1425,7 @@ function main(FEED) {
 })();
 })();
 </script>
-<script src="/commun/partage.js?v=20261105n"></script>
+<script src="/commun/partage.js?v=20261105t"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261031i"></script>
 <script src="/commun/menu.js?v=20261105q"></script>

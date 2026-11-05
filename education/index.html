@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="93165a79e17c">
+<meta name="concret-version" content="0156a8a6521e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261105q"></script>
+<script src="/commun/bref.js?v=20261105t"></script>
 <script src="/commun/toile.js?v=20261105n"></script>
 <script src="/commun/pays.js?v=20261031i"></script>
 <script src="/commun/quiz.js?v=20261031j"></script>
@@ -126,6 +126,17 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .sheet-box { background: var(--panel); border-radius: 14px; padding: 14px; display: grid; gap: 10px; max-width: 420px; width: 100%; max-height: 100%; overflow: auto; }
 .sheet-box img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+/* Le dernier chiffre (du jour, du mois, du trimestre), en tête de son thème : il n'entre pas dans le résultat, la ligne du haut le dit. */
+.dc-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 12px; }
+.dc { gap: 8px; scroll-margin-top: 140px; }
+section.theme .dc { padding: 12px 12px 10px; border-radius: 12px; box-shadow: none; }
+.dc-l { margin: 0; display: flex; align-items: center; gap: 7px; font-size: 12.5px; line-height: 1.35; font-weight: 600; color: var(--muted); }
+.dc-l::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--th, var(--fr)); }
+.dc .metric { padding: 0; }
+.dc .mo { padding: 0; }
+.dc-ancre { display: block; height: 0; }
+.dc p.mo-t { margin: 0; }
+.card.chiffre-jour { padding: 0; border: 0; background: none; gap: 6px; }
 /* Menus dépliables */
 .acc { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
 .acc > summary { cursor: pointer; list-style: none; padding: 14px 16px; display: grid; gap: 4px; position: relative; }
@@ -359,7 +370,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   <div class="brand"><h1>Éducation</h1><span id="today"></span></div>
   <p class="upd" id="upd">Mise à jour automatique chaque jour vers midi.</p>
   <p class="visit visit-res" id="visit" aria-hidden="true"></p>
-  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Résultats</a><a href="#courbes">Thèmes</a><a href="#acc-month">Ce mois-ci</a><a href="#acc-actu">Actualité</a><a href="#acc-today">Chiffres clés</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a><a href="#annees">Année par année</a></nav>
+  <nav class="jump" aria-label="Aller à"><a href="#bulletin">Résultats</a><a href="#courbes">Thèmes</a><a href="#acc-actu">Actualité</a><a href="#quiz">Question</a><a href="#lois">Les lois</a><a href="#mots">Les mots</a><a href="#annees">Année par année</a></nav>
 
   <section class="card bref" id="reponse" aria-label="En bref"></section>
   <section class="card" id="toile" hidden></section>
@@ -424,6 +435,31 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <div class="theme" id="t-jeunes">
     <h2>Études et emploi des jeunes</h2>
+    <div class="dc-row">
+      <section class="card dc" id="dc-chomage" aria-labelledby="u-lab" data-bref="Ce qui a changé ce mois-ci">
+        <p class="dc-l">Chiffre du mois, non compté dans le résultat</p>
+        <span class="dc-ancre" id="acc-month"></span>
+        <div class="mo">
+          <span class="mo-lab" id="u-lab">Chômage des moins de 25 ans</span>
+          <span class="mo-num" id="u-num">—</span>
+          <span class="delta" id="u-delta"></span>
+          <span class="mo-t" id="u-t"></span>
+          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
+          <div class="chart" id="mo-u"></div>
+          <p class="mo-t">Le chômage des jeunes dit si l'école mène à un emploi. En juin et juillet, les chiffres de Parcoursup prendront le relais : candidats encore sans proposition, formations demandées.</p>
+          <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
+        </div>
+        <span class="dc-bref" id="teaser-month" hidden></span>
+      </section>
+      <section class="card dc" id="dc-lecture" aria-labelledby="lec-lab">
+        <p class="dc-l">Chiffre de l'année, non compté dans le résultat</p>
+        <div class="metric">
+          <span class="lab" id="lec-lab">Lecture à 17 ans</span>
+          <div class="row" data-t="lecture_jdc_chiffre"><span class="num">14<small>%</small></span><span class="delta up">des jeunes en difficulté</span></div>
+          <div class="foot" data-t="lecture_jdc_texte">Mesuré à la Journée défense et citoyenneté 2025 : <b>6 %</b> sont en situation d'illettrisme. C'est environ un jeune sur sept qui ne lit pas couramment à la sortie du système scolaire.</div>
+        </div>
+      </section>
+    </div>
     <div class="charts4">
       <section class="card" aria-labelledby="c1"><h2 id="c1" class="inv"><span class="eyebrow">Décrochage, % des 18-24 ans</span>Moins de décrocheurs que nos voisins</h2><div class="chart" id="ch-el"></div><p class="note">Les 18-24 ans sortis de l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et sans formation. Pas de chiffre comparable pour les États-Unis : c'est un indicateur européen.</p></section>
       <section class="card" aria-labelledby="c2"><h2 id="c2" class="inv"><span class="eyebrow">Ni emploi ni études, % des 15-29 ans</span>Plus de jeunes ni en emploi ni en études que la moyenne de l'UE</h2><div class="chart" id="ch-ne"></div><p class="note">Tous les 15-29 ans qui ne travaillent pas et n'étudient pas, diplômés ou non. Pas de chiffre comparable pour les États-Unis : c'est un indicateur européen.</p></section>
@@ -434,6 +470,17 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <div class="theme" id="t-depense">
     <h2>Dépense d'éducation</h2>
+    <div class="dc-row">
+      <section class="card dc" id="dc-budget" aria-labelledby="bud-lab">
+        <p class="dc-l">Budget de l'année, non compté dans le résultat</p>
+        <span class="dc-ancre" id="acc-today"></span>
+        <div class="metric">
+          <span class="lab" id="bud-lab">Budget de l'Éducation nationale</span>
+          <div class="row"><span class="num" id="bud-num">64,4<small>Md€</small></span><span class="delta" id="bud-year">en 2026, hors pensions</span></div>
+          <div class="foot">Soit <b id="bud-day">177 M€ par jour</b>, ou <b id="edu-since">—</b> dépensés depuis minuit. La France consacre <b id="sp-fr">5,1 % de son PIB</b> à l'éducation, contre <span id="sp-eu">4,7 %</span> dans l'Union européenne.</div>
+        </div>
+      </section>
+    </div>
     <section class="card" id="depense" aria-labelledby="dep-title">
       <h2 id="dep-title" class="inv"><span class="eyebrow">Ce que ça coûte, % du PIB</span>Dépense d'éducation : 5,1 % du PIB en France, 4,7 % dans l'UE</h2>
       <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--us)"></i>États-Unis</span><span><i class="bd"></i>Bandes : Premiers ministres successifs</span></div>
@@ -483,52 +530,11 @@ footer p { margin: 0; } footer a { color: inherit; }
   </div>
 
 
-  <h2 class="grp-t" id="actualite">Chiffres et actualité</h2>
-
-  <details class="acc acc-fixe" id="acc-month" open>
-    <summary><span class="acc-h">Ce qui a changé ce mois-ci</span><span class="acc-t" id="teaser-month">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body card">
-      <div class="month" style="grid-template-columns:minmax(0,1fr)">
-        <div class="mo">
-          <span class="mo-lab" id="u-lab">Chômage des moins de 25 ans</span>
-          <span class="mo-num" id="u-num">—</span>
-          <span class="delta" id="u-delta"></span>
-          <span class="mo-t" id="u-t"></span>
-          <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span></div>
-          <div class="chart" id="mo-u"></div>
-          <button class="share" type="button" data-share="chomage">Partager ce graphique</button>
-        </div>
-      </div>
-      <p class="note">Le chômage des jeunes dit si l'école mène à un emploi. En juin et juillet, les chiffres de Parcoursup prendront le relais : candidats encore sans proposition, formations demandées.</p>
-    </div>
-  </details>
+  <h2 class="grp-t" id="actualite">L'actualité</h2>
 
   <details class="acc acc-fixe" id="acc-actu" open>
     <summary><span class="acc-h">L'actualité de l'éducation</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body card"><ul class="actu replie" data-n="3" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu replie" data-n="2" id="agenda-edu"></ul></div>
-  </details>
-
-  <details class="acc acc-fixe" id="acc-today" open>
-    <summary><span class="acc-h">Les chiffres clés</span><span class="acc-t" id="teaser-today">Un chiffre à retenir</span><span class="acc-actions"><span class="acc-cta"></span><button class="share" id="share-fact-top" type="button" aria-label="Partager le chiffre du jour">Partager</button></span></summary>
-    <div class="acc-body">
-      <section class="summary" aria-label="Un chiffre à retenir">
-        <p class="daily"><span class="eyebrow" id="daily-lab">Un chiffre à retenir</span><span id="daily-text">—</span><button class="share" id="share-fact" type="button">Partager ce chiffre</button></p>
-      </section>
-      <section class="today" aria-label="Les chiffres clés">
-        <div class="today-grid">
-          <div class="metric">
-            <span class="lab">Budget de l'Éducation nationale</span>
-            <div class="row"><span class="num" id="bud-num">64,4<small>Md€</small></span><span class="delta" id="bud-year">en 2026, hors pensions</span></div>
-            <div class="foot">Soit <b id="bud-day">177 M€ par jour</b>, ou <b id="edu-since">—</b> dépensés depuis minuit. La France consacre <b id="sp-fr">5,1 % de son PIB</b> à l'éducation, contre <span id="sp-eu">4,7 %</span> dans l'Union européenne.</div>
-          </div>
-          <div class="metric">
-            <span class="lab">Lecture à 17 ans</span>
-            <div class="row" data-t="lecture_jdc_chiffre"><span class="num">14<small>%</small></span><span class="delta up">des jeunes en difficulté</span></div>
-            <div class="foot" data-t="lecture_jdc_texte">Mesuré à la Journée défense et citoyenneté 2025 : <b>6 %</b> sont en situation d'illettrisme. C'est environ un jeune sur sept qui ne lit pas couramment à la sortie du système scolaire.</div>
-          </div>
-        </div>
-      </section>
-    </div>
   </details>
 
   <section class="card quiz" id="quiz" aria-labelledby="quiz-q">
@@ -536,6 +542,10 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="q" id="quiz-q">—</p>
     <div class="opts" id="quiz-opts"></div>
     <p class="answer" id="quiz-a" hidden></p>
+  </section>
+
+  <section class="card chiffre-jour" id="chiffre-jour" aria-label="Un chiffre à retenir">
+    <p class="daily"><span class="eyebrow" id="daily-lab">Un chiffre à retenir</span><span id="daily-text">—</span><button class="share" id="share-fact" type="button">Partager ce chiffre</button></p>
   </section>
 
   <details class="acc" id="lois">
@@ -1082,14 +1092,13 @@ function main(FEED) {
     var lv = stv.base;
     if (lv) {
       var dv = Math.round((nowV - lv.t) / 864e5), whenV = dv >= 1 ? 'il y a ' + dv + ' jour' + (dv > 1 ? 's' : '') : 'il y a ' + Math.max(1, Math.round((nowV - lv.t) / 3600e3)) + ' h', pv = [];
-      if (MO.fr.length > lv.n) pv.push('nouveau chiffre du chômage des moins de 25 ans : <b>' + fmt(MO.fr[nU], 1) + ' %</b> (contre ' + fmt(lv.u, 1) + ' %)');
+      if (MO.fr.length > lv.n) pv.push('<a href="#dc-chomage" data-cible="dc-chomage">nouveau chiffre du chômage des moins de 25 ans : <b>' + fmt(MO.fr[nU], 1) + ' %</b> (contre ' + fmt(lv.u, 1) + ' %)</a>');
       var DSE = (FEED && FEED.datasets) || {};
       pv = ConcretBref.nouveau({ chiffres: pv, actu: DSE.actu_education, agenda: DSE.agenda_education, depuis: lv.t, jour: dv >= 1, prochains: 'prochain chiffre : le chômage des moins de 25 ans, chaque mois' });
       ConcretBref.afficher(vis, 'Depuis votre dernière visite (' + whenV + ')', pv);
     } else ConcretBref.premiere(vis, { actu: ((FEED && FEED.datasets) || {}).actu_education });
     // Première visite : rien à comparer, la ligne reste cachée.
   } catch (e) {}
-  document.getElementById('teaser-today').innerHTML = 'Budget <b>177&nbsp;M€</b> par jour · Lecture à 17 ans : <b>14&nbsp;%</b> en difficulté · Un chiffre à retenir';
 
   // ===== Question du jour =====
   var QUIZ = SER.QUIZ;
@@ -1148,10 +1157,10 @@ function main(FEED) {
 
   // ===== Menus, mise à jour, alerte =====
   document.querySelectorAll('.jump a').forEach(function (a) { a.addEventListener('click', function () { var t = document.querySelector(a.getAttribute('href')); if (t && t.tagName === 'DETAILS') t.open = true; }); });
-  ['acc-today', 'acc-month', 'acc-actu', 'acc-bilan'].forEach(function (id) {
+  ['acc-actu', 'acc-bilan'].forEach(function (id) {
     var d = document.getElementById(id);
     try { if (localStorage.getItem('edu-' + id) === 'open') d.open = true; } catch (e) {}
-    d.addEventListener('toggle', function () { try { localStorage.setItem('edu-' + id, d.open ? 'open' : 'closed'); } catch (e) {} if (d.open && id === 'acc-month') setTimeout(drawMonth, 30); }); // seul ce bloc contient un graphique à dessiner à l'ouverture
+    d.addEventListener('toggle', function () { try { localStorage.setItem('edu-' + id, d.open ? 'open' : 'closed'); } catch (e) {} });
   });
   (function () {
     var el = document.getElementById('upd'), d = FEED && FEED.updated_iso ? new Date(FEED.updated_iso) : null;
@@ -1220,7 +1229,6 @@ function main(FEED) {
     try { c.toBlob(function (blob) { var file = blob && new File([blob], 'concret-education-' + kind + '.png', { type: 'image/png' }); if (file && navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file], title: 'Concret', text: 'concret2027.fr' }).catch(show); else show(); }); } catch (e) { show(); }
   }
   document.getElementById('share-fact').addEventListener('click', function () { shareCard('fact'); });
-  document.getElementById('share-fact-top').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); shareCard('fact'); });
   document.getElementById('share-rank').addEventListener('click', function () { shareCard('rank'); });
   document.querySelectorAll('[data-share]').forEach(function (b) { b.addEventListener('click', function () { shareCard(b.dataset.share); }); });
   document.getElementById('sheet-close').addEventListener('click', function () { document.getElementById('sheet').hidden = true; });
@@ -1265,7 +1273,7 @@ function main(FEED) {
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261105n"></script>
+<script src="/commun/partage.js?v=20261105t"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261031i"></script>
 <script src="/commun/menu.js?v=20261105q"></script>

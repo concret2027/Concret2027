@@ -36,7 +36,8 @@
     for (var d = el; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
     // Défilement dès l'image suivante (le bloc ouvert a pris sa place), sans attente.
     requestAnimationFrame(function () {
-      var c = el.closest('.card, .mo') || el.closest('section') || el;
+      // Un chiffre du jour ou du mois : la tuile entière, en tête de son thème.
+      var c = el.closest('.dc') || el.closest('.card, .mo') || el.closest('section') || el;
       c.scrollIntoView({ behavior: window.ConcretMenu ? ConcretMenu.doux() : 'smooth', block: 'start' });
       c.classList.remove('bref-flash'); void c.offsetWidth; c.classList.add('bref-flash');
       // La page bouge encore (courbes qui se dessinent au-dessus) : une fois posée, on remet la courbe en haut.
@@ -101,15 +102,20 @@
   }
   function premiere(box, o) {
     o = o || {};
-    // Les accroches des blocs de « L'actualité » sont écrites par la page juste après : on les lit un instant plus tard.
+    // Les accroches (dernier chiffre, actualité) sont écrites par la page juste après : on les lit un instant plus tard.
     setTimeout(function () {
       // La phrase en texte, puis « Voir ↓ » seul en lien, vers le même bloc.
       var parts = [], lien = function (id, h) { h = h.replace(/\s+$/, ''); var fin = h.replace(/<[^>]+>/g, '').trim().slice(-1); return h + (/[.…!?]/.test(fin) ? '' : '.') + ' <a class="bref-voir" href="#' + id + '" data-cible="' + id + '">Voir ↓</a>'; };
       var dfr = function (s) { return new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }).replace(/^1 /, '1er '); };
       var court = function (t) { t = String(t); if (t.length <= 110) return t.replace(/\.$/, ''); var c = t.slice(0, 107); return c.slice(0, c.lastIndexOf(' ')) + '…'; };
-      var acc = Array.prototype.filter.call(document.querySelectorAll('details.acc'), function (d) { return /aujourd'hui|ce mois-ci|du mois/i.test((d.querySelector('.acc-h') || {}).textContent || ''); })[0];
-      var tz = acc && acc.querySelector('.acc-t');
-      if (tz && tz.textContent.trim() && tz.textContent.trim() !== '—') parts.push(lien(acc.id, ((acc.querySelector('.acc-h') || {}).textContent || '').trim() + ' : ' + tz.innerHTML));
+      // Le dernier chiffre du jour ou du mois : sa tuile, en tête de son thème (data-bref : le libellé ; .dc-bref : la phrase, écrite par la page).
+      var tu = document.querySelector('[data-bref]'), tb = tu && tu.querySelector('.dc-bref');
+      if (tb && tb.textContent.trim()) parts.push(lien(tu.id, tu.dataset.bref + ' : ' + tb.innerHTML));
+      else {
+        var acc = Array.prototype.filter.call(document.querySelectorAll('details.acc'), function (d) { return /aujourd'hui|ce mois-ci|du mois/i.test((d.querySelector('.acc-h') || {}).textContent || ''); })[0];
+        var tz = acc && acc.querySelector('.acc-t');
+        if (tz && tz.textContent.trim() && tz.textContent.trim() !== '—') parts.push(lien(acc.id, ((acc.querySelector('.acc-h') || {}).textContent || '').trim() + ' : ' + tz.innerHTML));
+      }
       var A = (o.actu || []).filter(function (a) { return a.texte && a.date; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
       if (A[0]) parts.push(lien('acc-actu', 'Actualité du ' + esc(dfr(A[0].date)) + ' : ' + esc(court(A[0].texte))));
       afficher(box, 'Les dernières nouvelles', parts);
