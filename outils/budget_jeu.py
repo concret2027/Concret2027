@@ -85,7 +85,8 @@ EXCLUES = {'fctva-taux': "versement de l'État aux collectivités : le document 
 PONCTUELLES = {'avoirs-desherence', 'contribution-complementaires-sante', 'contribution-transport-maritime', 'contribution-grandes-entreprises', 'cpeb'}
 SCRUTINS = {'ir-indemnites-journalieres': (8727, -1), 'csg-indemnites-journalieres': (8727, -1), 'ir-abattement-retraites': (8738, -1),
             'cpeb': (8887, -1), 'allegements-complements-salaire': (8998, 1), 'taxe-produits-sucres': (9033, -1),
-            'contribution-complementaires-sante': (9077, -1), 'contribution-grandes-entreprises': (9123, -1), 'contribution-transport-maritime': (9123, -1)}
+            'contribution-complementaires-sante': (9077, -1), 'contribution-grandes-entreprises': (9123, -1), 'contribution-transport-maritime': (9123, -1),
+            'tva-television': (9484, -1), 'taxe-infrastructures-transport': (9516, -1), 'avoirs-desherence': (9519, -1), 'cufpa-plafond': (9698, 1)}
 
 # Niches fiscales : titre de carte, thème, étiquettes, type d'effet sur l'activité. Écartées : 130201 (chiffrage contradictoire
 # dans le document) et 110261 (réductions d'impôt d'investissements déjà réalisés).
@@ -259,8 +260,8 @@ PAR_QUI = {'univ-master-doctorat': "chiffrage de la Cour des comptes", 'univ-30'
 # Ce que les députés ont fait de la mesure, quand une phrase plus précise est utile (lue dans le statut de la carte).
 # « (1re lecture) » reste en fin de phrase : la page y insère le décompte des voix.
 STATUT_CLAIR = {
-    'ir-indemnites-rupture': "Les députés ont adopté cette mesure en la modifiant : les indemnités de licenciement ne sont plus concernées, et la règle vaut pour les indemnités reçues à partir du 1er janvier 2027 (1re lecture)",
-    'apport-cession': "Les députés ont adopté cette mesure en la modifiant : la transmission par héritage n'est plus concernée, le don est imposé sous conditions, et la règle ne vaut que pour les apports faits à partir du 7 octobre 2026 (1re lecture)",
+    'ir-indemnites-rupture': "Les députés ont adopté cette mesure en la modifiant : les indemnités de licenciement ne sont plus concernées, et la règle vaut pour les indemnités reçues à partir du 1er janvier 2027, puis ont rejeté tout le budget de l'État (1re lecture)",
+    'apport-cession': "Les députés ont adopté cette mesure en la modifiant : la transmission par héritage n'est plus concernée, le don est imposé sous conditions, et la règle ne vaut que pour les apports faits à partir du 7 octobre 2026, puis ont rejeté tout le budget de l'État (1re lecture)",
     'secu-indemnites-rupture': "Les députés ont adopté cette mesure en excluant les ruptures prévues par un plan social (plan de sauvegarde de l'emploi) validé avant le 31 décembre 2026, puis ont rejeté tout le budget de la Sécurité sociale (1re lecture)",
 }
 # Mesures retirées par un même vote : l'autre mesure retirée en même temps.
@@ -327,20 +328,26 @@ QUI_TITRE = {'cufpa-plafond': 'Reçoit moins', 'franchises-x2': 'Paient plus', '
              'retraites-fin-suspension': 'Ne peuvent plus partir aussi tôt'}
 
 
-def statut_court(t, i=None):
+def statut_court(t, i=None, texte=''):
     """Ce que les députés ont fait de la mesure, en mots courants."""
     t = t or ''
     if not t: return ''
     if i in STATUT_CLAIR: return STATUT_CLAIR[i]
+    # Les deux projets de loi ont été rejetés en première lecture : le budget de la Sécurité sociale le 23 octobre 2026,
+    # le budget de l'État le 4 novembre 2026.
+    budget = "le budget de l'État" if texte.startswith('PLF ') else 'le budget de la Sécurité sociale'
+    rejete = 'projet de loi rejeté' in t.lower()
+    puis = (', puis ont rejeté tout ' + budget) if rejete else ''
     if t.startswith('Supprimée'):
-        return "Les députés ont retiré du texte cette mesure et %s (1re lecture)" % MEME_VOTE[i] if i in MEME_VOTE else "Les députés ont retiré cette mesure du texte (1re lecture)"
-    if t.startswith('Adoptée'): return "Les députés ont adopté cette mesure (1re lecture)"
-    if t.startswith('Modifiée'): return "Les députés ont adopté cette mesure en la modifiant (1re lecture)"
-    if t.startswith('Article adopté'): return "Les députés ont adopté cette mesure, puis ont rejeté tout le budget de la Sécurité sociale (1re lecture)"
-    if t.startswith('Article rejeté'): return "Les députés ont rejeté cette mesure (1re lecture)"
-    if t.startswith('Non examinée'): return "Les députés n'ont pas voté sur cette mesure : ils ont rejeté le budget de la Sécurité sociale avant d'y arriver (1re lecture)"
-    if t.startswith('Rapport annexé'): return "Les députés ont supprimé le rapport joint au texte qui décrivait cette mesure, puis ont rejeté tout le budget de la Sécurité sociale (1re lecture)"
-    if t.startswith('Projet de loi rejeté'): return "Les députés ont rejeté tout le budget de la Sécurité sociale, qui contenait cette mesure (1re lecture)"
+        b = "Les députés ont retiré du texte cette mesure et %s" % MEME_VOTE[i] if i in MEME_VOTE else "Les députés ont retiré cette mesure du texte"
+        return b + puis + ' (1re lecture)'
+    if t.startswith('Adoptée'): return "Les députés ont adopté cette mesure" + puis + " (1re lecture)"
+    if t.startswith('Modifiée'): return "Les députés ont adopté cette mesure en la modifiant" + puis + " (1re lecture)"
+    if t.startswith('Article adopté'): return "Les députés ont adopté cette mesure, puis ont rejeté tout " + budget + " (1re lecture)"
+    if t.startswith('Article rejeté'): return "Les députés ont rejeté cette mesure" + puis + " (1re lecture)"
+    if t.startswith('Non examinée'): return "Les députés n'ont pas voté sur cette mesure : ils ont rejeté " + budget + " avant d'y arriver (1re lecture)"
+    if t.startswith('Rapport annexé'): return "Les députés ont supprimé le rapport joint au texte qui décrivait cette mesure, puis ont rejeté tout " + budget + " (1re lecture)"
+    if t.startswith('Projet de loi rejeté'): return "Les députés ont rejeté tout " + budget + ", qui contenait cette mesure, sans vote sur la mesure elle-même (1re lecture)"
     if t.startswith("L'Assemblée a adopté le relèvement"): return "Les députés ont voté le relèvement des tranches proposé par le Gouvernement, pas ce gel (1re lecture)"
     return t.split(' (')[0].split(' ; ')[0]
 
@@ -733,18 +740,20 @@ def construire():
             c['note'] = (c.get('note') or '') + " Ne s'additionne pas avec " + ("le retour de l'ISF : l'impôt plancher compte les impôts déjà payés, ISF compris." if c['id'] == 'taxe-zucman' else "la taxe Zucman, qui compte les impôts déjà payés, ISF compris.")
         if c['id'] == 'cpeb' and not c.get('note'):
             c['note'] = "Pour la seule année 2027 : « Il est institué, au profit du budget général de l'État, pour l'année 2027, une contribution progressive des collectivités territoriales » (PLF 2027, article 37). L'argent que les collectivités versent à l'État améliore le déficit de l'ensemble des administrations du même montant (même document)."
-        # Budgets prêts à jouer : le texte du Gouvernement tel que déposé, et ce qu'il en reste après les votes de l'Assemblée
-        # en première lecture (mesure supprimée, article ou projet de loi rejeté, ou mesure non examinée : retirée).
+        # Budgets prêts à jouer : le texte du Gouvernement tel que déposé, et les votes des députés sur chaque mesure en première
+        # lecture. Les deux projets de loi ont été rejetés en entier ; ce second budget garde le vote des députés sur la mesure
+        # elle-même (mesure supprimée ou article rejeté : retirée) ; une mesure sur laquelle ils n'ont pas voté reste comme
+        # dans le texte du Gouvernement.
         if c.get('origine') in ('plf', 'plfss'):
             st = c.get('statut') or ''
-            retire = bool(re.search(r"Supprimée|Article rejeté|Non examinée|projet de loi rejeté|Projet de loi rejeté|Rapport annexé supprimé|n'a pas rete", st))
+            retire = bool(re.search(r"Supprimée|Article rejeté|Rapport annexé supprimé|n'a pas rete", st))
             c['preset'] = {'gouv': True, 'an': not retire, 'modifie': (not retire) and bool(re.search(r'Modifiée|modification', st))}
         c['sens'] = 'depense' if c['sens'] in ('dépense', 'depense') else c['sens']
         c['titre'] = COURT.get(c['id'], c['l'])
         if c['id'] in CLAIR:
             c['clair'] = {'a': CLAIR[c['id']][0], 'p': CLAIR[c['id']][1]}
         if c['id'] in PAR_QUI: c['par'] = PAR_QUI[c['id']]
-        c['statut_court'] = statut_court(c.get('statut'), c['id'])
+        c['statut_court'] = statut_court(c.get('statut'), c['id'], c.get('texte') or '')
         if c['id'] in QUI_CLAIR: c['qui_texte'] = QUI_CLAIR[c['id']]
         if c['id'] in QUI_TITRE: c['qui_titre'] = QUI_TITRE[c['id']]
         ks = sorted(c['effet'])

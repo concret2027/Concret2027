@@ -1542,13 +1542,13 @@ body.q-vote { padding-bottom: 92px; }
 
 
   // ---------- Budgets prêts à jouer ----------
-  // Le texte du Gouvernement tel que déposé (ses mesures que contient le jeu), et ce qu'il en reste après les votes de
+  // Le texte du Gouvernement tel que déposé (ses mesures que contient le jeu), et les votes des députés sur chaque mesure, avant le rejet des deux textes ; d'après
   // l'Assemblée en première lecture (donnees/budget_jeu.json, champ « preset », lu dans le statut de chaque mesure).
-  var PRESETS = { gouv: 'Le budget du Gouvernement', an: 'Après les votes de l\'Assemblée' };
+  var PRESETS = { gouv: 'Le budget du Gouvernement', an: 'Les votes des députés, mesure par mesure' };
   function etatPreset(k) { var v = {}; C.forEach(function (c) { if (c.preset && c.preset[k]) v[c.id] = 1; }); return v; }
   function simPreset(k) { return simuler({ vote: etatPreset(k), perso: {}, unites: {} }); }
   function infoPreset(k) {
-    var L = C.filter(function (c) { return c.preset && c.preset[k]; }), t = L.reduce(function (a, c) { return a + montant(c, AN0); }, 0), mo = L.filter(function (c) { return c.preset.modifie; }).length;
+    var L = C.filter(function (c) { return c.preset && c.preset[k]; }), t = L.reduce(function (a, c) { return a + montant(c, AN0); }, 0), mo = k === 'an' ? L.filter(function (c) { return c.preset.modifie; }).length : 0;
     return L.length + ' mesure' + (L.length > 1 ? 's' : '') + ' du projet chiffrées à au moins 300 M€, ' + mdt(t) + ' en ' + AN0 + (mo ? ' (' + mo + ' modifiée' + (mo > 1 ? 's' : '') + ' par les députés : montants du texte d\'origine, le nouveau n\'est pas chiffré)' : '');
   }
   var confPreset = null;
@@ -1635,7 +1635,7 @@ body.q-vote { padding-bottom: 92px; }
     rows.push(ligne('<b>Vous</b>', de(R, a), de(R, z), dd(R), 'moi'));
     if (S.ami) { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }); rows.push(ligne('Le budget qu\'on vous a envoyé', de(Am, a), de(Am, z), dd(Am))); }
     rows.push(ligne('Le budget du Gouvernement¹', de(G, a), '—', '—'));
-    rows.push(ligne('Après les votes de l\'Assemblée, au ' + dateJ() + '¹', de(A, a), '—', '—'));
+    rows.push(ligne('Les votes des députés, mesure par mesure¹', de(A, a), '—', '—'));
     rows.push(ligne('Sans aucune mesure', de(R0, a), de(R0, z), dd(R0), 'sep'));
     if (J.cible) rows.push(ligne('Cible du Gouvernement²', nf(J.cible.v, 1) + ' %', '—', '—'));
     var classe = [];
@@ -1648,7 +1648,7 @@ body.q-vote { padding-bottom: 92px; }
     var moi = -an1(R).solde, mieux = classe.filter(function (c) { return c.v < moi - 0.05; }).map(function (c) { return (DE[c.n] || c.n) + ' (' + nf(c.v, 1) + '\u00a0%)'; }), moins = classe.filter(function (c) { return c.v >= moi - 0.05; }).map(function (c) { return DE[c.n] || c.n; });
     $('q-cmp').innerHTML = '<p class="q-gros">En ' + a + ', votre déficit (' + defic(an1(R).solde) + ') serait ' + (mieux.length ? 'au-dessus de celui ' + et(mieux) + (moins.length ? ', et au niveau de celui ' + et(moins) + ' ou en dessous' : '') : 'au niveau de celui ' + et(moins) + ' ou en dessous') + ', d\'après les prévisions du FMI pour ces pays.</p>' +
       '<div style="overflow-x:auto"><table class="q-cmp"><thead><tr><th></th><th>Déficit ' + a + '</th><th>Déficit ' + z + '</th><th>Dette ' + z + '</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' +
-      '<p class="q-note">¹ ' + infoPreset('gouv') + ' ; après les votes de l\'Assemblée en première lecture : ' + infoPreset('an') + '. Les mesures pas encore examinées par les députés sont comptées comme dans le texte du Gouvernement ; les mesures ajoutées par les députés ne sont pas comptées. Calcul de Concret pour ' + a + ', avec les mêmes hypothèses que votre budget ; rien après ' + a + ' : la trajectoire du Gouvernement pour les années suivantes n\'est pas dans le jeu. <button type="button" class="q-lien" data-p="gouv">Jouer le budget du Gouvernement</button> · <button type="button" class="q-lien" data-p="an">Jouer le texte après l\'Assemblée</button></p>' +
+      '<p class="q-note">¹ ' + infoPreset('gouv') + '. L\'Assemblée a rejeté les deux projets de loi en première lecture : le budget de la Sécurité sociale le 23 octobre 2026, le budget de l\'État le 4 novembre 2026. Les votes des députés sur chaque mesure, avant ce rejet : ' + infoPreset('an') + ' ; les mesures sur lesquelles ils n\'ont pas voté sont comptées comme dans le texte du Gouvernement ; les mesures ajoutées par les députés ne sont pas comptées. Calcul de Concret pour ' + a + ', avec les mêmes hypothèses que votre budget ; rien après ' + a + ' : la trajectoire du Gouvernement pour les années suivantes n\'est pas dans le jeu. <button type="button" class="q-lien" data-p="gouv">Jouer le budget du Gouvernement</button> · <button type="button" class="q-lien" data-p="an">Jouer les votes des députés</button></p>' +
       (J.cible ? '<p class="q-note">² Tout le projet de loi de finances, toutes ses mesures comprises : <a href="' + esc(J.cible.url) + '">' + esc(J.cible.source) + '</a>.</p>' : '') +
       (F ? '<p class="q-note">³ Prévisions du FMI, qui comptent les mesures déjà annoncées par chaque gouvernement : <a href="' + esc(F.url) + '">' + esc(F.source.split(',')[0]) + '</a> (édition d\'octobre 2026, la même que la courbe de la dette). Les autres pays ne sont pas des choix de joueurs : ce sont leurs propres prévisions.</p>' : '');
     Array.prototype.forEach.call($('q-cmp').querySelectorAll('button[data-p]'), function (b) { b.onclick = function () { chargerPreset(b.dataset.p); onglet('voter'); window.scrollTo({ top: 0 }); }; });
@@ -1809,6 +1809,6 @@ body.q-vote { padding-bottom: 92px; }
 })();
 </script>
 
-<script src="/commun/menu.js?v=20261028r"></script>
+<script src="/commun/menu.js?v=20261031k"></script>
 </body>
 </html>
