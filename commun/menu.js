@@ -152,7 +152,7 @@
     'nav.jump.jx .jx-sep{flex:none;width:1px;margin:6px 2px;background:' + V.line + '}' +
     'nav.jump.jx a.th-a.mn-ici{background:var(--th);color:' + V.bg + ';border-color:var(--th)}nav.jump.jx a.th-a.mn-ici::before{background:' + V.bg + '}' +
     // Fond opaque : rien de la page ne se lit à travers la barre. Le fondu de droite est posé sur la barre, pas sur la page.
-    'nav.jump{background:' + V.bg + '!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}' +
+    'nav.site,nav.jump{background:' + V.bg + '!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}' +
     'nav.jump.jx::after{content:"";flex:none;position:sticky;right:calc(-1 * max(16px, env(safe-area-inset-right, 0px)));width:48px;margin-left:-48px;align-self:stretch;pointer-events:none;opacity:0;background:linear-gradient(to right,transparent,' + V.bg + ' 75%)}nav.jump.jx.jx-defile::after{opacity:1}' +
     // L'icône de la mission à gauche du titre de sa page (la même que dans le Menu et sur l'accueil).
     '.brand .mn-tic{display:inline-grid;place-items:center;flex:none;width:38px;height:38px;border-radius:11px;margin-right:10px;vertical-align:middle;color:' + V.fr + ';background:color-mix(in srgb,' + V.fr + ' 11%,transparent)}.brand .mn-tic svg{width:22px;height:22px}' +
@@ -601,11 +601,11 @@
     Array.prototype.forEach.call(jp.querySelectorAll('.jx-th, .jx-sep, a[href="#courbes"]'), function (e) { e.remove(); });
     // Un raccourci vers un thème déjà écrit dans la page (Démographie) : remplacé par celui de la rangée des thèmes.
     Array.prototype.forEach.call(jp.querySelectorAll('a[href^="#"]'), function (e) { if (th.some(function (t) { return e.getAttribute('href') === '#' + t.id; })) e.remove(); });
-    // En tête, « Présidents » (couleur neutre) : les résultats des présidents, dans « En bref », à un toucher de partout.
+    // En tête, « Résultats » (couleur neutre) : les résultats des présidents (et le lien vers les gouvernements), dans « En bref », à un toucher de partout.
     // Le détail, plus bas, garde son propre raccourci.
     Array.prototype.forEach.call(jp.querySelectorAll('a[href="#bulletin"]'), function (a) { a.textContent = 'Le détail par président'; });
     Array.prototype.forEach.call(jp.querySelectorAll('a.jx-pres'), function (a) { a.remove(); });
-    if (document.getElementById('bref-pres')) { var ap = document.createElement('a'); ap.className = 'jx-pres'; ap.href = '#bref-pres'; ap.textContent = 'Présidents'; jp.insertBefore(ap, jp.firstChild); }
+    if (document.getElementById('bref-pres')) { var ap = document.createElement('a'); ap.className = 'jx-pres'; ap.href = '#bref-pres'; ap.textContent = 'Résultats'; jp.insertBefore(ap, jp.firstChild); }
     var ref = jp.querySelector('a.jx-pres') ? jp.querySelector('a.jx-pres').nextSibling : jp.firstChild;
     th.forEach(function (t) {
       var a = document.createElement('a'), h = t.querySelector(':scope > h2');
