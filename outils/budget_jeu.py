@@ -446,7 +446,7 @@ QUESTIONS = {
                        'o': [("Toutes : 1 point de plus que les prix", ['revalo-plus-1']), ("Toutes : 1 point de moins que les prix", ['revalo-moins-1']),
                              ("Retraites de base : comme les prix seulement sous 1 260 € par mois", ['pensions-revalorisation-2027']),
                              ("Prestations familiales : pas de hausse", ['prestations-familiales-gel']),
-                             ("Les deux précédentes (budget du Gouvernement)", ['pensions-revalorisation-2027', 'prestations-familiales-gel'])],
+                             ("Projet du Gouvernement : retraites comme les prix sous 1 260 €, prestations familiales sans hausse", ['pensions-revalorisation-2027', 'prestations-familiales-gel'])],
                        'aucune': "Toutes comme les prix (règle d'aujourd'hui)"},
     'droits-universite': {'t': "Droits d'inscription à l'université", 'q': "Les augmenter ?",
                           'o': [("Master à 965 €, doctorat à 781 €", ['univ-master-doctorat']), ("+30 % pour tous les diplômes", ['univ-30'])],
