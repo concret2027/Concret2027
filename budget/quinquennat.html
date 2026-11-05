@@ -1383,7 +1383,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     $('q-deck').innerHTML = (uneParQ(filtrees().filter(aVoir)).filter(function (o) { return qk(o) !== qk(c); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card q-qcard' + (entree ? ' in' : '') + '" id="q-card">' +
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span>' + (vc ? '<span class="q-vous">Vous concerne</span>' : '') + '<span class="q-org">' + esc(org) + '</span></div>' +
       '<h2>' + nb(Q.t) + '</h2>' +
-      enonce(M.map(function (m) { return m.origine; }), nb(Q.q)) + '<p class="q-ligne m q-touchez">' + (multi ? 'Cochez une ou plusieurs réponses, puis validez (ou « Ne rien changer ») :' : 'Touchez votre réponse (une seule) :') + '</p><div class="q-reps" role="group" aria-label="' + esc(Q.q) + '">' +
+      (function () { var m0 = M.filter(function (m) { return m.clair && m.clair.a; })[0]; return m0 ? clair(m0, true) : ''; })() + enonce(M.map(function (m) { return m.origine; }), nb(Q.q)) + '<p class="q-ligne m q-touchez">' + (multi ? 'Cochez une ou plusieurs réponses, puis validez (ou « Ne rien changer ») :' : 'Touchez votre réponse (une seule) :') + '</p><div class="q-reps" role="group" aria-label="' + esc(Q.q) + '">' +
       opt('a', Q.aucune, null, 'aucune') + reps + '</div>' + (multi ? '<p class="q-valider"><span class="q-combo" id="q-combo"></span><button type="button" class="q-val" id="b-valq" disabled>Valider ma réponse</button></p>' : '') +
       '<div class="q-vin q-vin2" role="group" aria-label="Autres choix"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button></div>' +
       '<p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette question à la fin</button></p>' +
@@ -1434,13 +1434,13 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     setTimeout(function () { tout(true, true); remonter(); }, 260);
   }
   // Ce que dit la carte, en deux phrases : aujourd'hui, ce qui est proposé ; les montants en vigueur viennent de parametres_cas.json.
-  function clair(c) {
+  function clair(c, sansP) {
     if (!c.clair) return '';
     var di = CAS('droits_inscription') || {}, fr = CAS('franchises') || {};
     var T = { licence: di.licence_eur, master: di.master_eur, doctorat: di.doctorat_eur, boite: fr.franchise_par_boite_medicament_eur, consultation: fr.participation_forfaitaire_par_consultation_ou_acte_eur, transport: fr.franchise_par_transport_sanitaire_eur, plafond: fr.plafond_annuel_total_eur };
     var r = function (t) { return nb(t).replace(/\{(\w+)\}/g, function (m, k) { return T[k] != null ? eu(T[k]) : m; }); };
     var court = function (t) { var m = /^([\s\S]{30,}?[.;:])\s+(?=[A-ZÉÀÈÊÔ«])/.exec(t); if (!m || t.length - m[0].length < 25) return t; return m[1] + ' <details class="q-suite"><summary>Lire la suite</summary>' + t.slice(m[0].length) + '</details>'; };
-    return '<div class="q-clair">' + (c.clair.a ? '<div><b>Aujourd\'hui :</b> ' + court(r(c.clair.a)) + '</div>' : '') + '<div><b>Proposé :</b> ' + court(r(c.clair.p)) + '</div></div>';
+    return '<div class="q-clair">' + (c.clair.a ? '<div><b>Aujourd\'hui :</b> ' + (sansP ? r(c.clair.a) : court(r(c.clair.a))) + '</div>' : '') + (sansP ? '' : '<div><b>Proposé :</b> ' + court(r(c.clair.p)) + '</div>') + '</div>';
   }
   // Sur la carte : le premier cas type, en clair ; les autres et le montant par habitant dans le dépliant « Concrètement ».
   function concretCarte(c, m) {
