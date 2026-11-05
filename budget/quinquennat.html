@@ -1165,7 +1165,7 @@ body.q-vote { padding-bottom: 92px; }
     var o = exemplesCarte(c), P = J.population, ph = P ? Math.abs(m) * 1e9 / P.v : null;
     var rep = ph != null ? nf(ph, ph < 10 ? 1 : 0) + '\u00a0€ par habitant et par an (calcul de Concret : ' + mdt(Math.abs(m)) + ' divisés par ' + nf(P.v / 1e6, 1) + ' millions d\'habitants, Insee ; pour comparer, ce n\'est pas forcément ce que paie ou reçoit chacun)' : '';
     if (!o.L.length) return '';
-    var F = FOYERS[S.foyer]; if (F) { var a = o.L.filter(function (t) { return F.re.test(t); }), b = o.L.filter(function (t) { return !F.re.test(t); }); o.L = a.map(function (t) { return '<b class="q-vous">Pour vous</b> ' + t; }).concat(b); }
+    var F = FOY(); if (F) { var a = o.L.filter(function (t) { return F.re.test(t); }), b = o.L.filter(function (t) { return !F.re.test(t); }); o.L = a.map(function (t) { return '<b class="q-vous">Pour vous</b> ' + t; }).concat(b); }
     if (rep) o.L.push('Repère : ' + rep + '.');
     var premier = o.L.shift();
     return '<p class="q-ligne q-ccl"><b>Concrètement :</b> ' + premier + '</p>' + (o.L.length ? '<details class="q-src q-ccd"><summary>Autres exemples</summary>' + blocConcret(o, ' ') + '</details>' : '');
@@ -1285,11 +1285,11 @@ body.q-vote { padding-bottom: 92px; }
   function carteSpeciale(k, entree) {
     if (k === 'objectif') {
       $('q-deck').innerHTML = '<section class="card q-etape' + (entree ? ' in' : '') + '"><span class="eyebrow">Pour commencer</span>' +
-        '<div class="q-foy-l"><span>Vous êtes :</span><div class="q-chips q-foy">' + Object.keys(FOYERS).map(function (k) { return '<button type="button" data-f="' + k + '" aria-pressed="' + (S.foyer === k) + '">' + FOYERS[k].l + '</button>'; }).join('') + '</div></div>' +
+        '<div class="q-foy-l"><span>Vous êtes (plusieurs choix possibles) :</span><div class="q-chips q-foy">' + Object.keys(FOYERS).map(function (k) { return '<button type="button" data-f="' + k + '" aria-pressed="' + (foyersSel().indexOf(k) >= 0) + '">' + FOYERS[k].l + '</button>'; }).join('') + '</div></div>' +
         '<p class="q-note" style="margin:4px 0 0">Les mesures qui vous touchent passeront en premier.</p><h2 style="margin-top:10px">Quel est votre objectif ?</h2>' +
         '<p class="q-note">Vous pourrez en changer à tout moment.</p><div class="q-grands q-grands2">' +
         OBJS().map(function (o) { var r = S.reussi && S.reussi[o[0]]; return '<button type="button" data-o="' + o[0] + '"><b>' + esc(o[1]) + '</b><span>' + esc(o[2]) + '</span>' + (r && o[0] !== 'aucun' ? '<span class="q-rec">✓ Votre record : ' + r + ' vote' + (r > 1 ? 's' : '') + ' · à battre ?</span>' : '') + '</button>'; }).join('') + '</div></section>';
-      Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-foy button'), function (b) { b.onclick = function () { S.foyer = S.foyer === b.dataset.f ? '' : b.dataset.f; garder(); Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-foy button'), function (x) { x.setAttribute('aria-pressed', x.dataset.f === S.foyer); }); enHaut(); }; });
+      Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-foy button'), function (b) { b.onclick = function () { basculerFoyer(b.dataset.f); Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-foy button'), function (x) { x.setAttribute('aria-pressed', foyersSel().indexOf(x.dataset.f) >= 0); }); enHaut(); }; });
       Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-grands button'), function (b) { b.onclick = function () { S.obj = b.dataset.o; garder(); objectifs(); tout(true); pop(b.dataset.o === 'aucun' ? 'Sans objectif : votez librement' : 'Objectif choisi : ' + esc(b.querySelector('b').textContent)); setTimeout(function () { sousBandeau($('q-prog')); }, 30); setTimeout(function () { sousBandeau($('q-prog')); }, 350); }; });
       return;
     }
@@ -1371,7 +1371,7 @@ body.q-vote { padding-bottom: 92px; }
     var t0 = b.textContent; b.dataset.conf = 1; b.textContent = t; setTimeout(function () { if (b.dataset.conf) { delete b.dataset.conf; b.textContent = t0; } }, 5000);
   }
   // Tout effacer garde ce qui appartient au joueur sur cet appareil : objectifs atteints, défis réussis, record, foyer, cartes déjà comptées.
-  function toutEffacer() { var g = {}; ['reussi', 'defis', 'recordDefi', 'foyer', 'compte', 'vu', 'records'].forEach(function (k) { if (S[k] != null) g[k] = S[k]; }); S = Object.assign({ v: {}, perso: {}, unites: {}, po: {}, macro: true, macroV: 2, taux: 0, cr: 0, filtre: 'tout', pile: [], graine: 1 + Math.floor(Math.random() * 2147483646) }, g); garder(); window.scrollTo({ top: 0 }); location.reload(); }
+  function toutEffacer() { var g = {}; ['reussi', 'defis', 'recordDefi', 'foyer', 'foyers', 'compte', 'vu', 'records'].forEach(function (k) { if (S[k] != null) g[k] = S[k]; }); S = Object.assign({ v: {}, perso: {}, unites: {}, po: {}, macro: true, macroV: 2, taux: 0, cr: 0, filtre: 'tout', pile: [], graine: 1 + Math.floor(Math.random() * 2147483646) }, g); garder(); window.scrollTo({ top: 0 }); location.reload(); }
   // Revoter : les votes sont effacés, les cartes reviennent dans un nouvel ordre ; les mesures créées et les hypothèses restent.
   function revoter() { S.v = {}; S.pile = []; S.etape = 0; S.hist = {}; S.atteint = {}; S.filtre = 'tout'; S.graine = 1 + Math.floor(Math.random() * 2147483646); garder(); window.scrollTo({ top: 0 }); location.reload(); }
   function ouvrirVotes() { onglet('voter'); var d = $('q-vos-d'); d.open = true; setTimeout(function () { sousBandeau(d); }, 60); }
@@ -1814,7 +1814,7 @@ body.q-vote { padding-bottom: 92px; }
     return 'en moyenne, environ <b>' + calc(v * (1 + pc / 100)) + '</b> ' + u + ' au lieu de ' + calc(v) + ', si le changement est le même pour chacun';
   }
   function pourVous() {
-    var F = FOYERS[S.foyer], sec = $('q-pv-c'); if (!sec) return;
+    var F = FOY(), sec = $('q-pv-c'); if (!sec) return;
     sec.hidden = !F; if (!F) return;
     var L = adoptees().map(function (c) { var o = exemplesCarte(c); return { t: c.titre || c.l, e: (o.L || []).filter(function (t) { return F.re.test(t); })[0] }; }).filter(function (x) { return x.e; })
       .concat(Object.keys(S.perso).filter(function (k) { return (AS[k].qui || []).some(function (q) { return F.q.indexOf(q) >= 0; }); }).map(function (k) { var pc = S.perso[k]; return { t: AS[k].l.split(' (')[0] + ' ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%', e: ppLigne(AS[k], pc) }; }).filter(function (x) { return x.e; }));
@@ -2250,8 +2250,12 @@ body.q-vote { padding-bottom: 92px; }
   // ---------- En haut de Voter : le budget reçu, le défi du jour, votre foyer ----------
   // Votre foyer : les exemples « Concrètement » qui vous ressemblent passent en premier, et une carte qui vous concerne le dit.
   var FOYERS = { retraite: { l: 'Retraité', q: ['retraites'], re: /[Rr]etrait|pension/ }, salarie: { l: 'Salarié', q: ['salaries', 'smic', 'prime_activite', 'menages_imposables'], re: /[Ss]alarié|SMIC|salaire/ },
-    parent: { l: 'Parent', q: ['familles'], re: /enfant|[Ff]amil/ }, agent: { l: 'Agent public', q: ['agents_publics'], re: /agent|indice/ }, etudiant: { l: 'Étudiant', q: ['etudiants'], re: /licence|master|doctorat|[ÉE]tudiant/ } };
-  var vousConcerne = function (c) { var F = FOYERS[S.foyer]; return !!F && (c.qui || []).some(function (q) { return F.q.indexOf(q) >= 0; }); };
+    parent: { l: 'Parent', q: ['familles'], re: /enfant|[Ff]amil/ }, agent: { l: 'Agent public', q: ['agents_publics'], re: /agent|indice/ }, etudiant: { l: 'Étudiant', q: ['etudiants'], re: /licence|master|doctorat|[ÉE]tudiant/ }, entrepreneur: { l: 'Entrepreneur ou indépendant', q: ['entreprises', 'grandes_entreprises', 'restauration', 'agriculture', 'transport'], re: /[Ee]ntreprise|[Ii]ndépendant|[Ee]mployeur|[Ss]ociété/ } };
+  // Plusieurs foyers à la fois (salarié et parent, retraité et entrepreneur…) : leur réunion.
+  function foyersSel() { var L = S.foyers || (S.foyer ? [S.foyer] : []); return L.filter(function (k) { return FOYERS[k]; }); }
+  function FOY() { var L = foyersSel(); if (!L.length) return null; return { l: L.map(function (k) { return FOYERS[k].l; }).join(', '), q: [].concat.apply([], L.map(function (k) { return FOYERS[k].q; })), re: { test: function (t) { return L.some(function (k) { return FOYERS[k].re.test(t); }); } } }; }
+  function basculerFoyer(k) { var L = foyersSel(), i = L.indexOf(k); if (i >= 0) L.splice(i, 1); else L.push(k); S.foyers = L; delete S.foyer; garder(); }
+  var vousConcerne = function (c) { var F = FOY(); return !!F && (c.qui || []).some(function (q) { return F.q.indexOf(q) >= 0; }); };
   // Depuis votre dernière visite : les mesures dont le vote au Parlement a changé (Assemblée ou Sénat), lues dans les
   // données du jeu ; ce que la personne avait voté reste sur son appareil.
   var DEPUIS = [];
@@ -2275,15 +2279,15 @@ body.q-vote { padding-bottom: 92px; }
         '<div class="q-chips"><button type="button" id="q-ami-p">Partir de ce budget</button><button type="button" id="q-ami-x">Ne plus l\'afficher</button></div></div>'; }
     if (DJ && nbDecisions() >= 5 && S.obj !== 'defi') h += '<p class="q-defm"><b>Défi du jour :</b> ' + esc(DJ.x.t) + ' · ' + (DJ.ok ? '✓ réussi' : 'en cours') + (DJ.serie > 1 ? ' · ' + DJ.serie + ' jours de suite' : '') + (DJ.record > 1 && DJ.record > DJ.serie ? ' · record : ' + DJ.record + ' jours' : '') + ' <button type="button" id="q-defm-b">Voir</button></p>';
     // Le foyer déjà choisi tient sur une ligne ; « changer » rouvre les choix.
-    if (S.obj && S.foyer && !FOYOUV) h += '<p class="q-defm">Vous êtes : <b>' + FOYERS[S.foyer].l + '</b> <button type="button" id="q-foy-ch">changer</button></p>';
-    else if (S.obj) h += '<div class="q-obj"><span>Vous êtes… ? Les mesures qui vous touchent passeront en premier, avec un exemple pour vous.</span><div class="q-chips" id="q-foyers">' + Object.keys(FOYERS).map(function (k) { return '<button type="button" data-f="' + k + '" aria-pressed="' + (S.foyer === k) + '">' + FOYERS[k].l + '</button>'; }).join('') + '</div></div>';
+    if (S.obj && foyersSel().length && !FOYOUV) h += '<p class="q-defm">Vous êtes : <b>' + esc(FOY().l) + '</b> <button type="button" id="q-foy-ch">changer</button></p>';
+    else if (S.obj) h += '<div class="q-obj"><span>Vous êtes… ? Les mesures qui vous touchent passeront en premier, avec un exemple pour vous.</span><div class="q-chips" id="q-foyers">' + Object.keys(FOYERS).map(function (k) { return '<button type="button" data-f="' + k + '" aria-pressed="' + (foyersSel().indexOf(k) >= 0) + '">' + FOYERS[k].l + '</button>'; }).join('') + '</div></div>';
     $('q-top').innerHTML = h;
     var ai = $('q-ami-i'); if (S.ami && !nbDecisions()) { var Ai = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), ri = ressemble(an1(Ai)); ai.hidden = false; ai.innerHTML = '<b>On vous a envoyé un budget</b> : déficit ' + AN0 + ' à ' + defic(an1(Ai).solde) + (ri ? ', il ressemble ' + esc(aPays(ri.p)) + ' ' + drapeau(ri.p.code) : '') + '. Votez les mêmes cartes : après chacun de vos votes, vous verrez le sien, et à la fin, vos deux budgets côte à côte.'; $('q-voir').textContent = 'Relever le défi ↓'; } else { ai.hidden = true; $('q-voir').textContent = 'Commencer ↓'; }
     if ($('q-ami-p')) $('q-ami-p').onclick = function () { var A0 = simuler(); S.v = JSON.parse(JSON.stringify(S.ami.v)); S.perso = JSON.parse(JSON.stringify(S.ami.perso)); S.unites = JSON.parse(JSON.stringify(S.ami.unites)); S.pile = []; S.etape = ETAPES.filter(function (e) { return e <= nbDecisions(); }).pop() || 0; garder(); mesCreer(); tout(true); pop('Vous partez du budget reçu · ' + avantApres(A0, R)); };
     if ($('q-ami-x')) $('q-ami-x').onclick = function () { delete S.ami; garder(); enHaut(); };
     if ($('q-dep-x')) $('q-dep-x').onclick = function () { DEPUIS = []; enHaut(); };
     if ($('q-defm-b')) $('q-defm-b').onclick = function () { onglet('bilan'); setTimeout(function () { $('q-defi').scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); };
-    if ($('q-foyers')) Array.prototype.forEach.call($('q-foyers').querySelectorAll('button'), function (b) { b.onclick = function () { S.foyer = S.foyer === b.dataset.f ? '' : b.dataset.f; FOYOUV = false; garder(); enHaut(); pile(); }; });
+    if ($('q-foyers')) Array.prototype.forEach.call($('q-foyers').querySelectorAll('button'), function (b) { b.onclick = function () { basculerFoyer(b.dataset.f); enHaut(); pile(); }; });
     if ($('q-foy-ch')) $('q-foy-ch').onclick = function () { FOYOUV = true; enHaut(); };
   }
   function demarrer(j, b) {
