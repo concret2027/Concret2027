@@ -374,7 +374,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-chips small { font-weight: 400; opacity: .8; }
 /* Le bandeau : une ligne, toujours la même hauteur. */
 .q-collant { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 9; display: grid; gap: 6px; margin-top: -6px; padding-top: 6px; background: var(--bg); }
-.q-hud { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 4px 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
+.q-hud { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 4px 10px; align-items: center; padding: 9px 12px; border: 1px solid color-mix(in srgb, var(--fr) 28%, var(--line)); border-radius: 14px; background: linear-gradient(180deg, color-mix(in srgb, var(--fr) 12%, var(--panel)), color-mix(in srgb, var(--fr) 6%, var(--panel))); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
 .q-hd { display: grid; line-height: 1.1; font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer; min-width: 0; }
 .q-hd small { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: normal; overflow-wrap: anywhere; }
 .q-hd b { font-family: var(--serif); font-weight: 400; font-size: 22px; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -520,8 +520,19 @@ body.q-grand .q-bar button { font-size: 13.5px; padding: 4px 2px; white-space: n
 .q-rep::before { content: ""; position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; margin-top: -9px; border: 2px solid var(--fr); border-radius: 50%; box-sizing: border-box; background: var(--panel); }
 .q-rep:active::before, .q-rep:hover::before { background: radial-gradient(circle, var(--fr) 45%, var(--panel) 50%); }
 .q-touchez { text-align: center; margin: -2px 0 4px; }
+/* Réponses à cocher (plusieurs possibles) : un carré au lieu du rond, coché quand la réponse est choisie ; grisée si elle ne se combine pas. */
+.q-rep.q-case::before { border-radius: 5px; }
+.q-rep.q-case.on { background: color-mix(in srgb, var(--fr) 12%, var(--panel)); }
+.q-rep.q-case.on::before { background: var(--fr); box-shadow: inset 0 0 0 3px var(--panel); }
+.q-rep.q-case:disabled { opacity: .42; cursor: not-allowed; }
+.q-valider { display: grid; justify-items: center; gap: 6px; margin: 10px 0 2px; }
+.q-combo { font-size: 14px; font-weight: 600; color: var(--fr); }
+.q-combo:empty { display: none; }
+.q-val { font: inherit; font-weight: 700; font-size: 16px; min-height: 48px; padding: 0 24px; border-radius: 999px; border: 0; background: var(--fr); color: #fff; cursor: pointer; }
+.q-val:disabled { opacity: .4; cursor: not-allowed; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .q-val { color: #0b1530; } } :root[data-theme="dark"] .q-val { color: #0b1530; }
 .q-rep span { font-size: 13px; color: var(--muted); line-height: 1.3; }
-.q-rep.aucune { border-color: var(--line); border-style: dashed; background: var(--panel); }
+.q-rep.aucune { }
 .q-vin2 { grid-template-columns: 44px minmax(0, 1fr); }
 .q-vin2 button[data-qo="x"] { background: color-mix(in srgb, var(--muted) 10%, var(--panel)); border-color: var(--muted); font-weight: 600; }
 .q-qdet .q-qm { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 8px; }
@@ -1354,18 +1365,39 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   function carteQ(c, entree) {
     var Q = QS[c.q], M = membres(c), vc = vousConcerne(c);
     var org = M.map(function (m) { return ORIG[m.origine]; }).filter(function (x, i, a) { return x && a.indexOf(x) === i; }).join(' · ');
-    var opt = function (i, l, ids, cl) { return '<button type="button" class="q-rep' + (cl ? ' ' + cl : '') + '" data-qo="' + i + '"><b>' + nb(l) + '</b>' + (ids ? '<span>' + nb(texteReponse(ids)) + '</span>' : '') + '</button>'; };
+    var opt = function (i, l, ids, cl, at) { return '<button type="button" class="q-rep' + (cl ? ' ' + cl : '') + '" ' + (at || 'data-qo') + '="' + i + '"' + (at ? ' aria-pressed="false"' : '') + '><b>' + nb(l) + '</b>' + (ids ? '<span>' + nb(texteReponse(ids)) + '</span>' : '') + '</button>'; };
+    // Plusieurs réponses à cocher quand certaines se combinent (une réponse « combinée » réunit exactement des réponses simples) :
+    // on coche les réponses simples, les combinaisons qui n'existent pas sont grisées, puis « Valider » vote la réponse qui correspond.
+    var cle = function (ids) { return ids.slice().sort().join('|'); }, PAR = {};
+    Q.o.forEach(function (o, i) { PAR[cle(o.ids)] = i; });
+    var combo = Q.o.map(function (o) { return o.ids.length > 1 && o.ids.every(function (id) { return Q.o.some(function (p) { return p.ids.length === 1 && p.ids[0] === id; }); }); });
+    var multi = combo.some(Boolean);
+    var reps = multi ? Q.o.map(function (o, i) { return combo[i] ? '' : opt(i, o.l, o.ids, 'q-case', 'data-qm'); }).join('') : Q.o.map(function (o, i) { return opt(i, o.l, o.ids); }).join('');
     $('q-deck').innerHTML = (uneParQ(filtrees().filter(aVoir)).filter(function (o) { return qk(o) !== qk(c); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card q-qcard' + (entree ? ' in' : '') + '" id="q-card">' +
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span>' + (vc ? '<span class="q-vous">Vous concerne</span>' : '') + '<span class="q-org">' + esc(org) + '</span></div>' +
       '<h2>' + nb(Q.t) + '</h2>' +
-      '<p class="q-question">' + nb(Q.q) + '</p><p class="q-ligne m q-touchez">Touchez votre réponse (une seule) :</p><div class="q-reps" role="group" aria-label="' + esc(Q.q) + '">' +
-      opt('a', Q.aucune, null, 'aucune') + Q.o.map(function (o, i) { return opt(i, o.l, o.ids); }).join('') + '</div>' +
+      '<p class="q-question">' + nb(Q.q) + '</p><p class="q-ligne m q-touchez">' + (multi ? 'Cochez une ou plusieurs réponses, puis validez (ou « Ne rien changer ») :' : 'Touchez votre réponse (une seule) :') + '</p><div class="q-reps" role="group" aria-label="' + esc(Q.q) + '">' +
+      opt('a', Q.aucune, null, 'aucune') + reps + '</div>' + (multi ? '<p class="q-valider"><span class="q-combo" id="q-combo"></span><button type="button" class="q-val" id="b-valq" disabled>Valider ma réponse</button></p>' : '') +
       '<div class="q-vin q-vin2" role="group" aria-label="Autres choix"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button></div>' +
       '<p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette question à la fin</button></p>' +
       '<details class="q-src q-qdet"><summary>Le détail de chaque mesure, et ses sources</summary>' + M.map(function (m) { var mm = montant(m, AN0); return '<div class="q-qm"><h3>' + nb(m.titre || m.l) + '</h3>' + clair(m) + '<p class="q-ligne"><b>' + quiTitre(m, mm) + ' :</b> ' + nb(m.qui_texte || m.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' + concretCarte(m, mm) + detailsSrc(m, mm, (m.statut_court ? 'À l\'Assemblée, ce que ça change, la source' : 'Ce que ça change, et la source')) + '</div>'; }).join('') + '</details>' +
       '</article>';
     serrer($('q-deck'));
     Array.prototype.forEach.call($('q-deck').querySelectorAll('[data-qo]'), function (b) { b.onclick = function () { var v = b.dataset.qo; voterQ(c, /^\d+$/.test(v) ? +v : v); }; });
+    if (multi) {
+      var sel = [], cases = $('q-deck').querySelectorAll('[data-qm]'), bv = $('b-valq');
+      var union = function (L) { var u = []; L.forEach(function (i) { Q.o[i].ids.forEach(function (id) { if (u.indexOf(id) < 0) u.push(id); }); }); return u; };
+      var maj = function () {
+        Array.prototype.forEach.call(cases, function (b) {
+          var j = +b.dataset.qm, on = sel.indexOf(j) >= 0;
+          b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+          b.disabled = !on && sel.length > 0 && !(cle(union(sel.concat([j]))) in PAR);
+        });
+        var k = sel.length ? cle(union(sel)) : null; bv.disabled = !(k && k in PAR); var i0 = k && k in PAR ? PAR[k] : -1; $('q-combo').textContent = i0 >= 0 && combo[i0] ? Q.o[i0].l.replace(/ :.*$/, '') === 'Projet du Gouvernement' ? 'C\'est le projet du Gouvernement.' : '' : '';
+      };
+      Array.prototype.forEach.call(cases, function (b) { b.onclick = function () { var j = +b.dataset.qm, x = sel.indexOf(j); if (x >= 0) sel.splice(x, 1); else sel.push(j); maj(); }; });
+      bv.onclick = function () { var k = cle(union(sel)); if (k in PAR) voterQ(c, PAR[k]); };
+    }
     var u = $('q-deck').querySelector('[data-vin="u"]'); if (u) u.onclick = annuler;
     VIN_VU = true; barre();
     $('b-tard').onclick = function () { passer(); };
