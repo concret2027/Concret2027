@@ -409,7 +409,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 /* Le bandeau : une ligne, toujours la même hauteur. */
 .q-collant { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 9; display: grid; gap: 6px; margin-top: -6px; padding-top: 6px; background: var(--bg); }
 .q-hud { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; align-items: center; padding: 9px 12px; border: 1px solid color-mix(in srgb, var(--fr) 28%, var(--line)); border-radius: 14px; background: linear-gradient(180deg, color-mix(in srgb, var(--fr) 12%, var(--panel)), color-mix(in srgb, var(--fr) 6%, var(--panel))); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
-.q-hd { display: grid; line-height: 1.1; font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer; min-width: 0; }
+.q-hd { display: grid; align-content: center; min-height: 44px; line-height: 1.1; font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer; min-width: 0; }
 .q-hd small { font-size: 13px; font-weight: 700; color: var(--muted); white-space: normal; overflow-wrap: anywhere; line-height: 1.2; }
 .q-hd b { font-family: var(--serif); font-weight: 400; font-size: clamp(17px, 5.6vw, 22px); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 .q-hd.d { text-align: right; }
@@ -615,7 +615,7 @@ body.q-grand .q-hs.q-msg.q-cm:not(.ouvert) .q-court { -webkit-line-clamp: 3; lin
 body.q-grand nav.site a:not(.logo) { display: none; }
 body.q-grand .q-hs.q-msg { max-height: calc(3 * 1.35em + 2px); -webkit-line-clamp: 3; line-clamp: 3; }
 body.q-grand.q-vote .q-ress, body.q-grand.q-vote .q-hd-s, body.q-grand.q-vote .q-jauge, body.q-vote .q-jauge-t, body.q-grand.q-hors-vote .q-jauge-t { display: none !important; }
-footer a { display: inline-block; padding: 10px 0; }
+footer a { display: inline-block; padding: 13px 0; }
 .q-grands2 button.large { grid-column: 1 / -1; }
 body.q-grand.q-vote .q-hud { padding-top: 5px; padding-bottom: 5px; }
 .q-hs:not(.q-msg) { max-height: none; display: block; -webkit-line-clamp: unset; line-clamp: unset; }
@@ -865,7 +865,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
         <details class="q-plie q-ch-det"><summary>La source, le calcul et des exemples</summary>
           <p class="q-note" id="q-ch-n"></p>
           <p class="q-note" id="q-ch-h"></p>
-          <div class="q-note" id="q-ch-x"></div>
+          <div class="q-note" id="q-ch-av"></div>
           <div class="q-pp" id="q-pp" hidden></div>
         </details>
       </div>
@@ -1693,6 +1693,8 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   function reduire(on) { var c = $('q-collant'); if (!c || c.classList.contains('q-mini') === !!on) return; c.classList.toggle('q-mini', !!on); MINI_T0 = Date.now(); }
   (function () { var y0 = window.scrollY; window.addEventListener('scroll', function () { var y = window.scrollY, c = $('q-collant'), now = Date.now(); if (!c) return; if (now - MINI_T0 < 400) { y0 = y; return; } var mini = c.classList.contains('q-mini');
       if (!colle()) { if (mini) reduire(false); y0 = y; return; }
+      // Une carte à voter à l'écran : le bandeau reste réduit tant qu'il est collé (la carte garde la place) ; il revient en entier en haut de page.
+      if (ONG === 'voter' && $('q-card')) { if (!mini) reduire(true); y0 = y; return; }
       if (!mini && y > y0 + 24) reduire(true); else if (mini && y < y0 - 40) reduire(false); if (Math.abs(y - y0) > 24) y0 = y; }, { passive: true }); })();
   // Le bandeau change de hauteur avec le message : on revérifie une fois le défilement fini, pour que la ligne de progression reste visible.
   function remonter() { if (colle() || window.scrollY > 40) reduire(true); var k = $('q-prog') || $('q-deck'), ecart = function () { return k.getBoundingClientRect().top - $('q-collant').getBoundingClientRect().bottom; }, t = ecart(); if (t < 8 || k.getBoundingClientRect().top > innerHeight * 0.55) window.scrollBy({ top: t - 12, behavior: 'smooth' }); setTimeout(function () { var e = ecart(); if (e < 4) window.scrollBy({ top: e - 12, behavior: 'instant' }); }, 520); }
@@ -2018,7 +2020,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       // Ce que le calcul ne compte pas pour cette ligne, juste sous l'effet sur l'économie, avec sa source.
       (choisi.nc && J.non_comptes && J.non_comptes[choisi.nc] && (choisi.nc !== 'ame' || pc < 0) ? '<li>' + esc(J.non_comptes[choisi.nc].t) + ' <a href="' + esc(J.non_comptes[choisi.nc].src.url) + '">Source</a></li>' : '') + '</ul>' : '') +
       (pc !== (av || 0) ? horsModeleCourt(A1, 'Le détail : « La source, le calcul et des exemples ».') + miniCourbes(R, A1, $('q-apercu').clientWidth) : '') + (remp.length ? '<br>Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' » (' + quoi(o.sens, montant(o, AN0)) + ')' : ''; }).join(', ') + ' : les deux portent sur le même argent, ce montant sort de votre budget.' : '') + (rempP.length ? '<br>Ce choix remplace votre ligne ' + nomsP.map(function (t) { return '« ' + t + ' »'; }).join(', ') + ' : elle porte sur le même argent et sort de votre budget.' : '');
-    $('q-ch-x').innerHTML = pc !== (av || 0) ? horsModele(A1, true) + (choisi.macro_note && choisi.macro && J.variantes[choisi.macro] ? '<p>Effet sur l\'activité (modèle Mésange, le modèle de calcul de la direction du Trésor et de l\'Insee) : ' + esc(choisi.macro_note) + '</p>' : '') : '';
+    $("q-ch-av").innerHTML = pc !== (av || 0) ? horsModele(A1, true) + (choisi.macro_note && choisi.macro && J.variantes[choisi.macro] ? '<p>Effet sur l\'activité (modèle Mésange, le modèle de calcul de la direction du Trésor et de l\'Insee) : ' + esc(choisi.macro_note) + '</p>' : '') : '';
     GRAND = G0;
     if (hs) $('q-apercu').innerHTML = '<p class="q-alerte"><b>Pas possible :</b> ' + hs + '</p>';
     $('q-ajout').disabled = !pc || pc === av || !!hs; $('q-ajout').textContent = S.perso[choisi.k] != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
@@ -2438,7 +2440,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     var RP = J.repartition; if (!RP) { $('q-ou-c').hidden = true; return; }
     var VP = variationsPostes(), W = nE ? 420 : Math.round(320 / TS()), y = 0, rows = [], NETAT = nE || 12, o = '';
     RP.groupes.forEach(function (g) {
-      var L = g.lignes.slice().sort(function (a, b) { return b.v27 - a.v27; }), garde = g.k === 'secu' && !nS ? L : L.filter(function (l, i) { return i < (g.k === 'secu' ? nS : NETAT) || (!nE && l.k === 'mi:santé') || Math.abs(VP.V[l.k] || 0) >= 0.05 || (!nE && VP.P[l.k]); }), autres = L.filter(function (l) { return garde.indexOf(l) < 0; });
+      var L = g.lignes.slice().sort(function (a, b) { return b.v27 - a.v27; }), garde = g.k === 'secu' && !nS ? L : L.filter(function (l, i) { return i < (g.k === 'secu' ? nS : NETAT) || (!nE && (l.k === 'mi:santé' || VP.V[l.k] || VP.P[l.k])); }), autres = L.filter(function (l) { return garde.indexOf(l) < 0; });
       rows.push({ h: g.l + (g.k === 'secu' ? ' (régimes de base)' : g.k === 'etat' ? ' (pensions des agents comprises)' : '') + ', en milliards d\'euros' });
       garde.forEach(function (l) { rows.push({ l: l.l, o: l.officiel, v: l.v27, v0: l.v26, d: VP.V[l.k] || 0, p: VP.P[l.k] || 0 }); });
       if (autres.length) rows.push({ l: autres.length + (g.k === 'secu' ? ' autres branches' : ' autres missions'), o: autres.map(function (l) { return l.officiel; }).join(' ; '), v: autres.reduce(function (a, l) { return a + l.v27; }, 0), v0: autres.reduce(function (a, l) { return a + l.v26; }, 0), d: 0, p: 0, autres: true });
@@ -2863,7 +2865,9 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     // Le résultat obtenu, en tête : objectif atteint (en combien de questions), défi du jour réussi, sinon ce que devient le déficit.
     var res = resultatTxt(), y = 250; g.fillStyle = '#2f5bd3'; g.font = '700 38px ' + sans; lignesC(res, W - 160, 2).forEach(function (li) { g.fillText(li, 80, y); y += 48; });
     var tuile = function (x, y, l, v, s2) { g.fillStyle = '#62646d'; g.font = '600 30px ' + sans; g.fillText(l, x, y); g.fillStyle = '#1c1d22'; g.font = '400 112px ' + serif; g.fillText(v, x, y + 112); g.fillStyle = '#62646d'; g.font = '400 28px ' + sans; g.fillText(s2, x, y + 158); };
-    y += 30; tuile(80, y, 'DÉFICIT ' + AN0, deficO(r1, AN0), 'sans aucune mesure : ' + deficP(z1.solde)); tuile(580, y, 'DETTE ' + f.an, nf(f.d, 1) + ' %', 'sans aucune mesure : ' + nf(zf.d, 1) + ' %');
+    // « environ » va sous le grand chiffre, jamais dedans (il tiendrait mal dans sa colonne).
+    var vD = deficO(r1, AN0), vT = dpc(f.d), env = function (v) { return /^environ /.test(v) ? 'environ ; ' : ''; };
+    y += 30; tuile(80, y, 'DÉFICIT ' + AN0, vD.replace(/^environ /, ''), env(vD) + 'sans aucune mesure : ' + deficP(z1.solde)); tuile(580, y, 'DETTE ' + f.an, vT.replace(/^environ /, ''), env(vT) + 'sans aucune mesure : ' + nf(zf.d, 1) + ' %');
     y += 245;
     var rs = ressemble(r1), defL = 'Déficit ' + AN0 + ' : ' + deficP(z1.solde) + ' → ' + deficO(r1, AN0);
     g.fillStyle = '#1c1d22'; g.font = '600 36px ' + sans;
