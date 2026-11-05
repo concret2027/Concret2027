@@ -497,6 +497,10 @@ body.q-grand .q-bar button { font-size: 13.5px; padding: 4px 2px; white-space: n
 .q-bar div.e button { padding: 0 16px; }
 .q-bar div.e .q-go { border: 0; }
 .q-hs.q-msg { color: var(--fg); font-weight: 600; animation: q-flash .7s ease; }
+.q-hs.q-msg.q-cm:not(.ouvert) { display: flex; align-items: flex-start; gap: 6px; max-height: none; -webkit-line-clamp: unset; line-clamp: unset; }
+.q-hs.q-msg.q-cm:not(.ouvert) .q-court { flex: 1; min-width: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+body.q-grand .q-hs.q-msg.q-cm:not(.ouvert) .q-court { -webkit-line-clamp: 3; line-clamp: 3; }
+.q-hs.q-msg.q-cm:not(.ouvert) .q-det { flex: none; margin: -12px 0 -12px auto; }
 .q-hs.q-msg span { font-weight: 400; color: var(--muted); }
 .q-hs.q-msg .q-court, .q-hs.q-msg .q-plein { font-weight: 600; color: var(--fg); }
 .q-hs.q-msg .q-plein span { font-weight: 400; color: var(--muted); }
@@ -1038,7 +1042,7 @@ body.q-vote { padding-bottom: 92px; }
     clearTimeout(popT); POP = true; var el = $('q-hs'); el.className = 'q-hs'; el.scrollTop = 0; $('q-hud').classList.remove('q-det-ouvert'); void el.offsetWidth; el.className = 'q-hs q-msg';
     var fin = function (ms) { clearTimeout(popT); popT = setTimeout(function () { POP = false; hud(); }, ms); };
     if (court) {
-      el.innerHTML = '<span class="q-court">' + court + '</span><span class="q-plein" hidden>' + t + '</span> <button type="button" class="q-det" aria-expanded="false">Détail</button>';
+      el.classList.add('q-cm'); el.innerHTML = '<span class="q-court">' + court + '</span><span class="q-plein" hidden>' + t + '</span> <button type="button" class="q-det" aria-expanded="false">Détail</button>';
       var b = el.querySelector('.q-det');
       b.onclick = function () { var o = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', o); b.textContent = o ? 'Fermer' : 'Détail'; el.classList.toggle('ouvert', o); $('q-hud').classList.toggle('q-det-ouvert', o); el.querySelector('.q-plein').hidden = !o; el.querySelector('.q-court').hidden = o; el.scrollTop = 0; requestAnimationFrame(function () { el.scrollTop = 0; }); if (o) clearTimeout(popT); else fin(6000); };
     } else el.innerHTML = t;
@@ -1064,7 +1068,7 @@ body.q-vote { padding-bottom: 92px; }
       // Si l'écart n'est pas le montant voté, on dit pourquoi (l'effet sur l'activité, ou l'année de l'objectif).
       var m0 = (-r0.solde - T) / 100 * r0.pib, m1 = (-r1.solde - T) / 100 * r1.pib, d = m1 - m0, pq = attendu != null && Math.abs(Math.abs(d) - Math.abs(attendu)) >= Math.max(0.01, 0.1 * Math.abs(attendu)) ? (AO !== AN0 ? ' en ' + AO : S.macro ? ' après l\'effet sur l\'activité' : '') : '', ds = sec || Math.abs(d) < 0.05 || (attendu != null && !pq) ? '' : ' (' + (d < 0 ? '−' : '+') + mdt(Math.abs(d)) + pq + ')';
       var manq = S.obj === 'defi' && m1 <= 0 ? (defiDuJour() || { cond: [] }).cond.filter(function (c) { return !c.ok && !/^Déficit/.test(c.t); })[0] : null;
-      if (manq) return 'seuil atteint, mais il manque une condition du défi';
+      if (manq) return 'seuil atteint, mais le défi demande : ' + (manq.court ? 'aucune ' + manq.court : manq.t.charAt(0).toLowerCase() + manq.t.slice(1));
       return m1 <= 0 ? (S.obj === 'defi' ? 'défi réussi : déficit ' : 'objectif atteint : déficit ') + AO + ' à ' + b : 'il reste ' + mdt(m1) + ' à trouver' + ds;
     }
     var dd = (r1.solde - r0.solde) / 100 * r1.pib;
@@ -1076,11 +1080,12 @@ body.q-vote { padding-bottom: 92px; }
     if (compte === false) return 'Effet sur l\'économie : non compté (la raison est écrite avec cette mesure).';
     var AO = anObj(), r0 = ligneAn(A0, AO), r1 = ligneAn(A1, AO), d = (r1.solde - r0.solde) / 100 * r1.pib, g0 = croiss(A0, AN0), g1 = croiss(A1, AN0);
     var gc = g0 != null && pcs(g0) !== pcs(g1) ? 'croissance ' + AN0 + ' : ' + pcs(g0) + ' → ' + pcs(g1) : '';
-    if (direct != null && Math.abs(d - direct) >= Math.max(0.05, 0.1 * Math.abs(direct))) return 'Avec l\'effet sur l\'économie' + (gc ? ' (' + gc + ')' : '') + ', le déficit ' + AO + (Math.abs(d) < 0.05 ? ' ne bouge presque pas' : (d > 0 ? ' baisse' : ' augmente') + ' finalement de ' + mdt(Math.abs(d))) + (d * direct > 0 && Math.abs(d) < Math.abs(direct) ? pourquoiEco(direct, macro) : '') + '.' + (macro === 'depense' ? ' C\'est l\'effet moyen d\'une dépense publique dans le modèle, pas un calcul propre à cette mesure.' : macro === 'cotis_emp' ? ' Le modèle donne l\'effet de cotisations changées sur tous les salaires, pas un calcul propre aux bas salaires.' : '');
+    if (direct != null && Math.abs(d - direct) >= Math.max(0.05, 0.1 * Math.abs(direct))) return 'Avec l\'effet sur l\'économie' + (gc ? ' (' + gc + ')' : '') + ', le déficit ' + AO + (Math.abs(d) < 0.05 ? ' ne bouge presque pas' : (d > 0 ? ' baisse' : ' augmente') + ' finalement de ' + mdt(Math.abs(d))) + (d * direct > 0 && Math.abs(d) < Math.abs(direct) ? pourquoiEco(direct, macro) : '') + '.' + (macro === 'depense' || macro === 'depense_rec' ? ' C\'est l\'effet moyen d\'une dépense publique dans le modèle, pas un calcul propre à cette mesure.' : macro === 'cotis_emp' ? ' Le modèle donne l\'effet de cotisations changées sur tous les salaires, pas un calcul propre aux bas salaires.' : '');
     return gc ? gc.charAt(0).toUpperCase() + gc.slice(1) + '.' : 'Effet sur l\'économie : presque nul.';
   }
   // Pourquoi le déficit bouge moins que la mesure, selon ce que la mesure change dans l'économie.
   function pourquoiEco(direct, macro) {
+    if (macro === 'depense_rec') return direct > 0 ? ' : cet argent n\'est plus dépensé par l\'organisme public qui le recevait ; il paie donc moins d\'aides, de salaires ou d\'achats, et il rentre moins d\'impôts et de cotisations' : ' : cet argent est dépensé par l\'organisme public qui le reçoit, et il rentre des impôts et des cotisations';
     if (macro === 'depense') return direct > 0 ? ' : cet argent ne paie plus des aides, des salaires, des achats ou des soins ; ceux qui le recevaient dépensent moins, et il rentre moins d\'impôts et de cotisations' : ' : cet argent paie des aides, des salaires, des achats ou des soins ; ceux qui le reçoivent le dépensent à leur tour, et il rentre des impôts et des cotisations';
     if (macro === 'carbone') return direct > 0 ? ' : les ménages et les entreprises ont moins à dépenser, l\'activité ralentit et rapporte moins d\'impôts et de cotisations' : ' : les ménages et les entreprises ont plus à dépenser, l\'activité accélère et rapporte des impôts et des cotisations';
     if (macro === 'csg' || macro === 'ir' || macro === 'tva' || macro === 'cotis_sal') return direct > 0 ? ' : les ménages ont moins à dépenser, l\'activité ralentit et rapporte moins d\'impôts et de cotisations' : ' : les ménages ont plus à dépenser, l\'activité accélère et rapporte des impôts et des cotisations';
@@ -1263,8 +1268,8 @@ body.q-vote { padding-bottom: 92px; }
       var pP = retP.reduce(function (t, x) { return t + effetPerso(AS[x.k], x.pc); }, 0), kPo = (PIBY[anObj()] || PIBY[AN0]) / PIBY[AN0];
       // Une mesure qui en remplace une autre : le montant net (cette mesure moins celle qu'elle remplace), l'année du budget.
       var net = m0 - RO.reduce(function (t, o) { return t + montant(o, AN0); }, 0) - pP, netA = ma - RO.reduce(function (t, o) { return t + montant(o, anObj()); }, 0) - pP * kPo;
-      plein = rem.length ? ['<b>Adoptée</b>, à la place de : ' + rem.join(', ') + '.', 'Au total : ' + (Math.abs(net) < 0.05 ? 'presque rien ne change' : quoi(c.sens, net)) + ' en ' + AN0 + ' (cette mesure seule : ' + (m0 ? quoi(c.sens, m0) : premiere(c)) + ').', maj1(reste) + '.', ecoPhrase(A0, A1, netA, !!c.macro, c.macro)]
-        : ['<b>Adoptée</b> : ' + (m0 ? quoi(c.sens, m0) + ' en ' + AN0 : premiere(c)) + '.', maj1(reste) + '.', m0 || ma ? ecoPhrase(A0, A1, ma, !!c.macro, c.macro) : ''];
+      plein = rem.length ? ['<b>Adoptée</b>, à la place de : ' + rem.join(', ') + '.', 'Au total : ' + (Math.abs(net) < 0.05 ? 'presque rien ne change' : quoi(c.sens, net)) + ' en ' + AN0 + ' (cette mesure seule : ' + (m0 ? quoi(c.sens, m0) : premiere(c)) + ').', maj1(reste) + '.', ecoPhrase(A0, A1, netA, !!c.macro, c.macro === 'depense' && c.sens === 'recette' ? 'depense_rec' : c.macro)]
+        : ['<b>Adoptée</b> : ' + (m0 ? quoi(c.sens, m0) + ' en ' + AN0 : premiere(c)) + '.', maj1(reste) + '.', m0 || ma ? ecoPhrase(A0, A1, ma, !!c.macro, c.macro === 'depense' && c.sens === 'recette' ? 'depense_rec' : c.macro) : ''];
       // Le message court dit ce que la mesure remplace, et le verbe suit le sens : une dépense en moins « économise », un impôt « rapporte ».
       var mc = rem.length ? net : m0, verbe = mc > 0 ? (c.sens === 'recette' ? ', rapporte ' : ', économise ') : ', coûte ';
       court = rem.length ? '✓ Adoptée à la place de ' + rem.join(', ') + ' · au total ' + (Math.abs(net) < 0.05 ? 'presque rien ne change' : quoi(c.sens, net).replace(' d\'euros', '')) + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver')
@@ -1286,7 +1291,7 @@ body.q-vote { padding-bottom: 92px; }
     return { plein: '<ul class="q-pl">' + L.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>', court: court + dl };
   }
   // Les conditions du défi déjà manquées avant un vote (pour n'alerter que sur la carte qui en casse une).
-  var CASSE0 = [];
+  var CASSE0 = [], REP_VU = false;
   function casses() { return S.obj === 'defi' ? (defiDuJour() || { cond: [] }).cond.filter(function (x) { return !x.ok; }).map(function (x) { return x.k; }) : []; }
   function voter(c, v) {
     CASSE0 = casses();
@@ -1337,9 +1342,9 @@ body.q-vote { padding-bottom: 92px; }
     if (k === 'nouveaudefi') {
       var DN = defiDuJour(), nv = nbDecisions();
       $('q-deck').innerHTML = '<section class="card q-etape' + (entree ? ' in' : '') + '"><span class="eyebrow">Nouveau défi du jour</span><h2>' + esc(DN ? DN.x.t : '') + '</h2>' +
-        (DN ? '<ul class="q-hyp" style="color:var(--fg)">' + DN.cond.map(function (c) { return '<li>' + (c.ok ? '✓ ' : '') + esc(c.t) + '</li>'; }).join('') + '</ul>' : '') +
-        '<p>Ces chiffres sont ceux de votre budget d\'hier (' + nv + ' vote' + (nv > 1 ? 's' : '') + '). Pour compter vos votes, repartez de zéro.</p>' +
         '<p class="q-actions"><button type="button" class="q-go" id="b-nd-zero">Le relever avec de nouveaux votes</button> <button type="button" class="q-lien" id="b-nd-garder">Garder mon budget</button></p>' +
+        '<p>Avec votre budget d\'hier (' + nv + ' vote' + (nv > 1 ? 's' : '') + ') :</p>' +
+        (DN ? '<ul class="q-hyp" style="color:var(--fg)">' + DN.cond.map(function (c) { return '<li>' + (c.ok ? '✓ ' : '') + esc(c.t) + '</li>'; }).join('') + '</ul>' : '') +
         '<p class="q-note">Les mesures de l\'onglet Créer restent dans les deux cas.</p></section>';
       $('b-nd-zero').onclick = function () { S.defiJour = isoJ(); revoter(); };
       $('b-nd-garder').onclick = function () { S.defiJour = isoJ(); garder(); tout(true); };
@@ -1827,6 +1832,7 @@ body.q-vote { padding-bottom: 92px; }
     series.forEach(function (s) { s.L.forEach(function (p) { tous.push(p.d); }); }); refs.forEach(function (r) { tous.push(r.v); });
     var lo = Math.floor(Math.min.apply(null, tous) / pas) * pas, hi = Math.ceil(Math.max.apply(null, tous) / pas) * pas; if (o.zero != null) lo = Math.min(lo, o.zero); if (hi - lo < 2 * pas) hi = lo + 2 * pas;
     var a0 = series[0].L[0].an, a1 = series[0].L[series[0].L.length - 1].an;
+    var lgTick = Math.max(nf(lo, dec).length, nf(hi, dec).length) + (o.unite ? 0 : 2); g = Math.max(g, Math.round(10 + lgTick * 6.4));
     var X = function (a) { return g + (W - g - dr) * (a - a0) / (a1 - a0); }, Y = function (v) { return top + (H - top - bot) * (hi - v) / (hi - lo); };
     var ligne = function (L) { return L.map(function (p, i) { return (i ? 'L' : 'M') + X(p.an).toFixed(1) + ' ' + Y(p.d).toFixed(1); }).join(' '); };
     var gr = ''; for (var v = lo; v <= hi + 1e-9; v += pas) gr += '<line x1="' + g + '" x2="' + (W - dr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--grid)"/><text x="' + (g - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' + nf(v, dec) + (o.unite ? '' : '\u00a0%') + '</text>';
@@ -2156,7 +2162,7 @@ body.q-vote { padding-bottom: 92px; }
     // Le cadre : de 30 % (ou moins si votre budget y descend) au plus haut, plus 2 points ; un pays en dehors est nommé sous la carte.
     var V = P.map(function (p) { return p.dep; }).concat(P.map(function (p) { return p.rec; }), [s.dep, s.rec]), lo = Math.min(30, Math.floor((Math.min(s.dep, s.rec) - 2) / 5) * 5), hi = Math.ceil((Math.max.apply(null, V) + 2) / 5) * 5;
     var dedans = function (p) { return p.dep >= lo && p.rec >= lo; }, hors = P.filter(function (p) { return !dedans(p); });
-    var W = 340, H = 330, l = 40, t = 12, w = W - l - 12, h = H - t - 40, X = function (v) { return l + (v - lo) / (hi - lo) * w; }, Y = function (v) { return t + h - (v - lo) / (hi - lo) * h; };
+    var W = 340, H = 330, l = 54, t = 12, w = W - l - 12, h = H - t - 40, X = function (v) { return l + (v - lo) / (hi - lo) * w; }, Y = function (v) { return t + h - (v - lo) / (hi - lo) * h; };
     var g = '';
     for (var v = lo; v <= hi; v += 10) {
       g += '<line x1="' + X(v) + '" y1="' + t + '" x2="' + X(v) + '" y2="' + (t + h) + '" stroke="var(--line)"/><line x1="' + l + '" y1="' + Y(v) + '" x2="' + (l + w) + '" y2="' + Y(v) + '" stroke="var(--line)"/>' +
@@ -2316,7 +2322,7 @@ body.q-vote { padding-bottom: 92px; }
       var ey = sec.querySelector('.eyebrow'), h2 = sec.querySelector('h2'), tt = h2 ? h2.textContent.replace(ey ? ey.textContent : '', '').trim() : '';
       g.fillStyle = '#62646d'; g.font = '700 30px ' + sans; g.fillText((ey ? ey.textContent : '').toUpperCase() + ' · MON BUDGET ' + AN0, 80, 110);
       // Texte sur plusieurs lignes dans la largeur de l'image.
-      var ecrire = function (t, x, y, l, h) { var ligne = ''; t.split(' ').forEach(function (m) { var u = ligne ? ligne + ' ' + m : m; if (g.measureText(u).width > l && ligne) { g.fillText(ligne, x, y); y += h; ligne = m; } else ligne = u; }); if (ligne) g.fillText(ligne, x, y); return y + h; };
+      var ecrire = function (t, x, y, l, h) { t = String(t).replace(/ ([:;?!»])/g, '\u00a0$1').replace(/« /g, '«\u00a0'); var ligne = ''; t.split(' ').forEach(function (m) { var u = ligne ? ligne + ' ' + m : m; if (g.measureText(u).width > l && ligne) { g.fillText(ligne, x, y); y += h; ligne = m; } else ligne = u; }); if (ligne) g.fillText(ligne, x, y); return y + h; };
       g.fillStyle = '#1c1d22'; g.font = '700 54px ' + sans; var yt = ecrire(tt, 80, 180, W - 160, 64);
       var gros = box.querySelector('.q-gros'); if (gros && id === 'q-pays') { g.fillStyle = '#1c1d22'; g.font = '400 30px ' + sans; yt = ecrire(gros.textContent.trim(), 80, yt + 6, W - 160, 40); }
       var k2 = Math.min(k, (H - 170 - yt - 70 - nLeg * 46 - (id === 'q-ou' ? 200 : id === 'q-int' || id === 'q-crc' ? 80 : 0)) / vb.height); if (k2 < k) { clone.setAttribute('width', vb.width * k2); clone.setAttribute('height', vb.height * k2); }
@@ -2417,6 +2423,7 @@ body.q-vote { padding-bottom: 92px; }
       var Ar = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), xr = accordAmi(); ai.hidden = false;
       ai.innerHTML = '<b>Réponse à votre budget</b> : ' + (xr && xr.n ? 'mêmes votes sur ' + xr.ok + ' carte' + (xr.ok > 1 ? 's' : '') + ' sur ' + xr.n + ' ; ' : '') + 'déficit ' + AN0 + ' : ' + defic(an1(Ar).solde) + ' pour la réponse, ' + defic(an1(R).solde) + ' pour votre budget sur cet appareil.' + (objAmi ? ' Son objectif : ' + esc(objAmi) + '.' : '');
       $('q-voir').textContent = nbDecisions() ? 'Reprendre ↓' : 'Commencer ↓';
+      if (!REP_VU) { REP_VU = true; var mr = ai.innerHTML; setTimeout(function () { pop(mr, true); }, 400); }
     } else if (S.ami && !nbDecisions()) { var Ai = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), ri = ressemble(an1(Ai)); ai.hidden = false; ai.innerHTML = '<b>On vous a envoyé un budget</b> : déficit ' + AN0 + ' à ' + defic(an1(Ai).solde) + (ri ? ', il ressemble ' + esc(aPays(ri.p)) + ' ' + drapeau(ri.p.code) : '') + '.' + (objAmi ? ' Son objectif : ' + esc(objAmi) + '.' : '') + ' Votez les mêmes cartes : après chacun de vos votes, vous verrez le sien, et à la fin, vos deux budgets côte à côte.'; $('q-voir').textContent = 'Relever le défi ↓'; } else { ai.hidden = true; $('q-voir').textContent = 'Commencer ↓'; }
     if ($('q-ami-p')) $('q-ami-p').onclick = function () { var A0 = simuler(); S.v = JSON.parse(JSON.stringify(S.ami.v)); S.perso = JSON.parse(JSON.stringify(S.ami.perso)); S.unites = JSON.parse(JSON.stringify(S.ami.unites)); S.pile = []; S.etape = ETAPES.filter(function (e) { return e <= nbDecisions(); }).pop() || 0; garder(); mesCreer(); tout(true); pop('Vous partez du budget reçu · ' + avantApres(A0, R)); };
     if ($('q-ami-x')) $('q-ami-x').onclick = function () { delete S.ami; garder(); enHaut(); };

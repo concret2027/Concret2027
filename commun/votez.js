@@ -366,6 +366,7 @@
       el.querySelector('.vz-choix').classList.add('fait');
       rev.innerHTML = '<p class="vz-sort">Vote de l\'Assemblée prévu le <b>' + dateFr(q.d) + '</b><small>Votre vote du ' + dateFr(le) + ' est gardé sur cet appareil. Revenez après le vote : vous verrez comment chaque groupe a voté, et ce vote comptera dans votre résultat.</small></p>' +
         '<p class="vz-change">Vous pouvez changer votre vote jusqu\'au vote de l\'Assemblée : touchez une autre réponse.</p>' +
+        (/(loi de finances|financement de la sécurité sociale) pour 2027/i.test(q.titre || '') ? '<p class="vz-comme"><a href="/budget/">Votre budget 2027</a> : votez, une par une, des mesures proposées pour ce budget, et voyez ce que deviennent le déficit et la dette.</p>' : '') +
         (o.suivant ? '<button type="button" class="vz-suite">' + esc(o.suivantLabel || 'Vote suivant →') + '</button>' : '');
       rev.hidden = false;
       var s = rev.querySelector('.vz-suite'); if (s) s.addEventListener('click', o.suivant);
