@@ -616,6 +616,10 @@ body.q-vote { padding-bottom: 92px; }
 .q-tuile small { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .q-tuile b { font-family: var(--serif); font-weight: 400; font-size: 25px; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .q-tuile span { font-size: 12.5px; color: var(--muted); }
+.q-tuile { align-content: start; }
+.q-tuile.large { grid-column: 1 / -1; }
+.q-tuile.deux b { font-size: 21px; white-space: nowrap; }
+.q-tuile span.ecart { color: var(--fg); font-weight: 600; }
 .q-chart svg { width: 100%; height: auto; display: block; }
 .q-ans { margin: 0; }
 .q-votes li { grid-template-columns: minmax(0, 1fr); }
@@ -1999,14 +2003,27 @@ body.q-vote { padding-bottom: 92px; }
   function bilan() { bilan0(); serrer($('p-bilan')); }
   function bilan0() {
     var dep = { an: PJ.depart.an, d: PJ.depart.dette }, r1 = an1(R), z1 = an1(R0), f = R[R.length - 1], zf = R0[R0.length - 1], n = nbChoix();
-    var tu = function (l, v, s) { return '<div class="q-tuile"><small>' + l + '</small><b>' + v + '</b><span>' + s + '</span></div>'; };
-    $('q-rc-h').textContent = n ? 'Votre budget : ' + n + ' mesure' + (n > 1 ? 's' : '') : 'Le point de départ, sans aucune mesure';
+    // Une tuile : l'intitulé, le chiffre, puis des lignes courtes (déjà en <span>).
+    var tu = function (l, v, s, cl) { return '<div class="q-tuile' + (cl ? ' ' + cl : '') + '"><small>' + l + '</small><b>' + v + '</b>' + (s || '') + '</div>'; };
+    var sp = function (t, cl) { return '<span' + (cl ? ' class="' + cl + '"' : '') + '>' + t + '</span>'; };
+    $('q-rc-h').textContent = n ? 'Votre budget : ' + n + ' mesure' + (n > 1 ? 's' : '') : 'Si rien ne change';
     // Le même budget sans l'effet sur l'activité (modèle Mésange) : cette hypothèse pèse souvent plus qu'une carte, elle se voit ici.
     var Rs = null; if (S.macro && n) { var mc = S.macro; S.macro = false; Rs = simuler(); S.macro = mc; }
     var rs1 = Rs && an1(Rs), rsf = Rs && Rs[Rs.length - 1], sa = function (v) { return Rs ? ' ; sans l\'effet sur l\'activité : ' + v : ''; };
-    $('q-tuiles').innerHTML = tu('Déficit ' + AN0, deficO(r1, AN0), 'sans vos mesures : ' + defic(z1.solde) + sa(rs1 && defic(rs1.solde))) +
-      tu('Croissance ' + AN0 + ' et ' + f.an, pcs(croiss(R, AN0)) + ' · ' + pcs(croiss(R, f.an)), 'prévision du FMI : ' + pcs(croiss(R0, AN0)) + ' · ' + pcs(croiss(R0, f.an)) + (S.macro ? '' : ' (effet de vos choix non compté)')) + tu('Déficit ' + f.an, defic(f.solde), 'sans vos mesures : ' + defic(zf.solde) + sa(rsf && defic(rsf.solde))) + tu('Dette ' + f.an, nf(f.d, 1) + '\u00a0%', 'sans vos mesures : ' + nf(zf.d, 1) + '\u00a0%' + sa(rsf && nf(rsf.d, 1) + '\u00a0%')) + tu('Intérêts de la dette ' + f.an, mds(f.interets * f.pib / 100), nf(f.interets, 1) + '\u00a0% du PIB ; sans vos mesures : ' + mdt(zf.interets * zf.pib / 100));
-    $('q-rc-p').innerHTML = resume('bilan');
+    // Sans mesure : les chiffres de départ seuls, sans « sans vos mesures » qui répéterait le même chiffre.
+    // Avec des mesures : l'écart avec le départ, en points, puis le chiffre de départ.
+    var ecartPt = function (a, b) { var d = Math.round((a - b) * 10) / 10; return Math.abs(d) < 0.05 ? 'comme sans vos mesures' : (d > 0 ? '+' : '−') + nf(Math.abs(d), 1) + '\u00a0point' + (Math.abs(d) >= 2 ? 's' : ''); };
+    // Une seule ligne : « comme sans vos mesures », ou l'écart et le chiffre sans vos mesures (l'effet sur l'activité est détaillé sous les tuiles).
+    var sous = function (a, b, txt) { var e = ecartPt(a, b); return e === 'comme sans vos mesures' ? sp(e) : sp(e, 'ecart') + sp('sans vos mesures : ' + txt); };
+    var ti = f.interets * f.pib / 100, zi = zf.interets * zf.pib / 100;
+    $('q-tuiles').innerHTML = tu('Déficit ' + AN0, deficO(r1, AN0), n ? sous(-r1.solde, -z1.solde, defic(z1.solde)) : sp('du PIB')) +
+      tu('Déficit ' + f.an, defic(f.solde), n ? sous(-f.solde, -zf.solde, defic(zf.solde)) : sp('si rien ne change')) +
+      tu('Dette ' + f.an, nf(f.d, 1) + '\u00a0%', n ? sous(f.d, zf.d, nf(zf.d, 1) + '\u00a0%') : sp('du PIB ; fin ' + PJ.depart.an + ' : ' + nf(PJ.depart.dette, 1) + '\u00a0%')) +
+      tu('Croissance', pcs(croiss(R, AN0)) + ' · ' + pcs(croiss(R, f.an)), sp('en ' + AN0 + ' · en ' + f.an) + sp(n && (pcs(croiss(R0, AN0)) !== pcs(croiss(R, AN0)) || pcs(croiss(R0, f.an)) !== pcs(croiss(R, f.an))) ? 'prévision du FMI : ' + pcs(croiss(R0, AN0)) + ' · ' + pcs(croiss(R0, f.an)) : 'prévision du FMI'), 'deux') +
+      tu('Intérêts de la dette en ' + f.an, nf(ti, 0) + '\u00a0milliards d\'euros', sp(nf(f.interets, 1) + '\u00a0% du PIB' + (n && Math.abs(ti - zi) >= 0.5 ? ' ; sans vos mesures : ' + nf(zi, 0) + '\u00a0milliards' : '')), 'large');
+    // Sans mesure : une phrase et deux boutons pour commencer, pas de partage d'un budget vide.
+    $('q-rc-p').innerHTML = n ? resume('bilan') : '<p class="q-gros">Aucune mesure pour l\'instant : voici où irait la France si rien ne change.</p><p class="q-actions"><button type="button" class="q-go" data-aller="voter">Voter les mesures</button> <button type="button" class="q-lien" data-aller="creer">Créer les vôtres</button></p>';
+    $('q-partager').parentNode.hidden = !n;
     vosMesuresG(); ouVa(); pourVous();
     // Défi du jour
     var DJ = defiDuJour(), x = DJ && DJ.x, cond = DJ && DJ.cond, ok = DJ && DJ.ok, faisable = DJ && DJ.faisable;
