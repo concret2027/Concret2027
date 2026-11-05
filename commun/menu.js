@@ -635,7 +635,7 @@
     Array.prototype.forEach.call(jp.querySelectorAll('a[href="#bulletin"]'), function (a) { a.textContent = 'Le détail, président par président'; });
     Array.prototype.forEach.call(jp.querySelectorAll('a.jx-pres, .jx-fixe, .jx-plus'), function (a) { a.remove(); });
     var fx = document.createElement('span'); fx.className = 'jx-fixe';
-    if (document.getElementById('bref-pres')) { var ap = document.createElement('a'); ap.className = 'jx-pres'; ap.href = '#bref-pres'; ap.textContent = 'Par président'; fx.appendChild(ap); }
+    if (document.getElementById('bref-pres')) { var ap = document.createElement('a'); ap.className = 'jx-pres'; ap.href = '#bref-pres'; ap.textContent = 'Résultats'; fx.appendChild(ap); }
     jp.insertBefore(fx, jp.firstChild);
     var ref = fx.nextSibling;
     th.forEach(function (t) {

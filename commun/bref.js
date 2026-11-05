@@ -131,7 +131,7 @@
       // Avec le sommaire, la liste des indicateurs y est répartie thème par thème ; elle reste dans la page, cachée, pour les cartes
       // d'aperçu et « Le pouls de la France » (outils/apercu.js la lit telle quelle).
       (th.length ? sommaire(th) + '<div class="bref-cache" aria-hidden="true">' + chips + '</div>' : '<details class="bref-det"><summary>Voir les ' + l.length + ' indicateurs</summary>' + chips + '</details>') +
-      '<span class="eyebrow" id="bref-pres" style="margin:4px 0 0">Par président</span><div class="bref-pres">' +
+      '<span class="eyebrow" id="bref-pres" style="margin:4px 0 0">La France sous chaque président</span><div class="bref-pres">' +
       o.pres.map(function (p) {
         var c = p.v == null ? '' : p.v >= 10 ? 'g' : p.v >= 6 ? 'm' : 'b';
         return '<a class="' + c + '" href="#bulletin"><span>' + esc(p.n.split(' ').slice(-1)[0]) + '</span><b>' + (p.v == null ? '—' : fmt(p.v)) + '</b><i style="width:' + (p.v == null ? 0 : 5 * p.v) + '%"></i></a>';
