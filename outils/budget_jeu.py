@@ -616,6 +616,14 @@ DIR_ETIQ = [('François Hollande', 'Hollande'), ('Emmanuel Macron', 'Macron'), (
             ('Giorgia Meloni', 'Meloni'), ('António Costa', 'Costa'), ('Viktor Orbán', 'Orbán'), ('Sanna Marin', 'Marin'), ('Shinzō Abe', 'Abe'),
             ('Jacinda Ardern', 'Ardern'), ('Boris Johnson', 'Johnson'), ('Romano Prodi', 'Prodi'), ('Mark Rutte', 'Rutte'), ('Joe Biden', 'Biden'), ('Jair Bolsonaro', 'Bolsonaro')]
 # « de la France », « du Japon », « des Pays-Bas », « d'Israël » : la grammaire du nom du pays.
+# Code à deux lettres (drapeau) et grande région du monde de chaque pays, pour la couleur des points (Europe, Amériques,
+# Asie-Pacifique, autres) : un repère géographique, pas un classement.
+DIR_ISO2 = {'AUS': 'AU', 'AUT': 'AT', 'BEL': 'BE', 'BGR': 'BG', 'BRA': 'BR', 'CAN': 'CA', 'CHL': 'CL', 'CHN': 'CN', 'COL': 'CO', 'CRI': 'CR', 'CZE': 'CZ', 'DEU': 'DE',
+            'DNK': 'DK', 'ESP': 'ES', 'EST': 'EE', 'FIN': 'FI', 'FRA': 'FR', 'GBR': 'GB', 'GRC': 'GR', 'HRV': 'HR', 'HUN': 'HU', 'IRL': 'IE', 'ISL': 'IS', 'ISR': 'IL',
+            'ITA': 'IT', 'JPN': 'JP', 'KOR': 'KR', 'LTU': 'LT', 'LUX': 'LU', 'LVA': 'LV', 'MLT': 'MT', 'NLD': 'NL', 'NOR': 'NO', 'NZL': 'NZ', 'POL': 'PL', 'PRT': 'PT',
+            'ROU': 'RO', 'SVK': 'SK', 'SVN': 'SI', 'SWE': 'SE', 'TUR': 'TR', 'USA': 'US', 'MEX': 'MX', 'IND': 'IN', 'RUS': 'RU', 'CHE': 'CH'}
+DIR_REGION = {**{k: 'am' for k in ('BRA', 'CAN', 'CHL', 'COL', 'CRI', 'USA', 'MEX')}, **{k: 'ap' for k in ('AUS', 'CHN', 'JPN', 'KOR', 'NZL', 'IND')},
+              **{k: 'au' for k in ('TUR', 'ISR', 'RUS')}}
 DIR_DU = {'Brésil', 'Canada', 'Chili', 'Costa Rica', 'Danemark', 'Japon', 'Luxembourg', 'Portugal', 'Royaume-Uni'}
 DIR_DES = {'Pays-Bas', 'États-Unis'}
 DIR_SANS = {'Israël': "d'Israël", 'Malte': 'de Malte'}
@@ -670,7 +678,7 @@ def dirigeants():
             courts += 1; continue
         assert 10 <= p['depense'] <= 75 and -20 <= p['solde'] <= 20, p
         assert p['sources']['depense'] == p['sources']['solde'], p
-        x = {'nom': p['nom'], 'pays': p['pays'], 'de': _de_pays(p['pays']), 'an': p['annee'], 'dep': round(p['depense'], 2),
+        x = {'nom': p['nom'], 'pays': p['pays'], 'c': DIR_ISO2[p['code_pays']], 'rg': DIR_REGION.get(p['code_pays'], 'eu'), 'de': _de_pays(p['pays']), 'an': p['annee'], 'dep': round(p['depense'], 2),
              'rec': round(p['depense'] + p['solde'], 2), 'src': p['sources']['depense'], 'ax': p['axes']}
         if p['en_cours']: x['mc'] = 1
         k = (p['pays'], p['annee'])
