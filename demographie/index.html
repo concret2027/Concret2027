@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="70567d9a18e1">
+<meta name="concret-version" content="fe613c89925a">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -177,6 +177,16 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
 #chiffres:empty { min-height: 300px; }
 @media (min-width: 700px) { #chiffres:empty { min-height: 150px; } }
 @media (min-width: 1100px) { #chiffres:empty { min-height: 115px; } }
+/* Le dernier chiffre (du jour, du mois, du trimestre), en tête de son thème : il n'entre pas dans le résultat, la ligne du haut le dit. */
+.dc-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 12px; }
+.dc { gap: 8px; scroll-margin-top: 140px; }
+section.theme .dc { padding: 12px 12px 10px; border-radius: 12px; box-shadow: none; }
+.dc-l { margin: 0; display: flex; align-items: center; gap: 7px; font-size: 12.5px; line-height: 1.35; font-weight: 600; color: var(--muted); }
+.dc-l::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--th, var(--fr)); }
+.dc .metric { padding: 0; }
+.dc .mo { padding: 0; }
+.dc-ancre { display: block; height: 0; }
+.dc h3 { margin: 0; }
 </style>
 </head>
 <body data-sources="Sources : Eurostat et Insee (démographie et migrations), Cour des comptes (détail sous chaque courbe).">
@@ -185,7 +195,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/" aria-current="page">Démographie</a></nav>
   <div class="brand"><b>Démographie</b><span id="maj"></span></div>
   <nav class="jump" aria-label="Aller à">
-    <a href="#acc-actu">Actualité</a><a href="#acc-mois">Naissances du mois</a><a href="#naissances">Naissances</a><a href="#ages">Âges</a><a href="#nes">Nés à l'étranger</a><a href="#titres">Titres de séjour</a><a href="#asile">Asile</a><a href="#lois">Les lois</a><a href="#regle">Sources</a>
+    <a href="#acc-actu">Actualité</a><a href="#naissances">Naissances</a><a href="#ages">Âges</a><a href="#nes">Nés à l'étranger</a><a href="#titres">Titres de séjour</a><a href="#asile">Asile</a><a href="#lois">Les lois</a><a href="#regle">Sources</a>
   </nav>
 
   <section class="card" id="reponse" data-partage="non" aria-labelledby="titre">
@@ -197,25 +207,25 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
 
   <section class="card" id="toile" hidden></section>
 
-  <h2 class="grp-t" id="actualite">Chiffres et actualité</h2>
+  <h2 class="grp-t" id="actualite">L'actualité</h2>
   <details class="acc" id="acc-actu">
     <summary><span class="acc-h">L'actualité de la démographie</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-list"></ul></div>
   </details>
-  <details class="acc" id="acc-mois">
-    <summary><span class="acc-h">Les naissances du mois</span><span class="acc-t" id="teaser-mois">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body">
-      <div class="mois-chiffres" id="mois-chiffres"></div>
-      <div class="key" id="k-mois"></div><div class="chart" id="ch-mois"></div>
-      <p class="note" id="n-mois"></p>
-    </div>
-  </details>
-
   <p class="chap">La population</p>
 
   <div class="theme" id="naissances">
     <h2>Naissances et décès</h2>
     <p class="retenir" id="naissances-t"></p>
+    <section class="card dc" id="dc-mois" aria-labelledby="dc-mois-h">
+      <p class="dc-l">Chiffre du mois, affiché sans calcul</p>
+      <span class="dc-ancre" id="acc-mois"></span>
+      <h3 id="dc-mois-h">Naissances et décès du mois <small>· France métropolitaine</small></h3>
+      <div class="mois-chiffres" id="mois-chiffres"></div>
+      <div class="key" id="k-mois"></div><div class="chart" id="ch-mois"></div>
+      <p class="note" id="n-mois"></p>
+      <span class="dc-bref" id="teaser-mois" hidden></span>
+    </section>
     <section class="card"><h3>Naissances et décès en France <small>· nombre par an</small></h3><div class="key" id="k-nd"></div><div class="chart" id="ch-nd"></div><p class="note" id="n-nd"></p></section>
     <div class="plus" id="plus-naissances"><div class="grille">
       <section class="card"><h3>Enfants par femme</h3><div class="key"></div><div class="chart" id="ch-fec"></div><p class="note" id="n-fec"></p></section>
@@ -560,7 +570,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
         '<div class="chiffre"><span class="lab">Décès, ' + nom(mm) + '</span><span class="n">' + nf(M.deces[n]) + '</span><span class="t">' + (avant >= 0 ? nf(M.deces[avant]) + ' en ' + nom(M.m[avant]) : '') + '</span></div>';
       $('k-mois').innerHTML = '<span><i style="background:var(--fr)"></i>Naissances</span><span><i style="background:var(--bad)"></i>Décès</span>';
       var k0 = Math.max(0, n - 23), xs = M.m.slice(k0);
-      quand('acc-mois', function () {
+      quand('dc-mois', function () {
         lineChart('ch-mois', [{ c: 'var(--fr)', n: 'Naissances', main: 1, data: xs.map(function (x, i) { return { x: i, v: M.nais[k0 + i] }; }) }, { c: 'var(--bad)', n: 'Décès', data: xs.map(function (x, i) { return { x: i, v: M.deces[k0 + i] }; }) }],
           { x: [-0.5, xs.length - .5], xt: xs.map(function (x, i) { return i; }).filter(function (i) { return xs[i].slice(5) === '01' || xs[i].slice(5) === '07'; }), label: 'Naissances et décès par mois', yfmt: function (v) { return fmt(v / 1000, 0) + ' k'; }, efmt: function (v) { return nf(v); },
             xfmt: function (i) { return MO[+xs[i].slice(5) - 1] + ' ' + xs[i].slice(0, 4); }, xlab: function (i) { return nom(xs[i]); }, l: 40, r: 56 });
@@ -595,7 +605,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
 <script src="/commun/toile.js?v=20261105n"></script>
 <script src="/commun/pays.js?v=20261031i"></script>
 <script src="/commun/lois.js?v=20261031i"></script>
-<script src="/commun/partage.js?v=20261105n"></script>
+<script src="/commun/partage.js?v=20261105t"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/menu.js?v=20261105s"></script>
 </body>

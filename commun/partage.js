@@ -17,7 +17,7 @@
   var txt = function (el) { return el ? el.textContent.replace(/\s+/g, ' ').replace(/\bexemple\b/i, '').trim() : ''; };
   // Titre d'un h2 avec sur-titre : { sur: « Dette, % du PIB », main: la phrase }.
   function parties(card) {
-    var h = card.querySelector('h1, h2, .acc-h, .lab, .eyebrow');
+    var h = card.querySelector('h1, h2, .acc-h, .lab, .mo-lab, .eyebrow');
     if (!h) return { sur: '', main: document.title.replace(' · Concret', '') };
     var eb = h.querySelector('.eyebrow'), clone = h.cloneNode(true);
     Array.prototype.forEach.call(clone.querySelectorAll('.eyebrow, .ex'), function (e) { e.remove(); });
@@ -103,7 +103,7 @@
     if (window.ConcretMenu && ConcretMenu.presser) ConcretMenu.presser(card);
     lib().then(function (h2c) {
       // Le titre est déjà écrit en haut de l'image : on le retire de la capture pour ne pas le répéter.
-      var h = card.querySelector('h1, h2, .acc-h, .lab, .eyebrow'); if (h) h.setAttribute('data-pt-titre', ''); card.setAttribute('data-pt-bloc', '');
+      var h = card.querySelector('h1, h2, .acc-h, .lab, .mo-lab, .eyebrow'); if (h) h.setAttribute('data-pt-titre', ''); card.setAttribute('data-pt-bloc', '');
       var lg = legende(card); if (lg) lg.setAttribute('data-pt-legende', '');
       return h2c(card, { backgroundColor: getComputedStyle(document.body).backgroundColor, scale: 2, useCORS: true, logging: false,
         ignoreElements: function (el) { return el.classList && (el.classList.contains('share') || el.classList.contains('pt-share') || el.classList.contains('nt-btn') || el.classList.contains('cp-bar')); },
@@ -156,8 +156,9 @@
     Array.prototype.forEach.call((root || document).querySelectorAll(SEL), function (card) {
       if (card.dataset.partage || card.querySelector('.share, .pt-share')) return; // data-partage="non" : bloc d'en-tête, rien à partager
       // Un bloc dans un autre n'a pas son propre bouton, sauf une courbe d'un dépliant (« Voir les autres courbes ») ou la courbe principale
-      // d'un thème (.courbe-p) : on peut la partager seule. data-partage-l : le libellé du bouton (« Partager la courbe », « Partager le thème »).
-      if (card.parentElement && card.parentElement.closest(SEL) && !card.matches('.today .metric') && !card.parentElement.closest('.fold') && !card.classList.contains('courbe-p') && !card.classList.contains('courbe-s')) return;
+      // d'un thème (.courbe-p), ou le dernier chiffre du jour ou du mois en tête d'un thème (.dc) : on peut la partager seule.
+      // data-partage-l : le libellé du bouton (« Partager la courbe », « Partager le thème »).
+      if (card.parentElement && card.parentElement.closest(SEL) && !card.matches('.today .metric') && !card.parentElement.closest('.fold') && !card.classList.contains('courbe-p') && !card.classList.contains('courbe-s') && !card.classList.contains('dc')) return;
       card.dataset.partage = '1';
       var b = document.createElement('button'); b.type = 'button'; b.className = 'share pt-share'; b.textContent = card.dataset.partageL || 'Partager';
       b.setAttribute('aria-label', 'Partager ce bloc en image');
