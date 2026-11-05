@@ -47,6 +47,15 @@
 .q-clair .q-prop { display: grid; gap: 4px; margin-top: 4px; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--fr); background: color-mix(in srgb, var(--fr) 9%, var(--panel)); }
 .q-prop-l { font-size: 12.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--fr); }
 .q-prop-t { font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--fg); }
+/* Fin des votes : l'étape suivante (le Bilan) tout de suite, en grand. */
+.q-fin-suite { display: grid; justify-items: center; gap: 6px; margin: 4px 0 14px; padding: 16px 14px; border-radius: 14px; background: color-mix(in srgb, var(--fr) 10%, var(--panel)); border: 1.5px solid color-mix(in srgb, var(--fr) 40%, var(--line)); text-align: center; }
+.q-fin-l { margin: 0; font-size: 12.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--fr); }
+.q-fin-go { font-size: 18px !important; min-height: 54px; padding: 0 30px !important; width: 100%; max-width: 340px; }
+.q-fin-s { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.4; max-width: 34ch; }
+.q-mini-x { margin: 6px 0 0; font-size: 14px; line-height: 1.4; color: var(--fg); }
+.q-enonce .q-prop-t { margin: 2px 0 0; display: block; }
+.q-effet { margin: 0; font-size: 15px; line-height: 1.4; color: var(--fg); }
+.q-card .q-effet b { font: inherit; font-weight: 700; font-size: inherit; line-height: inherit; color: var(--fr); }
 </style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -857,6 +866,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       <h2 id="q-mes-t"><span class="eyebrow">Dans votre budget</span><span id="q-mes-n">Aucune mesure créée</span></h2>
       <ul class="q-liste" id="q-mes"></ul>
     </section>
+    <div class="q-fin-suite" id="q-cr-suite"><p class="q-fin-l">Étape suivante</p><button type="button" class="q-go q-fin-go" id="q-cr-bilan">Voir mon bilan →</button><p class="q-fin-s">Déficit, dette, croissance jusqu'en 2031, ce que vos choix changent pour vous, et le pays qui vous ressemble.</p></div>
   </div>
 
   <div class="q-pane" id="p-bilan" role="tabpanel" aria-labelledby="t-bilan" hidden>
@@ -1371,33 +1381,36 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   }
   // Au-dessus de la question : ce que l'on vote, sur un fond à part. Les mesures des deux projets de budget 2027 sont celles
   // que le Parlement examine : on vote comme un député ; les autres sont des pistes chiffrées, hors des projets du Gouvernement.
-  function enonce(origines, q) {
+  function enonce(origines, q, avant) {
     var t = origines.some(function (o) { return o === 'plf' || o === 'plfss'; }) ? 'Votez comme un député : mesure du budget 2027, examiné par le Parlement'
       : origines.indexOf('debat') >= 0 ? 'Votez comme un député : mesure débattue, hors des projets du Gouvernement'
       : 'À vous de voter : piste chiffrée, hors des projets du Gouvernement';
-    return '<div class="q-enonce"><span class="q-ass">' + t + '</span><p class="q-question">' + q + '</p></div>';
+    return '<div class="q-enonce"><span class="q-ass">' + t + '</span>' + (avant || '') + '<p class="q-question">' + q + '</p></div>';
+  }
+  // Le texte « proposé » d'une mesure (mêmes remplacements que dans clair()).
+  function clairP(c) { var x = clair(c); var m = /<span class="q-prop-t">([\s\S]*?)<\/span>/.exec(x); return m ? m[1] : nb(c.clair.p); }
+  // L'effet d'une mesure en une phrase, au même endroit que pour les questions à plusieurs réponses.
+  function effetTexte(c, m) {
+    var prem = 0; for (var y = AN0; y <= AN1 && !prem; y++) if (montant(c, y)) prem = y;
+    if (!m && !prem) return '<b>Effet :</b> rien avant ' + (AN1 + 1) + (c.hors_jeu ? ' (' + mdt(c.hors_jeu.md) + ' ' + phrase(c.hors_jeu.md, c) + ' en ' + c.hors_jeu.an + ')' : '');
+    if (!m) return '<b>Effet :</b> ' + mdt(montant(c, prem)) + ' ' + phrase(montant(c, prem), c) + ' en ' + prem + ' (rien avant), puis davantage';
+    var fin = montant(c, AN1), monte = c.duree !== 'une seule année' && Math.abs(fin) > Math.abs(m) * 1.5 && fin * m > 0;
+    var hab = J.population ? Math.abs(m) * 1e9 / J.population.v : null;
+    return '<b>Effet :</b> ' + mdt(m) + ' ' + phrase(m, c) + ' en ' + AN0 + (c.duree === 'une seule année' ? ', une seule année' : monte ? ', puis ' + mdt(fin) + ' en ' + AN1 : ', chaque année') + (hab ? ' (environ ' + nf(hab, hab < 10 ? 1 : 0) + '\u00a0€ par habitant)' : '') + '.';
   }
   function carte(c, entree) {
     var m = montant(c, AN0), CC = concretCarte(c, m);
     $('q-deck').innerHTML = (filtrees().filter(function (o) { return o !== c && (S.v[o.id] == null || S.v[o.id] === 0); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card' + (entree ? ' in' : '') + '" id="q-card">' +
       '<span class="q-stamp p" id="q-sp">✓ POUR</span><span class="q-stamp c" id="q-sc">✗ CONTRE</span>' +
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span>' + (vousConcerne(c) ? '<span class="q-vous">Vous concerne</span>' : '') + '<span class="q-org">' + esc(origine(c)) + '</span></div>' +
-      '<h2>' + nb(c.titre || c.l) + '</h2>' +
-      (function () {
-        // Rien la première année : le montant de la première année où la mesure joue, ou « rien avant » la fin du jeu.
-        var prem = 0; for (var y = AN0; y <= AN1 && !prem; y++) if (montant(c, y)) prem = y;
-        if (!m && !prem) return '<div class="q-mt"><b>Rien avant ' + (AN1 + 1) + '</b><span>' + (c.hors_jeu ? mdt(c.hors_jeu.md) + ' ' + phrase(c.hors_jeu.md, c) + ' en ' + c.hors_jeu.an + ', après les cinq ans du jeu' : 'pendant les cinq ans du jeu') + '</span></div>';
-        if (!m) return '<div class="q-mt"><b>' + mdt(montant(c, prem)) + '</b><span>' + phrase(montant(c, prem), c) + ' en ' + prem + ' (rien avant)</span><em>puis davantage chaque année</em></div>';
-        var fin = montant(c, AN1), monte = c.duree !== 'une seule année' && Math.abs(fin) > Math.abs(m) * 1.5 && fin * m > 0;
-        var hab = J.population ? Math.abs(m) * 1e9 / J.population.v : null;
-        return '<div class="q-mt"><b>' + mdt(m) + '</b><span>' + phrase(m, c) + ' en ' + AN0 + (hab ? ' · environ ' + nf(hab, hab < 10 ? 1 : 0) + '\u00a0€ par habitant' : '') + '</span><em>' + (c.duree === 'une seule année' ? 'une seule année' : monte ? 'puis davantage : ' + mdt(fin) + ' en ' + AN1 : 'chaque année') + '</em></div>';
-      })() +
-      (CC.indexOf('q-vous') >= 0 ? CC : '') + clair(c) +
+      '<h2>' + nb(c.titre || c.l) + '</h2>' + clair(c, true) +
+      enonce([c.origine], 'Êtes-vous pour ?', (c.clair && c.clair.p ? '<p class="q-prop-t">' + clairP(c) + '</p>' : '') + '<p class="q-effet">' + effetTexte(c, m) + '</p>') +
+      '<div class="q-vin" role="group" aria-label="Votre vote"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button><button type="button" data-vin="-1">✗ Contre</button><button type="button" data-vin="3">Abstention</button><button type="button" data-vin="1">✓ Pour</button></div><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') +
+      (CC.indexOf('q-vous') >= 0 ? CC : '') +
       (rivaux(c).length ? '<p class="q-ligne"><b>Sur le même sujet :</b> ' + rivaux(c).map(function (o) { return nb(o.titre || o.l) + (S.v[o.id] === 1 ? ' (votre choix)' : ''); }).join(' · ') + '. Une seule peut être adoptée.</p>' : '') +
       '<p class="q-ligne"><b>' + quiTitre(c, m) + ' :</b> ' + nb(c.qui_texte || c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' +
       (CC.indexOf('q-vous') >= 0 ? '' : CC) +
-      detailsSrc(c, m) +
-      enonce([c.origine], 'Êtes-vous pour ce qui est proposé ?') + '<div class="q-vin" role="group" aria-label="Votre vote"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button><button type="button" data-vin="-1">✗ Contre</button><button type="button" data-vin="3">Abstention</button><button type="button" data-vin="1">✓ Pour</button></div><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
+      detailsSrc(c, m) + '</article>';
     serrer($('q-deck'));
     Array.prototype.forEach.call($('q-deck').querySelectorAll('[data-vin]'), function (b) { b.onclick = function () { if (b.dataset.vin === 'u') annuler(); else voter(c, +b.dataset.vin); }; });
     var vin = $('q-deck').querySelector('.q-vin'); VIN_VU = false;
@@ -1540,7 +1553,14 @@ body.q-bilan .q-collant { position: relative; top: auto; }
         '<text x="' + gx + '" y="' + (H - 2) + '" font-size="9.5" fill="var(--muted)">' + ans[0] + '</text><text x="' + (W - dx) + '" y="' + (H - 2) + '" font-size="9.5" text-anchor="end" fill="var(--muted)">' + ans[ans.length - 1] + '</text></svg></figure>';
     };
     var pcf = function (v) { return (v < 0 ? '−' : '') + nf(Math.abs(v), 1) + '\u00a0%'; };
-    return '<div class="q-minis">' + un('Déficit', function (L, an) { return -ligneAn(L, an).solde; }, pcf) + un('Croissance', function (L, an) { return croiss(L, an); }, pcf) + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>sans</p>';
+    // Quand le choix fait chuter l'activité la première année, la courbe de croissance remonte ensuite : le dire en clair,
+    // avec le niveau du PIB (écart avec « sans ce choix »), pour qu'on ne lise pas un rebond qui effacerait la chute.
+    var niv = function (an) { var x = ligneAn(A1, an), y = ligneAn(A0, an); return x && y ? (x.L || 0) - (y.L || 0) : 0; };
+    var n0 = niv(AN0), n1 = niv(ans[ans.length - 1]), expl = '';
+    if (S.macro && Math.abs(n0) >= 1) expl = '<p class="q-mini-x">' + (n0 < 0
+      ? 'Le PIB baisse de ' + nf(Math.abs(n0), 1) + '\u00a0% dès ' + AN0 + ' par rapport à « sans ce choix », et en ' + ans[ans.length - 1] + ' il reste ' + nf(Math.abs(n1), 1) + '\u00a0% plus bas. Si la croissance des dernières années repasse au-dessus, c\'est qu\'elle repart d\'un niveau plus bas : elle ne rattrape pas la perte.'
+      : 'Le PIB monte de ' + nf(n0, 1) + '\u00a0% dès ' + AN0 + ' par rapport à « sans ce choix », et en ' + ans[ans.length - 1] + ' il reste ' + nf(Math.abs(n1), 1) + '\u00a0% ' + (n1 >= 0 ? 'plus haut' : 'plus bas') + '. Si la croissance des dernières années repasse en dessous, c\'est qu\'elle part d\'un niveau plus haut.') + '</p>';
+    return '<div class="q-minis">' + un('Déficit', function (L, an) { return -ligneAn(L, an).solde; }, pcf) + un('Croissance', function (L, an) { return croiss(L, an); }, pcf) + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>sans</p>' + expl;
   }
   function premiere(c) { for (var a = AN0; a <= AN1; a++) if (montant(c, a)) return 'rien avant ' + a + ', puis ' + quoi(c.sens, montant(c, a)) + ' en ' + a; return 'rien avant ' + (AN1 + 1); }
   // Ce que votent les joueurs : le compteur de Concret (le même que pour le quiz, un total par choix, rien qui identifie la
@@ -1690,7 +1710,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     var n = nbDecisions(), c = suivante(), et = etapeDue(), prochaine = ETAPES.filter(function (e) { return e > n; })[0], sp = speciale();
     var rest = uneParQ(C.filter(aVoir)).length, NQ = uneParQ(C).length;
     var dots = '<span class="q-dots">' + [0, 1, 2, 3, 4].map(function (i) { return '<i class="' + (i < Math.min(n, 5) ? 'on' : '') + '"></i>'; }).join('') + '</span>';
-    $('q-prog').innerHTML = n < 5 ? dots + 'Votre résultat dans ' + (5 - n) + ' vote' + (5 - n > 1 ? 's' : '') : n + ' votées · <b>' + (rest ? rest + ' restante' + (rest > 1 ? 's' : '') : 'toutes vues') + '</b>' + (prochaine ? ' · prochain point à ' + prochaine + ' votes' : '') + (S.obj && S.reussi && S.reussi[cleRec(S.obj)] ? ' · record : ' + S.reussi[cleRec(S.obj)] + ' votes' : '');
+    $('q-prog').innerHTML = n < 5 ? dots + 'Votre résultat dans ' + (5 - n) + ' vote' + (5 - n > 1 ? 's' : '') : n + ' votées · <b>' + (rest ? rest + ' restante' + (rest > 1 ? 's' : '') : 'toutes vues') + '</b>' + (prochaine && rest ? ' · prochain point à ' + prochaine + ' votes' : '') + (S.obj && S.reussi && S.reussi[cleRec(S.obj)] ? ' · record : ' + S.reussi[cleRec(S.obj)] + ' votes' : '');
     $('q-ptot').querySelector('span').style.width = (100 * (NQ - rest) / NQ) + '%';
     if (sp && c) carteSpeciale(sp, entree);
     else if (et && c) {
@@ -1703,8 +1723,9 @@ body.q-bilan .q-collant { position: relative; top: auto; }
       $('b-suite').textContent = 'Continuer : ' + $('q-suite').textContent.toLowerCase();
     } else if (c) (c.q ? carteQ : carte)(c, entree);
     else {
-      $('q-deck').innerHTML = '<section class="card q-etape"><span class="eyebrow">Vous avez vu toutes les mesures' + (S.filtre !== 'tout' ? ' de ce filtre' : '') + '</span><h2>Votre quinquennat</h2>' + resume() +
-        '<div class="q-actions"><button type="button" class="q-go" id="q-voirb2">Voir tout le bilan</button><button type="button" class="q-lien" id="q-cr2">Créer vos propres mesures</button></div>' +
+      $('q-deck').innerHTML = '<section class="card q-etape"><span class="eyebrow">Vous avez vu toutes les mesures' + (S.filtre !== 'tout' ? ' de ce filtre' : '') + '</span><h2>Bravo, vous avez voté toutes les mesures</h2>' +
+        '<div class="q-fin-suite"><p class="q-fin-l">Étape suivante</p><button type="button" class="q-go q-fin-go" id="q-cr2">Créer vos propres mesures →</button><p class="q-fin-s">Changez ce que vous voulez : toute la dépense, un impôt, une prestation, la retraite par capitalisation… avec l\'effet sur le déficit et la croissance.</p><button type="button" class="q-lien" id="q-voirb2">Ou voir tout de suite mon bilan</button></div>' +
+        resume('etape') +
         (function () { if (!S.ami) return ''; var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), a1 = an1(Am), r1 = an1(R), x = accordAmi();
           return '<div class="q-ami" style="margin-top:12px"><p><b>Vous et le budget reçu</b> : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' carte' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + '. ' : '') + 'Déficit ' + AN0 + ' : ' + defic(r1.solde) + ' pour vous, ' + defic(a1.solde) + ' pour le budget reçu' + (Math.abs(r1.solde - a1.solde) < 0.05 ? ', à égalité.' : -r1.solde < -a1.solde ? ' : le vôtre est plus bas.' : ' : le sien est plus bas.') + '</p><div class="q-chips"><button type="button" id="q-ami-r">Renvoyer ma réponse</button></div></div>'; })() +
         '<p class="q-note" style="margin-top:12px">Pour changer d\'avis : revoyez vos votes un par un, revotez toutes les mesures depuis le début (vos mesures créées restent), ou effacez tout.</p>' +
@@ -2501,6 +2522,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     barre(); if (t === 'bilan') bilan();
     var h = $('q-collant').getBoundingClientRect().bottom, p = $('p-' + t).getBoundingClientRect().top; if (p < h) window.scrollBy({ top: p - h - 70 });
   }
+  document.addEventListener('click', function (e) { if (e.target && e.target.id === 'q-cr-bilan') onglet('bilan'); });
   function tout(entree, anime) { hud(anime); enHaut(); pile(entree); barre(); }
 
   function objectifs() {
