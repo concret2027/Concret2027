@@ -523,10 +523,12 @@ body.q-grand .q-bar button { font-size: 13.5px; padding: 4px 2px; white-space: n
 .q-som { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 10; background: var(--bg); margin: 0 0 4px; min-width: 0; max-width: 100%; contain: inline-size; }
 .q-som-r { display: flex; gap: 6px; min-width: 0; overflow-x: auto; padding: 3px 0; scrollbar-width: none; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
 .q-som-r.fin { -webkit-mask-image: none; mask-image: none; }
+.q-som::after { content: '›'; position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 24px; font-weight: 700; color: var(--fr); pointer-events: none; }
+.q-som.fin::after { display: none; }
 .q-som-r::-webkit-scrollbar { display: none; }
 .q-som-r a { flex: none; box-sizing: border-box; display: inline-flex; align-items: center; min-height: 44px; padding: 0 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); font-size: 15px; font-weight: 600; text-decoration: none; white-space: nowrap; }
-.q-som-r a[aria-current="true"] { background: var(--fr); border-color: var(--fr); color: #fff; }
-#p-bilan > section, #p-bilan > details { scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px) + 62px); }
+.q-som-r a[aria-current] { background: var(--fr); border-color: var(--fr); color: #fff; }
+#p-bilan > section, #p-bilan > details { scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px) + var(--somh, 52px) + 10px); }
 .q-tard { margin: 0; text-align: center; }
 .q-tard button { font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; padding: 0 6px; cursor: pointer; }
 .q-bar button.passe { border: 0; background: none; font-size: 13.5px; font-weight: 600; color: var(--muted); text-decoration: underline; min-height: 44px; padding: 0 4px; }
@@ -994,17 +996,23 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     var K = Object.keys(T); if (!K.length) return '';
     var mc = J.mesange_choc, m1 = mdt(CHOC / 100 * PIBY[AN0]);
     var mx = Math.max.apply(null, K.map(function (k) { return T[k]; })), ici = ' Ici : ' + K.map(function (k) { return (NOMT[k] || k) + ', ' + mdt(T[k] / 100 * PIBY[AN0]) + ' (' + nf(T[k], 1) + '\u00a0point' + (T[k] >= 2 ? 's' : '') + ' de PIB)'; }).join(' ; ') + '.';
-    var t = mx > CHOC2 ? 'Ce changement dépasse de loin ce que le modèle de la direction du Trésor et de l\'Insee sait calculer (« quelques points de PIB », écrivent ses auteurs) : les chiffres de croissance, d\'emploi et de chômage sont seulement indicatifs. Ils sont obtenus en multipliant l\'effet testé pour environ ' + m1 + ' (prolongement en ligne droite).' + ici
+    var t = mx > CHOC2 ? '<b>C\'est bien plus que ce que le modèle de la direction du Trésor et de l\'Insee sait calculer : la croissance, l\'emploi et le chômage affichés ne sont qu\'un ordre de grandeur, arrondi à l\'unité.</b> Ses auteurs disent leur calcul valable pour « quelques points de PIB » ; le jeu multiplie l\'effet testé pour environ ' + m1 + ' (prolongement en ligne droite) ; la limite de 3 points est une convention de Concret, pas celle des auteurs.' + ici
       : 'Au-delà d\'environ ' + m1 + ' par type de mesure (1 point de PIB), le modèle de la direction du Trésor et de l\'Insee n\'a pas été testé : le jeu multiplie l\'effet testé (prolongement en ligne droite). C\'est une estimation.' + ici;
     if (court) return '<p class="q-alerte">⚠ ' + t + '</p>';
     return '<div class="q-alerte"><p>⚠ ' + t + '</p>' + (mc ? '<p class="q-note">Ce qu\'écrivent la direction du Trésor et l\'Insee (Mésange 2017, <a href="' + esc(mc.url) + '">document</a>) : « ' + esc(mc.citation.charAt(0).toUpperCase() + mc.citation.slice(1)) + ' » (page ' + esc(String(mc.page).split(' ')[0]) + ' du PDF, les variantes de dépense sont aussi de 1 point) ; « ' + esc(mc.citation2) + ' » (même page) ; à propos des cotisations des employeurs, ils écrivent que le cadre linéaire du modèle est « ' + esc(mc.citation3.replace(/^.*?valable pour/, 'valable pour').replace(/ : en dehors.*$/, '')) + ' » (page ' + esc(String(mc.page3).split(' ')[0]) + ') ; Concret prend 3 points comme limite de ces « quelques points ». Aucune source publiée lue ne donne, pour la France, un meilleur chiffre pour de si grands changements.</p>' : '') + '</div>';
   }
+  // Au-delà de 3 points de PIB pour un type de mesure : chiffres de l'activité arrondis à l'unité (convention de Concret).
+  function tresGrand(L) { return (L || []).some(function (r) { return (r.ext || []).some(function (t) { return Math.abs(r.A[t]) > CHOC2; }); }); }
+  var arr = function (v, u) { return 'environ ' + (Math.round(v) < 0 ? '−' : Math.round(v) > 0 ? '+' : '') + nf(Math.abs(Math.round(v)), 0) + u; };
   // Garde-fou : une dépense ou une recette totale ne peut pas devenir négative, ni un poste de « Où va l'argent public ».
   function horsSens(L) {
     var r = L && an1(L); if (!r || !FR0 || !D0) return '';
     var depP = FR0.dep - D0.interets;
     if (r.dep > depP + 1e-6) return 'vos choix retirent ' + nf(r.dep, 1) + '\u00a0points de PIB de dépenses, plus que toute la dépense publique hors intérêts (' + nf(depP, 1) + '\u00a0points en ' + D0.an + ', Eurostat) : une dépense ne peut pas être négative.';
     if (-r.rec > FR0.rec + 1e-6) return 'vos choix retirent ' + nf(-r.rec, 1) + '\u00a0points de PIB de recettes, plus que toutes les recettes publiques (' + nf(FR0.rec, 1) + '\u00a0points en ' + D0.an + ', Eurostat) : une recette ne peut pas être négative.';
+    var P = S.perso, ce = AS['cotis-emp'], ts = AS['tva-sociale'];
+    if (ce && ts && P['tva-sociale'] && ce.md * (1 + (P['cotis-emp'] || 0) / 100) - P['tva-sociale'] * ts.mix[0].par_u < -1e-6) return 'la TVA sociale baisse les cotisations des employeurs de ' + mdt(P['tva-sociale'] * ts.mix[0].par_u) + ', plus qu\'il n\'en reste avec votre ligne « Cotisations des employeurs » : une recette ne peut pas être négative.';
+    if (AS.ir && (P.ir || 0) <= -100 && (P['pfu-bareme'] || P['quotient-familial'])) return 'vous avez supprimé l\'impôt sur le revenu : ' + (P['pfu-bareme'] ? '« Revenus du capital au barème »' : '« Quotient familial »') + ' change cet impôt et ne peut pas s\'y ajouter.';
     var VP = variationsPostes(), neg = [];
     (J.repartition ? J.repartition.groupes : []).forEach(function (g) { g.lignes.forEach(function (l) { if (l.v27 + (VP.V[l.k] || 0) < -0.05) neg.push(l.l); }); });
     var xt = AS['tout-depense'], ft = xt && S.perso['tout-depense'] ? -effetPerso(xt, S.perso['tout-depense']) / (xt.md * PIBY[AN0] / PIBY[xt.an]) : 0;
@@ -1189,7 +1197,8 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   function ecoPhrase(A0, A1, direct, compte, macro) {
     if (compte === false) return 'Effet sur l\'économie : non compté (la raison est écrite sous « Pas compté »).';
     var AO = anObj(), r0 = ligneAn(A0, AO), r1 = ligneAn(A1, AO), d = (r1.solde - r0.solde) / 100 * r1.pib, g0 = croiss(A0, AN0), g1 = croiss(A1, AN0);
-    var gc = g0 != null && pcs(g0) !== pcs(g1) ? 'croissance ' + AN0 + ' : ' + pcs(g0) + ' → ' + pcs(g1) : '';
+    var gr = tresGrand(A1), fg = function (v) { return gr ? 'environ ' + (Math.round(v) < 0 ? '−' : '') + nf(Math.abs(Math.round(v)), 0) + '\u00a0%' : pcs(v); };
+    var gc = g0 != null && fg(g0) !== fg(g1) ? 'croissance ' + AN0 + ' : ' + pcs(g0) + ' → ' + fg(g1) : '';
     if (direct != null && Math.abs(d - direct) >= Math.max(0.05, 0.1 * Math.abs(direct))) return 'Avec l\'effet sur l\'économie' + (gc ? ' (' + gc + ')' : '') + ', le déficit ' + AO + (Math.abs(d) < 0.05 ? ' ne bouge presque pas' : (d > 0 ? ' baisse' : ' augmente') + ' finalement de ' + mdt(Math.abs(d))) + (d * direct > 0 && Math.abs(d) < Math.abs(direct) ? pourquoiEco(direct, macro) : '') + '.' + (macro === 'depense' || macro === 'depense_rec' ? ' C\'est l\'effet moyen d\'une dépense publique dans le modèle, pas un calcul propre à cette mesure.' : macro === 'cotis_emp' ? ' Le modèle donne l\'effet de cotisations des employeurs changées sur tous les salaires, pas un calcul propre à cette mesure.' : '');
     return gc ? gc.charAt(0).toUpperCase() + gc.slice(1) + '.' : 'Effet sur l\'économie : presque nul.';
   }
@@ -1328,10 +1337,10 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     var opt = function (i, l, ids, cl) { return '<button type="button" class="q-rep' + (cl ? ' ' + cl : '') + '" data-qo="' + i + '"><b>' + nb(l) + '</b><span>' + (ids ? nb(texteReponse(ids)) : 'rien ne change') + '</span></button>'; };
     $('q-deck').innerHTML = (uneParQ(filtrees().filter(aVoir)).filter(function (o) { return qk(o) !== qk(c); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card q-qcard' + (entree ? ' in' : '') + '" id="q-card">' +
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span>' + (vc ? '<span class="q-vous">Vous concerne</span>' : '') + '<span class="q-org">' + esc(org) + '</span></div>' +
-      '<h2>' + nb(Q.t) + '</h2><p class="q-ligne m">Ces ' + M.length + ' mesures portent sur le même sujet : choisissez une seule réponse.</p>' +
+      '<h2>' + nb(Q.t) + '</h2><p class="q-ligne m">' + Q.o.length + ' changements possibles, ou garder la règle d\'aujourd\'hui : une seule réponse.</p>' +
       '<p class="q-question">' + nb(Q.q) + '</p><div class="q-reps" role="group" aria-label="' + esc(Q.q) + '">' +
       Q.o.map(function (o, i) { return opt(i, o.l, o.ids); }).join('') + opt('a', Q.aucune, null, 'aucune') + '</div>' +
-      '<div class="q-vin q-vin2" role="group" aria-label="Autres choix"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button><button type="button" data-qo="x">Abstention</button></div><p class="q-note" style="text-align:center;margin:0">Abstention : vous ne vous prononcez pas ; aucune de ces mesures n\'entre dans votre budget.</p>' +
+      '<div class="q-vin q-vin2" role="group" aria-label="Autres choix"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button><button type="button" data-qo="x">Abstention</button></div><p class="q-note" style="text-align:center;margin:0">Abstention : vous ne vous prononcez pas. Pour le calcul, cela revient à garder la règle d\'aujourd\'hui.</p>' +
       '<p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette question à la fin</button></p>' +
       '<details class="q-src q-qdet"><summary>Le détail de chaque mesure, et ses sources</summary>' + M.map(function (m) { var mm = montant(m, AN0); return '<div class="q-qm"><h3>' + nb(m.titre || m.l) + '</h3>' + clair(m) + '<p class="q-ligne"><b>' + quiTitre(m, mm) + ' :</b> ' + nb(m.qui_texte || m.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' + concretCarte(m, mm) + detailsSrc(m, mm, (m.statut_court ? 'À l\'Assemblée, ce que ça change, la source' : 'Ce que ça change, et la source')) + '</div>'; }).join('') + '</details>' +
       '</article>';
@@ -1757,7 +1766,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     var u = choisi.u, pc = $('q-pc'), P0 = [[-100, 'Supprimer'], [-20], [-10], [-5], [0], [5], [10], [20], [100, 'Doubler']];
     pc.min = u ? u.min : -100; pc.max = u ? u.max : 100; pc.step = u ? u.pas : 1; pc.hidden = $('q-pc-b').hidden = !!(u && u.choix);
     $('q-pc-b').innerHTML = '<span>' + (u ? pcT(choisi, u.min) : '−100\u00a0%') + '</span><span>' + (u && u.min === 0 ? '' : '0') + '</span><span>' + (u ? pcT(choisi, u.max) : '+100\u00a0%') + '</span>';
-    $('q-pc-l').textContent = u ? u.q + (choisi.par_pib ? ' (1 point ≈ ' + mdt(PIBY[AN0] / 100) + ')' : '') : 'De combien ?';
+    $('q-pc-l').textContent = u && u.choix ? 'Votre choix (touchez une réponse)' : u ? u.q + (choisi.par_pib ? ' (1 point ≈ ' + mdt(PIBY[AN0] / 100) + ')' : '') : 'De combien ?';
     $('q-pc-p').innerHTML = (u && u.choix ? [[0, 'Rien ne change']].concat(u.choix.map(function (o) { return [o.v, o.l]; })) : u ? [[0]].concat(u.p.map(function (v) { return [v]; })) : P0).map(function (v) { return '<button type="button" data-v="' + v[0] + '">' + (v[1] ? v[1] + (u && u.choix ? '' : ' (' + pcT(choisi, v[0]) + ')') : v[0] ? pcC(choisi, v[0]) : 'Rien') + '</button>'; }).join('');
     Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.onclick = function () { $('q-pc').value = b.dataset.v; majCreer(); }; });
     pc.setAttribute('aria-label', u ? 'Choix : ' + u.np : 'Pourcentage de baisse ou de hausse');
@@ -1767,7 +1776,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   function majCreer() {
     if (!choisi) return;
     var pc = +$('q-pc').value, e = effetPerso(choisi, pc);
-    $('q-pc-v').textContent = pc ? pcC(choisi, pc) : (choisi.u ? 'rien' : '0\u00a0%');
+    $('q-pc-v').textContent = choisi.u && choisi.u.choix ? '' : pc ? pcC(choisi, pc) : (choisi.u ? 'rien' : '0\u00a0%');
     Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', +b.dataset.v === pc); });
     $('q-effet').innerHTML = pc && choisi.mix ? '<b>' + mdt(Math.abs(pc * choisi.mix[0].par_u)) + '</b> de TVA en plus par an, et autant de cotisations des employeurs en moins : sur le papier, le déficit ne change pas' : pc ? '<b>' + mdt(Math.abs(e)) + '</b> ' + (choisi.k === 'capitalisation' ? 'de cotisations en moins pour les retraites d\'aujourd\'hui' : phrase(e, { sens: choisi.groupe === 'depense' && choisi.k !== 'allegements' ? 'depense' : 'recette' })) + ' par an' + (choisi.rampe ? ', une fois en place (' + mdt(Math.abs(effetPerso(choisi, pc, AN0))) + ' en ' + AN0 + ')' : ', à partir de ' + AN0) + (choisi.par_pib ? ', soit ' + nf(Math.abs(e) / choisi.md / (PIBY[AN0] / PIBY[choisi.an]) * 100, 0) + '\u00a0% de toute la dépense publique (hors intérêts de la dette)' : '') : (choisi.u ? 'Choisissez avec le curseur.' : 'Choisissez de combien baisser ou augmenter cette ligne.');
     $('q-ch-h').textContent = pc ? 'Calcul de Concret : ' + (choisi.par_pib ? nf(Math.abs(pc), Math.abs(pc) % 1 ? 1 : 0) + ' × 1\u00a0% du PIB de ' + AN0 + ' (' + mdt(PIBY[AN0] / 100) + ')' : choisi.par_u != null ? nf(Math.abs(pc), 0) + ' × ' + mdt(Math.abs(choisi.par_u)) + ' (' + esc(choisi.u.n) + ', ' + choisi.an + ')' + (choisi.rampe ? ' ; un quart la première année, la moitié la deuxième, les trois quarts la troisième, puis tout' : '') : choisi.par_pt ? Math.abs(pc) + ' × ' + nf(choisi.par_pt, 2) + ' milliard d\'euros par 1 % (même base que la carte des allègements)' : Math.abs(pc) + '\u00a0% de ' + mdt(choisi.md) + ' en ' + choisi.an) + ' ; le montant suit ensuite la croissance de l\'économie. On suppose que les comportements ne changent pas' + (choisi.macro && J.variantes[choisi.macro] && S.macro ? ', sauf l\'effet sur l\'activité et l\'emploi, qui est compté : ' + (e >= 0 ? 'une partie de ce gain ne réduit pas le déficit, parce que l\'activité ralentit (modèle de la direction du Trésor et de l\'Insee).' : 'une partie de ce coût est compensée, parce que l\'activité accélère (modèle de la direction du Trésor et de l\'Insee).') : (choisi.macro && J.variantes[choisi.macro] ? ' ; l\'effet sur l\'activité n\'est pas compté (case décochée, Bilan, « Changer les hypothèses »).' : ' ; aucun effet sur l\'activité n\'est compté pour ce type de ligne.')) : '';
@@ -1786,7 +1795,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     var dP = effetPerso(choisi, pc, AN0) - effetPerso(choisi, av || 0, AN0), dPo = effetPerso(choisi, pc, anObj()) - effetPerso(choisi, av || 0, anObj()), sP = choisi.k === 'allegements' ? 'recette' : choisi.groupe, kP = (PIBY[anObj()] || PIBY[AN0]) / PIBY[AN0];
     // Les votes que ce choix remplace sortent du budget : le montant net, et l'effet sur l'économie mesuré sur ce net.
     var RC = remp.map(function (id) { return C.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean), r0 = RC.reduce(function (t, c) { return t + montant(c, AN0); }, 0), rA = RC.reduce(function (t, c) { return t + montant(c, anObj()); }, 0) + pr0 * kP, nD = dP - r0 - pr0;
-    $('q-apercu').innerHTML = (pc !== (av || 0) ? '<ul class="q-pl q-ap-t"><li><b>Avec ce choix</b> : ' + (choisi.mix ? 'sur le papier, rien ne change au déficit en ' + AN0 : RC.length || rempP.length ? 'au total ' + (Math.abs(nD) < 0.05 ? 'presque rien ne change' : quoi(sP, nD)) + ' en ' + AN0 + ' (cette ligne seule : ' + quoi(sP, dP) + ')' : quoi(sP, dP) + ' en ' + AN0) + '.</li><li>' + maj1(avantApres(R, A1, null, true)) + '.</li><li>' + ecoPhrase(R, A1, dPo * kP - rA, !!(choisi.macro && J.variantes[choisi.macro]), choisi.mix ? 'mix' : choisi.macro) + '</li>' + (choisi.macro_note && choisi.macro && J.variantes[choisi.macro] ? '<li>Effet sur l\'activité : ' + esc(choisi.macro_note) + '</li>' : '') +
+    $('q-apercu').innerHTML = (pc !== (av || 0) ? '<ul class="q-pl q-ap-t"><li><b>Avec ce choix</b> : ' + (choisi.mix ? 'sur le papier, rien ne change au déficit en ' + AN0 : RC.length || rempP.length ? 'au total ' + (Math.abs(nD) < 0.05 ? 'presque rien ne change' : quoi(sP, nD)) + ' en ' + AN0 + ' (cette ligne seule : ' + quoi(sP, dP) + ')' : quoi(sP, dP) + ' en ' + AN0) + '.</li><li>' + maj1(avantApres(R, A1, null, true)) + '.</li><li>' + ecoPhrase(R, A1, dPo * kP - rA, !!(choisi.macro && J.variantes[choisi.macro]), choisi.mix ? 'mix' : choisi.macro) + '</li>' + (choisi.macro_note && choisi.macro && J.variantes[choisi.macro] ? '<li>Effet sur l\'activité (modèle Mésange, le modèle de calcul de la direction du Trésor et de l\'Insee) : ' + esc(choisi.macro_note) + '</li>' : '') +
       // Ce que le calcul ne compte pas pour cette ligne, juste sous l'effet sur l'économie, avec sa source.
       (choisi.nc && J.non_comptes && J.non_comptes[choisi.nc] && (choisi.nc !== 'ame' || pc < 0) ? '<li>' + esc(J.non_comptes[choisi.nc].t) + ' <a href="' + esc(J.non_comptes[choisi.nc].src.url) + '">Source</a></li>' : '') + '</ul>' : '') +
       (pc !== (av || 0) ? horsModele(A1, true) + miniCourbes(R, A1) : '') + (remp.length ? '<br>Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' » (' + quoi(o.sens, montant(o, AN0)) + ')' : ''; }).join(', ') + ' : les deux portent sur le même argent, ce montant sort de votre budget.' : '') + (rempP.length ? '<br>Ce choix remplace votre ligne ' + nomsP.map(function (t) { return '« ' + t + ' »'; }).join(', ') + ' : elle porte sur le même argent et sort de votre budget.' : '');
@@ -1865,7 +1874,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     if (k === 'tm-dm') add('Un dispositif médical remboursable de 100 € (exemple, pour un patient qui n\'est pas en affection de longue durée) : l\'assurance maladie rembourse 50 € à partir de 2027, <b>' + eu(50 - pc) + '</b> avec ce choix ; le reste est payé par le patient ou sa complémentaire santé.');
     if (k === 'quotient-familial' && pc === 1 && x.moyenne_perte) add('Les foyers avec enfants qui perdent : <b>' + eu(x.moyenne_perte) + ' d\'impôt en plus par an</b> en moyenne, pour ' + nf(x.perdants, 2) + ' millions de foyers (Cour des comptes).');
     if (k === 'quotient-familial' && pc === 2) { var qf = CAS('ir_qf_plafond'); if (qf) add('Aujourd\'hui, chaque demi-part en plus pour un enfant réduit l\'impôt de ' + eu(qf) + ' au plus ; <b>sans plafond</b>, les foyers aux revenus élevés avec enfants paient moins d\'impôt.', ['ir_qf_plafond']); }
-    if (k === 'tva-sociale') { var Tv = CAS('tva_taux'); if (Tv) add('Un achat de 100 € hors taxe au taux normal : ' + eu(100 + Tv.normal.taux_pct) + ' → <b>' + eu(100 + Tv.normal.taux_pct + pc, pc % 1 ? 2 : 0) + '</b>, si la hausse passe entièrement dans les prix (exemple).', ['tva_taux']); }
+    if (k === 'tva-sociale') { var Tv = CAS('tva_taux'); if (Tv) add('Un achat payé ' + eu(100 + Tv.normal.taux_pct) + ' aujourd\'hui (100 € hors taxe, taux normal) coûterait <b>' + eu(100 + Tv.normal.taux_pct + pc, pc % 1 ? 2 : 0) + '</b>, si la hausse passe entièrement dans les prix (exemple).', ['tva_taux']); }
     if (k === 'capitalisation' && x.md) add('Sur 100 € de cotisations de retraite, ' + eu(pc) + ' vont dans un fonds et ' + eu(100 - pc) + ' paient les retraites d\'aujourd\'hui (exemple).');
     var M = CAS('minima_avril_2026'), mm = M && { rsa: ['RSA d\'une personne seule (montant forfaitaire)', M.rsa_personne_seule_eur], aah: ['AAH à taux plein', M.aah_taux_plein_eur], 'alloc-familiales': ['Allocations familiales pour 2 enfants', M.af_2_enfants_eur] }[k];
     if (mm) add(mm[0] + ' : ' + eu(mm[1], 2) + ' par mois → <b>' + eu(mm[1] * (1 + f), 2) + '</b>, si le changement est le même pour chacun.', ['minima_avril_2026']);
@@ -2233,24 +2242,28 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   // Après chaque Bilan : espaces insécables dans tout le texte affiché.
   function bilan() { bilan0(); serrer($('p-bilan')); sommaire(); }
   // Sommaire du Bilan : les parties dans leur ordre, celle qu'on lit mise en avant.
-  var SOM = [['q-rc-t', 'Résumé'], ['q-pv-c', 'Pour vous'], ['q-pays-c', 'Pays'], ['q-vm-c', 'Vos mesures'], ['q-ou-c', 'Où va l\'argent'], ['q-int-t', 'Intérêts'], ['q-grp-c', 'Groupes'], ['q-defi', 'Défi'], ['q-cmp-c', 'Comparaison'], ['q-bi-t', 'Courbes'], ['q-qui-t', 'Qui est concerné'], ['q-eco-t', 'Activité']], SOM_OBS = false;
+  // Huit entrées, chacune vers la première partie de son groupe ; la partie en cours met son groupe en avant.
+  var SOM = [['q-rc-t', 'Résumé', []], ['q-pv-c', 'Pour votre foyer', []], ['q-pays-c', 'Le pays le plus proche', []], ['q-vm-c', 'Vos mesures, poste par poste', ['q-ou-c']], ['q-int-t', 'Dette et intérêts', ['q-bi-t', 'q-def-t']],
+    ['q-grp-c', 'Les députés, le défi', ['q-defi']], ['q-cmp-c', 'Se comparer', []], ['q-crc-t', 'Croissance, emploi, qui paie', ['q-qui-t', 'q-eco-t']]], SOM_OBS = false;
   function partie(id) { var e = $(id); return e && (e.tagName === 'H2' ? e.closest('section') : e); }
   function sommaire() {
     var r = $('q-som-r'); if (!r) return;
-    var L = SOM.filter(function (x) { var e = partie(x[0]); return e && !e.hidden && e.innerHTML.trim(); });
+    var L = SOM.map(function (x) { var ids = [x[0]].concat(x[2]).filter(function (i) { var e = partie(i); return e && !e.hidden && e.innerHTML.trim(); }); return ids.length ? [ids[0], x[1], ids] : null; }).filter(Boolean);
     L.forEach(function (x) { var e = partie(x[0]); if (!e.id) e.id = 'p-' + x[0]; });
-    r.innerHTML = L.map(function (x) { return '<a href="#' + partie(x[0]).id + '" data-p="' + x[0] + '">' + esc(x[1]) + '</a>'; }).join('');
+    r.innerHTML = L.map(function (x) { return '<a href="#' + partie(x[0]).id + '" data-p="' + x[0] + '" data-g="' + x[2].join(' ') + '">' + esc(x[1]) + '</a>'; }).join('');
     Array.prototype.forEach.call(r.querySelectorAll('a'), function (a) { a.onclick = function (ev) { ev.preventDefault(); var e = partie(a.dataset.p), sb = $('q-som').getBoundingClientRect(); window.scrollTo({ top: Math.max(0, e.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle($('q-som')).top) || 0) - sb.height - 8), behavior: 'smooth' }); var h = e.querySelector('h2'); if (h) { h.setAttribute('tabindex', '-1'); setTimeout(function () { h.focus({ preventScroll: true }); }, 400); } }; });
-    var fin = function () { r.classList.toggle('fin', r.scrollLeft + r.clientWidth >= r.scrollWidth - 4); };
+    document.documentElement.style.setProperty('--somh', $('q-som').offsetHeight + 'px');
+    var fin = function () { var f = r.scrollLeft + r.clientWidth >= r.scrollWidth - 4; r.classList.toggle('fin', f); $('q-som').classList.toggle('fin', f); };
     r.onscroll = fin; fin(); enCours();
     if (!SOM_OBS) { SOM_OBS = true; window.addEventListener('scroll', function () { if (!$('p-bilan').hidden) enCours(); }, { passive: true }); }
   }
   // La partie en cours : la dernière dont le haut est passé sous la rangée.
   function enCours() {
     var r = $('q-som-r'); if (!r) return; var lim = r.getBoundingClientRect().bottom + 30, cur = null;
-    Array.prototype.forEach.call(r.querySelectorAll('a'), function (a) { var e = partie(a.dataset.p); if (e && e.getBoundingClientRect().top <= lim) cur = a; });
+    Array.prototype.forEach.call(r.querySelectorAll('a'), function (a) { a.dataset.g.split(' ').forEach(function (i) { var e = partie(i); if (e && e.getBoundingClientRect().top <= lim && (!cur || e.getBoundingClientRect().top > cur.t)) cur = { a: a, t: e.getBoundingClientRect().top }; }); });
+    cur = cur && cur.a;
     cur = cur || r.querySelector('a');
-    Array.prototype.forEach.call(r.querySelectorAll('a'), function (a) { if (a === cur) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
+    Array.prototype.forEach.call(r.querySelectorAll('a'), function (a) { if (a === cur) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current'); });
     if (cur && (cur.offsetLeft < r.scrollLeft || cur.offsetLeft + cur.offsetWidth > r.scrollLeft + r.clientWidth)) r.scrollLeft = cur.offsetLeft - 16;
   }
   function bilan0() {
@@ -2271,7 +2284,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     $('q-tuiles').innerHTML = tu('Déficit ' + AN0, deficO(r1, AN0), n ? sous(-r1.solde, -z1.solde, defic(z1.solde)) : sp('du PIB')) +
       tu('Déficit ' + f.an, defic(f.solde), n ? sous(-f.solde, -zf.solde, defic(zf.solde)) : sp('si rien ne change')) +
       tu('Dette ' + f.an, nf(f.d, 1) + '\u00a0%', n ? sous(f.d, zf.d, nf(zf.d, 1) + '\u00a0%') : sp('du PIB ; fin ' + PJ.depart.an + ' : ' + nf(PJ.depart.dette, 1) + '\u00a0%')) +
-      tu('Croissance', pcs(croiss(R, AN0)) + ' · ' + pcs(croiss(R, f.an)), sp('en ' + AN0 + ' · en ' + f.an) + sp(n && (pcs(croiss(R0, AN0)) !== pcs(croiss(R, AN0)) || pcs(croiss(R0, f.an)) !== pcs(croiss(R, f.an))) ? 'prévision du FMI : ' + pcs(croiss(R0, AN0)) + ' · ' + pcs(croiss(R0, f.an)) : 'prévision du FMI'), 'deux') +
+      tu('Croissance', tresGrand(R) ? arr(croiss(R, AN0), '\u00a0%') + ' · ' + arr(croiss(R, f.an), '\u00a0%') : pcs(croiss(R, AN0)) + ' · ' + pcs(croiss(R, f.an)), sp('en ' + AN0 + ' · en ' + f.an) + sp(n && (pcs(croiss(R0, AN0)) !== pcs(croiss(R, AN0)) || pcs(croiss(R0, f.an)) !== pcs(croiss(R, f.an))) ? 'prévision du FMI : ' + pcs(croiss(R0, AN0)) + ' · ' + pcs(croiss(R0, f.an)) : 'prévision du FMI'), 'deux') +
       tu('Intérêts de la dette en ' + f.an, nf(ti, 0) + '\u00a0milliards d\'euros', sp(nf(f.interets, 1) + '\u00a0% du PIB' + (n && Math.abs(ti - zi) >= 0.5 ? ' ; sans vos mesures : ' + nf(zi, 0) + '\u00a0milliards' : '')), 'large');
     // Sans mesure : une phrase et deux boutons pour commencer, pas de partage d'un budget vide.
     $('q-rc-p').innerHTML = n ? resume('bilan') : '<p class="q-gros">Aucune mesure pour l\'instant : voici où irait la France si rien ne change.</p><p class="q-actions"><button type="button" class="q-go" data-aller="voter">Voter les mesures</button> <button type="button" class="q-lien" data-aller="creer">Créer les vôtres</button></p>';
@@ -2321,7 +2334,8 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     $('q-qui').innerHTML = (plus.length || moins.length) ? liste(plus, 'Paient plus ou reçoivent moins') + liste(moins, 'Paient moins ou reçoivent plus', 'b2') + '<p class="q-note">En ' + AN0 + ', au sens des textes. Une mesure qui concerne plusieurs groupes est sur une seule ligne, qui les nomme : la source ne dit pas comment le montant se partage entre eux.</p>' : '<p class="q-note">Adoptez ou créez des mesures pour voir qui est concerné.</p>';
     $('q-eco-x0').innerHTML = (horsModele(R) ? horsModele(R, true).replace('</p>', ' <a href="#q-eco-t">Le détail</a></p>') : '') + horsSensBilan();
     $('q-eco-x').innerHTML = horsModele(R) + (AS['tout-depense'] && S.perso['tout-depense'] && J.non_comptes.grand ? '<p class="q-note">' + esc(J.non_comptes.grand.t) + '</p>' : '');
-    $('q-eco').innerHTML = S.macro ? tu('PIB ' + f.an, sg(f.L, 1) + '\u00a0%', 'écart avec « rien ne change »') + tu('Emplois ' + f.an, (Math.round(f.emploi) ? sg(Math.round(f.emploi), 0) + '\u00a0000' : '0'), 'emplois salariés des entreprises') + tu('Chômage ' + f.an, (Math.abs(f.chomage) < 0.05 ? '0 pt' : sg(f.chomage, 1) + ' pt'), 'écart du taux de chômage') : '';
+    var TG = tresGrand(R);
+    $('q-eco').innerHTML = S.macro ? tu('PIB ' + f.an, TG ? arr(f.L, '\u00a0%') : sg(f.L, 1) + '\u00a0%', 'écart avec « rien ne change »') + tu('Emplois ' + f.an, TG ? arr(f.emploi / 100, '00\u00a0000') : (Math.round(f.emploi) ? sg(Math.round(f.emploi), 0) + '\u00a0000' : '0'), 'emplois salariés des entreprises') + tu('Chômage ' + f.an, TG ? arr(f.chomage, ' pt') : (Math.abs(f.chomage) < 0.05 ? '0 pt' : sg(f.chomage, 1) + ' pt'), 'écart du taux de chômage') : '';
     var choc = Math.abs(an1(R).mesures || 0) / (an1(R).pib || 1) * 100;
     $('q-eco-n').innerHTML = S.macro ? plie('D\'après les effets publiés par la direction du Trésor et l\'Insee (modèle Mésange) : baisser une dépense ou monter un impôt freine l\'activité, l\'inverse la soutient. Le modèle garde les taux d\'intérêt réels inchangés (« à taux d\'intérêt réels constants », Mésange 2017, page 101 du PDF) : un fort creusement du déficit pourrait aussi faire monter les taux, et une forte baisse les faire baisser, ce qui n\'est pas compté ici ; le curseur des taux, dans les hypothèses, permet de le tester.' + (choc > 1 && !horsModele(R) ? ' Vos mesures représentent ' + nf(choc, 1) + ' point' + (choc >= 2 ? 's' : '') + ' de PIB, mais aucun type de mesure ne dépasse 1 point : le modèle publie ses effets pour 1 point de PIB et Concret les additionne.' : ''), 'Ne comptent pas : les mesures marquées « non compté » sur leur carte (impôt sur les sociétés, patrimoine, SMIC, âge de la retraite et quelques autres : le modèle ne publie pas leur effet)' + (sansEffet() >= 0.05 ? ', soit ' + mdt(sansEffet()) + ' de vos mesures en ' + AN0 + '.' : '.')) : '';
   }
