@@ -302,6 +302,10 @@ footer p { margin: 0; } footer a { color: inherit; }
 .hero p.lead { font-family: var(--serif); font-size: 21px; line-height: 1.35; }
 .hero h1 .h1-2 { color: var(--fr); }
 .auj { gap: 0; padding-bottom: 8px; } .auj .eyebrow { padding-bottom: 6px; }
+.une { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; padding: 12px 14px; border: 1.5px solid var(--fr); border-radius: 14px; background: color-mix(in srgb, var(--fr) 7%, var(--panel)); color: var(--fg); text-decoration: none; }
+.une small { grid-column: 1; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fr); }
+.une b { grid-column: 1; font-size: 17px; font-weight: 700; } .une span { grid-column: 1; font-size: 13.5px; color: var(--muted); line-height: 1.35; }
+.une i { grid-column: 2; grid-row: 1 / span 3; font-style: normal; font-size: 14px; font-weight: 700; color: #fff; background: var(--fr); border-radius: 999px; padding: 8px 14px; white-space: nowrap; }
 .auj-l { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--line); color: var(--fg); text-decoration: none; min-height: 44px; }
 .auj-l b { font-size: 16px; font-weight: 700; } .auj-l span { grid-column: 1; font-size: 13.5px; color: var(--muted); line-height: 1.35; }
 .auj-l i { grid-column: 2; grid-row: 1 / span 2; font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--fr); background: var(--band); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
@@ -388,6 +392,8 @@ footer p { margin: 0; } footer a { color: inherit; }
     <span class="eyebrow" style="margin:0">Concret</span>
     <h1>Ce que font ceux qui gouvernent, en chiffres. <span class="h1-2">Les vrais votes pour vous situer.</span></h1>
     <p class="lead">Chaque président et gouvernement depuis 1995 : la France comparée à ses voisins, avec une même règle. Et les vrais votes de l'Assemblée, à votre tour.</p>
+    <!-- Le jeu du budget au premier écran pendant l'examen du budget au Parlement (à redescendre après le vote). -->
+    <a class="une" href="/budget/"><small>Nouveau · le Parlement examine le budget 2027</small><b>Faites le budget 2027</b><span>Choisissez les mesures, voyez le déficit et la dette jusqu'en 2031</span><i>Jouer</i></a>
   </section>
 
 
@@ -406,7 +412,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   <section class="card auj" id="aujourdhui" data-partage="non" aria-labelledby="auj-t">
     <span id="auj-t" class="eyebrow" style="margin:0">Aujourd'hui sur Concret</span>
-    <a class="auj-l" href="/budget/"><b>Votre budget 2027</b><span id="auj-budget">Un jeu : votez le budget 2027 mesure par mesure, et voyez le déficit bouger</span><i id="auj-budget-s">Jouer</i></a>
+    <a class="auj-l" href="/budget/"><b>Faites le budget 2027</b><span id="auj-budget">Choisissez les mesures, voyez le déficit et la dette jusqu'en 2031</span><i id="auj-budget-s">Jouer</i></a>
     <a class="auj-l" href="/quiz/"><b>Quiz du jour</b><span id="auj-quiz">8 questions sur la France face à ses voisins</span><i id="auj-quiz-s">À faire</i></a>
     <a class="auj-l" href="/votez/"><b>Votez les lois</b><span id="auj-vote">Les vrais votes de l'Assemblée, expliqués</span><i id="auj-vote-s">À voter</i></a>
     <a class="auj-l" href="/barometre/"><b>Baromètre 2027</b><span id="auj-baro">Sondages et parieurs, mis à jour vers 8 h, 9 h et midi</span><i id="auj-baro-s">Voir</i></a>
@@ -500,7 +506,7 @@ footer p { margin: 0; } footer a { color: inherit; }
   var jour = function (x) { var p = x.split('-'); return +p[2] + (+p[2] === 1 ? 'er' : '') + ' ' + MOIS[p[1] - 1]; };
   var q = lire('quiz-histo-' + iso);
   if (q) { $('auj-quiz').textContent = 'Fait aujourd\'hui : ' + q.replace('/', ' sur ') + '. Nouvelles questions à minuit.'; $('auj-quiz-s').textContent = 'Fait'; $('auj-quiz-s').className = 'ok'; }
-  // Votre budget 2027 : le défi du jour (même tirage que le jeu) et, s'il est réussi sur cet appareil, « Réussi ».
+  // Faites le budget 2027 : le défi du jour (même tirage que le jeu) et, s'il est réussi sur cet appareil, « Réussi ».
   fetch('/donnees/budget_defis.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (B) {
     var L = B.defis || []; if (!L.length) return;
     var k = Math.round((new Date(iso + 'T12:00:00') - new Date(B.debut + 'T12:00:00')) / 864e5), x = L[((k % L.length) + L.length) % L.length];
