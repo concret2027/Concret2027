@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="1fa2617e8789">
+<meta name="concret-version" content="9ffcf78e02d1">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -337,8 +337,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .radar svg { touch-action: pan-y; }
 .radar-who .chip i, .rtab i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .radar-who .chip[aria-pressed="false"] { opacity: .55; }
-#radar-plus { background: var(--fr); border-color: var(--fr); color: var(--bg); } /* bleu : un bouton qu'on reconnaît */
-#radar-plus:hover { filter: brightness(1.08); }
+#radar-plus { justify-self: start; background: var(--panel); border-color: var(--fr); color: var(--fr); } /* bouton secondaire, en contour : « Jouer » reste le plus visible */
+#radar-plus:hover { background: var(--band); }
 .rtab th.rt-sur { text-align: left; color: var(--fg); font-weight: 700; white-space: nowrap; }
 .pick > summary { cursor: pointer; padding-block: 4px; font-size: 13.5px; font-weight: 600; color: var(--fr); } .pick[open] > summary { margin-bottom: 8px; }
 .rtab { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
@@ -388,26 +388,31 @@ footer p { margin: 0; } footer a { color: inherit; }
 .rank .n { display: inline-block; min-width: 2.6em; padding: 2px 6px; border-radius: 6px; font-weight: 600; text-align: center; }
 .rank .g { background: var(--s-good); color: var(--ok); } .rank .m { background: var(--s-mid); color: var(--mid); } .rank .b { background: var(--s-bad); color: var(--bad); }
 .rank .avg .n { font-weight: 700; } .rank .na { color: var(--axis); }
-/* De la couleur sans code : des fonds de blocs teintés, à tour de rôle, et une pastille douce sous l'icône de chaque page.
-   Ces teintes ne veulent rien dire : pas de vert, de rouge ni d'or (qui disent déjà « au-dessus », « en dessous » et « autour » de la moyenne
-   de l'UE), pas les couleurs des pays, des thèmes ni des présidents de la toile, et aucune ne revient ailleurs pour désigner une mission
-   (sur la toile, toutes les icônes restent du même bleu). Les pastilles reprennent les teintes des fonds de blocs : un décor, pas une légende. */
-:root { --fd-bleu: #e8eefc; --fd-peche: #fbeee2; --fd-lilas: #efeafb; --fd-ciel: #e6f1f6; --fd-brume: #e6e9f6;
-  --pa-1: #dce5fc; --pa-2: #fbe2d2; --pa-3: #e6defa; --pa-4: #d8eaf3; --pa-5: #f5e0ea; --pa-6: #e8e4dc; --pa-ic: #1c1d22; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --fd-bleu: #1f2638; --fd-peche: #2e2620; --fd-lilas: #272336; --fd-ciel: #1d2a30; --fd-brume: #262940;
-  --pa-1: #2b3a5e; --pa-2: #4a3628; --pa-3: #3a3159; --pa-4: #25434f; --pa-5: #4a2c3c; --pa-6: #3d3a33; --pa-ic: #eef0f5; } }
-:root[data-theme="dark"] { --fd-bleu: #1f2638; --fd-peche: #2e2620; --fd-lilas: #272336; --fd-ciel: #1d2a30; --fd-brume: #262940;
-  --pa-1: #2b3a5e; --pa-2: #4a3628; --pa-3: #3a3159; --pa-4: #25434f; --pa-5: #4a2c3c; --pa-6: #3d3a33; --pa-ic: #eef0f5; }
-section.hero { background: linear-gradient(135deg, var(--fd-bleu), var(--fd-lilas) 55%, var(--fd-peche)); border-radius: 18px; padding: 18px 16px 16px; margin-top: 14px !important; }
-#profil { background: var(--fd-bleu); border-color: transparent; }
+/* De la couleur sans code : trois teintes de fond au plus, qui ne veulent rien dire (pas de vert, de rouge ni d'or, qui disent déjà « au-dessus »,
+   « en dessous » et « autour » de la moyenne de l'UE ; pas les couleurs des pays, des thèmes ni des présidents de la toile).
+   Bleu brume : le haut de page et les deux listes de pages ; jamais deux blocs brume de suite (un fond blanc entre eux).
+   Pêche : « Aujourd'hui sur Concret ». Ciel : tous les blocs « Le pouls de la France », qui se suivent.
+   Les icônes des pages sont toutes sur la même pastille brume, en bleu Concret, comme sur la toile : aucune couleur par mission. */
+:root { --fd-brume: #e6e9f6; --fd-peche: #fbeee2; --fd-ciel: #e6f1f6; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --fd-brume: #262940; --fd-peche: #2e2620; --fd-ciel: #1d2a30; } }
+:root[data-theme="dark"] { --fd-brume: #262940; --fd-peche: #2e2620; --fd-ciel: #1d2a30; }
+section.hero { background: var(--fd-brume); border-radius: 18px; padding: 18px 16px 16px; margin-top: 14px !important; }
+/* Sur téléphone, le bandeau va d'un bord à l'autre : le texte garde toute la largeur (titre sur trois lignes, comme sans fond). */
+@media (max-width: 600px) { section.hero { margin-top: 0 !important; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))) calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  padding: 14px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); border-radius: 0; } }
+/* En tête : le total déjà calculé plus bas (« Le pouls de la France »), et le chemin vers les missions. */
+.hero-rep { display: grid; gap: 2px; margin: 0; } .hero-rep a[hidden] { display: none; }
+.hero-rep a { display: inline-flex; align-items: center; min-height: 44px; color: var(--fg); text-decoration: none; font-size: 16px; line-height: 1.35; }
+.hero-rep a b { font-weight: 700; color: var(--fr); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hero-rep a .hr-l { color: var(--fr); font-weight: 600; white-space: nowrap; }
+.hero-rep a:hover .hr-l, .hero-rep a:focus-visible .hr-l { text-decoration: underline; }
+.hero-rep a.hr-m { font-weight: 600; color: var(--fr); justify-self: start; }
 #aujourdhui { background: var(--fd-peche); border-color: transparent; }
-#pouls, #fonctionnement { background: var(--fd-ciel); border-color: transparent; }
-#pouls-analyse { background: var(--fd-lilas); border-color: transparent; }
-/* La toile posée sur une carte claire dans son bloc. */
-#radar svg { background: color-mix(in srgb, var(--panel) 72%, transparent); border-radius: 14px; }
+#pouls, #pouls-analyse, #pouls-semaine, #pouls-agenda, #pouls-cote { background: var(--fd-ciel); border-color: transparent; }
+/* La toile posée sur un fond brume léger, dans son bloc blanc. */
+#radar svg { background: color-mix(in srgb, var(--fd-brume) 55%, var(--panel)); border-radius: 14px; }
 /* Les pages : une carte blanche par page sur le fond du bloc ; l'icône à droite du titre, dans la carte, la flèche au bord. */
-#missions, #reperes { border-color: transparent; border-radius: 18px; padding: 16px 12px 12px; }
-#missions, #reperes { background: var(--fd-brume); }
+#missions, #reperes { background: var(--fd-brume); border-color: transparent; border-radius: 18px; padding: 16px 12px 12px; }
 #missions h2, #reperes h2 { padding: 0 6px; }
 #reperes .note { padding: 0 6px; margin: 10px 0 2px; }
 #missions .pg, #reperes .pg { background: var(--panel); border-radius: 14px; padding: 14px 34px 14px 16px; }
@@ -417,15 +422,24 @@ section.hero { background: linear-gradient(135deg, var(--fd-bleu), var(--fd-lila
 #missions .pg.mn-avec, #reperes .pg.mn-avec { grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; }
 #missions .pg.mn-avec > *, #reperes .pg.mn-avec > * { grid-column: 1 / -1; }
 #missions .pg.mn-avec > b, #reperes .pg.mn-avec > b { grid-column: 1; grid-row: 1; align-self: center; }
-#missions .pg.mn-avec > .mn-ic, #reperes .pg.mn-avec > .mn-ic { grid-column: 2; grid-row: 1; align-self: center; margin: 0; color: var(--pa-ic); }
-#missions a.pg:nth-of-type(6n+1) .mn-ic { background: var(--pa-1); } #missions a.pg:nth-of-type(6n+2) .mn-ic { background: var(--pa-2); }
-#missions a.pg:nth-of-type(6n+3) .mn-ic { background: var(--pa-3); } #missions a.pg:nth-of-type(6n+4) .mn-ic { background: var(--pa-4); }
-#missions a.pg:nth-of-type(6n+5) .mn-ic { background: var(--pa-5); } #missions a.pg:nth-of-type(6n) .mn-ic { background: var(--pa-6); }
-#reperes a.pg:nth-of-type(2n+1) .mn-ic { background: var(--pa-3); } #reperes a.pg:nth-of-type(2n) .mn-ic { background: var(--pa-4); }
+#missions .pg.mn-avec > .mn-ic, #reperes .pg.mn-avec > .mn-ic { grid-column: 2; grid-row: 1; align-self: center; margin: 0; color: var(--fr); background: var(--fd-brume); }
 /* Sur grand écran, deux cartes par ligne : l'icône reste près du titre et du texte. */
 @media (min-width: 900px) { #missions, #reperes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
   #missions h2, #reperes h2, #reperes .note { grid-column: 1 / -1; } #missions .pg + .pg, #reperes .pg + .pg { margin-top: 0; } #reperes .note { margin-top: 0; } }
 @media (max-width: 400px) { #missions .pg, #reperes .pg { padding-left: 14px; padding-right: 30px; } #missions .pg.mn-avec, #reperes .pg.mn-avec { column-gap: 10px; } #missions .pg::after, #reperes .pg::after { right: 8px; } }
+/* Zones à toucher de 44 px au moins : « Choisir qui comparer », les cinq étapes, le pied de page, les liens des actualités (texte de 13 px au moins). */
+.pick > summary { padding-block: 12px; line-height: 20px; }
+.etapes li { padding-top: 0; padding-bottom: 0; } .etapes li::before { margin-top: 9px; }
+.etapes .sous > summary { padding: 11px 0; min-height: 44px; box-sizing: border-box; }
+/* Texte agrandi ou page zoomée : le bloc des mandats ne s'élargit jamais au-delà de l'écran ; le tableau, s'il est trop large, défile dans son cadre. */
+#profil { grid-template-columns: minmax(0, 1fr); } #profil > * { min-width: 0; }
+.rtab-box { overflow-x: auto; -webkit-overflow-scrolling: touch; container-type: inline-size; }
+/* Page zoomée (le zoom ne déclenche pas les règles de largeur d'écran) : le tableau se resserre selon la place réelle de son cadre. */
+@container (max-width: 260px) { .rtab { font-size: 10.5px !important; } .rtab th, .rtab td { padding: 4px 1px !important; } .rtab i { width: 8px !important; height: 8px !important; margin-right: 3px !important; } .rtab .rt-ic { width: 14px; height: 14px; } }
+@media (max-width: 340px) { #profil { padding-inline: 12px; } .radar { margin-inline: -8px; } }
+footer a { display: inline-flex; align-items: center; min-height: 44px; }
+.po-actu .d { font-size: 13px; } .po-actu .tag { font-size: 13px; } .po-actu .src { font-size: 13px; }
+.po-actu a { position: relative; } .po-actu a::after { content: ""; position: absolute; inset: -13px -4px; }
 </style>
 </head>
 <body>
@@ -438,6 +452,7 @@ section.hero { background: linear-gradient(135deg, var(--fd-bleu), var(--fd-lila
     <span class="eyebrow" style="margin:0">Concret</span>
     <h1>Ce que font ceux qui gouvernent, en chiffres. <span class="h1-2">Les vrais votes pour vous situer.</span></h1>
     <p class="lead">Chaque président et gouvernement depuis 1995 : la France comparée à ses voisins, avec une même règle. Et les vrais votes de l'Assemblée, à votre tour.</p>
+    <p class="hero-rep"><a id="hero-pouls" href="#pouls" hidden><span><b id="hp-n"></b> indicateurs où la France fait mieux que la moyenne de l'UE · <span class="hr-l">Le détail ›</span></span></a><a class="hr-m" id="hero-miss" href="#missions">Voir les missions ›</a></p>
     <!-- Le jeu du budget au premier écran pendant l'examen du budget au Parlement (à redescendre après le vote). -->
     <a class="une" href="/budget/"><small>Nouveau · le Parlement examine le budget 2027</small><b>Faites le budget 2027</b><span>Choisissez les mesures, voyez le déficit et la dette jusqu'en 2031</span><i>Jouer</i></a>
   </section>
@@ -451,19 +466,19 @@ section.hero { background: linear-gradient(135deg, var(--fd-bleu), var(--fd-lila
     <details class="pick"><summary>Choisir qui comparer</summary><div class="chips radar-who" id="radar-who" role="group" aria-label="Choisir qui comparer"></div></details>
     <div class="radar" id="radar"></div>
     <div class="radar-leg" id="radar-leg"></div>
-    <table class="rtab" id="radar-table"></table>
+    <div class="rtab-box"><table class="rtab" id="radar-table"></table></div>
     <p class="note" id="radar-why"></p>
     <p class="note">Ce n'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l'UE pendant le mandat. Les missions ne sont pas additionnées : chacune a sa page, sa règle et ses chiffres.</p>
   </section>
 
   <section class="pages" id="missions" aria-labelledby="mi-t">
     <h2 id="mi-t"><span class="eyebrow">Les grandes missions de l'État</span>Une page par mission</h2>
-    <a class="pg" href="/vie/"><b>Vie des Français</b><span>Pouvoir d'achat, pauvreté, logement, travail, moral des ménages : la France face à l'Europe.</span></a>
-    <a class="pg" href="/finances/"><b>Finances publiques</b><span>Dette, déficit, impôts, dépenses, croissance, chômage : la France face à la moyenne de l'Union européenne depuis 1995.</span></a>
-    <a class="pg" href="/sante/"><b>Santé</b><span>Espérance de vie, accès aux soins, coût, prévention, nouveaux médicaments : la France face à l'Europe.</span></a>
-    <a class="pg" href="/education/"><b>Éducation</b><span>PISA, décrochage, diplômés, chômage des jeunes, universités : la France face à l'Europe depuis 2002.</span></a>
-    <a class="pg" href="/securite/"><b>Sécurité et justice</b><span>Homicides, vols avec violence, cambriolages, prisons, moyens de la police et de la justice, éloignements : la France face à l'Europe.</span></a>
-    <a class="pg" href="/defense/"><b>Défense</b><span>Budget, objectif de l'OTAN, équipement, effectifs : la France face à l'Europe.</span></a>
+    <a class="pg" href="/vie/"><b>Vie des Français</b><span>Pouvoir d'achat, pauvreté, logement, travail, moral des ménages.</span></a>
+    <a class="pg" href="/finances/"><b>Finances publiques</b><span>Dette, déficit, impôts, dépenses, croissance, chômage, depuis 1995.</span></a>
+    <a class="pg" href="/sante/"><b>Santé</b><span>Espérance de vie, accès aux soins, coût, prévention, nouveaux médicaments.</span></a>
+    <a class="pg" href="/education/"><b>Éducation</b><span>PISA, décrochage, diplômés, chômage des jeunes, universités, depuis 2002.</span></a>
+    <a class="pg" href="/securite/"><b>Sécurité et justice</b><span>Homicides, vols avec violence, cambriolages, prisons, moyens de la police et de la justice, éloignements.</span></a>
+    <a class="pg" href="/defense/"><b>Défense</b><span>Budget, objectif de l'OTAN, équipement, effectifs.</span></a>
   </section>
 
   <section class="card auj" id="aujourdhui" data-partage="non" aria-labelledby="auj-t">
@@ -500,6 +515,14 @@ section.hero { background: linear-gradient(135deg, var(--fd-bleu), var(--fd-lila
 
 
 
+  <details class="acc" id="pouls-cote">
+    <summary><span class="eyebrow" style="margin:0">Le pouls de la France</span><span class="acc-h">Mis côte à côte : les moyens et les résultats</span><span class="acc-t" id="pc-teaser">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body">
+      <p class="note">Pour une même mission, ce que la France dépense et ce qu'elle obtient, face à l'Allemagne, l'Espagne et la moyenne de l'UE. Les chiffres sont ceux des pages ; ✓ : la France fait mieux que la moyenne de l'UE, ✗ : moins bien. Touchez une mission pour voir son tableau.</p>
+      <div id="po-cote" style="display:grid;gap:0"></div>
+    </div>
+  </details>
+
   <section class="pages" id="reperes" aria-labelledby="re-t">
     <h2 id="re-t"><span class="eyebrow">Repères, sans calcul</span>Les lois et la population</h2>
     <a class="pg" href="/politique/"><b>La vie politique</b><span>Les grandes lois de chaque gouvernement depuis 2012, les votes de l'Assemblée groupe par groupe, les lois publiées, l'ordre du jour.</span></a>
@@ -510,13 +533,6 @@ section.hero { background: linear-gradient(135deg, var(--fd-bleu), var(--fd-lila
 
 
 
-  <details class="acc" id="pouls-cote">
-    <summary><span class="eyebrow" style="margin:0">Le pouls de la France</span><span class="acc-h">Mis côte à côte : les moyens et les résultats</span><span class="acc-t" id="pc-teaser">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body">
-      <p class="note">Pour une même mission, ce que la France dépense et ce qu'elle obtient, face à l'Allemagne, l'Espagne et la moyenne de l'UE. Les chiffres sont ceux des pages ; ✓ : la France fait mieux que la moyenne de l'UE, ✗ : moins bien. Touchez une mission pour voir son tableau.</p>
-      <div id="po-cote" style="display:grid;gap:0"></div>
-    </div>
-  </details>
 
 
   <section class="card" id="fonctionnement" aria-labelledby="fo-t">
@@ -606,6 +622,8 @@ section.hero { background: linear-gradient(135deg, var(--fd-bleu), var(--fd-lila
       var ord = Object.keys(B), n = 0, t = 0;
       ord.forEach(function (k) { n += B[k].n; t += B[k].total; });
       document.getElementById('po-n').innerHTML = n + '<small>/' + t + '</small>';
+      // Le même total en tête de page.
+      document.getElementById('hp-n').textContent = n + ' sur ' + t; document.getElementById('hero-pouls').hidden = false;
       // Le résultat de chaque mission, dans la liste des missions : n indicateurs sur N où la France fait mieux que la moyenne de l'UE.
       ord.forEach(function (k) {
         var m = B[k], a = document.querySelector('#missions a.pg[href="/' + k + '/"]'); if (!a || a.querySelector('.pg-res')) return;
@@ -614,6 +632,7 @@ section.hero { background: linear-gradient(135deg, var(--fd-bleu), var(--fd-lila
         a.appendChild(r);
       });
     } else document.getElementById('pouls').hidden = true;
+    var nm = document.querySelectorAll('#missions a.pg').length; if (nm) document.getElementById('hero-miss').textContent = 'Voir les ' + nm + ' missions ›';
     // Repères sans calcul : les derniers faits de La vie politique et de la page Démographie.
     var nfr = function (v) { return new Intl.NumberFormat('fr-FR').format(v).replace(/\u202f/g, '\u00a0'); };
     var vir = function (v, d) { return v.toFixed(d).replace('.', ','); };
@@ -774,7 +793,7 @@ section.hero { background: linear-gradient(135deg, var(--fd-bleu), var(--fd-lila
       var regle = function () { trs.slice(1).forEach(function (tr) { tr.hidden = !tableTout; }); bt.textContent = tableTout ? 'Replier le tableau' : 'Voir les ' + qui; bt.setAttribute('aria-expanded', tableTout ? 'true' : 'false'); };
       bt = document.createElement('button'); bt.type = 'button'; bt.id = 'radar-plus'; bt.className = 'plus-gov';
       bt.addEventListener('click', function () { tableTout = !tableTout; regle(); });
-      document.getElementById('radar-table').insertAdjacentElement('afterend', bt); regle();
+      (document.getElementById('radar-table').closest('.rtab-box') || document.getElementById('radar-table')).insertAdjacentElement('afterend', bt); regle();
     }
   }
   function chips() {
