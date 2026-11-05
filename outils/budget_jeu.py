@@ -104,7 +104,7 @@ NICHES = {
     '210309': {'l': "Supprimer la réduction d'impôt pour les dons des entreprises", 'theme': 'entreprises', 'qui': ['entreprises'], 'macro': None},
     '800229': {'l': "Supprimer le tarif réduit d'accise sur le carburant des travaux agricoles et forestiers", 'theme': 'entreprises', 'qui': ['agriculture'], 'macro': 'carbone'},
     '120202': {'l': "Soumettre à l'impôt sur le revenu les prestations familiales et l'allocation aux adultes handicapés", 'theme': 'solidarite', 'qui': ['familles', 'handicap'], 'macro': 'ir'},
-    '800401': {'l': "Supprimer le régime particulier de l'accise sur les carburants en Guadeloupe, Guyane, Martinique, à La Réunion et à Mayotte", 'theme': 'impots', 'qui': ['outre_mer'], 'macro': 'carbone'},
+    '800401': {'l': "Supprimer le régime particulier de l'accise sur les carburants en Guadeloupe, Guyane, Martinique, à La Réunion et à Mayotte", 'theme': 'impots', 'qui': ['outre_mer'], 'macro': 'tva'},
     '940102': {'l': "Soumettre les voitures électriques et à hydrogène à la taxe sur la masse (malus au poids)", 'theme': 'impots', 'qui': ['automobilistes'], 'macro': None},
     '710103': {'l': "Appliquer en Guadeloupe, en Martinique et à La Réunion les taux de TVA de la métropole", 'theme': 'impots', 'qui': ['outre_mer', 'consommateurs'], 'macro': 'tva'},
     '210326': {'l': "Supprimer le taux d'impôt de 10 % sur les revenus des brevets et de la propriété industrielle", 'theme': 'entreprises', 'qui': ['entreprises'], 'macro': None},
@@ -124,6 +124,15 @@ DEFIS = [
     {'id': 'equilibre', 't': "Atteignez l'équilibre (aucun déficit) la dernière année.", 'c': [{'type': 'deficit_fin', 'v': 0}]},
     {'id': 'd3-sans-sante', 't': "Ramenez le déficit de la dernière année à 3 % sans mesure sur la santé.", 'c': [{'type': 'deficit_fin', 'v': 3}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': REGLE},
 ]
+DEFIS_FAISABLES = [
+    {'id': 'gouv-sans-retraites', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) sans toucher aux retraites.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_theme', 'theme': 'retraites'}], 'src': 'CIBLE'},
+    {'id': 'd4-2027', 't': "Ramenez le déficit de 2027 à 4 % du PIB ou moins (un palier choisi par Concret, pour le jeu).", 'c': [{'type': 'deficit_an1', 'v': 4}]},
+    {'id': 'gouv-sans-sante', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) sans mesure sur la santé.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': 'CIBLE'},
+    {'id': 'dette-130', 't': "Gardez la dette de la dernière année sous 130 % du PIB (un palier choisi par Concret, pour le jeu).", 'c': [{'type': 'dette_fin', 'v': 130}]},
+    {'id': 'gouv-10-mesures', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) avec 10 mesures adoptées au plus.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'max_mesures', 'v': 10}], 'src': 'CIBLE'},
+]
+# Un défi faisable avec les cartes un jour sur deux environ.
+DEFIS = [x for paire in zip(DEFIS, DEFIS_FAISABLES + [None] * len(DEFIS)) for x in paire if x]
 # Titre court de chaque carte (60 caractères environ) ; l'intitulé complet reste dans les détails.
 # Chaque carte en deux phrases simples : ce qui se passe aujourd'hui, ce qui est proposé (repris des textes cités sur la carte).
 # {licence}, {master}, {doctorat}, {boite}, {consultation}, {transport}, {plafond} : remplacés par les montants en vigueur (parametres_cas.json).
@@ -432,15 +441,17 @@ def positions(nums):
 
 
 def eurostat_depart():
-    """Solde public et intérêts de la dernière année publiée (Eurostat, gov_10a_main), en % du PIB."""
+    """Solde public et intérêts de la dernière année publiée (Eurostat, gov_10a_main), en % du PIB. Le solde primaire est calculé
+    avec les intérêts nets (payés moins reçus), comme les intérêts projetés du FMI qui prennent la suite."""
     from budget import lire
     ans = [str(date.today().year - k) for k in range(1, 3)]
-    m = lire('gov_10a_main', geo='FR', sector='S13', unit='PC_GDP', na_item=['B9', 'D41PAY'], time=ans)
-    an = max(a for (g, a, k) in m if k == 'B9' and ('FR', a, 'D41PAY') in m)
+    m = lire('gov_10a_main', geo='FR', sector='S13', unit='PC_GDP', na_item=['B9', 'D41PAY', 'D41REC'], time=ans)
+    an = max(a for (g, a, k) in m if k == 'B9' and ('FR', a, 'D41PAY') in m and ('FR', a, 'D41REC') in m)
     pib = lire('nama_10_gdp', geo='FR', unit='CP_MEUR', na_item='B1GQ', time=[an])
     return {'an': int(an), 'solde': m[('FR', an, 'B9')], 'interets': m[('FR', an, 'D41PAY')], 'pib_md': round(pib[('FR', an)] / 1000, 1),
-            'primaire': round(m[('FR', an, 'B9')] + m[('FR', an, 'D41PAY')], 2),
-            'source': "Eurostat, principaux agrégats des administrations publiques (gov_10a_main) : solde et intérêts payés",
+            'interets_recus': m[('FR', an, 'D41REC')],
+            'primaire': round(m[('FR', an, 'B9')] + m[('FR', an, 'D41PAY')] - m[('FR', an, 'D41REC')], 2),
+            'source': "Eurostat, principaux agrégats des administrations publiques (gov_10a_main) : solde, intérêts payés et intérêts reçus",
             'url': 'https://ec.europa.eu/eurostat/databrowser/view/gov_10a_main/default/table'}
 
 
@@ -664,7 +675,7 @@ def construire():
         ('ondam-plus-1', "Faire progresser les dépenses d'assurance maladie (ONDAM) de 1 % de plus en " + an1, "Les dépenses remboursées par l'assurance maladie augmentent de 1 % de plus que l'objectif prévu.", 'sante', ['assures', 'soignants'], 'depense', -2.65, ondam, ['ondam-moins-1'], ''),
         ('revalo-moins-1', "Revaloriser toutes les prestations de sécurité sociale d'un point de moins que l'inflation en " + an1, "Pensions de base, prestations familiales et autres prestations des régimes de base augmentent d'un point de moins que la hausse des prix.", 'retraites', ['retraites', 'familles'], 'depense', 3.37, revalo, ['revalo-plus-1', 'pensions-revalorisation-2027', 'prestations-familiales-gel'], "Régimes de base seulement (pas les retraites complémentaires Agirc-Arrco)."),
         ('revalo-plus-1', "Revaloriser toutes les prestations de sécurité sociale d'un point de plus que l'inflation en " + an1, "Pensions de base, prestations familiales et autres prestations des régimes de base augmentent d'un point de plus que la hausse des prix.", 'retraites', ['retraites', 'familles'], 'depense', -3.37, revalo, ['revalo-moins-1', 'pensions-revalorisation-2027', 'prestations-familiales-gel'], "Régimes de base seulement (pas les retraites complémentaires Agirc-Arrco)."),
-        ('allegements-moins-10', "Faire payer plus de cotisations aux employeurs sur les salaires proches du SMIC (allègements réduits de 10 %)", "Les réductions générales de cotisations patronales baissent de 10 % : les employeurs paient plus de cotisations sur ces salaires.", 'entreprises', ['entreprises'], 'cotis_emp', 5.6, ag, [], "La source chiffre 1 % ; Concret multiplie par 10. Coût des allègements généraux prévu pour " + an1 + " : 72,8 Md€ (même rapport, p. 67), régimes de base, Unédic, Agirc-Arrco et FNAL compris. Le chiffrage de 1 % porte sur le solde des régimes de base de la Sécurité sociale : c'est pourquoi 10 % donnent 5,6 Md€ et non 7,3 Md€ (10 % de 72,8) ; l'effet sur les autres organismes n'est pas chiffré par la source, et n'est pas compté. Effet sur l'emploi : compté par le modèle Mésange (cotisations des employeurs), si l'effet sur l'activité est coché."),
+        ('allegements-moins-10', "Faire payer plus de cotisations aux employeurs sur les salaires proches du SMIC (allègements réduits de 10 %)", "Les réductions générales de cotisations patronales baissent de 10 % : les employeurs paient plus de cotisations sur ces salaires.", 'entreprises', ['entreprises'], 'cotis_emp', 5.6, ag, [], "La source chiffre 1 % ; Concret multiplie par 10. Coût des allègements généraux prévu pour " + an1 + " : 72,8 Md€ (même rapport, p. 67), régimes de base, Unédic, Agirc-Arrco et FNAL compris. Le chiffrage de 1 % porte sur le solde des régimes de base de la Sécurité sociale : c'est pourquoi 10 % donnent 5,6 Md€ et non 7,3 Md€ (10 % de 72,8) ; selon la même source, ce chiffrage comprend déjà 180 M€ de charges en plus par point pour les mécanismes qui compensent les allègements de l'Agirc-Arrco et de l'Unédic. Effet sur l'emploi : compté par le modèle Mésange (cotisations des employeurs)."),
     ]
     for i, l, q, th, qui, mac, v, cit, exc, note in lev:
         cartes.append({'id': i, 'origine': 'levier', 'l': l, 'quoi': q, 'theme': th, 'qui': qui, 'qui_texte': '', 'macro': mac,
@@ -716,7 +727,7 @@ def construire():
         else:
             ass('tva', "TVA (part de l'État)", 'recette', AE['tva_nette_etat']['valeurs']['2027_plf'], an2, ['consommateurs'], 'tva', asx('tva_nette_etat'), "Recette nette de l'État ; une autre part de la TVA va à la Sécurité sociale et aux collectivités.")
         ass('csg', "CSG (contribution sociale généralisée)", 'recette', AE['csg_produit']['valeurs']['2027_p'] / 1000, an2, ['salaries', 'retraites'], 'csg', asx('csg_produit'), "Produit prévu (Commission des comptes de la Sécurité sociale) ; un point de CSG rapporte environ 18,4 Md€.")
-        ass('carburants', "Taxes sur les carburants (accise, ex-TICPE)", 'recette', AE['accise_energies_nette']['valeurs']['2027_plf_euros_carburants'] / 1e9, an2, ['automobilistes', 'consommateurs'], 'carbone', dict(asx('accise_energies_nette'), citation=AE['accise_energies_nette']['citations_complementaires'][1]['citation'], page=AE['accise_energies_nette']['citations_complementaires'][1]['page']), "Part de l'État seulement : les régions et départements reçoivent aussi une part de cette taxe, que la source ne chiffre pas ici. Le montant d'un changement de tarif est donc un minimum. Effet sur l'activité compté avec la variante « taxe carbone » du modèle Mésange (direction du Trésor et Insee), la plus proche publiée : elle pèse à 70 % sur les entreprises, alors que les taxes sur les carburants pèsent davantage sur les ménages.")
+        ass('carburants', "Taxes sur les carburants (accise, ex-TICPE)", 'recette', AE['accise_energies_nette']['valeurs']['2027_plf_euros_carburants'] / 1e9, an2, ['automobilistes', 'consommateurs'], 'tva', dict(asx('accise_energies_nette'), citation=AE['accise_energies_nette']['citations_complementaires'][1]['citation'], page=AE['accise_energies_nette']['citations_complementaires'][1]['page']), "Part de l'État seulement : les régions et départements reçoivent aussi une part de cette taxe, que la source ne chiffre pas ici. Le montant d'un changement de tarif est donc un minimum. Effet sur l'activité compté avec la variante « TVA » du modèle Mésange (direction du Trésor et Insee), celle d'une taxe sur la consommation : le modèle ne publie pas de variante propre aux taxes sur les carburants (sa variante « taxe carbone », qui pèse à 70 % sur les entreprises, sert aux cartes sur le carburant agricole et le gazole des camions).")
         ass('ame', "Aide médicale de l'État (AME)", 'depense', AE['ame_credits_2027']['valeurs']['2027_plf_CP'] / 1e9, an2, ['etrangers'], 'depense', asx('ame_credits_2027'),
             "Crédits prévus. En 2025, la dépense réelle a été de 1,47 Md€ pour 1,21 Md€ de crédits ; " + '{:,}'.format(AE['ame_beneficiaires']['valeurs']['31_12_2025']).replace(',', ' ') + " bénéficiaires fin 2025.")
         ass('c2s', "Complémentaire santé solidaire (C2S, ex-CMU complémentaire)", 'depense', AE['c2s_depense']['valeurs']['2024_depense_nette'], 2024, ['assures'], 'depense', asx('c2s_depense'), "Dépense nette 2024, dernier chiffre publié ; 7,79 millions de bénéficiaires fin 2024.")

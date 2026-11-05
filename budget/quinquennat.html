@@ -338,6 +338,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-grands button { font: inherit; text-align: left; display: grid; gap: 2px; padding: 10px 14px; min-height: 56px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
 .q-grands button b { font-size: 16px; }
 .q-grands button span { font-size: 13.5px; color: var(--muted); }
+.q-grands button .q-rec { color: var(--ok); font-weight: 600; }
 .q-grands button:hover, .q-grands button:focus-visible { border-color: var(--fr); }
 .q-etape.q-bravo { border-color: var(--ok); animation: q-bravo .6s cubic-bezier(.2,.8,.2,1); }
 .q-bravo h2 { font-size: 24px; }
@@ -355,7 +356,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 /* Le bandeau : une ligne, toujours la même hauteur. */
 .q-collant { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 9; display: grid; gap: 6px; margin-top: -6px; padding-top: 6px; background: var(--bg); }
 .q-hud { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 4px 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
-.q-hd { display: grid; line-height: 1.1; }
+.q-hd { display: grid; line-height: 1.1; font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer; min-width: 0; }
 .q-hd small { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
 .q-hd b { font-family: var(--serif); font-weight: 400; font-size: 22px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .q-hd.d { text-align: right; }
@@ -374,7 +375,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-ress span { overflow: hidden; text-overflow: ellipsis; }
 .q-ress b { font-weight: 600; }
 .q-ress.q-flash { animation: q-flash .7s ease; }
-.q-hs { grid-column: 1 / -1; margin: 0; font-size: 14px; line-height: 1.35; color: var(--muted); min-height: calc(2 * 1.35em); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.q-hs { grid-column: 1 / -1; margin: 0; font-size: 14px; line-height: 1.35; color: var(--muted); min-height: calc(2 * 1.35em); max-height: calc(2 * 1.35em + 2px); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
 .q-hs b { color: var(--fg); font-variant-numeric: tabular-nums; }
 .q-hs button { font: inherit; font-size: 13.5px; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 12px 4px; margin: -12px 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .q-hobj { grid-column: 1 / -1; }
@@ -474,6 +475,9 @@ details.card.fold > summary { min-height: 44px; display: flex; align-items: cent
 .q-bar div.e .q-go { border: 0; }
 .q-hs.q-msg { color: var(--fg); font-weight: 600; animation: q-flash .7s ease; }
 .q-hs.q-msg span { font-weight: 400; color: var(--muted); }
+.q-hs.q-msg .q-court, .q-hs.q-msg .q-plein { font-weight: 600; color: var(--fg); }
+.q-hs.q-msg .q-plein span { font-weight: 400; color: var(--muted); }
+.q-hs.ouvert { -webkit-line-clamp: unset; line-clamp: unset; display: block; max-height: 55vh; overflow-y: auto; }
 .q-extrait summary { cursor: pointer; font-weight: 600; color: var(--fr); min-height: 44px; display: flex; align-items: center; }
 .q-extrait p { white-space: pre-line; font-size: 12.5px; }
 .q-partage-t { font-size: 13px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); user-select: all; margin: 0; }
@@ -533,7 +537,7 @@ body.q-vote { padding-bottom: 92px; }
 .q-tuiles-c > .q-choisi { grid-template-columns: minmax(0, 1fr); grid-column: 1 / -1; }
 .q-ch-top { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
 .q-ferme { flex: none; font: inherit; font-size: 18px; width: 44px; height: 44px; margin: -8px -6px 0 0; border: 0; border-radius: 22px; background: none; color: var(--muted); cursor: pointer; }
-.q-choisi .q-presets { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.q-choisi .q-presets { flex-wrap: wrap; }
 .q-choisi .q-presets button { flex: none; min-height: 40px; }
 .q-ch-det summary { font-size: 14px; }
 .q-tuiles-c .q-choisi h3 { margin: 0; font-size: 17px; letter-spacing: 0; text-transform: none; color: var(--fg); }
@@ -624,6 +628,7 @@ body.q-vote { padding-bottom: 92px; }
     <p class="q-brouillon">Brouillon à tester : cette page n'est pas en ligne.</p>
     <h1 id="q-titre">Votre quinquennat : votre budget 2027 et ses effets jusqu’en 2031</h1>
     <p class="q-lead" id="q-lead"></p>
+    <p class="q-ami" id="q-ami-i" hidden></p>
     <details class="q-plie"><summary id="q-conv-s">Si rien ne change</summary><p class="q-note" id="q-conv"></p></details>
     <details class="q-plie"><summary>Partir d'un budget tout prêt</summary><div class="q-chips" id="q-presets"></div></details>
     <button type="button" class="q-go" id="q-voir">Commencer ↓</button>
@@ -631,9 +636,9 @@ body.q-vote { padding-bottom: 92px; }
 
   <div class="q-collant" id="q-collant">
   <div class="q-hud" id="q-hud">
-    <div class="q-hd"><small id="h-l1">Déficit</small><b id="h-v1">—</b></div>
-    <div class="q-hd c"><small id="h-l3">Croissance</small><b id="h-v3">—</b><i class="q-hd-s" id="h-s3"></i></div>
-    <div class="q-hd d"><small id="h-l2">Dette</small><b id="h-v2">—</b></div>
+    <button type="button" class="q-hd" data-x="d" aria-label="Déficit : ce que veut dire ce chiffre"><small id="h-l1">Déficit</small><b id="h-v1">—</b><i class="q-hd-s">du PIB ⓘ</i></button>
+    <button type="button" class="q-hd c" data-x="c" aria-label="Croissance : ce que veut dire ce chiffre"><small id="h-l3">Croissance</small><b id="h-v3">—</b><i class="q-hd-s" id="h-s3"></i></button>
+    <button type="button" class="q-hd d" data-x="t" aria-label="Dette : ce que veut dire ce chiffre"><small id="h-l2">Dette</small><b id="h-v2">—</b><i class="q-hd-s">du PIB ⓘ</i></button>
     <div class="q-jauge" id="q-jauge" aria-hidden="true"><span></span><em></em></div>
     <button type="button" class="q-ress" id="q-ress" hidden></button>
     <p class="q-hs" id="q-hs" aria-live="polite"></p>
@@ -678,6 +683,7 @@ body.q-vote { padding-bottom: 92px; }
         <div class="q-ch-top"><h3 id="q-ch-t"></h3><button type="button" class="q-ferme" id="q-ch-x" aria-label="Fermer sans rien changer">✕</button></div>
         <div class="q-sl"><div class="h"><span>De combien ?</span><b id="q-pc-v">0 %</b></div><div class="q-presets" id="q-pc-p"></div><input type="range" id="q-pc" min="-100" max="100" step="1" value="0" aria-label="Pourcentage de baisse ou de hausse"><div class="b"><span>−100 %</span><span>0</span><span>+100 %</span></div></div>
         <p class="q-effet" id="q-effet"></p>
+        <p class="q-note q-ppv" id="q-pp-v"></p>
         <div class="q-apercu" id="q-apercu" aria-live="polite"></div>
         <button type="button" class="q-go" id="q-ajout" disabled>Ajouter à mon budget</button>
         <details class="q-plie q-ch-det"><summary>Le montant officiel, le calcul et des exemples</summary>
@@ -904,6 +910,8 @@ body.q-vote { padding-bottom: 92px; }
     var r = L.filter(function (x) { return x.an === an; })[0], q = L.filter(function (x) { return x.an === an - 1; })[0];
     return p.croissance + (L === R0 ? 0 : (S.cr || 0)) + (S.macro && r ? (r.L || 0) - (q ? q.L || 0 : 0) : 0);
   }
+  // Déficit juste au-dessus de l'objectif : deux décimales, pour ne pas lire « 5,0 % » quand il manque encore de l'argent.
+  var deficO = function (r, an) { var T = seuil(); return T != null && anObj() === an && -r.solde > T && -r.solde - T < 0.05 ? nf(-r.solde, 2) + '\u00a0%' : defic(r.solde); };
   var pcs = function (v) { return (v < 0 ? '−' : '') + nf(Math.abs(v), 1) + '\u00a0%'; };
   var ligneAn = function (L, an) { return L.filter(function (r) { return r.an === an; })[0] || an1(L); };
   function objectif() {
@@ -917,7 +925,7 @@ body.q-vote { padding-bottom: 92px; }
       var x = f.d - PJ.depart.dette, x0 = zf.d - PJ.depart.dette;
       return { ok: x <= 0, prog: x0 > 0 ? cl((x0 - x) / x0) : 1, t: x <= 0 ? 'Objectif atteint : la dette de ' + AN1 + ' ne dépasse pas celle de fin ' + PJ.depart.an + '.' : 'Dette ' + AN1 + ' : <b>' + pt(x) + '</b> au-dessus de fin ' + PJ.depart.an + ' (' + nf(PJ.depart.dette, 1) + '\u00a0%).' };
     }
-    var n = nbChoix(), t = r1.mesures;
+    var n = nbChoix(), E0 = effort(), t = E0.imp + E0.eco - E0.baisse - E0.dep;
     if (!S.obj) return { ok: false, prog: null, t: 'Commencez par choisir un objectif, sur la carte ci-dessous.' };
     return { ok: false, prog: null, t: n ? (n > 1 ? 'Vos ' + n + ' mesures ' : 'Votre mesure ') + (t >= 0 ? 'rapporte' + (n > 1 ? 'nt' : '') + ' <b>' : 'coûte' + (n > 1 ? 'nt' : '') + ' <b>') + mdt(t) + '</b> en ' + AN0 + '.' : 'Votez des mesures : leur effet s\'affiche ici.' };
   }
@@ -927,7 +935,7 @@ body.q-vote { padding-bottom: 92px; }
     R = simuler(); R0 = simuler({ rien: true });
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1];
     var AOh = anObj ? anObj() : AN0, rO = ligneAn(R, AOh); $('h-l1').textContent = 'Déficit ' + AOh; r1 = rO; $('h-l2').textContent = 'Dette ' + AN1; $('h-l3').textContent = 'Croissance';
-    var g1 = croiss(R, AN0), g0 = croiss(R0, AN0), gz = croiss(R, AN1), v3 = g1 == null ? '—' : (g1 < 0 ? '−' : '') + nf(Math.abs(g1), 1) + (gz == null ? '\u00a0%' : ' → ' + pcs(gz)); $('h-s3').textContent = AN0 + ' → ' + AN1;
+    var g1 = croiss(R, AN0), g0 = croiss(R0, AN0), gz = croiss(R, AN1), v3 = g1 == null ? '—' : (g1 < 0 ? '−' : '') + nf(Math.abs(g1), 1) + (gz == null ? '\u00a0%' : ' → ' + pcs(gz)); $('h-s3').textContent = AN0 + ' → ' + AN1 + ' ⓘ';
     $('h-v3').parentNode.title = g0 == null ? '' : 'Prévision du FMI pour ' + AN0 + ' : ' + pcs(g0) + (S.macro ? ' ; avec l\'effet de vos choix sur l\'activité : ' + pcs(g1) : ' (effet de vos choix sur l\'activité non compté)');
     var T0 = seuil(), v1 = T0 != null && anObj() === AN0 && -r1.solde > T0 && -r1.solde - T0 < 0.05 ? nf(-r1.solde, 2) + '\u00a0%' : defic(r1.solde), v2 = nf(f.d, 1) + '\u00a0%';
     [['h-v1', v1], ['h-v2', v2], ['h-v3', v3]].forEach(function (x) { var el = $(x[0]); if (anime && el.textContent !== x[1]) { el.classList.remove('q-flash'); void el.offsetWidth; el.classList.add('q-flash'); } el.textContent = x[1]; });
@@ -938,7 +946,7 @@ body.q-vote { padding-bottom: 92px; }
     var rs = ressemble(r1), qr = $('q-ress');
     qr.hidden = !rs;
     if (rs) {
-      qr.innerHTML = '<i aria-hidden="true">' + drapeau(rs.p.code) + '</i><span>' + (nbChoix() ? 'Votre budget ressemble <b>' + esc(aPays(rs.p)) + '</b>' : 'Au départ, votre budget est celui <b>' + esc(aPays(rs.p).replace(/^à la /, 'de la ')) + '</b>') + ' ›</span>';
+      qr.innerHTML = '<i aria-hidden="true">' + drapeau(rs.p.code) + '</i><span>' + (nbChoix() ? 'Votre budget ressemble <b>' + esc(aPays(rs.p)) + '</b>' : 'Au départ : <b>' + esc(aPays(rs.p).replace(/^à la /, 'la ').replace(/^au /, 'le ').replace(/^aux /, 'les ').replace(/^à l'/, 'l\'')) + '</b>') + ' ›</span>';
       qr.setAttribute('aria-label', 'Votre budget ' + AN0 + ' ressemble le plus ' + aPays(rs.p) + ', pour les dépenses et les recettes publiques : voir la carte des pays');
       if (anime && RESS && RESS !== rs.p.code) { qr.classList.remove('q-flash'); void qr.offsetWidth; qr.classList.add('q-flash'); }
       RESS = rs.p.code;
@@ -954,9 +962,28 @@ body.q-vote { padding-bottom: 92px; }
     $('q-tabexp').hidden = (ONG === 'voter' && !$('q-intro').hidden) || !!(S.vu && S.vu[ONG] > 1);
     if (!$('p-bilan').hidden) bilan();
   }
+  // Toucher un chiffre du bandeau : ce qu'il veut dire, en une phrase, avec son montant en euros.
+  function expliquer(x) {
+    var AO = anObj(), r = ligneAn(R, AO), f = R[R.length - 1], g1 = croiss(R, AN0), gz = croiss(R, AN1), p1 = croiss(R0, AN0), pz = croiss(R0, AN1), t;
+    if (x === 'd') t = 'Déficit ' + AO + ' : ce que l\'État, la Sécurité sociale et les collectivités dépensent de plus qu\'ils ne reçoivent dans l\'année, rapporté au PIB, la richesse produite en France en un an (' + mdt(r.pib) + ' en ' + AO + '). ' + defic(r.solde) + ' du PIB, c\'est ' + mdt(Math.max(0, -r.solde) / 100 * r.pib) + '.';
+    else if (x === 't') t = 'Dette ' + f.an + ' : ce que doivent l\'État, la Sécurité sociale et les collectivités, rapporté au PIB, la richesse produite en un an. ' + nf(f.d, 1) + '\u00a0% du PIB, c\'est ' + mdt(f.d / 100 * f.pib) + ' (fin ' + PJ.depart.an + ' : ' + nf(PJ.depart.dette, 1) + '\u00a0%).';
+    else t = 'Croissance : la hausse du PIB, hors hausse des prix. Prévision du FMI : ' + pcs(p1) + ' en ' + AN0 + ', ' + pcs(pz) + ' en ' + AN1 + (Math.abs(g1 - p1) >= 0.05 || Math.abs(gz - pz) >= 0.05 ? ' ; avec l\'effet de vos choix sur l\'économie (modèle de la direction du Trésor et de l\'Insee) : ' + pcs(g1) + ' et ' + pcs(gz) + '.' : ' ; vos choix ne la changent presque pas pour l\'instant.');
+    pop(t, true, t);
+    var h = $('q-hs'); h.querySelector('.q-det').click();
+  }
   // Après chaque geste, la ligne du bandeau dit ce qui vient de changer, puis revient à l'objectif.
   var popT = null, POP = false, ONG = 'voter';
-  function pop(t, long) { clearTimeout(popT); POP = true; var el = $('q-hs'); el.className = 'q-hs'; void el.offsetWidth; el.className = 'q-hs q-msg'; el.innerHTML = t; popT = setTimeout(function () { POP = false; hud(); }, long ? 15000 : 11000); }
+  // Avec « court » : le bandeau garde une ligne (le résultat), et « Détail » ouvre le message entier ; il reste ouvert tant qu'on le lit.
+  function pop(t, long, court) {
+    clearTimeout(popT); POP = true; var el = $('q-hs'); el.className = 'q-hs'; void el.offsetWidth; el.className = 'q-hs q-msg';
+    var fin = function (ms) { clearTimeout(popT); popT = setTimeout(function () { POP = false; hud(); }, ms); };
+    if (court) {
+      el.innerHTML = '<span class="q-court">' + court + '</span><span class="q-plein" hidden>' + t + '</span> <button type="button" class="q-det" aria-expanded="false">Détail</button>';
+      var b = el.querySelector('.q-det');
+      b.onclick = function () { var o = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', o); b.textContent = o ? 'Fermer' : 'Détail'; el.classList.toggle('ouvert', o); el.querySelector('.q-plein').hidden = !o; el.querySelector('.q-court').hidden = o; if (o) clearTimeout(popT); else fin(6000); };
+    } else el.innerHTML = t;
+    fin(long ? 15000 : 11000);
+  }
   // Ce que montre le bandeau, avant et après : les mêmes chiffres arrondis, pour que le message et le bandeau disent la même chose.
   // Le budget reçu par lien : son vote sur cette carte, dit après le vôtre (jamais avant, pour ne pas l'influencer).
   var MOTS = { 1: 'pour', '-1': 'contre', 3: 'abstention' };
@@ -968,18 +995,30 @@ body.q-vote { padding-bottom: 92px; }
   }
   // Quand le pays le plus proche change, le message qui suit un geste le dit.
   function chgPays(A0, A1) { var a = ressemble(an1(A0)), b = ressemble(an1(A1)); return a && b && a.p.code !== b.p.code ? ' · Votre budget ressemble maintenant <b>' + esc(aPays(b.p)) + '</b> ' + drapeau(b.p.code) : ''; }
-  function avantApres(A0, A1, attendu) {
+  function avantApres(A0, A1, attendu, sec) {
     if (S.obj === 'dette') { var d0 = nf(A0[A0.length - 1].d, 1), d1 = nf(A1[A1.length - 1].d, 1); return 'dette ' + AN1 + ' : ' + (d0 === d1 ? d1 + '\u00a0% (écart de moins de 0,1 point)' : d0 + '\u00a0% → ' + d1 + '\u00a0%'); }
     var AO = anObj(), r0 = ligneAn(A0, AO), r1 = ligneAn(A1, AO), T = seuil(), a = defic(r0.solde), b = defic(r1.solde);
     if (T != null) {
       // Ce qui manque pour l'objectif, en Md€, et l'écart avec avant : un vote de 2 Md€ se voit même si le déficit en % ne bouge pas.
       // Si l'écart n'est pas le montant voté, on dit pourquoi (l'effet sur l'activité, ou l'année de l'objectif).
-      var m0 = (-r0.solde - T) / 100 * r0.pib, m1 = (-r1.solde - T) / 100 * r1.pib, d = m1 - m0, pq = attendu != null && Math.abs(Math.abs(d) - Math.abs(attendu)) >= Math.max(0.01, 0.1 * Math.abs(attendu)) ? (AO !== AN0 ? ' en ' + AO : S.macro ? ' après l\'effet sur l\'activité' : '') : '', ds = Math.abs(d) < 0.05 || (attendu != null && !pq) ? '' : ' (' + (d < 0 ? '−' : '+') + mdt(Math.abs(d)) + pq + ')';
+      var m0 = (-r0.solde - T) / 100 * r0.pib, m1 = (-r1.solde - T) / 100 * r1.pib, d = m1 - m0, pq = attendu != null && Math.abs(Math.abs(d) - Math.abs(attendu)) >= Math.max(0.01, 0.1 * Math.abs(attendu)) ? (AO !== AN0 ? ' en ' + AO : S.macro ? ' après l\'effet sur l\'activité' : '') : '', ds = sec || Math.abs(d) < 0.05 || (attendu != null && !pq) ? '' : ' (' + (d < 0 ? '−' : '+') + mdt(Math.abs(d)) + pq + ')';
       return m1 <= 0 ? 'objectif atteint : déficit ' + AO + ' à ' + b : 'il reste ' + mdt(m1) + ' à trouver' + ds;
     }
     var dd = (r1.solde - r0.solde) / 100 * r1.pib;
-    return 'déficit ' + AN0 + ' : ' + (a === b ? b + (Math.abs(dd) < 0.05 ? '' : ' (' + (dd > 0 ? '−' : '+') + mdt(Math.abs(dd)) + (S.macro && attendu != null && Math.abs(Math.abs(dd) - Math.abs(attendu)) >= Math.max(0.01, 0.1 * Math.abs(attendu)) ? ' après l\'effet sur l\'activité' : '') + ')') : a + ' → ' + b);
+    return 'déficit ' + AN0 + ' : ' + (a === b ? b + (Math.abs(dd) < 0.05 || sec ? '' : ' (' + (dd > 0 ? '−' : '+') + mdt(Math.abs(dd)) + (S.macro && attendu != null && Math.abs(Math.abs(dd) - Math.abs(attendu)) >= Math.max(0.01, 0.1 * Math.abs(attendu)) ? ' après l\'effet sur l\'activité' : '') + ')') : a + ' → ' + b);
   }
+  // Ce que l'effet sur l'économie change, en une phrase : la croissance de l'année, et le déficit de l'année visée quand il ne bouge
+  // pas du montant de la mesure (direct : ce montant cette année-là, positif = déficit plus bas). Rien d'écrit sous 0,05 point.
+  function ecoPhrase(A0, A1, direct, compte) {
+    if (compte === false) return 'Effet sur l\'économie : non publié pour ce type de mesure, non compté.';
+    var AO = anObj(), r0 = ligneAn(A0, AO), r1 = ligneAn(A1, AO), d = (r1.solde - r0.solde) / 100 * r1.pib, g0 = croiss(A0, AN0), g1 = croiss(A1, AN0);
+    var gc = g0 != null && nf(g0, 1) !== nf(g1, 1) ? 'croissance ' + AN0 + ' : ' + pcs(g0) + ' → ' + pcs(g1) : '';
+    if (direct != null && Math.abs(d - direct) >= Math.max(0.05, 0.1 * Math.abs(direct))) return 'Avec l\'effet sur l\'économie' + (gc ? ' (' + gc + ')' : '') + ', le déficit ' + AO + (Math.abs(d) < 0.05 ? ' ne bouge presque pas' : (d > 0 ? ' baisse' : ' augmente') + ' finalement de ' + mdt(Math.abs(d))) + '.';
+    return gc ? gc.charAt(0).toUpperCase() + gc.slice(1) + '.' : 'Effet sur l\'économie : presque nul.';
+  }
+  var maj1 = function (t) { return t.charAt(0).toUpperCase() + t.slice(1); };
+  // « 1,1 milliard d'euros de recettes en plus », « d'économies », « de dépenses en plus », « de recettes en moins ».
+  function quoi(sens, m) { return mdt(Math.abs(m)) + (m > 0 ? (sens === 'recette' ? ' de recettes en plus' : ' d\'économies') : (sens === 'recette' ? ' de recettes en moins' : ' de dépenses en plus')); }
   // Après une mesure votée par les députés : leur décision et le nombre de groupes qui ont voté comme vous.
   // « Les députés ont retiré cette mesure par 45 voix contre 15, puis ont rejeté tout le budget » : les voix sont celles du vote
   // sur la mesure, écrites juste après elle.
@@ -1037,7 +1076,7 @@ body.q-vote { padding-bottom: 92px; }
   }
   var passer = function () {};
   function carte(c, entree) {
-    var m = montant(c, AN0);
+    var m = montant(c, AN0), CC = concretCarte(c, m);
     var grp = c.an ? (function () {
       var p = [], cc = [], ab = [];
       J.groupes.forEach(function (g) { var x = c.an.g[g.c]; if (!x || x === 'nv') return; var pm = x === 'pour' ? c.an.sens : x === 'contre' ? -c.an.sens : 0; (pm > 0 ? p : pm < 0 ? cc : ab).push(g.n); });
@@ -1056,10 +1095,10 @@ body.q-vote { padding-bottom: 92px; }
         var hab = J.population ? Math.abs(m) * 1e9 / J.population.v : null;
         return '<div class="q-mt"><b>' + mdt(m) + '</b><span>' + phrase(m, c) + ' en ' + AN0 + (hab ? ' · environ ' + nf(hab, hab < 10 ? 1 : 0) + '\u00a0€ par habitant' : '') + '</span><em>' + (c.duree === 'une seule année' ? 'une seule année' : monte ? 'puis davantage : ' + mdt(fin) + ' en ' + AN1 : 'chaque année') + '</em></div>';
       })() +
-      clair(c) +
+      (CC.indexOf('q-vous') >= 0 ? CC : '') + clair(c) +
       (rivaux(c).length ? '<p class="q-ligne"><b>Sur le même sujet :</b> ' + rivaux(c).map(function (o) { return nb(o.titre || o.l) + (S.v[o.id] === 1 ? ' (votre choix)' : ''); }).join(' · ') + '. Une seule peut être adoptée.</p>' : '') +
       '<p class="q-ligne"><b>' + quiTitre(c, m) + ' :</b> ' + nb(c.qui_texte || c.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' +
-      concretCarte(c, m) +
+      (CC.indexOf('q-vous') >= 0 ? '' : CC) +
       '<details class="q-src"><summary>' + (c.statut_court ? 'À l\'Assemblée, ce que ça change, la source' : 'Ce que ça change, et la source') + '</summary>' + deputes(c) +
       (c.quoi ? '<p>' + esc(c.quoi) + '</p>' : '') + (c.officiel ? '<p>Intitulé officiel : « ' + esc(c.officiel) + ' ».</p>' : '') +
       ((!c.officiel && c.titre && c.titre !== c.l) ? '<p>Intitulé complet : ' + nb(c.l) + '.</p>' : '') +
@@ -1068,7 +1107,7 @@ body.q-vote { padding-bottom: 92px; }
       '<p>Source : ' + esc(c.src.doc) + (c.src.page ? ', page ' + esc(String(c.src.page).replace(/^p\. ?/, '')) : '') + '. <a href="' + esc(c.src.url) + '">Lire le document</a></p>' +
       '<details class="q-extrait"><summary>Extrait exact du document</summary><p>« ' + esc(c.src.citation) + ' »</p></details>' +
       (J.population && !exemplesCarte(c).L.length ? '<p>Repère : ' + nf(Math.abs(m) * 1e9 / J.population.v, Math.abs(m) * 1e9 / J.population.v < 10 ? 1 : 0) + '\u00a0€ par habitant et par an (calcul de Concret : ' + mdt(Math.abs(m)) + ' divisés par ' + nf(J.population.v / 1e6, 1) + ' millions d\'habitants, Insee ; pour comparer, ce n\'est pas forcément ce que paie ou reçoit chacun).</p>' : '') +
-      '<p>' + (c.macro && J.variantes[c.macro] ? (S.macro ? 'Son effet sur l\'activité et l\'emploi est compté, d\'après le modèle de la direction du Trésor et de l\'Insee' + (c.macro === 'carbone' ? ' (variante publiée la plus proche : une taxe carbone, qui pèse à 70 % sur les entreprises, alors que les taxes sur les carburants pèsent davantage sur les ménages).' : '.') : 'Son effet sur l\'activité et l\'emploi n\'est pas compté : la case « Compter l\'effet de vos choix sur l\'activité » est décochée (Bilan, « Changer les hypothèses »). Le modèle de la direction du Trésor et de l\'Insee le publie pour ce type de mesure.') : 'Son effet sur l\'activité n\'est pas compté : le modèle de la direction du Trésor et de l\'Insee ne le publie pas pour ce type de mesure.') + '</p></details>' +
+      '<p>' + (c.macro && J.variantes[c.macro] ? (S.macro ? 'Son effet sur l\'activité et l\'emploi est compté, d\'après le modèle de la direction du Trésor et de l\'Insee' + (c.macro === 'carbone' ? ' (variante publiée la plus proche : une taxe carbone, qui pèse à 70 % sur les entreprises dans le modèle).' : '.') : 'Son effet sur l\'activité et l\'emploi n\'est pas compté : la case « Compter l\'effet de vos choix sur l\'activité » est décochée (Bilan, « Changer les hypothèses »). Le modèle de la direction du Trésor et de l\'Insee le publie pour ce type de mesure.') : 'Son effet sur l\'activité n\'est pas compté : le modèle de la direction du Trésor et de l\'Insee ne le publie pas pour ce type de mesure.') + '</p></details>' +
       '<p class="q-question">Êtes-vous pour ce qui est proposé ?</p><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') + '</article>';
     glisser($('q-card'), c);
     $('b-tard').onclick = function () { passer(); };
@@ -1136,7 +1175,7 @@ body.q-vote { padding-bottom: 92px; }
     S.compte = S.compte || {}; var op = VRAI && !S.compte[c.id] ? 'hit' : 'get'; if (op === 'hit') { S.compte[c.id] = 1; garder(); }
     fetch(API + op + '?k=' + encodeURIComponent(k) + '&n=3' + (op === 'hit' ? '&i=' + i : ''), { method: op === 'hit' ? 'POST' : 'GET', cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
       if (!j || !j.v) return; var t = j.v[0] + j.v[1] + j.v[2]; if (t < 10) return;
-      var el = $('q-hs'); if (!el || el.dataset.carte !== c.id) return;
+      var el = $('q-hs'); if (!el || el.dataset.carte !== c.id) return; el = el.querySelector('.q-plein') || el;
       var p = function (x) { return nf(100 * x / t, 0) + '\u00a0%'; };
       el.insertAdjacentHTML('beforeend', '<br><span>Les joueurs de Concret : ' + p(j.v[0]) + ' pour, ' + p(j.v[1]) + ' contre, ' + p(j.v[2]) + ' abstention (' + nf(t, 0) + ' votes).</span>');
     }).catch(function () {});
@@ -1149,8 +1188,18 @@ body.q-vote { padding-bottom: 92px; }
     S.v[c.id] = v; S.pile.push({ id: c.id, avant: avant == null ? null : avant, retirees: retirees }); garder();
     var el = $('q-card'); if (el) el.classList.add(v === 1 ? 'out-r' : 'out-l');
     var A1 = simuler(), echo = duel(c, v) + echoAssemblee(c, v), m0 = montant(c, AN0);
-    if (v === 3) { pop('Abstention : la mesure n\'est pas adoptée, votre budget ne change pas.' + echo, true); $('q-hs').dataset.carte = c.id; joueurs(c, v); setTimeout(function () { tout(true, true); remonter(); }, 260); return; }
-    pop((v === 1 ? 'Adoptée : ' + (m0 ? mdt(m0, true) : premiere(c)) + (S.macro && !c.macro && m0 ? ' (effet sur l\'activité non publié pour ce type de mesure : non compté)' : effetPIB(A0, A1)) + ' · ' + avantApres(A0, A1, m0) + (retirees.length ? ' (remplace : ' + retirees.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? esc(o.titre || o.l) : ''; }).join(', ') + ')' : '') + chgPays(A0, A1) : 'Vous avez voté contre : la règle actuelle reste, votre budget ne change pas.') + echo, !!echo); $('q-hs').dataset.carte = c.id; joueurs(c, v);
+    var reste = avantApres(A0, A1, null, true), ma = c.effet ? montant(c, anObj()) : 0, pays = chgPays(A0, A1), dl = duel(c, v);
+    var hors = m0 ? quoi(c.sens, m0) : premiere(c), plein, court;
+    if (v === 1) {
+      var rem = retirees.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? esc(o.titre || o.l) : ''; }).filter(Boolean);
+      plein = 'Adoptée : ' + (m0 ? quoi(c.sens, m0) + ' en ' + AN0 : premiere(c)) + (rem.length ? ' (elle remplace : ' + rem.join(', ') + ')' : '') + '. ' + maj1(reste) + '. ' + (m0 || ma ? ecoPhrase(A0, A1, ma, !!c.macro) : '');
+      court = '✓ Adoptée · ' + reste;
+    } else {
+      plein = (v === -1 ? 'Contre : la règle actuelle reste' : 'Abstention : la mesure n\'est pas adoptée') + (m0 ? ' ; ces ' + hors + ' ne sont pas dans votre budget' : '') + '. ' + maj1(reste) + '.';
+      court = (v === -1 ? '✗ Contre' : 'Abstention') + ' · ' + reste;
+    }
+    pop(plein + pays + dl + echoAssemblee(c, v), true, court + pays + dl); $('q-hs').dataset.carte = c.id; joueurs(c, v);
+    if (v === 3) { setTimeout(function () { tout(true, true); remonter(); }, 260); return; }
     setTimeout(function () { tout(true, true); remonter(); }, 260);
   }
   function annuler() {
@@ -1160,7 +1209,7 @@ body.q-vote { padding-bottom: 92px; }
     garder(); tout(true, true); pop('Vote annulé');
   }
   // Amène un élément juste sous le bandeau du haut (il ne passe plus dessous).
-  function sousBandeau(el) { var h = $('q-collant').getBoundingClientRect().bottom, t = el.getBoundingClientRect().top; if (Math.abs(t - h - 8) > 4) window.scrollBy({ top: t - h - 8 }); }
+  function sousBandeau(el) { var h = $('q-collant').getBoundingClientRect().bottom, t = el.getBoundingClientRect().top; if (Math.abs(t - h - 8) > 4) window.scrollBy({ top: t - h - 8, behavior: 'instant' }); }
   // Le bandeau se réduit quand on fait défiler vers le bas (les onglets se cachent), et revient en entier en remontant.
   (function () { var y0 = window.scrollY, t0 = 0; window.addEventListener('scroll', function () { var y = window.scrollY, c = $('q-collant'), now = Date.now(); if (!c) return; if (now - t0 < 400) { y0 = y; return; } var bas = y + innerHeight > document.documentElement.scrollHeight - 80, mini = c.classList.contains('q-mini');
       if (!mini && y > y0 + 30 && y > 400 && !bas) { c.classList.add('q-mini'); t0 = now; } else if (mini && (y < y0 - 30 || y < 400)) { c.classList.remove('q-mini'); t0 = now; } if (Math.abs(y - y0) > 30 || y < 400) y0 = y; }, { passive: true }); })();
@@ -1182,7 +1231,7 @@ body.q-vote { padding-bottom: 92px; }
     if (k === 'objectif') {
       $('q-deck').innerHTML = '<section class="card q-etape' + (entree ? ' in' : '') + '"><span class="eyebrow">Pour commencer</span><h2>Quel est votre objectif ?</h2>' +
         '<p class="q-note">Le jeu vous dira, vote après vote, combien il manque. Vous pourrez en changer à tout moment.</p><div class="q-grands">' +
-        OBJS().map(function (o) { return '<button type="button" data-o="' + o[0] + '"><b>' + esc(o[1]) + '</b><span>' + esc(o[2]) + '</span></button>'; }).join('') + '</div></section>';
+        OBJS().map(function (o) { var r = S.reussi && S.reussi[o[0]]; return '<button type="button" data-o="' + o[0] + '"><b>' + esc(o[1]) + '</b><span>' + esc(o[2]) + '</span>' + (r && o[0] !== 'aucun' ? '<span class="q-rec">✓ Déjà atteint' + (r > 1 ? ', en ' + r + ' votes' : '') + ' : à refaire avec d\'autres cartes ?</span>' : '') + '</button>'; }).join('') + '</div></section>';
       Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-grands button'), function (b) { b.onclick = function () { S.obj = b.dataset.o; garder(); objectifs(); tout(true); pop(b.dataset.o === 'aucun' ? 'Sans objectif : votez librement' : 'Objectif choisi : ' + esc(b.querySelector('b').textContent)); }; });
       return;
     }
@@ -1257,7 +1306,8 @@ body.q-vote { padding-bottom: 92px; }
     if (b.dataset.conf) { delete b.dataset.conf; f(); return; }
     var t0 = b.textContent; b.dataset.conf = 1; b.textContent = t; setTimeout(function () { if (b.dataset.conf) { delete b.dataset.conf; b.textContent = t0; } }, 5000);
   }
-  function toutEffacer() { S = { v: {}, perso: {}, unites: {}, po: {}, macro: true, macroV: 2, taux: 0, cr: 0, filtre: 'tout', obj: S.obj, pile: [], graine: 1 + Math.floor(Math.random() * 2147483646) }; garder(); window.scrollTo({ top: 0 }); location.reload(); }
+  // Tout effacer garde ce qui appartient au joueur sur cet appareil : objectifs atteints, défis réussis, record, foyer, cartes déjà comptées.
+  function toutEffacer() { var g = {}; ['reussi', 'defis', 'recordDefi', 'foyer', 'compte', 'vu', 'records'].forEach(function (k) { if (S[k] != null) g[k] = S[k]; }); S = Object.assign({ v: {}, perso: {}, unites: {}, po: {}, macro: true, macroV: 2, taux: 0, cr: 0, filtre: 'tout', pile: [], graine: 1 + Math.floor(Math.random() * 2147483646) }, g); garder(); window.scrollTo({ top: 0 }); location.reload(); }
   // Revoter : les votes sont effacés, les cartes reviennent dans un nouvel ordre ; les mesures créées et les hypothèses restent.
   function revoter() { S.v = {}; S.pile = []; S.etape = 0; S.hist = {}; S.filtre = 'tout'; S.graine = 1 + Math.floor(Math.random() * 2147483646); garder(); window.scrollTo({ top: 0 }); location.reload(); }
   function ouvrirVotes() { onglet('voter'); var d = $('q-vos-d'); d.open = true; setTimeout(function () { sousBandeau(d); }, 60); }
@@ -1268,7 +1318,7 @@ body.q-vote { padding-bottom: 92px; }
   // Accord avec chaque groupe : même calcul que Votez les lois (depuis le 28 octobre 2026). Sur chaque mesure, la part des députés
   // du groupe qui ont voté comme vous, une abstention comptant pour moitié d'un côté comme de l'autre ; pas compté : un groupe
   // dont moins de 5 députés, ou moins d'un quart des membres, ont voté ; les mesures que tous les groupes ont votées pareil.
-  var VOTANTS_MIN = 5, PART_MIN = 0.25, MIN_GROUPE = 3;
+  var VOTANTS_MIN = 5, PART_MIN = 0.25, MIN_GROUPE = 5;
   function unanime(c) { var p = null, ok = true; J.groupes.forEach(function (g) { if (g.c === 'NI') return; var x = c.an.g[g.c]; if (!x || x === 'nv') return; if (p == null) p = x; else if (x !== p) ok = false; }); return ok; }
   function proches() {
     var acc = {}, n = 0, un = 0, vu = {};
@@ -1310,13 +1360,13 @@ body.q-vote { padding-bottom: 92px; }
   function proximite(P, min, court) {
     if (P.n < min) return '<p class="q-note">Votez encore ' + (min - P.n) + ' mesure' + (min - P.n > 1 ? 's' : '') + ' sur lesquelles les groupes de députés n\'ont pas tous voté pareil, et vous verrez desquels vos votes sont le plus proches.</p>';
     var G = P.G.slice().sort(function (a, b) { return b.v - a.v; }), top = G.filter(function (x) { return Math.abs(x.v - G[0].v) < 0.5; });
-    var peu = P.peu.length ? '<p class="q-note">Pas montré' + (P.peu.length > 1 ? 's' : '') + ' : ' + esc(P.peu.join(', ')) + '. Sur vos votes, leurs députés ont assez voté sur moins de 3 mesures (au moins 5 votants et un quart du groupe).</p>' : '';
-    if (!G.length) return '<p class="q-note">Sur les mesures que vous avez votées, aucun groupe de députés n\'a assez voté sur au moins 3 d\'entre elles (au moins 5 votants et un quart du groupe). Votez d\'autres mesures pour voir desquels vos votes sont le plus proches.</p>';
-    return '<p class="q-gros">' + (top.length > 1 ? 'À égalité, vos votes ressemblent le plus à ceux de : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b>' : 'Vos votes ressemblent le plus à ceux du groupe <b>' + esc(G[0].g.n) + '</b>') + ' (' + nf(G[0].v, 0) + '\u00a0% d\'accord, sur ' + G[0].nb + ' mesure' + (G[0].nb > 1 ? 's' : '') + ' où ses députés ont assez voté ; vous avez voté ' + P.n + ' des ' + P.tot + ' mesures sur lesquelles les groupes n\'ont pas tous voté pareil).</p>' + peu +
+    var peu = P.peu.length ? '<p class="q-note">Pas montré' + (P.peu.length > 1 ? 's' : '') + ' : ' + esc(P.peu.join(', ')) + '. Sur vos votes, leurs députés ont assez voté sur moins de ' + MIN_GROUPE + ' mesures (au moins 5 votants et un quart du groupe).</p>' : '';
+    if (!G.length) return '<p class="q-note">Sur les mesures que vous avez votées, aucun groupe de députés n\'a assez voté sur au moins ' + MIN_GROUPE + ' d\'entre elles (au moins 5 votants et un quart du groupe). Votez d\'autres mesures pour voir desquels vos votes sont le plus proches.</p>';
+    return '<p class="q-gros">' + (top.length > 1 ? 'À égalité, vos votes ressemblent le plus à ceux de : <b>' + esc(top.map(function (x) { return x.g.n; }).join(', ')) + '</b>' : 'Vos votes ressemblent le plus à ceux du groupe <b>' + esc(G[0].g.n) + '</b>') + ' (' + nf(G[0].v, 0) + '\u00a0% d\'accord, sur ' + G[0].nb + ' mesure' + (G[0].nb > 1 ? 's' : '') + ' où ' + (top.length > 1 ? 'leurs' : 'ses') + ' députés ont assez voté ; vous avez voté ' + P.n + ' des ' + P.tot + ' mesures sur lesquelles les groupes n\'ont pas tous voté pareil).</p>' + peu +
       '<div class="q-hemi">' + hemicycle(P) + '</div>' + (court ? '<div class="q-barres">' + G.slice(0, 3).map(barreG).join('') + '</div><details class="q-tous"><summary>Voir les ' + G.length + ' groupes</summary><div class="q-barres">' + G.slice(3).map(barreG).join('') + '</div></details>' : '<div class="q-barres">' + G.map(barreG).join('') + '</div>') +
       '<div class="q-note">' + plie('Chaque groupe de députés est à sa place dans l\'Assemblée ; plus la part foncée est grande, plus ses députés ont voté comme vous. Sur chaque mesure : la part des députés du groupe qui ont voté comme vous, une abstention comptant pour moitié (même calcul que Votez les lois).', 'Ne comptent pas : un groupe dont moins de 5 députés, ou moins d\'un quart des membres, ont voté' + (P.un ? ' ; ' + P.un + ' de vos votes, sur des mesures que tous les groupes ont votées pareil' : ' ; les mesures que tous les groupes ont votées pareil') + ' ; les députés sans groupe.') + '</div>';
   }
-  function barreG(x) { return '<div><span class="t">' + esc(x.g.n) + '</span><span class="r"><em class="g" style="left:0;width:' + x.v + '%;--g:' + x.g.coul + '"></em></span><span class="v">' + nf(x.v, 0) + '\u00a0%</span></div>'; }
+  function barreG(x) { return '<div><span class="t">' + esc(x.g.n) + ' <small>(' + x.nb + ' mesures)</small></span><span class="r"><em class="g" style="left:0;width:' + x.v + '%;--g:' + x.g.coul + '"></em></span><span class="v">' + nf(x.v, 0) + '\u00a0%</span></div>'; }
   function effort() {
     var E = { imp: 0, eco: 0, baisse: 0, dep: 0 };
     adoptees().forEach(function (c) { var m = montant(c, AN0), ret = c.sens !== 'recette'; E[m >= 0 ? (ret ? 'eco' : 'imp') : (ret ? 'dep' : 'baisse')] += Math.abs(m); });
@@ -1329,7 +1379,6 @@ body.q-vote { padding-bottom: 92px; }
   function chg(q, a, b) { return a === b ? q + ' ne bouge pas (' + b + ')' : q + ' passe de ' + a + ' à ' + b; }
   function resume(mode) {
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1], zf = R0[R0.length - 1], E = effort();
-    Object.keys(E).forEach(function (k) { E[k] = Math.round(E[k] * 10) / 10; });
     var net = E.imp + E.eco - E.baisse - E.dep, apres = (r1.solde - z1.solde) / 100 * r1.pib, o = objectif();
     // Deux barres sur la même échelle : ce qui réduit le déficit, ce qui l'augmente.
     var red = E.imp + E.eco, aug = E.baisse + E.dep, mx = Math.max(red, aug, 1e-9);
@@ -1339,7 +1388,7 @@ body.q-vote { padding-bottom: 92px; }
     var act = S.macro && nbChoix() && Math.abs(apres - net) >= 0.1 ? '<p class="q-note">Sur le papier, vos mesures ' + (net >= 0 ? 'baissent' : 'augmentent') + ' le déficit de ' + AN0 + ' de ' + mdt(Math.abs(net)) + ' ; avec leur effet sur l\'activité, elles l\'' + (apres >= 0 ? 'abaissent' : 'augmentent') + ' de ' + mdt(Math.abs(apres)) + ' : l\'activité ' + (apres < net ? 'ralentit' : 'accélère') + ' cette année-là (modèle de la direction du Trésor et de l\'Insee).</p>' : '';
     var prec = mode === 'etape' && S.hist ? Object.keys(S.hist).map(Number).filter(function (k) { return k < nbDecisions(); }).sort(function (a, b) { return b - a; })[0] : null;
     return '<div class="q-res"><p class="q-gros">' + (nbChoix() ? 'Vos mesures ' + (net >= 0 ? 'rapportent <b>' + mdt(net) + '</b>' : 'coûtent <b>' + mdt(-net) + '</b>') + ' en ' + AN0 + '.' : 'Vous n\'avez encore adopté aucune mesure.') +
-      ' Le déficit de ' + AN0 + (defic(z1.solde) === defic(r1.solde) ? ' reste à <b>' + defic(r1.solde) + '</b> du PIB (moins de 0,1 point d\'écart),' : ' passe de ' + defic(z1.solde) + ' à <b>' + defic(r1.solde) + '</b> du PIB,') + ' la dette de ' + f.an + ' serait de <b>' + nf(f.d, 1) + '\u00a0%</b>' + (nf(f.d, 1) === nf(zf.d, 1) ? ', comme sans vos mesures' : ' au lieu de ' + nf(zf.d, 1) + '\u00a0%') + '.</p>' +
+      ' Le déficit de ' + AN0 + (defic(z1.solde) === defic(r1.solde) ? ' reste à <b>' + defic(r1.solde) + '</b> du PIB' + (nbChoix() && r1.solde !== z1.solde ? ' (moins de 0,1 point d\'écart)' : '') + ',' : ' passe de ' + defic(z1.solde) + ' à <b>' + defic(r1.solde) + '</b> du PIB,') + ' la dette de ' + f.an + ' serait de <b>' + nf(f.d, 1) + '\u00a0%</b>' + (nf(f.d, 1) === nf(zf.d, 1) ? ', comme sans vos mesures' : ' au lieu de ' + nf(zf.d, 1) + '\u00a0%') + '.</p>' +
       (prec ? '<p class="q-depuis">Depuis l\'étape des ' + prec + ' votes : ' + chg('le déficit ' + AN0, defic(S.hist[prec].s), defic(r1.solde)) + ' ; ' + chg('la dette ' + AN1, nf(S.hist[prec].d, 1) + '\u00a0%', nf(f.d, 1) + '\u00a0%') + '.</p>' : '') +
       barresE + act + '<p class="q-gros" style="font-size:15px">' + o.t + '</p>' +
       (function () {
@@ -1379,7 +1428,8 @@ body.q-vote { padding-bottom: 92px; }
     if (pc) { remp.forEach(function (id) { S.v[id] = 2; }); (choisi.exclut || []).forEach(function (id) { delete S.perso[id]; }); Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(choisi.k) >= 0) delete S.perso[k]; }); }
     if (pc) S.perso[choisi.k] = pc; else delete S.perso[choisi.k];
     A1 = simuler(); S.v = JSON.parse(gV); S.perso = JSON.parse(gP);
-    $('q-apercu').innerHTML = (pc !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1, effetPerso(choisi, pc) - effetPerso(choisi, av || 0)) + (choisi.macro && J.variantes[choisi.macro] ? effetPIB(R, A1) : (S.macro ? ' (effet sur l\'activité non publié pour ce type de ligne : non compté)' : '')) : '') +
+    var dP = effetPerso(choisi, pc) - effetPerso(choisi, av || 0), sP = choisi.k === 'allegements' ? 'recette' : choisi.groupe, kP = (PIBY[anObj()] || PIBY[AN0]) / PIBY[AN0];
+    $('q-apercu').innerHTML = (pc !== (av || 0) ? '<p class="q-ap-t">Avec ce choix : ' + quoi(sP, dP) + ' en ' + AN0 + '. ' + maj1(avantApres(R, A1, null, true)) + '. ' + ecoPhrase(R, A1, dP * kP, !!(choisi.macro && J.variantes[choisi.macro])) + '</p>' : '') +
       (pc !== (av || 0) ? miniCourbes(R, A1) : '') + (remp.length ? '<br>Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' »' : ''; }).join(', ') + ' (les deux portent sur le même argent).' : '');
     $('q-ajout').disabled = !pc || pc === av; $('q-ajout').textContent = S.perso[choisi.k] != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
   }
@@ -1512,6 +1562,7 @@ body.q-vote { padding-bottom: 92px; }
     }
     if (x && x.regles && x.regles.length) t += '<details class="q-tous"><summary>Les règles aujourd\'hui</summary><ul>' + x.regles.map(function (r) { return '<li>' + nb(r.texte) + ' <a href="' + esc(r.url) + '">Source</a></li>'; }).join('') + '</ul></details>';
     el.innerHTML = t;
+    var v = el.querySelector('p.v'), dst = $('q-pp-v'); if (dst) dst.innerHTML = v ? v.innerHTML : '';
   }
   // Le réglage s'ouvre juste sous la famille de la tuile touchée (sur téléphone, pas 2 000 px plus bas).
   function placer() {
@@ -1523,7 +1574,7 @@ body.q-vote { padding-bottom: 92px; }
     var fu = (J.unites || []).length ? '<h3 class="q-cat" id="cat-4" style="--cat:var(--c-rech)">Recruter ou construire<small>' + J.unites.length + ' lignes</small></h3><div style="--cat:var(--c-rech)">' + J.unites.map(function (u) { var v = S.unites[u.k]; return '<button type="button" data-u="' + esc(u.k) + '" aria-pressed="' + (!!uchoisi && uchoisi.k === u.k) + '"><b>' + esc(u.l) + '</b><span>' + (u.type === 'construction' ? eu(u.cout) + ' la place' : eu(u.entree || u.cout) + ' par an chacun') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + nf(Math.abs(v), 0) + '</i>' : '') + '</button>'; }).join('') + '</div>' : '';
     var CATC = ['var(--fr)', 'var(--c-def)', 'var(--c-ecole)'], nbl = function (f) { return f[1].filter(function (t) { return AS[t[0]]; }).length; };
     var som = '<nav class="q-cats" aria-label="Catégories">' + TUILES.map(function (f, i) { return '<button type="button" data-cat="cat-' + i + '" style="--cat:' + CATC[i % 3] + '">' + esc(f[0]) + '</button>'; }).join('') + ((J.unites || []).length ? '<button type="button" data-cat="cat-4" style="--cat:var(--c-rech)">Recruter ou construire</button>' : '') + '</nav>';
-    $('q-tuiles-c').innerHTML = som + TUILES.map(function (f, i) { return '<h3 class="q-cat" id="cat-' + i + '" style="--cat:' + CATC[i % 3] + '">' + esc(f[0]) + '<small>' + nbl(f) + ' lignes</small></h3><div style="--cat:' + CATC[i % 3] + '">' + f[1].filter(function (t) { return AS[t[0]]; }).map(function (t) { var k = t[0], x = AS[k], v = S.perso[k]; return '<button type="button" data-k="' + esc(k) + '" aria-pressed="' + (!!choisi && choisi.k === k) + '"><b>' + esc(t[1]) + '</b><span>' + md(x.md) + '\u00a0Md€ en ' + x.an + ' · ' + (x.groupe === 'recette' ? 'recette' : 'dépense') + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + Math.abs(v) + '\u00a0%</i>' : '') + '</button>'; }).join('') + '</div>'; }).join('') + fu;
+    $('q-tuiles-c').innerHTML = som + TUILES.map(function (f, i) { return '<h3 class="q-cat" id="cat-' + i + '" style="--cat:' + CATC[i % 3] + '">' + esc(f[0]) + '<small>' + nbl(f) + ' lignes</small></h3><div style="--cat:' + CATC[i % 3] + '">' + f[1].filter(function (t) { return AS[t[0]]; }).map(function (t) { var k = t[0], x = AS[k], v = S.perso[k]; return '<button type="button" data-k="' + esc(k) + '" aria-pressed="' + (!!choisi && choisi.k === k) + '"><b>' + esc(t[1]) + '</b><span>' + (k === 'allegements' ? md(x.md) + '\u00a0Md€ en ' + x.an + ' : recettes en moins' : x.groupe === 'recette' ? 'rapporte ' + md(x.md) + '\u00a0Md€ en ' + x.an : 'coûte ' + md(x.md) + '\u00a0Md€ en ' + x.an) + '</span>' + (v ? '<i>Votre choix : ' + (v > 0 ? '+' : '−') + Math.abs(v) + '\u00a0%</i>' : '') + '</button>'; }).join('') + '</div>'; }).join('') + fu;
     Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('.q-cats button'), function (b) { b.onclick = function () { var c = $(b.dataset.cat); c.scrollIntoView({ block: 'start' }); setTimeout(function () { sousBandeau(c); }, 30); }; });
     Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button[data-k], button[data-u]'), function (b) { b.onclick = function () { if (b.dataset.u) choisirUnite(b.dataset.u); else choisir(b.dataset.k); }; });
     placer();
@@ -1540,7 +1591,7 @@ body.q-vote { padding-bottom: 92px; }
     } else {
       $('q-un-n').innerHTML = 'Coût d\'une recrue : <b>' + eu(u.entree || u.cout) + ' par an</b>' + (u.entree ? ' (coût d\'entrée ; ' + eu(u.cout) + ' en moyenne pour l\'ensemble des agents)' : '') + ' : salaire et cotisations de l\'employeur, sans le matériel, les bâtiments ni la contribution de l\'État au financement des pensions de ses agents (' + src + ').' + (u.effectif ? ' Aujourd\'hui : ' + nf(Math.round(u.effectif.v), 0) + ' emplois.' : '');
     }
-    var P = u.type === 'construction' ? [1000, 5000, 10000, 15000] : [-10000, -5000, -1000, 1000, 5000, 10000];
+    var P = u.type === 'construction' ? [1000, 5000, 10000, 15000] : [1000, 5000, 10000, -1000, -5000, -10000];
     $('q-un-p').innerHTML = P.map(function (v) { return '<button type="button" data-v="' + v + '">' + (v > 0 ? '+' : '−') + nf(Math.abs(v), 0) + '</button>'; }).join('');
     Array.prototype.forEach.call($('q-un-p').querySelectorAll('button'), function (b) { b.onclick = function () { $('q-un-i').value = b.dataset.v; majUnite(); }; });
     $('q-un-i').min = u.type === 'construction' ? 0 : -100000; $('q-un-i').value = S.unites[k] || 0; majUnite();
@@ -1556,13 +1607,14 @@ body.q-vote { padding-bottom: 92px; }
     else if (u.type === 'construction') {
       // Ce que ça change sur le terrain : détenus et places à la même date (même document), calcul de Concret.
       var pl = u.places_prison_operationnelles, occ = pl && pl.effectif ? function (pp) { return nf(100 * pl.effectif.v / pp, 0) + '\u00a0%'; } : null;
-      $('q-un-e').innerHTML = '<b>' + mdp(n * u.cout / 1e9) + '</b> de dépenses en plus, réparties de ' + AN0 + ' à ' + AN1 + ' (' + mdp(m) + ' par an)' +
+      $('q-un-e').innerHTML = '<b>' + mdt(n * u.cout / 1e9) + '</b> de dépenses en plus, réparties de ' + AN0 + ' à ' + AN1 + ' (' + mdt(m) + ' par an)' +
         (occ ? '<br>Sur le terrain : ' + nf(pl.effectif.v, 0) + ' détenus pour ' + nf(pl.v, 0) + ' places, une occupation de <b>' + occ(pl.v) + '</b> ; avec ' + nf(n, 0) + ' places de plus, <b>' + occ(pl.v + n) + '</b> (même nombre de détenus, calcul de Concret).' : '');
     }
-    else $('q-un-e').innerHTML = '<b>' + mdp(m) + '</b> ' + (m < 0 ? 'de dépenses en plus' : 'de dépenses en moins') + ' par an, à partir de ' + AN0 +
+    else $('q-un-e').innerHTML = '<b>' + mdt(m) + '</b> ' + (m < 0 ? 'de dépenses en plus' : 'de dépenses en moins') + ' par an, à partir de ' + AN0 +
       (u.effectif && u.effectif.v ? '<br>Sur le terrain : ' + (n > 0 ? '+' : '−') + nf(100 * Math.abs(n) / u.effectif.v, 1) + '\u00a0% par rapport aux ' + nf(Math.round(u.effectif.v), 0) + ' emplois prévus pour ' + u.effectif.annee + ' (' + esc(String(u.effectif.unite).split(' (')[0].split(' ;')[0]) + ').' : '');
     var av = S.unites[u.k], A1; if (n) S.unites[u.k] = n; else delete S.unites[u.k]; A1 = simuler(); if (av == null) delete S.unites[u.k]; else S.unites[u.k] = av;
-    $('q-un-a').innerHTML = n !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1) + effetPIB(R, A1) + miniCourbes(R, A1) : '';
+    var dU = unMd(u, n, AN0) - unMd(u, av || 0, AN0);
+    $('q-un-a').innerHTML = n !== (av || 0) ? '<p class="q-ap-t">Avec ce choix : ' + quoi('depense', dU) + ' en ' + AN0 + '. ' + maj1(avantApres(R, A1, null, true)) + '. ' + ecoPhrase(R, A1, unMd(u, n, anObj()) - unMd(u, av || 0, anObj()), true) + '</p>' + miniCourbes(R, A1) : '';
     var jd = u.journee_detention;
     $('q-un-h').innerHTML = !n ? '' : u.type === 'construction'
       ? 'Calcul de Concret : nombre de places × ' + eu(u.cout) + ', réparti également sur les ' + nb + ' années (hypothèse de Concret, la durée des chantiers n\'étant pas fixée).' + (jd ? ' Une fois ouverte, une place occupée coûte ' + eu(jd.v * 365) + ' par an (' + eu(jd.v, 2) + ' par jour, ' + esc(String(jd.annee)) + ') : ce coût n\'est pas compté ici, faute de date d\'ouverture connue.' : '')
@@ -1585,7 +1637,7 @@ body.q-vote { padding-bottom: 92px; }
     Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.onclick = function () { $('q-pc').value = b.dataset.v; majCreer(); }; });
     $('q-pc').oninput = majCreer;
     $('q-un-i').oninput = majUnite;
-    $('q-un-ok').onclick = function () { var u = uchoisi, n = Math.round(+$('q-un-i').value || 0); if (!u || !n) return; var A0 = simuler(); S.unites[u.k] = n; garder(); hud(true); pop(esc(u.l) + ' ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0) + ' · ' + avantApres(A0, R) + effetPIB(A0, R) + chgPays(A0, R)); mesCreer(); majUnite(); pile(); $('q-un').hidden = true; uchoisi = null; sousBandeau($('q-mes').hidden ? $('q-tuiles-c') : $('q-mes')); };
+    $('q-un-ok').onclick = function () { var u = uchoisi, n = Math.round(+$('q-un-i').value || 0); if (!u || !n) return; var A0 = simuler(); S.unites[u.k] = n; garder(); hud(true); var rU = avantApres(A0, R, null, true); pop(esc(u.l) + ' ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0) + ' : ' + quoi('depense', unMd(u, n, AN0)) + ' en ' + AN0 + '. ' + maj1(rU) + '. ' + ecoPhrase(A0, R, unMd(u, n, anObj()), true) + chgPays(A0, R), false, '✓ Ajouté : ' + esc(u.l) + ' ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0) + ' · ' + rU + chgPays(A0, R)); mesCreer(); majUnite(); pile(); $('q-un').hidden = true; uchoisi = null; revoirTuile('data-u', u.k); };
     $('q-ch-x').onclick = function () { $('q-choisi').hidden = true; choisi = null; Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', 'false'); }); };
     $('q-ajout').onclick = function () {
       var pc = +$('q-pc').value; if (!choisi || !pc) return;
@@ -1593,18 +1645,21 @@ body.q-vote { padding-bottom: 92px; }
       choisi.exclut.forEach(function (id) { if (S.v[id] === 1) S.v[id] = 2; if (S.perso[id] != null) delete S.perso[id]; });
       Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(choisi.k) >= 0) delete S.perso[k]; });
       S.perso[choisi.k] = pc; garder(); hud(true);
-      pop(esc(choisi.l.split(' (')[0]) + ' ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0% · ' + avantApres(A0, R, effetPerso(choisi, pc)) + (choisi.macro && J.variantes[choisi.macro] ? effetPIB(A0, R) : (S.macro ? ' (effet sur l\'activité non publié pour ce type de ligne : non compté)' : '')) + chgPays(A0, R));
+      var nm = esc(choisi.l.split(' (')[0]) + ' ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%', eP = effetPerso(choisi, pc), rP = avantApres(A0, R, null, true);
+      pop(nm + ' : ' + quoi(choisi.k === 'allegements' ? 'recette' : choisi.groupe, eP) + ' en ' + AN0 + '. ' + maj1(rP) + '. ' + ecoPhrase(A0, R, eP * (PIBY[anObj()] || PIBY[AN0]) / PIBY[AN0], !!(choisi.macro && J.variantes[choisi.macro])) + chgPays(A0, R), false, '✓ Ajouté : ' + nm + ' · ' + rP + chgPays(A0, R));
       mesCreer(); majCreer(); pile();
       // Le panneau se replie : on revoit la liste des lignes du budget.
-      $('q-choisi').hidden = true; choisi = null; Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', 'false'); }); sousBandeau($('q-mes').hidden ? $('q-tuiles-c') : $('q-mes'));
+      var kA = choisi.k; $('q-choisi').hidden = true; choisi = null; Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', 'false'); }); revoirTuile('data-k', kA);
     };
     mesCreer();
   }
+  // Après « Ajouter » : on reste sur la tuile qu'on vient d'utiliser (la page ne saute pas en bas).
+  function revoirTuile(at, k) { var t = $('q-tuiles-c').querySelector('button[' + at + '="' + k + '"]'); if (t) { var h = $('q-collant').getBoundingClientRect().bottom, r = t.getBoundingClientRect(); if (r.top < h + 8 || r.bottom > innerHeight - 20) window.scrollBy({ top: r.top - h - 60 }); t.classList.remove('q-flash'); void t.offsetWidth; t.classList.add('q-flash'); } }
   function mesCreer() {
     var K = Object.keys(S.perso), KU = Object.keys(S.unites).filter(function (k) { return UN[k]; }), N = K.length + KU.length; tuiles();
     $('q-mes-n').textContent = N ? N + ' mesure' + (N > 1 ? 's' : '') + ' à vous' : 'Aucune mesure créée';
-    $('q-mes').innerHTML = K.map(function (k) { var x = AS[k], pc = S.perso[k]; return '<li><span>' + esc(x.l) + ' : ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%</span><span class="m">' + mdt(effetPerso(x, pc), true) + '</span><small><button type="button" data-k="' + esc(k) + '">Modifier</button><button type="button" data-r="' + esc(k) + '">Retirer</button></small></li>'; }).join('') +
-      KU.map(function (k) { var u = UN[k], n = S.unites[k]; return '<li><span>' + esc(u.l) + ' : ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0) + '</span><span class="m">' + (unMd(u, n, AN0) > 0 ? '+' : '−') + mdp(unMd(u, n, AN0)) + ' par an</span><small><button type="button" data-uk="' + esc(k) + '">Modifier</button><button type="button" data-ur="' + esc(k) + '">Retirer</button></small></li>'; }).join('');
+    $('q-mes').innerHTML = K.map(function (k) { var x = AS[k], pc = S.perso[k]; return '<li><span>' + esc(x.l) + ' : ' + (pc > 0 ? '+' : '−') + Math.abs(pc) + '\u00a0%</span><span class="m">' + (effetPerso(x, pc) >= 0 ? 'rapporte ' : 'coûte ') + mdt(Math.abs(effetPerso(x, pc))) + '</span><small><button type="button" data-k="' + esc(k) + '">Modifier</button><button type="button" data-r="' + esc(k) + '">Retirer</button></small></li>'; }).join('') +
+      KU.map(function (k) { var u = UN[k], n = S.unites[k]; return '<li><span>' + esc(u.l) + ' : ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0) + '</span><span class="m">' + (unMd(u, n, AN0) > 0 ? 'économise ' : 'coûte ') + mdt(Math.abs(unMd(u, n, AN0))) + ' par an</span><small><button type="button" data-uk="' + esc(k) + '">Modifier</button><button type="button" data-ur="' + esc(k) + '">Retirer</button></small></li>'; }).join('');
     Array.prototype.forEach.call($('q-mes').querySelectorAll('button[data-uk]'), function (b) { b.onclick = function () { choisirUnite(b.dataset.uk); }; });
     Array.prototype.forEach.call($('q-mes').querySelectorAll('button[data-ur]'), function (b) { b.onclick = function () { delete S.unites[b.dataset.ur]; garder(); hud(true); mesCreer(); majUnite(); pile(); }; });
     Array.prototype.forEach.call($('q-mes').querySelectorAll('button[data-k]'), function (b) { b.onclick = function () { choisir(b.dataset.k); }; });
@@ -1643,12 +1698,14 @@ body.q-vote { padding-bottom: 92px; }
         if (c.type === 'deficit_fin') return { ok: -f.solde <= c.v + 1e-9, t: 'Déficit ' + f.an + ' : ' + defic(f.solde) + ', pour ' + nf(c.v, 0) + '\u00a0% au plus' };
         if (c.type === 'deficit_an') { var ry = ligneAn(R, c.an); return { ok: -ry.solde <= c.v + 1e-9, t: 'Déficit ' + c.an + ' : ' + defic(ry.solde) + ', pour ' + nf(c.v, 0) + '\u00a0% au plus' }; }
         if (c.type === 'sans_baisse_depense') { var bd = adoptees().some(function (y) { return y.sens !== 'recette' && montant(y, AN0) > 0; }) || Object.keys(S.perso).some(function (k) { return AS[k].groupe === 'depense' && S.perso[k] < 0 && k !== 'allegements'; }) || Object.keys(S.unites).some(function (k) { return S.unites[k] < 0; }); return { ok: !bd, t: bd ? 'Vous avez adopté une baisse de dépense' : 'Aucune baisse de dépense' }; }
+        if (c.type === 'dette_fin') return { ok: f.d <= c.v + 1e-9, t: 'Dette ' + f.an + ' : ' + nf(f.d, 1) + '\u00a0%, pour ' + nf(c.v, 0) + '\u00a0% au plus' };
+        if (c.type === 'max_mesures') { var na = adoptees().length + Object.keys(S.perso).length + Object.keys(S.unites).length; return { ok: na <= c.v, t: na + ' mesure' + (na > 1 ? 's' : '') + ' adoptée' + (na > 1 ? 's' : '') + ', pour ' + c.v + ' au plus' }; }
         if (c.type === 'dette_baisse') return { ok: f.d <= PJ.depart.dette, t: 'Dette ' + f.an + ' : ' + nf(f.d, 1) + '\u00a0%, pour ' + nf(PJ.depart.dette, 1) + '\u00a0% au plus' };
         if (c.type === 'sans_impot') { var k = adoptees().some(function (y) { return y.sens === 'recette' && montant(y, AN0) > 0; }) || Object.keys(S.perso).some(function (k) { return (AS[k].groupe === 'recette' && S.perso[k] > 0) || (k === 'allegements' && S.perso[k] < 0); }); return { ok: !k, t: k ? 'Vous avez adopté une hausse d\'impôt' : 'Aucune hausse d\'impôt' }; }
         if (c.type === 'sans_theme') { var QT = { retraites: ['retraites'], sante: ['assures', 'malades', 'soignants', 'complementaires'] }[c.theme] || [], u = adoptees().some(function (y) { return y.theme === c.theme; }) || Object.keys(S.perso).some(function (k) { return (AS[k].qui || []).some(function (q) { return QT.indexOf(q) >= 0; }); }); return { ok: !u, t: u ? 'Vous avez adopté une mesure sur : ' + J.themes[c.theme] : 'Aucune mesure sur : ' + J.themes[c.theme] }; }
         return { ok: false, t: '' };
       }), ok = cond.every(function (c) { return c.ok; });
-      var faisable = BEST && x.c.every(function (c) { return c.type !== 'deficit_an' || !BEST.L || -ligneAn(BEST.L, c.an).solde <= c.v; }) && x.c.every(function (c) { return c.type !== 'deficit_fin' || -BEST.f <= c.v; }) && x.c.every(function (c) { return c.type !== 'dette_baisse' || BEST.d <= PJ.depart.dette; }) && x.c.every(function (c) { return c.type !== 'deficit_an1' || -BEST.a <= c.v; });
+      var faisable = BEST && x.c.every(function (c) { return c.type !== 'deficit_an' || !BEST.L || -ligneAn(BEST.L, c.an).solde <= c.v; }) && x.c.every(function (c) { return c.type !== 'deficit_fin' || -BEST.f <= c.v; }) && x.c.every(function (c) { return c.type !== 'dette_baisse' || BEST.d <= PJ.depart.dette; }) && x.c.every(function (c) { return c.type !== 'dette_fin' || BEST.d <= c.v; }) && x.c.every(function (c) { return c.type !== 'deficit_an1' || -BEST.a <= c.v; });
       if (ok) { S.defis = S.defis || {}; if (!S.defis[iso]) { S.defis[iso] = 1; garder(); } }
       var serie = 0, d0 = new Date(iso + 'T12:00:00'); for (var k = 0; k < 400; k++) { var dd = new Date(d0 - k * 864e5), di = dd.getFullYear() + '-' + ('0' + (dd.getMonth() + 1)).slice(-2) + '-' + ('0' + dd.getDate()).slice(-2); if (S.defis && S.defis[di]) serie++; else if (k) break; }
       if (serie > (S.recordDefi || 0)) { S.recordDefi = serie; garder(); }
@@ -1758,7 +1815,7 @@ body.q-vote { padding-bottom: 92px; }
     // Le même budget sans l'effet sur l'activité (modèle Mésange) : cette hypothèse pèse souvent plus qu'une carte, elle se voit ici.
     var Rs = null; if (S.macro && n) { var mc = S.macro; S.macro = false; Rs = simuler(); S.macro = mc; }
     var rs1 = Rs && an1(Rs), rsf = Rs && Rs[Rs.length - 1], sa = function (v) { return Rs ? ' ; sans l\'effet sur l\'activité : ' + v : ''; };
-    $('q-tuiles').innerHTML = tu('Déficit ' + AN0, defic(r1.solde), 'sans vos mesures : ' + defic(z1.solde) + sa(rs1 && defic(rs1.solde))) +
+    $('q-tuiles').innerHTML = tu('Déficit ' + AN0, deficO(r1, AN0), 'sans vos mesures : ' + defic(z1.solde) + sa(rs1 && defic(rs1.solde))) +
       tu('Croissance ' + AN0 + ' et ' + f.an, pcs(croiss(R, AN0)) + ' · ' + pcs(croiss(R, f.an)), 'prévision du FMI : ' + pcs(croiss(R0, AN0)) + ' · ' + pcs(croiss(R0, f.an)) + (S.macro ? '' : ' (effet de vos choix non compté)')) + tu('Déficit ' + f.an, defic(f.solde), 'sans vos mesures : ' + defic(zf.solde) + sa(rsf && defic(rsf.solde))) + tu('Dette ' + f.an, nf(f.d, 1) + '\u00a0%', 'sans vos mesures : ' + nf(zf.d, 1) + '\u00a0%' + sa(rsf && nf(rsf.d, 1) + '\u00a0%')) + tu('Intérêts de la dette ' + f.an, mds(f.interets * f.pib / 100), nf(f.interets, 1) + '\u00a0% du PIB ; sans vos mesures : ' + mdt(zf.interets * zf.pib / 100));
     $('q-rc-p').innerHTML = resume('bilan');
     vosMesuresG(); ouVa();
@@ -1782,11 +1839,11 @@ body.q-vote { padding-bottom: 92px; }
     $('q-crc-l').innerHTML = '<span><i style="background:var(--fr)"></i>Avec vos mesures</span><span><i style="height:0;border-top:2px dashed var(--muted);border-radius:0"></i>Prévision du FMI</span>';
     $('q-crc-n').innerHTML = plie('Croissance du PIB hors inflation : la prévision du FMI (octobre 2026), plus l\'effet de vos mesures sur l\'activité d\'après les effets publiés par la direction du Trésor et l\'Insee (modèle Mésange).', 'Les mesures sur l\'impôt sur les sociétés, le patrimoine, le SMIC et l\'âge de la retraite n\'y comptent pas : le modèle ne publie pas leur effet.');
     // Les intérêts de la dette, en milliards d'euros, à côté des crédits 2027 de quelques budgets de l'État.
-    var intr = function (L) { return L.filter(function (r) { return r.an >= AN0; }).map(function (r) { return { an: r.an, d: r.interets * r.pib / 100 }; }); };
+    var intr = function (L) { return L.filter(function (r) { return r.an >= AN0 - 1; }).map(function (r) { return { an: r.an, d: r.interets * r.pib / 100 }; }); };
     var RV = (J.reperes_etat || {}).valeurs || {}, REF = [["Charge de la dette et trésorerie de l'État", "Intérêts de la dette de l'État", 'var(--fg)'], ['Enseignement scolaire', 'Écoles, collèges, lycées', 'var(--c-ecole)'], ['Défense', 'Défense', 'var(--c-def)'], ['Recherche et enseignement supérieur', 'Recherche et universités', 'var(--c-rech)'], ['Sécurités', 'Police, gendarmerie, secours', 'var(--c-pol)']].filter(function (x) { return RV[x[0]] != null; }).map(function (x) { return { v: RV[x[0]], l: x[1], c: x[2] }; });
     $('q-int').innerHTML = courbe([{ L: intr(R0), c: 'var(--muted)', dash: '5 4' }, { L: intr(R), c: 'var(--fr)', w: 3 }], { pas: 20, unite: '\u00a0Md€', zero: 0, refs: REF, g: 40, dr: 58, h: 220, aria: 'Intérêts de la dette chaque année, en milliards d\'euros' });
     $('q-int-l').innerHTML = '<span><i style="background:var(--fr)"></i>Avec vos mesures</span><span><i style="height:0;border-top:2px dashed var(--muted);border-radius:0"></i>Si rien ne change</span>';
-    var i1 = intr(R)[0], iz = intr(R).slice(-1)[0], PERIM = 'Trait bleu : toutes les administrations publiques (État, Sécurité sociale, collectivités) ; traits fins : budget de l\'État seul.';
+    var i1 = intr(R).filter(function (x) { return x.an === AN0; })[0], iz = intr(R).slice(-1)[0], PERIM = 'Trait bleu : toutes les administrations publiques (État, Sécurité sociale, collectivités) ; traits fins : budget de l\'État seul.';
     $('q-int-n').innerHTML = plie('Le trait bleu : les intérêts de toutes les administrations publiques (État, Sécurité sociale, collectivités), moins les intérêts qu\'elles reçoivent, calculés par Concret avec le taux moyen de la dette prévu par le FMI. Les traits fins : crédits de paiement du budget de l\'État pour ' + AN0 + ', pensions comprises, tous lus dans le même tableau du projet de loi de finances (<a href="' + esc((J.reperes_etat || {}).url || '') + '">' + esc((J.reperes_etat || {}).page || '') + '</a>), sans vos changements de l\'onglet Créer.', 'En ' + i1.an + ', les intérêts de la dette coûteraient ' + mdt(i1.d) + ', et ' + mdt(iz.d) + ' en ' + iz.an + '. ' + PERIM);
     var mx = Math.max.apply(null, R.concat(R0).map(function (r) { return Math.max(0, -r.solde); }).concat([PAR.regle]));
     $('q-def').innerHTML = R.filter(function (r) { return r.an >= AN0; }).map(function (r) { var v = Math.max(0, -r.solde); return '<div><span class="t">' + r.an + '</span><span class="r"><em style="left:0;width:' + (v / mx * 100) + '%"></em><em style="left:' + (PAR.regle / mx * 100) + '%;width:2px;background:var(--fg)"></em></span><span class="v">' + defic(r.solde) + '</span></div>'; }).join('');
@@ -1802,7 +1859,7 @@ body.q-vote { padding-bottom: 92px; }
     var liste = function (L, titre, cl) { if (!L.length) return ''; var m = mq; return '<p class="q-ligne" style="margin:4px 0"><b>' + titre + '</b></p><div class="q-barres">' + L.map(function (x) { return '<div><span class="t">' + esc(nomQ(x[0])) + '</span><span class="r"><em class="' + (cl || '') + '" style="left:0;width:' + (Math.abs(x[1]) / m * 100) + '%"></em></span><span class="v">' + mdt(Math.abs(x[1])) + '</span></div>'; }).join('') + '</div>'; };
     var plus = Object.keys(Q).filter(function (q) { return Q[q] > 0.0005; }).map(function (q) { return [q, Q[q]]; }).sort(function (a, b) { return b[1] - a[1]; }), moins = Object.keys(Q).filter(function (q) { return Q[q] < -0.0005; }).map(function (q) { return [q, Q[q]]; }).sort(function (a, b) { return a[1] - b[1]; });
     $('q-qui').innerHTML = (plus.length || moins.length) ? liste(plus, 'Paient plus ou reçoivent moins') + liste(moins, 'Paient moins ou reçoivent plus', 'b2') + '<p class="q-note">En ' + AN0 + ', au sens des textes. Une mesure qui concerne plusieurs groupes est sur une seule ligne, qui les nomme : la source ne dit pas comment le montant se partage entre eux.</p>' : '<p class="q-note">Adoptez ou créez des mesures pour voir qui est concerné.</p>';
-    $('q-eco').innerHTML = S.macro ? tu('PIB ' + f.an, sg(f.L, 1) + '\u00a0%', 'écart avec « rien ne change »') + tu('Emplois ' + f.an, (Math.round(f.emploi) ? sg(Math.round(f.emploi), 0) + '\u00a0000' : '0'), 'emplois salariés des entreprises') + tu('Chômage ' + f.an, sg(f.chomage, 1) + ' pt', 'écart du taux de chômage') : '';
+    $('q-eco').innerHTML = S.macro ? tu('PIB ' + f.an, sg(f.L, 1) + '\u00a0%', 'écart avec « rien ne change »') + tu('Emplois ' + f.an, (Math.round(f.emploi) ? sg(Math.round(f.emploi), 0) + '\u00a0000' : '0'), 'emplois salariés des entreprises') + tu('Chômage ' + f.an, (Math.abs(f.chomage) < 0.05 ? '0 pt' : sg(f.chomage, 1) + ' pt'), 'écart du taux de chômage') : '';
     var choc = Math.abs(an1(R).mesures || 0) / (an1(R).pib || 1) * 100;
     $('q-eco-n').innerHTML = S.macro ? plie('D\'après les effets publiés par la direction du Trésor et l\'Insee (modèle Mésange) : baisser une dépense ou monter un impôt freine l\'activité, l\'inverse la soutient.' + (choc > 1 ? ' Vos mesures représentent ' + nf(choc, 1) + ' point' + (choc >= 2 ? 's' : '') + ' de PIB : le modèle publie ses effets pour 1 point de PIB et Concret les multiplie ; sa source dit ce calcul « valable pour des chocs de quelques points de PIB ».' : ''), 'Ne comptent pas : les mesures sur l\'impôt sur les sociétés, le patrimoine, le SMIC et l\'âge de la retraite (le modèle ne publie pas leur effet)' + (sansEffet() >= 0.05 ? ', soit ' + mdt(sansEffet()) + ' de vos mesures en ' + AN0 + '.' : '.')) : '';
   }
@@ -2075,19 +2132,19 @@ body.q-vote { padding-bottom: 92px; }
     g.fillStyle = '#1c1d22'; g.font = '700 64px ' + sans; g.fillText('Mon budget ' + AN0, 80, 150);
     g.fillStyle = '#62646d'; g.font = '400 36px ' + sans; g.fillText('Votre quinquennat, sur Concret', 80, 205);
     var tuile = function (y, l, v, s2) { g.fillStyle = '#62646d'; g.font = '600 32px ' + sans; g.fillText(l, 80, y); g.fillStyle = '#1c1d22'; g.font = '400 128px ' + serif; g.fillText(v, 80, y + 125); g.fillStyle = '#62646d'; g.font = '400 32px ' + sans; g.fillText(s2, 80, y + 175); };
-    tuile(320, 'DÉFICIT ' + AN0, defic(r1.solde), 'sans aucune mesure : ' + defic(z1.solde));
+    tuile(320, 'DÉFICIT ' + AN0, deficO(r1, AN0), 'sans aucune mesure : ' + defic(z1.solde));
     tuile(600, 'DETTE ' + f.an, nf(f.d, 1) + ' %', 'sans aucune mesure : ' + nf(zf.d, 1) + ' %');
     var rs = ressemble(r1); if (rs) { g.fillStyle = '#1c1d22'; g.font = '600 38px ' + sans; g.fillText('Il ressemble ' + aPays(rs.p) + ' ' + drapeau(rs.p.code), 80, 850); g.fillStyle = '#62646d'; g.font = '400 28px ' + sans; g.fillText('dépenses et recettes publiques (Eurostat, ' + PE.an + ')', 80, 890); }
     var L = adoptees().map(function (x) { return { t: x.titre || x.l, m: montant(x, AN0) }; }).concat(Object.keys(S.perso).map(function (k) { return { t: AS[k].l.split(' (')[0] + ' ' + (S.perso[k] > 0 ? '+' : '−') + Math.abs(S.perso[k]) + ' %', m: effetPerso(AS[k], S.perso[k]) }; })).sort(function (a, b) { return Math.abs(b.m) - Math.abs(a.m); }).slice(0, 3);
     g.fillStyle = '#1c1d22'; g.font = '700 34px ' + sans; g.fillText(L.length ? 'Mes plus grosses mesures' : 'Aucune mesure pour l\'instant', 80, 965);
-    g.font = '400 32px ' + sans; L.forEach(function (x, i) { var t = x.t.length > 46 ? x.t.slice(0, 45) + '…' : x.t; g.fillStyle = '#1c1d22'; g.fillText('• ' + t, 80, 1015 + i * 48); g.fillStyle = '#2f5bd3'; g.textAlign = 'right'; g.fillText(mds(x.m).replace(/ /g, ' '), W - 80, 1015 + i * 48); g.textAlign = 'left'; });
+    g.font = '400 32px ' + sans; L.forEach(function (x, i) { var t = x.t.length > 46 ? x.t.slice(0, 45) + '…' : x.t; g.fillStyle = '#1c1d22'; g.fillText('• ' + t, 80, 1015 + i * 48); g.fillStyle = '#2f5bd3'; g.textAlign = 'right'; g.fillText((x.m >= 0 ? 'rapporte ' : 'coûte ') + mds(Math.abs(x.m)), W - 80, 1015 + i * 48); g.textAlign = 'left'; });
     g.fillStyle = '#2f5bd3'; g.fillRect(80, 1170, W - 160, 4);
     g.fillStyle = '#1c1d22'; g.font = '700 44px ' + sans; g.fillText('Et vous, avec les mêmes cartes ?', 80, 1245);
     g.fillStyle = '#2f5bd3'; g.font = '600 36px ' + sans; g.fillText('concret2027.fr/budget/quinquennat.html', 80, 1300);
     c.toBlob(function (b) { fin(b); }, 'image/png');
   }
   function partager() {
-    var r1 = an1(R), f = R[R.length - 1], t = 'Mon budget ' + AN0 + ' sur Concret : déficit ' + defic(r1.solde) + ' en ' + AN0 + ', dette ' + nf(f.d, 1) + ' % en ' + f.an + ', avec ' + nbChoix() + ' mesure' + (nbChoix() > 1 ? 's' : '') + '.' + (ressemble(r1) ? ' Il ressemble ' + aPays(ressemble(r1).p) + '.' : '') + ' Et vous, avec les mêmes cartes ?', u = lienBudget();
+    var r1 = an1(R), f = R[R.length - 1], t = 'Mon budget ' + AN0 + ' sur Concret : déficit ' + deficO(r1, AN0) + ' en ' + AN0 + ', dette ' + nf(f.d, 1) + ' % en ' + f.an + ', avec ' + nbChoix() + ' mesure' + (nbChoix() > 1 ? 's' : '') + '.' + (ressemble(r1) ? ' Il ressemble ' + aPays(ressemble(r1).p) + '.' : '') + ' Et vous, avec les mêmes cartes ?', u = lienBudget();
     var dit = function (m) { var p = $('q-partage-t') || document.createElement('p'); p.id = 'q-partage-t'; p.className = 'q-partage-t'; p.innerHTML = m; $('q-partager').parentNode.after(p); };
     var copier = function () { if (navigator.clipboard) navigator.clipboard.writeText(t + ' ' + u).then(function () { dit('Texte et lien copiés : collez-les où vous voulez. Celui qui ouvre le lien voit votre budget à côté du sien.'); }, function () { dit(esc(t + ' ' + u)); }); else dit(esc(t + ' ' + u)); };
     (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () { image(function (b) {
@@ -2125,8 +2182,9 @@ body.q-vote { padding-bottom: 92px; }
         (S.ami.ancien ? ' (Ce lien vient d\'une version plus ancienne du jeu : ses votes ne sont pas repris, seulement ses mesures de Créer.)' : '') + '</p>' +
         '<div class="q-chips"><button type="button" id="q-ami-p">Partir de ce budget</button><button type="button" id="q-ami-x">Ne plus l\'afficher</button></div></div>'; }
     if (DJ) h += '<p class="q-defm"><b>Défi du jour :</b> ' + esc(DJ.x.t) + ' · ' + (DJ.ok ? '✓ réussi' : 'en cours') + (DJ.serie > 1 ? ' · ' + DJ.serie + ' jours de suite' : '') + (DJ.record > 1 && DJ.record > DJ.serie ? ' · record : ' + DJ.record + ' jours' : '') + ' <button type="button" id="q-defm-b">Voir</button></p>';
-    h += '<div class="q-obj"><span>Votre foyer : les mesures et les exemples qui vous concernent passent en premier</span><div class="q-chips" id="q-foyers">' + Object.keys(FOYERS).map(function (k) { return '<button type="button" data-f="' + k + '" aria-pressed="' + (S.foyer === k) + '">' + FOYERS[k].l + '</button>'; }).join('') + '</div></div>';
+    h += '<div class="q-obj"><span>Vous êtes… ? Les mesures qui vous touchent passeront en premier, avec un exemple pour vous.</span><div class="q-chips" id="q-foyers">' + Object.keys(FOYERS).map(function (k) { return '<button type="button" data-f="' + k + '" aria-pressed="' + (S.foyer === k) + '">' + FOYERS[k].l + '</button>'; }).join('') + '</div></div>';
     $('q-top').innerHTML = h;
+    var ai = $('q-ami-i'); if (S.ami && !nbDecisions()) { var Ai = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), ri = ressemble(an1(Ai)); ai.hidden = false; ai.innerHTML = '<b>On vous a envoyé un budget</b> : déficit ' + AN0 + ' à ' + defic(an1(Ai).solde) + (ri ? ', il ressemble ' + esc(aPays(ri.p)) + ' ' + drapeau(ri.p.code) : '') + '. Votez les mêmes cartes : après chacun de vos votes, vous verrez le sien, et à la fin, qui a le déficit le plus bas.'; $('q-voir').textContent = 'Relever le défi ↓'; } else { ai.hidden = true; $('q-voir').textContent = 'Commencer ↓'; }
     if ($('q-ami-p')) $('q-ami-p').onclick = function () { var A0 = simuler(); S.v = JSON.parse(JSON.stringify(S.ami.v)); S.perso = JSON.parse(JSON.stringify(S.ami.perso)); S.unites = JSON.parse(JSON.stringify(S.ami.unites)); S.pile = []; S.etape = ETAPES.filter(function (e) { return e <= nbDecisions(); }).pop() || 0; garder(); mesCreer(); tout(true); pop('Vous partez du budget reçu · ' + avantApres(A0, R)); };
     if ($('q-ami-x')) $('q-ami-x').onclick = function () { delete S.ami; garder(); enHaut(); };
     if ($('q-dep-x')) $('q-dep-x').onclick = function () { DEPUIS = []; enHaut(); };
@@ -2160,10 +2218,10 @@ body.q-vote { padding-bottom: 92px; }
     $('q-conv-s').textContent = 'Si rien ne change : déficit à ' + defic(an1(R0).solde) + ' en ' + AN0;
     $('q-conv').innerHTML = 'Convention de Concret : l\'écart de ' + D0.an + ' entre recettes et dépenses publiques, intérêts mis à part, reste le même (détail en bas du Bilan). Le déficit public (ce que les administrations dépensent de plus qu\'elles ne reçoivent) passerait alors de ' + nf(-D0.solde, 1) + '\u00a0% du PIB (la richesse produite en un an) en ' + D0.an + ' (Eurostat) à ' + defic(an1(R0).solde) + ' en ' + AN0 + ', parce que les intérêts de la dette augmentent.';
     $('q-hyp').innerHTML = [
-      'Si rien ne change : l\'écart entre recettes et dépenses publiques, intérêts mis à part, de ' + D0.an + ' (' + nf(D0.primaire, 1) + '\u00a0% du PIB, <a href="' + esc(D0.url) + '">' + esc(D0.source) + '</a>) reste le même chaque année, en part du PIB. C\'est une convention de Concret, pas une prévision.',
+      'Si rien ne change : l\'écart entre recettes et dépenses publiques, intérêts mis à part (intérêts payés moins intérêts reçus, comme dans les prévisions du FMI qui servent ensuite), de ' + D0.an + ' (' + nf(D0.primaire, 1) + '\u00a0% du PIB, <a href="' + esc(D0.url) + '">' + esc(D0.source) + '</a>) reste le même chaque année, en part du PIB. C\'est une convention de Concret, pas une prévision.',
       'Croissance, inflation et taux d\'intérêt moyen de la dette : prévision du FMI (' + esc(PJ.editions.join(' ; ')) + '). Ce qui ne vient ni du solde ni de la croissance (achats et ventes d\'actifs publics, écarts de calcul) est repris tel que le FMI le prévoit.',
       'Chaque mesure : son chiffrage officiel, lu dans le document cité sur sa carte, compté à partir de ' + AN0 + '. Quand le document ne chiffre pas les années suivantes, le dernier montant est gardé (mesure d\'une seule année : rien ensuite). Les avantages fiscaux (« dépenses fiscales ») sont chiffrés par le Gouvernement pour 2026 : l\'annexe du budget 2027 n\'est pas encore en ligne sur le site de l\'Assemblée.',
-      'Effet sur l\'activité et l\'emploi (s\'il est coché) : variantes du modèle Mésange (direction du Trésor et Insee, 2017) ; une hausse de dépense ou une baisse d\'impôt de 1 point de PIB et leur effet, année par année, sur le PIB, le solde public, l\'emploi et le chômage. Le modèle étant linéaire selon le document, une baisse de dépense ou une hausse d\'impôt a l\'effet inverse. Année 4 : milieu des années 3 et 5 ; au-delà de 5 ans : l\'effet de la cinquième année.',
+      'Effet sur l\'activité et l\'emploi : variantes du modèle Mésange (direction du Trésor et Insee, 2017) ; une hausse de dépense ou une baisse d\'impôt de 1 point de PIB et leur effet, année par année, sur le PIB, le solde public, l\'emploi et le chômage. Le modèle étant linéaire selon le document, une baisse de dépense ou une hausse d\'impôt a l\'effet inverse. Année 4 : milieu des années 3 et 5 ; au-delà de 5 ans : l\'effet de la cinquième année.',
       'Taux d\'intérêt : un écart avec le taux à 10 ans de départ s\'ajoute au taux moyen de la dette à mesure qu\'elle se renouvelle (1 / durée de vie moyenne par an).',
       'Mesures écartées : ' + J.ecartees.map(function (x) { return esc(x.l) + ' (' + esc(x.pourquoi) + ')'; }).join(' ; ') + '.',
       'Recruter ou construire : chaque emploi compte pour son coût d\'entrée publié dans le projet de budget 2027 (cotisations de l\'employeur comprises, sans la contribution de l\'État aux pensions de ses agents), suivi ensuite de la croissance de l\'économie ; une place de prison compte pour son coût moyen de construction constaté par la Cour des comptes, réparti également de ' + AN0 + ' à ' + AN1 + ' (hypothèse de Concret) ; son coût de fonctionnement n\'est pas compté.',
@@ -2182,12 +2240,13 @@ body.q-vote { padding-bottom: 92px; }
     $('q-revoter').onclick = function () { confirmer($('q-revoter'), 'Confirmer : revoter les ' + nbDecisions() + ' mesures', revoter); };
     $('q-changer').onclick = ouvrirVotes;
     $('q-partager').onclick = partager;
+    Array.prototype.forEach.call(document.querySelectorAll('.q-hd[data-x]'), function (b) { b.onclick = function () { expliquer(b.dataset.x); }; });
     $('q-ress').onclick = function () { onglet('bilan'); setTimeout(function () { $('q-pays-c').scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); };
     $('q-tabexp').innerHTML = EXPL.voter;
     // Pour, Contre et Abstention ne s'affichent que quand une carte est à l'écran : on ne vote jamais pour une carte qu'on n'a pas vue.
     if (window.IntersectionObserver) { CARTE_VUE = false; new IntersectionObserver(function (E) { var v = E.some(function (x) { return x.isIntersecting; }); if (v !== CARTE_VUE) { CARTE_VUE = v; barre(); } }, { rootMargin: '0px 0px -25% 0px' }).observe($('q-deck')); }
     // Le haut collant (bandeau et onglets) une fois collé : sa hauteur, plus le bandeau du site.
-    $('q-voir').onclick = function () { var k = $('q-deck'), nav = document.querySelector('nav.site'), h = $('q-collant').offsetHeight + (nav ? nav.offsetHeight : 0); window.scrollTo({ top: Math.max(0, k.getBoundingClientRect().top + window.scrollY - h - 8) }); setTimeout(function () { sousBandeau(k); }, 120); };
+    $('q-voir').onclick = function () { var k = S.ami && $('q-top').querySelector('.q-ami') ? $('q-top') : $('q-deck'), nav = document.querySelector('nav.site'), h = $('q-collant').offsetHeight + (nav ? nav.offsetHeight : 0); window.scrollTo({ top: Math.max(0, k.getBoundingClientRect().top + window.scrollY - h - 8), behavior: 'instant' }); setTimeout(function () { sousBandeau(k); }, 60); };
     lireLien(); depuisVisite(); presetsAvecSenat(); presets(); objectifs(); filtres(); hypotheses(); creer(); tout(true);
     if (S.ami && !nbChoix()) window.scrollTo({ top: 0 });
   }
