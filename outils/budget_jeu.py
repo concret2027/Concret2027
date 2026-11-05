@@ -615,7 +615,9 @@ def repartition(T, MISSIONS, cartes, assiettes, unites):
     return {'an': an, 'groupes': [secu, etat]}
 
 # Effets sur l'activité non comptés faute de profil année par année : ce que disent d'autres sources officielles, écrit sur les cartes.
-NC_CARTES = {'contribution-grandes-entreprises': 'is', 'contribution-transport-maritime': 'is', 'isf': 'patrimoine', 'taxe-zucman': 'patrimoine',
+# Les surtaxes d'une année ont leur propre phrase ; la taxe Zucman, qui porte aussi sur les biens professionnels, n'a pas
+# celle de l'ISF (que l'évaluation de France Stratégie ne permet pas de transposer).
+NC_CARTES = {'contribution-grandes-entreprises': 'is_temp', 'contribution-transport-maritime': 'is_temp', 'isf': 'patrimoine',
              'retraite-62': 'retraite_age', 'retraite-63': 'retraite_age', 'retraite-65': 'retraite_age', 'retraites-fin-suspension': 'retraite_age'}
 NC_ASSIETTES = {'is': 'is'}
 
@@ -625,15 +627,18 @@ def non_comptes(P, cartes, assiettes):
     x = P.get('non_compte_is')
     if x:
         v = x['valeurs']
-        out['is'] = {'t': "Effet sur l'activité non compté : aucun chiffre année par année n'est publié. À long terme, une étude de la direction du Trésor (2007) estime qu'une hausse de l'impôt sur les sociétés d'un point du PIB marchand réduirait ce PIB de %s %% (de %s à %s %%), plus que la TVA (%s %%) dans la même étude." % (fr_nb(-v['IS']), fr_nb(-v['IS'] - v['IS_marge']), fr_nb(-v['IS'] + v['IS_marge']), fr_nb(-v['TVA'])),
+        g = lambda f: ('%g' % f).replace('.', ',')
+        out['is'] = {'t': "Effet sur l'activité non compté : aucun chiffre année par année n'est publié. À long terme, une étude de la direction du Trésor (2007) estime qu'une hausse durable de l'impôt sur les sociétés d'un point du PIB marchand réduirait ce PIB de %s %% (de %s à %s %%), plus que la TVA (%s %%) dans la même étude." % (g(-v['IS']), g(round(-v['IS'] - v['IS_marge'], 1)), g(round(-v['IS'] + v['IS_marge'], 1)), g(-v['TVA'])),
                      'src': {k: x[k] for k in ('document', 'page', 'url', 'citation')}}
+        out['is_temp'] = {'t': "Effet sur l'activité non compté : aucun chiffre n'est publié pour une surtaxe d'une seule année. Pour une hausse durable de l'impôt sur les sociétés, une étude de la direction du Trésor (2007) donne un effet à long terme de %s %% du PIB marchand par point (de %s à %s %%)." % (g(-v['IS']), g(round(-v['IS'] - v['IS_marge'], 1)), g(round(-v['IS'] + v['IS_marge'], 1))),
+                          'src': {k: x[k] for k in ('document', 'page', 'url', 'citation')}}
     x = P.get('non_compte_patrimoine')
     if x:
-        out['patrimoine'] = {'t': "Effet sur l'activité non compté : aucun chiffre année par année n'est publié. L'évaluation officielle de la suppression de l'ISF en 2018 (France Stratégie, 2023) conclut à « un impact nul, précisément estimé » sur l'investissement des entreprises.",
+        out['patrimoine'] = {'t': "Effet sur l'activité non compté : aucun chiffre année par année n'est publié. L'évaluation officielle de la suppression de l'ISF en 2018 (France Stratégie, 2023) conclut, pour les entreprises qu'elle étudie, à « un impact nul, précisément estimé » sur leur investissement ; d'autres effets, plus diffus, ne sont pas mesurés de cette façon.",
                              'src': {k: x[k] for k in ('document', 'page', 'url', 'citation')}}
     x = P.get('non_compte_retraite_age')
     if x:
-        out['retraite_age'] = {'t': "Effet sur l'activité non compté : le modèle utilisé pour les autres mesures ne mesure que la consommation. L'étude d'impact de la réforme de 2023 estime qu'un âge de départ plus élevé augmente l'emploi et le PIB (+%s %% en 2030), sans profil comparable à ceux du jeu." % fr_nb(x['valeurs']['2030']),
+        out['retraite_age'] = {'t': "Effet sur l'activité non compté : le modèle utilisé pour les autres mesures (Mésange) ne publie pas de variante sur l'âge de la retraite. L'étude d'impact de la réforme de 2023 estime qu'un âge de départ plus élevé augmente l'emploi et le PIB (+%s %% en 2030), sans profil comparable à ceux du jeu." % ('%g' % x['valeurs']['2030']).replace('.', ','),
                                'src': {k: x[k] for k in ('document', 'page', 'url', 'citation')}}
     for c in cartes:
         if NC_CARTES.get(c['id']) in out: c['nc'] = NC_CARTES[c['id']]
