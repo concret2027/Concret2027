@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="26377adec188">
+<meta name="concret-version" content="93165a79e17c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -18,6 +18,7 @@
 <meta property="og:title" content="Quiz du jour · Concret">
 <meta property="og:description" content="Huit questions par jour sur la France face à ses voisins européens et sur les résultats mandat par mandat. Chaque réponse renvoie à sa source.">
 <meta property="og:url" content="https://concret2027.fr/quiz/">
+<link rel="canonical" href="https://concret2027.fr/quiz/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://concret2027.fr/donnees/apercu/quiz.png">
 <meta property="og:image:width" content="1200">
@@ -29,7 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261031i"></script>
+<script src="/commun/bref.js?v=20261105q"></script>
 <script src="/commun/quiz.js?v=20261031j"></script>
 <style>html, body { margin: 0; }
 
@@ -890,14 +891,15 @@ footer p { margin: 0; } footer a { color: inherit; }
     }
     document.getElementById('qz-partager').addEventListener('click', function () {
       var ok = scoreCompte(), dit = document.getElementById('qz-copie'), jour = day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-      var t = 'Quiz du jour de Concret, ' + jour + ' : ' + ok + ' / ' + total + '. À vous : concret2027.fr/quiz';
+      // Une ligne de carrés, un par question, dans l'ordre : bonne réponse 🟩, mauvaise 🟥 (la grille de la page).
+      var t = 'Quiz du jour de Concret, ' + jour + ' : ' + ok + ' / ' + total + '.\n' + rep.map(function (v) { return v ? '🟩' : '🟥'; }).join('') + '\nÀ vous : concret2027.fr/quiz';
       (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () { return image(ok); }).then(function (blob) {
         var f = blob && new File([blob], 'concret-quiz-' + iso + '.png', { type: 'image/png' });
         if (f && navigator.canShare && navigator.canShare({ files: [f] })) return navigator.share({ files: [f], text: t }).catch(function () {});
         // Ordinateur : l'image s'affiche, à enregistrer ou copier.
         if (f) { var u = URL.createObjectURL(f); dit.innerHTML = '<img src="' + u + '" alt="Mon score du jour" style="width:100%;max-width:360px;border-radius:10px;border:1px solid var(--line);display:block;margin:8px auto"><a href="' + u + '" download="concret-quiz-' + iso + '.png">Enregistrer l\'image</a>'; return; }
         if (navigator.share) return navigator.share({ text: t }).catch(function () {});
-        dit.textContent = t;
+        dit.style.whiteSpace = 'pre-line'; dit.textContent = t;
       });
     });
   }
@@ -907,6 +909,6 @@ footer p { margin: 0; } footer a { color: inherit; }
 </script>
 <script src="/commun/partage.js?v=20261105n"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
-<script src="/commun/menu.js?v=20261105p"></script>
+<script src="/commun/menu.js?v=20261105q"></script>
 </body>
 </html>

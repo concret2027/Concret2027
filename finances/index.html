@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="26377adec188">
+<meta name="concret-version" content="93165a79e17c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -18,6 +18,7 @@
 <meta property="og:title" content="Finances publiques · Concret">
 <meta property="og:description" content="Depuis 1995, sous aucun président la France n'atteint 10/20 en finances publiques. Les chiffres du jour et le résultat sous chaque gouvernement.">
 <meta property="og:url" content="https://concret2027.fr/finances/">
+<link rel="canonical" href="https://concret2027.fr/finances/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://concret2027.fr/donnees/apercu/finances.png">
 <meta property="og:image:width" content="1200">
@@ -30,7 +31,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261031i"></script>
+<script src="/commun/bref.js?v=20261105q"></script>
 <script src="/commun/toile.js?v=20261105n"></script>
 <script src="/commun/pays.js?v=20261031i"></script>
 <script src="/commun/quiz.js?v=20261031j"></script>
@@ -288,6 +289,14 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .gov.pending .who span { font-style: italic; }
 
 /* Graphes */
+/* Les thèmes : ils rangent les courbes (couleur, titre et raccourci posés par commun/menu.js, comme sur les autres pages de mission). */
+.t-pills { display: flex; flex-wrap: wrap !important; white-space: normal; gap: 8px; margin: -4px 0 0; }
+.t-pills a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--fg); font-size: 14px; font-weight: 600; text-decoration: none; }
+.t-pills a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.t-regle { margin: -6px 0 0; }
+div.theme { display: grid; gap: 16px; min-width: 0; scroll-margin-top: 140px; }
+div.theme > h2 { font-size: 21px; font-weight: 700; line-height: 1.2; margin: 0; }
+div.theme > * { min-width: 0; }
 .charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
 .chart { position: relative; min-width: 0; }
 .chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
@@ -392,43 +401,59 @@ footer p { margin: 0; } footer a { color: inherit; }
     </details>
   </section>
 
-  <h2 class="grp-t" id="courbes">Les courbes</h2>
+  <h2 class="grp-t" id="courbes">Les thèmes</h2>
+  <nav class="t-pills" aria-label="Aller au thème"><a href="#t-dette">Dette et déficit</a><a href="#t-depenses">Dépenses et prélèvements</a><a href="#t-richesse">Richesse par habitant</a><a href="#t-taux">Taux d'emprunt</a></nav>
+  <p class="note t-regle">Sur cette page, les thèmes rangent les courbes ; le résultat de la page se calcule sur ses 8 critères, à poids égal.</p>
 
-  <div class="charts4">
+  <div class="theme" id="t-dette">
+    <h2>Dette et déficit</h2>
+    <div class="charts4">
     <section class="card" aria-labelledby="c1"><h2 id="c1" class="inv"><span class="eyebrow">Dette, % du PIB</span>De 7 points sous la moyenne de l'UE en 2000 à 34 points au-dessus</h2><div class="chart" id="ch-dette"></div><p class="note">Chiffres de fin d'année : <span id="debt-ye">115,7 % fin 2025</span>. Depuis, la dette a continué de monter : <span id="debt-last">119 % fin juin 2026</span> selon le dernier chiffre trimestriel de l'Insee, celui affiché en haut de page. États-Unis : dette brute des administrations publiques (FMI, Perspectives de l'économie mondiale, octobre 2026), de 2001 à 2024.</p></section>
     <section class="card" aria-labelledby="c2"><h2 id="c2" class="inv"><span class="eyebrow">Déficit, % du PIB</span>Un déficit plus élevé que la moyenne de l'UE chaque année depuis 2002</h2><div class="chart" id="ch-deficit"></div><p class="note">États-Unis : solde des administrations publiques (FMI, Perspectives de l'économie mondiale, octobre 2026), de 2001 à 2024.</p><p class="jeu-l"><a href="/budget/"><b>Votre budget 2027</b> : votez, une par une, des mesures chiffrées pour le budget de 2027, et voyez ce que deviennent le déficit et la dette →</a></p></section>
-    <section class="card" aria-labelledby="c3"><h2 id="c3" class="inv"><span class="eyebrow">Dépenses, % du PIB</span>L'écart avec l'UE est passé de 2,6 à 7,9 points</h2><div class="chart" id="ch-dep"></div><p class="note">États-Unis : dépenses des administrations publiques (FMI, base des finances publiques historiques, décembre 2025), jusqu'en 2024.</p><p class="bars-big" data-t="depenses_allemagne">Dépenser comme l'Allemagne, ce serait <b>≈ 215 Md€</b> de moins par an.</p></section>
-    <section class="card" aria-labelledby="c4"><h2 id="c4" class="inv"><span class="eyebrow">Prélèvements, % du PIB</span>Entre 3,5 et 7,5 points au-dessus de l'UE depuis 1995</h2><div class="chart" id="ch-po"></div><p class="note" data-t="prelevements_rang">Impôts et cotisations (Eurostat). En 2024, la France est 2e de l'UE, derrière le Danemark. États-Unis : OCDE (Statistiques des recettes publiques), jusqu'en 2024 ; sur cette base, la France ressort environ 2 points plus bas qu'avec Eurostat (43,5 % contre 45,3 % en 2024), l'écart réel est donc un peu plus faible que sur le graphique.</p></section>
+    </div>
   </div>
 
-  <section class="card" id="richesse" aria-labelledby="pib-title">
-    <h2 id="pib-title" class="inv"><span class="eyebrow">Richesse par habitant</span>16 % au-dessus de la moyenne de l'UE en 1990, au même niveau en 2025</h2>
-    <p class="insight" id="pib-insight">En 1990, un Français produisait <b>16 % de plus</b> que la moyenne de l'UE. En 2025, <b>autant</b>.</p>
-    <div class="bar-row">
-      <div class="key"><span><i style="background:var(--us)"></i>États-Unis</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i class="dash"></i>Moyenne de l'UE</span><span><i style="background:var(--fr)"></i>France</span></div>
-      <div class="chips" role="group" aria-label="Mode d'affichage">
-        <button class="chip" id="pib-lvl" aria-pressed="true">En dollars</button>
-        <button class="chip" id="pib-idx" aria-pressed="false">Base 100 en 1990</button>
-      </div>
+  <div class="theme" id="t-depenses">
+    <h2>Dépenses et prélèvements</h2>
+    <div class="charts4">
+    <section class="card" aria-labelledby="c3"><h2 id="c3" class="inv"><span class="eyebrow">Dépenses, % du PIB</span>L'écart avec l'UE est passé de 2,6 à 7,9 points</h2><div class="chart" id="ch-dep"></div><p class="note">États-Unis : dépenses des administrations publiques (FMI, base des finances publiques historiques, décembre 2025), jusqu'en 2024.</p><p class="bars-big" data-t="depenses_allemagne">Dépenser comme l'Allemagne, ce serait <b>≈ 215 Md€</b> de moins par an.</p></section>
+    <section class="card" aria-labelledby="c4"><h2 id="c4" class="inv"><span class="eyebrow">Prélèvements, % du PIB</span>Entre 3,5 et 7,5 points au-dessus de l'UE depuis 1995</h2><div class="chart" id="ch-po"></div><p class="note" data-t="prelevements_rang">Impôts et cotisations (Eurostat). En 2024, la France est 2e de l'UE, derrière le Danemark. États-Unis : OCDE (Statistiques des recettes publiques), jusqu'en 2024 ; sur cette base, la France ressort environ 2 points plus bas qu'avec Eurostat (43,5 % contre 45,3 % en 2024), l'écart réel est donc un peu plus faible que sur le graphique.</p></section>
     </div>
-    <div class="chart" id="pib-chart"></div>
-    <p class="note" id="pib-note">PIB par habitant, en dollars de 2021 (hors inflation) et corrigé des écarts de prix entre pays (« parité de pouvoir d'achat », Banque mondiale). Depuis 1990 : France +43 %, Union européenne +65 %, Allemagne +48 %, États-Unis +73 %.</p>
-  </section>
+    <section class="card" id="retraites" aria-labelledby="ret-title" hidden>
+      <h2 id="ret-title" class="inv"><span class="eyebrow">Retraites publiques, % du PIB</span>Le poids des retraites dans la richesse nationale</h2>
+      <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
+      <div class="chart" id="ch-retraites"></div>
+      <p class="note" id="ret-note"></p>
+    </section>
+  </div>
 
-  <section class="card" id="retraites" aria-labelledby="ret-title" hidden>
-    <h2 id="ret-title" class="inv"><span class="eyebrow">Retraites publiques, % du PIB</span>Le poids des retraites dans la richesse nationale</h2>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--us)"></i>États-Unis</span></div>
-    <div class="chart" id="ch-retraites"></div>
-    <p class="note" id="ret-note"></p>
-  </section>
+  <div class="theme" id="t-richesse">
+    <h2>Richesse par habitant</h2>
+    <section class="card" id="richesse" aria-labelledby="pib-title">
+      <h2 id="pib-title" class="inv"><span class="eyebrow">Richesse par habitant</span>16 % au-dessus de la moyenne de l'UE en 1990, au même niveau en 2025</h2>
+      <p class="insight" id="pib-insight">En 1990, un Français produisait <b>16 % de plus</b> que la moyenne de l'UE. En 2025, <b>autant</b>.</p>
+      <div class="bar-row">
+        <div class="key"><span><i style="background:var(--us)"></i>États-Unis</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i class="dash"></i>Moyenne de l'UE</span><span><i style="background:var(--fr)"></i>France</span></div>
+        <div class="chips" role="group" aria-label="Mode d'affichage">
+          <button class="chip" id="pib-lvl" aria-pressed="true">En dollars</button>
+          <button class="chip" id="pib-idx" aria-pressed="false">Base 100 en 1990</button>
+        </div>
+      </div>
+      <div class="chart" id="pib-chart"></div>
+      <p class="note" id="pib-note">PIB par habitant, en dollars de 2021 (hors inflation) et corrigé des écarts de prix entre pays (« parité de pouvoir d'achat », Banque mondiale). Depuis 1990 : France +43 %, Union européenne +65 %, Allemagne +48 %, États-Unis +73 %.</p>
+    </section>
+  </div>
 
-  <section class="card" id="marches" aria-labelledby="sp-title">
-    <h2 id="sp-title" class="inv"><span class="eyebrow">Politique et marchés</span>La France emprunte plus cher que l'Italie</h2>
-    <p class="explain"><b>À lire ainsi :</b> chaque courbe montre combien un pays paie de plus que l'Allemagne pour emprunter à 10 ans (le « spread », en points de base). Les numéros renvoient aux événements listés dessous.</p>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--it)"></i>Italie</span><span><i style="background:var(--es)"></i>Espagne</span><span id="sp-key">moyennes mensuelles</span></div>
-    <div class="chart" id="spread-chart"></div>
-    <ol class="events" id="events"></ol>
-  </section>
+  <div class="theme" id="t-taux">
+    <h2>Taux d'emprunt</h2>
+    <section class="card" id="marches" aria-labelledby="sp-title">
+      <h2 id="sp-title" class="inv"><span class="eyebrow">Politique et marchés</span>La France emprunte plus cher que l'Italie</h2>
+      <p class="explain"><b>À lire ainsi :</b> chaque courbe montre combien un pays paie de plus que l'Allemagne pour emprunter à 10 ans (le « spread », en points de base). Les numéros renvoient aux événements listés dessous.</p>
+      <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--it)"></i>Italie</span><span><i style="background:var(--es)"></i>Espagne</span><span id="sp-key">moyennes mensuelles</span></div>
+      <div class="chart" id="spread-chart"></div>
+      <ol class="events" id="events"></ol>
+    </section>
+  </div>
 
 
   <h2 class="grp-t" id="actualite">Chiffres et actualité</h2>
@@ -905,7 +930,7 @@ function main(FEED) {
   // Les gouvernements sont repliés : leur classement est dessiné à l'ouverture, à la largeur réelle.
   document.getElementById('gov-pli').addEventListener('toggle', function () { if (this.open) rankOne('gov'); });
   function rankOne(rankMode) {
-    var list = (rankMode === 'gov' ? GOVS : PRES).map(function (g) { return { g: g, n: noteOf(g) }; }).sort(function (a, b) { return b.n - a.n; });
+    var list = (rankMode === 'gov' ? GOVS : PRES).map(function (g) { return { g: g, n: noteOf(g) }; }); // dans l'ordre des mandats, comme les cartes du dessus (pas un classement)
     var box = document.getElementById('rank-' + rankMode); box.textContent = '';
     var W = Math.max(300, box.clientWidth), small = W < 520, rh = 26, lw = small ? 92 : 150, top = 22, H = top + list.length * rh + 26;
     var x = d3.scaleLinear().domain([0, 20]).range([lw, W - 34]);
@@ -926,7 +951,7 @@ function main(FEED) {
       var inside = x(r.n) - x(0) > 30;
       svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n)).style('fill', inside ? 'var(--panel)' : 'var(--fg)').style('font-weight', 700).style('font-size', '12px');
     });
-    var best = list[0], above = list.filter(function (r) { return r.n >= 10; }).length;
+    var best = list.reduce(function (a, b) { return b.n > a.n ? b : a; }), above = list.filter(function (r) { return r.n >= 10; }).length;
     document.getElementById('rank-' + rankMode + '-note').textContent = (above ? above + ' sur ' + list.length + ' atteignent le niveau de la moyenne de l\'UE ; les autres sont en dessous de la moyenne européenne. ' : 'Tous sont en dessous de la moyenne européenne. ') +
       (function () { var ex = list.filter(function (r) { return nfmt(r.n) === nfmt(best.n); }).map(function (r) { return r.g.n; }); return (ex.length > 1 ? 'Les plus hauts, à égalité : ' + ex.slice(0, -1).join(', ') + ' et ' + ex[ex.length - 1] : 'Le plus haut : ' + best.g.n) + ' (' + nfmt(best.n) + '/20).'; })() + (rankMode === 'pres' ? ' Chirac inclut les cinq ans de cohabitation avec Lionel Jospin ; Macron est compté sur 2017-2025.' : ' Lecornu sera compté au printemps 2027 ; Barnier (sept.-déc. 2024) n\'a pas d\'année complète.');
   }
@@ -1393,7 +1418,7 @@ function main(FEED) {
       x.fillText(('Les finances publiques, mandat par mandat · ' + day).toUpperCase(), 80, 175);
       x.fillStyle = '#1c1d22'; x.font = '400 58px Newsreader, Georgia, serif';
       wrapText(x, 'Depuis 1995, sous aucun président la France n\'atteint 10/20 en finances publiques', 80, 270, W - 160, 70);
-      var rows = PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; }).sort(function (a, b) { return b.v - a.v; });
+      var rows = PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; });
       var y0 = 490, x0 = 470, bw = W - x0 - 110;
       x.font = '500 30px "Inter Tight", system-ui, sans-serif'; x.fillStyle = '#62646d'; x.fillText('Résultat sur 20 · la France face à la moyenne de l\'UE, sur 8 critères', 80, 420);
       rows.forEach(function (r, i) {
@@ -1492,6 +1517,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261105n"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261031i"></script>
-<script src="/commun/menu.js?v=20261105p"></script>
+<script src="/commun/menu.js?v=20261105q"></script>
 </body>
 </html>

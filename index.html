@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="26377adec188">
+<meta name="concret-version" content="93165a79e17c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -18,6 +18,7 @@
 <meta property="og:title" content="Concret : ce que font ceux qui gouvernent, en chiffres ; les vrais votes pour vous situer">
 <meta property="og:description" content="Le bilan chiffré de chaque président et gouvernement depuis 1995, la France face à ses voisins, le quiz du jour et les vrais votes de l'Assemblée.">
 <meta property="og:url" content="https://concret2027.fr/">
+<link rel="canonical" href="https://concret2027.fr/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://concret2027.fr/donnees/apercu/accueil.png">
 <meta property="og:image:width" content="1200">
@@ -306,6 +307,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 .une small { grid-column: 1; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fr); }
 .une b { grid-column: 1; font-size: 17px; font-weight: 700; } .une span { grid-column: 1; font-size: 13.5px; color: var(--muted); line-height: 1.35; }
 .une i { grid-column: 2; grid-row: 1 / span 3; font-style: normal; font-size: 14px; font-weight: 700; color: #fff; background: var(--fr); border-radius: 999px; padding: 8px 14px; white-space: nowrap; }
+/* En sombre, le bleu du thème est clair : texte foncé dessus (contraste 6,9:1 au lieu de 2,6:1 en blanc). */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .une i { color: #0b1530; } }
+:root[data-theme="dark"] .une i { color: #0b1530; }
 .auj-l { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--line); color: var(--fg); text-decoration: none; min-height: 44px; }
 .auj-l b { font-size: 16px; font-weight: 700; } .auj-l span { grid-column: 1; font-size: 13.5px; color: var(--muted); line-height: 1.35; }
 .auj-l i { grid-column: 2; grid-row: 1 / span 2; font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--fr); background: var(--band); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
@@ -669,8 +673,10 @@ footer p { margin: 0; } footer a { color: inherit; }
     // Le chiffre de chaque point, en petit, à côté de lui (de part et d'autre de l'axe, décalé s'il en touche un autre) ;
     // Toucher (ou survoler) la toile près d'une mission affiche, comme sur les courbes des sondages, le chiffre de chacun pour cette
     // mission, dans l'ordre des mandats, et souligne l'axe.
-    var poses = [];
-    MISS.forEach(function (m, i) {
+    // Sur téléphone (moins de 600 px), pas de chiffres sur la toile : quatre contours et vingt-quatre nombres ne se lisent pas ;
+    // les chiffres sont dans le tableau, ouvert dessous.
+    var poses = [], etroit = matchMedia('(max-width: 599px)').matches;
+    if (!etroit) MISS.forEach(function (m, i) {
       var a = ang(i), px = -Math.sin(a), py = Math.cos(a), ux = Math.cos(a), uy = Math.sin(a);
       rows.filter(function (r) { return r[m.k] != null; }).sort(function (x, y) { return x[m.k] - y[m.k]; }).forEach(function (r, k) {
         var p = pt(i, r[m.k]), sg = k % 2 ? -1 : 1, x = p[0] + px * sg * 10, y = p[1] + py * sg * 10 + 3, t = 0;
@@ -731,9 +737,9 @@ footer p { margin: 0; } footer a { color: inherit; }
       box.appendChild(b);
     });
   }
-  var tableTout = false;
+  var tableTout = matchMedia('(max-width: 599px)').matches; // sur téléphone, le tableau des présidents est ouvert d'office
   function setKind(k) {
-    kind = k; chosen = {}; tableTout = false;
+    kind = k; chosen = {}; tableTout = matchMedia('(max-width: 599px)').matches;
     // Par défaut : les présidents, tous ; les gouvernements, les trois derniers comptés.
     var list = data[k].filter(function (r) { return r.m != null; });
     (k === 'pres' ? list : list.slice().sort(function (a, b) { return b.y0 - a.y0; }).slice(0, 3)).forEach(function (r) { chosen[r.n] = true; });
@@ -777,6 +783,6 @@ document.querySelectorAll('.jump a[href^="#"]').forEach(function (a) { a.addEven
 <script src="/commun/partage.js?v=20261105n"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/contact.js?v=20261031a"></script>
-<script src="/commun/menu.js?v=20261105p"></script>
+<script src="/commun/menu.js?v=20261105q"></script>
 </body>
 </html>

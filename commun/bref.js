@@ -8,7 +8,7 @@
     '.bref-det{margin:6px 0 14px}.bref-det>summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--fr);padding:4px 0}' +
     '.bref-det>summary::-webkit-details-marker{display:none}.bref-det>summary::after{content:"▾"}.bref-det[open]>summary::after{content:"▴"}' +
     '.bref-chips{display:flex;flex-wrap:wrap;gap:4px 5px;margin:8px 0 2px}' +
-    '.bref-chips a{font-size:11.5px;font-weight:500;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);text-decoration:none}' +
+    '.bref-chips a{display:inline-flex;align-items:center;min-height:24px;box-sizing:border-box;font-size:11.5px;font-weight:500;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);text-decoration:none}' +
     '.bref-chips a:hover,.bref-chips a:focus{border-color:var(--fr);color:var(--fg)}' +
     '.bref-chips a i{font-style:normal;font-weight:700;margin-right:3px;color:var(--bad)}.bref-chips a.g i{color:var(--ok)}.bref-chips a.m i{color:var(--mid)}' +
     '.bref-pres{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 10px}' +
@@ -20,10 +20,19 @@
   var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); };
   var fmt = function (v) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(Math.round(v * 10) / 10); };
   var ICON = { g: '✓', b: '✗', m: '=' };
+  // Haut de page : la date du jour n'est pas répétée au-dessus de la ligne « Dernière mise à jour le… » ; dans les puces, le lien est « Voir ↓ ».
+  (function () {
+    var st = document.createElement('style'); st.id = 'bref-tete-css';
+    st.textContent = '.brand:has(+ #upd) > #today{display:none}.bref-voir{white-space:nowrap;font-weight:600}';
+    (document.head || document.documentElement).appendChild(st);
+  })();
 
   // Aller à une courbe : ouvre les blocs repliés qui la contiennent (elle se dessine à l'ouverture), puis y descend.
+  // Une petite courbe (« Toucher pour agrandir ») n'existe qu'agrandie : on touche sa vignette, comme à l'arrivée par un lien.
   function aller(id) {
-    var el = document.getElementById(id); if (!el) return;
+    var el = document.getElementById(id);
+    if (!el) { var mini = document.querySelector('.mini[data-courbe="' + id + '"]'); if (mini) { mini.click(); el = document.getElementById(id); } }
+    if (!el) return;
     for (var d = el; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
     // Défilement dès l'image suivante (le bloc ouvert a pris sa place), sans attente.
     requestAnimationFrame(function () {
@@ -87,21 +96,22 @@
     if (!L.length) { box.hidden = true; return; }
     var maj = function (h) { return h.replace(/^((?:<[^>]+>)*)([a-zà-ÿ])/, function (m, t, c) { return t + c.toUpperCase(); }); };
     var div = document.createElement('div'); div.className = box.className.replace(/\s*visit-res\b/, ''); div.id = box.id;
-    div.innerHTML = '<b>' + titre + '</b><ul class="vis-l">' + L.map(function (x) { var t = maj(x), fin = t.replace(/<[^>]+>/g, '').trim().slice(-1); return '<li>' + t + (/[.…!?]/.test(fin) ? '' : '.') + '</li>'; }).join('') + '</ul>';
+    div.innerHTML = '<b>' + titre + '</b><ul class="vis-l">' + L.map(function (x) { var t = maj(x), fin = t.replace(/<[^>]+>/g, '').trim().slice(-1); return '<li>' + t + (/[.…!?↓]/.test(fin) ? '' : '.') + '</li>'; }).join('') + '</ul>';
     box.parentNode.replaceChild(div, box); lier(div);
   }
   function premiere(box, o) {
     o = o || {};
     // Les accroches des blocs de « L'actualité » sont écrites par la page juste après : on les lit un instant plus tard.
     setTimeout(function () {
-      var parts = [], lien = function (id, h) { return '<a href="#' + id + '" data-cible="' + id + '">' + h + '</a>'; };
+      // La phrase en texte, puis « Voir ↓ » seul en lien, vers le même bloc.
+      var parts = [], lien = function (id, h) { h = h.replace(/\s+$/, ''); var fin = h.replace(/<[^>]+>/g, '').trim().slice(-1); return h + (/[.…!?]/.test(fin) ? '' : '.') + ' <a class="bref-voir" href="#' + id + '" data-cible="' + id + '">Voir ↓</a>'; };
       var dfr = function (s) { return new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }).replace(/^1 /, '1er '); };
       var court = function (t) { t = String(t); if (t.length <= 110) return t.replace(/\.$/, ''); var c = t.slice(0, 107); return c.slice(0, c.lastIndexOf(' ')) + '…'; };
       var acc = Array.prototype.filter.call(document.querySelectorAll('details.acc'), function (d) { return /aujourd'hui|ce mois-ci|du mois/i.test((d.querySelector('.acc-h') || {}).textContent || ''); })[0];
       var tz = acc && acc.querySelector('.acc-t');
       if (tz && tz.textContent.trim() && tz.textContent.trim() !== '—') parts.push(lien(acc.id, ((acc.querySelector('.acc-h') || {}).textContent || '').trim() + ' : ' + tz.innerHTML));
       var A = (o.actu || []).filter(function (a) { return a.texte && a.date; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
-      if (A[0]) parts.push(lien('acc-actu', 'Actualité du ' + esc(dfr(A[0].date))) + ' : ' + esc(court(A[0].texte)));
+      if (A[0]) parts.push(lien('acc-actu', 'Actualité du ' + esc(dfr(A[0].date)) + ' : ' + esc(court(A[0].texte))));
       afficher(box, 'Les dernières nouvelles', parts);
     }, 300);
   }

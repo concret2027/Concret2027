@@ -54,9 +54,9 @@
   }
   function arbre(n) { attr(n); if (n.querySelectorAll) Array.prototype.forEach.call(n.querySelectorAll('[style*="font-size"]'), attr); }
   feuilles(); arbre(document.documentElement);
-  // Un mot trop long pour sa case passe à la ligne (coupé en français), un tableau trop large défile dans son cadre.
+  // Un mot trop long pour sa case passe à la ligne (coupé en français), un tableau trop large défile dans son cadre ; un écart en pastille (« 2,7 pt en dessous… ») aussi.
   var st = document.createElement('style');
-  st.textContent = 'body{overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}td,th{-webkit-hyphens:manual;hyphens:manual}';
+  st.textContent = 'body{overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}td,th{-webkit-hyphens:manual;hyphens:manual}.delta{white-space:normal;max-width:100%}';
   vu.add(st); (document.head || document.documentElement).appendChild(st);
   var att = 0;
   function tableaux() {
@@ -176,9 +176,10 @@
     // Le bandeau tient toujours en entier : le logo, les rendez-vous quotidiens (Baromètre, Quiz, Votez), la vie politique et la page
     // en cours ; toutes les pages sont dans le Menu, visible à toutes les largeurs. Sur téléphone : logo, rendez-vous, loupe et Menu.
     'nav.site>a:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]):not([href="/politique/"]):not([aria-current]){display:none}' +
-    // Entre téléphone et grand écran (iPad debout, ordinateur zoomé) : sans « La vie politique » ni la page en cours, les liens ne se chevauchent plus ; aucun lien ne rétrécit sous son texte.
-    '@media (min-width:521px){nav.site>a{flex-shrink:0}}@media (max-width:860px){nav.site>a .lg{display:none}nav.site .rech-b{display:none}nav.site>a[href="/politique/"]:not([aria-current]),nav.site>a[aria-current]:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]){display:none}}' +
-    '@media (max-width:520px){nav.site>a[href="/politique/"]:not([aria-current]),nav.site>a[aria-current]:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]){display:none}nav.site>a{padding-block:8px}nav.site{gap:11px!important}.mn-btn{padding-left:8px}nav.site .rech-b{display:none}}' +
+    // Entre téléphone et grand écran (iPad debout, ordinateur zoomé) : sans « La vie politique » ni la page en cours, les liens ne se chevauchent plus.
+    // Aucun lien ne rétrécit sous son texte, à toutes les largeurs : s'il n'y a pas la place (texte agrandi), barreAjuste retire le lien de trop.
+    'nav.site>a{flex-shrink:0;white-space:nowrap}@media (max-width:860px){nav.site>a .lg{display:none}nav.site .rech-b{display:none}nav.site>a[href="/politique/"]:not([aria-current]),nav.site>a[aria-current]:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]){display:none}}' +
+    '@media (max-width:520px){nav.site>a[href="/politique/"]:not([aria-current]),nav.site>a[aria-current]:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]){display:none}nav.site>a{padding-block:8px}nav.site{gap:9px!important}nav.site a.logo{margin-right:0!important}.mn-btn{padding-left:8px}nav.site .rech-b{display:none}}' +
     '@media (max-width:380px){nav.site{gap:8px!important}nav.site a.logo{font-size:17px!important}.mn-btn span{padding:4px 9px}}' +
     // Les trois rendez-vous quotidiens ressortent dans le bandeau.
     'nav.site>a[href="/barometre/"],nav.site>a[href="/quiz/"],nav.site>a[href="/votez/"]{color:' + V.fg + ';font-weight:600}' +
@@ -626,7 +627,8 @@
       Array.prototype.forEach.call(nav.querySelectorAll('a[data-mn-cache]'), function (a) { a.style.removeProperty('display'); a.removeAttribute('data-mn-cache'); });
       ['/politique/', '/votez/', '/quiz/', '/barometre/'].some(function (u) {
         var vis = Array.prototype.filter.call(nav.querySelectorAll('a:not(.logo)'), function (a) { return a.offsetParent && a.getBoundingClientRect().width; });
-        var last = vis[vis.length - 1]; if ((!last || last.getBoundingClientRect().right <= mb.getBoundingClientRect().left - 4) && mb.getBoundingClientRect().right <= document.documentElement.clientWidth) return true;
+        var last = vis[vis.length - 1], pil = mb.querySelector('span') || mb; // le bord visible du bouton (sa marge de gauche n'est qu'un fondu)
+        if ((!last || last.getBoundingClientRect().right <= pil.getBoundingClientRect().left - 6) && mb.getBoundingClientRect().right <= document.documentElement.clientWidth) return true;
         var a = nav.querySelector('a[href="' + u + '"]'); if (a && a.offsetParent && a.getAttribute('aria-current') !== 'page') { a.style.setProperty('display', 'none', 'important'); a.setAttribute('data-mn-cache', '1'); }
         return false;
       });

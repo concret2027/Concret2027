@@ -16,6 +16,7 @@
 <meta property="og:title" content="Faites le budget 2027 · Concret">
 <meta property="og:description" content="Choisissez les mesures du budget 2027, une par une, et voyez le déficit, la dette et la croissance jusqu'en 2031 : à quel pays d'Europe votre budget ressemble-t-il ?">
 <meta property="og:url" content="https://concret2027.fr/budget/">
+<link rel="canonical" href="https://concret2027.fr/budget/quinquennat.html">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://concret2027.fr/donnees/apercu/budget.png">
 <meta property="og:image:width" content="1200">
@@ -413,6 +414,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 4px 0; border-radius: 12px; background: var(--bg); }
 .q-tabs button { font: inherit; font-size: 15px; font-weight: 700; min-height: 44px; border: 1.5px solid var(--fr); border-radius: 9px; background: var(--panel); color: var(--fr); cursor: pointer; }
 .q-tabs button[aria-selected="true"] { background: var(--fr); color: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
+/* En sombre, le bleu du thème est clair : texte foncé dessus (contraste 6,9:1 au lieu de 2,6:1 en blanc). */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .q-tabs button[aria-selected="true"] { color: #0b1530; } }
+:root[data-theme="dark"] .q-tabs button[aria-selected="true"] { color: #0b1530; }
 .q-pane { display: grid; gap: 14px; }
 .q-top { display: grid; gap: 8px; }
 .q-lien { font: inherit; color: var(--fr); background: none; border: 0; padding: 0; min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
@@ -534,6 +538,14 @@ body.q-grand.q-hors-vote .q-ress, body.q-grand.q-hors-vote .q-hd-s, body.q-grand
 .q-extrait p { white-space: pre-line; font-size: 12.5px; }
 .q-partage-t { font-size: 13px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); user-select: all; margin: 0; }
 body.q-vote { padding-bottom: 92px; }
+/* Pendant le vote : le bandeau tient sur une ligne, les trois chiffres seuls (déficit, croissance, dette) ; la ligne de l'objectif et le pays
+   reviennent avec le message du vote, et hors du vote. Dans le Bilan, le bandeau n'est plus collé en haut : il défile avec la page. */
+body.q-vote .q-hd-s, body.q-vote .q-jauge, body.q-vote .q-hs:not(.q-msg) { display: none; }
+body.q-vote .q-hud:not(:has(.q-hs.q-msg)) .q-ress { display: none; }
+body.q-vote .q-hud { padding-top: 5px; padding-bottom: 5px; row-gap: 2px; }
+body.q-vote .q-hd small { font-size: 10.5px; }
+body.q-vote .q-hd b { font-size: 19px; }
+body.q-bilan .q-collant { position: relative; top: auto; }
 /* Étape : le résultat */
 .q-etape { border: 1.5px solid var(--fr); }
 .q-etape h2 { font-size: 22px; }
@@ -1474,11 +1486,18 @@ body.q-vote { padding-bottom: 92px; }
   function revoter() { S.v = {}; S.pile = []; S.etape = 0; S.hist = {}; S.atteint = {}; S.filtre = 'tout'; S.graine = 1 + Math.floor(Math.random() * 2147483646); garder(); window.scrollTo({ top: 0 }); location.reload(); }
   function ouvrirVotes() { onglet('voter'); var d = $('q-vos-d'); d.open = true; setTimeout(function () { sousBandeau(d); }, 60); }
   var CARTE_VUE = true, VIN_VU = false, VIN_OBS = null;
-  // Texte agrandi : « Abstention » ne se coupe pas au milieu du mot ; trop large pour son bouton, il devient « Abst. ».
-  function ajusterBoutons() { var b = $('b-abst'); if (!b) return; b.textContent = 'Abstention'; b.removeAttribute('aria-label'); if (b.scrollWidth > b.clientWidth + 1) { b.textContent = 'Abst.'; b.setAttribute('aria-label', 'Abstention'); } }
+  // Texte agrandi : « Abstention » ne se coupe pas au milieu du mot ; s'il ne laisse pas un peu d'air de chaque côté dans son bouton
+  // (barre du bas, ou boutons sous la carte), il devient « Abst. ».
+  function ajusterBoutons() {
+    [$('b-abst')].concat([].slice.call(document.querySelectorAll('.q-vin button[data-vin="3"]'))).forEach(function (b) {
+      if (!b) return; b.textContent = 'Abstention'; b.removeAttribute('aria-label'); if (!b.clientWidth) return;
+      var r = document.createRange(); r.selectNodeContents(b);
+      if (b.scrollWidth > b.clientWidth + 1 || r.getBoundingClientRect().width > b.clientWidth - 8) { b.textContent = 'Abst.'; b.setAttribute('aria-label', 'Abstention'); }
+    });
+  }
   window.addEventListener('resize', function () { ajusterBoutons(); });
   function grand() { document.body.classList.toggle('q-grand', TS() > 1.15); }
-  function barre() { grand(); var v = !$('p-voter').hidden && !!suivante() && CARTE_VUE && !speciale(), on = v && !etapeDue(), et = v && !!etapeDue(); $('q-bar').hidden = !on || VIN_VU; $('q-bar2').hidden = !et; if (on) setTimeout(ajusterBoutons, 50); document.body.classList.toggle('q-vote', on || et); $('b-undo').disabled = $('b-undo2').disabled = !S.pile.length; }
+  function barre() { grand(); var v = !$('p-voter').hidden && !!suivante() && CARTE_VUE && !speciale(), on = v && !etapeDue(), et = v && !!etapeDue(); $('q-bar').hidden = !on || VIN_VU; $('q-bar2').hidden = !et; setTimeout(ajusterBoutons, 50); document.body.classList.toggle('q-vote', on || et); $('b-undo').disabled = $('b-undo2').disabled = !S.pile.length; }
 
   // ---------- Le résumé (étapes, fin, bilan) ----------
   // Accord avec chaque groupe : même calcul que Votez les lois (depuis le 28 octobre 2026). Sur chaque mesure, la part des députés
@@ -2138,7 +2157,7 @@ body.q-vote { padding-bottom: 92px; }
     $('q-tabexp').innerHTML = EXPL[t].replace('{AN0}', AN0).replace('{AN1}', AN1); ONG = t; $('q-tabexp').hidden = (t === 'voter' && !$('q-intro').hidden) || S.vu[t] > 1;
     if (POP) { clearTimeout(popT); POP = false; hud(); }
     ['voter', 'creer', 'bilan'].forEach(function (x) { $('t-' + x).setAttribute('aria-selected', x === t); $('p-' + x).hidden = x !== t; });
-    document.body.classList.toggle('q-hors-vote', t !== 'voter');
+    document.body.classList.toggle('q-hors-vote', t !== 'voter'); document.body.classList.toggle('q-bilan', t === 'bilan');
     barre(); if (t === 'bilan') bilan();
     var h = $('q-collant').getBoundingClientRect().bottom, p = $('p-' + t).getBoundingClientRect().top; if (p < h) window.scrollBy({ top: p - h - 70 });
   }
@@ -2529,6 +2548,6 @@ body.q-vote { padding-bottom: 92px; }
 })();
 </script>
 
-<script src="/commun/menu.js?v=20261105p"></script>
+<script src="/commun/menu.js?v=20261105q"></script>
 </body>
 </html>

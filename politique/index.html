@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="26377adec188">
+<meta name="concret-version" content="93165a79e17c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -18,6 +18,7 @@
 <meta property="og:title" content="La vie politique · Concret">
 <meta property="og:description" content="Ce que vote l'Assemblée nationale, groupe par groupe, ce qui devient loi, et les grandes dates depuis 1995.">
 <meta property="og:url" content="https://concret2027.fr/politique/">
+<link rel="canonical" href="https://concret2027.fr/politique/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://concret2027.fr/donnees/apercu/politique.png">
 <meta property="og:image:width" content="1200">
@@ -162,6 +163,11 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 .mandats { display: flex; height: 34px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
 .mandats div { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--fg); background: var(--band); border-right: 1px solid var(--panel); overflow: hidden; white-space: nowrap; padding: 0 4px; min-width: 0; }
 .mandats div:nth-child(even) { background: color-mix(in srgb, var(--fr) 16%, var(--panel)); }
+/* Un nom plus large que son mandat (texte agrandi, écran étroit) : les noms passent sur deux rangées, un mandat sur deux en bas, et débordent sans se toucher. */
+.mandats.deux { height: auto; }
+.mandats.deux div { overflow: visible; min-height: 46px; align-items: flex-start; padding: 4px 0; }
+.mandats.deux div:nth-child(even) { align-items: flex-end; }
+.mandats.deux div span { position: relative; z-index: 1; }
 .ans { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-top: 3px; }
 .frise { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--line); display: grid; gap: 0; }
 .frise li { position: relative; padding: 8px 0 12px 10px; }
@@ -455,8 +461,14 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
     var an = function (s) { var d = dt(s); return d.getFullYear() + d.getMonth() / 12; };
     $('mandats').innerHTML = bandes.map(function (b) {
       var w = ((b.fin ? an(b.fin) : a1f) - an(b.de)) / span * 100;
-      return '<div style="flex:0 0 ' + w.toFixed(2) + '%" title="' + esc(b.nom) + '">' + esc(b.nom.split(' ').slice(-1)[0]) + '</div>';
+      return '<div style="flex:0 0 ' + w.toFixed(2) + '%" title="' + esc(b.nom) + '"><span>' + esc(b.nom.split(' ').slice(-1)[0]) + '</span></div>';
     }).join('');
+    // Deux rangées de noms si l'un d'eux ne tient pas dans son mandat.
+    var rangees = function () {
+      var m = $('mandats'); m.classList.remove('deux');
+      if ([].some.call(m.children, function (d) { return d.firstChild && d.firstChild.getBoundingClientRect().width > d.clientWidth - 8; })) m.classList.add('deux');
+    };
+    rangees(); addEventListener('resize', rangees); addEventListener('load', rangees);
     $('ans').innerHTML = '<span>' + a0f + '</span><span>' + (a0f + Math.round(span / 2)) + '</span><span>' + (a1f - 1) + '</span>';
     var cats = ['tous'].concat(Object.keys(FK).filter(function (k, i, a) { return a.map(function (x) { return FK[x]; }).indexOf(FK[k]) === i; }));
     var ff = 'tous', nfMax = 12;
@@ -502,6 +514,6 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 <script src="/commun/lois.js?v=20261031i"></script>
 <script src="/commun/partage.js?v=20261105n"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
-<script src="/commun/menu.js?v=20261105p"></script>
+<script src="/commun/menu.js?v=20261105q"></script>
 </body>
 </html>

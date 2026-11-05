@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="26377adec188">
+<meta name="concret-version" content="93165a79e17c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -18,6 +18,7 @@
 <meta property="og:title" content="Éducation · Concret">
 <meta property="og:description" content="Plus de diplômés que la moyenne de l'UE, mais des scores PISA plus bas et plus de jeunes au chômage. L'éducation, mandat par mandat.">
 <meta property="og:url" content="https://concret2027.fr/education/">
+<link rel="canonical" href="https://concret2027.fr/education/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://concret2027.fr/donnees/apercu/education.png">
 <meta property="og:image:width" content="1200">
@@ -30,7 +31,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <script src="/commun/d3-7.8.5.min.js"></script>
 <script src="../commun/notes.js?v=20261029c"></script>
-<script src="/commun/bref.js?v=20261031i"></script>
+<script src="/commun/bref.js?v=20261105q"></script>
 <script src="/commun/toile.js?v=20261105n"></script>
 <script src="/commun/pays.js?v=20261031i"></script>
 <script src="/commun/quiz.js?v=20261031j"></script>
@@ -291,6 +292,14 @@ button.kpi:focus-visible { outline: 2px solid var(--fr); outline-offset: 1px; }
 .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 .seg button:focus-visible { outline: 2px solid var(--fr); outline-offset: -3px; }
 .charts3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
+/* Les thèmes : ils rangent les courbes (couleur, titre et raccourci posés par commun/menu.js, comme sur les autres pages de mission). */
+.t-pills { display: flex; flex-wrap: wrap !important; white-space: normal; gap: 8px; margin: -4px 0 0; }
+.t-pills a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--fg); font-size: 14px; font-weight: 600; text-decoration: none; }
+.t-pills a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
+.t-regle { margin: -6px 0 0; }
+div.theme { display: grid; gap: 16px; min-width: 0; scroll-margin-top: 140px; }
+div.theme > h2 { font-size: 21px; font-weight: 700; line-height: 1.2; margin: 0; }
+div.theme > * { min-width: 0; }
 .charts4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 16px; }
 .chart { position: relative; min-width: 0; }
 .chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
@@ -409,53 +418,70 @@ footer p { margin: 0; } footer a { color: inherit; }
     </details>
   </section>
 
-  <h2 class="grp-t" id="courbes">Les courbes</h2>
+  <h2 class="grp-t" id="courbes">Les thèmes</h2>
+  <nav class="t-pills" aria-label="Aller au thème"><a href="#t-jeunes">Études et emploi des jeunes</a><a href="#t-depense">Dépense d'éducation</a><a href="#t-pisa">PISA, élèves de 15 ans</a><a href="#t-origine">Écart selon l'origine sociale</a><a href="#t-univ">Universités</a></nav>
+  <p class="note t-regle">Sur cette page, les thèmes rangent les courbes ; le résultat de la page se calcule sur ses 6 critères, PISA comptant trois fois.</p>
 
-  <div class="charts4">
-    <section class="card" aria-labelledby="c1"><h2 id="c1" class="inv"><span class="eyebrow">Décrochage, % des 18-24 ans</span>Moins de décrocheurs que nos voisins</h2><div class="chart" id="ch-el"></div><p class="note">Les 18-24 ans sortis de l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et sans formation. Pas de chiffre comparable pour les États-Unis : c'est un indicateur européen.</p></section>
-    <section class="card" aria-labelledby="c2"><h2 id="c2" class="inv"><span class="eyebrow">Ni emploi ni études, % des 15-29 ans</span>Plus de jeunes ni en emploi ni en études que la moyenne de l'UE</h2><div class="chart" id="ch-ne"></div><p class="note">Tous les 15-29 ans qui ne travaillent pas et n'étudient pas, diplômés ou non. Pas de chiffre comparable pour les États-Unis : c'est un indicateur européen.</p></section>
-    <section class="card" aria-labelledby="c3"><h2 id="c3" class="inv"><span class="eyebrow">Diplômés du supérieur, % des 25-34 ans</span>Plus de diplômés : 11 points d'avance sur l'UE</h2><div class="chart" id="ch-te"></div><p class="note">Pas de chiffre comparable pour les États-Unis : c'est un indicateur européen.</p></section>
-    <section class="card" aria-labelledby="c4"><h2 id="c4" class="inv"><span class="eyebrow">Chômage des 15-24 ans, %</span>Deux à trois fois plus qu'en Allemagne</h2><div class="chart" id="ch-yu"></div><p class="note">Estimations de l'OIT (Banque mondiale), mêmes définitions pour les quatre.</p></section>
+  <div class="theme" id="t-jeunes">
+    <h2>Études et emploi des jeunes</h2>
+    <div class="charts4">
+      <section class="card" aria-labelledby="c1"><h2 id="c1" class="inv"><span class="eyebrow">Décrochage, % des 18-24 ans</span>Moins de décrocheurs que nos voisins</h2><div class="chart" id="ch-el"></div><p class="note">Les 18-24 ans sortis de l'école sans diplôme du secondaire (ni bac, ni CAP, ni BEP) et sans formation. Pas de chiffre comparable pour les États-Unis : c'est un indicateur européen.</p></section>
+      <section class="card" aria-labelledby="c2"><h2 id="c2" class="inv"><span class="eyebrow">Ni emploi ni études, % des 15-29 ans</span>Plus de jeunes ni en emploi ni en études que la moyenne de l'UE</h2><div class="chart" id="ch-ne"></div><p class="note">Tous les 15-29 ans qui ne travaillent pas et n'étudient pas, diplômés ou non. Pas de chiffre comparable pour les États-Unis : c'est un indicateur européen.</p></section>
+      <section class="card" aria-labelledby="c3"><h2 id="c3" class="inv"><span class="eyebrow">Diplômés du supérieur, % des 25-34 ans</span>Plus de diplômés : 11 points d'avance sur l'UE</h2><div class="chart" id="ch-te"></div><p class="note">Pas de chiffre comparable pour les États-Unis : c'est un indicateur européen.</p></section>
+      <section class="card" aria-labelledby="c4"><h2 id="c4" class="inv"><span class="eyebrow">Chômage des 15-24 ans, %</span>Deux à trois fois plus qu'en Allemagne</h2><div class="chart" id="ch-yu"></div><p class="note">Estimations de l'OIT (Banque mondiale), mêmes définitions pour les quatre.</p></section>
+    </div>
   </div>
 
-  <section class="card" id="depense" aria-labelledby="dep-title">
-    <h2 id="dep-title" class="inv"><span class="eyebrow">Ce que ça coûte, % du PIB</span>Dépense d'éducation : 5,1 % du PIB en France, 4,7 % dans l'UE</h2>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--us)"></i>États-Unis</span><span><i class="bd"></i>Bandes : Premiers ministres successifs</span></div>
-    <div class="chart" id="ch-dep"></div>
-    <p class="note" data-t="depense_note">Dépense publique d'éducation, de la maternelle au supérieur (Eurostat). En 2024 : France 5,1 %, Union européenne 4,7 %, Allemagne 4,5 %. L'écart avec l'UE représente environ 12 Md€ par an. États-Unis : chiffres de l'Unesco (2015-2021), calculés un peu différemment ; sur cette base, la France est autour de 5,4 %. Ce critère n'entre pas dans le résultat : dépenser plus n'est ni bien ni mal en soi, c'est le résultat qui compte.</p>
-  </section>
-
-  <section class="card" id="pisa" aria-labelledby="pisa-title">
-    <h2 id="pisa-title" class="inv"><span class="eyebrow">PISA, élèves de 15 ans</span>Vingt-cinq ans de recul, et sous la moyenne de l'OCDE</h2>
-    <p class="insight" data-t="pisa_rang">En 2000, la France était <b>11<sup>e</sup></b> en maths. En 2025, elle est <b>30<sup>e</sup></b> sur 91 pays, avec 458 points, sous la moyenne de l'OCDE (463), au niveau de l'Allemagne (464) et des États-Unis (463).</p>
-    
-    <p class="note replie" id="pisa-ue-note"></p>
-    <button class="share" type="button" data-share="pisa" style="justify-self:start">Partager le graphique des maths</button>
-  </section>
-
-  <div class="charts3">
-    <section class="card" aria-labelledby="p1"><h2 id="p1" class="inv"><span class="eyebrow">Mathématiques, points</span>−53 points depuis 2003</h2><div class="chart" id="ch-pisa-m"></div><p class="note" data-t="pisa_maths_note"><b>Élèves en difficulté : 36 %</b> en 2025 (29 % en 2022), contre 35 % dans l'OCDE.</p></section>
-    <section class="card" aria-labelledby="p2"><h2 id="p2" class="inv"><span class="eyebrow">Compréhension de l'écrit, points</span>Le plus fort recul : −49 points depuis 2012</h2><div class="chart" id="ch-pisa-r"></div><p class="note" data-t="pisa_lecture_note"><b>Élèves en difficulté : 33 %</b> en 2025, contre 15 % en 2000 ; 30 % dans l'OCDE. États-Unis 2006 : pas de résultat en lecture, invalidé à cause d'une erreur d'impression des cahiers de test (<a href="https://nces.ed.gov/surveys/international/tables/B_1_06.asp">NCES</a>).</p></section>
-    <section class="card" aria-labelledby="p3"><h2 id="p3" class="inv"><span class="eyebrow">Sciences, points</span>Sciences : au niveau de la moyenne de l'OCDE</h2><div class="chart" id="ch-pisa-s"></div><p class="note" data-t="pisa_sciences_note">Près de <b>3 élèves sur 4</b> atteignent le niveau de base en 2025. Score au niveau de la moyenne de l'OCDE.</p></section>
+  <div class="theme" id="t-depense">
+    <h2>Dépense d'éducation</h2>
+    <section class="card" id="depense" aria-labelledby="dep-title">
+      <h2 id="dep-title" class="inv"><span class="eyebrow">Ce que ça coûte, % du PIB</span>Dépense d'éducation : 5,1 % du PIB en France, 4,7 % dans l'UE</h2>
+      <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne de l'UE</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i style="background:var(--us)"></i>États-Unis</span><span><i class="bd"></i>Bandes : Premiers ministres successifs</span></div>
+      <div class="chart" id="ch-dep"></div>
+      <p class="note" data-t="depense_note">Dépense publique d'éducation, de la maternelle au supérieur (Eurostat). En 2024 : France 5,1 %, Union européenne 4,7 %, Allemagne 4,5 %. L'écart avec l'UE représente environ 12 Md€ par an. États-Unis : chiffres de l'Unesco (2015-2021), calculés un peu différemment ; sur cette base, la France est autour de 5,4 %. Ce critère n'entre pas dans le résultat : dépenser plus n'est ni bien ni mal en soi, c'est le résultat qui compte.</p>
+    </section>
   </div>
 
-  <section class="card" id="origine" aria-labelledby="eq-title">
-    <h2 id="eq-title" class="inv"><span class="eyebrow">Poids de l'origine sociale, maths</span>Écart de score selon l'origine sociale : 95 points en France, 83 dans l'OCDE</h2>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne OCDE</span></div>
-    <div class="chart" id="ch-eq"></div>
-    <p class="note">Pas de courbe pour l'Allemagne, l'Espagne et les États-Unis : cet écart est calculé par l'Insee et la DEPP pour la France seulement ; la comparaison se fait avec la moyenne de l'OCDE.</p>
-    <p class="note" data-t="origine_note">Écart de score en maths entre le quart des élèves le plus favorisé et le quart le plus défavorisé. En 2025 : 95 points en France, 83 dans l'OCDE. L'écart se réduit depuis 2012, mais en 2025 surtout parce que les élèves favorisés reculent. Sources : Insee (France, portrait social 2025) pour 2003-2022, DEPP pour 2025.</p>
-  </section>
+  <div class="theme" id="t-pisa">
+    <h2>PISA, élèves de 15 ans</h2>
+    <section class="card" id="pisa" aria-labelledby="pisa-title">
+      <h2 id="pisa-title" class="inv"><span class="eyebrow">PISA, élèves de 15 ans</span>Vingt-cinq ans de recul, et sous la moyenne de l'OCDE</h2>
+      <p class="insight" data-t="pisa_rang">En 2000, la France était <b>11<sup>e</sup></b> en maths. En 2025, elle est <b>30<sup>e</sup></b> sur 91 pays, avec 458 points, sous la moyenne de l'OCDE (463), au niveau de l'Allemagne (464) et des États-Unis (463).</p>
+      
+      <p class="note replie" id="pisa-ue-note"></p>
+      <button class="share" type="button" data-share="pisa" style="justify-self:start">Partager le graphique des maths</button>
+    </section>
+    <div class="charts3">
+      <section class="card" aria-labelledby="p1"><h2 id="p1" class="inv"><span class="eyebrow">Mathématiques, points</span>−53 points depuis 2003</h2><div class="chart" id="ch-pisa-m"></div><p class="note" data-t="pisa_maths_note"><b>Élèves en difficulté : 36 %</b> en 2025 (29 % en 2022), contre 35 % dans l'OCDE.</p></section>
+      <section class="card" aria-labelledby="p2"><h2 id="p2" class="inv"><span class="eyebrow">Compréhension de l'écrit, points</span>Le plus fort recul : −49 points depuis 2012</h2><div class="chart" id="ch-pisa-r"></div><p class="note" data-t="pisa_lecture_note"><b>Élèves en difficulté : 33 %</b> en 2025, contre 15 % en 2000 ; 30 % dans l'OCDE. États-Unis 2006 : pas de résultat en lecture, invalidé à cause d'une erreur d'impression des cahiers de test (<a href="https://nces.ed.gov/surveys/international/tables/B_1_06.asp">NCES</a>).</p></section>
+      <section class="card" aria-labelledby="p3"><h2 id="p3" class="inv"><span class="eyebrow">Sciences, points</span>Sciences : au niveau de la moyenne de l'OCDE</h2><div class="chart" id="ch-pisa-s"></div><p class="note" data-t="pisa_sciences_note">Près de <b>3 élèves sur 4</b> atteignent le niveau de base en 2025. Score au niveau de la moyenne de l'OCDE.</p></section>
+    </div>
+  </div>
 
-  <section class="card" id="universites" aria-labelledby="u-title">
-    <h2 id="u-title" class="inv"><span class="eyebrow">Universités, classement de Shanghai</span>Quatre universités dans le top 100 mondial, autant que l'Allemagne</h2>
-    <p class="insight" data-t="shanghai_texte">La meilleure université française est passée de la <b>65<sup>e</sup></b> place en 2003 à la <b>13<sup>e</sup></b> en 2026 (Paris-Saclay). Mais ce bond date de 2020 et vient surtout du regroupement d'établissements en grandes universités (Paris-Saclay, PSL, Université Paris Cité), qui additionne leurs publications et leurs prix : le nombre d'universités françaises dans le top 100 n'a, lui, presque pas bougé.</p>
-    <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i class="bd"></i>Bandes : Premiers ministres successifs</span></div>
-    <div class="chart" id="ch-arwu"></div>
-    <span class="eyebrow" style="margin:6px 0 0">États-Unis, même classement</span>
-    <div class="chart" id="ch-arwu-us"></div>
-    <p class="note" data-t="shanghai_note">Nombre d'établissements classés dans les 100 premiers. Les États-Unis dominent mais reculent : 58 universités en 2003, 37 en 2026. 2018 : chiffre américain non vérifié, laissé vide. Le classement de Shanghai mesure la recherche (prix Nobel, médailles Fields, publications, citations), pas la qualité de l'enseignement ; il n'entre pas dans le résultat, car un regroupement d'universités suffit à faire monter un établissement sans que rien ne change pour les étudiants. Source : <a href="https://www.shanghairanking.com/rankings/arwu/2025">ShanghaiRanking</a>, éditions 2003 à 2026 ; 2018 : <a href="https://www.letudiant.fr/etudes/fac/classement-de-shanghai-2018-quelles-sont-les-19-universites-francaises-du-top-500.html">L'Étudiant</a>.</p>
-  </section>
+  <div class="theme" id="t-origine">
+    <h2>Écart selon l'origine sociale</h2>
+    <section class="card" id="origine" aria-labelledby="eq-title">
+      <h2 id="eq-title" class="inv"><span class="eyebrow">Poids de l'origine sociale, maths</span>Écart de score selon l'origine sociale : 95 points en France, 83 dans l'OCDE</h2>
+      <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i class="dash"></i>Moyenne OCDE</span></div>
+      <div class="chart" id="ch-eq"></div>
+      <p class="note">Pas de courbe pour l'Allemagne, l'Espagne et les États-Unis : cet écart est calculé par l'Insee et la DEPP pour la France seulement ; la comparaison se fait avec la moyenne de l'OCDE.</p>
+      <p class="note" data-t="origine_note">Écart de score en maths entre le quart des élèves le plus favorisé et le quart le plus défavorisé. En 2025 : 95 points en France, 83 dans l'OCDE. L'écart se réduit depuis 2012, mais en 2025 surtout parce que les élèves favorisés reculent. Sources : Insee (France, portrait social 2025) pour 2003-2022, DEPP pour 2025.</p>
+    </section>
+  </div>
+
+  <div class="theme" id="t-univ">
+    <h2>Universités</h2>
+    <section class="card" id="universites" aria-labelledby="u-title">
+      <h2 id="u-title" class="inv"><span class="eyebrow">Universités, classement de Shanghai</span>Quatre universités dans le top 100 mondial, autant que l'Allemagne</h2>
+      <p class="insight" data-t="shanghai_texte">La meilleure université française est passée de la <b>65<sup>e</sup></b> place en 2003 à la <b>13<sup>e</sup></b> en 2026 (Paris-Saclay). Mais ce bond date de 2020 et vient surtout du regroupement d'établissements en grandes universités (Paris-Saclay, PSL, Université Paris Cité), qui additionne leurs publications et leurs prix : le nombre d'universités françaises dans le top 100 n'a, lui, presque pas bougé.</p>
+      <div class="key"><span><i style="background:var(--fr)"></i>France</span><span><i style="background:var(--de)"></i>Allemagne</span><span><i style="background:var(--es)"></i>Espagne</span><span><i class="bd"></i>Bandes : Premiers ministres successifs</span></div>
+      <div class="chart" id="ch-arwu"></div>
+      <span class="eyebrow" style="margin:6px 0 0">États-Unis, même classement</span>
+      <div class="chart" id="ch-arwu-us"></div>
+      <p class="note" data-t="shanghai_note">Nombre d'établissements classés dans les 100 premiers. Les États-Unis dominent mais reculent : 58 universités en 2003, 37 en 2026. 2018 : chiffre américain non vérifié, laissé vide. Le classement de Shanghai mesure la recherche (prix Nobel, médailles Fields, publications, citations), pas la qualité de l'enseignement ; il n'entre pas dans le résultat, car un regroupement d'universités suffit à faire monter un établissement sans que rien ne change pour les étudiants. Source : <a href="https://www.shanghairanking.com/rankings/arwu/2025">ShanghaiRanking</a>, éditions 2003 à 2026 ; 2018 : <a href="https://www.letudiant.fr/etudes/fac/classement-de-shanghai-2018-quelles-sont-les-19-universites-francaises-du-top-500.html">L'Étudiant</a>.</p>
+    </section>
+  </div>
+
 
   <h2 class="grp-t" id="actualite">Chiffres et actualité</h2>
 
@@ -761,7 +787,7 @@ function main(FEED) {
   // Les gouvernements sont repliés : leur classement est dessiné à l'ouverture, à la largeur réelle.
   document.getElementById('gov-pli').addEventListener('toggle', function () { if (this.open) rankOne('gov'); });
   function rankOne(mode) {
-    var list = (mode === 'gov' ? GOVS : PRES).map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }).sort(function (a, b) { return b.n - a.n; });
+    var list = (mode === 'gov' ? GOVS : PRES).map(function (g) { return { g: g, n: noteOf(g) }; }).filter(function (r) { return r.n != null; }); // dans l'ordre des mandats, comme les cartes du dessus (pas un classement)
     var box = document.getElementById('rank-' + mode); box.textContent = '';
     var W = Math.max(300, box.clientWidth), small = W < 520, rh = 26, lw = small ? 92 : 150, top = 22, H = top + list.length * rh + 26;
     var x = d3.scaleLinear().domain([0, 20]).range([lw, W - 34]);
@@ -780,7 +806,7 @@ function main(FEED) {
       var inside = x(r.n) - x(0) > 30, few = countOf(r.g) < MIN_N;
       svg.append('text').style('pointer-events', 'none').attr('x', inside ? x(r.n) - 6 : x(r.n) + 6).attr('y', y + 16.5).attr('text-anchor', inside ? 'end' : 'start').text(nfmt(r.n) + (few ? ' · seulement ' + countOf(r.g) + ' comparaisons' : '')).attr('text-anchor', few ? 'start' : (inside ? 'end' : 'start')).attr('x', few ? x(r.n) + 6 : (inside ? x(r.n) - 6 : x(r.n) + 6)).style('fill', few ? 'var(--muted)' : (inside ? 'var(--panel)' : 'var(--fg)')).style('font-weight', 700).style('font-size', '12px');
     });
-    var best = list[0], above = list.filter(function (r) { return r.n >= 10; }).length;
+    var best = list.reduce(function (a, b) { return b.n > a.n ? b : a; }), above = list.filter(function (r) { return r.n >= 10; }).length;
     document.getElementById('rank-' + mode + '-note').textContent = (above ? above + ' sur ' + list.length + (above > 1 ? ' atteignent' : ' atteint') + ' le niveau de la moyenne de l\'UE ; les autres sont en dessous. ' : 'Tous sont en dessous de la moyenne de l\'UE. ') + (function () { var ex = list.filter(function (r) { return nfmt(r.n) === nfmt(best.n); }).map(function (r) { return r.g.n; }); return (ex.length > 1 ? 'Les plus hauts, à égalité : ' + ex.slice(0, -1).join(', ') + ' et ' + ex[ex.length - 1] : 'Le plus haut : ' + best.g.n) + ' (' + nfmt(best.n) + '/20).'; })() +
       (mode === 'pres' ? ' Emmanuel Macron, en exercice, est compté sur 2017-2025.' : ' En gris : résultat calculé sur moins de ' + MIN_N + ' comparaisons (mandat court, ou années non comptées), donc peu fiable. Touchez une barre pour voir le détail.');
   }
@@ -1165,7 +1191,7 @@ function main(FEED) {
     } else if (kind === 'rank') {
       f = frame('L\'éducation, mandat par mandat · ' + day2); var x = f.x;
       x.fillStyle = '#1c1d22'; x.font = '400 58px Newsreader, Georgia, serif'; wrapText(x, 'Quel président a fait progresser l\'école plus vite que nos voisins ?', 80, 270, f.W - 160, 70);
-      var rows = PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; }).sort(function (a, b) { return b.v - a.v; }), y0 = 520, x0 = 470, bw = f.W - x0 - 110;
+      var rows = PRES.map(function (g) { return { n: g.n, v: noteOf(g) }; }), y0 = 520, x0 = 470, bw = f.W - x0 - 110;
       rows.forEach(function (r, i) {
         var y = y0 + i * 120; x.fillStyle = '#1c1d22'; x.font = '600 40px "Inter Tight", system-ui, sans-serif'; x.textAlign = 'right'; x.fillText(r.n, x0 - 24, y + 50); x.textAlign = 'left';
         x.fillStyle = '#ececE6'; x.fillRect(x0, y + 10, bw, 56); x.fillStyle = r.v >= 10 ? '#1f8a4c' : r.v >= 6 ? '#b0812a' : '#c43d3d'; x.fillRect(x0, y + 10, bw * r.v / 20, 56);
@@ -1242,6 +1268,6 @@ function main(FEED) {
 <script src="/commun/partage.js?v=20261105n"></script>
 <script src="/commun/recherche.js?v=20261031a"></script>
 <script src="/commun/lois.js?v=20261031i"></script>
-<script src="/commun/menu.js?v=20261105p"></script>
+<script src="/commun/menu.js?v=20261105q"></script>
 </body>
 </html>

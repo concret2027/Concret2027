@@ -39,6 +39,15 @@
     'texte de la commission mixte paritaire': 'texte de compromis entre députés et sénateurs'
   };
   var CHOIX = { pour: 'Pour', contre: 'Contre', abstention: 'Abstention' };
+  // Texte d'un bouton : pour une motion, ce que veut dire voter pour ou contre (le vote gardé reste « pour », « contre », « abstention »).
+  var LIB = {
+    rejet: { pour: ['Pour la motion', 'rejeter le texte'], contre: ['Contre la motion', 'examiner le texte'] },
+    censure: { pour: ['Pour la censure', 'renverser le Gouvernement'], contre: ['Contre la censure'] }
+  };
+  var bouton = function (q, c) {
+    var l = (LIB[q.k] || {})[c];
+    return '<button type="button" data-c="' + c + '" aria-pressed="false">' + (l ? esc(l[0]) + (l[1] ? ' <small>(' + esc(l[1]) + ')</small>' : '') : CHOIX[c]) + '</button>';
+  };
 
   var css = '.vz{display:grid;gap:12px}' +
     '.vz-titre{font-family:var(--serif);font-weight:500;font-size:21px;line-height:1.25;margin:0;text-wrap:balance}' +
@@ -53,7 +62,7 @@
     '.vz-q{margin:4px 0 0;font-size:17px;font-weight:700}' +
     '.vz-aide{margin:-4px 0 0;font-size:13.5px;color:var(--muted)}' +
     '.vz-choix{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:8px}' +
-    '.vz-choix button{font:inherit;font-weight:700;font-size:15.5px;min-height:52px;border-radius:12px;border:1.5px solid var(--fg);background:var(--panel);color:var(--fg);cursor:pointer}' +
+    '.vz-choix button{font:inherit;font-weight:700;font-size:15.5px;line-height:1.2;min-height:52px;padding:6px 4px;border-radius:12px;border:1.5px solid var(--fg);background:var(--panel);color:var(--fg);cursor:pointer}.vz-choix button small{display:block;margin-top:2px;font-size:12.5px;font-weight:500}' +
     '.vz-choix button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}' +
     '.vz-choix button:disabled{cursor:default}.vz-choix.fait button:not([aria-pressed="true"]){opacity:.75}' +
     '.vz-change{margin:0;font-size:12.5px;color:var(--muted)}' +
@@ -310,7 +319,7 @@
     el.innerHTML = '<div class="vz">' + (o.entete || '') +
       tete(q) + '<h2 class="vz-titre">' + esc(q.titre) + '</h2>' + expl(q) +
       '<p class="vz-q">' + esc(q.q) + '</p>' + (q.aide ? '<p class="vz-aide">' + esc(q.aide) + '</p>' : '') +
-      '<div class="vz-choix" style="--n:' + q.choix.length + '">' + q.choix.map(function (c) { return '<button type="button" data-c="' + c + '" aria-pressed="false">' + CHOIX[c] + '</button>'; }).join('') + '</div>' +
+      '<div class="vz-choix" style="--n:' + q.choix.length + '">' + q.choix.map(function (c) { return bouton(q, c); }).join('') + '</div>' +
       '<button type="button" class="vz-passe">Je ne sais pas : passer</button><div class="vz-rev" hidden></div>' + off + '</div>';
     var rev = el.querySelector('.vz-rev'), bs = el.querySelectorAll('.vz-choix button');
     // Les boutons restent actifs : toucher une autre réponse change le vote.
@@ -357,7 +366,7 @@
     var deja = lireAv()[q.cle];
     el.innerHTML = '<div class="vz">' + (o.entete || '') + tete(q) +
       '<h2 class="vz-titre">' + esc(q.titre) + '</h2>' + expl(q) + '<p class="vz-q">' + esc(q.q) + '</p>' +
-      '<div class="vz-choix" style="--n:3">' + q.choix.map(function (c) { return '<button type="button" data-c="' + c + '" aria-pressed="false">' + CHOIX[c] + '</button>'; }).join('') + '</div>' +
+      '<div class="vz-choix" style="--n:3">' + q.choix.map(function (c) { return bouton(q, c); }).join('') + '</div>' +
       '<div class="vz-rev" hidden></div>' +
       '<details class="vz-off"><summary>Sources</summary><p><a href="https://www.assemblee-nationale.fr/dyn/17/dossiers/' + esc(q.dos) + '">Le dossier du texte</a> · ordre du jour de l\'Assemblée nationale</p></details></div>';
     var rev = el.querySelector('.vz-rev'), bs = el.querySelectorAll('.vz-choix button');
