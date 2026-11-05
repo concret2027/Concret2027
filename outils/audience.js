@@ -52,7 +52,9 @@ var ecrire = function (n, v) { fs.writeFileSync(path.join(out, n + '.json'), JSO
   var noms = [['au moins 10 s', 'duree'], ['au moins 30 s', 'duree'], ['au moins 1 min', 'duree'], ['au moins 3 min', 'duree'], ['au moins 10 min', 'duree'], ['au moins 2 pages', 'pages'], ['au moins 3 pages', 'pages'], ['au moins 5 pages', 'pages'], ['au moins 10 pages', 'pages']];
   ecrire('d_visites', noms.map(function (x, i) { return { critere: x[0], genre: x[1], n: vs[i] || 0, visites: ent }; }));
   var auj = jour(0);
-  ecrire('d_resume', [{ releve: auj, appareils_total: vs[9] || 0, visites_suivies: ent }]);
+  // L'heure du relevé (heure de Paris), affichée en tête du tableau : « Relevé du 5 novembre 2026 à 9 h 17 ».
+  var hp = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: 'numeric', minute: '2-digit' }).formatToParts(new Date()), hh = hp.filter(function (x) { return x.type === 'hour'; })[0].value, mm = hp.filter(function (x) { return x.type === 'minute'; })[0].value;
+  ecrire('d_resume', [{ releve: auj, heure: (+hh) + ' h ' + mm, appareils_total: vs[9] || 0, visites_suivies: ent }]);
   // Historique : une ligne par jour, totaux cumulés (reprise de la veille).
   var hist = []; try { if (prev) hist = JSON.parse(fs.readFileSync(prev, 'utf8')); } catch (e) {}
   hist = hist.filter(function (r) { return r.jour !== auj; });
