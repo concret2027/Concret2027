@@ -783,6 +783,7 @@ def reformes_jeu(cartes, assiettes, unites):
             assert m.rstrip('.').split(' (')[0] in r['mesure'] and m.split(' (')[1].rstrip('.') in r['mesure'], r['id']
         if r['id'] in REF_RETIRE: assert REF_RETIRE[r['id']] in x['mesure'], r['id']; x['mesure'] = x['mesure'].replace(REF_RETIRE[r['id']], '')
         assert r['dirigeant'] not in x['mesure'] and r['dirigeant'].split()[-1] not in x['mesure'], r['id']
+        x.pop('source')   # le titre du document peut nommer la personne : la page n'affiche que le lien « Source »
         if r['id'] in REF_PERIMETRE: x['perimetre'] = REF_PERIMETRE[r['id']]
         if str((r.get('regime') or {}).get('type', '')).startswith('autocratie'): x['reg'] = r['regime']['type']   # écrit tel quel (V-Dem)
         x['en'] = _en_pays(r['pays'])
