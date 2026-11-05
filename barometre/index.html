@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="f591a9691276">
+<meta name="concret-version" content="f3c3f6cb2076">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1536,8 +1536,9 @@ window.addEventListener('baro:data', function () {
       if (cmp) x.font = '400 50px Newsreader, Georgia, serif';
       var y = wrap(x, cmp ? (bp ? BX.full(bp.textContent) + ' · ' : '') + 'premier tour, comparé à 2012, 2017 et 2022' : card.querySelector('h2').textContent, 70, cmp ? 172 : 190, W - 140, cmp ? 58 : 72);
       var note = cmp ? null : card.querySelector('.bx-note');
-      // Comparaison : le tableau-légende en grand (à la même distance du vote, résultat), puis les exceptions.
-      if (cmp) {
+      // Comparaison : l'image montre le graphique seul (choix de l'éditeur, 5 novembre 2026) : chaque courbe y porte son année
+      // et ses chiffres ; le tableau reste sur la page.
+      if (cmp && false) {
         var trs = card.querySelectorAll('#cmp-table tbody tr'), hd = card.querySelectorAll('#cmp-table thead th');
         x.globalAlpha = .6; x.font = '500 24px "Inter Tight", system-ui, sans-serif'; x.fillStyle = fg; x.fillText(hd[1] ? hd[1].textContent : '', 430, y + 26); x.fillText('Résultat', 760, y + 26); x.globalAlpha = 1; y += 40;
         Array.prototype.forEach.call(trs, function (tr) {
@@ -1559,7 +1560,7 @@ window.addEventListener('baro:data', function () {
       if (ML.length) { x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var mc = document.createElement('canvas').getContext('2d'); mc.font = x.font; ML.forEach(function (t) { var line = '', n = 1; t.split(' ').forEach(function (w) { var u = line ? line + ' ' + w : w; if (mc.measureText(u).width > W - 140 && line) { n++; line = w; } else line = u; }); mh += n * 29 + 8; }); mh += 16; }
       if (LEG.length) { x.font = '500 26px "Inter Tight", system-ui, sans-serif'; var lx = 70, ly = y + 14; LEG.forEach(function (g) { var w = 30 + x.measureText(g.t).width + 30; if (lx + w > W - 70) { lx = 70; ly += 40; } x.fillStyle = g.c; x.beginPath(); x.arc(lx + 10, ly - 9, 10, 0, 7); x.fill(); x.fillStyle = fg; x.fillText(g.t, lx + 28, ly); lx += w; }); y = ly + 22; }
       // Comparaison : la rangée des candidats sous la courbe (celui de l'image surligné), pour montrer qu'on peut en choisir un autre sur le site.
-      var chH = cmp ? 44 : 0;
+      var chH = cmp ? 130 : 0;
       var top = y + 20, avail = H - 170 - top - mh - chH, cols = imgs.length > 1 ? 2 : 1, rows = Math.ceil(imgs.length / cols), gw = (W - 140 - (cols - 1) * 30) / cols, gh = (avail - (rows - 1) * 24) / rows;
       if (cmp && imgs.length === 1) { gh = Math.round(gw * imgs[0].h / imgs[0].w) + (labels[0] ? 40 : 0); avail = gh; H = Math.max(1350, Math.round(top + gh + chH + mh + 200)); }
       imgs.forEach(function (im, i) {
@@ -1567,7 +1568,13 @@ window.addEventListener('baro:data', function () {
         if (lh) { x.fillStyle = fg; x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.fillText(labels[i], 70 + (i % cols) * (gw + 30), cy + 28); }
         x.drawImage(im.img, cx, cy + lh, dw, dh);
       });
-      if (cmp) { x.fillStyle = fg; x.globalAlpha = .8; x.font = '600 24px "Inter Tight", system-ui, sans-serif'; x.fillText('Les autres candidats : concret2027.fr/barometre', 70, top + avail + 32); x.globalAlpha = 1;
+      if (cmp) {
+        // Les candidats que l'on peut choisir sur le site, celui de l'image en foncé.
+        var cy0 = top + avail + 30, cx0 = 70; x.globalAlpha = .75; x.fillStyle = fg; x.font = '500 24px "Inter Tight", system-ui, sans-serif'; x.fillText('Les autres candidats, sur concret2027.fr/barometre :', 70, cy0); x.globalAlpha = 1; cy0 += 18;
+        x.font = '600 24px "Inter Tight", system-ui, sans-serif';
+        Array.prototype.forEach.call(card.querySelectorAll('#cmp-cands button'), function (bt) { var t = bt.textContent.trim(), w = x.measureText(t).width + 36, on = bt.getAttribute('aria-pressed') === 'true'; if (cx0 + w > W - 70) { cx0 = 70; cy0 += 52; }
+          x.beginPath(); if (x.roundRect) x.roundRect(cx0, cy0, w, 42, 21); else x.rect(cx0, cy0, w, 42); x.fillStyle = on ? fg : 'rgba(127,127,127,.12)'; x.fill(); x.fillStyle = on ? bg : fg; x.fillText(t, cx0 + 18, cy0 + 29); cx0 += w + 10; });
+        H = Math.max(H, Math.round(cy0 + 42 + 30 + mh + 190));
         if (H < c.height) { var c2 = document.createElement('canvas'); c2.width = W; c2.height = H; var x2 = c2.getContext('2d'); x2.drawImage(c, 0, 0); c = c2; x = x2; } }
       if (ML.length) { x.fillStyle = fg; x.globalAlpha = .75; x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var my = H - 150 - mh + 16; ML.forEach(function (t) { my = wrap(x, t, 70, my + 22, W - 140, 29) - 22 + 8; }); x.globalAlpha = 1; }
       x.fillStyle = '#2f5bd3'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText('concret2027.fr', 70, H - 90);
