@@ -182,13 +182,13 @@
     '@media (max-width:520px){nav.site>a[href="/politique/"]:not([aria-current]),nav.site>a[aria-current]:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]){display:none}nav.site>a{padding-block:8px}nav.site{gap:9px!important}nav.site a.logo{margin-right:0!important}.mn-btn{padding-left:8px}nav.site .rech-b{display:none}}' +
     '@media (max-width:380px){nav.site{gap:8px!important}nav.site a.logo{font-size:17px!important}.mn-btn span{padding:4px 9px}}' +
     // Logo et bouton Menu (choix de l'éditeur, 5 novembre 2026, avis de deux UX et du marketing) : sur ordinateur, le mot « Concret » ;
-    // sur téléphone, le « C » blanc sur carré bleu de l'icône de l'application, « Concret » en 12 px dessous, et un bouton Menu plus étroit
+    // sur téléphone, le « C » blanc sur carré bleu de l'icône de l'application, seul (lu « Concret, accueil »), et un bouton Menu plus étroit
     // et plus haut (icône et mot « Menu » dessous) : la place gagnée garde Quiz et Votez, et laisse « Budget » quand il tient.
     'nav.site a.logo .lc{display:none}.mn-btn svg{width:18px;height:14px;flex:none}' +
     'nav.site>a[href="/budget/"]{display:block!important;color:' + V.fg + ';font-weight:600}' +
     '@media (max-width:520px){nav.site a.logo{display:inline-flex;flex-direction:column;align-items:center;gap:2px;font-size:inherit!important;line-height:1;padding-block:2px}' +
-    'nav.site a.logo .lc{display:grid;place-items:center;width:28px;height:28px;border-radius:7px;background:#2f5bd3;color:#fff;font-family:var(--serif,Georgia,serif);font-size:23px;font-weight:500;line-height:1}' +
-    'nav.site a.logo .ln{font-family:var(--serif,Georgia,serif);font-size:12px;font-weight:600;letter-spacing:0}' +
+    'nav.site a.logo .lc{display:grid;place-items:center;width:36px;height:36px;border-radius:9px;background:#2f5bd3;color:#fff;font-family:var(--serif,Georgia,serif);font-size:28px;font-weight:500;line-height:1}' +
+    'nav.site a.logo .ln{display:none}' +
     '.mn-btn{padding-left:6px!important}.mn-btn span{flex-direction:column;justify-content:center;gap:3px!important;min-width:56px;min-height:52px;box-sizing:border-box;padding:6px 8px!important;border-radius:12px!important;font-size:12px;line-height:1}' +
     'nav.site{gap:6px!important}}' +
     // Les trois rendez-vous quotidiens ressortent dans le bandeau.
