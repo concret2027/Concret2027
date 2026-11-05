@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="93165a79e17c">
+<meta name="concret-version" content="8e805f909678">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -402,6 +402,12 @@ footer p { margin: 0; } footer a { color: inherit; }
 .qz-rang .qz-rang-e { display: block; font-size: 11.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
 .qz-rang .qz-place { display: block; font-family: var(--serif); font-size: 34px; line-height: 1.1; font-weight: 400; }
 .qz-suivi a { color: var(--fr); font-weight: 700; text-decoration: none; }
+/* Fin du quiz : la suite proposée, le jeu du budget (même tirage du défi du jour que l'accueil et le jeu). */
+.qz-jeu { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; width: 100%; box-sizing: border-box; margin-top: 6px; padding: 12px 14px; border: 1.5px solid var(--fr); border-radius: 14px; background: var(--panel); color: var(--fg); text-decoration: none; text-align: left; }
+.qz-jeu small { grid-column: 1; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fr); }
+.qz-jeu b { grid-column: 1; font-size: 17px; } .qz-jeu span { grid-column: 1; font-size: 13.5px; color: var(--muted); line-height: 1.35; }
+.qz-jeu i { grid-column: 2; grid-row: 1 / span 3; font-style: normal; font-size: 14px; font-weight: 700; color: #fff; background: var(--fr); border-radius: 999px; padding: 8px 14px; white-space: nowrap; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .qz-jeu i { color: #0b1530; } } :root[data-theme="dark"] .qz-jeu i { color: #0b1530; }
 .qz-btn { font: inherit; font-weight: 600; font-size: 14.5px; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--fr); color: #fff; cursor: pointer; }
 .qz-btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 .qz-perso { display: grid; gap: 8px; justify-items: center; width: 100%; max-width: 46ch; padding-top: 10px; border-top: 1px solid var(--line); font-size: 14.5px; }
@@ -451,6 +457,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     <div class="qz-perso" id="qz-perso" hidden></div>
     <button class="qz-btn" id="qz-partager" type="button">Partager mon score</button>
     <p class="qz-copie" id="qz-copie"></p>
+    <a class="qz-jeu" id="qz-jeu" href="/budget/"><small>Et maintenant</small><b>Faites le budget 2027</b><span id="qz-jeu-t">Choisissez les mesures, voyez le déficit et la dette jusqu'en 2031</span><i id="qz-jeu-s">Jouer</i></a>
   </section>
 
 
@@ -682,7 +689,20 @@ footer p { margin: 0; } footer a { color: inherit; }
     var classe = null; // le classement du jour, repris dans l'image partagée
     // Le score qui compte : le premier essai du jour, gardé sur l'appareil une fois compté ; sinon les réponses de maintenant.
     function scoreCompte() { var ok = rep.filter(Boolean).length, c = null; try { c = localStorage.getItem('quiz-score-compte-' + iso); } catch (e) {} return c != null && /^\d+$/.test(c) && +c <= total ? +c : ok; }
+    // Fin du quiz : la suite proposée est le jeu du budget ; pour qui y a déjà joué sur cet appareil, le défi du jour (même tirage que l'accueil).
+    function suiteJeu() {
+      var S = {}; try { S = JSON.parse(localStorage.getItem('concret-quinquennat') || '{}') || {}; } catch (e) {}
+      if (!(S.v && Object.keys(S.v).length)) return;
+      fetch('/donnees/budget_defis.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (B) {
+        var L = B.defis || []; if (!L.length) return;
+        var k = Math.round((new Date(iso + 'T12:00:00') - new Date(B.debut + 'T12:00:00')) / 864e5), x = L[((k % L.length) + L.length) % L.length];
+        document.getElementById('qz-jeu-t').textContent = 'Défi du jour : ' + x.t.replace(/(\d) (%|€)/g, '$1\u00a0$2');
+        document.getElementById('qz-jeu').href = '/budget/#defi';
+        document.getElementById('qz-jeu-s').textContent = S.defis && S.defis[iso] ? 'Réussi' : 'Relever le défi';
+      }).catch(function () {});
+    }
     function fin(nouveau) {
+      suiteJeu();
       var ok = rep.filter(Boolean).length, box = document.getElementById('qz-fin'), sc0 = scoreCompte();
       // En grand, le score compté (celui du classement et de la série) ; si les réponses ont changé depuis, elles sont dites dessous.
       document.getElementById('qz-score').innerHTML = sc0 + '<small> / ' + total + '</small>' + (sc0 !== ok ? '<span class="qz-maint">Vos réponses de maintenant (la grille) : ' + ok + ' sur ' + total + '. Seul le premier essai du jour compte.</span>' : '');
