@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="556e27f2a9a7">
+<meta name="concret-version" content="852be26972c2">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -14,9 +14,9 @@
 <meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)">
 <title>L'évolution démographique de la France · Concret</title>
-<meta name="description" content="Naissances et décès, âge de la population, personnes nées à l'étranger, titres de séjour et asile : la France à côté de l'Allemagne, de l'Espagne et de la moyenne de l'Union européenne. Chiffres d'Eurostat et de l'Insee, sans note.">
+<meta name="description" content="Naissances et décès, âge de la population, personnes nées à l'étranger, titres de séjour et asile : la France à côté de l'Allemagne, de l'Espagne et de la moyenne de l'Union européenne. Chiffres d'Eurostat et de l'Insee, sans calcul.">
 <meta property="og:title" content="L'évolution démographique de la France · Concret">
-<meta property="og:description" content="Naissances, âges, migrations : la France face à ses voisins, chiffres d'Eurostat et de l'Insee, sans note.">
+<meta property="og:description" content="Naissances, âges, migrations : la France face à ses voisins, chiffres d'Eurostat et de l'Insee, sans calcul.">
 <meta property="og:url" content="https://concret2027.fr/demographie/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://concret2027.fr/donnees/apercu/demographie.png">
@@ -28,11 +28,11 @@
 <script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="/commun/d3-7.8.5.min.js"></script>
 <style>html, body { margin: 0; }
 :root {
   --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
-  --fr: #2f5bd3; --bad: #c43d3d; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06); --axis: #c9c9c2;
+  --fr: #2f5bd3; --bad: #a83232; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06); --axis: #c9c9c2;
   --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .16); --s-nv: rgba(98, 100, 109, .12);
   --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
   --serif: "Newsreader", Georgia, "Times New Roman", serif;
@@ -138,7 +138,7 @@ details.def > summary::-webkit-details-marker { display: none; }
 details.def > summary::after { content: "\00a0▾"; } details.def[open] > summary::after { content: "\00a0▴"; }
 details.def > div { display: grid; gap: 8px; font-size: 13.5px; padding-top: 4px; }
 details.def p { margin: 0; }
-.retenir { margin: -4px 0 0; font-family: var(--serif); font-size: 19px; line-height: 1.35; max-width: 70ch; text-wrap: pretty; }
+.retenir { --nt-l: 5; margin: -4px 0 0; font-family: var(--serif); font-size: 19px; line-height: 1.35; max-width: 70ch; text-wrap: pretty; }
 @media (max-width: 520px) { .retenir { font-size: 17px; } }
 .retenir b { font-weight: 500; color: var(--fr); }
 .retenir a { color: inherit; }
@@ -147,6 +147,7 @@ details.plus > summary { cursor: pointer; list-style: none; padding: 12px 16px; 
 details.plus > summary::-webkit-details-marker { display: none; }
 details.plus > summary::after { content: "\00a0▾"; } details.plus[open] > summary::after { content: "\00a0▴"; }
 details.plus > .grille { padding: 0 12px 12px; }
+div.plus > .grille { margin-top: 12px; } /* courbes toujours visibles (règle du site) */
 details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
 .grp-t { font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.15; margin: 10px 0 -6px; }
 .acc { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
@@ -171,26 +172,31 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
 .renvoi a:hover { border-color: var(--fr); }
 .chap { display: flex; align-items: center; gap: 10px; margin: 22px 0 -2px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .chap::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+/* La place des blocs remplis par les données est gardée pendant le chargement : la page ne saute pas quand ils arrivent. */
+#chiffres:empty { min-height: 300px; }
+@media (min-width: 700px) { #chiffres:empty { min-height: 150px; } }
+@media (min-width: 1100px) { #chiffres:empty { min-height: 115px; } }
 </style>
 </head>
 <body data-sources="Sources : Eurostat et Insee (démographie et migrations), Cour des comptes (détail sous chaque courbe).">
+<noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les résultats et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/" aria-current="page">Démographie</a></nav>
   <div class="brand"><b>Démographie</b><span id="maj"></span></div>
   <nav class="jump" aria-label="Aller à">
-    <a href="#actualite">Actualité</a><a href="#naissances">Naissances</a><a href="#ages">Âges</a><a href="#nes">Nés à l'étranger</a><a href="#titres">Titres de séjour</a><a href="#asile">Asile</a><a href="#lois">Les lois</a><a href="#regle">Sources</a>
+    <a href="#acc-actu">Actualité</a><a href="#acc-mois">Naissances du mois</a><a href="#naissances">Naissances</a><a href="#ages">Âges</a><a href="#nes">Nés à l'étranger</a><a href="#titres">Titres de séjour</a><a href="#asile">Asile</a><a href="#lois">Les lois</a><a href="#regle">Sources</a>
   </nav>
 
   <section class="card" id="reponse" data-partage="non" aria-labelledby="titre">
     <h1 id="titre">L'évolution démographique de la France</h1>
     <p class="lead">Combien de bébés naissent, combien de personnes meurent, quel âge a la population, combien de personnes arrivent et partent : la France à côté de l'Allemagne, de l'Espagne et de la moyenne de l'Union européenne.</p>
     <div class="chiffres" id="chiffres"></div>
-    <p class="sansnote"><b>Pas de note sur cette page</b> : les chiffres sont montrés sans dire s'ils vont dans le bon ou le mauvais sens. La page n'entre pas dans le classement des présidents.</p>
+    <p class="sansnote"><b>Pas de résultat sur 20 sur cette page</b> : les chiffres sont montrés sans dire s'ils vont dans le bon ou le mauvais sens. La page n'entre pas dans les résultats mandat par mandat.</p>
   </section>
 
   <section class="card" id="toile" hidden></section>
 
-  <h2 class="grp-t" id="actualite">L'actualité</h2>
+  <h2 class="grp-t" id="actualite">Chiffres et actualité</h2>
   <details class="acc" id="acc-actu">
     <summary><span class="acc-h">L'actualité de la démographie</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
     <div class="acc-body"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-list"></ul></div>
@@ -210,21 +216,21 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
     <h2>Naissances et décès</h2>
     <p class="retenir" id="naissances-t"></p>
     <section class="card"><h3>Naissances et décès en France <small>· nombre par an</small></h3><div class="key" id="k-nd"></div><div class="chart" id="ch-nd"></div><p class="note" id="n-nd"></p></section>
-    <details class="plus" id="plus-naissances"><summary>Voir 3 autres courbes : enfants par femme, taux de natalité, solde naturel comparés</summary><div class="grille">
+    <div class="plus" id="plus-naissances"><div class="grille">
       <section class="card"><h3>Enfants par femme</h3><div class="key"></div><div class="chart" id="ch-fec"></div><p class="note" id="n-fec"></p></section>
       <section class="card"><h3>Taux de natalité <small>· naissances pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-nat"></div><p class="note" id="n-nat"></p></section>
       <section class="card"><h3>Solde naturel (naissances moins décès) <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-solnat"></div><p class="note" id="n-solnat"></p></section>
-    </div></details>
+    </div></div>
   </div>
 
   <div class="theme" id="ages">
     <h2>L'âge de la population</h2>
     <p class="retenir" id="ages-t"></p>
     <section class="card"><h3 id="pyr-t">Pyramide des âges</h3><div class="key" id="k-pyr"></div><div class="chart" id="ch-pyr"></div><p class="note" id="n-pyr"></p></section>
-    <details class="plus" id="plus-ages"><summary>Voir 2 autres courbes : part des 65 ans et plus, âge médian</summary><div class="grille">
+    <div class="plus" id="plus-ages"><div class="grille">
       <section class="card"><h3>Part des 65 ans et plus <small>· % de la population</small></h3><div class="key"></div><div class="chart" id="ch-p65"></div><p class="note" id="n-p65"></p></section>
       <section class="card"><h3>Âge médian <small>· ans</small></h3><div class="key"></div><div class="chart" id="ch-med"></div><p class="note" id="n-med"></p></section>
-    </div></details>
+    </div></div>
   </div>
 
   <p class="chap">Les migrations</p>
@@ -240,21 +246,21 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
       <ul class="orig-l replie" id="orig-l" data-n="2"></ul>
       <p class="note replie" id="orig-n"></p>
     </section>
-    <details class="plus" id="plus-nes"><summary>Voir 4 autres courbes : étrangers, naturalisations, nées hors de l'UE, solde migratoire</summary><div class="grille">
+    <div class="plus" id="plus-nes"><div class="grille">
       <section class="card"><h3>Étrangers (sans la nationalité du pays) <small>· % de la population</small></h3><div class="key"></div><div class="chart" id="ch-etr"></div><p class="note" id="n-etr"></p></section>
       <section class="card"><h3>Acquisitions de la nationalité <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-natu"></div><p class="note" id="n-natu"></p></section>
       <section class="card"><h3>Personnes nées hors de l'UE <small>· % de la population</small></h3><div class="key"></div><div class="chart" id="ch-neshue"></div><p class="note" id="n-neshue"></p></section>
       <section class="card"><h3>Solde migratoire (arrivées moins départs) <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-solmig"></div><p class="note" id="n-solmig"></p></section>
-    </div></details>
+    </div></div>
   </div>
 
   <div class="theme" id="titres">
     <h2>Les premiers titres de séjour</h2>
     <p class="retenir" id="titres-t"></p>
     <section class="card"><h3>Premiers titres de séjour en France, par motif <small>· nombre par an</small></h3><div class="key" id="k-mot"></div><div class="chart" id="ch-mot"></div><p class="note" id="n-mot"></p></section>
-    <details class="plus" id="plus-titres"><summary>Voir la comparaison avec les voisins : titres pour 1 000 habitants</summary><div class="grille">
+    <div class="plus" id="plus-titres"><div class="grille">
       <section class="card"><h3>Premiers titres de séjour <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-titres"></div><p class="note" id="n-titres"></p></section>
-    </div></details>
+    </div></div>
   </div>
 
   <div class="theme" id="asile">
@@ -267,11 +273,11 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
       <blockquote id="irr-q"></blockquote>
       <p class="note" id="irr-src"></p>
     </section>
-    <details class="plus" id="plus-asile"><summary>Voir 3 autres courbes : situation irrégulière, obligations de quitter le territoire, départs</summary><div class="grille">
+    <div class="plus" id="plus-asile"><div class="grille">
       <section class="card"><h3>Étrangers trouvés en situation irrégulière <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-irreg"></div><p class="note" id="n-irreg"></p></section>
       <section class="card"><h3>Obligations de quitter le territoire et départs, en France <small>· nombre par an</small></h3><div class="key" id="k-oq"></div><div class="chart" id="ch-oq"></div><p class="note" id="n-oq"></p></section>
       <section class="card"><h3>Obligations de quitter le territoire <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-oqtf"></div><p class="note" id="n-oqtf"></p></section>
-    </div></details>
+    </div></div>
   </div>
 
   <details class="acc" id="lois">
@@ -280,7 +286,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
   </details>
 
   <div class="renvoi">
-    <a href="/securite/"><b>Sécurité et justice →</b><span>La part des obligations de quitter le territoire suivies d'un départ, notée face à la moyenne de l'UE</span></a>
+    <a href="/securite/"><b>Sécurité et justice →</b><span>La part des obligations de quitter le territoire suivies d'un départ, mesurée face à la moyenne de l'UE</span></a>
     <a href="/vie/"><b>Vie des Français →</b><span>Pouvoir d'achat, pauvreté, logement, travail, moral</span></a>
   </div>
 
@@ -288,7 +294,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
     <summary>Définitions et sources</summary>
     <div>
       <ul>
-        <li><b>Pourquoi pas de note</b> : sur les autres pages, chaque indicateur a un sens (une dette qui baisse, une espérance de vie qui monte). Ici, les chiffres décrivent la population et les migrations : la page les montre, la France à côté de ses voisins, sans les classer.</li>
+        <li><b>Pourquoi pas de résultat sur 20</b> : sur les autres pages, chaque indicateur a un sens (une dette qui baisse, une espérance de vie qui monte). Ici, les chiffres décrivent la population et les migrations : la page les montre, la France à côté de ses voisins, sans les classer.</li>
         <li><b>Taux de natalité</b> : nombre de naissances de l'année pour 1 000 habitants (Eurostat). Il dépend du nombre d'enfants par femme et du nombre de femmes en âge d'avoir des enfants.</li>
         <li><b>Enfants par femme</b> (indicateur conjoncturel de fécondité) : le nombre d'enfants qu'aurait une femme tout au long de sa vie si les taux de fécondité de l'année restaient les mêmes.</li>
         <li><b>Solde naturel</b> : naissances moins décès. <b>Solde migratoire</b> : arrivées moins départs, toutes nationalités (Français compris) ; Eurostat le calcule par différence (évolution de la population moins solde naturel), ce qui comprend aussi les ajustements statistiques.</li>
@@ -315,7 +321,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
   var signe = function (v, d) { return (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d); };
   var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
   var dLong = function (s) { var d = new Date(s + 'T12:00:00'); return (d.getDate() === 1 ? '1er' : d.getDate()) + ' ' + MOIS[d.getMonth()] + ' ' + d.getFullYear(); };
-  var NOMS = { fr: ['France', 'var(--fr)'], ue: ['Union européenne', 'var(--ea)'], de: ['Allemagne', 'var(--de)'], es: ['Espagne', 'var(--es)'], us: ['États-Unis', 'var(--us)'] };
+  var NOMS = { fr: ['France', 'var(--fr)'], ue: ['Moyenne de l\'UE', 'var(--ea)'], de: ['Allemagne', 'var(--de)'], es: ['Espagne', 'var(--es)'], us: ['États-Unis', 'var(--us)'] };
   var QUI = { fr: 'la France', ue: 'la moyenne de l\'UE', de: 'l\'Allemagne', es: 'l\'Espagne', 'les deux': 'la France et la moyenne de l\'UE' };
   var maj1 = function (t) { return t.charAt(0).toUpperCase() + t.slice(1); };
   var dernier = function (c, w) { for (var i = c.y.length - 1; i >= 0; i--) if (c[w] && c[w][i] != null) return { y: c.y[i], v: c[w][i], i: i }; return null; };
@@ -323,6 +329,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
   // ===== Courbes (même dessin que les autres pages) =====
   function hover(box, svg, H, m, pts) {
     if (!pts.length) return;
+    if (window.ConcretMenu && ConcretMenu.tableau) ConcretMenu.tableau(box, pts, svg.attr('aria-label'));
     svg.classed('hov', true);
     var g = svg.append('g').attr('pointer-events', 'none').style('display', 'none');
     var vl = g.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', 'var(--fg)').attr('stroke-opacity', .35);
@@ -354,10 +361,14 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
       svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', t === 0 ? 'var(--axis)' : 'var(--grid)');
       svg.append('text').attr('x', m.l - 6).attr('y', y(t) + 4).attr('text-anchor', 'end').text(yfmt ? yfmt(t) : t.toLocaleString('fr-FR'));
     });
-    (small ? xt.filter(function (_, i) { return i % 2 === 0; }) : xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(xfmt ? xfmt(t) : t); });
+    (small ? xt.filter(function (_, i, A) { var L = A.length - 1; return i === L || (i % 2 === 0 && !(L % 2 === 1 && i === L - 1)); }) : xt).forEach(function (t) { svg.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(xfmt ? xfmt(t) : t); });
   }
-  var ticks = function (a, b) { var s = Math.max(1, Math.ceil((b - a) / 6)), t = []; for (var y = a; y <= b; y += s) t.push(y); return t; };
+  // La dernière année est toujours écrite sous l'axe (comme sur les pages de mission).
+  var ticks = function (a, b) { var s = Math.max(1, Math.ceil((b - a) / 6)), t = []; for (var y = a; y <= b; y += s) t.push(y); if (t[t.length - 1] !== b) { if (b - t[t.length - 1] < s / 2) t.pop(); t.push(b); } return t; };
   function lineChart(id, series, o) {
+    // Courbe loin de l'écran : dessinée quand on s'en approche, sa place gardée (commun/menu.js).
+    var bx0 = document.getElementById(id);
+    if (!o.maintenant && bx0 && window.ConcretMenu && ConcretMenu.plusTard && ConcretMenu.plusTard(bx0, function () { lineChart(id, series, Object.assign({}, o, { maintenant: 1 })); }, o.h || (bx0.clientWidth && bx0.clientWidth < 520 ? 220 : 260))) return;
     // Pays ajoutés par le visiteur (commun/pays.js) : en pointillé, repères seulement.
     if (window.ConcretPays) { var s0 = series; ConcretPays.retenir(id, function () { lineChart(id, s0, o); }); series = ConcretPays.ajouter(id, series); }
     var box = $(id); box.textContent = '';
@@ -379,7 +390,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
     ends.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
     for (var j = ends.length - 1; j >= 0; j--) { var lim = j === ends.length - 1 ? H - 6 : ends[j + 1].y - 13; if (ends[j].y > lim) ends[j].y = lim; }
-    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c).style('font-weight', e.main ? 700 : 500); });
+    ends.forEach(function (e) { svg.append('text').attr('x', e.x + 6).attr('y', e.y + 4).text(e.t).style('fill', e.c === 'var(--ea)' ? 'var(--ea-t, var(--ea))' : e.c === 'var(--es)' ? 'var(--es-t, var(--es))' : e.c).style('font-weight', e.main ? 700 : 500); });
     var xs = []; series.forEach(function (s) { s.data.forEach(function (d) { if (d.v != null && xs.indexOf(d.x) < 0) xs.push(d.x); }); }); xs.sort(function (a, b) { return a - b; });
     hover(box, svg, H, m, xs.map(function (xv) {
       return { px: x(xv), t: o.xlab ? o.xlab(xv) : String(xv), rows: series.map(function (s) { var d = s.data.filter(function (q) { return q.x === xv; })[0]; return d && d.v != null ? { c: s.c, n: s.n, py: y(d.v), s: (o.efmt ? o.efmt(d.v) : fmt(d.v, o.dec)) } : null; }).filter(Boolean) };
@@ -415,7 +426,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
   fetch('../data.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (D) {
     var P = (D.series || {}).demographie, DS = D.datasets || {};
     // Courbes repliées : dessinées à la première ouverture de leur bloc (à la bonne largeur).
-    var quand = function (id, f) { var d = $(id), fait = false; var go = function () { if (!fait && d.open) { fait = true; f(); } }; d.addEventListener('toggle', go); go(); };
+    var quand = function (id, f) { var d = $(id), fait = false; var go = function () { if (!fait && (d.open || d.tagName !== 'DETAILS')) { fait = true; f(); } }; d.addEventListener('toggle', go); go(); };
     var compare = function (a, b) { return Math.abs(a - b) <= 0.05 * Math.abs(b) ? 'proche de' : a < b ? 'moins que' : 'plus que'; };
     if (!P) { $('chiffres').innerHTML = '<p class="note">Données indisponibles pour le moment.</p>'; return; }
     $('maj').textContent = 'Chiffres lus le ' + dLong(P.maj);
@@ -446,7 +457,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
     (function () {
       var Y = P.PYR, box = $('ch-pyr'); box.textContent = '';
       $('pyr-t').innerHTML = 'Pyramide des âges au 1er janvier ' + Y.annee + ' <small>· % de la population</small>';
-      $('k-pyr').innerHTML = '<span><i class="sq" style="background:var(--fr);opacity:.75"></i>France</span><span><i class="sq" style="border:1.5px solid var(--ea);background:none"></i>Union européenne</span>';
+      $('k-pyr').innerHTML = '<span><i class="sq" style="background:var(--fr);opacity:.75"></i>France</span><span><i class="sq" style="border:1.5px solid var(--ea);background:none"></i>Moyenne de l\'UE</span>';
       var W = Math.max(300, box.clientWidth), n = Y.ages.length, bh = W < 520 ? 13 : 14, H = n * bh + 34, mid = W / 2, lab = 44;
       var mx = d3.max([].concat(Y.fr.H, Y.fr.F, Y.ue.H, Y.ue.F)), sc = d3.scaleLinear().domain([0, mx * 1.05]).range([0, mid - lab / 2 - 8]);
       var svg = d3.select(box).append('svg').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Pyramide des âges, France et Union européenne');
@@ -474,10 +485,10 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
     $('nes-t').innerHTML = '<b>' + fmt(e1.v, 1) + ' % des habitants de la France sont nés à l\'étranger</b> (' + e1.y + '), ' + compare(e1.v, e2.v) + ' la moyenne de l\'UE (' + fmt(e2.v, 1) + ' %), moins qu\'en Allemagne (' + fmt(eDe.v, 1) + ' %) et en Espagne (' + fmt(eEs.v, 1) + ' %) ; dont ' + fmt(eh.v, 1) + ' % nés hors de l\'UE. ' +
       (sn.v <= 0 ? 'En ' + sm.y + ', la population augmente par le solde migratoire (' + signe(sm.v, 0) + '), le solde naturel étant de ' + signe(sn.v, 0) + '.' : 'En ' + sm.y + ', solde migratoire : ' + signe(sm.v, 0) + '.');
     serie('ch-nes', ne, 'n-nes');
-    // Toile : la France et ses voisins au dernier chiffre connu, sans note (commun/toile.js).
+    // Toile : la France et ses voisins au dernier chiffre connu, sans calcul (commun/toile.js).
     if (window.ConcretToile) {
       var TO = ConcretToile.depuisC(P.C, ['fec', 'nat', 'solnat', 'solmig', 'p65', 'med', 'nes', 'etr'], { page: 'demographie', cible: function (k) { return 'ch-' + k; } });
-      ConcretPays.init({ page: 'demographie', carte: {} }); ConcretPays.toile('toile', ConcretToile.dessiner, { titre: 'La France et ses voisins', axes: TO.axes, omis: TO.omis, notes: TO.notes, series: ConcretToile.SERIES });
+      ConcretPays.init({ page: 'demographie', carte: { 'ch-neshue': 'demographie.nes_hue' }, sans: { 'ch-mois': "Pas d'autres pays : chiffres du mois publiés par l'Insee pour la France ; les autres pays se comparent sur les courbes annuelles, rapportées à la population.", 'ch-nd': "Pas d'autres pays : des nombres de naissances et de décès ne se comparent pas d'un pays à l'autre ; la comparaison, rapportée à la population, est sur les courbes de la fécondité et du solde naturel.", 'ch-pyr': "Pas d'autres pays : la pyramide montre la France ; la part des 65 ans et plus et l'âge médian comparent les pays.", 'ch-mot': "Pas d'autres pays : nombres de titres délivrés en France, par motif ; les autres pays se comparent, rapportés à la population, sur la courbe des premiers titres de séjour.", 'ch-oq': "Pas d'autres pays : nombres de décisions et de départs en France ; les autres pays se comparent, rapportés à la population, sur les courbes des obligations de quitter le territoire et des départs." } }); ConcretPays.toile('toile', ConcretToile.dessiner, { titre: 'La France et ses voisins', axes: TO.axes, omis: TO.omis, notes: TO.notes, series: ConcretToile.SERIES });
     }
 
     quand('plus-nes', function () { serie('ch-etr', P.C.etr, 'n-etr'); serie('ch-natu', P.M.natu, 'n-natu'); serie('ch-neshue', P.C.nes_hue, 'n-neshue'); serie('ch-solmig', P.C.solmig, 'n-solmig'); });
@@ -534,7 +545,7 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
     var y0 = NN.oqtf.y[0], y1 = NN.oqtf.y[NN.oqtf.y.length - 1];
     lineChart('ch-oq', [{ c: 'var(--fr)', n: 'Obligations', main: 1, data: NN.oqtf.y.map(function (y, i) { return { x: y, v: NN.oqtf.fr[i] }; }) }, { c: 'var(--ea)', n: 'Départs', data: NN.departs.y.map(function (y, i) { return { x: y, v: NN.departs.fr[i] }; }) }],
       { x: [y0 - .5, y1 + .5], xt: ticks(y0, y1), min: 0, label: 'Obligations de quitter le territoire et départs en France', yfmt: kf, efmt: function (v) { return nf(v); }, l: 44, r: 58 });
-    $('n-oq').innerHTML = 'En ' + oq.y + ' : ' + nf(oq.v) + ' obligations et ' + nf(dp.v) + ' départs. Un départ peut suivre une obligation prise une année précédente ; la page Sécurité et justice note la part des obligations suivies d\'un départ. Source : <a href="' + esc(NN.oqtf.url) + '">' + esc(NN.oqtf.source) + '</a> ; <a href="' + esc(NN.departs.url) + '">' + esc(NN.departs.source) + '</a>.';
+    $('n-oq').innerHTML = 'En ' + oq.y + ' : ' + nf(oq.v) + ' obligations et ' + nf(dp.v) + ' départs. Un départ peut suivre une obligation prise une année précédente ; la page Sécurité et justice mesure la part des obligations suivies d\'un départ. Source : <a href="' + esc(NN.oqtf.url) + '">' + esc(NN.oqtf.source) + '</a> ; <a href="' + esc(NN.departs.url) + '">' + esc(NN.departs.source) + '</a>.';
     });
 
     // Les naissances du mois (Insee, France métropolitaine) : le dernier mois, le même mois un an plus tôt, le cumul depuis janvier.
@@ -580,11 +591,11 @@ details.plus > .grille > .card { border: 0; padding: 6px 4px 10px; }
   }).catch(function (e) { $('chiffres').innerHTML = '<p class="note">Les données n\'ont pas pu être chargées. Rechargez la page.</p>'; if (window.console) console.error(e); });
 })();
 </script>
-<script src="/commun/toile.js?v=20261028a"></script>
-<script src="/commun/pays.js?v=20261028b"></script>
-<script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/partage.js?v=20261028g"></script>
-<script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261028r"></script>
+<script src="/commun/toile.js?v=20261031i"></script>
+<script src="/commun/pays.js?v=20261031i"></script>
+<script src="/commun/lois.js?v=20261031i"></script>
+<script src="/commun/partage.js?v=20261031d"></script>
+<script src="/commun/recherche.js?v=20261031a"></script>
+<script src="/commun/menu.js?v=20261031k"></script>
 </body>
 </html>

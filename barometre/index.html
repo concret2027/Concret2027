@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="556e27f2a9a7">
+<meta name="concret-version" content="852be26972c2">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -35,7 +35,7 @@
 /* Layout: one centered column of cards; tokens mirror the dashboard kit so the page reads the same, in both themes. */
 :root {
   --color-bg: #f6f6f3; --color-panel: #ffffff; --color-fg: #1c1d22; --color-fg-muted: #62646d;
-  --color-border-line: #e2e2dc; --color-ok: #1f8a4c; --color-bad: #c43d3d; --fr: #2f5bd3;
+  --color-border-line: #e2e2dc; --color-ok: #1f8a4c; --color-bad: #c43d3d; --fr: #2f5bd3; --cmp-2022: #b86a12; --cmp-2017: #5d6270; --cmp-2012: #2e8b7a;
   --cds-chart-grid: #ececE6; --cds-chart-axis: #c9c9c2; --cds-chart-reference: #9a9ca3; --cds-chart-muted: #c9cad0;
   --cds-surface-popover: #ffffff; --cds-border: #dcdcd5; --cds-shadow-popover: 0 4px 16px rgba(20, 22, 30, .12); --cds-text-secondary: #62646d;
   --cds-radius: 10px; --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 14px; --cds-pad-lg: 20px;
@@ -48,16 +48,17 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --color-bg: #15161a; --color-panel: #1d1f24; --color-fg: #ececea; --color-fg-muted: #a4a6ad; --color-border-line: #2e3037;
   --color-ok: #4cc27f; --color-bad: #ff7070; --cds-chart-grid: #2a2c32; --cds-chart-axis: #44464e; --cds-chart-reference: #7d7f87; --cds-chart-muted: #4a4c55;
-  --cds-surface-popover: #24262c; --cds-border: #3a3c44; --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, .5); --cds-text-secondary: #a4a6ad; --bx-accent: #8fa8ff; --fr: #7a9cff; color-scheme: dark; } }
+  --cds-surface-popover: #24262c; --cds-border: #3a3c44; --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, .5); --cds-text-secondary: #a4a6ad; --bx-accent: #8fa8ff; --fr: #7a9cff; --cmp-2022: #e7a24a; --cmp-2017: #a6aab3; --cmp-2012: #5fc7b4; color-scheme: dark; } }
 :root[data-theme="dark"] {
   --color-bg: #15161a; --color-panel: #1d1f24; --color-fg: #ececea; --color-fg-muted: #a4a6ad; --color-border-line: #2e3037;
   --color-ok: #4cc27f; --color-bad: #ff7070; --cds-chart-grid: #2a2c32; --cds-chart-axis: #44464e; --cds-chart-reference: #7d7f87; --cds-chart-muted: #4a4c55;
-  --cds-surface-popover: #24262c; --cds-border: #3a3c44; --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, .5); --cds-text-secondary: #a4a6ad; --bx-accent: #8fa8ff; --fr: #7a9cff; color-scheme: dark; }
+  --cds-surface-popover: #24262c; --cds-border: #3a3c44; --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, .5); --cds-text-secondary: #a4a6ad; --bx-accent: #8fa8ff; --fr: #7a9cff; --cmp-2022: #e7a24a; --cmp-2017: #a6aab3; --cmp-2012: #5fc7b4; color-scheme: dark; }
 body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); line-height: 1.5; }
 #dash-root { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 48px; }
 .dash-skeleton { color: transparent !important; background: var(--color-border-line); border-radius: 6px; min-height: 1em; }
 .bx-stale { font-size: var(--cds-font-size-caption); color: var(--color-bad); border: 1px solid var(--color-bad); border-radius: 6px; padding: 4px 8px; justify-self: start; }
 .bx-updated { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+@media (max-width: 699px) { .bx-updated { min-height: 3em; } } /* deux lignes une fois les données arrivées : la place est gardée */
 .bx-foot { max-width: 1200px; margin: 0 auto; padding-top: var(--cds-gap-lg); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border-top: 1px solid var(--color-border-line); }
 
 .bx { display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); max-width: 1200px; margin-inline: auto; }
@@ -65,7 +66,8 @@ body { background: var(--color-bg); color: var(--color-fg); font-family: var(--f
 .site::-webkit-scrollbar { display: none; }
 @media (max-width: 520px) { .site { gap: 14px; } .site .lg { display: none; } .site a.logo { font-size: 18px; margin-right: 0; } }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 21; background: var(--color-bg); }
-.bx [id] { scroll-margin-top: calc(var(--navh, 44px) + 96px); }
+/* Les deux bandeaux collés (pages, raccourcis) sont déjà comptés par html { scroll-padding-top } (commun/menu.js) : juste un peu d'air en plus. */
+.bx [id] { scroll-margin-top: 12px; }
 .jump { display: grid !important; gap: 6px; } .jump-l1, .jump-l2 { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; } .jump-l1::-webkit-scrollbar, .jump-l2::-webkit-scrollbar { display: none; }
 .jump a.on { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
 .jump-l2 a { font-weight: 500; padding: 4px 11px; }
@@ -120,11 +122,31 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-tile .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
 .bx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-md); }
 .bx-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
-.bx-card.wide { grid-column: 1 / -1; }
+.bx-card.wide, .bx-grid > #agenda { grid-column: 1 / -1; } /* l'agenda sur toute la largeur : à côté, il n'y a rien */
 .mn-autres { max-width: 1200px; margin-inline: auto !important; padding-inline: 16px; box-sizing: border-box; }
 .bx-group { grid-column: 1 / -1; margin: var(--cds-gap-md) 0 0; padding-top: var(--cds-gap-md); border-top: 1px solid var(--color-border-line); display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
 .bx-group h2 { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); }
 .bx-grouplinks { display: flex; flex-wrap: wrap; gap: 6px; }
+.bx-cmp-c { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; }
+.bx-cmp-c button { flex: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--color-fg); padding: 3px 10px; min-height: 30px; border-radius: 8px; border: 1px solid var(--color-border-line); background: var(--color-bg); cursor: pointer; }
+.bx-cmp-c button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-panel); border-color: var(--color-fg); }
+.bx-cmp-qui { margin-top: -2px; } #chart-cmp { min-height: 330px; } #cmp-exc { font-size: 12px; line-height: 1.4; }
+.bx-cmp-t table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.bx-cmp-t { max-width: 420px; }
+.bx-cmp-t th, .bx-cmp-t td { text-align: left; padding: 3px 6px 3px 0; vertical-align: baseline; font-size: 13.5px; line-height: 1.35; }
+.bx-cmp-t thead th { font-size: 11.5px; font-weight: 500; color: var(--color-fg-muted); padding-bottom: 2px; }
+.bx-cmp-t td:nth-child(2), .bx-cmp-t th:nth-child(2) { text-align: right; padding-right: 14px; }
+.bx-cmp-t tbody th { font-weight: 500; white-space: nowrap; }
+.bx-cmp-t tbody th i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.bx-cmp-t tbody th small { display: none; }
+.bx-cmp-t td b { font-size: 13.5px; font-weight: 700; } .bx-cmp-t td .nc { font-size: 12px; color: var(--color-fg-muted); } .bx-cmp-t sup { font-size: 9px; color: var(--color-fg-muted); margin-left: 1px; }
+.bx-cmp-phrase { margin: 6px 0 0; display: grid; gap: 2px; }
+/* Replié par défaut : la première ligne, puis « Voir le détail » ouvre les autres lignes et les notes. */
+.bx-cmp:not(.ouvert) .bx-cmp-phrase .l:not(:first-child), .bx-cmp:not(.ouvert) .bx-cmp-plus { display: none; }
+.bx-cmp-g { flex-basis: 100%; font-size: 12.5px; color: var(--color-fg-muted); margin-top: 4px; }
+.bx-cmp-voir { font: inherit; font-size: 14px; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 0; min-height: 36px; cursor: pointer; justify-self: start; text-align: left; }
+.bx-cmp-plus { display: grid; gap: var(--cds-gap-sm); } .bx-cmp-phrase .l { display: block; } .bx-cmp-phrase .l:first-child { font-weight: 600; }
+.bx-cmp-phrase .y17 { color: var(--cmp-2017); font-weight: 600; } .bx-cmp-phrase .y22 { color: var(--cmp-2022); font-weight: 600; } .bx-cmp-phrase .y27 { color: var(--fr); font-weight: 600; }
 .bx-grouplinks a { font-size: 13px; font-weight: 600; color: var(--color-fg); text-decoration: none; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); }
 .bx-groupnote { grid-column: 1 / -1; margin: -6px 0 0; max-width: 82ch; }
 .bx-sub { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-sm) 0 0; }
@@ -136,6 +158,14 @@ details.bx-fold > summary:focus-visible { outline: 2px solid #2f5bd3; outline-of
 .bx-fold-hint { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
 details.bx-fold[open] .bx-fold-hint { display: none; }
 .bx-today { border-left: 4px solid #2f5bd3; }
+.bx-today .bx-take { color: var(--color-fg); font-size: 15.5px; max-width: none; }
+/* Replié : trois lignes de la synthèse, le reste sous « Voir le détail ». */
+.bx-today.plie .bx-take { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.bx-today.plie .bx-todaylist { display: none; }
+/* La place de « L'essentiel du moment » est gardée pendant le chargement : la page ne saute pas quand il se remplit. */
+.bx-today.charge { min-height: 146px; }
+@media (min-width: 700px) { .bx-today.charge { min-height: 124px; } }
+.bx-today .today-voir { margin-top: -8px; font: inherit; font-size: 14.5px; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 0; min-height: 44px; cursor: pointer; justify-self: start; align-self: start; text-align: left; }
 .bx-visit { margin: 0; font-size: 14px; line-height: 1.45; padding: 8px 12px; border-left: 3px solid #2f5bd3; background: var(--color-panel); border-radius: 0 8px 8px 0; }
 .bx-visit b { font-weight: 600; }
 .bx-todaylist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14.5px; line-height: 1.45; }
@@ -172,6 +202,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 .bx-tip .r b { font-weight: 600; }
 .bx-tip .n { white-space: normal; max-width: 220px; margin-top: 3px; }
 .bx-tablebox { overflow-x: auto; }
+.bx-tablebox:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
 .bx-voir { font: inherit; font-size: 14px; font-weight: 600; color: var(--fr); background: none; border: 1px solid var(--color-border-line); border-radius: 999px; padding: 8px 16px; min-height: 44px; cursor: pointer; justify-self: start; margin-top: 8px; }
 .bx-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
 .bx-table th, .bx-table td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
@@ -202,6 +233,10 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 .bx-lastbar .tr { height: 12px; background: var(--cds-chart-grid); border-radius: 6px; overflow: hidden; }
 .bx-lastbar .fl { height: 100%; border-radius: 6px; }
 .bx-lastbar .pv { text-align: right; }
+.bx-lastbar.ec { grid-template-columns: 96px minmax(0, 1fr) 48px 60px; }
+.bx-lastbar .ev { text-align: right; color: var(--color-fg-muted); white-space: nowrap; }
+.bx-lastbar .ev.bx-up { color: var(--color-ok); } .bx-lastbar .ev.bx-down { color: var(--color-bad); }
+.bx-lastbar.tete { font-size: 11px; color: var(--color-fg-muted); margin-bottom: -2px; }
 .bx-lastsrc { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
 .bx-duel { display: grid; gap: 4px; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
 .bx-duel-t { display: flex; justify-content: space-between; gap: 8px; }
@@ -224,7 +259,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&display=swap">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="/commun/d3-7.8.5.min.js"></script>
 <script>
 (function () {
   var P = null, ds = {}, calcs = {}, cache = {}, fns = [];
@@ -236,7 +271,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
     cache[id] = c.fn.apply(null, args); return cache[id];
   }
   window.dash = {
-    colors: ['#3a5bd9', '#e07b26', '#d23f3f', '#c2447c', '#1f9e89', '#8a5cd1', '#5a9e2f', '#8c6d4f'],
+    colors: ['#3a5bd9', '#b25e12', '#d23f3f', '#c2447c', '#17806f', '#8a5cd1', '#3f7d1d', '#8c6d4f'],
     calc: function (id, o) { calcs[id] = o; },
     loader: function () {},
     data: function (id) { var d = get(id); return d ? { status: 'ok', data: d, columns: d[0] ? Object.keys(d[0]) : [], meta: [] } : { status: 'missing', data: [] }; },
@@ -259,6 +294,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 </script>
 </head>
 <body data-sources="Sources : Commission des sondages et instituts de sondage, Polymarket (détail dans « Méthode »).">
+<noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les résultats et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
 <div id="dash-root">
 
 <div class="bx">
@@ -270,21 +306,17 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
     <div class="bx-stale" id="bx-stale" hidden>Données en cours d’actualisation : la dernière mise à jour date de plus d’un jour.</div>
   </header>
   <nav class="jump" aria-label="Aller à">
-    <div class="jump-l1"><a href="#aujourdhui" data-g="moment">En ce moment</a><a href="#sondages" data-g="sondages">Sondages</a><a href="#parieurs" data-g="parieurs">Parieurs</a><a href="#detail" data-g="detail">Tous les sondages</a><a href="#methode" data-g="methode">Méthode</a></div>
+    <div class="jump-l1"><a href="#aujourdhui" data-g="moment">En ce moment</a><a href="#sondages" data-g="sondages">Sondages</a><a href="#parieurs" data-g="parieurs">Parieurs</a><a href="#wikipedia" data-g="wikipedia">Wikipédia</a><a href="#detail" data-g="detail">Tous les sondages</a><a href="#methode" data-g="methode">Méthode</a></div>
   </nav>
 
-  <section class="bx-hero" aria-label="La course en un coup d'œil">
-  <div class="bx-hero-h"><b>Premier tour</b><span>moyenne des sondages des 30 derniers jours</span></div>
-  <div class="bx-bars" id="tiles" data-source="moyenne_t1 polymarket"><div class="dash-skeleton" style="height:180px"></div></div>
-  <a class="bx-fav" id="fav" href="#parieurs" hidden></a>
-  <p class="bx-take replie" id="takeaway" style="--nt-l:3"><span class="dash-skeleton">—</span></p>
-  </section>
-
-
-  <details class="bx-card bx-today bx-fold" id="aujourdhui" open>
-    <summary><h2 id="today-h">L'essentiel du moment <span id="today-since" hidden></span></h2><span class="bx-fold-hint" id="today-hint"></span></summary>
+  <!-- En tête : l'essentiel du moment (la synthèse, puis ce qui a bougé), l'actualité, puis tout de suite les sondages.
+       Les candidats ne sont montrés qu'une fois, dans « Les sondages » (plus de carte « moyenne des 30 derniers jours » en double). -->
+  <section class="bx-card bx-today plie charge" id="aujourdhui" data-partage="non">
+    <h2 id="today-h">L'essentiel du moment <span id="today-since" hidden></span><span id="today-hint" hidden></span></h2>
+    <p class="bx-take" id="takeaway"><span class="dash-skeleton">—</span></p>
     <ul class="bx-todaylist" id="today-list"><li>Chargement…</li></ul>
-  </details>
+    <button type="button" class="today-voir" id="today-voir" aria-expanded="false" aria-controls="today-list" hidden>Voir le détail ▾</button>
+  </section>
 
   <div class="bx-grid">
 
@@ -300,31 +332,58 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 
     <section class="bx-card" id="dernier-sondage">
       <h2 id="last-title">Premier tour : le dernier sondage</h2>
-      <p class="bx-note mentions" id="last-note">Premier tour, moyenne des hypothèses testées.</p>
+      <p class="bx-note" id="last-note">Premier tour, moyenne des hypothèses testées.</p>
       <div class="bx-last" id="last" data-source="dernier_sondage"></div>
+      <p class="bx-note mentions" id="last-src" hidden></p>
     </section>
 
     <section class="bx-card" id="premier-tour">
       <h2>Premier tour : l'évolution dans les sondages</h2>
-      <p class="bx-note">Chaque point est un sondage (moyenne de ses hypothèses) ; la ligne suit la moyenne des sondages des trois semaines précédentes. Courbes des 8 premiers candidats des sondages. En juillet 2026, Marine Le Pen remplace Jordan Bardella comme candidate du RN.</p>
-      <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
-      <div class="bx-legend" id="legend-t1"></div>
+      <p class="bx-note">Chaque point est un sondage (moyenne de ses hypothèses) ; la ligne suit la moyenne des sondages des 30 jours précédents (les 15 plus récents au plus, quand ils sont plus nombreux), la même que dans « L'essentiel ». Courbes des 8 premiers candidats des sondages. En juillet 2026, Marine Le Pen remplace Jordan Bardella comme candidate du RN.</p>
+      <!-- Pas de légende : le nom de chaque candidat est écrit au bout de sa courbe. -->
+      <div class="bx-legend" id="legend-t1" hidden></div>
+      <div class="bx-cmp-c bx-per" role="group" aria-label="Période affichée"><button type="button" data-p="tout" aria-pressed="true">Tout</button><button type="button" data-p="1an" aria-pressed="false">1 an</button><button type="button" data-p="6mois" aria-pressed="false">6 mois</button><button type="button" data-p="3mois" aria-pressed="false">3 mois</button></div>
       <div class="bx-chart" id="chart-t1" data-source="sondages_t1 tendance_t1 evenements"></div>
+      <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
       <ol class="bx-events replie" id="events-list" data-source="evenements" data-n="0" data-voir="Voir les {n} événements numérotés sur la courbe"></ol>
+    </section>
+
+    <section class="bx-card wide bx-cmp" id="comparaison">
+      <h2>Premier tour : comparé à 2012, 2017 et 2022</h2>
+      <div class="bx-cmp-c" id="cmp-cands" role="group" aria-label="Choisir un candidat"></div>
+      <p class="bx-note bx-cmp-qui">Candidats testés en 2026-2027 et lors d'au moins une des trois campagnes précédentes.</p>
+      <div class="bx-chart" id="chart-cmp"></div>
+      <div class="bx-cmp-t" id="cmp-table"></div>
+      <p class="bx-note mentions" id="cmp-exc" hidden></p>
+      <p class="bx-note mentions" id="cmp-src"></p>
+      <div class="bx-cmp-plus">
+        <p class="bx-note">Chaque campagne à la même distance du vote : la ligne est la moyenne des sondages des 30 jours précédents (les 15 plus récents au plus), un point par sondage. Le trait vertical marque la date du dernier sondage de 2026-2027 ; les ronds, le niveau de chaque campagne à cette même distance du vote. À droite, le résultat officiel, relié par un pointillé aux derniers sondages.</p>
+        <p class="bx-note" id="cmp-note"></p>
+      </div>
+      <button type="button" class="bx-cmp-voir" aria-expanded="false">Voir le détail ▾</button>
+    </section>
+
+    <section class="bx-card wide" id="rythme">
+      <h2>Le rythme des sondages</h2>
+      <p class="bx-cmp-phrase" id="rythme-phrase"></p>
+      <div class="bx-chart" id="chart-rythme" style="min-height:240px"></div>
+      <p class="bx-note">Nombre de sondages de premier tour publiés depuis 18 mois avant le vote, à la même distance du vote pour chaque campagne. Un sondage publié chaque jour ne compte qu'une fois par période d'enquête ; les campagnes de 2012, 2017 et 2022 sont recensées d'après les listes de Wikipédia.</p>
     </section>
 
     <section class="bx-card" id="dernier-t2">
       <h2 id="last2-title">Second tour : le dernier sondage</h2>
-      <p class="bx-note mentions" id="last2-note">Score de chaque candidat dans chaque duel testé, en % des voix exprimées.</p>
+      <p class="bx-note" id="last2-note">Score de chaque candidat dans chaque duel testé, en % des voix exprimées.</p>
       <div class="bx-last" id="last2" data-source="dernier_sondage_t2"></div>
+      <p class="bx-note mentions" id="last2-src" hidden></p>
     </section>
 
     <section class="bx-card" id="second-tour">
       <h2>Second tour : l'évolution, Marine Le Pen selon son adversaire</h2>
-      <p class="bx-note">Score de Marine Le Pen, en % des voix exprimées, dans chaque duel testé en 2026. Sous 50 %, elle perd.</p>
-      <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
+      <p class="bx-note">Score de Marine Le Pen, en % des voix exprimées, dans chaque duel testé en 2026 (Concret suit les duels testés avec le candidat du RN). Sous 50 %, elle perd.</p>
       <div class="bx-legend" id="legend-t2"></div>
+      <div class="bx-cmp-c bx-per" role="group" aria-label="Période affichée"><button type="button" data-p="tout" aria-pressed="true">Tout</button><button type="button" data-p="1an" aria-pressed="false">1 an</button><button type="button" data-p="6mois" aria-pressed="false">6 mois</button><button type="button" data-p="3mois" aria-pressed="false">3 mois</button></div>
       <div class="bx-chart small" id="chart-t2" data-source="sondages_t2"></div>
+      <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
     </section>
 
     <div class="bx-group" id="parieurs"><h2>Les parieurs</h2><nav class="bx-grouplinks" aria-label="Parieurs"><a href="#parieurs-t1">Premier tour ↓</a><a href="#polymarket">Second tour ↓</a></nav></div>
@@ -348,13 +407,20 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <div class="bx-chart" id="chart-pmh" data-source="polymarket_hist"></div>
     </section>
 
+    <details class="bx-card bx-fold wide" id="wikipedia" open>
+      <summary><h2>Par ailleurs : qui fait parler de lui</h2><span class="bx-fold-hint">Les lectures de leur page Wikipédia, en moyenne sur 28 jours. Ce n'est ni un sondage ni un soutien.</span></summary>
+      <p class="bx-note">Ce n'est ni un sondage ni un soutien : le nombre de fois où la page Wikipédia en français de chaque candidat est lue, par semaine, en moyenne sur les 28 derniers jours, jusqu'à la veille de la mise à jour (relevé chaque matin), pour que le pic d'une seule semaine ne masque pas la tendance. Une hausse peut suivre une annonce, une polémique ou un passage à la télévision. Les candidats : les 8 premiers des sondages des 30 derniers jours, parmi ceux testés dans au moins la moitié de ces sondages.</p>
+      <div class="bx-chart" id="chart-wiki" data-source="wikipedia_vues"></div>
+      <p class="bx-note bx-lastsrc" id="wiki-src"></p>
+    </details>
+
     <div class="bx-group" id="detail"><h2>Le détail des sondages</h2><nav class="bx-grouplinks" aria-label="Détail"><a href="#duels">Duels ↓</a><a href="#tous-sondages">Premier tour ↓</a><a href="#notices">Notices ↓</a></nav></div>
 
     <section class="bx-card" id="duels">
       <h2>Derniers duels testés</h2>
       <p class="bx-note">Sondages de second tour des 45 derniers jours.</p>
       <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
-      <div class="bx-tablebox">
+      <div class="bx-tablebox" tabindex="0" role="region" aria-label="Derniers duels testés, tableau">
         <table class="bx-table" data-source="duels_recents" data-row-key="duel">
           <thead><tr><th class="l" data-field="duel">Duel · institut</th><th data-field="date">Date</th><th data-field="score_rn">Le Pen</th><th data-field="score_adversaire">Adversaire</th></tr></thead>
           <tbody id="tbody-duels"></tbody>
@@ -367,7 +433,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <h2>Tous les sondages de premier tour</h2>
       <p class="bx-note">Moyenne des hypothèses testées par chaque enquête, en %, pour les 15 premiers candidats des sondages. Case vide : le candidat ne figurait dans aucune hypothèse testée par ce sondage.</p>
       <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
-      <div class="bx-tablebox">
+      <div class="bx-tablebox" tabindex="0" role="region" aria-label="Tous les sondages de premier tour, tableau">
         <table class="bx-table" data-source="tableau_t1" data-row-key="sondage">
           <thead><tr id="thead-t1"><th class="l" data-field="sondage">Sondage</th></tr></thead>
           <tbody id="tbody-t1"></tbody>
@@ -385,7 +451,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 
   <details class="bx-method" id="methode">
     <summary>Méthode et sources : qui est affiché, comment lire sondages et paris</summary>
-    <p><b>Qui est affiché, et pourquoi.</b> Une seule règle, recalculée à chaque mise à jour : les candidats sont classés selon leur moyenne dans les sondages des 30 derniers jours (Le Pen et Bardella comptent pour un seul candidat RN). Les 4 premiers ont une vignette en haut de page, les 8 premiers une courbe, les 15 premiers une colonne dans le tableau. Côté parieurs, deux marchés de Polymarket : « qui sera au second tour » (premier tour) et « qui va gagner » (second tour) ; pour chacun, on montre les 10 favoris et l'évolution des 6 premiers. « Ce qui a bougé » réunit les 8 premiers des sondages et les 6 favoris des parieurs. Chaque candidat garde toujours la même couleur.</p>
+    <p><b>Qui est affiché, et pourquoi.</b> Une seule règle, recalculée à chaque mise à jour : les candidats sont classés selon leur moyenne dans les sondages des 30 derniers jours, limités aux 15 plus récents quand ils sont plus nombreux, comme en fin de campagne (Le Pen et Bardella comptent pour un seul candidat RN). La même moyenne sert partout : « L'essentiel », les courbes, l'écart du dernier sondage et la comparaison avec 2012, 2017 et 2022. Les 4 premiers ont une vignette en haut de page, les 8 premiers une courbe, les 15 premiers une colonne dans le tableau. Côté parieurs, deux marchés de Polymarket : « qui sera au second tour » (premier tour) et « qui va gagner » (second tour) ; pour chacun, on montre les 10 favoris et l'évolution des 6 premiers. « Ce qui a bougé » réunit les 8 premiers des sondages et les 6 favoris des parieurs. Chaque candidat garde toujours la même couleur.</p>
     <p><b>À lire avec prudence.</b> Un sondage est une photographie, pas une prévision : avec 1 000 à 2 000 personnes interrogées, un écart de 2 à 3 points entre deux candidats n'est pas significatif. Les instituts testent plusieurs hypothèses de candidatures dans une même enquête ; nous faisons la moyenne, pour chaque candidat, des hypothèses où il figure.</p>
     <p><b>Polymarket</b> est une plateforme de paris en cryptomonnaie, non autorisée en France. Ses probabilités, qui portent sur la victoire finale au second tour, reflètent les mises de parieurs, majoritairement étrangers, pas les intentions de vote. Chaque candidat y est un pari distinct, si bien que les probabilités ne totalisent pas exactement 100 %.</p>
     <p><b>Sondages et parieurs ne disent pas la même chose.</b> Un sondage mesure une intention de vote au premier tour ; une cote mesure ce que les parieurs pensent du résultat final, au second tour. Les marchés réagissent vite à l'actualité : la cote de Marine Le Pen a bondi de 8,5 % à 26 % la semaine de sa décision en appel de juillet 2026, avant que les sondages ne la testent. Cela ne suffit pas à prouver qu'ils prédisent les sondages suivants : il faudra des mois de données pour le mesurer.</p>
@@ -415,14 +481,20 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
   BX.short = function (full) { for (var k in BX.NAMES) if (BX.NAMES[k] === full) return k; var p = String(full).split(' '); return p[p.length - 1]; };
   BX.full = function (s) { return BX.NAMES[s] || s; };
   var FIXED = { 'Le Pen': 0, 'Bardella': 0, 'Philippe': 1, 'Mélenchon': 2, 'Glucksmann': 3, 'Retailleau': 4, 'Attal': 5, 'Lisnard': 6, 'Zemmour': 7 };
-  var FIXE2 = { 'Hollande': '#ca8a04', 'Ruffin': '#64748b', 'Villepin': '#0369a1', 'Knafo': '#be185d' };
-  var EXTRA = ['#0f766e', '#b45309', '#64748b', '#be185d', '#ca8a04', '#0369a1'], extraOf = {}, nExtra = 0;
+  // Chaque candidat souvent testé a sa couleur, loin des autres (pas deux orangés, pas deux verts-bleus) ; les autres prennent les couleurs de réserve.
+  var FIXE2 = { 'Hollande': '#27272a', 'Tondelier': '#0369a1', 'Dupont-Aignan': '#64748b', 'Roussel': '#881337', 'Ruffin': '#64748b', 'Villepin': '#1e3a8a', 'Knafo': '#be185d' };
+  var EXTRA = ['#be185d', '#946503', '#881337', '#0369a1', '#27272a'], extraOf = {}, nExtra = 0;
+  // En mode sombre, les mêmes couleurs, plus claires, pour rester lisibles sur le fond sombre (contraste d'au moins 4,5:1).
+  var SOMBRE = { '#3a5bd9': '#7d98ff', '#b25e12': '#f0a050', '#d23f3f': '#ff7a7a', '#c2447c': '#e27aaa', '#17806f': '#3ccfb5', '#8a5cd1': '#b394ec', '#3f7d1d': '#7fcf4f', '#8c6d4f': '#c4a484', '#946503': '#e0b13c', '#64748b': '#9aa7ba', '#0369a1': '#4fb3ea', '#be185d': '#f06aa8', '#0f766e': '#2dd4bf', '#b45309': '#f59e4b', '#881337': '#fb7185', '#27272a': '#d4d4d8', '#1e3a8a': '#93b4ff' };
+  var sombre = function () { var t = document.documentElement.getAttribute('data-theme'); return t ? t === 'dark' : !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); };
   BX.col = function (s) {
-    if (FIXED[s] != null) return window.dash ? dash.colors[FIXED[s]] : null;
-    if (FIXE2[s]) return FIXE2[s];
-    if (extraOf[s] == null) extraOf[s] = EXTRA[nExtra++ % EXTRA.length];
-    return extraOf[s];
+    var c;
+    if (FIXED[s] != null) c = window.dash ? dash.colors[FIXED[s]] : null;
+    else if (FIXE2[s]) c = FIXE2[s];
+    else { if (extraOf[s] == null) extraOf[s] = EXTRA[nExtra++ % EXTRA.length]; c = extraOf[s]; }
+    return c && sombre() && SOMBRE[c] ? SOMBRE[c] : c;
   };
+  BX.c = function (c) { return c && sombre() && SOMBRE[c] ? SOMBRE[c] : c; };
   BX.key = function (s) { return s === 'Le Pen' || s === 'Bardella' ? 'RN' : s; };
   // La règle : classement par moyenne des sondages des 30 derniers jours (Le Pen et Bardella comptent comme un seul candidat RN).
   BX.rank = function (moy) {
@@ -430,7 +502,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
     moy.slice().sort(function (a, b) { return b.moyenne - a.moyenne; }).forEach(function (r) {
       var k = BX.key(r.candidat); if (seen[k]) return; seen[k] = 1;
       var s = k === 'RN' ? 'Le Pen' : r.candidat;
-      out.push({ key: k, label: s, short: s, name: k === 'RN' ? 'Marine Le Pen (RN)' : BX.full(s), moyenne: r.moyenne, colKey: r.candidat });
+      out.push({ key: k, label: s, short: s, name: k === 'RN' ? 'Marine Le Pen' : BX.full(s), moyenne: r.moyenne, sondages: r.sondages, colKey: r.candidat });
     });
     return out;
   };
@@ -443,6 +515,22 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
   };
   // Graduations de l'axe des dates : un mois sur k, pour qu'aucun mois ne se répète ni ne se chevauche (au moins 90 px par repère).
   BX.mois = function (x, largeur) { var d = x.domain(), n = Math.max(1, d3.utcMonth.count(d[0], d[1])), k = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(largeur / 90)))); return d3.utcMonth.every(k); };
+  // Moyenne des sondages : ceux des 30 derniers jours, limités aux 15 plus récents (en fin de campagne, ils sont plusieurs par jour :
+  // la moyenne suit alors la dernière semaine au lieu de garder trois semaines de retard). l : liste triée ou non, avec une date.
+  // Période affichée sur les courbes d'évolution : tout, 1 an, 3 mois (avant le dernier sondage).
+  BX.PER = 'tout';
+  BX.JOURS = { '1an': 365, '6mois': 182, '3mois': 91 };
+  BX.borne = function (rows, per) { var last = rows.reduce(function (m, r) { return r.date > m ? r.date : m; }, ''); return new Date(Date.parse(last) - BX.JOURS[per] * 864e5).toISOString().slice(0, 10); };
+  BX.coupe = function (rows) { if (BX.PER === 'tout' || !rows.length) return ''; return BX.borne(rows, BX.PER); };
+  // Une période qui garderait tous les sondages (ils ont tous moins d'un an, par exemple) ne changerait rien : son bouton est caché.
+  BX.perVis = function (id, rows) {
+    if (!rows.length) return; var prem = rows.reduce(function (m, r) { return r.date < m ? r.date : m; }, '9999');
+    document.querySelectorAll('#' + id + ' .bx-per button').forEach(function (b) { b.hidden = b.dataset.p !== 'tout' && BX.borne(rows, b.dataset.p) <= prem; });
+    // Période choisie sur l'autre courbe mais sans effet ici : « Tout » est affiché comme choisi.
+    var vu = document.querySelector('#' + id + ' .bx-per button[data-p="' + BX.PER + '"]'), eff = vu && !vu.hidden ? BX.PER : 'tout';
+    document.querySelectorAll('#' + id + ' .bx-per button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.p === eff ? 'true' : 'false'); });
+  };
+  BX.FEN = 15; BX.fen = function (l, cle) { cle = cle || 'date'; return l.slice().sort(function (a, b) { return a[cle] < b[cle] ? -1 : a[cle] > b[cle] ? 1 : 0; }).slice(-BX.FEN); };
   BX.TOP_TILES = 4; BX.TOP_CURVES = 8; BX.TOP_TABLE = 15; BX.TOP_PM = 6; BX.TOP_MV = 8; BX.TOP_MV_PM = 6; BX.TOP_PM_BARS = 10;
 })();
 </script>
@@ -457,10 +545,10 @@ dash.calc('moyenne_t1', {
     var from = new Date(Date.parse(last) - 30 * 86400000).toISOString().slice(0, 10);
     var by = {};
     sondages_t1.filter(function (r) { return r.date >= from; }).forEach(function (r) {
-      (by[r.candidat] = by[r.candidat] || []).push(Number(r.score));
+      (by[r.candidat] = by[r.candidat] || []).push({ date: r.date, v: Number(r.score) });
     });
     return Object.keys(by).map(function (c) {
-      var v = by[c];
+      var v = BX.fen(by[c]).map(function (q) { return q.v; });
       return { candidat: c, moyenne: Math.round(v.reduce(function (a, b) { return a + b; }, 0) / v.length * 10) / 10, sondages: v.length, depuis: from };
     }).sort(function (a, b) { return b.moyenne - a.moyenne; });
   }
@@ -469,7 +557,7 @@ dash.calc('moyenne_t1', {
 dash.calc('tendance_t1', {
   inputs: ['sondages_t1'],
   title: 'Tendance premier tour',
-  description: 'Pour chaque candidat et chaque date de sondage, moyenne de ses scores sur les 21 jours précédents ; le RN est suivi sans mélanger Bardella et Le Pen.',
+  description: 'Pour chaque candidat et chaque date de sondage, moyenne de ses scores sur les 30 jours précédents (comme « L\'essentiel ») ; le RN est suivi sans mélanger Bardella et Le Pen.',
   fn: function (sondages_t1) {
     var rows = sondages_t1.map(function (r) { return { date: r.date, c: r.candidat === 'Le Pen' || r.candidat === 'Bardella' ? 'RN' : r.candidat, seg: r.candidat, v: Number(r.score) }; });
     var out = [];
@@ -480,8 +568,9 @@ dash.calc('tendance_t1', {
       var mine = rows.filter(function (r) { return r.c === parts[0] && r.seg === parts[1]; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
       var dates = mine.map(function (r) { return r.date; }).filter(function (d, i, a) { return a.indexOf(d) === i; });
       dates.forEach(function (d) {
-        var from = new Date(Date.parse(d) - 21 * 86400000).toISOString().slice(0, 10);
-        var w = mine.filter(function (r) { return r.date <= d && r.date > from; });
+        // Même période que « L'essentiel » : les sondages des 30 jours qui précèdent (bornes comprises).
+        var from = new Date(Date.parse(d) - 30 * 86400000).toISOString().slice(0, 10);
+        var w = BX.fen(mine.filter(function (r) { return r.date <= d && r.date >= from; }));
         out.push({ date: d, candidat: parts[0], segment: parts[1], valeur: Math.round(w.reduce(function (a, r) { return a + r.v; }, 0) / w.length * 10) / 10 });
       });
     });
@@ -641,7 +730,7 @@ dash.calc('duels_recents', {
   function drawTiles(rank, pmr, mvRows, pmr1) {
     // La course en un coup d'œil : pour chaque candidat, sa moyenne dans les sondages (barre), son évolution sur 14 jours,
     // et, dans une colonne à part, ses chances d'aller au second tour selon les parieurs (jamais sur la même barre).
-    var box = document.getElementById('tiles'); box.textContent = '';
+    var box = document.getElementById('tiles'); if (!box) return; box.textContent = '';
     var top = rank.slice(0, BX.TOP_CURVES), mx = Math.max.apply(null, top.map(function (c) { return c.moyenne; })) || 1;
     var MV = {}; (mvRows || []).forEach(function (r) { MV[r.court] = r; });
     var Q = {}; (pmr1 || []).forEach(function (r) { Q[r.key] = r; });
@@ -674,7 +763,7 @@ dash.calc('duels_recents', {
     var f = document.getElementById('fav');
     if (pmr[0]) {
       f.textContent = '';
-      var e = document.createElement('span'); e.className = 'e'; e.textContent = 'Favori des parieurs · chances de victoire au 2nd tour (Polymarket)'; f.appendChild(e);
+      var e = document.createElement('span'); e.className = 'e'; e.textContent = 'Favori des parieurs · chances de gagner l\'élection (Polymarket)'; f.appendChild(e);
       var sw = document.createElement('i'); sw.style.background = colorOf(pmr[0].name); f.appendChild(sw);
       var n = document.createElement('span'); n.className = 'n'; n.textContent = pmr[0].name; f.appendChild(n);
       var v = document.createElement('span'); v.className = 'v'; v.textContent = BX.pct(pmr[0].v); f.appendChild(v);
@@ -682,7 +771,7 @@ dash.calc('duels_recents', {
     }
   }
   var lg2 = document.getElementById('legend-t2');
-  [['contre Philippe', 1], ['contre Mélenchon', 2], ['contre Glucksmann', 3], ['contre Attal', 5]].forEach(function (p) { var s = document.createElement('span'); var i = document.createElement('i'); i.style.background = dash.colors[p[1]]; s.appendChild(i); s.appendChild(document.createTextNode(p[0])); lg2.appendChild(s); });
+  [['contre Philippe', 1], ['contre Mélenchon', 2], ['contre Glucksmann', 3], ['contre Attal', 5]].forEach(function (p) { var s = document.createElement('span'); var i = document.createElement('i'); i.style.background = BX.c(dash.colors[p[1]]); s.appendChild(i); s.appendChild(document.createTextNode(p[0])); lg2.appendChild(s); });
 
   var signed = function (v, unit) { if (v == null) return '—'; var s = (v > 0 ? '+' : v < 0 ? '−' : '±') + new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(Math.abs(v)); return s + ' ' + unit; };
   var cls = function (v) { return v == null || Math.abs(v) < 0.5 ? 'bx-flat' : v > 0 ? 'bx-up' : 'bx-down'; };
@@ -741,22 +830,63 @@ dash.calc('duels_recents', {
     var P = rows[0].polls, noms = P.map(function (p) { return p.institut; });
     if (P.length === 1) {
       document.getElementById('last-title').textContent = 'Premier tour : le dernier sondage (' + P[0].institut + ')';
-      document.getElementById('last-note').innerHTML = mention(P[0]).replace(/\.$/, '. ') + 'Premier tour, moyenne des hypothèses testées.';
+      document.getElementById('last-note').textContent = 'Premier tour, moyenne des hypothèses testées.';
     } else {
       document.getElementById('last-title').textContent = 'Premier tour : les derniers sondages (' + et(noms) + ')';
       var jour = new Date(P[0].date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
       document.getElementById('last-note').textContent = 'Moyenne des ' + P.length + ' sondages dont le terrain finit le ' + jour + ' (pour chacun, moyenne de ses hypothèses de premier tour).';
     }
+    // Mentions obligatoires sous les barres, toujours en entier (plusieurs sondages : la liste plus bas, une ligne par sondage).
+    var src = document.getElementById('last-src'); src.hidden = P.length !== 1; src.innerHTML = P.length === 1 ? mention(P[0]) : '';
     var max = rows[0].score;
+    // Écart avec la moyenne des sondages dont le terrain finit dans les 30 jours précédents (même règle que « L'essentiel »).
+    var fin = P[0].date, deb = new Date(Date.parse(fin) - 30 * 864e5).toISOString().slice(0, 10), av = {}, nbp = {};
+    ((dash.data('sondages_t1') || {}).data || []).filter(function (r) { return r.date < fin && r.date >= deb; }).forEach(function (r) {
+      (av[r.candidat] = av[r.candidat] || []).push({ date: r.date, v: +r.score }); nbp[r.date + '|' + r.institut] = 1;
+    });
+    Object.keys(av).forEach(function (c) { av[c] = BX.fen(av[c]).map(function (q) { return q.v; }); });
+    var nAv = Math.min(BX.FEN, Object.keys(nbp).length), ecart = nAv > 0, sansMoy = [], ex = null;
+    var nf1 = function (x) { return x.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); };
+    if (ecart) {
+      var t = document.createElement('div'); t.className = 'bx-lastbar ec tete'; t.setAttribute('aria-hidden', 'true');
+      t.innerHTML = '<div></div><div></div><div class="pv">Score</div><div class="ev">Écart</div>'; box.appendChild(t);
+    }
     rows.filter(function (r) { return r.score >= 1; }).forEach(function (r) {
-      var l = document.createElement('div'); l.className = 'bx-lastbar';
+      var l = document.createElement('div'); l.className = 'bx-lastbar' + (ecart ? ' ec' : '');
       var n = document.createElement('div'); n.textContent = r.candidat + (r.n < P.length ? ' *' : ''); l.appendChild(n);
       var tr = document.createElement('div'); tr.className = 'tr'; var fl = document.createElement('div'); fl.className = 'fl';
       fl.style.width = (r.score / max * 100) + '%'; fl.style.background = colorOf(r.candidat);
       tr.appendChild(fl); l.appendChild(tr);
       var v = document.createElement('div'); v.className = 'pv'; v.textContent = BX.pct(r.score); l.appendChild(v);
+      if (ecart) {
+        var e = document.createElement('div'), a = av[r.candidat]; e.className = 'ev';
+        if (a) {
+          var m = Math.round(a.reduce(function (x, y) { return x + y; }, 0) / a.length * 10) / 10, d = Math.round((r.score - m) * 10) / 10;
+          e.textContent = d === 0 ? '=' : (d > 0 ? '▲ +' : '▼ −') + nf1(Math.abs(d)); if (d) e.className += d > 0 ? ' bx-up' : ' bx-down';
+          e.title = 'Moyenne des sondages précédents : ' + nf1(m) + ' %';
+          if (!ex) {
+            var avec = BX.fen(((dash.data('sondages_t1') || {}).data || []).filter(function (x) { return x.candidat === r.candidat && x.date <= fin && x.date >= deb; })).map(function (x) { return +x.score; });
+            ex = { c: r.candidat, s: r.score, m: m, d: d, avec: Math.round(avec.reduce(function (x, y) { return x + y; }, 0) / avec.length * 10) / 10 };
+          }
+          e.setAttribute('aria-label', d === 0 ? 'égal à la moyenne des sondages précédents' : (d > 0 ? 'plus ' : 'moins ') + nf1(Math.abs(d)) + ' point par rapport à la moyenne des sondages précédents (' + nf1(m) + ' %)');
+        } else { e.textContent = 'non compté'; sansMoy.push(r.candidat); }
+        l.appendChild(e);
+      }
       box.appendChild(l);
     });
+    if (ecart) {
+      var j = function (x) { return new Date(x + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
+      // Replié : la première phrase (et ce qui n'est pas compté, toujours visible) ; « Voir le détail » ouvre la méthode et l'exemple.
+      var en = document.createElement('p'); en.className = 'bx-note';
+      var court = document.createElement('span');
+      court.textContent = 'Écart, en points : avec la moyenne des ' + nAv + ' sondage' + (nAv > 1 ? 's' : '') + (nAv >= BX.FEN ? ' les plus récents' : ' des 30 jours précédents') + '.' + (sansMoy.length ? ' ' + et(sansMoy) + ' : non compté, ' + (sansMoy.length > 1 ? 'pas testés' : 'pas testé') + ' dans ces sondages.' : '') + ' ';
+      var plus = document.createElement('span'); plus.hidden = true;
+      plus.textContent = 'Terrains finis entre le ' + j(deb) + ' et le ' + j(new Date(Date.parse(fin) - 864e5).toISOString().slice(0, 10)) + ', pour chacun la moyenne de ses hypothèses. Les instituts ne posent pas tous les mêmes hypothèses : l\'écart compare des enquêtes différentes.' +
+        (ex ? ' Par exemple, ' + ex.c + ' : ' + nf1(ex.m) + ' % en moyenne avant ce sondage, ' + nf1(ex.s) + ' % dans ce sondage (écart ' + (ex.d > 0 ? '+' : ex.d < 0 ? '−' : '') + nf1(Math.abs(ex.d)) + '), ' + nf1(ex.avec) + ' % en moyenne en l\'incluant, le chiffre de « L\'essentiel » et de la fin de la courbe.' : '') + ' ';
+      var bv = document.createElement('button'); bv.type = 'button'; bv.className = 'bx-cmp-voir'; bv.textContent = 'Voir le détail ▾'; bv.setAttribute('aria-expanded', 'false');
+      bv.addEventListener('click', function () { plus.hidden = !plus.hidden; bv.textContent = plus.hidden ? 'Voir le détail ▾' : 'Masquer ▴'; bv.setAttribute('aria-expanded', plus.hidden ? 'false' : 'true'); });
+      en.appendChild(court); en.appendChild(plus); box.appendChild(en); box.appendChild(bv);
+    }
     var part = rows.filter(function (r) { return r.score >= 1 && r.n < P.length; });
     if (part.length) { var w = document.createElement('p'); w.className = 'bx-note'; w.textContent = '* ' + et(part.map(function (r) { return r.candidat + ' (' + r.n + ' sur ' + P.length + ')'; })) + ' : ' + (part.length > 1 ? 'testés' : 'testé') + ' dans une partie de ces sondages seulement ; moyenne des sondages où ' + (part.length > 1 ? 'ils figurent' : 'il figure') + '.'; box.appendChild(w); }
     if (P.length > 1) { var ul = document.createElement('ul'); ul.className = 'bx-note bx-lastsrc'; ul.innerHTML = P.map(function (p) { return '<li>' + mentionCourte(p) + '</li>'; }).join(''); box.appendChild(ul); var cs = document.createElement('p'); cs.className = 'bx-note mentions'; cs.textContent = 'Notices consultables à la Commission des sondages (marge d\'erreur selon le score).'; box.appendChild(cs); }
@@ -769,7 +899,8 @@ dash.calc('duels_recents', {
     var P = rows[0].polls.map(function (i) { return { institut: i, date: rows[0].date }; });
     var jour = new Date(rows[0].date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
     document.getElementById('last2-title').textContent = 'Second tour : ' + (P.length > 1 ? 'les derniers sondages (' : 'le dernier sondage (') + et(P.map(function (p) { return p.institut; })) + ')';
-    document.getElementById('last2-note').innerHTML = (P.length > 1 ? 'Moyenne des ' + P.length + ' sondages dont le terrain finit le ' + esc(jour) + '. ' : mention(P[0]) + ' ') + 'Score de chaque candidat dans chaque duel testé, en % des voix exprimées.';
+    document.getElementById('last2-note').innerHTML = (P.length > 1 ? 'Moyenne des ' + P.length + ' sondages dont le terrain finit le ' + esc(jour) + '. ' : '') + 'Score de chaque candidat dans chaque duel testé, en % des voix exprimées.';
+    var src = document.getElementById('last2-src'); src.hidden = P.length !== 1; src.innerHTML = P.length === 1 ? mention(P[0]) : '';
     rows.forEach(function (r) {
       var l = document.createElement('div'); l.className = 'bx-duel';
       var t = document.createElement('div'); t.className = 'bx-duel-t';
@@ -824,6 +955,8 @@ dash.calc('duels_recents', {
   }
 
   function drawT1(rows, trend, events) {
+    BX.perVis('premier-tour', rows);
+    var cut1 = BX.coupe(rows); if (cut1) { rows = rows.filter(function (r) { return r.date >= cut1; }); trend = trend.filter(function (t) { return t.date >= cut1; }); events = events.filter(function (e) { return e.date >= cut1; }); }
     var box = document.getElementById('chart-t1');
     box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
     var W = box.clientWidth || 600, H = 360;
@@ -835,7 +968,7 @@ dash.calc('duels_recents', {
     var gy = svg.append('g').call(d3.axisLeft(y).ticks(6).tickFormat(function (v) { return v + ' %'; }).tickSize(0));
     styleAxis(gy);
     var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); });
-    mL = Math.ceil(mL) + 10; var mR = 112;
+    mL = Math.ceil(mL) + 10; var mR = 124;
     gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
     x.range([mL, W - mR]);
     svg.insert('g', ':first-child').selectAll('line').data(y.ticks(6)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
@@ -853,6 +986,8 @@ dash.calc('duels_recents', {
         TR.push({ c: c, seg: g[0], pts: pts });
         svg.append('path').datum(pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('stroke-opacity', g[0] === 'Bardella' ? .45 : 1)
           .attr('d', d3.line().x(function (t) { return x(t.d); }).y(function (t) { return y(t.v); }));
+        // Le trait pâle du RN avant juillet 2026 : son nom au bout, pour qu'on sache qui c'est.
+        if (g[0] === 'Bardella' && pts.length) { var lb = pts[pts.length - 1]; var tb = svg.append('text').attr('x', x(lb.d) - 4).attr('y', y(lb.v) - 7).attr('text-anchor', 'end').attr('fill', c.col).style('font-size', '11px').style('font-weight', 600).text('Jordan Bardella'); if (x(lb.d) - 4 - tb.node().getComputedTextLength() < mL + 2) tb.attr('x', mL + 2).attr('text-anchor', 'start'); }
       });
       var lastAll = tr.sort(function (a, b) { return a.d - b.d; })[tr.length - 1];
       if (lastAll && lastAll.seg !== 'Bardella') labs.push({ c: c, y: y(lastAll.v), v: lastAll.v, x: x(lastAll.d) });
@@ -875,12 +1010,199 @@ dash.calc('duels_recents', {
     });
   }
 
+  // Comparaison avec 2017 et 2022 : chaque campagne alignée sur le nombre de jours avant son premier tour.
+  var CMP = { passe: null, cand: 'Le Pen', T1: '2027-04-18' };
+  var CMP_COL = { 2027: 'var(--fr)', 2022: 'var(--cmp-2022)', 2017: 'var(--cmp-2017)', 2012: 'var(--cmp-2012)' };
+  var CMP_LAB = { 2027: '2026-2027', 2022: '2021-2022', 2017: '2016-2017', 2012: '2011-2012' };
+  function cmpTendance(pts) { // pts : [{j, v}] triés ; moyenne des sondages des 30 jours précédents (bornes comprises)
+    var out = [], vus = {};
+    pts.forEach(function (p) { if (vus[p.j]) return; vus[p.j] = 1; var w = BX.fen(pts.filter(function (q) { return q.j <= p.j && q.j >= p.j - 30; }), 'j'); out.push({ j: p.j, v: Math.round(w.reduce(function (a, q) { return a + q.v; }, 0) / w.length * 10) / 10, n: w.length }); });
+    return out;
+  }
+  function cmpSeries(rows2027) {
+    var jour = function (d, t1) { return Math.round((Date.parse(d + 'T12:00:00Z') - Date.parse(t1 + 'T12:00:00Z')) / 864e5); };
+    var S = [];
+    S.push({ an: 2027, t1: CMP.T1, pts: rows2027.filter(function (r) { return r.candidat === CMP.cand; }).map(function (r) { return { j: jour(r.date, CMP.T1), v: +r.score, inst: r.institut }; }) });
+    (CMP.passe.campagnes || []).slice().reverse().forEach(function (c) {
+      S.push({ an: c.annee, t1: c.premier_tour, res: c.resultats[CMP.cand], pts: c.sondages.filter(function (p) { return p.scores[CMP.cand] != null; }).map(function (p) { return { j: jour(p.fin, c.premier_tour), v: p.scores[CMP.cand], inst: p.institut }; }) });
+    });
+    S.forEach(function (s) { s.pts.sort(function (a, b) { return a.j - b.j; }); s.tr = cmpTendance(s.pts); });
+    return S;
+  }
+  // Période : les deux courbes d'évolution changent ensemble.
+  document.querySelectorAll('.bx-per button').forEach(function (b) {
+    b.addEventListener('click', function () { BX.PER = b.dataset.p; document.querySelectorAll('.bx-per button').forEach(function (x) { x.setAttribute('aria-pressed', x.dataset.p === BX.PER ? 'true' : 'false'); }); dash.refresh(); });
+  });
+  document.querySelectorAll('.bx-cmp .bx-cmp-voir').forEach(function (b) {
+    b.addEventListener('click', function () { var o = b.closest('.bx-cmp').classList.toggle('ouvert'); b.textContent = o ? 'Masquer le détail ▴' : 'Voir le détail ▾'; b.setAttribute('aria-expanded', o ? 'true' : 'false'); });
+  });
+  // Phrases courtes : « À 6 mois du vote », « En octobre 2021 ».
+  var cmpDist = function (j) { var m = Math.round(-j / 30.44); return m >= 2 ? m + ' mois' : (-j) + ' jours'; };
+  var cmpMois = function (j, t) { return new Date(Date.parse(t + 'T12:00:00Z') + j * 864e5).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); };
+  var cmpL = function (t) { return '<span class="l">' + t + ' </span>'; };
+  // Info-bulle : « À 6 mois », « À 12 jours », « La veille » ; dans la dernière semaine, le résultat officiel à côté de la moyenne des sondages.
+  var cmpTete = function (j, tour) { var m = Math.round(-j / 30.44); return j === 0 ? 'Jour du ' + tour : j === -1 ? 'La veille du ' + tour : (m >= 1 ? 'À ' + m + ' mois' : 'À ' + (-j) + ' jours') + ' du ' + tour; };
+  var cmpRes = function (vis, j, y, lab) { var out = []; if (j < -7) return out; vis.forEach(function (s) { if (s.res != null) out.push({ c: CMP_COL[s.an], n: lab(s) + ' · résultat officiel', v: s.res, py: y(s.res), s: s.res.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %' }); }); return out; };
+  function drawCmp(rows2027) {
+    if (!CMP.passe) return;
+    var box = document.getElementById('chart-cmp'); box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
+    var bt = document.getElementById('cmp-cands');
+    if (!bt.childNodes.length) CMP.passe.candidats.forEach(function (c) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = c; b.setAttribute('aria-pressed', c === CMP.cand ? 'true' : 'false');
+      b.addEventListener('click', function () { CMP.cand = c; bt.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.textContent === c ? 'true' : 'false'); }); drawCmp(rows2027); });
+      bt.appendChild(b);
+    });
+    var S = cmpSeries(rows2027), vis = S.filter(function (s) { return s.pts.length; }), cur = S[0], nom = BX.full(CMP.cand);
+    var fd = function (j, t1) { return new Date(Date.parse(t1 + 'T12:00:00Z') + j * 864e5).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); };
+    var fdc = function (j, t1) { return new Date(Date.parse(t1 + 'T12:00:00Z') + j * 864e5).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); };
+    var at = function (s, j) { var w = BX.fen(s.pts.filter(function (p) { return p.j <= j && p.j >= j - 30; }), 'j'); return w.length ? { v: Math.round(w.reduce(function (a, p) { return a + p.v; }, 0) / w.length * 10) / 10, n: w.length } : null; };
+    var nf2 = function (v) { return v.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %'; };
+    // « Aujourd'hui » : la date du dernier sondage de 2026-2027 ; les campagnes passées sont lues à la même distance du vote.
+    var j0 = cur.pts.length ? cur.pts[cur.pts.length - 1].j : null;
+    var A = {}; S.forEach(function (s) { A[s.an] = j0 != null ? at(s, j0) : null; });
+
+    // Tableau-légende (visible) : à la même distance du vote, et le résultat.
+    var tb = document.getElementById('cmp-table'), notesV = [], peuL = [];
+    var row = function (s) {
+      var a = A[s.an], lab = CMP_LAB[s.an], d = j0 != null ? (s.an === 2027 ? fdc(j0, CMP.T1) + ' ' + (new Date(Date.parse(CMP.T1) + j0 * 864e5).getFullYear()) : cmpMois(j0, s.t1)) : '';
+      if (a && a.n < 3) peuL.push({ n: a.n, s: s });
+      var v = !s.pts.length ? '<span class="nc">pas testé</span>' : a ? '<b style="color:' + CMP_COL[s.an] + '">' + BX.pct(a.v) + '</b>' + (a.n < 3 ? '<sup>' + peuL.length + '</sup>' : '') : '<span class="nc">pas de sondage</span>';
+      var r = s.an === 2027 ? '<span class="nc">18 avril 2027</span>' : s.res != null ? '<b>' + nf2(s.res) + '</b>' : '<span class="nc">pas candidat</span>';
+      return '<tr><th scope="row"><i style="background:' + CMP_COL[s.an] + '"></i>' + lab + '<small>' + d + '</small></th><td>' + v + '</td><td>' + r + '</td></tr>';
+    };
+    tb.innerHTML = '<table><thead><tr><th></th><th scope="col">' + (j0 != null ? 'À ' + cmpDist(j0) + ' du vote' : 'À la même date') + '</th><th scope="col">Résultat</th></tr></thead><tbody>' + S.map(row).join('') + '</tbody></table>';
+    peuL.forEach(function (q, i) { var per = 'entre le ' + fd(j0 - 30, q.s.t1).replace(/ \d{4}$/, '') + ' et le ' + fd(j0, q.s.t1); notesV.push('<sup>' + (i + 1) + '</sup> ' + (q.n === 1 ? 'Un seul sondage ' + per : 'Moyenne de ' + q.n + ' sondages seulement, ' + per) + ' : il y en avait peu à cette époque.'); });
+    var abs = S.slice(1).filter(function (s) { return !s.pts.length; }).map(function (s) { return s.an; });
+    if (abs.length) notesV.push('Pas testé en ' + abs.join(' ni en ') + ' : pas de courbe.');
+    S.slice(1).forEach(function (s) { if (s.pts.length && s.res == null) notesV.push('Pas candidat en ' + s.an + ' : testé jusqu\'au ' + fd(s.pts[s.pts.length - 1].j, s.t1) + '.'); });
+    if (CMP.cand === 'Le Pen') notesV.push('Avant juillet 2026, les sondages testaient surtout Jordan Bardella : seules les hypothèses avec Marine Le Pen sont retenues.');
+    if (!cur.pts.length) notesV.push(nom + ' n\'est pas encore testé dans les sondages de 2026-2027.');
+    var ex = document.getElementById('cmp-exc'); ex.innerHTML = notesV.join(' '); ex.hidden = !notesV.length;
+    tb.setAttribute('aria-label', nom + ', au premier tour : ' + S.map(function (s) { var a = A[s.an]; return CMP_LAB[s.an] + ' ' + (a ? BX.pct(a.v) : 'non mesuré') + (s.res != null ? ', résultat ' + nf2(s.res) : ''); }).join(' ; '));
+
+    // Graphique.
+    var W = box.clientWidth || 600, tel = W < 480, H = tel ? 330 : 360, J0 = -540, T0 = 26, B0 = H - 40;
+    var maxV = d3.max(vis, function (s) { return d3.max(s.pts.concat(s.res != null ? [{ v: s.res }] : []), function (p) { return p.v; }); }) || 10;
+    // L'axe vertical se resserre autour des courbes (il ne part pas forcément de 0) pour qu'on les distingue.
+    var minV = d3.min(vis, function (s) { return d3.min(s.tr.filter(function (p) { return p.j >= J0; }).concat(s.res != null ? [{ v: s.res }] : []), function (p) { return p.v; }); });
+    var lo = Math.max(0, Math.floor(((minV == null ? 0 : minV) - 3) / 5) * 5);
+    var y = d3.scaleLinear([lo, Math.ceil((maxV + 1) / 5) * 5], [B0, T0]);
+    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Intentions de vote de ' + nom + ' au premier tour, campagnes 2011-2012, 2016-2017, 2021-2022 et 2026-2027, selon le nombre de mois avant le premier tour, et résultats officiels');
+    var gy = svg.append('g').call(d3.axisLeft(y).ticks(5).tickFormat(function (v) { return v + ' %'; }).tickSize(0)); styleAxis(gy);
+    var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); }); mL = Math.ceil(mL) + 8; var mR = tel ? 66 : 90;
+    gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
+    var x = d3.scaleLinear([J0, 0], [mL, W - mR]);
+    svg.insert('g', ':first-child').selectAll('line').data(y.ticks(5)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
+    var ticks = tel ? [-540, -360, -180, -90, 0] : [-540, -450, -360, -270, -180, -90, 0];
+    var gx = svg.append('g').attr('transform', 'translate(0,' + B0 + ')').call(d3.axisBottom(x).tickValues(ticks).tickFormat(function (t) { return t === 0 ? '1er tour' : t === -540 ? '18 mois' : String(Math.round(-t / 30)); }).tickSizeOuter(0)); styleAxis(gx);
+    svg.append('text').attr('x', (mL + W - mR) / 2).attr('y', H - 6).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg-muted)').style('font-size', '11px').text('mois avant le premier tour');
+    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', T0).attr('y2', B0).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '3 3');
+    // Colonne « Résultat » à droite du jour du vote.
+    svg.append('rect').attr('x', x(0) + 3).attr('y', T0 - 4).attr('width', W - x(0) - 4).attr('height', B0 - T0 + 4).attr('fill', 'var(--cds-chart-grid)').attr('opacity', .45).attr('rx', 4);
+    svg.append('text').attr('x', x(0) + 7).attr('y', T0 - 9).attr('fill', 'var(--color-fg-muted)').style('font-size', '10.5px').text('Résultat');
+    vis.forEach(function (s) {
+      var col = CMP_COL[s.an], past = s.an !== 2027, P = s.pts.filter(function (p) { return p.j >= J0; }), T = s.tr.filter(function (p) { return p.j >= J0; });
+      svg.append('g').selectAll('circle').data(P).join('circle').attr('cx', function (p) { return x(p.j); }).attr('cy', function (p) { return y(p.v); }).attr('r', past ? 1.5 : 2.3).attr('fill', col).attr('fill-opacity', past ? .12 : .28);
+      var line = d3.line().x(function (p) { return x(p.j); }).y(function (p) { return y(p.v); });
+      if (past && j0 != null) {
+        svg.append('path').datum(T.filter(function (p) { return p.j <= j0; })).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2.6).attr('stroke-linejoin', 'round').attr('d', line);
+        svg.append('path').datum(T.filter(function (p) { return p.j >= j0 - 30; })).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2.2).attr('stroke-opacity', .7).attr('stroke-linejoin', 'round').attr('d', line);
+      } else svg.append('path').datum(T).attr('fill', 'none').attr('stroke', col).attr('stroke-width', past ? 2.6 : 3.4).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('d', line);
+      // Résultat : un carré dans la colonne, relié au bout de la courbe par un pointillé fin.
+      var fin = T[T.length - 1];
+      if (past && s.res != null) {
+        var ry = y(s.res), cx = x(0) + 10;
+        if (fin) svg.append('line').attr('x1', x(fin.j)).attr('y1', y(fin.v)).attr('x2', cx).attr('y2', ry).attr('stroke', col).attr('stroke-width', 1).attr('stroke-dasharray', '2 2');
+        svg.append('rect').attr('x', cx - 3.5).attr('y', ry - 3.5).attr('width', 7).attr('height', 7).attr('fill', col);
+        s.ry = ry;
+      }
+    });
+    // Valeurs des résultats, sans chevauchement.
+    var rl = vis.filter(function (s) { return s.ry != null; }).map(function (s) { return { y: s.ry, t: s.res.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %', c: CMP_COL[s.an] }; }).sort(function (a, b) { return a.y - b.y; });
+    for (var i = 1; i < rl.length; i++) if (rl[i].y - rl[i - 1].y < 13) rl[i].y = rl[i - 1].y + 13;
+    rl.forEach(function (l) { svg.append('text').attr('x', x(0) + 17).attr('y', l.y + 4).attr('fill', l.c).style('font-size', tel ? '10.5px' : '12px').style('font-weight', 700).text(l.t); });
+    // Ligne « aujourd'hui » et les trois repères à la même distance du vote.
+    if (j0 != null) {
+      var xj = x(j0);
+      svg.append('line').attr('x1', xj).attr('x2', xj).attr('y1', T0 - 2).attr('y2', B0).attr('stroke', 'var(--cds-text-secondary)').attr('stroke-width', 1).attr('stroke-dasharray', '1.5 4').attr('stroke-linecap', 'round').attr('opacity', .7);
+      svg.append('text').attr('x', xj).attr('y', T0 - 9).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg)').style('font-size', '12px').style('font-weight', 600).text(fdc(j0, CMP.T1));
+      var mk = S.filter(function (s) { return A[s.an]; }).map(function (s) { return { s: s, y0: y(A[s.an].v), y: y(A[s.an].v), v: A[s.an].v }; }).sort(function (a, b) { return a.y - b.y; });
+      for (var k = 1; k < mk.length; k++) if (mk[k].y - mk[k - 1].y < 13) mk[k].y = mk[k - 1].y + 13;
+      mk.forEach(function (m) {
+        var col = CMP_COL[m.s.an], past = m.s.an !== 2027;
+        svg.append('circle').attr('cx', xj).attr('cy', m.y0).attr('r', 5).attr('fill', past ? 'var(--color-panel)' : col).attr('stroke', past ? col : 'var(--color-panel)').attr('stroke-width', past ? 2 : 1.5);
+        var halo = function (t) { return t.attr('stroke', 'var(--color-panel)').attr('stroke-width', 3.5).attr('stroke-linejoin', 'round').style('paint-order', 'stroke'); };
+        halo(svg.append('text').attr('x', xj - 9).attr('y', m.y + 4).attr('text-anchor', 'end').attr('fill', col).style('font-size', '11.5px').style('font-weight', 700).text(String(m.v).replace('.', ',')));
+        halo(svg.append('text').attr('x', xj + 9).attr('y', m.y + 4).attr('fill', col).style('font-size', '11px').style('font-weight', 600).text(m.s.an));
+      });
+    }
+    // Info-bulle : la moyenne de chaque campagne à ce nombre de jours du premier tour.
+    xhair(svg, box, W, T0, B0, function (sx) {
+      var j = Math.round(x.invert(sx)); if (j > 0 || j < J0) return null;
+      var rows = vis.map(function (s) {
+        var q = null; s.tr.forEach(function (p) { if (p.j <= j && p.j >= j - 30) q = p; });
+        return q ? { c: CMP_COL[s.an], n: CMP_LAB[s.an] + ' · sondages', v: q.v, py: y(q.v), s: BX.pct(q.v) } : null;
+      }).filter(Boolean).concat(cmpRes(vis, j, y, function (s) { return CMP_LAB[s.an]; }));
+      return { px: x(j), head: cmpTete(j, 'premier tour') + ' · moyenne des sondages des 30 jours', rows: rows };
+    });
+    // Détail replié : les derniers sondages de chaque campagne et la méthode.
+    var det = S.slice(1).filter(function (s) { return s.tr.length; }).map(function (s) { var dn = s.tr[s.tr.length - 1]; return 'Derniers sondages de ' + CMP_LAB[s.an] + ' (' + fd(dn.j, s.t1) + ') : ' + BX.pct(dn.v) + (s.res != null ? ' ; vote : ' + nf2(s.res) : '') + '.'; });
+    det.push('Un sondage publié chaque jour ne compte qu\'une fois par période d\'enquête.');
+    document.getElementById('cmp-note').textContent = det.join(' ');
+    var src = document.getElementById('cmp-src'), cs = CMP.passe.campagnes;
+    src.innerHTML = 'Sources : sondages, Wikipédia (' + cs.map(function (c) { return '<a href="' + esc(c.source.url) + '" target="_blank" rel="noopener">' + c.annee + '</a>'; }).join(', ') + ', contre-vérifiés avec <a href="https://github.com/nsppolls/nsppolls" target="_blank" rel="noopener">NSPPolls</a>) ; résultats, Conseil constitutionnel (' +
+      cs.map(function (c) { return '<a href="' + esc(c.resultats_source.url) + '" target="_blank" rel="noopener">' + c.annee + '</a>'; }).join(', ') + ').';
+  }
+
+  // Le rythme des sondages : nombre cumulé de sondages, à la même distance du vote, pour chaque campagne.
+  function drawRythme(rows2027) {
+    if (!CMP.passe) return;
+    var box = document.getElementById('chart-rythme'); if (!box) return; box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
+    var jour = function (d, t1) { return Math.round((Date.parse(d + 'T12:00:00Z') - Date.parse(t1 + 'T12:00:00Z')) / 864e5); };
+    var J0 = -540, polls27 = {}; rows2027.forEach(function (r) { polls27[r.date + '|' + r.institut] = r.date; });
+    var S = [{ an: 2027, js: Object.keys(polls27).map(function (k) { return jour(polls27[k], CMP.T1); }) }];
+    CMP.passe.campagnes.slice().reverse().forEach(function (c) { S.push({ an: c.annee, t1: c.premier_tour, js: c.sondages.map(function (p) { return jour(p.fin, c.premier_tour); }) }); });
+    S.forEach(function (s) { s.js = s.js.filter(function (j) { return j >= J0 && j < 0; }).sort(function (a, b) { return a - b; }); s.pts = [{ j: J0, n: 0 }]; s.js.forEach(function (j, i) { s.pts.push({ j: j, n: i + 1 }); }); });
+    var j0 = S[0].js.length ? S[0].js[S[0].js.length - 1] : null;
+    var nAt = function (s, j) { return s.js.filter(function (x) { return x <= j; }).length; };
+    var W = box.clientWidth || 600, tel = W < 480, H = tel ? 240 : 280, T0 = 24, B0 = H - 40;
+    var maxN = d3.max(S, function (s) { return s.js.length; }) || 10;
+    var y = d3.scaleLinear([0, Math.ceil(maxN / 50) * 50], [B0, T0]);
+    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Nombre cumulé de sondages de premier tour, campagnes 2011-2012, 2016-2017, 2021-2022 et 2026-2027, selon le nombre de mois avant le vote');
+    var gy = svg.append('g').call(d3.axisLeft(y).ticks(4).tickSize(0)); styleAxis(gy);
+    var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); }); mL = Math.ceil(mL) + 8; var mR = tel ? 64 : 90;
+    gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
+    var x = d3.scaleLinear([J0, 0], [mL, W - mR]);
+    svg.insert('g', ':first-child').selectAll('line').data(y.ticks(4)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
+    var ticks = tel ? [-540, -360, -180, -90, 0] : [-540, -450, -360, -270, -180, -90, 0];
+    var gx = svg.append('g').attr('transform', 'translate(0,' + B0 + ')').call(d3.axisBottom(x).tickValues(ticks).tickFormat(function (t) { return t === 0 ? '1er tour' : t === -540 ? '18 mois' : String(Math.round(-t / 30)); }).tickSizeOuter(0)); styleAxis(gx);
+    svg.append('text').attr('x', (mL + W - mR) / 2).attr('y', H - 6).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg-muted)').style('font-size', '11px').text('mois avant le premier tour');
+    var lab = [];
+    S.forEach(function (s) {
+      var col = CMP_COL[s.an], pts = s.pts.slice(); if (s.an !== 2027) pts.push({ j: 0, n: s.js.length });
+      svg.append('path').datum(pts).attr('fill', 'none').attr('stroke', col).attr('stroke-width', s.an === 2027 ? 3 : 2.2).attr('d', d3.line().curve(d3.curveStepAfter).x(function (p) { return x(p.j); }).y(function (p) { return y(p.n); }));
+      var e = pts[pts.length - 1]; lab.push({ y: y(e.n), x: x(e.j), t: s.an + ' : ' + e.n, c: col });
+    });
+    lab.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < lab.length; i++) if (lab[i].y - lab[i - 1].y < 13) lab[i].y = lab[i - 1].y + 13;
+    lab.forEach(function (l) { svg.append('text').attr('x', Math.max(l.x, x(0)) + 6).attr('y', l.y + 4).attr('fill', l.c).style('font-size', '11px').style('font-weight', 700).text(l.t); });
+    var ph = document.getElementById('rythme-phrase');
+    if (j0 != null) {
+      svg.append('line').attr('x1', x(j0)).attr('x2', x(j0)).attr('y1', T0 - 2).attr('y2', B0).attr('stroke', 'var(--cds-text-secondary)').attr('stroke-dasharray', '1.5 4').attr('stroke-linecap', 'round').attr('opacity', .7);
+      var fdc = function (j, t1) { return new Date(Date.parse(t1 + 'T12:00:00Z') + j * 864e5).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); };
+      svg.append('text').attr('x', x(j0)).attr('y', T0 - 9).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg)').style('font-size', '12px').style('font-weight', 600).text(fdc(j0, CMP.T1));
+      var autres = S.slice(1).map(function (s) { return '<b style="color:' + CMP_COL[s.an] + '">' + nAt(s, j0) + '</b> en ' + CMP_LAB[s.an]; });
+      ph.innerHTML = cmpL('À ' + cmpDist(j0) + ' du vote : <span class="y27">' + nAt(S[0], j0) + ' sondages</span> en 2026-2027, contre ' + autres.slice(0, -1).join(', ') + ' et ' + autres[autres.length - 1] + '.');
+    }
+  }
+
   // Les parieurs : l'évolution des chances des 6 favoris d'un marché, toutes les courbes sur le même graphique.
-  function drawPMLines(id, hist, pmr, quoi) {
+  // o (facultatif) : fmt (chiffre écrit), tick (axe), n (nombre de courbes), aria, tete (titre de l'info-bulle) ; sans o, les parieurs.
+  function drawPMLines(id, hist, pmr, quoi, o) {
+    o = o || {}; var fmtV = o.fmt || BX.pct;
     var box = document.getElementById(id);
     box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
     var withHist = {}; hist.forEach(function (r) { withHist[r.candidat] = 1; });
-    var C = pmr.filter(function (c) { return withHist[c.short]; }).slice(0, BX.TOP_PM).map(function (c) {
+    var C = pmr.filter(function (c) { return withHist[c.short]; }).slice(0, o.n || BX.TOP_PM).map(function (c) {
       var pts = hist.filter(function (r) { return r.candidat === c.short; }).map(function (r) { return { d: BX.day(r.date), v: +r.probabilite }; }).sort(function (a, b) { return a.d - b.d; });
       // Le point du jour reprend la valeur des barres (même relevé, même arrondi).
       if (pts.length && c.releve && +pts[pts.length - 1].d === +BX.day(c.releve)) pts[pts.length - 1].v = c.v;
@@ -891,11 +1213,11 @@ dash.calc('duels_recents', {
     var W = box.clientWidth || 600, H = 320;
     var x = d3.scaleUtc(d3.extent(all, function (r) { return r.d; }), [0, 1]);
     var y = d3.scaleLinear([0, Math.ceil(d3.max(all, function (r) { return r.v; }) / 10) * 10], [H - 28, 12]);
-    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', quoi + ' selon Polymarket, évolution des 6 favoris');
-    var gy = svg.append('g').call(d3.axisLeft(y).ticks(5).tickFormat(function (v) { return v + ' %'; }).tickSize(0));
+    var svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', o.aria || quoi + ' selon Polymarket, évolution des 6 favoris');
+    var gy = svg.append('g').call(d3.axisLeft(y).ticks(5).tickFormat(o.tick || function (v) { return v + ' %'; }).tickSize(0));
     styleAxis(gy);
     var mL = 0; gy.selectAll('text').each(function () { mL = Math.max(mL, this.getComputedTextLength()); });
-    mL = Math.ceil(mL) + 10; var mR = 112;
+    mL = Math.ceil(mL) + 10; var mR = o.mR || 112;
     gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
     x.range([mL, W - mR]);
     svg.insert('g', ':first-child').selectAll('line').data(y.ticks(5)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
@@ -910,16 +1232,18 @@ dash.calc('duels_recents', {
     labs.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
     svg.append('g').selectAll('text').data(labs).join('text').attr('x', W - mR + 6).attr('y', function (l) { return l.y + 4; }).attr('fill', function (l) { return l.c.col; })
-      .style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text(function (l) { return l.c.s + ' ' + BX.pct(l.v); });
+      .style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text(function (l) { return l.c.s + ' ' + fmtV(l.v); });
     var allD = Array.from(new Set(all.map(function (r) { return +r.d; }))).sort(function (a, b) { return a - b; }).map(function (v) { return new Date(v); });
     xhair(svg, box, W, 12, H - 28, function (sx) {
       var d = allD[d3.bisector(function (q) { return q; }).center(allD, x.invert(sx))];
-      var rows = C.map(function (c) { var q = c.pts.filter(function (p) { return p.d <= d; }).pop(); return q ? { c: c.col, n: c.name, v: q.v, py: y(q.v), s: BX.pct(q.v) } : null; }).filter(Boolean).sort(function (a, b) { return b.v - a.v; });
-      return { px: x(d), head: BX.fmtDay(d) + ' · ' + quoi.toLowerCase(), rows: rows };
+      var rows = C.map(function (c) { var q = c.pts.filter(function (p) { return p.d <= d; }).pop(); return q ? { c: c.col, n: c.name, v: q.v, py: y(q.v), s: fmtV(q.v) } : null; }).filter(Boolean).sort(function (a, b) { return b.v - a.v; });
+      return { px: x(d), head: o.tete ? o.tete(d) : BX.fmtDay(d) + ' · ' + quoi.toLowerCase(), rows: rows };
     });
   }
 
   function drawT2(rows) {
+    BX.perVis('second-tour', rows);
+    var cut2 = BX.coupe(rows); if (cut2) rows = rows.filter(function (r) { return r.date >= cut2; });
     var box = document.getElementById('chart-t2');
     box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
     var W = box.clientWidth || 400, H = 260;
@@ -938,7 +1262,7 @@ dash.calc('duels_recents', {
     svg.append('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y(50)).attr('y2', y(50)).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 4');
     var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 28) + ')').call(d3.axisBottom(x).ticks(BX.mois(x, W - mL - mR)).tickFormat(BX.fmtMonth).tickSizeOuter(0));
     styleAxis(gx);
-    var colOf = function (r) { return dash.colors[ADV[r.adversaire]]; };
+    var colOf = function (r) { return BX.c(dash.colors[ADV[r.adversaire]]); };
     var SM = [];
     d3.groups(data.slice().sort(function (a, b) { return a.d - b.d; }), function (r) { return r.adversaire; }).forEach(function (g) {
       SM.push({ n: g[0], c: colOf(g[1][0]), pts: null });
@@ -971,7 +1295,7 @@ dash.calc('duels_recents', {
     var x = d3.scaleLinear([0, d3.max(data, function (d) { return d.v; })], [0, Math.max(40, W - mL - 52)]);
     svg.append('g').selectAll('rect').data(data).join('rect').attr('x', mL).attr('y', function (d, i) { return i * row + 5; }).attr('height', 16).attr('rx', 4)
       .attr('width', function (d) { return Math.max(2, x(d.v)); })
-      .attr('fill', function (d, i) { return i === 0 && d.n !== 'Autres candidats' ? dash.colors[0] : 'var(--cds-chart-muted)'; });
+      .attr('fill', function (d) { return BX.col(BX.short(d.n)) || 'var(--cds-chart-muted)'; }); // chaque candidat dans sa couleur, la même que dans les sondages et sur la courbe d'évolution dessous
     svg.append('g').selectAll('text').data(data).join('text').attr('x', function (d) { return mL + Math.max(2, x(d.v)) + 6; }).attr('y', function (d, i) { return i * row + 17; })
       .attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').style('font-variant-numeric', 'tabular-nums').text(function (d) { return BX.pct(d.v); });
       // Ceux qui ne se présentent pas : leur chiffre et la raison, en une phrase sous les barres.
@@ -1006,10 +1330,10 @@ dash.calc('duels_recents', {
       };
       var nm = function (c) { return c.name.replace(' (RN)', ''); };
       add(nm(rank[0]) + ' est en tête du premier tour avec '); add(BX.pct(rank[0].moyenne), 1);
-      add(' en moyenne sur les sondages des 30 derniers jours. Derrière, ' + nm(rank[1]) + ' ('); add(BX.pct(rank[1].moyenne), 1);
+      add(' en moyenne sur les ' + (rank[0].sondages >= BX.FEN ? BX.FEN + ' derniers sondages' : 'sondages des 30 derniers jours') + '. Derrière, ' + nm(rank[1]) + ' ('); add(BX.pct(rank[1].moyenne), 1);
       add('), ' + nm(rank[2]) + ' ('); add(BX.pct(rank[2].moyenne), 1);
       add(') et ' + nm(rank[3]) + ' ('); add(BX.pct(rank[3].moyenne), 1);
-      add(') se disputent la qualification. Les parieurs de Polymarket donnent à ' + pmr[0].name + ' '); add(BX.pct(pmr[0].v), 1);
+      add(') suivent. Les parieurs de Polymarket donnent à ' + pmr[0].name + ' '); add(BX.pct(pmr[0].v), 1);
       add(' de chances de gagner au second tour' + (pmr[0].key === rank[0].key ? '.' : ' : ils ne voient pas le même favori que les sondages.'));
     } else if (moy.status === 'error' || pm.status === 'error') { tk.textContent = ''; }
 
@@ -1024,6 +1348,10 @@ dash.calc('duels_recents', {
     var cd = Math.ceil((Date.parse('2027-04-18T00:00:00+02:00') - Date.now()) / 86400000);
     document.getElementById('countdown').textContent = 'J-' + Math.max(0, cd);
     chart('chart-t1', t1.status === 'ok' && tr.status === 'ok' && moy.status === 'ok' && ev.status !== 'loading', t1.status === 'error' || tr.status === 'error', function () { drawT1(t1.data, tr.data, events); });
+    if (t1.status === 'ok') {
+      if (CMP.passe) { drawCmp(t1.data); drawRythme(t1.data); }
+      else if (!CMP.charge) { CMP.charge = 1; fetch('../donnees/sondages_passes.json').then(function (r) { return r.json(); }).then(function (j) { CMP.passe = j; drawCmp(t1.data); drawRythme(t1.data); }).catch(function () { failLine(document.getElementById('chart-cmp')); }); }
+    }
     var el = document.getElementById('events-list'); el.textContent = '';
     events.forEach(function (e) {
       var li = document.createElement('li'); var n = document.createElement('span'); n.className = 'num'; n.textContent = e.n; li.appendChild(n);
@@ -1039,6 +1367,22 @@ dash.calc('duels_recents', {
     chart('chart-pmh', ph.status === 'ok' && pm.status === 'ok', false, function () { drawPMLines('chart-pmh', ph.data, pmr, 'Chances de victoire'); });
     chart('chart-t2', t2.status === 'ok', t2.status === 'error', function () { drawT2(t2.data); });
     chart('chart-pm', pm.status === 'ok', pm.status === 'error', function () { drawPM('chart-pm', pm.data, 'Chances de victoire au second tour selon Polymarket'); });
+    // Lectures des pages Wikipédia (outils/wikipedia.py) : une courbe par candidat, par semaine complète.
+    var wv = dash.data('wikipedia_vues'), wi = (dash.data('wikipedia_info').data || [])[0];
+    var dessinWiki = function () {
+      // Chaque point : la moyenne par semaine des 28 jours qui finissent ce jour-là (outils/wikipedia.py), le dernier finit la veille du relevé.
+      var H = wv.data.map(function (r) { return { candidat: r.candidat, date: r.jusqu_au, probabilite: +r.vues }; });
+      var der = {}; H.forEach(function (r) { if (!der[r.candidat] || r.date > der[r.candidat].date) der[r.candidat] = r; });
+      var L = Object.keys(der).sort(function (a, b) { return der[b].probabilite - der[a].probabilite; }).map(function (c) { return { short: c, name: BX.full(c) }; });
+      var nfw = function (v) { return Math.round(v).toLocaleString('fr-FR'); };
+      drawPMLines('chart-wiki', H, L, 'Lectures', { n: 8, fmt: nfw, mR: 132, tick: function (v) { return v >= 1000 ? (v / 1000).toLocaleString('fr-FR') + ' k' : String(v); },
+        aria: 'Lectures de la page Wikipédia de chaque candidat, par semaine, en moyenne sur 28 jours', tete: function (d) { return '28 jours jusqu\'au ' + BX.fmtDay(d) + ' · lectures par semaine'; } });
+      var src = document.getElementById('wiki-src');
+      if (wi) { src.innerHTML = 'Source : <a href="' + wi.url + '">Wikimedia</a>, lectures par des personnes (robots exclus), relevé du ' + BX.fmtDay(BX.day(wi.releve)) + ', 28 derniers jours jusqu\'au ' + BX.fmtDay(BX.day(wi.jusqu_au)) + '.' + (wi.manque ? ' Pas relu ce jour-là, chiffres précédents gardés : ' + wi.manque + '.' : ''); }
+    };
+    var blocW = document.getElementById('wikipedia');
+    if (blocW && !blocW.dataset.pret) { blocW.dataset.pret = '1'; blocW.addEventListener('toggle', function () { if (blocW.open) chart('chart-wiki', wv.status === 'ok', wv.status === 'error', dessinWiki); }); }
+    if (blocW && blocW.open) chart('chart-wiki', wv.status === 'ok', wv.status === 'error', dessinWiki);
 
     if (du.status === 'ok') {
       var tbd = document.getElementById('tbody-duels'); tbd.textContent = '';
@@ -1065,7 +1409,7 @@ dash.calc('duels_recents', {
 })();
 </script>
 
-<footer class="bx-foot">concret2027.fr · Données publiques : sondages déposés à la Commission des sondages (via Wikipédia), Polymarket, Insee, presse. Page indépendante de tout parti.</footer>
+<footer class="bx-foot">concret2027.fr · Données publiques : sondages déposés à la Commission des sondages (liste des enquêtes repérée sur Wikipédia ; commanditaire et marge d'erreur lus dans la notice de la Commission ou le rapport de l'institut), Polymarket, Insee, presse. Page indépendante de tout parti.</footer>
 <script>
 // Les mentions de la loi de 1977 pour chaque sondage affiché, lues dans sa notice (datasets.sondages_notices, outils/sondages.py),
 // ou, en attendant que la Commission la mette en ligne, dans le rapport complet de l'institut (statut « rapport »).
@@ -1145,7 +1489,7 @@ window.addEventListener('baro:data', function () {
   // Mentions de la loi du 19 juillet 1977 pour les sondages d'un graphique partagé : le dernier sondage en entier, puis
   // l'ensemble (nombre, période, instituts, marges d'erreur) avec le renvoi vers la liste complète et les notices.
   function mentions(card) {
-    var src = card.id === 'second-tour' ? 'sondages_t2' : card.id === 'premier-tour' ? 'sondages_t1' : null;
+    var src = card.id === 'second-tour' ? 'sondages_t2' : card.id === 'premier-tour' || card.id === 'comparaison' ? 'sondages_t1' : null;
     if (!src) return [];
     var rows = dash.data(src).data || [], N = dash.data('sondages_notices').data || [], cle = function (d, i) { return d + '|' + String(i).replace(/ Interactive$/, ''); }, idx = {};
     N.forEach(function (n) { idx[cle(n.date, n.institut)] = n; });
@@ -1164,13 +1508,15 @@ window.addEventListener('baro:data', function () {
   }
   // Partage : le graphique est redessiné en grand format (740 px de large, agrandi dans l'image) le temps de la capture, quel que soit l'écran,
   // pour que l'image soit lisible ; puis la page reprend sa taille.
-  function share(card) {
+  // Une carte qui a plusieurs graphiques (parieurs : les chances du jour, puis l'évolution) a un bouton par graphique,
+  // et l'image ne montre que celui-là (chart), avec le texte qui le précède.
+  function share(card, chart) {
     card.classList.add('bx-sharing'); dash.refresh();
-    requestAnimationFrame(function () { requestAnimationFrame(function () { shareWide(card); }); });
+    requestAnimationFrame(function () { requestAnimationFrame(function () { shareWide(card, chart); }); });
   }
-  function shareWide(card) {
+  function shareWide(card, chart) {
     var fin = function () { card.classList.remove('bx-sharing'); dash.refresh(); };
-    var svgs = Array.prototype.filter.call(card.querySelectorAll('svg'), function (s) { return s.getBoundingClientRect().width > 50; });
+    var svgs = Array.prototype.filter.call((chart || card).querySelectorAll('svg'), function (s) { return s.getBoundingClientRect().width > 50; });
     if (!svgs.length) { fin(); return; }
     var labels = svgs.map(function (sv) { var pn = sv.closest('.bx-panel'), h = pn && pn.querySelector('h3'); return h ? h.textContent : ''; });
     // Légende des couleurs (second tour : un trait par adversaire), reprise dans l'image.
@@ -1185,37 +1531,67 @@ window.addEventListener('baro:data', function () {
       x.fillStyle = fg; x.globalAlpha = .65; x.font = '600 32px "Inter Tight", system-ui, sans-serif';
       x.fillText('CONCRET · BAROMÈTRE 2027 · ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase(), 70, 100);
       x.globalAlpha = 1; x.font = '400 62px Newsreader, Georgia, serif';
-      var y = wrap(x, card.querySelector('h2').textContent, 70, 190, W - 140, 72);
-      var note = card.querySelector('.bx-note');
-      if (note) { x.globalAlpha = .7; x.font = '400 28px "Inter Tight", system-ui, sans-serif'; y = wrap(x, note.textContent.split('. ')[0].replace(/\.$/, '') + '.', 70, y + 4, W - 140, 38); x.globalAlpha = 1; }
+      var cmp = card.id === 'comparaison', bp = cmp && card.querySelector('.bx-cmp-c [aria-pressed="true"]');
+      if (cmp) x.font = '400 50px Newsreader, Georgia, serif';
+      var y = wrap(x, cmp ? (bp ? BX.full(bp.textContent) + ' · ' : '') + 'premier tour, comparé à 2012, 2017 et 2022' : card.querySelector('h2').textContent, 70, cmp ? 172 : 190, W - 140, cmp ? 58 : 72);
+      var note = cmp ? null : card.querySelector('.bx-note');
+      // Comparaison : le tableau-légende en grand (à la même distance du vote, résultat), puis les exceptions.
+      if (cmp) {
+        var trs = card.querySelectorAll('#cmp-table tbody tr'), hd = card.querySelectorAll('#cmp-table thead th');
+        x.globalAlpha = .6; x.font = '500 24px "Inter Tight", system-ui, sans-serif'; x.fillStyle = fg; x.fillText(hd[1] ? hd[1].textContent : '', 430, y + 26); x.fillText('Résultat', 760, y + 26); x.globalAlpha = 1; y += 40;
+        Array.prototype.forEach.call(trs, function (tr) {
+          var th = tr.querySelector('th'), sw = th.querySelector('i'), col = sw ? getComputedStyle(sw).backgroundColor : fg, sm = th.querySelector('small'), tds = tr.querySelectorAll('td');
+          var lab = th.textContent.replace(sm ? sm.textContent : '', '').trim();
+          x.fillStyle = col; x.fillRect(70, y + 22, 30, 6);
+          x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.fillText(lab, 114, y + 30);
+          if (sm) { x.globalAlpha = .6; x.fillStyle = fg; x.font = '400 21px "Inter Tight", system-ui, sans-serif'; x.fillText(sm.textContent, 114, y + 58); x.globalAlpha = 1; }
+          var v = tds[0], r = tds[1], big = function (td, xx, c2) { var b = td.querySelector('b'); if (b) { var tv = (td.querySelector('sup') ? b.textContent : td.textContent).trim(); x.fillStyle = c2; x.font = '700 44px "Inter Tight", system-ui, sans-serif'; x.fillText(tv, xx, y + 40); if (td.querySelector('sup')) { var wv = x.measureText(tv).width; x.font = '400 24px "Inter Tight", system-ui, sans-serif'; x.fillText({ 1: '¹', 2: '²', 3: '³' }[td.querySelector('sup').textContent] || '', xx + wv + 4, y + 20); } } else { x.fillStyle = fg; x.globalAlpha = .6; x.font = '400 22px "Inter Tight", system-ui, sans-serif'; x.fillText(td.textContent, xx, y + 34); x.globalAlpha = 1; } };
+          big(v, 430, col); big(r, 760, fg); y += 78;
+        });
+        var exc = card.querySelector('#cmp-exc');
+        if (exc && !exc.hidden && exc.textContent) { x.globalAlpha = .7; x.fillStyle = fg; x.font = '400 21px "Inter Tight", system-ui, sans-serif'; y = wrap(x, exc.textContent.replace(/(^|\. )([123]) /g, function (m, a, n) { return a + { 1: '¹', 2: '²', 3: '³' }[n] + ' '; }), 70, y + 10, W - 140, 28); x.globalAlpha = 1; }
+      }
+      if (chart) { note = null; for (var pv = chart.previousElementSibling; pv; pv = pv.previousElementSibling) if (pv.classList.contains('bx-note')) { note = pv; break; } }
+      if (note) { x.globalAlpha = .7; x.font = (cmp ? '400 25px' : '400 28px') + ' "Inter Tight", system-ui, sans-serif'; y = wrap(x, cmp ? note.textContent : note.textContent.split('. ')[0].replace(/\.$/, '') + '.', 70, y + 4, W - 140, cmp ? 33 : 38); x.globalAlpha = 1; }
       // Mentions légales des sondages, en bas de l'image : on mesure leur hauteur avant de placer les graphiques.
       var ML = mentions(card), mh = 0;
       if (ML.length) { x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var mc = document.createElement('canvas').getContext('2d'); mc.font = x.font; ML.forEach(function (t) { var line = '', n = 1; t.split(' ').forEach(function (w) { var u = line ? line + ' ' + w : w; if (mc.measureText(u).width > W - 140 && line) { n++; line = w; } else line = u; }); mh += n * 29 + 8; }); mh += 16; }
       if (LEG.length) { x.font = '500 26px "Inter Tight", system-ui, sans-serif'; var lx = 70, ly = y + 14; LEG.forEach(function (g) { var w = 30 + x.measureText(g.t).width + 30; if (lx + w > W - 70) { lx = 70; ly += 40; } x.fillStyle = g.c; x.beginPath(); x.arc(lx + 10, ly - 9, 10, 0, 7); x.fill(); x.fillStyle = fg; x.fillText(g.t, lx + 28, ly); lx += w; }); y = ly + 22; }
-      var top = y + 20, avail = H - 170 - top - mh, cols = imgs.length > 1 ? 2 : 1, rows = Math.ceil(imgs.length / cols), gw = (W - 140 - (cols - 1) * 30) / cols, gh = (avail - (rows - 1) * 24) / rows;
+      // Comparaison : la rangée des candidats sous la courbe (celui de l'image surligné), pour montrer qu'on peut en choisir un autre sur le site.
+      var chH = cmp ? 44 : 0;
+      var top = y + 20, avail = H - 170 - top - mh - chH, cols = imgs.length > 1 ? 2 : 1, rows = Math.ceil(imgs.length / cols), gw = (W - 140 - (cols - 1) * 30) / cols, gh = (avail - (rows - 1) * 24) / rows;
       imgs.forEach(function (im, i) {
         var lh = labels[i] ? 40 : 0, s = Math.min(gw / im.w, (gh - lh) / im.h), dw = im.w * s, dh = im.h * s, cx = 70 + (i % cols) * (gw + 30) + (gw - dw) / 2, cy = top + Math.floor(i / cols) * (gh + 24);
         if (lh) { x.fillStyle = fg; x.font = '600 28px "Inter Tight", system-ui, sans-serif'; x.fillText(labels[i], 70 + (i % cols) * (gw + 30), cy + 28); }
         x.drawImage(im.img, cx, cy + lh, dw, dh);
       });
+      if (cmp) { x.fillStyle = fg; x.globalAlpha = .8; x.font = '600 24px "Inter Tight", system-ui, sans-serif'; x.fillText('Les autres candidats : concret2027.fr/barometre', 70, top + avail + 32); x.globalAlpha = 1; }
       if (ML.length) { x.fillStyle = fg; x.globalAlpha = .75; x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var my = H - 150 - mh + 16; ML.forEach(function (t) { my = wrap(x, t, 70, my + 22, W - 140, 29) - 22 + 8; }); x.globalAlpha = 1; }
       x.fillStyle = '#2f5bd3'; x.font = '700 40px "Inter Tight", system-ui, sans-serif'; x.fillText('concret2027.fr', 70, H - 90);
-      x.fillStyle = fg; x.globalAlpha = .6; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; x.fillText('Sources : Commission des sondages, instituts, Polymarket', 70, H - 48); x.globalAlpha = 1;
+      x.fillStyle = fg; x.globalAlpha = .6; x.font = '400 26px "Inter Tight", system-ui, sans-serif'; x.fillText(/^(parieurs-t1|polymarket)$/.test(card.id) ? 'Source : Polymarket' : cmp ? 'Sources : Commission des sondages, Wikipédia, Conseil constitutionnel' : 'Sources : Commission des sondages, instituts', 70, H - 48); x.globalAlpha = 1;
       var show = function () { document.getElementById('bx-sheet-img').src = c.toDataURL('image/png'); document.getElementById('bx-sheet').hidden = false; document.getElementById('bx-sheet-close').focus(); };
       try {
         c.toBlob(function (blob) {
-          var f = blob && new File([blob], 'concret-' + card.id + '.png', { type: 'image/png' });
-          if (f && navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: 'Concret', text: 'concret2027.fr' }).catch(show);
+          var f = blob && new File([blob], 'concret-' + (chart ? chart.id : card.id) + '.png', { type: 'image/png' });
+          if (f && navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: 'Concret', text: cmp ? 'Comparez avec 2012, 2017 et 2022 : https://concret2027.fr/barometre/#' + card.id : 'concret2027.fr' }).catch(show);
           else show();
         });
       } catch (e) { show(); }
     }).catch(function () {});
   }
-  ['premier-tour', 'second-tour', 'parieurs-t1', 'polymarket'].forEach(function (id) {
+  ['premier-tour', 'comparaison', 'second-tour', 'parieurs-t1', 'polymarket'].forEach(function (id) {
     var card = document.getElementById(id); if (!card) return;
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'bx-share'; b.textContent = 'Partager ce graphique';
-    b.addEventListener('click', function () { share(card); });
-    card.appendChild(b);
+    var charts = card.querySelectorAll('.bx-chart');
+    if (charts.length > 1) Array.prototype.forEach.call(charts, function (ch) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'bx-share'; b.textContent = 'Partager ce graphique';
+      b.addEventListener('click', function () { share(card, ch); });
+      ch.parentNode.insertBefore(b, ch.nextSibling);
+    });
+    else {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'bx-share'; b.textContent = 'Partager ce graphique';
+      b.addEventListener('click', function () { share(card); });
+      card.appendChild(b);
+    }
   });
   document.getElementById('bx-sheet-close').addEventListener('click', function () { document.getElementById('bx-sheet').hidden = true; });
   document.getElementById('bx-sheet').addEventListener('click', function (e) { if (e.target.id === 'bx-sheet') this.hidden = true; });
@@ -1225,13 +1601,28 @@ window.addEventListener('baro:data', function () {
 // Barre « Aller à » : le groupe où l'on se trouve est surligné (les liens Premier tour / Second tour sont sous chaque titre).
 (function () {
   var nav = document.querySelector('.jump'); if (!nav) return;
-  var G = ['moment', 'sondages', 'parieurs', 'detail', 'methode'], cur = null;
-  function maj() {
-    var lim = nav.getBoundingClientRect().bottom + 24, g = 'moment';
-    G.forEach(function (x) { var e = document.getElementById(x); if (e && e.getBoundingClientRect().top <= lim) g = x; });
+  var G = ['moment', 'sondages', 'parieurs', 'wikipedia', 'detail', 'methode'], cur = null;
+  var ID = { moment: 'aujourdhui' }, choisi = null, fin = 0;
+  function montre(g) {
     if (g === cur) return; cur = g;
     nav.querySelectorAll('.jump-l1 a').forEach(function (a) { var on = a.getAttribute('data-g') === g; a.classList.toggle('on', on); if (on) a.parentNode.scrollLeft = Math.max(0, a.offsetLeft - 40); });
   }
+  // La partie surlignée : la dernière dont le titre est passé sous la ligne des raccourcis (avec une marge, pour celle
+  // qu'on vient de choisir, posée juste dessous). Après un toucher, c'est celle-là, jusqu'à la fin du défilement.
+  function maj() {
+    if (choisi && Date.now() < fin) { montre(choisi); return; }
+    choisi = null;
+    var lim = nav.getBoundingClientRect().bottom + 80, g = 'moment';
+    G.forEach(function (x) { var e = document.getElementById(ID[x] || x); if (e && e.getBoundingClientRect().top <= lim) g = x; });
+    montre(g);
+  }
+  nav.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('.jump-l1 a'); if (a) {
+    choisi = a.getAttribute('data-g'); fin = Date.now() + 1500; montre(choisi);
+    // Le défilement vers une ancre ne s'arrête pas au même endroit selon le navigateur : on pose le titre juste sous les raccourcis.
+    var c = document.getElementById(a.getAttribute('href').slice(1)); if (!c) return;
+    e.preventDefault(); if (c.tagName === 'DETAILS') c.open = true;
+    var M = window.ConcretMenu; c.scrollIntoView({ behavior: M ? M.doux() : 'smooth', block: 'start' }); if (M) M.focaliser(c); if (history.replaceState) history.replaceState(null, '', a.getAttribute('href'));
+  } });
   var t = 0; addEventListener('scroll', function () { if (!t) t = requestAnimationFrame(function () { t = 0; maj(); }); }, { passive: true });
   addEventListener('resize', maj); maj();
   // Sur grand écran, l'agenda est ouvert d'office.
@@ -1292,18 +1683,20 @@ window.addEventListener('baro:data', function () {
         items.push('<b>Parieurs (Polymarket), depuis le ' + fd(d0) + ' :</b> ' + mv.map(function (m) {
           var s = Math.abs(m.d) < 0.05 ? 'stable' : (m.d > 0 ? '▲ +' : '▼ −') + nf(Math.abs(m.d), 1) + ' pt';
           return esc(m.c) + ' <b>' + s + '</b> (' + nf(m.v, 1) + ' %)';
-        }).join(', ') + '. Favori des parieurs pour le second tour : ' + esc(lead.candidat) + ' (' + nf(vu(lead.candidat, +lead.probabilite), 1) + ' %).');
+        }).join(', ') + '. Favori des parieurs pour gagner l\'élection : ' + esc(lead.candidat) + ' (' + nf(vu(lead.candidat, +lead.probabilite), 1) + ' %).');
       }
     }
     // Sondages : dernier sondage publié
     var st = ds.sondages_t1 || [];
     if (st.length) {
       var last = st.map(function (r) { return r.date; }).sort().pop(), rows = st.filter(function (r) { return r.date === last; });
-      var inst = Array.from(new Set(rows.map(function (r) { return r.institut; }))).reverse(), n = ago(last); // le dernier publié d'abord
+      // Jours depuis la publication (« publie ») quand elle est connue, sinon depuis la fin du terrain.
+      var pub = rows.map(function (r) { return r.publie || r.date; }).sort().pop();
+      var inst = Array.from(new Set(rows.map(function (r) { return r.institut; }))).reverse(), n = ago(pub); // le dernier publié d'abord
       // Plusieurs sondages le même jour : la moyenne de ces sondages, comme le bloc « Les derniers sondages ».
       var moy = {}; rows.forEach(function (r) { (moy[r.candidat] = moy[r.candidat] || []).push(+r.score); });
       var top = Object.keys(moy).map(function (c) { var v = moy[c]; return { candidat: c, score: v.reduce(function (a, b) { return a + b; }, 0) / v.length, terrain: rows[0].terrain }; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
-      items.push((n <= 4 ? '<b>' + (inst.length > 1 ? 'Nouveaux sondages ' : 'Nouveau sondage ') : '<b>Pas de nouveau sondage depuis ' + n + ' jours.</b> Dernier en date : ') + esc(inst.join(', ')) + (n <= 4 ? '</b>' : '') + ' (' + (inst.length > 1 ? 'moyenne des ' + inst.length + ' sondages, terrains finis le ' + fd(last) : 'terrain du ' + esc(rows[0].terrain || fd(last))) + ') : ' +
+      items[n <= 4 ? 'unshift' : 'push']((n <= 4 ? '<b>' + (inst.length > 1 ? 'Nouveaux sondages ' : 'Nouveau sondage ') + (n <= 0 ? 'publié aujourd\'hui, ' : n === 1 ? 'publié hier, ' : '') : '<b>Pas de nouveau sondage depuis ' + n + ' jours.</b> Dernier en date : ') + esc(inst.join(', ')) + (n <= 4 ? '</b>' : '') + ' (' + (inst.length > 1 ? 'moyenne des ' + inst.length + ' sondages, terrains finis le ' + fd(last) : 'terrain du ' + esc(rows[0].terrain || fd(last))) + ') : ' +
         top.map(function (r) { return esc(r.candidat) + ' ' + nf(+r.score, 1) + ' %'; }).join(', ') + '.');
     }
     // Événement récent
@@ -1315,6 +1708,20 @@ window.addEventListener('baro:data', function () {
     if (feed.updated_iso) { var u = new Date(feed.updated_iso); document.getElementById('today-since').textContent = '· mis à jour le ' + u.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: 'Europe/Paris' }); }
     ul.innerHTML = items.map(function (t) { return '<li>' + t + '</li>'; }).join('');
     document.getElementById('today-hint').textContent = items.length + ' point' + (items.length > 1 ? 's' : '') + ' · voir le détail';
+    // Replié sur trois lignes ; un seul bouton montre la suite de la synthèse et la liste.
+    var sec = document.getElementById('aujourdhui'), bv = document.getElementById('today-voir');
+    if (!bv.dataset.pret) {
+      bv.dataset.pret = '1';
+      bv.addEventListener('click', function () { var o = sec.classList.toggle('plie'); bv.textContent = o ? 'Voir le détail ▾' : 'Masquer ▴'; bv.setAttribute('aria-expanded', o ? 'false' : 'true'); });
+    }
+    // La place gardée pendant le chargement (.charge) est rendue quand la phrase de synthèse est écrite elle aussi (autre script) :
+    // sinon le bloc rétrécit, puis grandit de nouveau.
+    var tk = document.getElementById('takeaway');
+    var finir = function () {
+      if (tk.querySelector('.dash-skeleton')) return false;
+      bv.hidden = !items.length && !(tk.scrollHeight > tk.clientHeight + 2); sec.classList.remove('charge'); return true;
+    };
+    if (!finir()) { var mo = new MutationObserver(function () { if (finir()) mo.disconnect(); }); mo.observe(tk, { childList: true, subtree: true, characterData: true }); setTimeout(function () { mo.disconnect(); sec.classList.remove('charge'); }, 8000); }
     // Depuis votre dernière visite (gardé dans le navigateur du visiteur uniquement).
     // « cur » = début de la visite en cours ; « base » = visite précédente. Une nouvelle visite commence après 1 h d'absence.
     try {
@@ -1375,9 +1782,9 @@ window.addEventListener('baro:data', function () {
   } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261028g"></script>
-<script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261028r"></script>
+<script src="/commun/partage.js?v=20261031d"></script>
+<script src="/commun/recherche.js?v=20261031a"></script>
+<script src="/commun/menu.js?v=20261031k"></script>
 <script>
 // Longues listes du Baromètre (duels, sondages de premier tour, notices) : les 6 premières lignes, puis « Voir les N autres »
 // qui déplie dans la page (pas de zone qui défile à l'intérieur de la page). Refait à chaque mise à jour du tableau.

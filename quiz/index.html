@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="556e27f2a9a7">
+<meta name="concret-version" content="852be26972c2">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -14,9 +14,9 @@
 <meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)">
 <title>Quiz du jour · Concret</title>
-<meta name="description" content="Chaque jour, huit questions sur la France face à ses voisins européens et sur la note des présidents et des gouvernements. Chaque réponse renvoie à la courbe qui la prouve.">
+<meta name="description" content="Chaque jour, huit questions sur la France face à ses voisins européens et sur les résultats de la France sous chaque président et gouvernement. Chaque réponse renvoie à la courbe qui la prouve.">
 <meta property="og:title" content="Quiz du jour · Concret">
-<meta property="og:description" content="Huit questions par jour sur la France face à ses voisins européens et sur la note des présidents. Chaque réponse renvoie à sa source.">
+<meta property="og:description" content="Huit questions par jour sur la France face à ses voisins européens et sur les résultats mandat par mandat. Chaque réponse renvoie à sa source.">
 <meta property="og:url" content="https://concret2027.fr/quiz/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://concret2027.fr/donnees/apercu/quiz.png">
@@ -28,17 +28,16 @@
 <script data-goatcounter="https://concret2027.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
-<script src="../commun/notes.js?v=20261025j"></script>
-<script src="/commun/bref.js?v=20261026c"></script>
-<script src="/commun/quiz.js?v=20261026b"></script>
-<script src="/commun/votez.js?v=20261028c"></script>
+<script src="../commun/notes.js?v=20261029c"></script>
+<script src="/commun/bref.js?v=20261031i"></script>
+<script src="/commun/quiz.js?v=20261031j"></script>
 <style>html, body { margin: 0; }
 
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
 :root {
   --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
   --fr: #2f5bd3; --de: #6f7280; --it: #1f8a4c; --ea: #b0812a; --us: #a2459a; --es: #d0632a;
-  --bad: #c43d3d; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06);
+  --bad: #a83232; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06);
   --grid: #ececE6; --axis: #c9c9c2; --draft: #fff4d6; --draft-fg: #7a5a00;
   --hero-bg: #eaf0fd; --hero-line: #d3def8; --hero-fg: #13234d; --hero-muted: #4f5d80; --hero-num: #1d3c9e; --hero-up: #c43d3d; --pill: #ffffff;
   --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .14);
@@ -88,6 +87,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .jump a { flex: none; font-size: 13px; font-weight: 600; color: var(--fg); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
 .jump a:focus-visible { outline: 2px solid var(--fr); outline-offset: 2px; }
 section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
+/* Les questions : le bandeau des pages et la barre de progression sont déjà comptés par html { scroll-padding-top } (commun/menu.js). */
+section.quiz[id], #qz-fin { scroll-margin-top: 12px; }
 .flash { animation: flash 1.6s ease-out; }
 @keyframes flash { 0% { background: var(--band); box-shadow: 0 0 0 3px var(--fr); border-radius: 10px; } 100% { box-shadow: 0 0 0 0 transparent; } }
 @media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
@@ -161,7 +162,7 @@ section[id], details[id] { scroll-margin-top: calc(var(--navh, 44px) + 64px); }
 
 /* Question du jour */
 .quiz { border-color: var(--fr); }
-.quiz .q { font-family: var(--serif); font-size: 23px; line-height: 1.25; margin: 0; text-wrap: balance; }
+.quiz .q { font-family: var(--serif); font-size: 23px; font-weight: 400; line-height: 1.25; margin: 0; text-wrap: balance; }
 .opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .opt { font: inherit; text-align: left; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); cursor: pointer; min-height: 48px; }
 .opt.right { border-color: var(--ok); color: var(--ok); font-weight: 600; background: var(--s-good); }
@@ -377,6 +378,8 @@ footer p { margin: 0; } footer a { color: inherit; }
 .reps .rv { grid-column: 1; font-size: 14.5px; line-height: 1.4; } .reps .rv b { font-weight: 700; font-variant-numeric: tabular-nums; }
 .reps .st { grid-column: 2; grid-row: 1 / span 2; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; background: var(--grid); color: var(--fg); }
 .reps .st.ok { background: var(--s-good); color: var(--ok); } .reps .st.mid { background: var(--s-mid); color: var(--mid); } .reps .st:empty { display: none; } .mo-tab { width: 100%; table-layout: fixed; } .mo-tab th:first-child { width: 44%; } .mo-tab td small { display: block; } .mo-row { cursor: pointer; } .mo-row[aria-selected="true"] td { background: var(--band); } .mo-row[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--fr); }
+
+.qz-rang-n { display: block; margin-top: 6px; font-size: 13.5px; color: var(--muted); }
 </style>
 <style>
 .qz-intro { display: grid; gap: 8px; }
@@ -391,6 +394,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .qz-fin { border: 1.5px solid var(--fr); background: var(--band); text-align: center; justify-items: center; }
 .qz-score { font-family: var(--serif); font-size: 64px; line-height: 1; }
 .qz-score small { font-size: 28px; color: var(--muted); }
+.qz-maint { display: block; margin-top: 8px; font-family: var(--sans, system-ui, sans-serif); font-size: 13.5px; line-height: 1.4; color: var(--muted); }
 .qz-grille { font-size: 22px; letter-spacing: 2px; }
 .qz-rang { font-size: 15px; max-width: 46ch; margin: 0; }
 .qz-rang b { font-weight: 600; }
@@ -419,16 +423,19 @@ footer p { margin: 0; } footer a { color: inherit; }
 .qz-pseudo div { display: flex; gap: 8px; min-width: 0; } .qz-pseudo .qz-btn { flex: none; } .qz-pseudo input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
 .qz-pseudo-msg { margin: 0; font-size: 13px; min-height: 1em; color: var(--muted); }
 .qz-copie { font-size: 13px; color: var(--ok); margin: 0; min-height: 1em; }
+/* La place des blocs remplis par les données est gardée pendant le chargement : la page ne saute pas quand ils arrivent. */
+#qz-liste:empty { min-height: 100vh; }
 </style>
 </head>
 <body data-sources="Sources : les pages de Concret (données Eurostat, OCDE, OTAN, Insee, PNUD et autres, détail sur chaque page).">
+<noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les résultats et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/">La vie politique</a><a href="/quiz/" aria-current="page">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
   <div class="brand"><b>Quiz du jour</b><span id="today"></span></div>
 
   <section class="card qz-intro" data-partage="non" aria-labelledby="qz-titre">
     <h1 id="qz-titre">Huit questions sur la France face à ses voisins</h1>
-    <p class="note" style="font-size:14px">Une question par page de Concret et deux sur la note des présidents, avec la réponse sourcée. Nouvelles questions chaque jour à minuit.</p>
+    <p class="note" style="font-size:14px">Une question par page de Concret et deux sur les résultats mandat par mandat, avec la réponse sourcée. Nouvelles questions chaque jour à minuit.</p>
   </section>
 
   <div class="qz-suivi" id="qz-suivi"><b id="qz-n">0 / 8</b><div class="qz-prog" id="qz-prog" aria-hidden="true"></div></div>
@@ -461,7 +468,6 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="note">Un point par bonne réponse, chaque jour ; seul le premier essai compte. Le classement de la semaine repart chaque lundi. Votre place est gardée grâce à un identifiant tiré au hasard sur cet appareil : ni e-mail, ni nom. Le pseudo est visible de tous ; pas d'insulte ni de nom de personnalité politique. <a href="#" id="qz-oubli">Effacer mes scores et mon pseudo</a></p>
   </section>
 
-  <section class="card" id="qz-loi" data-partage="non" aria-live="polite" hidden></section>
 
   <footer><p>Les réponses sont comptées de façon anonyme, pour afficher la part de chaque réponse et le classement du jour. <a href="/mentions-legales/">Mentions légales</a></p></footer>
 </div>
@@ -488,48 +494,155 @@ footer p { margin: 0; } footer a { color: inherit; }
 
   // Questions fabriquées à partir des notes (commun/notes.js, mêmes chiffres que les bulletins des pages).
   // On ne garde que les notes calculées sur au moins une année complète, et une meilleure note sans égalité.
+  // Les deux questions fabriquées chaque jour, sans rien saisir à la main : l'une sur les notes (commun/notes.js), l'autre sur un
+  // indicateur des pages (data.json, dernier chiffre connu). Le type et le sujet changent d'un jour à l'autre, pour ne pas tourner en rond.
   function genere(S) {
     var cg = N.classement(S), M = N.MISSIONS, out = [], r = alea(idx * 7919 + 17);
     var note = function (x, k) { return x[k] == null || x[k + '_prov'] ? null : Math.round(x[k] * 10) / 10; };
     var seule = function (l) { var v = l.map(function (x) { return x.v; }).sort(function (a, b) { return b - a; }); return v[0] > v[1]; };
     var slug = function (m) { return m.url.split('/')[1]; };
-    // 1. Les présidents, sur une mission qui change chaque jour.
-    for (var t = 0; t < M.length; t++) {
-      var m = M[(idx + t) % M.length], P = cg.pres.slice().sort(function (a, b) { return a.y0 - b.y0; }).map(function (x) { return { n: court(x.n), v: note(x, m.k) }; });
-      if (P.some(function (x) { return x.v == null; }) || !seule(P)) continue;
-      var best = P.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = P.slice().sort(function (a, b) { return b.v - a.v; });
-      out.push({ page: 'notes', l: 'Les présidents', q: 'Sur la page ' + m.l + ', quel président a la note la plus haute ?', o: P.map(function (x) { return x.n; }), a: P.indexOf(best),
-        e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(m) + '/#bulletin', src: m.l });
-      break;
-    }
-    // 2. Quatre gouvernements tirés au sort, sur une autre mission.
-    for (t = 0; t < M.length; t++) {
-      m = M[(idx + 3 + t) % M.length];
-      var G = cg.gov.map(function (x) { return { n: x.n, v: note(x, m.k) }; }).filter(function (x) { return x.v != null; });
-      if (G.length < 4) continue;
-      var four = null;
-      for (var essai = 0; essai < 12 && !four; essai++) { var c = melange(G, r).slice(0, 4); if (seule(c)) four = c; }
-      if (!four) continue;
-      best = four.reduce(function (a, b) { return b.v > a.v ? b : a; }); tri = four.slice().sort(function (a, b) { return b.v - a.v; });
-      out.push({ page: 'notes', l: 'Les gouvernements', q: 'Sur la page ' + m.l + ', lequel de ces gouvernements a la note la plus haute ?', o: four.map(function (x) { return x.n; }), a: four.indexOf(best),
-        e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (notes sur 20).', lien: '/' + slug(m) + '/#bulletin', src: m.l });
-      break;
-    }
+    var pres = cg.pres.slice().sort(function (a, b) { return a.y0 - b.y0; });
+    var govs = function (m) { return cg.gov.map(function (x) { return { n: x.n, v: note(x, m.k) }; }).filter(function (x) { return x.v != null; }); };
+    // Sous un président ou un gouvernement, sur laquelle de quatre pages la France a-t-elle son résultat le plus haut ?
+    // (le résultat de la France pendant le mandat, jamais une note de la personne).
+    var mandat = function (p, gouv) {
+      if (!p) return null;
+      var L = M.map(function (m) { return { m: m, v: note(p, m.k) }; }).filter(function (x) { return x.v != null; });
+      if (L.length < 4) return null;
+      var four = null; for (var e = 0; e < 12 && !four; e++) { var c = melange(L, r).slice(0, 4); if (seule(c)) four = c; }
+      if (!four) return null;
+      var best = four.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = four.slice().sort(function (a, b) { return b.v - a.v; });
+      var qui = gouv ? 'le gouvernement ' + (/^[AEIOUÉÈYH]/i.test(p.n) ? 'd\'' : 'de ') + p.n : p.n;
+      return { l: gouv ? 'Les gouvernements' : 'Les présidents', q: 'Sous ' + qui + ', sur laquelle de ces pages la France a-t-elle son résultat le plus haut ?', o: four.map(function (x) { return x.m.l; }), a: four.indexOf(best),
+        e: tri.map(function (x) { return x.m.l + ' : ' + fmt(x.v); }).join(' ; ') + ' (résultats sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(best.m) + '/#bulletin', src: best.m.l };
+    };
+    var Q1 = [
+      // a. Les présidents sur une mission.
+      function (t) {
+        var m = M[t], P = pres.map(function (x) { return { n: court(x.n), v: note(x, m.k) }; });
+        if (P.some(function (x) { return x.v == null; }) || !seule(P)) return null;
+        var best = P.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = P.slice().sort(function (a, b) { return b.v - a.v; });
+        return { l: 'Les présidents', q: 'Sur la page ' + m.l + ', quel président a le résultat le plus haut ?', o: P.map(function (x) { return x.n; }), a: P.indexOf(best),
+          e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (résultats sur 20 ; 10 = aussi bien que la moyenne de l\'UE).', lien: '/' + slug(m) + '/#bulletin', src: m.l };
+      },
+      // b. Un mandat (président), ses missions : sur quelle page la France a-t-elle son résultat le plus haut ?
+      function (t) { return mandat(pres[t], false); },
+      // c. Quatre gouvernements tirés au sort, sur une mission.
+      function (t, q4) {
+        var m = M[t], G = govs(m);
+        if (G.length < 4) return null;
+        var four = q4 ? q4.map(function (j) { return G[j]; }) : null; for (var e = 0; e < 12 && !four; e++) { var c = melange(G, r).slice(0, 4); if (seule(c)) four = c; }
+        if (!four) return null;
+        var best = four.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = four.slice().sort(function (a, b) { return b.v - a.v; });
+        var noms = four.map(function (x) { return court(x.n); });
+        return { l: 'Les gouvernements', q: noms.slice(0, -1).join(', ') + ' ou ' + noms[noms.length - 1] + ' : sur la page ' + m.l + ', lequel de ces gouvernements a le résultat le plus haut ?', o: four.map(function (x) { return x.n; }), a: four.indexOf(best),
+          e: tri.map(function (x) { return x.n + ' : ' + fmt(x.v); }).join(' ; ') + ' (résultats sur 20).', lien: '/' + slug(m) + '/#bulletin', src: m.l };
+      },
+      // d. Un gouvernement, ses missions (comme b).
+      function (t) { return mandat(cg.gov[t], true); }
+    ];
+    // Les indicateurs des pages : France, moyenne de l'UE, Allemagne, Espagne, au dernier chiffre connu commun aux quatre.
+    var IND = [], dec = function (c) { return c.dec != null ? c.dec : 1; }, nf = function (v, d) { return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: d }).format(v); };
+    var PG = { sante: 'Santé', securite: 'Sécurité et justice', vie: 'Vie des Français' };
+    Object.keys(PG).forEach(function (pg) {
+      var C = (S[pg] || {}).C || {};
+      Object.keys(C).forEach(function (k) {
+        var c = C[k]; if (!c || !c.y || !c.fr || /propre|composite|croissance|effort/.test(c.regle || '')) return;
+        var ue = c.ue || c.ue_calc; if (!ue) return;
+        // Les dix dernières années définitives communes à la France et à la moyenne de l'UE.
+        for (var i = c.y.length - 1, nb = 0; i >= 0 && nb < 10; i--) if (c.fr[i] != null && ue[i] != null && !(c.est || {})[c.y[i]] && !(c.prov || {})[c.y[i]]) {
+          IND.push({ pg: pg, page: PG[pg], courbe: 'ch-' + k, der: !nb++, l: c.lc || c.l, u: c.unite || '', y: c.y[i], d: dec(c), low: c.low, moyens: /^d(pol|trib|pris)$|^places$/.test(k), v: { 'France': c.fr[i], 'Moyenne de l\'UE': ue[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
+        }
+      });
+    });
+    [['el', 'Décrochage scolaire'], ['ne', 'Jeunes ni en emploi ni en études'], ['te', 'Diplômés du supérieur']].forEach(function (p) {
+      var c = ((S.education || {}).S || {})[p[0]]; if (!c) return;
+      for (var i = Math.min(c.fr.length, c.eu.length) - 1, nb = 0; i >= 0 && nb < 10; i--) if (c.fr[i] != null && c.eu[i] != null) IND.push({ pg: 'education', page: 'Éducation', courbe: 'ch-' + p[0], der: !nb++, l: p[1], u: '%', y: 2002 + i, d: 1, low: p[0] !== 'te', v: { 'France': c.fr[i], 'Moyenne de l\'UE': c.eu[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
+    });
+    [['dette', 'Dette publique', true], ['dep', 'Dépenses publiques', null], ['po', 'Impôts et cotisations', null]].forEach(function (p) {
+      var c = ((S.finances || {}).D || {})[p[0]]; if (!c) return;
+      for (var i = c.fr.length - 1, nb = 0; i >= 0 && nb < 10; i--) if (c.fr[i] != null && c.eu[i] != null) IND.push({ pg: 'finances', page: 'Finances', courbe: 'ch-' + p[0], der: !nb++, l: p[1], u: '% du PIB', y: 1995 + i, d: 1, low: p[2], v: { 'France': c.fr[i], 'Moyenne de l\'UE': c.eu[i], 'Allemagne': (c.de || [])[i], 'Espagne': (c.es || [])[i] } });
+    });
+    var unite = function (x) { return /^%/.test(x.u) ? ' %' : ' ' + x.u; };
+    var Q2 = [
+      // d. Qui a le chiffre le plus élevé ? (sans jugement : plus élevé ne veut pas dire mieux)
+      function (x) {
+        var n = Object.keys(x.v).filter(function (k) { return x.v[k] != null; }); if (n.length < 4) return null;
+        var L = n.map(function (k) { return { n: k, v: x.v[k] }; }); if (!seule(L)) return null;
+        var o = melange(L, r), best = o.reduce(function (a, b) { return b.v > a.v ? b : a; }), tri = L.slice().sort(function (a, b) { return b.v - a.v; });
+        return { l: x.page, q: x.l + ', en ' + x.y + ' (' + x.u + ') : entre la France, la moyenne de l\'UE, l\'Allemagne et l\'Espagne, qui avait le chiffre le plus élevé ?', o: o.map(function (z) { return z.n; }), a: o.indexOf(best),
+          e: tri.map(function (z) { return z.n + ' : ' + nf(z.v, x.d) + (/^%/.test(x.u) ? ' %' : ''); }).join(' ; ') + ' (' + x.y + ', ' + x.u + ').', lien: '/' + x.pg + '/#' + x.courbe, src: x.page };
+      },
+      // e. Mieux ou moins bien que la moyenne de l'UE ? Seulement là où la page dit déjà ce qui est « mieux » (pas les moyens dépensés).
+      function (x) {
+        if (x.low == null || x.moyens) return null;
+        var f = x.v['France'], e = x.v['Moyenne de l\'UE']; if (f === e) return null;
+        var mieux = x.low ? f < e : f > e;
+        return { l: x.page, q: x.l + (x.der ? ', dernier chiffre connu' : ', en ' + x.y) + ' : la France fait-elle mieux ou moins bien que la moyenne de l\'UE ?', o: ['Mieux que la moyenne de l\'UE', 'Moins bien que la moyenne de l\'UE'], a: mieux ? 0 : 1,
+          e: 'France : ' + nf(f, x.d) + unite(x) + ' ; moyenne de l\'UE : ' + nf(e, x.d) + unite(x) + ' (' + x.y + '). ' + (x.low ? 'Ici, un chiffre plus bas est compté comme mieux.' : 'Ici, un chiffre plus haut est compté comme mieux.'), lien: '/' + x.pg + '/#' + x.courbe, src: x.page };
+      }
+    ];
+    // Toutes les questions possibles (forme × mission, président ou indicateur), puis un pas fixe, premier avec leur nombre :
+    // chacune passe avant qu'une revienne (avant, la forme et la mission tournaient ensemble et une question revenait en six jours).
+    var pgcd = function (a, b) { return b ? pgcd(b, a % b) : a; };
+    // Le j-ième jour d'une liste de n questions : un pas fixe, premier avec n.
+    var tour = function (j, n) { if (n === undefined) { n = j; j = idx; } var p = 7; while (n && pgcd(p, n) !== 1) p++; return n ? ((j * p) % n + n) % n : -1; };
+    // Les présidents (a, b) un jour sur sept ; les autres jours, quatre gouvernements d'une mission (c) : toutes les combinaisons
+    // de quatre gouvernements dont un seul a la note la plus haute, des milliers, chacune posée avant qu'une revienne.
+    var C1 = [], C3 = [];
+    for (var t = 0; t < Math.max(M.length, pres.length); t++) for (var f = 0; f < 2; f++) if (f === 1 ? t < pres.length : t < M.length) C1.push([f, t]);
+    M.forEach(function (m, t) {
+      var G = govs(m), n = G.length;
+      for (var a = 0; a < n; a++) for (var b = a + 1; b < n; b++) for (var c = b + 1; c < n; c++) for (var d = c + 1; d < n; d++) if (seule([G[a], G[b], G[c], G[d]])) C3.push([2, t, [a, b, c, d]]);
+    });
+    // Les missions à tour de rôle : la liste de chaque mission mélangée une fois pour toutes, puis une mission après l'autre.
+    var parM = M.map(function (m, t) { return melange(C3.filter(function (c) { return c[1] === t; }), alea(7919 + t)); }), C3b = [];
+    for (var n3 = 0; n3 < Math.max.apply(null, parM.map(function (l) { return l.length; }).concat(0)); n3++) parM.forEach(function (l) { if (l[n3]) C3b.push(l[n3]); });
+    var a7 = idx % 7 === 0 || !C3b.length, ord1 = a7 ? melange(C1, alea(7907)) : C3b, q1 = null, i0 = a7 ? tour(Math.floor(idx / 7), ord1.length) : (idx - Math.floor(idx / 7) - 1) % ord1.length;
+    // À partir du 31 octobre 2026 (jour 303), plus de question « quel président / quel gouvernement a le résultat le plus haut » :
+    // le site ne classe pas les personnes. Reste, chaque jour, la question « sur quelle page tel président a-t-il son résultat le
+    // plus haut ? » (b). Les jours d'avant gardent leurs questions (scores déjà enregistrés).
+    // Dès le 1er novembre 2026 (jour 304), les gouvernements aussi (d) ; le 31 octobre garde sa question (réponses déjà données).
+    if (idx >= 303) { ord1 = melange(C1.filter(function (c) { return c[0] === 1; }).concat(idx >= 304 ? cg.gov.map(function (g, t) { return [3, t]; }) : []), alea(7907)); i0 = tour(ord1.length); }
+    for (var k = 0, i1 = i0; k < ord1.length && !q1; k++) { var c1 = ord1[(i1 + k) % ord1.length]; q1 = Q1[c1[0]](c1[1], c1[2] && melange(c1[2], r)); }
+    var ord = melange(IND, alea(104729)), C2 = []; ord.forEach(function (x, j) { Q2.forEach(function (fn, f) { if (fn(x)) C2.push([f, j]); }); });
+    var q2 = null; for (k = 0, i1 = tour(C2.length); k < C2.length && !q2; k++) { var c2 = C2[(i1 + k) % C2.length]; q2 = Q2[c2[0]](ord[c2[1]]); }
+    // À partir du 31 octobre 2026, la deuxième question est celle du jour de la page Démographie (series.demographie.QUIZ,
+    // fabriquée par outils/quiz_auto.py, sujets à tour de rôle) ; comme les questions sur les mandats, son point est déclaré.
+    var DQ = (S.demographie || {}).QUIZ;
+    if (idx >= 303 && DQ && DQ.length) { var dq = pick(DQ); q2 = { l: 'Démographie', q: dq.q, o: dq.o, a: dq.a, e: dq.e, d: dq.d, lien: dq.v ? '/demographie/#' + dq.v : '/demographie/', src: 'Démographie' }; }
+    [q1, q2].forEach(function (q) { if (q) { q.page = 'notes'; out.push(q); } });
     return out;
   }
 
   function main(feed) {
     var S = feed.series, Qs = [];
-    PAGES.forEach(function (pg) { var B = (S[pg.p] || {}).QUIZ; if (B && B.length) { var Q = pick(B); Qs.push({ page: pg.p, l: pg.l, q: Q.q, o: Q.o, a: Q.a, e: Q.e, cle: pg.cle + idx, lien: Q.v ? '/' + pg.p + '/#' + Q.v : '/' + pg.p + '/#quiz', src: pg.l, Q: Q }); } });
-    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz-' + i + '-' + idx; g.Q = { q: g.q, o: g.o, d: 'Note sur 20, calculée avec la règle affichée sur chaque page : 10 = la France a fait aussi bien que la moyenne de l\'UE pendant le mandat.' }; Qs.push(g); });
+    PAGES.forEach(function (pg) { var B = (S[pg.p] || {}).QUIZ; if (B && B.length) { var Q = pick(B); Qs.push({ page: pg.p, l: Q.lp || pg.l, q: Q.q, o: Q.o, a: Q.a, e: Q.e, cle: pg.cle + idx + '-' + (function (t) { var h = 5381; for (var i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0; return h.toString(36); })(Q.q), lien: Q.v ? '/' + (Q.p || pg.p) + '/#' + Q.v : '/' + pg.p + '/#quiz', src: Q.lp || pg.l, Q: Q }); } });
+    genere(S).forEach(function (g, i) { g.cle = 'notes-quiz3-' + i + '-' + idx; g.Q = { q: g.q, o: g.o, d: /^Les (présidents|gouvernements)$/.test(g.l) ? 'Résultat sur 20, calculé avec la règle affichée sur chaque page : 10 = la France a fait aussi bien que la moyenne de l\'UE pendant le mandat.' : g.l === 'Démographie' ? g.d : 'Chiffres de la même année pour chaque réponse, lus dans les données de la page (Eurostat le plus souvent).' }; Qs.push(g); });
     var total = Qs.length, rep = Qs.map(function () { return null; });
     document.getElementById('qz-titre').textContent = total + ' questions sur la France face à ses voisins';
     var prog = document.getElementById('qz-prog'); prog.innerHTML = Qs.map(function () { return '<i></i>'; }).join('');
     var liste = document.getElementById('qz-liste');
 
+    // La prochaine question sans réponse (après la question n, puis depuis le début) ; sinon, le score.
+    function apres(n, doux) {
+      var k = -1; for (var d = 1; d < total; d++) { var j = (n + d) % total; if (rep[j] == null) { k = j; break; } }
+      var cible = k < 0 ? document.getElementById('qz-fin') : document.getElementById('q' + (k + 1));
+      if (cible) cible.scrollIntoView({ behavior: doux ? 'smooth' : 'auto', block: 'start' });
+    }
+    // « Vérifier sur la page » : au retour sur le quiz, on reprend à la question suivante (et pas en haut de la page).
+    liste.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('a.qz-src'), s = a && a.closest('section.quiz'); if (s) try { sessionStorage.setItem('concret-quiz-retour', s.id.slice(1) + '|' + idx); } catch (er) {} });
+    function retour() {
+      var r = null; try { r = sessionStorage.getItem('concret-quiz-retour'); sessionStorage.removeItem('concret-quiz-retour'); } catch (er) {}
+      if (!r) return; var p = r.split('|'); if (+p[1] !== idx) return;
+      // Le navigateur remet sa propre position, et la page bouge encore en se chargeant : on reprend la question trois fois.
+      try { history.scrollRestoration = 'manual'; } catch (er) {}
+      [0, 400, 1200].forEach(function (t) { setTimeout(function () { apres(+p[0] - 1, false); }, t); });
+    }
+    addEventListener('pageshow', function (e) { if (e.persisted) retour(); });
     Qs.forEach(function (x, n) {
       var sec = document.createElement('section'); sec.className = 'card quiz'; sec.id = 'q' + (n + 1);
-      sec.innerHTML = '<span class="eyebrow">' + (n + 1) + ' / ' + total + ' · ' + esc(x.l) + '</span><p class="q">' + esc(x.q) + '</p><div class="opts"></div><p class="answer" hidden></p>';
+      sec.innerHTML = '<span class="eyebrow">' + (n + 1) + ' / ' + total + ' · ' + esc(x.l) + '</span><h2 class="q" id="qz-q' + n + '">' + esc(x.q) + '</h2><div class="opts" role="group" aria-labelledby="qz-q' + n + '"></div><p class="answer" role="status" tabindex="-1" hidden></p>';
       liste.appendChild(sec);
       var opts = sec.querySelector('.opts'), ans = sec.querySelector('.answer');
       if (window.ConcretQuiz && ConcretQuiz.aide) ConcretQuiz.aide(x.Q, sec.querySelector('.q'));
@@ -537,6 +650,8 @@ footer p { margin: 0; } footer a { color: inherit; }
         rep[n] = p === x.a;
         Array.prototype.forEach.call(opts.children, function (b, i) { b.disabled = true; if (i === x.a) b.classList.add('right'); else if (i === p) b.classList.add('wrong'); });
         ans.innerHTML = esc((p === x.a ? 'Bonne réponse. ' : 'Pas tout à fait. ') + x.e) + ' <a class="qz-src" href="' + esc(x.lien) + '">Vérifier sur la page ' + esc(x.src) + ' →</a>'; ans.hidden = false;
+        // Le bouton touché devient inactif : le focus passe à la réponse, lue par le lecteur d'écran (« Bonne réponse… »).
+        if (nouveau) try { ans.focus({ preventScroll: true }); } catch (e) {}
         try { localStorage.setItem(x.cle, String(p)); } catch (e) {}
         prog.children[n].className = p === x.a ? 'g' : 'b';
         document.getElementById('qz-n').textContent = rep.filter(function (v) { return v != null; }).length + ' / ' + total;
@@ -544,9 +659,7 @@ footer p { margin: 0; } footer a { color: inherit; }
           var su = document.createElement('p'); su.className = 'qz-suite'; var bt = document.createElement('button'); bt.type = 'button'; su.appendChild(bt); sec.appendChild(su);
           bt.addEventListener('click', function () {
             // La prochaine question sans réponse (après celle-ci, puis depuis le début) ; sinon, le score.
-            var k = -1; for (var d = 1; d < total; d++) { var j = (n + d) % total; if (rep[j] == null) { k = j; break; } }
-            var cible = k < 0 ? document.getElementById('qz-fin') : document.getElementById('q' + (k + 1));
-            if (cible) cible.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            apres(n, true);
           });
         }
         suites();
@@ -557,6 +670,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       try { var prev = localStorage.getItem(x.cle); if (prev != null && +prev < x.o.length) reveal(+prev); } catch (e) {}
     });
     if (rep.every(function (v) { return v != null; })) fin(false);
+    retour();
     // Le libellé des boutons « Question suivante » : « Voir mon score » quand toutes les questions ont une réponse.
     function suites() {
       var toutes = rep.every(function (v) { return v != null; });
@@ -565,37 +679,58 @@ footer p { margin: 0; } footer a { color: inherit; }
 
     // Score du jour : un compteur par score possible (0 à total), remis à zéro chaque jour par la date dans son nom.
     var classe = null; // le classement du jour, repris dans l'image partagée
+    // Le score qui compte : le premier essai du jour, gardé sur l'appareil une fois compté ; sinon les réponses de maintenant.
+    function scoreCompte() { var ok = rep.filter(Boolean).length, c = null; try { c = localStorage.getItem('quiz-score-compte-' + iso); } catch (e) {} return c != null && /^\d+$/.test(c) && +c <= total ? +c : ok; }
     function fin(nouveau) {
-      var ok = rep.filter(Boolean).length, box = document.getElementById('qz-fin');
-      document.getElementById('qz-score').innerHTML = ok + '<small> / ' + total + '</small>';
+      var ok = rep.filter(Boolean).length, box = document.getElementById('qz-fin'), sc0 = scoreCompte();
+      // En grand, le score compté (celui du classement et de la série) ; si les réponses ont changé depuis, elles sont dites dessous.
+      document.getElementById('qz-score').innerHTML = sc0 + '<small> / ' + total + '</small>' + (sc0 !== ok ? '<span class="qz-maint">Vos réponses de maintenant (la grille) : ' + ok + ' sur ' + total + '. Seul le premier essai du jour compte.</span>' : '');
       document.getElementById('qz-grille').textContent = rep.map(function (v) { return v ? '🟩' : '🟥'; }).join('');
       box.hidden = false; if (nouveau) setTimeout(function () { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
-      try { localStorage.setItem('quiz-histo-' + iso, ok + '/' + total); } catch (e) {}
+      // Le score n'est compté qu'une fois par jour et par appareil (marqué « compté » sur l'appareil avant l'envoi ; un appareil qui
+      // ne garde rien, navigation sans mémoire, n'est pas compté). Le classement et la série gardent ce premier essai,
+      // même si les questions du jour ont changé depuis (on peut alors y répondre à nouveau, sans que rien ne change).
+      var cleCompte = 'quiz-score-compte-' + iso, deja = false, compte = null;
+      try { compte = localStorage.getItem(cleCompte); deja = compte != null; } catch (e) {}
+      var sc = deja && /^\d+$/.test(compte) && +compte <= total ? +compte : ok;
+      try { localStorage.setItem('quiz-histo-' + iso, sc + '/' + total); } catch (e) {}
       perso();
       classement();
-      // Le score n'est compté qu'une fois par jour et par appareil ; il n'est marqué « compté » qu'une fois le compteur d'accord
-      // (si l'envoi a échoué, il repart au prochain chargement de la page).
-      var cleCompte = 'quiz-score-compte-' + iso, deja = false; try { deja = localStorage.getItem(cleCompte) != null; } catch (e) {}
       var rang = document.getElementById('qz-rang');
       // En haut de l'écran, toujours visible : le score, puis la place du jour dès qu'elle est connue ; un toucher mène au score.
       // La barre de progression laisse la place à la phrase, écrite en entier.
       var haut = function (t) { document.getElementById('qz-prog').hidden = true; document.getElementById('qz-n').innerHTML = '<a href="#qz-fin">' + t + ' ↓</a>'; };
-      haut('Votre score : ' + ok + ' sur ' + total);
+      haut('Votre score : ' + sc + ' sur ' + total);
       if (!window.ConcretQuiz) return;
       var cle = 'score-' + total + '-' + iso;
       rang.textContent = 'Classement du jour en cours de chargement…';
       // Une seule requête : le score de la personne est compté (sauf s'il l'a déjà été), et le compteur renvoie le nombre de personnes à chaque score.
-      var prom = deja ? ConcretQuiz.compteur('get', cle, total + 1) : ConcretQuiz.compteur('hit', cle, total + 1, ok).then(function (v) { try { localStorage.setItem(cleCompte, String(ok)); } catch (e) {} return v; });
+      // Marqué « compté » avant l'envoi : une page rechargée, ou une réponse du compteur perdue en route, ne compte jamais deux fois
+      // la même partie (le 1er novembre 2026, le compteur du jour avait reçu plusieurs fois le même score sans partie au classement).
+      var marque = false; if (!deja) try { localStorage.setItem(cleCompte, String(ok)); marque = localStorage.getItem(cleCompte) === String(ok); } catch (e) {}
+      var prom = deja || !marque ? ConcretQuiz.compteur('get', cle, total + 1) : ConcretQuiz.compteur('hit', cle, total + 1, ok);
+      // Nouveaux joueurs et joueurs revenus du jour, pour l'éditeur seulement (node outils/vues_stats.js, jamais affiché) :
+      // « un de plus », sans rien qui identifie la personne. Revenu = cet appareil a déjà fini un quiz un autre jour
+      // (historique gardé dans le navigateur, quiz-histo-<date>). Les appareils de l'éditeur (?moi=1) ne sont pas comptés.
+      if (!deja && marque) {
+        var ed = false, avant = false;
+        try {
+          ed = localStorage.getItem('concret-editeur') === '1';
+          for (var li = 0; li < localStorage.length; li++) { var lk = localStorage.key(li); if (/^quiz-histo-\d{4}-\d{2}-\d{2}$/.test(lk || '') && lk !== 'quiz-histo-' + iso) { avant = true; break; } }
+        } catch (e) {}
+        if (!ed) try { ConcretQuiz.compteur('hit', 'quiz-vue-joueurs-' + (avant ? 'revenus' : 'nouveaux') + '-' + iso, 1, 0).catch(function () {}); } catch (e) {}
+      }
       prom.then(function (n) {
         var tous = n.reduce(function (a, b) { return a + b; }, 0);
         if (!tous) { rang.textContent = 'Le classement du jour s\'affiche quand vous finissez le quiz sur cet appareil.'; return; }
         if (tous < 2) { rang.textContent = 'Vous êtes la première personne à finir le quiz aujourd\'hui. Le classement s\'affiche dès 2 personnes.'; return; }
         // La place : 1 + le nombre de personnes qui ont fait mieux ; les égalités partagent la même place (la personne elle-même n'est pas comptée parmi les « ex aequo »).
-        var mieux = n.slice(ok + 1).reduce(function (a, b) { return a + b; }, 0), egaux = Math.max(0, n[ok] - 1), place = mieux + 1;
+        var mieux = n.slice(sc + 1).reduce(function (a, b) { return a + b; }, 0), egaux = Math.max(0, n[sc] - 1), place = mieux + 1;
         var ord = place === 1 ? '1re' : place + 'e', T = tous.toLocaleString('fr-FR');
         classe = { tous: tous, place: ord, egaux: egaux };
-        rang.innerHTML = '<span class="qz-rang-e">Votre classement du jour</span><span class="qz-place">' + ord + ' place</span>sur <b>' + T + ' personnes</b> qui ont fini le quiz aujourd\'hui' + (egaux ? ', ex aequo avec ' + (egaux === 1 ? 'une autre personne' : egaux.toLocaleString('fr-FR') + ' autres') : '') + '.';
-        haut('Votre score : ' + ok + ' sur ' + total + ' · classement du jour : ' + ord + ' sur ' + T);
+        rang.innerHTML = '<span class="qz-rang-e">Votre classement du jour</span><span class="qz-place">' + ord + ' place</span>sur <b>' + T + ' personnes</b> qui ont fini le quiz aujourd\'hui' + (egaux ? ', ex aequo avec ' + (egaux === 1 ? 'une autre personne' : egaux.toLocaleString('fr-FR') + ' autres') : '') + '.' +
+          '';
+        haut('Votre score : ' + sc + ' sur ' + total + ' · classement du jour : ' + ord + ' sur ' + T);
       }, function () { rang.textContent = 'Le classement du jour n\'a pas pu être chargé. Rechargez la page pour réessayer.'; });
     }
     // Vos scores jour après jour, gardés sur cet appareil seulement : série de jours de suite, record, moyenne, la semaine.
@@ -643,7 +778,8 @@ footer p { margin: 0; } footer a { color: inherit; }
       var id = joueur(), sec = document.getElementById('qz-cl'); if (!id || !window.ConcretQuiz || !ConcretQuiz.api || !window.fetch) return;
       var cle = 'quiz-classement-' + iso, envoye = false; try { envoye = localStorage.getItem(cle) != null; } catch (e) {}
       var pr;
-      if (envoye) pr = appel('classement', { id: id, jour: iso });
+      // Une copie du site (essais, relectures automatiques) lit le classement sans y inscrire de partie.
+      if (envoye || (window.ConcretQuiz && ConcretQuiz.vrai === false)) pr = appel('classement', { id: id, jour: iso });
       else {
         var c = [], g = 0;
         Qs.forEach(function (x, i) {
@@ -663,7 +799,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       document.getElementById('qz-cl-top').innerHTML = P.top.map(function (r) {
         return '<li' + (r.moi ? ' class="moi"' : '') + '><span class="r">' + r.rang + '</span><span class="p">' + (r.pseudo ? esc(r.pseudo) : '<i>Sans pseudo</i>') + (r.moi ? ' (vous)' : '') + '</span><span>' + nf(r.points) + (r.points > 1 ? ' pts' : ' pt') + '</span></li>';
       }).join('') +
-        // Hors du top 10 : la ligne du joueur sous le tableau, avec sa place.
+        // Hors des premiers du classement : la ligne du joueur sous le tableau, avec sa place.
         (P.moi && !P.top.some(function (r) { return r.moi; }) ? '<li class="sep" aria-hidden="true">…</li><li class="moi"><span class="r">' + P.moi.rang + '</span><span class="p">' + (CL.pseudo ? esc(CL.pseudo) : '<i>Sans pseudo</i>') + ' (vous)</span><span>' + nf(P.moi.points) + (P.moi.points > 1 ? ' pts' : ' pt') + '</span></li>' : '');
       var inp = document.getElementById('qz-pseudo-in');
       if (document.activeElement !== inp) inp.value = CL.pseudo || '';
@@ -681,7 +817,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       appel('oubli', { id: joueur() }, 'POST').then(function () { try { localStorage.removeItem('concret-joueur'); localStorage.removeItem('quiz-classement-' + iso); } catch (e) {} document.getElementById('qz-cl').hidden = true; CL = null; }, function () {});
     });
 
-    // Partager le classement : une image (période, place, points, les 5 premiers et la ligne du joueur), comme pour le score.
+    // Partager les résultats : une image (période, place, points, les 5 premiers et la ligne du joueur), comme pour le score.
     function imageClassement() {
       var P = CL[periode], W = 1080, H = 1080, c = document.createElement('canvas'), g = c.getContext('2d'), serif = '"Newsreader", Georgia, serif', sans = '"Inter Tight", system-ui, sans-serif';
       var quand = { semaine: 'cette semaine', mois: 'ce mois-ci', total: 'depuis le début' }[periode], nf = function (v) { return v.toLocaleString('fr-FR'); };
@@ -753,7 +889,7 @@ footer p { margin: 0; } footer a { color: inherit; }
       return new Promise(function (res) { c.toBlob(res, 'image/png'); });
     }
     document.getElementById('qz-partager').addEventListener('click', function () {
-      var ok = rep.filter(Boolean).length, dit = document.getElementById('qz-copie'), jour = day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+      var ok = scoreCompte(), dit = document.getElementById('qz-copie'), jour = day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
       var t = 'Quiz du jour de Concret, ' + jour + ' : ' + ok + ' / ' + total + '. À vous : concret2027.fr/quiz';
       (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () { return image(ok); }).then(function (blob) {
         var f = blob && new File([blob], 'concret-quiz-' + iso + '.png', { type: 'image/png' });
@@ -766,12 +902,11 @@ footer p { margin: 0; } footer a { color: inherit; }
     });
   }
 
-  if (window.ConcretVotez) ConcretVotez.duJour(document.getElementById('qz-loi'));
   try { fetch('../data.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(main, function () { document.getElementById('qz-liste').innerHTML = '<p class="note">Les questions n\'ont pas pu être chargées. Rechargez la page.</p>'; }); } catch (e) {}
 })();
 </script>
-<script src="/commun/partage.js?v=20261028g"></script>
-<script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261028r"></script>
+<script src="/commun/partage.js?v=20261031d"></script>
+<script src="/commun/recherche.js?v=20261031a"></script>
+<script src="/commun/menu.js?v=20261031k"></script>
 </body>
 </html>

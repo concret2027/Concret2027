@@ -92,18 +92,18 @@
 })();
 (function () {
   var PAGES = [
-    { u: '/', l: 'Accueil', t: 'Le classement des présidents et le pouls de la France', ic: 'accueil', large: 1 },
+    { u: '/', l: 'Accueil', t: 'La France mandat par mandat, et son pouls', ic: 'accueil', large: 1 },
     { u: '/barometre/', l: 'Baromètre 2027', t: 'Sondages et parieurs', ic: 'barometre', g: 'Chaque jour' },
     { u: '/quiz/', l: 'Quiz du jour', t: 'Huit questions sourcées', ic: 'quiz', g: 'Chaque jour' },
     { u: '/votez/', l: 'Votez les lois', t: 'Les vrais votes de l\'Assemblée, à votre tour', ic: 'votez', g: 'Chaque jour' },
-    { u: '/vie/', l: 'Vie des Français', t: 'Pouvoir d\'achat, logement, travail', ic: 'vie', g: 'Les missions notées' },
-    { u: '/finances/', l: 'Finances publiques', t: 'Dette, déficit, impôts', ic: 'finances', g: 'Les missions notées' },
-    { u: '/sante/', l: 'Santé', t: 'Espérance de vie, soins, prévention', ic: 'sante', g: 'Les missions notées' },
-    { u: '/education/', l: 'Éducation', t: 'PISA, diplômes, décrochage', ic: 'education', g: 'Les missions notées' },
-    { u: '/securite/', l: 'Sécurité et justice', t: 'Homicides, prisons, justice', ic: 'securite', g: 'Les missions notées' },
-    { u: '/defense/', l: 'Défense', t: 'Budget, OTAN, effectifs', ic: 'defense', g: 'Les missions notées' },
-    { u: '/politique/', l: 'La vie politique', t: 'Lois, votes, grandes dates', ic: 'politique', g: 'Repères, sans note' },
-    { u: '/demographie/', l: 'Démographie', t: 'Naissances, âges, migrations', ic: 'demographie', g: 'Repères, sans note' }
+    { u: '/vie/', l: 'Vie des Français', t: 'Pouvoir d\'achat, logement, travail', ic: 'vie', g: 'Les missions mesurées' },
+    { u: '/finances/', l: 'Finances publiques', t: 'Dette, déficit, impôts', ic: 'finances', g: 'Les missions mesurées' },
+    { u: '/sante/', l: 'Santé', t: 'Espérance de vie, soins, prévention', ic: 'sante', g: 'Les missions mesurées' },
+    { u: '/education/', l: 'Éducation', t: 'PISA, diplômes, décrochage', ic: 'education', g: 'Les missions mesurées' },
+    { u: '/securite/', l: 'Sécurité et justice', t: 'Homicides, prisons, justice', ic: 'securite', g: 'Les missions mesurées' },
+    { u: '/defense/', l: 'Défense', t: 'Budget, OTAN, effectifs', ic: 'defense', g: 'Les missions mesurées' },
+    { u: '/politique/', l: 'La vie politique', t: 'Lois, votes, grandes dates', ic: 'politique', g: 'Repères, sans calcul' },
+    { u: '/demographie/', l: 'Démographie', t: 'Naissances, âges, migrations', ic: 'demographie', g: 'Repères, sans calcul' }
   ];
   // Icônes des pages, au trait, dans la couleur d'accent.
   var IC = {
@@ -120,15 +120,23 @@
     politique: '<path d="M3 9l9-5 9 5"/><path d="M5 9v8"/><path d="M10 9v8"/><path d="M14 9v8"/><path d="M19 9v8"/><path d="M3 20h18"/>',
     demographie: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.8.2 5 2.6 5 5.8"/>',
     cherche: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
-    lettre: '<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/>'
+    lettre: '<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/>',
+    wa: '<path d="M4 20l1.3-3.9A8 8 0 1 1 8 18.8z"/>',
+    appli: '<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>'
   };
   var icone = function (k) { return '<i class="mn-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + IC[k] + '</svg></i>'; };
   // Couleurs des pages (les pages et le Baromètre n'ont pas les mêmes noms de variables).
   var V = { bg: 'var(--bg, var(--color-bg, #f6f6f3))', panel: 'var(--panel, var(--color-panel, #fff))', fg: 'var(--fg, var(--color-fg, #1c1d22))',
     muted: 'var(--muted, var(--color-fg-muted, #62646d))', line: 'var(--line, var(--color-border-line, #e2e2dc))', fr: 'var(--fr, #2f5bd3)' };
-  var css = '.mn-btn{position:sticky;right:0;margin-left:auto;flex:none;display:none;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:700;color:' + V.fg + ';' +
+  var css = '@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) #t-pres .tr .v,:root:not([data-theme="light"]) #t-gov .tr .v{color:#15161a}}:root[data-theme="dark"] #t-pres .tr .v,:root[data-theme="dark"] #t-gov .tr .v{color:#15161a}#annees{min-width:0;overflow-x:auto}.nt-btn{white-space:normal;text-align:left;max-width:100%}.vote a{display:inline-flex;align-items:center;min-height:24px}html{scroll-padding-top:140px}.vis-l{margin:4px 0 0;padding-left:18px}.vis-l li{margin:3px 0}.vis-l a,.note a:not([class]){color:' + V.fr + ';text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}.vis-l a{font-weight:500}.vis-l a b{font-weight:inherit}main.mn-main{display:contents}:where(a:not([class])){color:var(--fr,#2f5bd3)}nav.site a.logo{flex-shrink:0}@media (forced-colors: active){.key i,.cp-chip i,svg{forced-color-adjust:none}}.mn-sr{position:absolute!important;top:0;left:0;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}.mn-skip{position:absolute;left:-9999px;top:8px;z-index:1000;background:var(--panel,#fff);color:var(--fg,#111);padding:10px 14px;border:2px solid var(--fr,#2f5bd3);border-radius:10px;font-weight:700}.mn-skip:focus{left:8px}:root{--ea-t:#8a6418;--es-t:#b4531f;--it-t:#1a7a43}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ea-t:var(--ea);--es-t:var(--es);--it-t:var(--it)}}:root[data-theme="dark"]{--ea-t:var(--ea);--es-t:var(--es);--it-t:var(--it)}svg text[fill="var(--ea)"]{fill:var(--ea-t)}svg text[fill="var(--es)"]{fill:var(--es-t)}svg text[style*="fill: var(--ea)"]{fill:var(--ea-t)!important}svg text[style*="fill: var(--es)"]{fill:var(--es-t)!important}svg text[style*="fill: var(--it)"],svg text[fill="var(--it)"]{fill:var(--it-t)!important}.acc-fixe>summary{cursor:default;border-bottom:0!important;margin-bottom:0!important;padding-bottom:2px}.acc-fixe>summary .acc-t,.acc-fixe>summary .acc-cta{display:none}.mn-btn{position:sticky;right:0;margin-left:auto;flex:none;display:none;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:700;color:' + V.fg + ';' +
       'background:linear-gradient(to right,transparent,' + V.bg + ' 26px);box-shadow:24px 0 0 0 ' + V.bg + ';border:0;padding:4px 2px 4px 34px;cursor:pointer}' +
-    '.mn-btn span{display:inline-flex;align-items:center;gap:6px;border:1.5px solid ' + V.fg + ';border-radius:999px;padding:4px 11px;background:' + V.panel + '}' +
+    '.mn-btn span{display:inline-flex;align-items:center;gap:6px;border:1.5px solid ' + V.fg + ';border-radius:999px;padding:9px 14px;background:' + V.panel + '}' +
+    // Zones à toucher de 44 px au moins (pages du bandeau, raccourcis « Aller à »), pour tous les doigts.
+    'nav.site>a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;justify-content:center;padding:0 4px;box-sizing:border-box}' +
+    // En flex, l'espace en tête de « 2027 », « du jour », « les lois » disparaît : on le remet (sinon « Baromètre2027 » sur ordinateur).
+    'nav.site>a .lg{margin-left:.28em}' +
+    'nav.jump a,.jump-l1>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}' +
+    'nav.jump a.mn-ici{background:' + V.fg + ';color:' + V.bg + ';border-color:' + V.fg + '}' +
     '.mn-btn:focus-visible span{outline:2px solid ' + V.fr + ';outline-offset:2px}' +
     '.mn-btn{display:inline-flex}' +
     '.mn-voile{position:fixed;inset:0;z-index:50;background:rgba(10,12,18,.5);display:flex;justify-content:flex-end}' +
@@ -142,8 +150,10 @@
     '.mn-liste a b{font-size:15.5px;font-weight:700;line-height:1.2}.mn-liste a span{font-size:12.5px;color:' + V.muted + ';line-height:1.3}' +
     '.mn-liste a:hover{border-color:' + V.fr + '}' +
     '.mn-liste a[aria-current]{border:2px solid ' + V.fr + ';padding:10px 11px}.mn-liste a[aria-current] span::before{content:"Vous êtes ici · ";color:' + V.fr + ';font-weight:600}' +
-    '.mn-pied{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.mn-pied a,.mn-pied button{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:600;color:' + V.fg + ';background:' + V.panel + ';border:1px solid ' + V.line + ';border-radius:999px;padding:6px 14px 6px 8px;text-decoration:none;cursor:pointer;min-height:44px}' +
+    '.mn-pied{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px;margin:0 0 12px}.mn-pied a,.mn-pied button{display:flex;align-items:center;gap:6px;text-align:left;line-height:1.2;font:inherit;font-size:14px;font-weight:600;color:' + V.fg + ';background:' + V.panel + ';border:1px solid ' + V.line + ';border-radius:999px;padding:6px 14px 6px 8px;text-decoration:none;cursor:pointer;min-height:44px}' +
     '.mn-pied .mn-ic{width:28px;height:28px;background:none}' +
+    // Les boutons du haut du menu sur une seule ligne : l'icône, et dessous un mot.
+    '.mn-pied{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px}.mn-pied a,.mn-pied button{flex-direction:column;justify-content:center;text-align:center;gap:3px;font-size:12.5px;padding:8px 2px;min-height:62px;border-radius:14px}' +
     '.pg.mn-avec{grid-template-columns:auto minmax(0,1fr);column-gap:12px}.pg.mn-avec>*{grid-column:2}.pg.mn-avec>.mn-ic{grid-column:1;grid-row:1/span 4;align-self:start;margin-top:2px}' +
     // Dans le Menu : une colonne, une ligne par page. En bas de page : deux colonnes sur téléphone (nom seul), quatre sur grand écran.
     '.mn-panneau .mn-liste{grid-template-columns:minmax(0,1fr);gap:6px}.mn-panneau .mn-liste a{padding:9px 12px}.mn-panneau .mn-liste a[aria-current]{padding:8px 11px}' +
@@ -156,6 +166,8 @@
     // Le bandeau tient toujours en entier : le logo, les rendez-vous quotidiens (Baromètre, Quiz, Votez), la vie politique et la page
     // en cours ; toutes les pages sont dans le Menu, visible à toutes les largeurs. Sur téléphone : logo, rendez-vous, loupe et Menu.
     'nav.site>a:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]):not([href="/politique/"]):not([aria-current]){display:none}' +
+    // Entre téléphone et grand écran (iPad debout, ordinateur zoomé) : sans « La vie politique » ni la page en cours, les liens ne se chevauchent plus ; aucun lien ne rétrécit sous son texte.
+    '@media (min-width:521px){nav.site>a{flex-shrink:0}}@media (max-width:860px){nav.site>a .lg{display:none}nav.site .rech-b{display:none}nav.site>a[href="/politique/"]:not([aria-current]),nav.site>a[aria-current]:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]){display:none}}' +
     '@media (max-width:520px){nav.site>a[href="/politique/"]:not([aria-current]),nav.site>a[aria-current]:not(.logo):not([href="/barometre/"]):not([href="/quiz/"]):not([href="/votez/"]){display:none}nav.site>a{padding-block:8px}nav.site{gap:11px!important}.mn-btn{padding-left:8px}nav.site .rech-b{display:none}}' +
     '@media (max-width:380px){nav.site{gap:8px!important}nav.site a.logo{font-size:17px!important}.mn-btn span{padding:4px 9px}}' +
     // Les trois rendez-vous quotidiens ressortent dans le bandeau.
@@ -178,17 +190,40 @@
     '.mn-maj span{flex:1}.mn-maj b{flex:none;padding:6px 12px;border-radius:999px;background:' + V.fr + ';color:#fff;font-weight:700}' +
     '.nt-pli{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--nt-l,2);line-clamp:var(--nt-l,2);overflow:hidden}' +
     '.nt-btn{font:inherit;font-size:13.5px;font-weight:600;color:' + V.fr + ';background:none;border:0;padding:6px 0;margin-top:-6px;min-height:36px;cursor:pointer;justify-self:start;align-self:start;text-align:left}' +
-    '.nt-btn:focus-visible{outline:2px solid ' + V.fr + ';outline-offset:2px}';
+    '.nt-btn:focus-visible{outline:2px solid ' + V.fr + ';outline-offset:2px}' +
+    // Sur toutes les pages, les dépliants qui cachent des courbes (« Voir 2 autres courbes… ») se voient : fond bleu, gras, trait à gauche.
+    '.fold>summary,details.plus>summary{font-weight:700;color:' + V.fr + ';background:rgba(47,91,211,.10);background:color-mix(in srgb,' + V.fr + ' 13%,transparent);border-left:4px solid ' + V.fr + ';border-radius:12px;justify-content:space-between;gap:10px}' +
+    '.fold>summary:hover,details.plus>summary:hover,.fold[open]>summary,details.plus[open]>summary{background:rgba(47,91,211,.16);background:color-mix(in srgb,' + V.fr + ' 20%,transparent)}';
   var ici = location.pathname.replace(/index\.html$/, '');
+  // Concret ouvert depuis l'écran d'accueil (web app) : pas de lien vers l'explication pour l'y mettre.
+  // Le message des étapes pour installer Concret (le même que sur /application/), à envoyer sur WhatsApp d'un toucher ;
+  // un seul lien, celui de /application/ : c'est sa carte (les étapes) que WhatsApp montre en aperçu,
+  // y compris depuis Concret déjà installé.
+  var APP_MSG = 'Concret sur l\'écran d\'accueil, comme une application :\n' +
+    '• iPhone, dans Safari : bouton Partager (ou ⋯ → Partager) → Sur l\'écran d\'accueil → Ajouter\n' +
+    '• Android, dans Chrome : ⋮ → Ajouter à l\'écran d\'accueil → Installer\n' +
+    '• Ordinateur, dans Chrome ou Edge : l\'icône d\'installation de la barre d\'adresse → Installer (Mac, Safari : Fichier → Ajouter au Dock)\n' +
+    'Le détail : https://concret2027.fr/application/';
+  var WA = 'https://wa.me/?text=' + encodeURIComponent(APP_MSG);
+  var appli = function () { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; };
   var lien = function (p) { return '<a href="' + p.u + '"' + (p.large ? ' class="mn-large"' : '') + (p.u === ici ? ' aria-current="page"' : '') + '>' + icone(p.ic) + '<b>' + p.l + '</b><span>' + p.t + '</span></a>'; };
-  // Les pages par groupe (« Chaque jour », « Les missions notées », « Repères, sans note ») : un intitulé avant chaque groupe.
+  // Les pages par groupe (« Chaque jour », « Les missions mesurées », « Repères, sans calcul ») : un intitulé avant chaque groupe.
   var liste = function (L) { var g = null; return L.map(function (p) { var h = p.g && p.g !== g ? '<h3 class="mn-g">' + p.g + '</h3>' : ''; g = p.g || g; return h + lien(p); }).join(''); };
 
+  // Fenêtre ouverte (Menu, Partager) : le Tab tourne dans la fenêtre, sans passer derrière le voile.
+  var pieger = function (box, e) {
+    if (e.key !== 'Tab') return;
+    var f = Array.prototype.filter.call(box.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'), function (x) { return x.offsetWidth || x.offsetHeight; });
+    if (!f.length) return;
+    var a = f[0], z = f[f.length - 1], ic = document.activeElement;
+    if (e.shiftKey && (ic === a || !box.contains(ic))) { e.preventDefault(); z.focus(); }
+    else if (!e.shiftKey && (ic === z || !box.contains(ic))) { e.preventDefault(); a.focus(); }
+  };
   function ouvrir(btn) {
     var v = document.createElement('div'); v.className = 'mn-voile';
-    v.innerHTML = '<div class="mn-panneau" role="dialog" aria-modal="true" aria-label="Les pages de Concret"><div class="mn-haut"><b>Les pages de Concret</b><button type="button" class="mn-ferme">Fermer ✕</button></div><nav class="mn-liste">' + liste(PAGES) + '</nav><div class="mn-pied">' + (document.querySelector('.rech-b') ? '<button type="button" class="mn-cherche">' + icone('cherche') + 'Rechercher un chiffre</button>' : '') + (ici !== '/contact/' ? '<a href="/contact/">' + icone('lettre') + 'Écrire à Concret</a>' : '') + '</div></div>';
+    v.innerHTML = '<div class="mn-panneau" role="dialog" aria-modal="true" aria-label="Les pages de Concret"><div class="mn-haut"><b>Les pages de Concret</b><button type="button" class="mn-ferme">Fermer ✕</button></div><div class="mn-pied">' + (document.querySelector('.rech-b') ? '<button type="button" class="mn-cherche" aria-label="Rechercher un chiffre">' + icone('cherche') + 'Rechercher</button>' : '') + (ici !== '/contact/' ? '<a href="/contact/" aria-label="Écrire à Concret">' + icone('lettre') + 'Écrire</a>' : '') + (appli() ? '<a href="' + WA + '" target="_blank" rel="noopener" aria-label="Envoyer à quelqu\'un comment installer Concret, sur WhatsApp">' + icone('wa') + 'Envoyer</a>' : ici !== '/application/' ? '<a href="/application/" aria-label="Installer Concret sur l\'écran d\'accueil, ou l\'envoyer sur WhatsApp">' + icone('appli') + 'Installer</a>' : '') + '</div><nav class="mn-liste">' + liste(PAGES) + '</nav></div>';
     var fermer = function () { v.remove(); document.removeEventListener('keydown', esc); document.documentElement.style.overflow = ''; btn.focus(); };
-    var esc = function (e) { if (e.key === 'Escape') fermer(); };
+    var esc = function (e) { if (e.key === 'Escape') fermer(); else pieger(v.firstChild, e); };
     v.addEventListener('click', function (e) { if (e.target === v || e.target.closest('.mn-ferme')) fermer(); else if (e.target.closest('.mn-cherche')) { fermer(); document.querySelector('.rech-b').click(); } });
     document.addEventListener('keydown', esc); document.documentElement.style.overflow = 'hidden';
     document.body.appendChild(v); v.querySelector('.mn-ferme').focus();
@@ -218,21 +253,123 @@
     }
     return b;
   }
+  // Ce qui n'est pas compté s'explique là où on le voit, jamais replié : dans une note qui va être repliée, les phrases
+  // « Non compté… », « … ne sont pas comptées », « Affiché, pas compté… », « France seule… » passent dans une ligne à part,
+  // toujours visible, juste au-dessus de la note (p.nt-garde) ; le reste (méthode, sources) peut se replier.
+  var GARDE = /non compt|pas compté|ces années ne sont pas comptées|ne sont pas comptées|pas encore publi|France seule/i, REGLE = /sous 70 %/;
+  function phrases(html) {
+    // Coupe après « . » ou « ; » suivi d'une majuscule, sans couper au milieu d'un lien (sans lookbehind : vieux Safari).
+    var L = [], cur = '', re = /([.;])(\s+)(?=[A-ZÀ-ÖØ-Ý«(])/g, i = 0, m, ouvert = function (t) { return (t.match(/<a\b/g) || []).length > (t.match(/<\/a>/g) || []).length; };
+    while ((m = re.exec(html))) { cur += html.slice(i, m.index + 1); i = m.index + m[0].length; if (!ouvert(cur)) { L.push(cur); cur = ''; } else cur += m[2]; }
+    cur += html.slice(i); if (cur) L.push(cur); return L;
+  }
+  // Les phrases « Non compté » les plus fréquentes, regroupées en une phrase courte (« Non compté : 2005 (…) ; 2020 et 2022 (…) ») ;
+  // les phrases complètes restent dans le détail replié.
+  var MODELES = [
+    [/^Non compté : en (\d{4}), (la France|la moyenne européenne|la France et la moyenne européenne) (?:a|ont) changé (?:sa|leur) façon de mesurer ce chiffre ; son évolution par rapport à \d{4} ne compte pas\.$/, function (m) { return { k: 'm' + m[2], y: +m[1], t: m[2] + (m[2].indexOf(' et ') > 0 ? ' ont' : ' a') + ' changé sa façon de mesurer ce chiffre' }; }],
+    [/^En (\d{4}) : non compté, les pays de l'UE qui publient ce chiffre cette année-là et la précédente font moins de 70 % de sa population\.$/, function (m) { return { k: 'p', y: +m[1], t: 'trop peu de pays de l\'UE publient ce chiffre' }; }],
+    [/^La moyenne de l'UE ne commence qu'en (\d{4}) : avant, elle n'est pas publiée, ces années ne sont pas comptées\.$/, function (m) { return { k: 'd', y: +m[1], avant: true, t: 'pas de moyenne de l\'UE publiée' }; }]
+  ];
+  function resumer(g) {
+    var G = {}, ordre = [], reste = [];
+    g.forEach(function (x) {
+      var tx = x.replace(/<[^>]+>/g, '').trim(), f = null;
+      MODELES.some(function (M) { var m = M[0].exec(tx); if (m) { f = M[1](m); return true; } return false; });
+      if (!f) { reste.push(x); return; }
+      if (!G[f.k]) { G[f.k] = { t: f.t, y: [], avant: f.avant }; ordre.push(f.k); }
+      if (G[f.k].y.indexOf(f.y) < 0) G[f.k].y.push(f.y);
+    });
+    if (!ordre.length) return null;
+    var et = function (L) { return L.length > 1 ? L.slice(0, -1).join(', ') + ' et ' + L[L.length - 1] : String(L[0]); };
+    var parts = ordre.map(function (k) { var x = G[k]; x.y.sort(); return { y: x.y[0], t: (x.avant ? 'avant ' + x.y[0] : et(x.y)) + ' (' + x.t + ')' }; }).sort(function (a, b) { return a.y - b.y; });
+    return ['Non compté : ' + parts.map(function (p) { return p.t; }).join(' ; ') + '.'].concat(reste);
+  }
+  // Courbes des thèmes (pages de mission) : tout le texte sous la courbe est dans « Détail du graphe » (choix de l'éditeur) ;
+  // le bouton dit en quelques mots ce qui n'est pas compté (« Détail du graphe · non compté : 2020 et 2022 »).
+  var TOUT = '.courbe-p, .grand .card';
+  function nonComptes(html) {
+    var Y = [], av = null, fs = false, est = [];
+    phrases(html).forEach(function (x) {
+      var tx = x.replace(/<[^>]+>/g, ''), e = /(?:^|[.;] )(\d{4}) provisoire :/.exec(tx);
+      // Chiffre estimé par Concret en attendant la source (« 2025 provisoire : … ») : dit sur le bouton.
+      if (e) { if (est.indexOf(+e[1]) < 0) est.push(+e[1]); return; }
+      if (!GARDE.test(tx) || REGLE.test(tx)) return;
+      if (/France seule/.test(tx)) { fs = true; return; }
+      var m = /ne commence qu'en (\d{4})/.exec(tx); if (m) { av = +m[1]; return; }
+      m = /^Non compté : en (\d{4})/.exec(tx) || /^En (\d{4})/.exec(tx) || /(\d{4})/.exec(tx);
+      if (m && Y.indexOf(+m[1]) < 0) Y.push(+m[1]); else if (!m) Y.push(0);
+    });
+    var et = function (L) { return L.length > 1 ? L.slice(0, -1).join(', ') + ' et ' + L[L.length - 1] : String(L[0]); };
+    var L = Y.filter(Boolean).sort(), pe = '', nc = '';
+    if (est.length) {
+      // Année estimée et non comptée (le cas courant) : dit en une fois, « 2025 estimé, non compté ».
+      var tous = est.every(function (y) { return L.indexOf(y) >= 0; });
+      pe = et(est.sort()) + ' estimé' + (est.length > 1 ? 's' : '') + (tous ? ', non compté' + (est.length > 1 ? 's' : '') : '');
+      if (tous) L = L.filter(function (y) { return est.indexOf(y) < 0; });
+    }
+    // « avant 2009 » couvre déjà les années d'avant (pas de « avant 2009 et 2005 »).
+    if (av != null) { L = L.filter(function (y) { return y >= av; }); L.unshift('avant\u00a0' + av); }
+    if (L.length > 3 || (!L.length && Y.length && !est.length)) nc = 'années non comptées';
+    // Espaces insécables : jamais « : » ni « et 2022 » seuls en début de ligne.
+    else if (L.length) nc = 'non compté' + (L.length === 1 && /^avant/.test(L[0]) ? '\u00a0' : '\u00a0: ') + et(L).replace(/ et /, '\u00a0et ');
+    else if (fs) nc = 'France seule';
+    var parts = [pe, nc].filter(Boolean);
+    return parts.length ? ' · ' + parts.join(' · ') : '';
+  }
+  function garder(n) {
+    if (n._ntSet != null && n._ntSet === n.innerHTML) return;
+    if (n.dataset.ntVide) { n.hidden = false; delete n.dataset.ntVide; }
+    var g = [], r = [];
+    phrases(n.innerHTML).forEach(function (x) { var tx = x.replace(/<[^>]+>/g, ''); (GARDE.test(tx) && !REGLE.test(tx) ? g : r).push(x); });
+    if (!g.length) return;
+    // Deux phrases regroupables ou plus : la phrase courte reste visible, les phrases complètes passent à la fin du détail replié.
+    var court = g.length > 1 ? resumer(g) : null;
+    if (court) { r = r.concat(g.filter(function (x) { return court.indexOf(x) < 0; })); g = court; }
+    // La ligne gardée va sous la note et son bouton (la page cherche sa note avec querySelector('.note') : elle doit rester la première).
+    var sib = n._garde && n._garde.parentNode ? n._garde : null;
+    // La ligne gardée va juste au-dessus de la note (sans la classe « note » : la page cherche sa note avec querySelector('.note')),
+    // avec la même apparence que la note.
+    if (!sib) { sib = document.createElement('p'); sib.className = 'nt-garde'; n._garde = sib; var cs = getComputedStyle(n); ['fontSize', 'lineHeight', 'color', 'fontFamily'].forEach(function (k) { sib.style[k] = cs[k]; }); sib.style.margin = '0'; n.parentNode.insertBefore(sib, n); }
+    if (sib.innerHTML !== g.join(' ')) sib.innerHTML = g.join(' ');
+    n.innerHTML = r.join(' '); n._ntSet = n.innerHTML;
+    if (!r.length) { n.hidden = true; n.dataset.ntVide = '1'; }
+  }
   function plier() {
     Array.prototype.forEach.call(document.querySelectorAll('ul.replie, ol.replie'), function (n) {
       var b = bouton(n), ouvert = !!n.dataset.ntOuvert, k = n.dataset.n ? +n.dataset.n : 2, L = n.children, reste = L.length - k;
       for (var i = 0; i < L.length; i++) { var h = !ouvert && i >= k; if (L[i].hidden !== h) L[i].hidden = h; }
-      var t = reste <= 0 ? '' : ouvert ? 'Masquer ▴' : (n.dataset.voir ? n.dataset.voir.replace('{n}', reste) : k ? 'Voir les ' + reste + ' autres' : 'Voir le détail') + ' ▾';
+      var t = reste <= 0 ? '' : ouvert ? 'Masquer ▴' : (n.dataset.voir ? n.dataset.voir.replace('{n}', reste) : k ? (reste === 1 ? 'Voir l\'autre' : 'Voir les ' + reste + ' autres') : 'Voir le détail') + ' ▾';
       if (b.textContent !== t) b.textContent = t;
       if (b.hidden === !!t) b.hidden = !t;
       b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
     });
+    var libres = [], parCarte = new Map();
     Array.prototype.forEach.call(document.querySelectorAll(NT), function (n) {
       if (n.classList.contains('pt-hors') || n.classList.contains('defs') || n.classList.contains('mentions')) return; // mentions légales d'un sondage : jamais repliées
-      var b = bouton(n);
-      var ouvert = !!n.dataset.ntOuvert, deja = n.classList.contains('nt-pli');
-      if (deja) n.classList.remove('nt-pli');
-      var cs = getComputedStyle(n), lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.45 || 20, nl = parseFloat(cs.getPropertyValue('--nt-l')) || 2, long = n.offsetHeight > lh * (nl + 1.4);
+      var carte = n.closest && n.closest(TOUT);
+      if (carte) {
+        // Les notes de la carte, cherchées une fois par carte (pas une fois par note).
+        var notes = parCarte.get(carte);
+        if (!notes) { notes = Array.prototype.filter.call(carte.querySelectorAll('p.note'), function (x) { return x.matches(NT) && x.closest(TOUT) === carte && x.textContent.trim(); }); parCarte.set(carte, notes); }
+        var tete = notes[0];
+        if (n !== tete) { var o = tete && !!tete.dataset.ntOuvert; n.classList.toggle('nt-pli', !o); var bb = n.nextElementSibling; if (bb && bb.classList.contains('nt-btn')) bb.hidden = true; return; }
+        var b0 = bouton(n), ouv = !!n.dataset.ntOuvert;
+        n.classList.toggle('nt-pli', !ouv);
+        var nc = ouv ? '' : nonComptes(notes.map(function (x) { return x.innerHTML; }).join(' '));
+        var t0 = ouv ? 'Masquer le détail\u00a0▴' : (nc ? 'Détail' : 'Détail du graphe') + nc + '\u00a0▾';
+        if (b0.textContent !== t0) b0.textContent = t0;
+        if (b0.hidden) b0.hidden = false;
+        b0.setAttribute('aria-expanded', ouv ? 'true' : 'false');
+        return;
+      }
+      garder(n); libres.push(n);
+    });
+    // Les textes hors des cartes de courbe : mesurés tous ensemble (tout dépliés, puis toutes les hauteurs lues, puis repliés),
+    // pour une seule mise en page au lieu d'une par texte (la page se figeait au chargement).
+    libres.forEach(function (n) { n.classList.remove('nt-pli'); });
+    var longs = libres.map(function (n) { var cs = getComputedStyle(n), lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.45 || 20, nl = parseFloat(cs.getPropertyValue('--nt-l')) || 2; return n.offsetHeight > lh * (nl + 1.4); });
+    libres.forEach(function (n, i) {
+      var b = bouton(n), ouvert = !!n.dataset.ntOuvert, long = longs[i];
       if (long && !ouvert) n.classList.add('nt-pli');
       var rp = n.classList.contains('replie'), bx = !rp && (n.classList.contains('bx-note') || n.classList.contains('retenir') || n.classList.contains('dernier'));
       var t = !long ? '' : ouvert ? (bx || rp ? 'Masquer ▴' : 'Masquer le détail ▴') : rp ? 'Voir le détail ▾' : bx ? 'Lire la suite ▾' : 'Détail du graphe ▾';
@@ -247,19 +384,198 @@
   // Nouvelle version du site : la page connaît sa version (<meta name="concret-version">, écrite par outils/version.js) et la compare
   // à celle en ligne (donnees/version.json), à l'ouverture et à chaque retour au premier plan (la web app reste ouverte en arrière-plan).
   // Si elles diffèrent, un bandeau propose de recharger la page, sans attendre que le téléphone oublie l'ancienne.
-  var vPage = (document.querySelector('meta[name="concret-version"]') || {}).content, vVu = 0;
+  // Une page qui vient de s'ouvrir (moins de 4 s, rien touché) et qui est en retard — le navigateur la garde jusqu'à 10 minutes —
+  // se recharge seule, sans bandeau, une fois par version et par page ; le bandeau reste pour une page ouverte depuis longtemps.
+  var vPage = (document.querySelector('meta[name="concret-version"]') || {}).content, vVu = 0, vT0 = Date.now(), vTouche = false, vRecharge = /[?&]maj=/.test(location.search);
+  ['pointerdown', 'keydown', 'scroll'].forEach(function (e) { addEventListener(e, function () { vTouche = true; }, { once: true, passive: true }); });
   function verifierVersion() {
     if (!vPage || !window.fetch || Date.now() - vVu < 60000 || document.getElementById('mn-maj')) return;
     vVu = Date.now();
     fetch('/donnees/version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (o) {
       if (!o || !o.v || o.v === vPage || document.getElementById('mn-maj')) return;
+      var cle = o.v + location.pathname, deja = null;
+      try { deja = sessionStorage.getItem('mn-maj-auto'); } catch (e) {}
+      if (!vTouche && !vRecharge && Date.now() - vT0 < 4000 && deja !== cle) {
+        try { sessionStorage.setItem('mn-maj-auto', cle); } catch (e) {}
+        location.replace(location.pathname + '?maj=' + o.v + location.hash); return;
+      }
       var b = document.createElement('button'); b.type = 'button'; b.id = 'mn-maj'; b.className = 'mn-maj';
       b.innerHTML = '<span>Une nouvelle version de Concret est en ligne.</span><b>Mettre à jour</b>';
       b.addEventListener('click', function () { b.disabled = true; location.replace(location.pathname + '?maj=' + Date.now() + location.hash); });
       document.body.appendChild(b);
     }).catch(function () {});
   }
+  // Ce que les visiteurs ouvrent, pour savoir ce qu'il faut montrer d'emblée : le compteur de Concret reçoit seulement des totaux par page
+  // (pages vues, petites courbes agrandies, « Voir les chiffres », « Définitions et sources », dépliants de courbes, « Détail du graphe »),
+  // chacun compté une fois par visite de la page, sans rien qui identifie la personne. Seulement sur concret2027.fr (pas les essais).
+  // Compte rendu pour l'éditeur : node outils/vues_stats.js (rien n'est affiché sur le site).
+  var VUES = 'https://compteur.square-brook-9d65.workers.dev/hit?n=1&i=0&k=', vuesFaites = {};
+  var pageNom = (location.pathname.replace(/index\.html$/, '').replace(/^\/|\/$/g, '') || 'accueil').replace(/[^a-z0-9-]+/g, '-');
+  // Les appareils de l'éditeur ne sont pas comptés : concret2027.fr/?moi=1 les retire une fois pour toutes (ici et dans GoatCounter),
+  // ?moi=0 les compte de nouveau.
+  var editeur = false;
+  try {
+    var qm = /[?&]moi=([01])/.exec(location.search);
+    if (qm) { if (qm[1] === '1') { localStorage.setItem('concret-editeur', '1'); localStorage.setItem('skipgc', 't'); } else { localStorage.removeItem('concret-editeur'); localStorage.removeItem('skipgc'); } }
+    editeur = localStorage.getItem('concret-editeur') === '1';
+  } catch (e) {}
+  var compte = function () { return location.hostname === 'concret2027.fr' && !editeur && !!window.fetch; };
+  function envoyer(k, n, i) { try { fetch(VUES.replace('n=1&i=0', 'n=' + (n || 1) + '&i=' + (i || 0)) + encodeURIComponent(k), { method: 'POST', cache: 'no-store', keepalive: true }).catch(function () {}); } catch (e) {} }
+  function compter(quoi) {
+    if (!compte() || vuesFaites[quoi]) return; vuesFaites[quoi] = 1;
+    envoyer('quiz-vue-' + pageNom + (quoi === 'page' ? '' : '-' + quoi));
+  }
+  // Où vont les visiteurs et combien de temps ils restent, en totaux seulement (rien qui relie deux pages à une personne) :
+  // le passage d'une page à l'autre (« entree » quand on arrive d'ailleurs), le temps passé sur la page (par tranches),
+  // et pour la visite entière, combien ont duré au moins 10 s, 30 s, 1, 3 et 10 minutes et vu au moins 2, 3, 5 et 10 pages.
+  function compterParcours() {
+    if (!compte()) return;
+    var nomDe = function (ch) { return (ch.replace(/index\.html$/, '').replace(/^\/|\/$/g, '') || 'accueil').replace(/[^a-z0-9-]+/g, '-'); };
+    var de = 'entree', v;
+    try { var r = document.referrer && new URL(document.referrer); if (r && r.hostname === location.hostname) de = nomDe(r.pathname); } catch (e) {}
+    try { v = JSON.parse(sessionStorage.getItem('concret-visite') || 'null'); } catch (e) { return; }
+    if (!v || de === 'entree') v = { t: 0, p: 0, seuils: [], pages: [], der: '' };
+    if (v.der === pageNom) return; // page rechargée : pas un nouveau passage
+    v.p++; v.der = pageNom;
+    envoyer('quiz-vue-chemin-' + de + '-' + pageNom);
+    [2, 3, 5, 10].forEach(function (n) { if (v.p >= n && v.pages.indexOf(n) < 0) { v.pages.push(n); envoyer('quiz-vue-visite-pages-' + n); } });
+    var garder = function () { try { sessionStorage.setItem('concret-visite', JSON.stringify(v)); } catch (e) {} };
+    garder();
+    var vu = 0, depuis = document.visibilityState === 'visible' ? Date.now() : 0, tempsEnvoye = false;
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') { depuis = Date.now(); return; }
+      if (depuis) { vu += Date.now() - depuis; v.t += Date.now() - depuis; depuis = 0; }
+      if (!tempsEnvoye) { tempsEnvoye = true; var s = vu / 1000; envoyer('quiz-vue-temps-' + pageNom, 6, s < 10 ? 0 : s < 30 ? 1 : s < 60 ? 2 : s < 180 ? 3 : s < 600 ? 4 : 5); }
+      [10, 30, 60, 180, 600].forEach(function (n) { if (v.t >= n * 1000 && v.seuils.indexOf(n) < 0) { v.seuils.push(n); envoyer('quiz-vue-visite-' + n + 's'); } });
+      garder();
+    });
+  }
+  // Appareils : le navigateur garde une marque à la première visite du site (et le jour de la dernière visite comptée) ; le compteur
+  // reçoit seulement « un appareil de plus » (depuis le début, et ce jour-là). Rien qui identifie la personne ; deux appareils d'une
+  // même personne comptent deux fois, une navigation privée aussi.
+  function compterAppareil() {
+    if (!compte()) return;
+    var jour = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }), vu, dernier;
+    try { vu = localStorage.getItem('concret-appareil'); dernier = localStorage.getItem('concret-appareil-jour'); } catch (e) { return; }
+    var cles = [];
+    if (!vu) cles.push('quiz-vue-appareils');
+    if (dernier !== jour) cles.push('quiz-vue-appareils-' + jour);
+    if (!cles.length) return;
+    try { localStorage.setItem('concret-appareil', vu || jour); localStorage.setItem('concret-appareil-jour', jour); } catch (e) { return; }
+    cles.forEach(function (k) { envoyer(k); });
+  }
+  function compterOuvertures() {
+    compter('page'); compterAppareil(); compterParcours();
+    document.addEventListener('toggle', function (e) {
+      var d = e.target; if (!d || !d.open || !d.classList) return;
+      if (d.classList.contains('acc-fixe')) return; // ouvert d'office, pas une ouverture du visiteur
+      compter(d.classList.contains('tab-pli') ? 'chiffres' : d.classList.contains('defs-pli') ? 'defs' : d.classList.contains('fold') || d.classList.contains('plus') ? 'replis' : 'autres');
+    }, true);
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.nt-btn')) compter('detail'); }, true);
+    document.addEventListener('concret:vue', function (e) { compter(e.detail || 'courbe'); });
+  }
+  // Défilement doux, sauf si la personne a demandé moins d'animations dans les réglages de son appareil.
+  var doux = function () { return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; };
+  // Clavier et lecteur d'écran : après un raccourci, le focus va au titre de la partie choisie (sinon le Tab suivant repart du haut).
+  var focaliser = function (c) {
+    var t = /^H[1-4]$|^SUMMARY$/.test(c.tagName) ? c : c.querySelector('h2, h3, summary') || c;
+    if (t.tagName !== 'SUMMARY' && !t.hasAttribute('tabindex')) t.setAttribute('tabindex', '-1');
+    try { t.focus({ preventScroll: true }); } catch (e) { }
+  };
+  // Lecteur d'écran : les chiffres de chaque courbe en tableau (une ligne par année, une colonne par pays), caché à l'écran.
+  // Les pages l'appellent en dessinant la courbe, avec les mêmes chiffres que ceux montrés au toucher.
+  var tableau = function (box, pts, titre) {
+    if (!box || !pts || !pts.length || pts.length > 80) return;
+    // Fait quand le navigateur est libre, après le dessin des courbes : la page ne se fige pas au chargement.
+    // Si la courbe est redessinée entre-temps (pays ajouté), seul le dernier tableau est fait.
+    var jeton = box.mnTab = (box.mnTab || 0) + 1;
+    var faire = function () {
+      if (box.mnTab !== jeton || !box.isConnected) return;
+      var old = box.querySelector(':scope > .mn-sr'); if (old) old.remove();
+      var e = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }, nom = function (r) { return r.n || 'Valeur'; }, cols = [];
+      pts.forEach(function (p) { (p.rows || []).forEach(function (r) { if (cols.indexOf(nom(r)) < 0) cols.push(nom(r)); }); });
+      if (!cols.length) return;
+      // Le tableau est dans une boîte d'un pixel : un tableau seul garde la largeur de ses colonnes et élargirait la page.
+      var w = document.createElement('div'); w.className = 'mn-sr'; w.setAttribute('data-html2canvas-ignore', ''); var t = document.createElement('table'); w.appendChild(t);
+      t.innerHTML = '<caption>Les chiffres de la courbe' + (titre ? ' : ' + e(titre) : '') + '</caption><thead><tr><th scope="col">Année</th>' + cols.map(function (c) { return '<th scope="col">' + e(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        pts.map(function (p) { var v = {}; (p.rows || []).forEach(function (r) { v[nom(r)] = r.s; }); return '<tr><th scope="row">' + e(p.t) + '</th>' + cols.map(function (c) { return '<td>' + (v[c] != null ? e(v[c]) : 'pas de chiffre') + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
+      box.appendChild(w);
+    };
+    if (window.requestIdleCallback) requestIdleCallback(faire, { timeout: 4000 }); else setTimeout(faire, 300);
+  };
+  // Courbe loin de l'écran (ou dans un bloc replié) : dessinée quand on s'en approche, pour que la page ne se fige pas
+  // au chargement. Sa place est gardée en attendant (hauteur prévue), pour que la page ne saute pas. Renvoie true si
+  // le dessin attend. presser(bloc) dessine tout de suite ce qui attend dans un bloc (avant d'en faire une image).
+  var attente = [];
+  var plusTard = function (box, fn, haut) {
+    if (!box || !window.IntersectionObserver) return false;
+    var r = box.getBoundingClientRect();
+    if (r.width && r.bottom > -800 && r.top < innerHeight + 800) return false;
+    if (box.mnIO) box.mnIO.disconnect();
+    var x = { box: box, fn: null };
+    x.fn = function () { if (x.fait) return; x.fait = true; if (box.mnIO) { box.mnIO.disconnect(); box.mnIO = null; } attente = attente.filter(function (y) { return y !== x; }); box.style.minHeight = ''; fn(); };
+    box.textContent = ''; if (haut) box.style.minHeight = haut + 'px';
+    box.mnIO = new IntersectionObserver(function (es) { if (es.some(function (e) { return e.isIntersecting; })) x.fn(); }, { rootMargin: '800px 0px' });
+    box.mnIO.observe(box); attente.push(x);
+    return true;
+  };
+  var presser = function (root) { attente.filter(function (x) { return !root || root.contains(x.box); }).forEach(function (x) { x.fn(); }); };
+  window.ConcretMenu = { doux: doux, focaliser: focaliser, pieger: pieger, tableau: tableau, plusTard: plusTard, presser: presser };
+  function suivre(jp, cib) {
+    var ls = Array.prototype.filter.call(jp.querySelectorAll('a[href^="#"]'), function (l) { return cib(l); }), cur = null, choisi = null, fin = 0;
+    if (!ls.length) return;
+    var montre = function (l) {
+      if (l === cur) return; cur = l;
+      ls.forEach(function (x) { x.classList.toggle('mn-ici', x === l); if (x === l) x.setAttribute('aria-current', 'true'); else x.removeAttribute('aria-current'); });
+      if (l) { var r = l.parentNode; if (r.scrollWidth > r.clientWidth) r.scrollLeft = Math.max(0, l.offsetLeft - 40); }
+    };
+    var maj = function () {
+      if (choisi && Date.now() < fin) return montre(choisi);
+      choisi = null;
+      var lim = jp.getBoundingClientRect().bottom + 80, ici = null;
+      ls.forEach(function (l) { var e = cib(l), r = e && e.getBoundingClientRect(); if (r && r.height && r.top <= lim) ici = l; });
+      montre(ici);
+    };
+    var t = 0; addEventListener('scroll', function () { if (!t) t = requestAnimationFrame(function () { t = 0; maj(); }); }, { passive: true });
+    addEventListener('resize', maj); setTimeout(maj, 300);
+    jp.addEventListener('click', function (e) {
+      var l = e.target.closest && e.target.closest('a[href^="#"]'), c = l && cib(l); if (!c) return;
+      e.preventDefault(); choisi = l; fin = Date.now() + 1500; montre(l);
+      for (var d = c; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
+      // Le titre juste sous les deux bandeaux collés (pages, raccourcis), quel que soit le navigateur.
+      var n = document.querySelector('nav.site'), haut = (n ? n.offsetHeight : 0) + jp.offsetHeight + 12;
+      focaliser(c);
+      requestAnimationFrame(function () { window.scrollTo({ top: Math.max(0, window.pageYOffset + c.getBoundingClientRect().top - haut), behavior: doux() }); });
+      if (history.replaceState) history.replaceState(null, '', l.getAttribute('href'));
+    });
+  }
   function init() {
+    compterOuvertures();
+    // Les raccourcis du haut (nav.jump) suivent toujours l'ordre réel des blocs de la page, même quand un bloc change de place.
+    var jp = document.querySelector('nav.jump');
+    if (jp) {
+      var cib = function (l) { return document.getElementById(decodeURIComponent((l.getAttribute('href') || '').slice(1))); };
+      var ls = Array.prototype.filter.call(jp.querySelectorAll('a[href^="#"]'), function (l) { return cib(l); });
+      ls.slice().sort(function (p, q) { return cib(p).compareDocumentPosition(cib(q)) & 4 ? -1 : 1; }).forEach(function (l) { l.parentNode.appendChild(l); }); // chacun reste dans sa rangée (Baromètre : .jump-l1)
+    }
+    // Le raccourci de la partie où l'on se trouve est en noir, comme sur le Baromètre (qui a le sien) : la dernière partie dont
+    // le titre est passé sous la rangée. Après un toucher, la partie choisie, posée juste sous la rangée.
+    if (jp && !jp.querySelector('.jump-l1')) suivre(jp, cib);
+    // Clavier et lecteur d'écran : la zone principale de la page, et un lien « Aller au contenu » qui saute les menus.
+    // La zone principale : un <main> entre le bandeau des pages et le pied de page, sans rien changer à la mise en page (display: contents).
+    var wrap = document.querySelector('.wrap, .bx');
+    if (wrap && !document.querySelector('main, [role="main"]')) {
+      var kids = Array.prototype.slice.call(wrap.children), i0 = 0, i1 = kids.length;
+      while (i0 < i1 && kids[i0].matches('nav.site, .mn-skip, script, style')) i0++;
+      while (i1 > i0 && kids[i1 - 1].matches('footer, .mn-autres, script, style')) i1--;
+      if (i1 > i0) { var mn = document.createElement('main'); mn.className = 'mn-main'; wrap.insertBefore(mn, kids[i0]); kids.slice(i0, i1).forEach(function (k) { mn.appendChild(k); }); }
+    }
+    var cible = document.querySelector('.brand, section.hero, h1');
+    if (cible && !document.querySelector('.mn-skip')) {
+      if (!cible.id) cible.id = 'contenu'; if (!cible.hasAttribute('tabindex')) cible.setAttribute('tabindex', '-1');
+      var sk = document.createElement('a'); sk.className = 'mn-skip'; sk.href = '#' + cible.id; sk.textContent = 'Aller au contenu';
+      document.body.insertBefore(sk, document.body.firstChild);
+    }
     // Après une mise à jour, l'adresse perd son « ?maj=… ».
     if (/[?&]maj=/.test(location.search) && history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
     verifierVersion();
@@ -272,6 +588,8 @@
     }).observe(document.body, { childList: true, characterData: true, subtree: true });
     addEventListener('resize', plierBientot);
     document.addEventListener('toggle', plierBientot, true);
+    // Les blocs d'actualité restent ouverts : leur titre n'est pas un bouton (le bouton Partager qu'il porte, si.)
+    document.addEventListener('click', function (e) { var su = e.target.closest && e.target.closest('details.acc-fixe > summary'); if (su && !e.target.closest('button, a')) e.preventDefault(); }, true);
     if (!document.getElementById('mn-css')) { var st = document.createElement('style'); st.id = 'mn-css'; st.textContent = css; document.head.appendChild(st); }
     var nav = document.querySelector('nav.site');
     if (nav && !nav.querySelector('.mn-btn')) {
@@ -284,6 +602,9 @@
       if (!p || a.querySelector('.mn-ic')) return;
       a.classList.add('mn-avec'); a.insertAdjacentHTML('afterbegin', icone(p.ic));
     });
+    // Dans le pied de chaque page : comment mettre Concret sur l'écran d'accueil (page /application/, à envoyer sur WhatsApp).
+    var pied = document.querySelector('footer p:last-of-type') || document.querySelector('footer');
+    if (pied && ici !== '/application/' && !pied.querySelector('.mn-app')) pied.insertAdjacentHTML('beforeend', appli() ? ' · <a class="mn-app" href="' + WA + '" target="_blank" rel="noopener">Envoyer Concret sur WhatsApp</a>' : ' · <a class="mn-app" href="/application/">Mettre Concret sur l\'écran d\'accueil</a>');
     // En bas de page (pas sur l'accueil, qui a déjà la liste des missions) : les autres pages.
     if (ici !== '/' && !document.querySelector('.mn-autres')) {
       var f = document.querySelector('footer'), sec = document.createElement('section');

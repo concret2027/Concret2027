@@ -1,4 +1,4 @@
-/* « Les grandes lois » : ce que chaque gouvernement a fait voter depuis juin 2012, mission par mission, sans note.
+/* « Les grandes lois » : ce que chaque gouvernement a fait voter depuis juin 2012, mission par mission, sans calcul.
    Données : series.politique.GRANDES et P.mots de data.json (outils/parlement.py, données ouvertes de l'Assemblée nationale).
    Usage : <div data-lois="securite"></div> (une mission) ou <div data-lois="toutes"></div> (onglets par mission, page La vie politique).
    Le bloc se remplit à sa première ouverture (ou tout de suite s'il est visible) : data.json est déjà dans le cache du navigateur. */
@@ -70,7 +70,7 @@
       '<p>Une grande loi est une loi publiée au Journal officiel qui remplit au moins un de ces critères : un vote solennel à l\'Assemblée nationale (sa Conférence des présidents le réserve aux textes qu\'elle juge importants), une adoption par l\'article 49.3, une saisine du Conseil constitutionnel par des parlementaires ou l\'exécutif, ou un budget (loi de finances, budget de la Sécurité sociale).</p>' +
       (mission === 'toutes' ? '<p>Une loi est rattachée à une mission par les mots de son titre (liste sur chaque page de mission) ; les budgets de l\'État vont aux Finances, ceux de la Sécurité sociale à la Santé et à la Vie des Français. Une loi peut compter pour plusieurs missions ; celles qui n\'entrent dans aucune sont dans « Autres ».</p>'
         : mots ? '<p>Elle est rattachée à cette page quand son titre contient un de ces mots : ' + mots.map(esc).join(', ') + (mission === 'finances' ? ' ; et chaque budget de l\'État' : mission === 'sante' || mission === 'vie' ? ' ; et chaque budget de la Sécurité sociale' : '') + '.</p>' : '') +
-      '<p>Chaque loi est comptée pour le gouvernement en place le jour de sa promulgation. Avant juin 2012 (Jacques Chirac, Nicolas Sarkozy), les données ouvertes de l\'Assemblée nationale ne couvrent pas ces années. Pas de note : un nombre de lois n\'est ni bon ni mauvais.</p>' +
+      '<p>Chaque loi est comptée pour le gouvernement en place le jour de sa promulgation. Avant juin 2012 (Jacques Chirac, Nicolas Sarkozy), les données ouvertes de l\'Assemblée nationale ne couvrent pas ces années. Pas de résultat sur 20 : un nombre de lois n\'est ni bon ni mauvais.</p>' +
       '<p>Source : <a href="' + esc(PO.P.grandes.url) + '">' + esc(PO.P.grandes.source) + '</a>.</p></details>';
   }
 

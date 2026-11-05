@@ -2,7 +2,9 @@
 /* Contrôle de la mise à jour automatique de Concret.
    node outils/controle.js a-faire [AAAA-MM-JJ]
        Liste les indicateurs du calendrier à vérifier aujourd'hui.
-   node outils/controle.js verifier [AAAA-MM-JJ] [--compte-rendu fichier.md]
+   node outils/controle.js verifier [AAAA-MM-JJ] [--compte-rendu fichier.md] [--quotidienne]
+       --quotidienne (tâche quotidienne de midi) : refuse la publication tant qu'un indicateur dû n'a pas été vérifié
+       aujourd'hui (fait, ou introuvable à la source et noté comme tel : tentative + 1, revu demain).
        Valide data.json, recalcule toutes les notes (commun/notes.js), les compare à la dernière publication,
        vérifie les récits (outils/recits.js), contrôle le calendrier, met à jour donnees/notes.json,
        donnees/a_valider.json et l'index du moteur de recherche (donnees/recherche.json, par outils/recherche.js), écrit le journal du mois (journal/AAAA-MM.md) et imprime la notification.
@@ -15,6 +17,7 @@ var NOTES = require('../commun/notes.js'), RECITS = require('./recits.js');
 
 var args = process.argv.slice(2), cmd = args[0];
 var today = (args[1] && /^\d{4}-\d{2}-\d{2}$/.test(args[1])) ? args[1] : new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+var quotidienne = args.indexOf('--quotidienne') > 0;
 var crIdx = args.indexOf('--compte-rendu'), compteRendu = crIdx > 0 ? fs.readFileSync(args[crIdx + 1], 'utf8').trim() : '';
 var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 var dateFr = function (iso) { var p = iso.split('-'); return (+p[2] === 1 ? '1er' : +p[2]) + ' ' + MOIS[+p[1] - 1] + ' ' + p[0]; };
@@ -33,13 +36,20 @@ if (cmd === 'a-faire') {
 if (cmd !== 'verifier') { console.error('Usage : node outils/controle.js a-faire|verifier [AAAA-MM-JJ] [--compte-rendu fichier.md]'); process.exit(2); }
 
 // ===== 1. Validation de data.json =====
+// Questions du jour calculées à partir des séries (outils/quiz_auto.py) : refaites avant la validation, pour suivre chaque nouveau
+// chiffre ; la question d'aujourd'hui ne change pas.
+var qa = cp.spawnSync('python3', [path.join(__dirname, 'quiz_auto.py'), '--ecrire'], { cwd: ROOT, encoding: 'utf8', timeout: 60000 });
+var qaErr = qa.status !== 0 ? ((qa.stderr || qa.error && qa.error.message || 'erreur').trim().split('\n').pop()) : null;
 var bloquant = [], alertes = [];
 var d;
 try { d = rd('data.json'); } catch (e) { console.log('Concret ✗ ' + dateFr(today) + ' : data.json illisible (' + e.message + '), rien publié.'); process.exit(1); }
 var err = function (m) { bloquant.push(m); };
+if (qaErr) alertes.push('questions du jour calculées non refaites (' + qaErr + ') : relancer python3 outils/quiz_auto.py --ecrire');
 if (!d.updated || !d.updated_iso || isNaN(Date.parse(d.updated_iso))) err('updated / updated_iso absents ou invalides');
-var DATASETS = ['sondages_t1', 'sondages_t2', 'polymarket', 'polymarket_hist', 'polymarket_t1', 'polymarket_t1_hist', 'evenements', 'agenda_barometre', 'pouls', 'finances_mois', 'actu_finances', 'agenda_finances', 'education_mois', 'actu_education', 'agenda_education'];
+var DATASETS = ['sondages_t1', 'sondages_t2', 'polymarket', 'polymarket_hist', 'polymarket_t1', 'polymarket_t1_hist', 'wikipedia_vues', 'wikipedia_info', 'evenements', 'agenda_barometre', 'pouls', 'finances_mois', 'actu_finances', 'agenda_finances', 'education_mois', 'actu_education', 'agenda_education'];
 DATASETS.forEach(function (k) { if (!Array.isArray((d.datasets || {})[k])) err('jeu de données manquant : ' + k); });
+// Lectures Wikipédia du Baromètre (outils/wikipedia.py) : des nombres entiers plausibles, datés du dernier jour des 28 jours comptés.
+((d.datasets || {}).wikipedia_vues || []).forEach(function (r) { var v = Number(r.vues); if (!(v >= 0 && v < 2e7) || Math.round(v) !== v || !/^\d{4}-\d{2}-\d{2}$/.test(r.jusqu_au || '')) err('wikipedia_vues ' + r.candidat + ' ' + r.jusqu_au + ' : chiffre ou date invalide (' + r.vues + ')'); });
 Object.keys(d.datasets || {}).forEach(function (k) {
   (d.datasets[k] || []).forEach(function (r, i) { Object.keys(r).forEach(function (f) { if (typeof r[f] !== 'string') err(k + '[' + i + '].' + f + ' n\'est pas une chaîne'); }); });
 });
@@ -89,13 +99,50 @@ if (S.education) {
 })();
 // Question du jour : le lien « Vérifier » (QUIZ[i].v) mène à une courbe ou un bloc qui existe sur la page.
 (function () {
-  ['finances', 'education', 'sante', 'securite', 'defense', 'vie'].forEach(function (pg) {
-    var html = fs.readFileSync(path.join(ROOT, pg, 'index.html'), 'utf8'), ser = S[pg] || {}, cles = Object.keys(ser.C || {}).concat(Object.keys(ser.AFF || {}));
+  ['finances', 'education', 'sante', 'securite', 'defense', 'vie', 'demographie'].forEach(function (pg) {
+    var ser = S[pg] || {}, cles = Object.keys(ser.C || {}).concat(Object.keys(ser.AFF || {}));
     (ser.QUIZ || []).forEach(function (q, i) {
       if (!q.v) return;
+      var html = fs.readFileSync(path.join(ROOT, q.p || pg, 'index.html'), 'utf8');  // q.p : question venue d'une autre page (La vie politique)
       var ok = html.indexOf('id="' + q.v + '"') >= 0 || html.indexOf('\'' + q.v + '\'') >= 0 || cles.some(function (k) { return q.v === 'ch-' + k || q.v === 'ch-a-' + k || q.v.indexOf('ch-' + k + '-') === 0; });
       if (!ok) err(pg + '.QUIZ[' + i + '] : lien « Vérifier » vers « ' + q.v + ' », absent de la page');
     });
+  });
+})();
+// Audit des questions du jour, à chaque passage (les 31 jours à venir de chaque page) : quatre réponses différentes, une bonne
+// réponse, aucune question reposée (même texte, ou même question pour une autre année avec la même réponse), pas de forme
+// de question identique deux jours de suite, des réponses chiffrées vraisemblables (aucune impossible), un texte propre.
+(function () {
+  var jour0 = Math.round((Date.UTC(+today.slice(0, 4), +today.slice(5, 7) - 1, +today.slice(8, 10)) - Date.UTC(2026, 0, 1)) / 864e5);
+  var num = function (t) { var m = /^(−|-)?\s*([\d\s\u202f\u00a0]+(?:,\d+)?)\s*(%)?$/.exec(String(t).trim()); return m ? { v: (m[1] ? -1 : 1) * parseFloat(m[2].replace(/[\s\u202f\u00a0]/g, '').replace(',', '.')), pc: !!m[3] } : null; };
+  var forme = function (q) { var t = q.q; return /quel était le chiffre/.test(t) ? 'chiffre' : /quel pays de l'UE avait le chiffre le plus élevé/.test(t) ? 'haut' : /le plus bas en/.test(t) && /quel pays/.test(t) ? 'bas' : /combien de pays/.test(t) ? 'dessus' : /le plus proche/.test(t) ? 'proche' : /quatre pays/.test(t) ? 'duel' : /comment le chiffre/.test(t) ? 'evol' : /en quelle année/.test(t) ? 'annee' : 'autre'; };
+  ['finances', 'education', 'sante', 'securite', 'defense', 'vie', 'demographie'].forEach(function (pg) {
+    var Q = (S[pg] || {}).QUIZ || [], n = Q.length; if (!n) return;
+    var vu = {}, prec = null;
+    for (var k = 0; k < n; k++) {
+      var q = Q[(jour0 + k) % n], ou = pg + ', question du ' + (k ? 'jour J+' + k : 'jour') + ' : « ' + String(q.q).slice(0, 70) + '… »';
+      if (!q.o || q.o.length !== 4) err(ou + ' : ' + (q.o ? q.o.length : 0) + ' réponses au lieu de 4');
+      else if (new Set(q.o).size !== 4) err(ou + ' : deux réponses identiques');
+      if (!(q.a >= 0 && q.a < (q.o || []).length)) err(ou + ' : bonne réponse absente');
+      if (/None|NaN|undefined|null|\(\s*\(|,\s*,|\)\s*\(/.test(q.q + ' ' + (q.o || []).join(' '))) err(ou + ' : texte mal formé');
+      if (/\b([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{5,}), \1\b/i.test(q.q)) err(ou + ' : mots répétés (« ' + /\b([A-Za-zÀ-ÿ'][A-Za-zÀ-ÿ' ]{5,}), \1\b/i.exec(q.q)[1] + ' »)');
+      if (String(q.q).length > 200) alertes.push(ou + ' : question longue (' + String(q.q).length + ' signes), à raccourcir');
+      var cle = String(q.q).replace(/\b(19|20)\d\d\b/g, '#') + '|' + (q.o || [])[q.a];
+      if (vu[q.q]) err(ou + ' : même question que le jour J+' + vu[q.q]);
+      else if (vu[cle] !== undefined && forme(q) !== 'annee') err(ou + ' : même question, même réponse que le jour J+' + vu[cle] + ' (seule l\'année change)');
+      vu[q.q] = vu[q.q] || String(k); vu[cle] = vu[cle] !== undefined ? vu[cle] : String(k);
+      var f = forme(q); if (prec && f !== 'autre' && f === prec) alertes.push(ou + ' : même forme de question que la veille (' + f + ')');
+      prec = f;
+      var nums = (q.o || []).map(num);
+      if (nums.every(Boolean) && f === 'chiffre') {
+        var bon = nums[q.a].v;
+        nums.forEach(function (x, j) {
+          if (x.pc && (x.v < 0 || x.v > 100)) err(ou + ' : réponse impossible (' + q.o[j] + ')');
+          if (bon > 0 && (x.v < 0.4 * bon || x.v > 1.6 * bon)) err(ou + ' : réponse invraisemblable (' + q.o[j] + ' pour ' + q.o[q.a] + ')');
+          if (/de 0 à 1/.test(q.q) && x.v > 1) err(ou + ' : réponse impossible (' + q.o[j] + ', indice de 0 à 1)');
+        });
+      }
+    }
   });
 })();
 // Sondages (loi du 19 juillet 1977) : chaque sondage publié a sa notice lue à la Commission des sondages
@@ -103,6 +150,8 @@ if (S.education) {
 // ces mentions peuvent venir du rapport complet de l'institut (statut « rapport », datasets.sondages_rapports).
 (function () {
   var DS = d.datasets || {}, N = DS.sondages_notices || [], cle = function (dt, i) { return dt + '|' + String(i).replace(/ Interactive$/, ''); }, a = {};
+  // Une notice de la Commission des sondages ne vaut que pour un sondage.
+  var vuN = {}; N.forEach(function (n) { if (!n.notice) return; if (vuN[n.notice]) err('sondages_notices : la notice n° ' + n.notice + ' est donnée à deux sondages (' + vuN[n.notice] + ' et ' + n.date + ' ' + n.institut + ') ; une seule est la bonne'); vuN[n.notice] = n.date + ' ' + n.institut; });
   N.forEach(function (n) { a[cle(n.date, n.institut)] = n; if (!n.commanditaire || !n.marge || !n.url) err('sondages_notices ' + n.date + ' ' + n.institut + ' : commanditaire, marge d\'erreur ou lien ' + (n.statut === 'rapport' ? 'du rapport' : 'de la notice') + ' manquant');
     // Sondage publié avec les mentions de son rapport, en attendant la notice : signalé si elle tarde plus de 15 jours.
     if (n.statut === 'rapport' && (Date.parse(today) - Date.parse(n.date)) / 864e5 > 15) alertes.push('sondage ' + n.date + ' ' + n.institut + ' : notice toujours pas en ligne à la Commission des sondages, plus de 15 jours après (mentions lues dans le rapport de l\'institut)'); });
@@ -148,6 +197,26 @@ if (S.politique) {
     if (Object.keys(pj.series).sort().join() !== pi.cles.join()) err('donnees/pays_index.json ne décrit pas donnees/pays.json (relancer python3 outils/pays.py --ecrire)');
     if ((Date.now() - Date.parse(pj.maj)) / 864e5 > 45) alertes.push('pays à ajouter : chiffres relus il y a plus de 45 jours (relancer python3 outils/pays.py --ecrire)');
   } catch (e) { err('donnees/pays.json illisible (relancer python3 outils/pays.py --ecrire)'); }
+})();
+// Comparaison du Baromètre avec 2017 et 2022 (outils/historique.py → donnees/sondages_passes.json) : deux campagnes, chacune
+// avec ses sondages (date, institut, scores plausibles), son résultat officiel et sa source.
+(function () {
+  try {
+    var H = JSON.parse(fs.readFileSync(path.join(ROOT, 'donnees', 'sondages_passes.json'), 'utf8')), jo = /^\d{4}-\d{2}-\d{2}$/;
+    if (!H.campagnes || [2012, 2017, 2022].some(function (a) { return !H.campagnes.some(function (c) { return c.annee === a; }); })) err('donnees/sondages_passes.json : il faut les campagnes 2012, 2017 et 2022 (relancer python3 outils/historique.py --ecrire)');
+    (H.campagnes || []).forEach(function (c) {
+      if (!c.source || !c.source.url || !c.resultats_source || !c.resultats_source.url) err('donnees/sondages_passes.json ' + c.annee + ' : source manquante');
+      if (!c.sondages || c.sondages.length < 50) err('donnees/sondages_passes.json ' + c.annee + ' : moins de 50 sondages');
+      (c.sondages || []).forEach(function (p) {
+        if (!jo.test(p.fin) || p.fin >= c.premier_tour) err('donnees/sondages_passes.json ' + c.annee + ' : date de sondage invalide (' + p.fin + ')');
+        Object.keys(p.scores || {}).forEach(function (k) { var v = p.scores[k]; if (!(v >= 0 && v <= 60)) err('donnees/sondages_passes.json ' + c.annee + ' : score hors plage (' + k + ' ' + v + ', ' + p.fin + ')'); });
+      });
+      if (!c.resultats || !(c.resultats['Le Pen'] > 0)) err('donnees/sondages_passes.json ' + c.annee + ' : résultats officiels manquants');
+      if (c.second_tour && (!c.duels || c.duels.filter(function (p) { return p.adversaire === 'Macron'; }).length < 50)) err('donnees/sondages_passes.json ' + c.annee + ' : moins de 50 duels Le Pen–Macron au second tour');
+      (c.duels || []).forEach(function (p) { if (!jo.test(p.fin) || p.fin >= c.second_tour || !(p.score > 0 && p.score < 100)) err('donnees/sondages_passes.json ' + c.annee + ' : duel invalide (' + p.fin + ', ' + p.adversaire + ')'); });
+      if (c.second_tour && (!c.resultats_t2 || !(c.resultats_t2['Le Pen'] > 0) || !c.resultats_t2_source)) err('donnees/sondages_passes.json ' + c.annee + ' : résultat officiel du second tour manquant');
+    });
+  } catch (e) { err('donnees/sondages_passes.json illisible (relancer python3 outils/historique.py --ecrire)'); }
 })();
 // Votez les lois (outils/parlement.py → donnees/votes.json) : chaque vote a sa date, son numéro, son résultat et la position
 // d'au moins un groupe ; chaque position et chaque décompte sont lisibles ; relu depuis moins de trois jours.
@@ -293,13 +362,24 @@ if (!bloquant.length) {
 }
 
 // ===== 4. Calendrier =====
-var problemes = [];
+var problemes = [], nonFaites = 0;
 cal.indicateurs.forEach(function (i) {
-  if (i.statut === 'en_retard') problemes.push(i.libelle + ' : publication attendue' + (i.publication_attendue ? ' le ' + i.publication_attendue : '') + ' introuvable (tentative ' + i.tentatives + ')');
-  else if (i.prochaine_verification <= today && i.derniere_verification !== today) problemes.push(i.libelle + ' : vérification prévue le ' + i.prochaine_verification + ' non faite');
+  // Une actualité ou un agenda n'est jamais « en retard » : chercher est toujours possible ; un jour sans nouvelle, l'indicateur est vérifié.
+  var actu = /_actu$|^baro_(evenements|agenda)$/.test(i.id);
+  if (i.statut === 'en_retard') {
+    problemes.push(i.libelle + ' : publication attendue' + (i.publication_attendue ? ' le ' + i.publication_attendue : '') + ' introuvable (tentative ' + i.tentatives + ')' + (i.erreur ? ' : ' + i.erreur : ''));
+    if (quotidienne && actu) err(i.libelle + ' (' + i.id + ') marquée « en retard » : une actualité se cherche chaque jour ; s\'il n\'y a rien de nouveau, marque-la vérifiée (statut a_jour, tentatives 0, prochaine_verification demain).');
+    else if (quotidienne && i.derniere_verification === today && !i.erreur) err(i.libelle + ' (' + i.id + ') marquée « en retard » sans l\'erreur lue : écris dans « erreur » l\'adresse lue et ce qu\'elle a répondu (donnée absente, erreur 403…).');
+  }
+  if (i.prochaine_verification <= today && i.derniere_verification !== today) {
+    // La promesse du site : tout ce qui est dû est vérifié chaque jour. La tâche quotidienne ne publie pas en en laissant de côté.
+    if (quotidienne) { err('Vérification due non faite : ' + i.libelle + ' (' + i.id + ', prévue le ' + i.prochaine_verification + ')'); nonFaites++; }
+    else problemes.push(i.libelle + ' : vérification prévue le ' + i.prochaine_verification + ' non faite');
+  }
   // Valeur publiée mais pas encore confirmée à une source officielle : signalée chaque jour tant qu'elle l'est.
   if (i.statut === 'a_verifier' || i.statut === 'a_recuperer') problemes.push(i.libelle + ' : ' + (i.statut === 'a_recuperer' ? 'série pas encore récupérée, rien n\'est affiché' : 'nouvelle valeur pas encore confirmée à la source, le site garde la dernière valeur vérifiée') + '.');
 });
+if (nonFaites) err('Pour chacune : fais-la, ou, si la source est illisible ou la publication pas encore parue, note-le dans le calendrier (tentatives + 1, prochaine_verification = demain) et dans le compte rendu, puis relance le contrôle.');
 var fait = cal.indicateurs.filter(function (i) { return i.derniere_verification === today; });
 
 // ===== 5. Ce qui a changé dans data.json depuis la dernière publication =====
@@ -327,6 +407,9 @@ if (!bloquant.length) {
   // Version du site (outils/version.js) : ne change que si une page ou un script commun change ; la web app s'en sert pour proposer la mise à jour.
   var vs = cp.spawnSync('node', [path.join(__dirname, 'version.js')], { cwd: ROOT, encoding: 'utf8', timeout: 60000 });
   if (vs.status !== 0) alertes.push('version du site non refaite (' + ((vs.stderr || vs.error && vs.error.message || 'erreur').trim().split('\n').pop()) + ') : relancer node outils/version.js');
+  // Place de la France parmi les pays de l'UE, sous le titre des courbes des pages de mission (outils/rangs.js, dans donnees/pays_index.json).
+  var rg = cp.spawnSync('node', [path.join(__dirname, 'rangs.js')], { cwd: ROOT, encoding: 'utf8', timeout: 60000 });
+  if (rg.status !== 0) alertes.push('place de la France dans l\'UE non recalculée (' + ((rg.stderr || rg.error && rg.error.message || 'erreur').trim().split('\n').pop()) + ') : relancer node outils/rangs.js');
   var ix = cp.spawnSync('node', [path.join(__dirname, 'recherche.js')], { cwd: ROOT, encoding: 'utf8', timeout: 240000 });
   if (ix.status !== 0) alertes.push('index du moteur de recherche non refait (' + ((ix.stderr || ix.error && ix.error.message || 'délai dépassé').trim().split('\n').pop()) + ') : relancer node outils/recherche.js');
   // Cartes d'aperçu des liens (og:image) : refaites quand les chiffres qu'elles montrent changent.
@@ -357,7 +440,7 @@ fs.appendFileSync(jf, J.join('\n'));
 var out = [];
 if (bloquant.length) {
   out.push('Concret ✗ ' + dateFr(today) + ' : données refusées, rien publié (' + bloquant.length + ' erreur(s)).');
-  bloquant.slice(0, 5).forEach(function (b) { out.push('⚠ ' + b); });
+  bloquant.slice(0, quotidienne ? 60 : 5).forEach(function (b) { out.push('⚠ ' + b); });
 } else {
   // Le classement général de l'accueil d'abord : c'est le changement que les lecteurs voient en premier.
   var tri = chgNotes.filter(function (c) { return /^Classement général/.test(c); }).concat(chgNotes.filter(function (c) { return !/^Classement général/.test(c); }));

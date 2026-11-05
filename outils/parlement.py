@@ -207,7 +207,8 @@ def groupes(organes):
     for o in organes:
         o = o.get('organe') or {}
         if o.get('codeType') == 'GP' and not (o.get('viMoDe') or {}).get('dateFin'):
-            g[o['uid']] = {'c': o.get('libelleAbrev') or o.get('libelleAbrege') or o['libelle'], 'n': o['libelle']}
+            # Le sigle affiché par l'Assemblée (libelleAbrege, « UDR »), en majuscules ; libelleAbrev est un code interne (« UDDPLR »).
+            g[o['uid']] = {'c': (o.get('libelleAbrege') or o.get('libelleAbrev') or o['libelle']).upper(), 'n': o['libelle']}
     return g
 
 

@@ -81,6 +81,14 @@ def fin_terrain(p):
     return date.fromisoformat(p['date'])
 
 
+def fin_interviews(t):
+    """Derniers jours des interviews que la notice écrit (« Les interviews ont été réalisées du 9 au 10 septembre 2026 ») :
+    liste de (jour, mois). Vide si la notice ne le dit pas sous cette forme (rien n'est alors écarté sur la date)."""
+    noms = '|'.join(MOIS)
+    rx = r'réalisée?s?\s+du\s+\d{1,2}(?:er)?(?:\s+(?:%s))?\s+au\s+(\d{1,2})(?:er)?\s+(%s)' % (noms, noms)
+    return [(int(j), MOIS[m.lower()]) for j, m in re.findall(rx, re.sub(r'\s+', ' ', t), re.I) if m.lower() in MOIS]
+
+
 def chiffre(n):
     return re.compile(r'(?<!\d)' + r'[\s  .]?'.join(str(n)) + r'(?!\d)')
 
@@ -193,7 +201,7 @@ def main():
         N = liste()
     except Exception as e:
         print('Sondages ✗ site de la Commission des sondages injoignable (%s). Rien écrit.' % e); sys.exit(1)
-    out, manque, remplaces = [], [], []
+    out, manque, remplaces, prises = [], [], [], set()
     R = {(r['date'], r['institut'].replace(' Interactive', '')): r for r in D.get('sondages_rapports', [])}
     for k in sorted(polls):
         p = polls[k]
@@ -219,6 +227,13 @@ def main():
             # La notice doit porter le même nombre de personnes interrogées (quand on le connaît).
             if p['echantillon'] and not chiffre(p['echantillon']).search(t):
                 continue
+            # Une notice ne vaut que pour un sondage ; et ses interviews doivent finir le dernier jour du terrain
+            # (l'institut publie parfois deux sondages de suite, avec le même nombre de personnes interrogées).
+            if n['titre'].split()[0] in prises:
+                continue
+            fi = fin_interviews(t)
+            if fi and (fin.day, fin.month) not in fi:
+                continue
             trouve = (n, t, url); break
         rap = R.get(k)
         if not trouve:
@@ -232,7 +247,7 @@ def main():
         n, t, url = trouve
         c = commanditaire(t, n['titre'])
         mg = marge(t, p['echantillon'])
-        num = n['titre'].split()[0]
+        num = n['titre'].split()[0]; prises.add(num)
         ligne = {'date': p['date'], 'institut': p['institut'], 'terrain': p['terrain'], 'echantillon': p['echantillon'],
                  'commanditaire': c or '', 'marge': ('%s à %s' % (('%.1f' % mg[0]).replace('.', ','), ('%.1f' % mg[1]).replace('.', ','))) if mg else '', 'notice': num, 'url': url}
         out.append(ligne)

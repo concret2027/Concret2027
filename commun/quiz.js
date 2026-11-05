@@ -15,7 +15,10 @@
 
   // op : 'hit' (ajoute 1 à l'option i et renvoie les totaux de toutes les options) ou 'get' (lit les totaux) ; n : nombre d'options.
   // En cas d'erreur du réseau ou du serveur, deux nouveaux essais, espacés.
+  // Seul le vrai site compte : une copie (essais, relectures automatiques) lit les totaux sans rien ajouter.
+  var VRAI = /(^|\.)concret2027\.fr$/.test(location.hostname);
   function compteur(op, cle, n, i) {
+    if (op === 'hit' && !VRAI) op = 'get';
     var u = API + op + '?k=' + encodeURIComponent(cle) + '&n=' + n + (op === 'hit' ? '&i=' + i : '');
     var essai = function (k) {
       return fetch(u, { method: op === 'hit' ? 'POST' : 'GET', cache: 'no-store' }).then(function (x) {
@@ -66,6 +69,11 @@
       a.addEventListener('click', function (ev) { if (window.ConcretBref) { ev.preventDefault(); ConcretBref.aller(Q.v); } });
       ans.appendChild(document.createTextNode(' ')); ans.appendChild(a);
     }
+    // Une question venue d'une autre page (Q.p, par exemple La vie politique sur la page Défense) : le lien mène à cette page.
+    if (!cible && !el && Q.p && Q.v && !ans.querySelector('.qz-voir')) {
+      var ap = document.createElement('a'); ap.className = 'qz-voir'; ap.href = '/' + Q.p + '/#' + Q.v; ap.textContent = 'Vérifier sur la page ' + (Q.lp || Q.p) + ' →';
+      ans.appendChild(document.createTextNode(' ')); ans.appendChild(ap);
+    }
     // Sur une page de mission, un lien vers le quiz complet du jour.
     if (!el && !ans.querySelector('.qz-tout')) {
       var t = document.createElement('a'); t.className = 'qz-voir qz-tout'; t.href = '/quiz/'; t.textContent = 'Toutes les questions du jour →';
@@ -73,5 +81,5 @@
     }
     return totaux(page, Q, choix, nouveau).then(function (n) { afficher(opts, ans, n, nouveau); return n; }, function () { return null; });
   }
-  window.ConcretQuiz = { repondu: repondu, chemin: chemin, compteur: compteur, aide: aide, api: API };
+  window.ConcretQuiz = { repondu: repondu, chemin: chemin, compteur: compteur, aide: aide, api: API, vrai: VRAI };
 })();

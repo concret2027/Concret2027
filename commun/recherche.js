@@ -67,7 +67,7 @@
         var c = el.closest('section, .card, .mo, details') || el, haut = 0;
         // Barres collées en haut d'écran (menu, raccourcis) : le bloc doit apparaître dessous.
         Array.prototype.forEach.call(document.querySelectorAll('nav, header, .jump, .sticky'), function (e) { var cs = getComputedStyle(e); if ((cs.position === 'sticky' || cs.position === 'fixed') && parseFloat(cs.top || 0) < 200) haut += e.getBoundingClientRect().height; });
-        c.style.scrollMarginTop = (haut + 12) + 'px'; c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        c.style.scrollMarginTop = (haut + 12) + 'px'; c.scrollIntoView({ behavior: window.ConcretMenu ? ConcretMenu.doux() : 'smooth', block: 'start' });
         c.style.transition = 'box-shadow .3s'; c.style.boxShadow = '0 0 0 3px rgba(47,91,211,.45)'; setTimeout(function () { c.style.boxShadow = ''; }, 1800);
       }, 250);
     })();

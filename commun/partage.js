@@ -61,20 +61,25 @@
   }
   // L'image prend quelques secondes à préparer : passé ce délai, l'iPhone refuse d'ouvrir le menu de partage.
   // On montre alors l'image avec un bouton « Partager » qui, touché, ouvre le menu tout de suite.
-  function montrer(url, file, titreTxt) {
+  function montrer(url, file, titreTxt, btn) {
     var o = document.createElement('div'); o.className = 'pt-overlay';
-    o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
+    o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'Partager l\'image');
     o.style.cssText = 'position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px';
     o.innerHTML = '<div style="background:#fff;color:#111;border-radius:14px;padding:14px;max-width:min(92vw,520px);max-height:92vh;overflow:auto;display:grid;gap:10px;font:14px system-ui,sans-serif"><img alt="Image à partager" style="width:100%;border-radius:8px"><button type="button" class="pt-go" hidden style="font:inherit;font-weight:600;padding:12px;border-radius:10px;border:0;background:#2f5bd3;color:#fff">Partager l\'image</button><a download="concret.png" style="font-weight:600">Enregistrer l\'image</a><span>Ou appui long sur l\'image pour la partager.</span><button type="button" class="pt-close" style="font:inherit;font-weight:600;padding:10px;border-radius:10px;border:0;background:#111;color:#fff">Fermer</button></div>';
-    o.querySelector('img').src = url; o.querySelector('a').href = url;
+    o.querySelector('img').src = url; o.querySelector('img').alt = 'Image à partager : ' + titreTxt; o.querySelector('a').href = url;
     var go = o.querySelector('.pt-go');
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
       go.hidden = false;
       go.onclick = function () { navigator.share({ files: [file], title: titreTxt, text: titreTxt + ' · ' + adresse }).then(function () { o.remove(); }, function () {}); };
     }
-    o.querySelector('.pt-close').onclick = function () { o.remove(); };
-    o.addEventListener('click', function (e) { if (e.target === o) o.remove(); });
+    // Clavier : la fenêtre prend le focus, se ferme par Échap, et rend le focus au bouton touché.
+    var avant = btn || document.activeElement, fermer = function () { o.remove(); document.removeEventListener('keydown', esc); if (avant && avant.focus) try { avant.focus(); } catch (e) {} };
+    var esc = function (e) { if (e.key === 'Escape') fermer(); else if (window.ConcretMenu) ConcretMenu.pieger(o.firstChild, e); };
+    o.querySelector('.pt-close').onclick = fermer;
+    o.addEventListener('click', function (e) { if (e.target === o) fermer(); });
+    document.addEventListener('keydown', esc);
     document.body.appendChild(o);
+    try { (go.hidden ? o.querySelector('.pt-close') : go).focus(); } catch (e) {}
   }
   // Légende d'une courbe partagée seule : celle du bloc, sinon la légende commune placée juste avant le groupe de courbes
   // (Finances : « Les courbes » en tête des quatre graphiques).
@@ -91,6 +96,8 @@
     var wasClosed = card.tagName === 'DETAILS' && !card.open; if (wasClosed) card.open = true;
     // Courbe repliée sous son titre (pages de mission) : ouverte le temps de la capture, puis refermée.
     var plis = Array.prototype.filter.call(card.querySelectorAll('details.pli-courbe'), function (d) { return !d.open; }); plis.forEach(function (d) { d.open = true; });
+    // Courbe pas encore dessinée (loin de l'écran) : dessinée tout de suite, pour être dans l'image.
+    if (window.ConcretMenu && ConcretMenu.presser) ConcretMenu.presser(card);
     lib().then(function (h2c) {
       // Le titre est déjà écrit en haut de l'image : on le retire de la capture pour ne pas le répéter.
       var h = card.querySelector('h1, h2, .acc-h, .lab, .eyebrow'); if (h) h.setAttribute('data-pt-titre', ''); card.setAttribute('data-pt-bloc', '');
@@ -109,6 +116,8 @@
           Array.prototype.forEach.call(doc.querySelectorAll('[hidden], .pt-overlay, .nt-btn'), function (e) { e.remove(); });
           // Texte sous la courbe replié à l'écran (« Détail du graphe ») : en entier dans l'image.
           Array.prototype.forEach.call(doc.querySelectorAll('.nt-pli'), function (e) { e.classList.remove('nt-pli'); });
+          // Ce qui n'est montré que dans l'image (la note du thème par président) : visible dans la copie.
+          Array.prototype.forEach.call(doc.querySelectorAll('.pt-seul'), function (e) { e.classList.remove('pt-seul'); });
           // Dans l'image, seulement ce qui se lit : pas de bouton, pas de liste de détail à toucher, pas de bloc replié.
           var bl = doc.querySelector('[data-pt-bloc]');
           if (bl) {
@@ -135,18 +144,19 @@
     }).then(function (r) {
       var file = new File([r.blob], 'concret.png', { type: 'image/png' });
       var t = titre(card);
-      if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: t, text: t + ' · ' + adresse }).catch(function (e) { if (!e || e.name !== 'AbortError') montrer(r.url, file, t); });
-      montrer(r.url, file, t);
-    }).catch(function () { alert('Le partage n\'a pas pu être préparé.'); })
-      .then(function () { if (wasClosed) card.open = false; plis.forEach(function (d) { d.open = false; }); btn.textContent = label; btn.disabled = false; });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: t, text: t + ' · ' + adresse }).catch(function (e) { if (!e || e.name !== 'AbortError') montrer(r.url, file, t, btn); });
+      montrer(r.url, file, t, btn);
+    }).then(function () { return label; }, function () { return 'L\'image n\'a pas pu être préparée. Réessayer'; })
+      .then(function (l) { if (wasClosed) card.open = false; plis.forEach(function (d) { d.open = false; }); btn.textContent = l; btn.disabled = false; if (!document.activeElement || document.activeElement === document.body) try { btn.focus(); } catch (e) { } if (l !== label) { btn.setAttribute('role', 'status'); setTimeout(function () { btn.textContent = label; btn.removeAttribute('role'); }, 6000); } });
   }
   function equiper(root) {
     Array.prototype.forEach.call((root || document).querySelectorAll(SEL), function (card) {
       if (card.dataset.partage || card.querySelector('.share, .pt-share')) return; // data-partage="non" : bloc d'en-tête, rien à partager
-      // Un bloc dans un autre n'a pas son propre bouton, sauf une courbe d'un dépliant (« Voir les autres courbes ») : on peut la partager seule.
-      if (card.parentElement && card.parentElement.closest(SEL) && !card.matches('.today .metric') && !card.parentElement.closest('.fold')) return;
+      // Un bloc dans un autre n'a pas son propre bouton, sauf une courbe d'un dépliant (« Voir les autres courbes ») ou la courbe principale
+      // d'un thème (.courbe-p) : on peut la partager seule. data-partage-l : le libellé du bouton (« Partager la courbe », « Partager le thème »).
+      if (card.parentElement && card.parentElement.closest(SEL) && !card.matches('.today .metric') && !card.parentElement.closest('.fold') && !card.classList.contains('courbe-p') && !card.classList.contains('courbe-s')) return;
       card.dataset.partage = '1';
-      var b = document.createElement('button'); b.type = 'button'; b.className = 'share pt-share'; b.textContent = 'Partager';
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'share pt-share'; b.textContent = card.dataset.partageL || 'Partager';
       b.setAttribute('aria-label', 'Partager ce bloc en image');
       b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); partager(card, b); });
       var target = card.tagName === 'DETAILS' ? (card.querySelector('.acc-body') || card) : card;

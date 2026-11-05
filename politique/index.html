@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="556e27f2a9a7">
+<meta name="concret-version" content="852be26972c2">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -31,7 +31,7 @@
 <style>html, body { margin: 0; }
 :root {
   --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc;
-  --fr: #2f5bd3; --bad: #c43d3d; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06); --axis: #c9c9c2;
+  --fr: #2f5bd3; --bad: #a83232; --ok: #1a7a43; --mid: #8a6416; --band: rgba(47, 91, 211, .06); --axis: #c9c9c2;
   --s-good: rgba(31, 138, 76, .14); --s-bad: rgba(196, 61, 61, .13); --s-mid: rgba(176, 129, 42, .16); --s-nv: rgba(98, 100, 109, .12);
   --sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
   --serif: "Newsreader", Georgia, "Times New Roman", serif;
@@ -127,6 +127,7 @@ footer p { margin: 0; } footer a { color: inherit; }
 .vote details > summary::after { content: "\00a0▾"; } .vote details[open] > summary::after { content: "\00a0▴"; }
 .liens { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; }
 .liens a { color: var(--muted); }
+.liens a, .lois .m a { display: inline-flex; align-items: center; min-height: 24px; }
 .liens a.pg { color: var(--fr); font-weight: 600; text-decoration: none; }
 /* Tableaux */
 .tw { overflow-x: auto; }
@@ -198,16 +199,21 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 .chap::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .vers-votez { margin: 0; } .vers-votez a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--fr); text-decoration: none; }
 .lire-plus > summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--fr); min-height: 40px; display: flex; align-items: center; }
+/* La place des blocs remplis par les données est gardée pendant le chargement : la page ne saute pas quand ils arrivent. */
+#bref3:empty { min-height: 440px; }
+@media (min-width: 700px) { #bref3:empty { min-height: 220px; } }
+@media (min-width: 1100px) { #bref3:empty { min-height: 150px; } }
 </style>
 </head>
 <body data-sources="Sources : Assemblée nationale (données ouvertes), Conseil constitutionnel, Élysée, Sénat (détail dans « La règle et les sources »).">
+<noscript><p style="margin:12px 16px;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:15px system-ui,sans-serif">Les chiffres, les résultats et les courbes de Concret s'affichent avec JavaScript, qui est désactivé sur ce navigateur.</p></noscript>
 <div class="wrap">
   <nav class="site" aria-label="Pages de Concret"><a class="logo" href="/">Concret</a><a href="/barometre/">Baromètre<span class="lg"> 2027</span></a><a href="/politique/" aria-current="page">La vie politique</a><a href="/quiz/">Quiz<span class="lg"> du jour</span></a><a href="/votez/">Votez<span class="lg"> les lois</span></a><a href="/vie/">Vie des Français</a><a href="/finances/">Finances<span class="lg"> publiques</span></a><a href="/sante/">Santé</a><a href="/education/">Éducation</a><a href="/securite/">Sécurité<span class="lg"> et justice</span></a><a href="/defense/">Défense</a><a href="/demographie/">Démographie</a></nav>
   <div class="brand"><b>La vie politique</b><span id="maj"></span></div>
 
   <section class="card" id="reponse" data-partage="non" aria-labelledby="titre">
     <h1 id="titre">Ce que vote l'Assemblée, ce qui devient loi</h1>
-    <p class="lead">L'ordre du jour, les votes groupe par groupe, les lois publiées, lus aux sources officielles. Pas de note sur cette page.</p>
+    <p class="lead">L'ordre du jour, les votes groupe par groupe, les lois publiées, lus aux sources officielles. Pas de résultat sur 20 sur cette page.</p>
     <p class="visit" id="visite" hidden></p>
     <div class="bref3" id="bref3"></div>
     <p class="vers-votez"><a href="/votez/">Et vous, qu'auriez-vous voté ? Votez ces textes, et les prochains avant les députés →</a></p>
@@ -231,6 +237,7 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
     <h2 id="votes-t">Les votes de l'Assemblée</h2>
     <p class="note" id="votes-n"></p>
     <div class="chips" id="votes-f" role="group" aria-label="Filtrer les votes"></div>
+    <p class="note" id="grp-leg"></p>
     <div class="votes" id="votes-l"></div>
     <button class="plus" type="button" id="votes-plus" hidden></button>
     <p class="vers-votez"><a href="/votez/">Et vous, qu'auriez-vous voté ? Votez ces textes →</a></p>
@@ -261,7 +268,7 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 
   <section class="card" id="grandes" aria-labelledby="grandes-t" data-src="Source : Assemblée nationale, données ouvertes (dossiers législatifs et scrutins depuis juin 2012).">
     <h2 id="grandes-t">Les grandes lois, mission par mission</h2>
-    <p class="note" style="font-size:14px">Ce que chaque gouvernement a fait voter depuis 2012, rangé selon les missions notées sur Concret. Choisissez une mission, puis touchez un gouvernement.</p>
+    <p class="note" style="font-size:14px">Ce que chaque gouvernement a fait voter depuis 2012, rangé selon les missions mesurées sur Concret. Choisissez une mission, puis touchez un gouvernement.</p>
     <div data-lois="toutes"></div>
   </section>
 
@@ -277,7 +284,7 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 
   <div class="renvoi">
     <a href="/barometre/"><b>Baromètre 2027 →</b><span>Sondages, parieurs et agenda de l'élection présidentielle</span></a>
-    <a href="/"><b>La note des présidents →</b><span>Mission par mission, la France face à la moyenne de l'Union européenne</span></a>
+    <a href="/"><b>La France sous chaque président →</b><span>Mission par mission, la France face à la moyenne de l'Union européenne</span></a>
   </div>
 
   <details class="how" id="regle">
@@ -324,12 +331,15 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
     var S = (D.series || {}).politique;
     if (!S) { $('bref3').innerHTML = '<p class="vide">Données indisponibles pour le moment.</p>'; return; }
     var G = S.GROUPES, GN = {}; G.forEach(function (g) { GN[g.c] = g.n; });
+    // Les sigles des groupes, en clair, une fois au-dessus des votes (sur téléphone, l'infobulle ne s'ouvre pas).
+    try { $('grp-leg').innerHTML = '<b>Les groupes :</b> ' + G.map(function (g) { return '<b>' + esc(g.c) + '</b> ' + esc(g.n); }).join(' · ') + '.'; } catch (e) {}
     var VOTES = S.VOTES.filter(function (v) { return !v.loi; });
     var PAR = {}; S.VOTES.forEach(function (v) { PAR[v.n] = v; });
     $('maj').textContent = 'Mis à jour le ' + dLong(S.maj);
 
     // En bref : le dernier vote, la dernière loi publiée, le prochain jour de séance.
-    var v0 = VOTES[0], l0 = S.LOIS[0], a0 = S.AGENDA[0];
+    // La prochaine séance : aujourd'hui ou à venir.
+    var auj0 = new Date().toLocaleDateString('sv-SE'), v0 = VOTES[0], l0 = S.LOIS[0], a0 = S.AGENDA.filter(function (x) { return x.d >= auj0; })[0];
     $('bref3').innerHTML =
       (v0 ? '<a class="bcase" href="#v' + v0.n + '"><span class="lab">Dernier vote · ' + dCourt(v0.d) + '</span><span class="t">' + esc(maj1(court(v0.t))) + '</span><span class="d"><span class="sort ' + (v0.s === 'adopté' ? 'adopte">Adopté' : 'rejete">Rejeté') + '</span> ' + nf(v0.p) + ' pour, ' + nf(v0.c) + ' contre</span></a>' : '') +
       (l0 ? '<a class="bcase" href="#lois"><span class="lab">Dernière loi publiée · ' + dCourt(l0.jo || l0.d) + '</span><span class="t">Loi ' + esc(l0.t) + '</span><span class="d">Loi n° ' + esc(l0.code) + '</span></a>' : '') +
@@ -382,7 +392,7 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
         (v.moc ? '' : '<div class="barre" aria-hidden="true"><i class="p" style="width:' + (100 * v.p / tot) + '%"></i><i class="c" style="width:' + (100 * v.c / tot) + '%"></i><i class="a" style="width:' + (100 * v.a / tot) + '%"></i></div>') +
         '<div class="pos">' + lignes + '</div>' +
         '<details><summary>Le vote de chaque groupe</summary><div class="tw">' + tab + '</div></details>' +
-        '<div class="liens"><a href="' + urlScrutin(v.n) + '">Scrutin n° ' + v.n + ' (Assemblée nationale)</a>' + (v.dos ? '<a href="' + urlDossier(v.dos) + '">Le dossier du texte</a>' : '') + lienPages(v.pg) + '</div></article>';
+        '<div class="liens"><a href="' + urlScrutin(v.n) + '">Scrutin n° ' + v.n + ' (Assemblée nationale)</a>' + (v.dos ? '<a href="' + urlDossier(v.dos) + '" aria-label="Le dossier du texte du scrutin n° ' + v.n + '">Le dossier du texte</a>' : '') + lienPages(v.pg) + '</div></article>';
     }
     dessinerVotes();
 
@@ -404,7 +414,7 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
         return '<li><div><div class="t"><b>Loi n° ' + esc(l.code) + '</b> du ' + dLong(l.d) + ' ' + esc(l.t) + '</div><div class="m">' +
           (l.jo ? '<span>Journal officiel' + (l.njo ? ' n° ' + esc(l.njo) : '') + ' du ' + dLong(l.jo) + '</span>' : '') +
           (v ? '<a href="#v' + v.n + '" data-v="' + v.n + '">Vote final à l\'Assemblée : ' + nf(v.p) + ' pour, ' + nf(v.c) + ' contre (' + dCourt(v.d, true) + ')</a>' : '') +
-          '<a href="' + urlDossier(l.dos) + '">Le dossier</a>' + lienPages(l.pg) + '</div></div></li>';
+          '<a href="' + urlDossier(l.dos) + '" aria-label="Le dossier de la loi n° ' + esc(l.code) + '">Le dossier</a>' + lienPages(l.pg) + '</div></div></li>';
       }).join('') || '<li><p class="vide">Aucune loi dans cette catégorie.</p></li>';
       $('lois-plus').hidden = L.length <= nlMax;
       $('lois-plus').textContent = 'Voir ' + Math.min(20, L.length - nlMax) + ' lois de plus (' + (L.length - nlMax) + ' restantes)';
@@ -423,9 +433,11 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
 
     // L'agenda.
     var pt = function (o) { return '<li>' + esc(o) + '</li>'; };
-    $('agenda-l').innerHTML = S.AGENDA.map(function (a, i) { return '<li' + (i >= 4 ? ' hidden' : '') + '><span class="d">' + maj1(dJour(a.d)) + '</span><div><ul>' + a.o.slice(0, 3).map(pt).join('') + '</ul>' + (a.o.length > 3 ? '<details class="ag-plus"><summary>' + (a.o.length - 3) + ' autre' + (a.o.length > 4 ? 's' : '') + ' point' + (a.o.length > 4 ? 's' : '') + '</summary><ul>' + a.o.slice(3).map(pt).join('') + '</ul></details>' : '') + '</div></li>'; }).join('') || '<li><span></span><p class="vide">Aucune séance confirmée dans les quatorze jours qui viennent.</p></li>';
-    if (S.AGENDA.length > 4) {
-      var agp = $('agenda-plus'), nr = S.AGENDA.length - 4;
+    // Seulement aujourd'hui et les jours à venir (l'ordre du jour relevé la veille commence parfois hier).
+    var auj1 = new Date().toLocaleDateString('sv-SE'), AG = S.AGENDA.filter(function (x) { return x.d >= auj1; });
+    $('agenda-l').innerHTML = AG.map(function (a, i) { return '<li' + (i >= 4 ? ' hidden' : '') + '><span class="d">' + maj1(dJour(a.d)) + '</span><div><ul>' + a.o.slice(0, 3).map(pt).join('') + '</ul>' + (a.o.length > 3 ? '<details class="ag-plus"><summary>' + (a.o.length - 3) + ' autre' + (a.o.length > 4 ? 's' : '') + ' point' + (a.o.length > 4 ? 's' : '') + '</summary><ul>' + a.o.slice(3).map(pt).join('') + '</ul></details>' : '') + '</div></li>'; }).join('') || '<li><span></span><p class="vide">Aucune séance confirmée dans les quatorze jours qui viennent.</p></li>';
+    if (AG.length > 4) {
+      var agp = $('agenda-plus'), nr = AG.length - 4;
       agp.textContent = 'Voir les ' + nr + ' jours de séance suivants'; agp.hidden = false;
       agp.onclick = function () { $('agenda-l').querySelectorAll('li[hidden]').forEach(function (li) { li.hidden = false; }); agp.hidden = true; };
     }
@@ -487,9 +499,9 @@ td.pp { color: var(--ok); font-weight: 600; } td.cc { color: var(--bad); font-we
   }).catch(function () { $('bref3').innerHTML = '<p class="vide">Les données n\'ont pas pu être chargées. Rechargez la page.</p>'; });
 })();
 </script>
-<script src="/commun/lois.js?v=20261027a"></script>
-<script src="/commun/partage.js?v=20261028g"></script>
-<script src="/commun/recherche.js?v=20261025b"></script>
-<script src="/commun/menu.js?v=20261028r"></script>
+<script src="/commun/lois.js?v=20261031i"></script>
+<script src="/commun/partage.js?v=20261031d"></script>
+<script src="/commun/recherche.js?v=20261031a"></script>
+<script src="/commun/menu.js?v=20261031k"></script>
 </body>
 </html>

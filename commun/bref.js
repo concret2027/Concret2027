@@ -13,7 +13,7 @@
     '.bref-chips a i{font-style:normal;font-weight:700;margin-right:3px;color:var(--bad)}.bref-chips a.g i{color:var(--ok)}.bref-chips a.m i{color:var(--mid)}' +
     '.bref-pres{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 10px}' +
     '.bref-pres a{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--fg);text-decoration:none;overflow:hidden}' +
-    '.bref-pres a span{font-size:12.5px;color:var(--muted);font-weight:600}.bref-pres a b{font-family:var(--serif);font-size:28px;font-weight:500;line-height:1.1}' +
+    '.bref-pres a span{font-size:12.5px;color:var(--muted);font-weight:600}.bref-pres a b{font-family:var(--serif);font-size:clamp(22px,7vw,28px);font-weight:500;line-height:1.1}' +
     '.bref-pres a i{position:absolute;left:0;bottom:0;height:4px;background:var(--bad)}.bref-pres a.g i{background:var(--ok)}.bref-pres a.m i{background:var(--mid)}' +
     '.bref-pres a.g b{color:var(--ok)}.bref-pres a.m b{color:var(--mid)}.bref-pres a.b b{color:var(--bad)}' +
     '@keyframes bref-flash{0%{box-shadow:0 0 0 3px var(--fr)}100%{box-shadow:0 0 0 3px transparent}}.bref-flash{animation:bref-flash 1.6s ease-out}';
@@ -27,9 +27,11 @@
     for (var d = el; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
     // Défilement dès l'image suivante (le bloc ouvert a pris sa place), sans attente.
     requestAnimationFrame(function () {
-      var c = el.closest('section, .card, .mo') || el;
-      c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var c = el.closest('.card, .mo') || el.closest('section') || el;
+      c.scrollIntoView({ behavior: window.ConcretMenu ? ConcretMenu.doux() : 'smooth', block: 'start' });
       c.classList.remove('bref-flash'); void c.offsetWidth; c.classList.add('bref-flash');
+      // La page bouge encore (courbes qui se dessinent au-dessus) : une fois posée, on remet la courbe en haut.
+      setTimeout(function () { var h = c.getBoundingClientRect().top; if (h < 60 || h > 260) c.scrollIntoView({ block: 'start' }); }, 1300);
     });
   }
 
@@ -46,12 +48,12 @@
       '<details class="bref-det"><summary>Voir les ' + l.length + ' indicateurs</summary><div class="bref-chips">' +
       tri.map(function (x) { return '<a class="' + x.cl + '" href="#' + esc(x.cible) + '" data-cible="' + esc(x.cible) + '" title="Voir la courbe"><i>' + ICON[x.cl] + '</i>' + esc(x.l) + '</a>'; }).join('') +
       '</div></details>' +
-      '<span class="eyebrow" style="margin:4px 0 0">La note des présidents sur cette page</span><div class="bref-pres">' +
+      '<span class="eyebrow" style="margin:4px 0 0">La France sous chaque président</span><div class="bref-pres">' +
       o.pres.map(function (p) {
         var c = p.v == null ? '' : p.v >= 10 ? 'g' : p.v >= 6 ? 'm' : 'b';
         return '<a class="' + c + '" href="#bulletin"><span>' + esc(p.n.split(' ').slice(-1)[0]) + '</span><b>' + (p.v == null ? '—' : fmt(p.v)) + '</b><i style="width:' + (p.v == null ? 0 : 5 * p.v) + '%"></i></a>';
       }).join('') + '</div>' +
-      '<p class="note">Sur 20 ; 10 = aussi bien que la moyenne de l\'UE. <a class="pt-hors" href="#bulletin">Le détail et les gouvernements ↓</a></p>';
+      '<p class="note">Sur 20 ; 10 = aussi bien que la moyenne de l\'UE. Le résultat compte, année par année, si la France progresse mieux que la moyenne de l\'UE (ou garde son avance) ; le chiffre du haut compare seulement le dernier niveau connu. Ce n\'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l\'UE pendant le mandat. <a class="pt-hors" href="#bulletin">Le détail et les gouvernements ↓</a></p>';
     // Le bouton « Partager » (commun/partage.js) a pu être posé sur le bloc encore vide : on le laisse le reposer.
     box.removeAttribute('data-partage');
     box.querySelectorAll('.bref-chips a').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); });
@@ -72,17 +74,48 @@
     if (!ch.length) {
       // Rien de neuf depuis la visite : on le dit, sans repêcher une actualité déjà vue ; puis le prochain rendez-vous.
       var g = (o.agenda || []).filter(function (a) { return a.date && a.date >= auj; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
-      if (!na.length) parts.push('rien de nouveau' + (g ? ' ; prochain rendez-vous, ' + esc(min1(g.quand || dfr(g.date))) + ' : ' + esc(String(g.evenement).replace(/\.$/, '')) : o.prochains ? ' (' + o.prochains + ')' : ''));
+      if (!na.length) { parts.push('rien de nouveau' + (!g && o.prochains ? ' (' + o.prochains + ')' : '')); if (g) parts.push('prochain rendez-vous, ' + esc(min1(g.quand || dfr(g.date))) + ' : ' + esc(String(g.evenement).replace(/\.$/, ''))); }
       else if (g) parts.push('prochain rendez-vous, ' + esc(min1(g.quand || dfr(g.date))) + ' : ' + esc(String(g.evenement).replace(/\.$/, '')));
     }
     return parts;
+  }
+  // Haut de page : au plus deux puces. Après une visite : ce qui a changé depuis (les chiffres nouveaux sur la première,
+  // l'actualité ou le prochain rendez-vous sur la seconde) ; à la première visite : les dernières nouvelles de la page.
+  function afficher(box, titre, parts) {
+    if (!box) return; var L = (parts || []).filter(Boolean);
+    if (L.length > 2) L = [L.slice(0, L.length - 1).join(' ; '), L[L.length - 1]];
+    if (!L.length) { box.hidden = true; return; }
+    var maj = function (h) { return h.replace(/^((?:<[^>]+>)*)([a-zà-ÿ])/, function (m, t, c) { return t + c.toUpperCase(); }); };
+    var div = document.createElement('div'); div.className = box.className.replace(/\s*visit-res\b/, ''); div.id = box.id;
+    div.innerHTML = '<b>' + titre + '</b><ul class="vis-l">' + L.map(function (x) { var t = maj(x), fin = t.replace(/<[^>]+>/g, '').trim().slice(-1); return '<li>' + t + (/[.…!?]/.test(fin) ? '' : '.') + '</li>'; }).join('') + '</ul>';
+    box.parentNode.replaceChild(div, box); lier(div);
+  }
+  function premiere(box, o) {
+    o = o || {};
+    // Les accroches des blocs de « L'actualité » sont écrites par la page juste après : on les lit un instant plus tard.
+    setTimeout(function () {
+      var parts = [], lien = function (id, h) { return '<a href="#' + id + '" data-cible="' + id + '">' + h + '</a>'; };
+      var dfr = function (s) { return new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }).replace(/^1 /, '1er '); };
+      var court = function (t) { t = String(t); if (t.length <= 110) return t.replace(/\.$/, ''); var c = t.slice(0, 107); return c.slice(0, c.lastIndexOf(' ')) + '…'; };
+      var acc = Array.prototype.filter.call(document.querySelectorAll('details.acc'), function (d) { return /aujourd'hui|ce mois-ci|du mois/i.test((d.querySelector('.acc-h') || {}).textContent || ''); })[0];
+      var tz = acc && acc.querySelector('.acc-t');
+      if (tz && tz.textContent.trim() && tz.textContent.trim() !== '—') parts.push(lien(acc.id, ((acc.querySelector('.acc-h') || {}).textContent || '').trim() + ' : ' + tz.innerHTML));
+      var A = (o.actu || []).filter(function (a) { return a.texte && a.date; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+      if (A[0]) parts.push(lien('acc-actu', 'Actualité du ' + esc(dfr(A[0].date))) + ' : ' + esc(court(A[0].texte)));
+      afficher(box, 'Les dernières nouvelles', parts);
+    }, 300);
   }
   // Les liens de la ligne mènent au bloc visé (ouvert s'il est replié).
   function lier(box) { box.querySelectorAll('a[data-cible]').forEach(function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); aller(a.dataset.cible); }); }); }
   // Lien venu d'une autre page (par exemple le quiz) vers une courbe repliée : on attend qu'elle existe, puis on l'ouvre.
   if (location.hash.length > 1) {
     var vise = decodeURIComponent(location.hash.slice(1)), essais = 0;
-    var t = setInterval(function () { var el = document.getElementById(vise); if (el || ++essais > 40) { clearInterval(t); if (el) aller(vise); } }, 250);
+    // Une petite courbe (« Toucher pour agrandir ») n'existe qu'agrandie : on touche sa vignette, puis on y descend.
+    var t = setInterval(function () {
+      var el = document.getElementById(vise), mini = !el && document.querySelector('.mini[data-courbe="' + vise + '"]');
+      if (mini) { mini.click(); el = document.getElementById(vise); }
+      if (el || ++essais > 40) { clearInterval(t); if (el) aller(vise); }
+    }, 250);
   }
-  window.ConcretBref = { render: render, aller: aller, nouveau: nouveau, lier: lier };
+  window.ConcretBref = { render: render, aller: aller, nouveau: nouveau, lier: lier, afficher: afficher, premiere: premiere };
 })();
