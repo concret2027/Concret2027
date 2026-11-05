@@ -947,7 +947,7 @@ body.q-vote { padding-bottom: 92px; }
       return { ok: x <= 0, prog: x0 > 0 ? cl((x0 - x) / x0) : 1, t: x <= 0 ? 'Objectif atteint : la dette de ' + AN1 + ' ne dépasse pas celle de fin ' + PJ.depart.an + '.' : 'Dette ' + AN1 + ' : <b>' + pt(x) + '</b> au-dessus de fin ' + PJ.depart.an + ' (' + nf(PJ.depart.dette, 1) + '\u00a0%).' };
     }
     var n = nbChoix(), E0 = effort(), t = E0.imp + E0.eco - E0.baisse - E0.dep;
-    if (!S.obj) return { ok: false, prog: null, t: 'Commencez par choisir un objectif, sur la carte ci-dessous.' };
+    if (!S.obj) return { ok: false, prog: null, t: 'Choisissez un objectif sur la carte ci-dessous.' };
     return { ok: false, prog: null, t: n ? (n > 1 ? 'Vos ' + n + ' mesures ' : 'Votre mesure ') + (t >= 0 ? 'rapporte' + (n > 1 ? 'nt' : '') + ' <b>' : 'coûte' + (n > 1 ? 'nt' : '') + ' <b>') + mdt(t) + '</b> en ' + AN0 + '.' : 'Votez des mesures : leur effet s\'affiche ici.' };
   }
 
@@ -2270,7 +2270,7 @@ body.q-vote { padding-bottom: 92px; }
     C.slice().sort(tri).forEach(function (c) { if (montant(c, AN0) <= 0 && Object.keys(c.effet).every(function (k) { return c.effet[k] <= 0; })) return; var g = c.exclusif || ''; if (g && pris[g]) return; if ((c.exclut || []).some(function (o) { return V[o]; })) return; V[c.id] = 1; if (g) pris[g] = 1; });
     var Rb = simuler({ vote: V, macro: true }); BEST = { a: an1(Rb).solde, f: Rb[Rb.length - 1].solde, d: Rb[Rb.length - 1].d, L: Rb };
     R0 = simuler({ rien: true });
-    $('q-lead').innerHTML = '<b>Vous votez pour ou contre les mesures du budget ' + AN0 + ', une par une, ou vous créez les vôtres.</b> À chaque vote, vous voyez de combien l\'État, la Sécurité sociale et les collectivités dépensent plus qu\'ils ne reçoivent (le déficit), où en est leur dette, et à quel pays d\'Europe votre budget ressemble. La plupart des cartes rapportent de l\'argent : ce sont les mesures du projet de budget ' + AN0 + ' et la suppression d\'avantages fiscaux existants ; pour baisser un impôt ou augmenter une dépense, utilisez « Créer ».';
+    $('q-lead').innerHTML = '<b>Vous votez pour ou contre les mesures du budget ' + AN0 + ', une par une, ou vous créez les vôtres.</b> À chaque vote, vous voyez de combien l\'État, la Sécurité sociale et les collectivités dépensent plus qu\'ils ne reçoivent (le déficit), où en est leur dette, ce que devient la croissance de l\'économie, et à quel pays d\'Europe votre budget ressemble. Un impôt en plus ou une dépense en moins freine un peu l\'activité, l\'inverse la soutient : cela change aussi les recettes. Le jeu le compte quand le modèle de la direction du Trésor et de l\'Insee le publie pour ce type de mesure, et le dit sur la carte quand il ne le compte pas. La plupart des cartes rapportent de l\'argent : ce sont les mesures du projet de budget ' + AN0 + ' et la suppression d\'avantages fiscaux existants ; pour baisser un impôt ou augmenter une dépense, utilisez « Créer ».';
     $('q-conv-s').textContent = 'Si rien ne change : déficit à ' + defic(an1(R0).solde) + ' en ' + AN0;
     $('q-conv').innerHTML = 'Convention de Concret : l\'écart de ' + D0.an + ' entre recettes et dépenses publiques, intérêts mis à part, reste le même (détail en bas du Bilan). Le déficit public (ce que les administrations dépensent de plus qu\'elles ne reçoivent) passerait alors de ' + nf(-D0.solde, 1) + '\u00a0% du PIB (la richesse produite en un an) en ' + D0.an + ' (Eurostat) à ' + defic(an1(R0).solde) + ' en ' + AN0 + ', parce que les intérêts de la dette augmentent.';
     $('q-hyp').innerHTML = [
