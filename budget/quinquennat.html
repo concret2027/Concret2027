@@ -42,6 +42,11 @@
 .q-et-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .q-et-l li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 15px; line-height: 1.4; }
 .q-et-i { font-size: 20px; line-height: 1.2; text-align: center; }
+/* « Ce qui est proposé » : la mesure à voter, bien visible ; « Aujourd'hui » en retrait au-dessus. */
+.q-clair .q-auj { color: var(--muted); }
+.q-clair .q-prop { display: grid; gap: 4px; margin-top: 4px; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--fr); background: color-mix(in srgb, var(--fr) 9%, var(--panel)); }
+.q-prop-l { font-size: 12.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--fr); }
+.q-prop-t { font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--fg); }
 </style>
 <style>
 /* Layout: phone-first single column (Baromètre card system). The daily question opens the page; the debt band uses a soft "bleu Trésor" panel instead of a black hero. */
@@ -1456,7 +1461,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     var T = { licence: di.licence_eur, master: di.master_eur, doctorat: di.doctorat_eur, boite: fr.franchise_par_boite_medicament_eur, consultation: fr.participation_forfaitaire_par_consultation_ou_acte_eur, transport: fr.franchise_par_transport_sanitaire_eur, plafond: fr.plafond_annuel_total_eur };
     var r = function (t) { return nb(t).replace(/\{(\w+)\}/g, function (m, k) { return T[k] != null ? eu(T[k]) : m; }); };
     var court = function (t) { var m = /^([\s\S]{30,}?[.;:])\s+(?=[A-ZÉÀÈÊÔ«])/.exec(t); if (!m || t.length - m[0].length < 25) return t; return m[1] + ' <details class="q-suite"><summary>Lire la suite</summary>' + t.slice(m[0].length) + '</details>'; };
-    return '<div class="q-clair">' + (c.clair.a ? '<div><b>Aujourd\'hui :</b> ' + (sansP ? r(c.clair.a) : court(r(c.clair.a))) + '</div>' : '') + (sansP ? '' : '<div><b>Proposé :</b> ' + court(r(c.clair.p)) + '</div>') + '</div>';
+    return '<div class="q-clair">' + (c.clair.a ? '<div class="q-auj"><b>Aujourd\'hui :</b> ' + (sansP ? r(c.clair.a) : court(r(c.clair.a))) + '</div>' : '') + (sansP ? '' : '<div class="q-prop"><span class="q-prop-l">Ce qui est proposé</span><span class="q-prop-t">' + r(c.clair.p) + '</span></div>') + '</div>';
   }
   // Sur la carte : le premier cas type, en clair ; les autres et le montant par habitant dans le dépliant « Concrètement ».
   function concretCarte(c, m) {
