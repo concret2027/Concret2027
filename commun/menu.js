@@ -141,10 +141,19 @@
     'nav.jump a.mn-ici{background:' + V.fg + ';color:' + V.bg + ';border-color:' + V.fg + '}' +
     // La barre collante des pages de mission : les thèmes d'abord (leur couleur), puis les autres parties ; le thème en cours rempli
     // de sa couleur ; un fondu à droite tant qu'il reste des raccourcis à faire défiler. Texte de 15 px, zones de 44 px.
-    'nav.jump.jx{gap:8px}nav.jump.jx a{font-size:15px}' +
+    // 55 px de haut en tout (44 px à toucher, 5 px de marge, la bordure), en texte normal comme agrandi.
+    'nav.jump.jx{gap:8px;padding-top:5px;padding-bottom:5px}nav.jump.jx a{font-size:15px;padding-top:0;padding-bottom:0}' +
+    // Un thème atteint par un toucher s'arrête sous les deux barres collées (celle du site et celle des thèmes), titre visible.
+    '.jx-page section.theme[id],.jx-page div.theme[id],.jx-page #reponse,.jx-page #bulletin,.jx-page #toile,.jx-page #actualite,.jx-page #acc-actu,.jx-page #quiz,.jx-page #lois,.jx-page #mots,.jx-page #bref-pres{scroll-margin-top:calc(var(--navh,44px) + var(--jxh,56px) + 10px)}' +
+    // En bas de chaque thème : le thème suivant, et le retour au sommaire.
+    '.th-suite{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;margin:4px 0 0;padding-top:10px;border-top:1px solid ' + V.line + '}' +
+    '.th-suite a{display:inline-flex;align-items:center;min-height:44px;font-size:15px;font-weight:600;color:var(--th,' + V.fr + ');text-decoration:none}.th-suite a:hover,.th-suite a:focus-visible{text-decoration:underline}' +
+    '.th-suite a.th-haut{color:' + V.muted + '}' +
     'nav.jump.jx .jx-sep{flex:none;width:1px;margin:6px 2px;background:' + V.line + '}' +
     'nav.jump.jx a.th-a.mn-ici{background:var(--th);color:' + V.bg + ';border-color:var(--th)}nav.jump.jx a.th-a.mn-ici::before{background:' + V.bg + '}' +
-    'nav.jump.jx.jx-defile{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 44px),transparent)}' +
+    // Fond opaque : rien de la page ne se lit à travers la barre. Le fondu de droite est posé sur la barre, pas sur la page.
+    'nav.jump{background:' + V.bg + '!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}' +
+    'nav.jump.jx::after{content:"";flex:none;position:sticky;right:calc(-1 * max(16px, env(safe-area-inset-right, 0px)));width:48px;margin-left:-48px;align-self:stretch;pointer-events:none;opacity:0;background:linear-gradient(to right,transparent,' + V.bg + ' 75%)}nav.jump.jx.jx-defile::after{opacity:1}' +
     // L'icône de la mission à gauche du titre de sa page (la même que dans le Menu et sur l'accueil).
     '.brand .mn-tic{display:inline-grid;place-items:center;flex:none;width:38px;height:38px;border-radius:11px;margin-right:10px;vertical-align:middle;color:' + V.fr + ';background:color-mix(in srgb,' + V.fr + ' 11%,transparent)}.brand .mn-tic svg{width:22px;height:22px}' +
     '.brand h1.mn-avec-ic,.brand b.mn-avec-ic{display:inline-flex;align-items:center}' +
@@ -525,6 +534,20 @@
     if (t.tagName !== 'SUMMARY' && !t.hasAttribute('tabindex')) t.setAttribute('tabindex', '-1');
     try { t.focus({ preventScroll: true }); } catch (e) { }
   };
+  // Poser un bloc juste sous les barres collées (celle du site, celle des raccourcis), et l'y garder : les courbes dessinées à
+  // l'approche changent la hauteur de la page pendant le défilement, on corrige donc la position jusqu'à ce qu'elle tienne.
+  var poserId = 0;
+  var poser = function (c) {
+    var id = ++poserId, ecart = function () { var n = document.querySelector('nav.site'), jp = document.querySelector('nav.jump'); return c.getBoundingClientRect().top - ((n ? n.offsetHeight : 0) + (jp ? jp.offsetHeight : 0) + 10); };
+    window.scrollTo({ top: Math.max(0, window.pageYOffset + ecart()), behavior: doux() });
+    var k = 0, t = setInterval(function () {
+      if (id !== poserId || ++k > 12) return clearInterval(t);
+      var d = ecart(); if (Math.abs(d) > 6 && k > 2) window.scrollTo({ top: Math.max(0, window.pageYOffset + d), behavior: 'auto' });
+    }, 250);
+    // Un geste de la personne arrête les corrections.
+    var stop = function () { poserId++; removeEventListener('wheel', stop); removeEventListener('touchstart', stop); };
+    setTimeout(function () { addEventListener('wheel', stop, { passive: true, once: true }); addEventListener('touchstart', stop, { passive: true, once: true }); }, 50);
+  };
   // Lecteur d'écran : les chiffres de chaque courbe en tableau (une ligne par année, une colonne par pays), caché à l'écran.
   // Les pages l'appellent en dessinant la courbe, avec les mêmes chiffres que ceux montrés au toucher.
   var tableau = function (box, pts, titre) {
@@ -564,7 +587,7 @@
   };
   var presser = function (root) { attente.filter(function (x) { return !root || root.contains(x.box); }).forEach(function (x) { x.fn(); }); };
   // IC : les icônes des pages (l'accueil les met sur la toile « Mandat par mandat »).
-  window.ConcretMenu = { doux: doux, focaliser: focaliser, pieger: pieger, tableau: tableau, plusTard: plusTard, presser: presser, IC: IC };
+  window.ConcretMenu = { doux: doux, focaliser: focaliser, pieger: pieger, tableau: tableau, plusTard: plusTard, presser: presser, poser: poser, IC: IC };
   // La barre collante d'une page de mission : un raccourci par thème, en tête, dans l'ordre et la couleur des thèmes, puis les autres
   // parties (Présidents, Actualité…). Les thèmes écrits par le script arrivent après le chargement : la barre est revue à chaque
   // changement de la page (plierBientot), et refaite seulement si la liste des thèmes a changé.
@@ -572,22 +595,46 @@
     var jp = document.querySelector('nav.jump'); if (!jp || jp.querySelector('.jump-l1')) return;
     var th = Array.prototype.slice.call(document.querySelectorAll('section.theme[id], div.theme[id]'));
     if (!th.length) return;
-    var sig = th.map(function (t) { return t.id; }).join(',');
+    var sig = th.map(function (t) { return t.id; }).join(',') + (document.getElementById('bref-pres') ? ',pres' : '');
     if (jp.dataset.themes === sig) return;
     jp.dataset.themes = sig; jp.classList.add('jx');
     Array.prototype.forEach.call(jp.querySelectorAll('.jx-th, .jx-sep, a[href="#courbes"]'), function (e) { e.remove(); });
     // Un raccourci vers un thème déjà écrit dans la page (Démographie) : remplacé par celui de la rangée des thèmes.
     Array.prototype.forEach.call(jp.querySelectorAll('a[href^="#"]'), function (e) { if (th.some(function (t) { return e.getAttribute('href') === '#' + t.id; })) e.remove(); });
-    Array.prototype.forEach.call(jp.querySelectorAll('a[href="#bulletin"]'), function (a) { a.textContent = 'Présidents'; });
-    var ref = jp.firstChild;
+    // En tête, « Présidents » (couleur neutre) : les résultats des présidents, dans « En bref », à un toucher de partout.
+    // Le détail, plus bas, garde son propre raccourci.
+    Array.prototype.forEach.call(jp.querySelectorAll('a[href="#bulletin"]'), function (a) { a.textContent = 'Le détail par président'; });
+    Array.prototype.forEach.call(jp.querySelectorAll('a.jx-pres'), function (a) { a.remove(); });
+    if (document.getElementById('bref-pres')) { var ap = document.createElement('a'); ap.className = 'jx-pres'; ap.href = '#bref-pres'; ap.textContent = 'Présidents'; jp.insertBefore(ap, jp.firstChild); }
+    var ref = jp.querySelector('a.jx-pres') ? jp.querySelector('a.jx-pres').nextSibling : jp.firstChild;
     th.forEach(function (t) {
       var a = document.createElement('a'), h = t.querySelector(':scope > h2');
       a.className = 'jx-th'; a.href = '#' + t.id; a.textContent = t.dataset.court || (h ? h.textContent.trim() : t.id);
       jp.insertBefore(a, ref);
     });
     var sep = document.createElement('span'); sep.className = 'jx-sep'; sep.setAttribute('aria-hidden', 'true'); jp.insertBefore(sep, ref);
-    teinter(); fondu(jp);
+    // En bas de chaque thème : « Thème suivant : … → » et « ↑ Tous les thèmes » (le sommaire d'« En bref »).
+    th.forEach(function (t, i) {
+      var old = t.querySelector(':scope > .th-suite'); if (old) old.remove();
+      var p = document.createElement('p'), nx = th[i + 1], hn = nx && nx.querySelector(':scope > h2');
+      p.className = 'th-suite'; p.setAttribute('data-html2canvas-ignore', '');
+      if (nx) { var an = document.createElement('a'); an.className = 'th-next'; an.href = '#' + nx.id; an.style.setProperty('--th', 'var(--th' + ((i + 1) % 5 + 1) + ')'); an.textContent = 'Thème suivant : ' + (nx.dataset.court || (hn ? hn.textContent.trim() : nx.id)) + ' →'; p.appendChild(an); }
+      if (document.getElementById('reponse')) { var ah = document.createElement('a'); ah.className = 'th-haut'; ah.href = '#reponse'; ah.textContent = '↑ Tous les thèmes'; p.appendChild(ah); }
+      t.appendChild(p);
+    });
+    document.documentElement.classList.add('jx-page');
+    teinter(); fondu(jp); hauteurBarre(jp);
   }
+  // La hauteur de la barre des thèmes, pour l'arrêt des défilements juste dessous (--jxh).
+  function hauteurBarre(jp) { jp = jp || document.querySelector('nav.jump.jx'); if (jp && jp.offsetHeight) document.documentElement.style.setProperty('--jxh', jp.offsetHeight + 'px'); }
+  // Un toucher sur « Thème suivant » ou « Tous les thèmes » : le bloc posé juste sous les deux barres collées.
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('.th-suite a'); if (!a) return;
+    var c = document.getElementById(a.getAttribute('href').slice(1)); if (!c) return;
+    e.preventDefault();
+    focaliser(c); poser(c);
+    if (history.replaceState) history.replaceState(null, '', a.getAttribute('href'));
+  });
   function fondu(jp) { jp = jp || document.querySelector('nav.jump.jx'); if (!jp) return; jp.classList.toggle('jx-defile', jp.scrollWidth - jp.clientWidth - jp.scrollLeft > 4); }
   function suivre(jp, cib) {
     var liens = function () { return Array.prototype.filter.call(jp.querySelectorAll('a[href^="#"]'), function (l) { return cib(l); }); }, cur = null, choisi = null, fin = 0;
@@ -613,9 +660,8 @@
       e.preventDefault(); choisi = l; fin = Date.now() + 1500; montre(l);
       for (var d = c; d; d = d.parentElement) if (d.tagName === 'DETAILS' && !d.open) d.open = true;
       // Le titre juste sous les deux bandeaux collés (pages, raccourcis), quel que soit le navigateur.
-      var n = document.querySelector('nav.site'), haut = (n ? n.offsetHeight : 0) + jp.offsetHeight + 12;
       focaliser(c);
-      requestAnimationFrame(function () { window.scrollTo({ top: Math.max(0, window.pageYOffset + c.getBoundingClientRect().top - haut), behavior: doux() }); });
+      requestAnimationFrame(function () { poser(c); });
       if (history.replaceState) history.replaceState(null, '', l.getAttribute('href'));
     });
   }
@@ -631,7 +677,7 @@
     // Le raccourci de la partie où l'on se trouve est en noir, comme sur le Baromètre (qui a le sien) : la dernière partie dont
     // le titre est passé sous la rangée. Après un toucher, la partie choisie, posée juste sous la rangée.
     barre();
-    if (jp && !jp.querySelector('.jump-l1')) { suivre(jp, cib); jp.addEventListener('scroll', function () { fondu(jp); }, { passive: true }); addEventListener('resize', function () { fondu(jp); }); }
+    if (jp && !jp.querySelector('.jump-l1')) { suivre(jp, cib); jp.addEventListener('scroll', function () { fondu(jp); }, { passive: true }); addEventListener('resize', function () { fondu(jp); hauteurBarre(jp); }); }
     // L'icône de la mission à gauche du titre de sa page.
     var pm = PAGES.filter(function (p) { return p.u === ici && (p.g === 'Les missions de l\'État' || p.ic === 'demographie'); })[0], tt = document.querySelector('.brand h1, .brand b');
     if (pm && tt && !tt.querySelector('.mn-tic')) { tt.classList.add('mn-avec-ic'); tt.insertAdjacentHTML('afterbegin', '<span class="mn-tic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + IC[pm.ic] + '</svg></span>'); }

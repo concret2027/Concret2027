@@ -55,6 +55,8 @@
     requestAnimationFrame(function () {
       // Un chiffre du jour ou du mois : la tuile entière, en tête de son thème.
       var c = el.closest('.dc') || el.closest('.card, .mo') || el.closest('section') || el;
+      // Avec commun/menu.js : le bloc posé juste sous les barres collées, et gardé là pendant que les courbes se dessinent.
+      if (window.ConcretMenu && ConcretMenu.poser) { ConcretMenu.poser(c); c.classList.remove('bref-flash'); void c.offsetWidth; c.classList.add('bref-flash'); return; }
       c.scrollIntoView({ behavior: window.ConcretMenu ? ConcretMenu.doux() : 'smooth', block: 'start' });
       c.classList.remove('bref-flash'); void c.offsetWidth; c.classList.add('bref-flash');
       // La page bouge encore (courbes qui se dessinent au-dessus) : une fois posée, on remet la courbe en haut.
@@ -127,7 +129,7 @@
       // Avec le sommaire, la liste des indicateurs y est répartie thème par thème ; elle reste dans la page, cachée, pour les cartes
       // d'aperçu et « Le pouls de la France » (outils/apercu.js la lit telle quelle).
       (th.length ? sommaire(th) + '<div class="bref-cache" aria-hidden="true">' + chips + '</div>' : '<details class="bref-det"><summary>Voir les ' + l.length + ' indicateurs</summary>' + chips + '</details>') +
-      '<span class="eyebrow" style="margin:4px 0 0">La France sous chaque président</span><div class="bref-pres">' +
+      '<span class="eyebrow" id="bref-pres" style="margin:4px 0 0">La France sous chaque président</span><div class="bref-pres">' +
       o.pres.map(function (p) {
         var c = p.v == null ? '' : p.v >= 10 ? 'g' : p.v >= 6 ? 'm' : 'b';
         return '<a class="' + c + '" href="#bulletin"><span>' + esc(p.n.split(' ').slice(-1)[0]) + '</span><b>' + (p.v == null ? '—' : fmt(p.v)) + '</b><i style="width:' + (p.v == null ? 0 : 5 * p.v) + '%"></i></a>';
