@@ -354,11 +354,13 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-chips small { font-weight: 400; opacity: .8; }
 /* Le bandeau : une ligne, toujours la même hauteur. */
 .q-collant { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 9; display: grid; gap: 6px; margin-top: -6px; padding-top: 6px; background: var(--bg); }
-.q-hud { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
+.q-hud { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 4px 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
 .q-hd { display: grid; line-height: 1.1; }
 .q-hd small { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
 .q-hd b { font-family: var(--serif); font-weight: 400; font-size: 22px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .q-hd.d { text-align: right; }
+.q-hd.c { text-align: center; }
+.q-jauge { grid-column: 1 / -1; }
 .q-jauge { position: relative; height: 8px; border-radius: 4px; background: var(--line); }
 .q-jauge span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--fr); transition: width .45s cubic-bezier(.2,.8,.2,1); }
 .q-jauge em { position: absolute; top: -4px; bottom: -4px; right: 0; width: 2px; background: var(--fg); }
@@ -520,6 +522,16 @@ body.q-vote { padding-bottom: 92px; }
 .q-resultats span { color: var(--muted); font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .q-choisi { display: grid; gap: 10px; padding: 12px; border-radius: 14px; background: var(--band); }
 .q-choisi[hidden] { display: none; }
+/* Le panneau s'insère dans la grille des lignes du budget : une seule colonne, sur toute la largeur. */
+.q-tuiles-c > .q-choisi { grid-template-columns: minmax(0, 1fr); grid-column: 1 / -1; }
+.q-ch-top { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.q-ferme { flex: none; font: inherit; font-size: 18px; width: 44px; height: 44px; margin: -8px -6px 0 0; border: 0; border-radius: 22px; background: none; color: var(--muted); cursor: pointer; }
+.q-choisi .q-presets { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.q-choisi .q-presets button { flex: none; min-height: 40px; }
+.q-ch-det summary { font-size: 14px; }
+.q-tuiles-c .q-choisi h3 { margin: 0; font-size: 17px; letter-spacing: 0; text-transform: none; color: var(--fg); }
+.q-tuiles-c .q-ferme { display: block; padding: 0; min-height: 0; border: 0; background: none; text-align: center; }
+.q-ch-det[open] { display: grid; gap: 8px; }
 .q-cc { display: grid; gap: 6px; }
 .q-clair { display: grid; gap: 6px; font-size: 15px; line-height: 1.45; }
 .q-clair p { margin: 0; }
@@ -597,8 +609,9 @@ body.q-vote { padding-bottom: 92px; }
   <div class="q-collant" id="q-collant">
   <div class="q-hud" id="q-hud">
     <div class="q-hd"><small id="h-l1">Déficit</small><b id="h-v1">—</b></div>
-    <div class="q-jauge" id="q-jauge" aria-hidden="true"><span></span><em></em></div>
+    <div class="q-hd c"><small id="h-l3">Croissance</small><b id="h-v3">—</b></div>
     <div class="q-hd d"><small id="h-l2">Dette</small><b id="h-v2">—</b></div>
+    <div class="q-jauge" id="q-jauge" aria-hidden="true"><span></span><em></em></div>
     <button type="button" class="q-ress" id="q-ress" hidden></button>
     <p class="q-hs" id="q-hs" aria-live="polite"></p>
     <div class="q-hobj" id="q-hobj" hidden><div class="q-chips" id="q-objs2"></div></div>
@@ -638,14 +651,16 @@ body.q-vote { padding-bottom: 92px; }
         <button type="button" class="q-go" id="q-un-ok" disabled>Ajouter à mon budget</button>
       </div>
       <div class="q-choisi" id="q-choisi" hidden>
-        <h3 id="q-ch-t"></h3>
-        <p class="q-note" id="q-ch-n"></p>
-        <div class="q-sl"><div class="h"><span>De combien ?</span><b id="q-pc-v">0 %</b></div><input type="range" id="q-pc" min="-100" max="100" step="1" value="0" aria-label="Pourcentage de baisse ou de hausse"><div class="b"><span>−100 %</span><span>0</span><span>+100 %</span></div><div class="q-presets" id="q-pc-p"></div></div>
+        <div class="q-ch-top"><h3 id="q-ch-t"></h3><button type="button" class="q-ferme" id="q-ch-x" aria-label="Fermer sans rien changer">✕</button></div>
+        <div class="q-sl"><div class="h"><span>De combien ?</span><b id="q-pc-v">0 %</b></div><div class="q-presets" id="q-pc-p"></div><input type="range" id="q-pc" min="-100" max="100" step="1" value="0" aria-label="Pourcentage de baisse ou de hausse"><div class="b"><span>−100 %</span><span>0</span><span>+100 %</span></div></div>
         <p class="q-effet" id="q-effet"></p>
         <p class="q-apercu" id="q-apercu" aria-live="polite"></p>
-        <div class="q-pp" id="q-pp" hidden></div>
-        <p class="q-note" id="q-ch-h"></p>
         <button type="button" class="q-go" id="q-ajout" disabled>Ajouter à mon budget</button>
+        <details class="q-plie q-ch-det"><summary>Le montant officiel, le calcul et des exemples</summary>
+          <p class="q-note" id="q-ch-n"></p>
+          <p class="q-note" id="q-ch-h"></p>
+          <div class="q-pp" id="q-pp" hidden></div>
+        </details>
       </div>
     </section>
     <section class="card" aria-labelledby="q-mes-t">
@@ -828,6 +843,14 @@ body.q-vote { padding-bottom: 92px; }
   var NOMOBJ = { gouv: 'cible du Gouvernement', quatre: 'palier du jeu, choisi par Concret', trois: 'engagement européen' }, SUITE = { gouv: 'quatre', quatre: 'trois' };
   function seuil() { return S.obj === 'gouv' ? (J.cible ? J.cible.v : null) : S.obj === 'quatre' ? 4 : S.obj === 'trois' ? PAR.regle : null; }
   function anObj() { return S.obj === 'trois' && J.echeance_ue ? J.echeance_ue.an : AN0; }
+  // Croissance d'une année : la prévision du FMI, plus ce que vos choix changent au PIB cette année-là (écart de niveau du PIB
+  // avec « rien ne change », d'une année sur l'autre, modèle Mésange ; rien si la case de l'effet sur l'activité est décochée).
+  function croiss(L, an) {
+    var p = (PJ.ans || []).filter(function (x) { return x.an === an; })[0]; if (!p) return null;
+    var r = L.filter(function (x) { return x.an === an; })[0], q = L.filter(function (x) { return x.an === an - 1; })[0];
+    return p.croissance + (S.macro && r ? (r.L || 0) - (q ? q.L || 0 : 0) : 0);
+  }
+  var pcs = function (v) { return (v < 0 ? '−' : '') + nf(Math.abs(v), 1) + '\u00a0%'; };
   var ligneAn = function (L, an) { return L.filter(function (r) { return r.an === an; })[0] || an1(L); };
   function objectif() {
     var r1 = an1(R), f = R[R.length - 1], z1 = an1(R0), zf = R0[R0.length - 1], cl = function (v) { return Math.max(0, Math.min(1, v)); };
@@ -849,9 +872,11 @@ body.q-vote { padding-bottom: 92px; }
   function hud(anime) {
     R = simuler(); R0 = simuler({ rien: true });
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1];
-    $('h-l1').textContent = 'Déficit ' + AN0; $('h-l2').textContent = 'Dette ' + AN1;
+    $('h-l1').textContent = 'Déficit ' + AN0; $('h-l2').textContent = 'Dette ' + AN1; $('h-l3').textContent = 'Croissance ' + AN0;
+    var g1 = croiss(R, AN0), g0 = croiss(R0, AN0), v3 = g1 == null ? '—' : pcs(g1);
+    $('h-v3').parentNode.title = g0 == null ? '' : 'Prévision du FMI : ' + pcs(g0) + (S.macro ? ' ; avec l\'effet de vos choix sur l\'activité : ' + pcs(g1) : ' (effet de vos choix sur l\'activité non compté)');
     var T0 = seuil(), v1 = T0 != null && anObj() === AN0 && -r1.solde > T0 && -r1.solde - T0 < 0.05 ? nf(-r1.solde, 2) + '\u00a0%' : defic(r1.solde), v2 = nf(f.d, 1) + '\u00a0%';
-    [['h-v1', v1], ['h-v2', v2]].forEach(function (x) { var el = $(x[0]); if (anime && el.textContent !== x[1]) { el.classList.remove('q-flash'); void el.offsetWidth; el.classList.add('q-flash'); } el.textContent = x[1]; });
+    [['h-v1', v1], ['h-v2', v2], ['h-v3', v3]].forEach(function (x) { var el = $(x[0]); if (anime && el.textContent !== x[1]) { el.classList.remove('q-flash'); void el.offsetWidth; el.classList.add('q-flash'); } el.textContent = x[1]; });
     // La jauge : le chemin fait vers l'objectif choisi (vide au départ, pleine quand il est atteint).
     var o = objectif(), jg = $('q-jauge');
     jg.hidden = o.prog == null; jg.className = 'q-jauge' + (o.ok ? ' ok' : '');
@@ -1231,7 +1256,7 @@ body.q-vote { padding-bottom: 92px; }
     if (pc) { remp.forEach(function (id) { S.v[id] = 2; }); (choisi.exclut || []).forEach(function (id) { delete S.perso[id]; }); Object.keys(S.perso).forEach(function (k) { if ((AS[k].exclut || []).indexOf(choisi.k) >= 0) delete S.perso[k]; }); }
     if (pc) S.perso[choisi.k] = pc; else delete S.perso[choisi.k];
     A1 = simuler(); S.v = JSON.parse(gV); S.perso = JSON.parse(gP);
-    $('q-apercu').innerHTML = (pc !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1, effetPerso(choisi, pc) - effetPerso(choisi, av || 0)) : '') +
+    $('q-apercu').innerHTML = (pc !== (av || 0) ? 'Avec ce choix, ' + avantApres(R, A1, effetPerso(choisi, pc) - effetPerso(choisi, av || 0)) + (choisi.macro && J.variantes[choisi.macro] ? effetPIB(R, A1) : (S.macro ? ' (effet sur l\'activité non publié pour ce type de ligne : non compté)' : '')) : '') +
       (remp.length ? '<br>Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' »' : ''; }).join(', ') + ' (les deux portent sur le même argent).' : '');
     $('q-ajout').disabled = !pc || pc === av; $('q-ajout').textContent = S.perso[choisi.k] != null ? 'Mettre à jour dans mon budget' : 'Ajouter à mon budget';
   }
@@ -1433,6 +1458,7 @@ body.q-vote { padding-bottom: 92px; }
     $('q-pc').oninput = majCreer;
     $('q-un-i').oninput = majUnite;
     $('q-un-ok').onclick = function () { var u = uchoisi, n = Math.round(+$('q-un-i').value || 0); if (!u || !n) return; var A0 = simuler(); S.unites[u.k] = n; garder(); hud(true); pop(esc(u.l) + ' ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0) + ' · ' + avantApres(A0, R) + effetPIB(A0, R) + chgPays(A0, R)); mesCreer(); majUnite(); pile(); $('q-un').hidden = true; uchoisi = null; sousBandeau($('q-mes').hidden ? $('q-tuiles-c') : $('q-mes')); };
+    $('q-ch-x').onclick = function () { $('q-choisi').hidden = true; choisi = null; Array.prototype.forEach.call($('q-tuiles-c').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', 'false'); }); };
     $('q-ajout').onclick = function () {
       var pc = +$('q-pc').value; if (!choisi || !pc) return;
       var A0 = simuler();
@@ -1514,7 +1540,8 @@ body.q-vote { padding-bottom: 92px; }
     // Le même budget sans l'effet sur l'activité (modèle Mésange) : cette hypothèse pèse souvent plus qu'une carte, elle se voit ici.
     var Rs = null; if (S.macro && n) { var mc = S.macro; S.macro = false; Rs = simuler(); S.macro = mc; }
     var rs1 = Rs && an1(Rs), rsf = Rs && Rs[Rs.length - 1], sa = function (v) { return Rs ? ' ; sans l\'effet sur l\'activité : ' + v : ''; };
-    $('q-tuiles').innerHTML = tu('Déficit ' + AN0, defic(r1.solde), 'sans vos mesures : ' + defic(z1.solde) + sa(rs1 && defic(rs1.solde))) + tu('Déficit ' + f.an, defic(f.solde), 'sans vos mesures : ' + defic(zf.solde) + sa(rsf && defic(rsf.solde))) + tu('Dette ' + f.an, nf(f.d, 1) + '\u00a0%', 'sans vos mesures : ' + nf(zf.d, 1) + '\u00a0%' + sa(rsf && nf(rsf.d, 1) + '\u00a0%')) + tu('Intérêts de la dette ' + f.an, mdt(f.interets * f.pib / 100), nf(f.interets, 1) + '\u00a0% du PIB ; sans vos mesures : ' + mdt(zf.interets * zf.pib / 100));
+    $('q-tuiles').innerHTML = tu('Déficit ' + AN0, defic(r1.solde), 'sans vos mesures : ' + defic(z1.solde) + sa(rs1 && defic(rs1.solde))) +
+      tu('Croissance ' + AN0 + ' et ' + f.an, pcs(croiss(R, AN0)) + ' · ' + pcs(croiss(R, f.an)), 'prévision du FMI : ' + pcs(croiss(R0, AN0)) + ' · ' + pcs(croiss(R0, f.an)) + (S.macro ? '' : ' (effet de vos choix non compté)')) + tu('Déficit ' + f.an, defic(f.solde), 'sans vos mesures : ' + defic(zf.solde) + sa(rsf && defic(rsf.solde))) + tu('Dette ' + f.an, nf(f.d, 1) + '\u00a0%', 'sans vos mesures : ' + nf(zf.d, 1) + '\u00a0%' + sa(rsf && nf(rsf.d, 1) + '\u00a0%')) + tu('Intérêts de la dette ' + f.an, mdt(f.interets * f.pib / 100), nf(f.interets, 1) + '\u00a0% du PIB ; sans vos mesures : ' + mdt(zf.interets * zf.pib / 100));
     $('q-rc-p').innerHTML = resume('bilan');
     // Défi du jour
     var DJ = defiDuJour(), x = DJ && DJ.x, cond = DJ && DJ.cond, ok = DJ && DJ.ok, faisable = DJ && DJ.faisable;
