@@ -139,6 +139,15 @@
     'nav.site>a .lg{margin-left:.28em}' +
     'nav.jump a,.jump-l1>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}' +
     'nav.jump a.mn-ici{background:' + V.fg + ';color:' + V.bg + ';border-color:' + V.fg + '}' +
+    // La barre collante des pages de mission : les thèmes d'abord (leur couleur), puis les autres parties ; le thème en cours rempli
+    // de sa couleur ; un fondu à droite tant qu'il reste des raccourcis à faire défiler. Texte de 15 px, zones de 44 px.
+    'nav.jump.jx{gap:8px}nav.jump.jx a{font-size:15px}' +
+    'nav.jump.jx .jx-sep{flex:none;width:1px;margin:6px 2px;background:' + V.line + '}' +
+    'nav.jump.jx a.th-a.mn-ici{background:var(--th);color:' + V.bg + ';border-color:var(--th)}nav.jump.jx a.th-a.mn-ici::before{background:' + V.bg + '}' +
+    'nav.jump.jx.jx-defile{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 44px),transparent)}' +
+    // L'icône de la mission à gauche du titre de sa page (la même que dans le Menu et sur l'accueil).
+    '.brand .mn-tic{display:inline-grid;place-items:center;flex:none;width:38px;height:38px;border-radius:11px;margin-right:10px;vertical-align:middle;color:' + V.fr + ';background:color-mix(in srgb,' + V.fr + ' 11%,transparent)}.brand .mn-tic svg{width:22px;height:22px}' +
+    '.brand h1.mn-avec-ic,.brand b.mn-avec-ic{display:inline-flex;align-items:center}' +
     '.mn-btn:focus-visible span{outline:2px solid ' + V.fr + ';outline-offset:2px}' +
     // Une couleur par thème des pages de mission (titre et raccourci), dans le même ordre sur chaque page : violet, bleu canard,
     // lie-de-vin, olive, brun. Aucune n'est celle d'un pays sur les courbes (France bleu, UE or, Allemagne gris, Espagne orange,
@@ -390,7 +399,7 @@
     });
   }
   var plierPrevu = 0;
-  function plierBientot() { if (!plierPrevu) plierPrevu = setTimeout(function () { plierPrevu = 0; plier(); teinter(); }, 120); }
+  function plierBientot() { if (!plierPrevu) plierPrevu = setTimeout(function () { plierPrevu = 0; plier(); barre(); teinter(); }, 120); }
   // La couleur de chaque thème (pages de mission, Démographie) : posée sur le thème et sur ses raccourcis, dans l'ordre de la page.
   // Les thèmes sont écrits par la page après le chargement des données : revu à chaque changement de la page, comme plier().
   function teinter() {
@@ -544,20 +553,47 @@
     return true;
   };
   var presser = function (root) { attente.filter(function (x) { return !root || root.contains(x.box); }).forEach(function (x) { x.fn(); }); };
-  window.ConcretMenu = { doux: doux, focaliser: focaliser, pieger: pieger, tableau: tableau, plusTard: plusTard, presser: presser };
+  // IC : les icônes des pages (l'accueil les met sur la toile « Mandat par mandat »).
+  window.ConcretMenu = { doux: doux, focaliser: focaliser, pieger: pieger, tableau: tableau, plusTard: plusTard, presser: presser, IC: IC };
+  // La barre collante d'une page de mission : un raccourci par thème, en tête, dans l'ordre et la couleur des thèmes, puis les autres
+  // parties (Présidents, Actualité…). Les thèmes écrits par le script arrivent après le chargement : la barre est revue à chaque
+  // changement de la page (plierBientot), et refaite seulement si la liste des thèmes a changé.
+  function barre() {
+    var jp = document.querySelector('nav.jump'); if (!jp || jp.querySelector('.jump-l1')) return;
+    var th = Array.prototype.slice.call(document.querySelectorAll('section.theme[id], div.theme[id]'));
+    if (!th.length) return;
+    var sig = th.map(function (t) { return t.id; }).join(',');
+    if (jp.dataset.themes === sig) return;
+    jp.dataset.themes = sig; jp.classList.add('jx');
+    Array.prototype.forEach.call(jp.querySelectorAll('.jx-th, .jx-sep, a[href="#courbes"]'), function (e) { e.remove(); });
+    // Un raccourci vers un thème déjà écrit dans la page (Démographie) : remplacé par celui de la rangée des thèmes.
+    Array.prototype.forEach.call(jp.querySelectorAll('a[href^="#"]'), function (e) { if (th.some(function (t) { return e.getAttribute('href') === '#' + t.id; })) e.remove(); });
+    Array.prototype.forEach.call(jp.querySelectorAll('a[href="#bulletin"]'), function (a) { a.textContent = 'Présidents'; });
+    var ref = jp.firstChild;
+    th.forEach(function (t) {
+      var a = document.createElement('a'), h = t.querySelector(':scope > h2');
+      a.className = 'jx-th'; a.href = '#' + t.id; a.textContent = t.dataset.court || (h ? h.textContent.trim() : t.id);
+      jp.insertBefore(a, ref);
+    });
+    var sep = document.createElement('span'); sep.className = 'jx-sep'; sep.setAttribute('aria-hidden', 'true'); jp.insertBefore(sep, ref);
+    teinter(); fondu(jp);
+  }
+  function fondu(jp) { jp = jp || document.querySelector('nav.jump.jx'); if (!jp) return; jp.classList.toggle('jx-defile', jp.scrollWidth - jp.clientWidth - jp.scrollLeft > 4); }
   function suivre(jp, cib) {
-    var ls = Array.prototype.filter.call(jp.querySelectorAll('a[href^="#"]'), function (l) { return cib(l); }), cur = null, choisi = null, fin = 0;
-    if (!ls.length) return;
+    var liens = function () { return Array.prototype.filter.call(jp.querySelectorAll('a[href^="#"]'), function (l) { return cib(l); }); }, cur = null, choisi = null, fin = 0;
     var montre = function (l) {
       if (l === cur) return; cur = l;
+      var ls = liens();
       ls.forEach(function (x) { x.classList.toggle('mn-ici', x === l); if (x === l) x.setAttribute('aria-current', 'true'); else x.removeAttribute('aria-current'); });
-      if (l) { var r = l.parentNode; if (r.scrollWidth > r.clientWidth) r.scrollLeft = Math.max(0, l.offsetLeft - 40); }
+      // Le raccourci de la partie en cours est ramené à gauche : on voit ce qui suit.
+      if (l) { var r = l.parentNode; if (r.scrollWidth > r.clientWidth) r.scrollLeft = Math.max(0, l.offsetLeft - (r.classList.contains('jx') ? 16 : 40)); }
+      fondu(jp);
     };
     var maj = function () {
       if (choisi && Date.now() < fin) return montre(choisi);
       choisi = null;
       var lim = jp.getBoundingClientRect().bottom + 80, ici = null;
-      ls.forEach(function (l) { var e = cib(l), r = e && e.getBoundingClientRect(); if (r && r.height && r.top <= lim) ici = l; });
+      liens().forEach(function (l) { var e = cib(l), r = e && e.getBoundingClientRect(); if (r && r.height && r.top <= lim) ici = l; });
       montre(ici);
     };
     var t = 0; addEventListener('scroll', function () { if (!t) t = requestAnimationFrame(function () { t = 0; maj(); }); }, { passive: true });
@@ -584,7 +620,11 @@
     }
     // Le raccourci de la partie où l'on se trouve est en noir, comme sur le Baromètre (qui a le sien) : la dernière partie dont
     // le titre est passé sous la rangée. Après un toucher, la partie choisie, posée juste sous la rangée.
-    if (jp && !jp.querySelector('.jump-l1')) suivre(jp, cib);
+    barre();
+    if (jp && !jp.querySelector('.jump-l1')) { suivre(jp, cib); jp.addEventListener('scroll', function () { fondu(jp); }, { passive: true }); addEventListener('resize', function () { fondu(jp); }); }
+    // L'icône de la mission à gauche du titre de sa page.
+    var pm = PAGES.filter(function (p) { return p.u === ici && (p.g === 'Les missions de l\'État' || p.ic === 'demographie'); })[0], tt = document.querySelector('.brand h1, .brand b');
+    if (pm && tt && !tt.querySelector('.mn-tic')) { tt.classList.add('mn-avec-ic'); tt.insertAdjacentHTML('afterbegin', '<span class="mn-tic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + IC[pm.ic] + '</svg></span>'); }
     // Clavier et lecteur d'écran : la zone principale de la page, et un lien « Aller au contenu » qui saute les menus.
     // La zone principale : un <main> entre le bandeau des pages et le pied de page, sans rien changer à la mise en page (display: contents).
     var wrap = document.querySelector('.wrap, .bx');

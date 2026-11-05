@@ -322,7 +322,11 @@ footer p { margin: 0; } footer a { color: inherit; }
 .piliers b { font-size: 17px; font-weight: 700; } .piliers b::after { content: " →"; color: var(--fr); }
 .piliers span:last-child { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
 .radar svg { display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto; font-family: var(--sans); }
-.radar .ra { fill: var(--fg); font-size: 13px; font-weight: 600; } .radar .rl { fill: var(--muted); font-size: 10px; }
+.radar .ra { fill: var(--fg); font-size: 13px; font-weight: 600; }
+/* Les pointes de la toile : l'icône de la mission (couleur d'accent, une seule pour toutes : pas de couleur par mission) ; le nom mène à la page. */
+.radar a.ra-a:hover .ra, .radar a.ra-a:focus .ra { fill: var(--fr); text-decoration: underline; } .radar .ra-ic { color: var(--fr); } .radar .ra-bg { fill: color-mix(in srgb, var(--fr) 12%, transparent); }
+.rtab a.rt-m { color: inherit; text-decoration: none; display: inline-grid; justify-items: end; gap: 2px; } .rtab a.rt-m:hover, .rtab a.rt-m:focus-visible { color: var(--fr); text-decoration: underline; }
+.rtab .rt-ic { width: 16px; height: 16px; color: var(--fr); } .radar .rl { fill: var(--muted); font-size: 10px; }
 .radar { position: relative; } @media (max-width: 520px) { .radar { margin-inline: -14px; } .radar .ra { font-size: 12px; } }
 .radar .rv { font-size: 10px; font-weight: 500; paint-order: stroke; stroke: var(--panel, var(--bg)); stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
 .radar-leg { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; margin: 2px 0 10px; font-size: 12.5px; color: var(--muted); }
@@ -414,6 +418,16 @@ footer p { margin: 0; } footer a { color: inherit; }
     <p class="note">Ce n'est pas un jugement sur la personne : un calcul, le même pour tous, qui dit si la France a fait mieux que la moyenne de l'UE pendant le mandat. Les missions ne sont pas additionnées : chacune a sa page, sa règle et ses chiffres.</p>
   </section>
 
+  <section class="pages" id="missions" aria-labelledby="mi-t">
+    <h2 id="mi-t"><span class="eyebrow">Les grandes missions de l'État</span>Une page par mission</h2>
+    <a class="pg" href="/vie/"><b>Vie des Français</b><span>Pouvoir d'achat, pauvreté, logement, travail, moral des ménages : la France face à l'Europe.</span></a>
+    <a class="pg" href="/finances/"><b>Finances publiques</b><span>Dette, déficit, impôts, dépenses, croissance, chômage : la France face à la moyenne de l'Union européenne depuis 1995.</span></a>
+    <a class="pg" href="/sante/"><b>Santé</b><span>Espérance de vie, accès aux soins, coût, prévention, nouveaux médicaments : la France face à l'Europe.</span></a>
+    <a class="pg" href="/education/"><b>Éducation</b><span>PISA, décrochage, diplômés, chômage des jeunes, universités : la France face à l'Europe depuis 2002.</span></a>
+    <a class="pg" href="/securite/"><b>Sécurité et justice</b><span>Homicides, vols avec violence, cambriolages, prisons, moyens de la police et de la justice, éloignements : la France face à l'Europe.</span></a>
+    <a class="pg" href="/defense/"><b>Défense</b><span>Budget, objectif de l'OTAN, équipement, effectifs : la France face à l'Europe.</span></a>
+  </section>
+
   <section class="card auj" id="aujourdhui" data-partage="non" aria-labelledby="auj-t">
     <span id="auj-t" class="eyebrow" style="margin:0">Aujourd'hui sur Concret</span>
     <a class="auj-l" href="/budget/"><b>Faites le budget 2027</b><span id="auj-budget">Choisissez les mesures, voyez le déficit et la dette jusqu'en 2031</span><i id="auj-budget-s">Jouer</i></a>
@@ -447,15 +461,6 @@ footer p { margin: 0; } footer a { color: inherit; }
 
 
 
-  <section class="pages" id="missions" aria-labelledby="mi-t">
-    <h2 id="mi-t"><span class="eyebrow">Les grandes missions de l'État</span>Une page par mission</h2>
-    <a class="pg" href="/vie/"><b>Vie des Français</b><span>Pouvoir d'achat, pauvreté, logement, travail, moral des ménages : la France face à l'Europe.</span></a>
-    <a class="pg" href="/finances/"><b>Finances publiques</b><span>Dette, déficit, impôts, dépenses, croissance, chômage : la France face à la moyenne de l'Union européenne depuis 1995.</span></a>
-    <a class="pg" href="/sante/"><b>Santé</b><span>Espérance de vie, accès aux soins, coût, prévention, nouveaux médicaments : la France face à l'Europe.</span></a>
-    <a class="pg" href="/education/"><b>Éducation</b><span>PISA, décrochage, diplômés, chômage des jeunes, universités : la France face à l'Europe depuis 2002.</span></a>
-    <a class="pg" href="/securite/"><b>Sécurité et justice</b><span>Homicides, vols avec violence, cambriolages, prisons, moyens de la police et de la justice, éloignements : la France face à l'Europe.</span></a>
-    <a class="pg" href="/defense/"><b>Défense</b><span>Budget, objectif de l'OTAN, équipement, effectifs : la France face à l'Europe.</span></a>
-  </section>
 
   <section class="pages" id="reperes" aria-labelledby="re-t">
     <h2 id="re-t"><span class="eyebrow">Repères, sans calcul</span>Les lois et la population</h2>
@@ -645,7 +650,9 @@ footer p { margin: 0; } footer a { color: inherit; }
     if (ring.indexOf(10) < 0) ring.push(10);
     // Noms de mission sur deux lignes au besoin (« Sécurité / et justice ») ; place réservée à gauche et à droite.
     var lignes = function (l) { var w = l.split(' '); return w.length > 2 ? [w[0], w.slice(1).join(' ')] : [l]; };
-    var W = Math.min(520, Math.max(300, box.clientWidth)), side = W < 420 ? 66 : 84, R = Math.min(W / 2 - side, 170), cx = W / 2, cy = R + 40, H = 2 * R + 84, n = MISS.length;
+    // Chaque pointe porte l'icône de sa mission (la même que dans le Menu, la liste des missions et le titre de la page) : 28 px de plus en haut et en bas.
+    var ICO = (window.ConcretMenu && ConcretMenu.IC) || {}, page = function (m) { return String(m.url || '').split('#')[0]; }, icone = function (m) { return ICO[page(m).replace(/\//g, '')]; };
+    var W = Math.min(520, Math.max(300, box.clientWidth)), side = W < 420 ? 66 : 84, R = Math.min(W / 2 - side, 170), cx = W / 2, cy = R + 40 + 28, H = 2 * R + 84 + 56, n = MISS.length;
     var ang = function (i) { return -Math.PI / 2 + i * 2 * Math.PI / n; }, pt = function (i, v) { return [cx + Math.cos(ang(i)) * R * Math.min(v, S) / S, cy + Math.sin(ang(i)) * R * Math.min(v, S) / S]; };
     var h = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Résultats sur 20 par mission, échelle de 0 à ' + S + '">';
     ring.sort(function (a, b) { return a - b; }).forEach(function (v) {
@@ -662,7 +669,12 @@ footer p { margin: 0; } footer a { color: inherit; }
       // Haut : au-dessus ; bas : en dessous ; côtés : à côté de la pointe, aligné vers l'extérieur.
       var side_ = Math.abs(dx) > Math.abs(dy), anchor = side_ ? (dx < 0 ? 'end' : 'start') : 'middle';
       var x = side_ ? e[0] + (dx < 0 ? -8 : 8) : e[0], y0 = side_ ? e[1] + 4 - (L.length - 1) * 8 : dy < 0 ? e[1] - 10 - (L.length - 1) * 15 : e[1] + 20;
-      h += '<text x="' + x + '" y="' + y0 + '" text-anchor="' + anchor + '" class="ra">' + L.map(function (t, k) { return '<tspan x="' + x + '" dy="' + (k ? 15 : 0) + '">' + esc(t) + '</tspan>'; }).join('') + '</text>';
+      // Le nom et l'icône mènent à la page de la mission. L'icône au-dessus du nom ; en bas, le nom descend pour lui laisser la place.
+      var ic = icone(m), bas = !side_ && dy > 0;
+      if (ic && bas) y0 += 26;
+      var ix = anchor === 'middle' ? x : anchor === 'end' ? x - 12 : x + 12, iy = bas ? e[1] + 8 : y0 - 13 - (side_ ? 0 : 0) - 26;
+      h += '<a href="' + esc(page(m)) + '" class="ra-a">' + (ic ? '<rect x="' + (ix - 12) + '" y="' + iy + '" width="24" height="24" rx="7" class="ra-bg"/><g transform="translate(' + (ix - 9) + ' ' + (iy + 3) + ') scale(.75)" class="ra-ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + ic + '</g>' : '') +
+        '<text x="' + x + '" y="' + y0 + '" text-anchor="' + anchor + '" class="ra">' + L.map(function (t, k) { return '<tspan x="' + x + '" dy="' + (k ? 15 : 0) + '">' + esc(t) + '</tspan>'; }).join('') + '</text></a>';
     });
     rows.forEach(function (r) {
       var c = colOf(r), pts = MISS.map(function (m, i) { return r[m.k] == null ? null : pt(i, r[m.k]); });
@@ -709,7 +721,7 @@ footer p { margin: 0; } footer a { color: inherit; }
     box.onpointerdown = montre; box.onpointermove = function (e) { if (e.pointerType === 'mouse') montre(e); }; box.onpointerleave = cache;
     // Les mêmes chiffres en tableau, et la raison quand une mission n'est pas notée.
     var why = [];
-    document.getElementById('radar-table').innerHTML = rows.length ? '<thead><tr><th scope="col" class="rt-sur">Sur 20<span class="mn-sr">, ' + (kind === 'pres' ? 'président' : 'gouvernement') + '</span></th>' + MISS.map(function (m) { return '<th title="' + m.l + '"><span class="lg">' + m.l + '</span><span class="ab">' + (ABR[m.k] || m.l) + '</span></th>'; }).join('') + '</tr></thead><tbody>' + rows.map(function (r) {
+    document.getElementById('radar-table').innerHTML = rows.length ? '<thead><tr><th scope="col" class="rt-sur">Sur 20<span class="mn-sr">, ' + (kind === 'pres' ? 'président' : 'gouvernement') + '</span></th>' + MISS.map(function (m) { var ic = icone(m); return '<th title="' + m.l + '"><a class="rt-m" href="' + esc(page(m)) + '">' + (ic ? '<svg class="rt-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ic + '</svg>' : '') + '<span class="lg">' + m.l + '</span><span class="ab">' + (ABR[m.k] || m.l) + '</span></a></th>'; }).join('') + '</tr></thead><tbody>' + rows.map(function (r) {
       var c = colOf(r);
       MISS.forEach(function (m) { if (r[m.k] == null) why.push(r.n + ', ' + m.l.toLowerCase() + ' sans résultat : ' + m.debut + '.'); else if (r[m.k + '_prov']) why.push(r.n + ', ' + m.l.toLowerCase() + ' * : note ' + (r.y1 >= new Date().getFullYear() - 3 ? 'provisoire, chiffres des dernières années pas encore publiés' : 'fragile, ' + m.debut) + ' (' + r[m.k + '_n'] + ' comparaison' + (r[m.k + '_n'] > 1 ? 's' : '') + ', compte pour ' + fmt(r[m.k + '_w'], 2) + ' dans la moyenne).'); });
       return '<tr><td><i style="background:' + c + '"></i>' + esc(r.n.split(' ').slice(-1)[0].replace('Villepin', 'de Villepin')) + '</td>' + MISS.map(function (m) { return '<td>' + (r[m.k] == null ? '—' : fmt(r[m.k]) + (r[m.k + '_prov'] ? ' *' : '')) + '</td>'; }).join('') + '</tr>';

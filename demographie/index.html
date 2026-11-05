@@ -207,11 +207,7 @@ section.theme .dc { padding: 12px 12px 10px; border-radius: 12px; box-shadow: no
 
   <section class="card" id="toile" hidden></section>
 
-  <h2 class="grp-t" id="actualite">L'actualité</h2>
-  <details class="acc" id="acc-actu">
-    <summary><span class="acc-h">L'actualité de la démographie</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
-    <div class="acc-body"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-list"></ul></div>
-  </details>
+
   <p class="chap">La population</p>
 
   <div class="theme" id="naissances">
@@ -290,6 +286,12 @@ section.theme .dc { padding: 12px 12px 10px; border-radius: 12px; box-shadow: no
       <section class="card"><h3>Obligations de quitter le territoire <small>· pour 1 000 habitants</small></h3><div class="key"></div><div class="chart" id="ch-oqtf"></div><p class="note" id="n-oqtf"></p></section>
     </div></div>
   </div>
+
+  <h2 class="grp-t" id="actualite">L'actualité</h2>
+  <details class="acc" id="acc-actu">
+    <summary><span class="acc-h">L'actualité de la démographie</span><span class="acc-t" id="teaser-actu">—</span><span class="acc-cta"></span></summary>
+    <div class="acc-body"><ul class="actu" id="actu-list"></ul><span class="eyebrow" style="margin:6px 0 0">À venir</span><ul class="actu" id="agenda-list"></ul></div>
+  </details>
 
   <details class="acc" id="lois">
     <summary><span class="acc-h">Les grandes lois</span><span class="acc-t" data-lois-teaser>Immigration, asile, nationalité, natalité : ce que chaque gouvernement a fait voter depuis 2012</span><span class="acc-cta"></span></summary>
@@ -451,6 +453,15 @@ section.theme .dc { padding: 12px 12px 10px; border-radius: 12px; box-shadow: no
       (function (d) { return '<a class="chiffre" href="#ages"><span class="lab">65 ans et plus · ' + d.y + '</span><span class="n">' + fmt(d.v, 1) + ' <small>%</small></span><span class="t">de la population ; ' + fmt(P.C.p65.ue[d.i], 1) + '\u00a0% dans l\'UE' + ((P.C.p65.prov || {})[d.y] ? ', chiffre provisoire' : '') + '</span></a>'; })(dernier(P.C.p65, 'fr')) +
       '<a class="chiffre" href="#nes"><span class="lab">Nés à l\'étranger · ' + dernier(P.C.nes, 'fr').y + '</span><span class="n">' + fmt(dernier(P.C.nes, 'fr').v, 1) + ' <small>%</small></span><span class="t">de la population ; ' + fmt(dernier(P.C.nes, 'ue').v, 1) + '\u00a0% dans l\'UE</span></a>';
 
+    // Le sommaire des thèmes, sous les chiffres (même forme que sur les pages de mission, sans ✓ ✗ : pas de résultat sur cette page).
+    if (window.ConcretBref) {
+      ConcretBref.poserSommaire($('reponse'), Array.prototype.map.call(document.querySelectorAll('div.theme[id]'), function (t) {
+        var h = t.querySelector(':scope > h2'), cs = Array.prototype.map.call(t.querySelectorAll('section.card > h3'), function (x) { var c = x.cloneNode(true), s = c.querySelector('small'); if (s) s.remove(); return c.textContent.trim(); });
+        return { id: t.id, l: h ? h.textContent.trim() : t.id, sans: cs.slice(0, 3).join(' · ') + (cs.length > 3 ? ' · et ' + (cs.length - 3) + ' autre' + (cs.length > 4 ? 's' : '') : '') };
+      }), $('chiffres'));
+      ConcretBref.placerToile();
+    }
+
     // Naissances et décès (nombres).
     var nd = [{ c: 'var(--fr)', n: 'Naissances', main: 1, data: K.nais.y.map(function (y, i) { return { x: y, v: K.nais.fr[i] }; }).filter(function (d) { return d.x >= 2000; }) },
       { c: 'var(--bad)', n: 'Décès', data: K.deces.y.map(function (y, i) { return { x: y, v: K.deces.fr[i] }; }).filter(function (d) { return d.x >= 2000; }) }];
@@ -602,6 +613,7 @@ section.theme .dc { padding: 12px 12px 10px; border-radius: 12px; box-shadow: no
   }).catch(function (e) { $('chiffres').innerHTML = '<p class="note">Les données n\'ont pas pu être chargées. Rechargez la page.</p>'; if (window.console) console.error(e); });
 })();
 </script>
+<script src="/commun/bref.js?v=20261105t"></script>
 <script src="/commun/toile.js?v=20261105n"></script>
 <script src="/commun/pays.js?v=20261031i"></script>
 <script src="/commun/lois.js?v=20261031i"></script>

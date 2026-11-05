@@ -112,6 +112,8 @@
   }
 
   window.ConcretPays = {
+    // Redessiner une courbe ou la toile (par exemple quand la toile change de place : commun/bref.js).
+    redessiner: function (id) { redessiner(id); },
     init: function (o) {
       opts.page = o.page || ''; opts.carte = o.carte || {}; opts.sans = o.sans || {};
       if (!document.getElementById('cp-css')) { var st = document.createElement('style'); st.id = 'cp-css'; st.textContent = css; document.head.appendChild(st); }
