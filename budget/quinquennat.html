@@ -1392,10 +1392,10 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     var k = Math.min(1, (an - AN0 + 1) / ETALE), b = etaleB(x, pc, P), s = CHOC * PIBY[AN0] / 100;
     return k >= 1 ? 1 : (s + (b - s) * k) / b;
   }
-  // Sans année : le montant de 2027 pour un réglage étalé (1 point de PIB et un cinquième de la part au-delà), le montant plein sinon ; « null » : toujours le montant plein.
+  // Sans année : le montant de 2027 (réglage étalé : 1 point de PIB et un cinquième de la part au-delà ; mesure qui monte en charge : sa première année) ; « null » : toujours le montant plein.
   function effetPerso(x, pc, an, P) {
     // kE : l'étalement sur cinq ans des réglages de plus de 1 point de PIB, le même pour tous les leviers (en points, en %, par unité).
-    var kE = etaleK(x, pc, an === undefined ? AN0 : an, P), r = (x.rampe && an != null ? x.rampe[Math.max(0, Math.min(x.rampe.length - 1, an - AN0))] : 1) * reste(x, P) * kE;
+    var ay = an === undefined ? AN0 : an, kE = etaleK(x, pc, ay, P), r = (x.rampe && ay != null ? x.rampe[Math.max(0, Math.min(x.rampe.length - 1, ay - AN0))] : 1) * reste(x, P) * kE;
     var ech = PIBY[AN0] / (PIBY[x.an] || PIBY[AN0]);
     if (x.u && x.u.choix) { var o = x.u.choix.filter(function (y) { return y.v === pc; })[0]; return o ? o.md * ech * r : 0; }
     if (x.mix) return x.mix.reduce(function (t, m) { return t + pc * m.par_u; }, 0) * ech * r;
@@ -2937,7 +2937,7 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
   function mesCreer() {
     var K = Object.keys(S.perso), KU = Object.keys(S.unites).filter(function (k) { return UN[k]; }), N = K.length + KU.length; tuiles();
     $('q-mes-n').textContent = N ? N + ' mesure' + (N > 1 ? 's' : '') + ' à vous' : 'Aucune mesure créée';
-    $('q-mes').innerHTML = K.map(function (k) { var x = AS[k], pc = S.perso[k]; return '<li><span>' + esc(x.l) + ' : ' + pcT(x, pc) + '</span><span class="m">' + (effetPerso(x, pc) >= 0 ? (x.groupe === 'recette' || x.k === 'allegements' ? 'rapporte ' : 'économise ') : 'coûte ') + mdt(Math.abs(effetPerso(x, pc))) + (x.rampe ? ' une fois en place' : '') + '</span><small><button type="button" data-k="' + esc(k) + '">Modifier</button><button type="button" data-r="' + esc(k) + '">Retirer</button></small></li>'; }).join('') +
+    $('q-mes').innerHTML = K.map(function (k) { var x = AS[k], pc = S.perso[k]; return '<li><span>' + esc(x.l) + ' : ' + pcT(x, pc) + '</span><span class="m">' + (effetPerso(x, pc) >= 0 ? (x.groupe === 'recette' || x.k === 'allegements' ? 'rapporte ' : 'économise ') : 'coûte ') + mdt(Math.abs(effetPerso(x, pc))) + ' en ' + AN0 + (Math.abs(effetPerso(x, pc, null) - effetPerso(x, pc)) >= 0.05 ? ', ' + mdt(Math.abs(effetPerso(x, pc, null))) + ' par an une fois en place' : '') + '</span><small><button type="button" data-k="' + esc(k) + '">Modifier</button><button type="button" data-r="' + esc(k) + '">Retirer</button></small></li>'; }).join('') +
       KU.map(function (k) { var u = UN[k], n = S.unites[k]; return '<li><span>' + esc(u.l) + ' : ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0) + '</span><span class="m">' + (unMd(u, n, AN0) > 0 ? 'économise ' : 'coûte ') + mdt(Math.abs(unMd(u, n, AN0))) + ' par an</span><small><button type="button" data-uk="' + esc(k) + '">Modifier</button><button type="button" data-ur="' + esc(k) + '">Retirer</button></small></li>'; }).join('');
     Array.prototype.forEach.call($('q-mes').querySelectorAll('button[data-uk]'), function (b) { b.onclick = function () { choisirUnite(b.dataset.uk); }; });
     Array.prototype.forEach.call($('q-mes').querySelectorAll('button[data-ur]'), function (b) { b.onclick = function () { delete S.unites[b.dataset.ur]; garder(); hud(true); mesCreer(); majUnite(); pile(); }; });
