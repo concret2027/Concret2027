@@ -1110,7 +1110,7 @@ def leviers_creer(assiettes, P, MD):
 R6 = [round(k / 6, 4) for k in range(1, 6)] + [1]  # chiffre de 2032 atteint en ligne droite depuis 2027 (hypothèse de Concret)
 # L'effet sur l'activité de chaque nouvelle ligne : la variante de Mésange retenue, et pourquoi elle s'applique (écrit dans Créer).
 MACRO_NOTE = {
-    'tout-depense': "calculé avec l'effet moyen d'une dépense publique (salaires, achats, investissement et prestations), comme toute la dépense.",
+    'tout-depense': "calculé avec la variante « dépense publique » du modèle, une dépense répartie pour 46 % en prestations en argent, 25 % en salaires, 12 % en achats, 9 % en prestations en nature et 8 % en investissement (Mésange 2017, page 106 du PDF) : le document précise que cette répartition « diffère de la décomposition de la dépense publique totale ».",
     'cotis-emp': "calculé avec l'effet des cotisations des employeurs : c'est le même prélèvement.",
     'cotis-sal': "calculé avec l'effet des cotisations des salariés : c'est le même prélèvement (pas de calcul propre aux indépendants).",
     'chomage-duree': "calculé comme un prélèvement sur le revenu des ménages, l'approche la plus proche : des allocations en moins pèsent sur le revenu des ménages ; ce n'est pas un calcul propre à cette mesure.",
