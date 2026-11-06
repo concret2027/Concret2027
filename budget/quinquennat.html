@@ -1408,7 +1408,7 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
   function pcC(x, pc) { if (!x.u || x.u.choix) return pcT(x, pc); var a = Math.abs(pc); return (x.u.min < 0 ? (pc > 0 ? '+' : '−') : '') + nf(a, a % 1 ? 1 : 0) + '\u00a0' + (x.u.c === 'jour' && a >= 2 ? 'jours' : x.u.c === 'points' && a < 2 ? 'point' : x.u.c); }
   // Une ligne qui change un impôt baissé par une autre ligne : seulement sur ce qui reste de cet impôt (revenus du capital et
   // quotient familial avec l'impôt sur le revenu ; TVA sociale avec la TVA).
-  function reste(x, P) { P = P || S.perso; var b = x.k === 'pfu-bareme' || x.k === 'quotient-familial' ? 'ir' : x.k === 'tva-sociale' ? 'tva' : null; return b && P[b] < 0 ? Math.max(0, 1 + P[b] / 100) : 1; }
+  function reste(x, P) { P = P || S.perso; var b = x.k === 'pfu-bareme' || x.k === 'quotient-familial' ? 'ir' : x.k === 'tva-sociale' ? 'tva' : x.k === 'chomage-duree' ? 'chomage' : null; return b && P[b] < 0 ? Math.max(0, 1 + P[b] / 100) : 1; }
   // Le choix d'une ligne, en mots : « +5 % », « −20 points de PIB », « 10 % de durée en moins », « 1 jour de carence en plus ».
   function pcT(x, pc) {
     if (!x || !x.u) return (pc > 0 ? '+' : '−') + nf(Math.abs(pc), Math.abs(pc) % 1 ? 1 : 0) + '\u00a0%';
@@ -1490,8 +1490,8 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     if (-r.rec > FR0.rec + 1e-6) return 'vos choix retirent ' + nf(-r.rec, 1) + '\u00a0points de PIB de recettes, plus que toutes les recettes publiques (' + nf(FR0.rec, 1) + '\u00a0points en ' + D0.an + ', Eurostat) : une recette ne peut pas être négative.';
     var P = S.perso, ce = AS['cotis-emp'], ts = AS['tva-sociale'];
     if (ce && ts && P['tva-sociale'] && ce.md * (1 + (P['cotis-emp'] || 0) / 100) - P['tva-sociale'] * ts.mix[0].par_u < -1e-6) return 'la TVA sociale baisse les cotisations des employeurs de ' + mdt(P['tva-sociale'] * ts.mix[0].par_u) + ', plus qu\'il n\'en reste avec votre ligne « Cotisations des employeurs » : une recette ne peut pas être négative.';
-    var VP = variationsPostes(), neg = [];
-    (J.repartition ? J.repartition.groupes : []).forEach(function (g) { g.lignes.forEach(function (l) { if (l.v27 + (VP.V[l.k] || 0) < -0.05) neg.push(l.l); }); });
+    var VP = variationsPostes(), VQ = variationsPostes(true), neg = [];
+    (J.repartition ? J.repartition.groupes : []).forEach(function (g) { g.lignes.forEach(function (l) { if (l.v27 + Math.min(VP.V[l.k] || 0, VQ.V[l.k] || 0) < -0.05) neg.push(l.l); }); });
     var xt = AS['tout-depense'], ft = xt && S.perso['tout-depense'] ? -effetPerso(xt, S.perso['tout-depense']) / (xt.md * PIBY[AN0] / PIBY[xt.an]) : 0;
     Object.keys(S.perso).forEach(function (k) { var x = AS[k]; if (k === 'tout-depense' || x.groupe !== 'depense' || x.u || x.par_pt) return; if (S.perso[k] / 100 + ft < -1 - 1e-6) neg.push(x.l.split(' (')[0]); });
     if (neg.length) return 'vos mesures retirent à « ' + neg.map(esc).join(' », « ') + ' » plus que ' + (neg.length > 1 ? 'ces postes ne dépensent' : 'ce poste ne dépense') + '. Une dépense ne peut pas être négative : réduisez une autre de vos mesures sur ' + (neg.length > 1 ? 'ces postes' : 'ce poste') + ' (« Toute la dépense publique » les touche tous).';
@@ -2627,7 +2627,7 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     var pc = +$('q-pc').value, e = effetPerso(choisi, pc, null);
     $('q-pc-v').textContent = choisi.u && choisi.u.choix ? '' : pc ? pcC(choisi, pc) : 'Rien';
     Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', +b.dataset.v === pc); });
-    var suf = choisi.effet_suffixe ? esc(choisi.effet_suffixe) : '', rs = reste(choisi) < 1 ? ' ; calculé sur la part de ' + (choisi.k === 'tva-sociale' ? 'la TVA' : 'l\'impôt sur le revenu') + ' qui reste dans votre budget (' + nf(reste(choisi) * 100, 0) + '\u00a0%)' : '';
+    var suf = choisi.effet_suffixe ? esc(choisi.effet_suffixe) : '', rs = reste(choisi) < 1 ? (choisi.k === 'chomage-duree' ? ' ; la baisse de durée porte sur les allocations qui restent après votre baisse de ' + nf(-S.perso.chomage, 0) + '\u00a0% (' + nf(reste(choisi) * 100, 0) + '\u00a0%)' : ' ; calculé sur la part de ' + (choisi.k === 'tva-sociale' ? 'la TVA' : 'l\'impôt sur le revenu') + ' qui reste dans votre budget (' + nf(reste(choisi) * 100, 0) + '\u00a0%)') : '';
     // La ligne du montant, en texte normal : le montant en gras, signé ; étalé sur cinq ans (plus de 1 point de PIB) : 2027 puis 2031,
     // avec une petite pastille qui dit pourquoi.
     var etl = pc && etale(choisi, pc, S.perso), sensC = choisi.groupe === 'depense' && choisi.k !== 'allegements' ? 'depense' : 'recette';
@@ -3155,13 +3155,14 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
   }
   // Ce que vos choix changent à la dépense de chaque poste en AN0 (Md€, positif = plus de dépense), par rapport au projet du
   // Gouvernement : une mesure du Gouvernement que vous n'adoptez pas compte comme refusée, comme dans votre déficit.
-  function variationsPostes() {
+  // plein : les montants une fois en place (sans étalement ni montée en charge), pour le garde-fou ; sinon ceux de 2027.
+  function variationsPostes(plein) {
     var V = {}, P = {}, hors = 0, attente = 0, aj = function (k, v, W) { W = W || V; if (Math.abs(v) < 1e-9) return; if (Array.isArray(k)) { var sp = 0; k.forEach(function (x) { W[x[0]] = (W[x[0]] || 0) + v * x[1]; sp += x[1]; }); if (sp < 0.999 && W !== P) hors += v * (1 - sp); } else if (k) W[k] = (W[k] || 0) + v; else if (W !== P) hors += v; };
     if (!nbDecisions() && !nbChoix()) return { V: V, P: P, hors: 0, attente: 0 };
     C.forEach(function (c) { if (c.sens === 'recette') return; var moi = S.v[c.id] === 1 ? 1 : 0, gv = c.preset && c.preset.gouv ? 1 : 0, nv = S.v[c.id] == null || S.v[c.id] === 0; if (moi !== gv) { aj(c.poste, -(moi - gv) * montant(c, AN0), gv && nv ? P : V); if (gv && nv) attente += montant(c, AN0); } });
-    Object.keys(S.perso).forEach(function (k) { var x = AS[k]; if (k === 'tout-depense') return; if (x.groupe === 'depense' && k !== 'allegements') aj(x.poste, -effetPerso(x, S.perso[k])); });
+    Object.keys(S.perso).forEach(function (k) { var x = AS[k]; if (k === 'tout-depense') return; if (x.groupe === 'depense' && k !== 'allegements') aj(x.poste, -effetPerso(x, S.perso[k], plein ? null : AN0)); });
     // Toute la dépense publique : chaque poste change de la même part (calcul de Concret).
-    if (S.perso['tout-depense'] && J.repartition) { var xt = AS['tout-depense'], part = -effetPerso(xt, S.perso['tout-depense']) / (xt.md * PIBY[AN0] / PIBY[xt.an]); J.repartition.groupes.forEach(function (g) { g.lignes.forEach(function (l) { if (l.k !== 'pr:charge-dette') aj(l.k, part * l.v27); }); }); }
+    if (S.perso['tout-depense'] && J.repartition) { var xt = AS['tout-depense'], part = -effetPerso(xt, S.perso['tout-depense'], plein ? null : AN0) / (xt.md * PIBY[AN0] / PIBY[xt.an]); J.repartition.groupes.forEach(function (g) { g.lignes.forEach(function (l) { if (l.k !== 'pr:charge-dette') aj(l.k, part * l.v27); }); }); }
     Object.keys(S.unites).forEach(function (k) { var u = UN[k]; if (u) aj(u.poste, -unMd(u, S.unites[k], AN0)); });
     return { V: V, P: P, hors: hors, attente: attente };
   }
