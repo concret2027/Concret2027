@@ -119,22 +119,22 @@ REGLE = {'v': 3, 'source': "Eurostat, glossaire « Procédure concernant les dé
          'url': 'https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Excessive_deficit_procedure_(EDP)'}
 DEFIS = [
     # 3 % : la date fixée à la France par l'Union européenne est 2029 (recommandation du Conseil, janvier 2025), pas 2027.
-    {'id': 'd3-2029', 't': "Ramenez le déficit de 2029 à 3 % du PIB ou moins : c'est la date fixée à la France par l'Union européenne.", 'c': [{'type': 'deficit_an', 'an': 2029, 'v': 3}], 'src': 'UE2029'},
-    {'id': 'gouv-sans-baisse', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) sans baisser aucune dépense.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_baisse_depense'}], 'src': 'CIBLE'},
-    {'id': 'dette', 't': "Faites baisser la dette d'ici la fin du quinquennat.", 'c': [{'type': 'dette_baisse'}]},
-    {'id': 'd3-sans-impot', 't': "Ramenez le déficit de la dernière année à 3 % sans augmenter aucun impôt ni cotisation.", 'c': [{'type': 'deficit_fin', 'v': 3}, {'type': 'sans_impot'}], 'src': REGLE},
-    {'id': 'd3-sans-retraites', 't': "Ramenez le déficit de la dernière année à 3 % sans toucher aux retraites.", 'c': [{'type': 'deficit_fin', 'v': 3}, {'type': 'sans_theme', 'theme': 'retraites'}], 'src': REGLE},
-    {'id': 'equilibre', 't': "Atteignez l'équilibre (aucun déficit) la dernière année.", 'c': [{'type': 'deficit_fin', 'v': 0}]},
-    {'id': 'd3-sans-sante', 't': "Ramenez le déficit de la dernière année à 3 % sans mesure sur la santé.", 'c': [{'type': 'deficit_fin', 'v': 3}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': REGLE},
+    {'id': 'd3-2029', 't': "Le déficit de 2029 à 3 % du PIB ou moins : c'est la date fixée à la France par l'Union européenne.", 'c': [{'type': 'deficit_an', 'an': 2029, 'v': 3}], 'src': 'UE2029'},
+    {'id': 'gouv-sans-baisse', 't': "La cible du Gouvernement pour 2027 (5 % du PIB) sans baisser aucune dépense.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_baisse_depense'}], 'src': 'CIBLE'},
+    {'id': 'dette', 't': "La dette en baisse d'ici la fin du quinquennat.", 'c': [{'type': 'dette_baisse'}]},
+    {'id': 'd3-sans-impot', 't': "Le déficit de la dernière année à 3 % sans augmenter aucun impôt ni cotisation.", 'c': [{'type': 'deficit_fin', 'v': 3}, {'type': 'sans_impot'}], 'src': REGLE},
+    {'id': 'd3-sans-retraites', 't': "Le déficit de la dernière année à 3 % sans toucher aux retraites.", 'c': [{'type': 'deficit_fin', 'v': 3}, {'type': 'sans_theme', 'theme': 'retraites'}], 'src': REGLE},
+    {'id': 'equilibre', 't': "L'équilibre (aucun déficit) la dernière année.", 'c': [{'type': 'deficit_fin', 'v': 0}]},
+    {'id': 'd3-sans-sante', 't': "Le déficit de la dernière année à 3 % sans mesure sur la santé.", 'c': [{'type': 'deficit_fin', 'v': 3}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': REGLE},
 ]
 DEFIS_FAISABLES = [
-    {'id': 'gouv-sans-retraites', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) sans toucher aux retraites.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_theme', 'theme': 'retraites'}], 'src': 'CIBLE'},
-    {'id': 'd4-2027', 't': "Ramenez le déficit de 2027 à 4 % du PIB ou moins (un palier choisi par Concret, pour le jeu).", 'c': [{'type': 'deficit_an1', 'v': 4}]},
-    {'id': 'gouv-sans-sante', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) sans mesure sur la santé.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': 'CIBLE'},
-    {'id': 'dette-130', 't': "Gardez la dette de la dernière année sous 130 % du PIB (un palier choisi par Concret, pour le jeu).", 'c': [{'type': 'dette_fin', 'v': 130}]},
-    {'id': 'd45-2027', 't': "Ramenez le déficit de 2027 à 4,5 % du PIB ou moins (un palier choisi par Concret, pour le jeu).", 'c': [{'type': 'deficit_an1', 'v': 4.5}]},
-    {'id': 'gouv-sans-retraites-sante', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) sans toucher aux retraites ni à la santé.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_theme', 'theme': 'retraites'}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': 'CIBLE'},
-    {'id': 'gouv-10-mesures', 't': "Atteignez la cible du Gouvernement pour 2027 (5 % du PIB) avec 10 mesures adoptées au plus.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'max_mesures', 'v': 10}], 'src': 'CIBLE'},
+    {'id': 'gouv-sans-retraites', 't': "La cible du Gouvernement pour 2027 (5 % du PIB) sans toucher aux retraites.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_theme', 'theme': 'retraites'}], 'src': 'CIBLE'},
+    {'id': 'd4-2027', 't': "Le déficit de 2027 à 4 % du PIB ou moins (un palier choisi par Concret, pour le jeu).", 'c': [{'type': 'deficit_an1', 'v': 4}]},
+    {'id': 'gouv-sans-sante', 't': "La cible du Gouvernement pour 2027 (5 % du PIB) sans mesure sur la santé.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': 'CIBLE'},
+    {'id': 'dette-130', 't': "La dette de la dernière année sous 130 % du PIB (un palier choisi par Concret, pour le jeu).", 'c': [{'type': 'dette_fin', 'v': 130}]},
+    {'id': 'd45-2027', 't': "Le déficit de 2027 à 4,5 % du PIB ou moins (un palier choisi par Concret, pour le jeu).", 'c': [{'type': 'deficit_an1', 'v': 4.5}]},
+    {'id': 'gouv-sans-retraites-sante', 't': "La cible du Gouvernement pour 2027 (5 % du PIB) sans toucher aux retraites ni à la santé.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'sans_theme', 'theme': 'retraites'}, {'type': 'sans_theme', 'theme': 'sante'}], 'src': 'CIBLE'},
+    {'id': 'gouv-10-mesures', 't': "La cible du Gouvernement pour 2027 (5 % du PIB) avec 10 mesures adoptées au plus.", 'c': [{'type': 'deficit_an1', 'v': 5}, {'type': 'max_mesures', 'v': 10}], 'src': 'CIBLE'},
 ]
 # Un défi faisable avec les cartes un jour sur deux environ.
 DEFIS = [x for paire in zip(DEFIS, DEFIS_FAISABLES + [None] * len(DEFIS)) for x in paire if x]

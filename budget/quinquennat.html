@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="aa176104da4f">
+<meta name="concret-version" content="26ae43f29fb2">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -984,6 +984,8 @@ body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
 .q-recom-c button { font: inherit; font-size: 15px; font-weight: 700; min-height: 44px; padding: 8px 14px; border-radius: 10px; cursor: pointer; text-align: left; }
 .q-recom-c .q-rk { border: 0; background: var(--brique); color: var(--on-brique); }
 .q-recom-c .q-rk small { font-size: 13.5px; font-weight: 500; }
+.q-recom-c .q-rk-o { border: 1.5px solid var(--brique); background: var(--panel); color: var(--brique); }
+.q-recom-c [hidden] { display: none; }
 .q-recom-c .q-rk-non { border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-align: center; }
 .q-danger { font: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 44px; }
 @media (min-width: 760px) {
@@ -1273,6 +1275,21 @@ body.q-simu #sim-main { overflow-anchor: none; }
 .sim-tb.v-plie #sim-1, body.sim-cherche .sim-tb #sim-1 { display: grid !important; }
 @media (max-width: 699px) { .q-collant.q-mini .sim-tb.v-auto #sim-1 { display: grid !important; } }
 body.q-grand .sim-1 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sim-pl-ct { display: none; }
+/* Texte agrandi (iPhone, 1,3) : le bandeau tient en peu de place ; quatre cases compactes sur une ligne (chiffre et flèche, sans
+   petite courbe), l'objectif sur une ligne, « Courbes » au lieu de « Voir les courbes ». */
+body.q-grand .sim-1 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+body.q-grand .sim-t { padding: 4px 4px 3px; }
+body.q-grand .sim-t-s svg { display: none; }
+body.q-grand .sim-t-l { font-size: 9.5px; min-height: 0; }
+body.q-grand .sim-t-v { font-size: 12px; }
+body.q-grand .sim-t-e { font-size: 10px; }
+body.q-grand .sim-cap { flex-wrap: nowrap; gap: 5px; }
+body.q-grand .sim-cap .sim-obj { flex: 1 1 0; padding: 0 8px; }
+body.q-grand .sim-cap-t { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: none; line-clamp: none; }
+body.q-grand .sim-cap .sim-ic { padding: 0 9px; }
+body.q-grand .sim-pl-lg { display: none; } body.q-grand .sim-pl-ct { display: inline; }
+body.q-grand .sim-j { font-size: 12px; }
 .sim-t { position: relative; --kc: #2f5bd3; --kt: #2f5bd3; display: grid; gap: 1px; min-width: 0; padding: 5px 6px 4px; border-radius: 10px; background: color-mix(in srgb, var(--kc) 9%, var(--panel)); border: 1px solid color-mix(in srgb, var(--kc) 24%, var(--panel)); }
 .sim-t[data-c="dette"] { --kc: #7a4fc4; --kt: #6a40b3; } .sim-t[data-c="cr"] { --kc: #17806f; --kt: #12695b; } .sim-t[data-c="ph"] { --kc: #9a6a12; --kt: #80580e; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sim-t { --kc: #7a9cff; --kt: #8fadff; background: color-mix(in srgb, var(--kc) 13%, var(--panel)); border-color: color-mix(in srgb, var(--kc) 30%, var(--panel)); } :root:not([data-theme="light"]) .sim-t[data-c="dette"] { --kc: #b89cff; --kt: #c4adff; } :root:not([data-theme="light"]) .sim-t[data-c="cr"] { --kc: #4fc9b0; --kt: #5fd3bb; } :root:not([data-theme="light"]) .sim-t[data-c="ph"] { --kc: #d9b25a; --kt: #e2bf6d; } }
@@ -1285,7 +1302,25 @@ body.q-grand .sim-t-l { min-height: 0; }
 .sim-t-s { display: grid; gap: 1px; min-width: 0; }
 .sim-t-s svg { display: block; width: 100%; height: 14px; overflow: visible; }
 .sim-t-e { flex: 0 0 auto; font-size: 11px; font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
-body.q-grand .sim-t-v { font-size: 17px; }
+body.q-grand .sim-t-v { font-size: 12px; }
+
+/* Cases du tableau de bord, style B (choix de l'éditeur) : cases blanches, filet gris, trait de couleur de 4 px en haut ; texte gris
+   et noir, seule la courbe garde la couleur de l'indicateur. Les mêmes partout : bandeau, grandes cases de « Voir les courbes »,
+   récapitulatifs des pauses et de la carte de fin, variante compacte du texte agrandi. */
+:root { --tb-bd: #e3e3df; --tb-l: #5c6270; --tb-v: #1d1f24; --tb-bg: #fff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --tb-bd: #3a3d45; --tb-l: #a9aeb9; --tb-v: #f2f3f5; --tb-bg: var(--panel); } }
+:root[data-theme="dark"] { --tb-bd: #3a3d45; --tb-l: #a9aeb9; --tb-v: #f2f3f5; --tb-bg: var(--panel); }
+#sim-tb .sim-t, #sim-tb .sim-c, .sim-cartes .sim-c-vals > div { background: var(--tb-bg); border: 1px solid var(--tb-bd); border-top: 4px solid var(--kc); }
+#sim-tb .sim-t-l, #sim-tb .sim-c-t, .sim-cartes .sim-c-vals small { color: var(--tb-l); font-weight: 600; }
+#sim-tb .sim-t-v, #sim-tb .sim-c-v span, .sim-cartes .sim-c-vals b { color: var(--tb-v); font-weight: 800; white-space: nowrap; }
+#sim-tb .sim-t-e, #sim-tb .sim-c-s, #sim-tb .sim-c-m { color: var(--tb-l); white-space: nowrap; }
+#sim-tb .sim-t-e { font-weight: 600; }
+#sim-tb .sim-t-r { background: var(--tb-bg); color: var(--tb-l); border: 1px solid var(--tb-bd); font-weight: 600; }
+.sim-t-v { letter-spacing: -.02em; }
+.sim-cartes .sim-c-vals > div { --kc: #2f5bd3; }
+.sim-cartes .sim-c-vals > div:nth-child(2) { --kc: #7a4fc4; } .sim-cartes .sim-c-vals > div:nth-child(3) { --kc: #17806f; } .sim-cartes .sim-c-vals > div:nth-child(4) { --kc: #9a6a12; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sim-cartes .sim-c-vals > div { --kc: #7a9cff; } :root:not([data-theme="light"]) .sim-cartes .sim-c-vals > div:nth-child(2) { --kc: #b89cff; } :root:not([data-theme="light"]) .sim-cartes .sim-c-vals > div:nth-child(3) { --kc: #4fc9b0; } :root:not([data-theme="light"]) .sim-cartes .sim-c-vals > div:nth-child(4) { --kc: #d9b25a; } }
+:root[data-theme="dark"] .sim-cartes .sim-c-vals > div { --kc: #7a9cff; } :root[data-theme="dark"] .sim-cartes .sim-c-vals > div:nth-child(2) { --kc: #b89cff; } :root[data-theme="dark"] .sim-cartes .sim-c-vals > div:nth-child(3) { --kc: #4fc9b0; } :root[data-theme="dark"] .sim-cartes .sim-c-vals > div:nth-child(4) { --kc: #d9b25a; }
 
 /* Créer en cartes : les composants de Voter (carte, réponses, progression, pause, ↶) ; seuls ajouts : la réponse choisie, les quatre chiffres du point. */
 body.q-cartes #sim-main { display: none !important; }
@@ -1316,6 +1351,10 @@ body.q-cartes #sim-main { display: none !important; }
 .sim-c-bande b { white-space: normal; overflow-wrap: anywhere; }
 .sim-c-riv { font-weight: 600; }
 .sim-c-imp p { margin: 0 0 6px; } .sim-c-imp button { margin: 2px 6px 2px 0; }
+.sim-c-conf { padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--fr); background: color-mix(in srgb, var(--fr) 7%, var(--panel)); font-size: 14.5px; line-height: 1.4; }
+.sim-c-conf-b { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 0 !important; }
+.sim-c-conf-b .q-go { min-height: 44px; padding: 0 20px; }
+.sim-cartes .q-rep.vise { border-color: var(--fr); background: color-mix(in srgb, var(--fr) 7%, var(--panel)); }
 .sim-c-res { margin: 2px 0 0; font-size: 30px; font-weight: 800; line-height: 1.15; letter-spacing: -.01em; font-variant-numeric: tabular-nums; color: var(--fr); }
 @keyframes simBande { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sim-c-bande { animation: none; } }
@@ -1357,7 +1396,8 @@ body.q-cartes #sim-main { display: none !important; }
   <button type="button" class="q-recom-b" id="q-recom-b" aria-expanded="false" aria-controls="q-recom-c" hidden>↺ Recommencer</button>
   </div>
   <div class="q-recom-c" id="q-recom-c" role="group" aria-labelledby="q-rk-t" hidden><p id="q-rk-t">Que voulez-vous recommencer ?</p>
-    <button type="button" class="q-rk" id="q-rk-rv">Revoter toutes les questions <small>(vos mesures créées restent)</small></button>
+    <button type="button" class="q-rk q-rk-o" id="q-rk-rv">Revoter toutes les questions <small>(vos mesures créées restent)</small></button>
+    <button type="button" class="q-rk q-rk-o" id="q-rk-cr" hidden>Recommencer Créer seulement <small>(vos votes restent)</small></button>
     <button type="button" class="q-rk" id="q-rk-tout">Tout recommencer <small>(tout effacer)</small></button>
     <button type="button" class="q-rk-non" id="q-rk-non">Annuler</button></div>
   </div>
@@ -1883,6 +1923,7 @@ body.q-cartes #sim-main { display: none !important; }
         if (DJo.attente) return { ok: false, prog: pg, t: defiNom() + ' : vos mesures créées remplissent déjà ' + (DJo.cond.length > 1 ? 'les conditions' : 'la condition') + ' (' + DJo.cond.map(function (c) { return '✓ ' + esc(c.t); }).join(' · ') + ') ; le défi compte à partir de votre premier vote.' };
         return { ok: DJo.ok, prog: pg, t: (DJo.ok ? '✓ ' + defiNom() + ' réussi : ' : (DJo.cond.length > 1 ? defiNom() + ' (' + nok + ' condition' + (nok > 1 ? 's' : '') + ' sur ' + DJo.cond.length + ' remplie' + (nok > 1 ? 's' : '') + ') : ' : defiNom() + ' : ')) + DJo.cond.map(function (c) { return (c.ok ? '✓ ' : '✗ ') + esc(c.t); }).join(' · ') }; }
     }
+    if (S.obj === 'aucun' && S.simuFil) { var fo = filDe(R); if (fo) return { ok: false, prog: null, t: 'Objectif : ' + esc(fo.nom) + ' · <b>' + esc(fo.reste) + '</b>' }; }
     var T = seuil(), AO = anObj();
     if (T != null) {
       var ra = ligneAn(R, AO), za = ligneAn(R0, AO), e = -ra.solde - T, e0 = -za.solde - T, m0 = mdt(e0 / 100 * za.pib), m = mdt(e / 100 * ra.pib), nom = NOMOBJ[S.obj], Ts = nf(T, 1).replace(',0', '');
@@ -1905,7 +1946,7 @@ body.q-cartes #sim-main { display: none !important; }
   function hud(anime) {
     R = simuler(); R0 = simuler({ rien: true }); GRAND = tresGrand(R);
     // « ↺ Recommencer » : seulement quand il y a quelque chose à recommencer.
-    var nDq = nbDecisions(); Array.prototype.forEach.call(document.querySelectorAll('.q-recom-b'), function (b) { b.hidden = !(nDq || nbChoix()); }); $('q-rk-rv').hidden = !nDq;
+    var nDq = nbDecisions(); Array.prototype.forEach.call(document.querySelectorAll('.q-recom-b'), function (b) { b.hidden = !(nDq || nbChoix()); }); $('q-rk-rv').hidden = !nDq; $('q-rk-cr').hidden = !SIMU || !(Object.keys(S.perso).length || Object.keys(S.unites).length || Object.keys(S.cartesVu || {}).length || S.capi);
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1];
     var AOh = anObj ? anObj() : AN0, rO = ligneAn(R, AOh); $('h-l1').innerHTML = (/^excédent/.test(defic(rO.solde)) ? 'Excédent' : 'Déficit') + '<span class="q-an"> ' + AOh + '</span>'; r1 = rO; $('h-l2').innerHTML = 'Dette<span class="q-an"> ' + AN1 + '</span>'; $('h-l3').innerHTML = '<span class="q-l-l">PIB par habitant</span><span class="q-l-c">PIB/hab.</span><span class="q-an"> ' + AN1 + '</span>';
     // La richesse par habitant en 2031 (PIB par habitant, euros de 2025 hors inflation, même calcul que le Bilan) et son écart avec « sans mesure ».
@@ -2548,6 +2589,24 @@ body.q-cartes #sim-main { display: none !important; }
     return null;
   }
   var OBJS = function () { var DJx = null; try { DJx = R ? defiDuJour() : null; } catch (e) {} return [['aucun', 'Sans objectif', 'voter librement et voir le résultat']].concat(DJx && DJx.faisable ? [['defi', 'Le défi du jour', DJx.x.t +  ' (faisable avec les cartes)']] : [], J.cible ? [['gouv', nf(J.cible.v, 1).replace(',0', '') + '\u00a0% de déficit en ' + AN0, 'la cible du Gouvernement (projet de loi de finances)']] : [], [['quatre', '4\u00a0% de déficit en ' + AN0, 'un palier choisi par Concret, pour le jeu'], ['trois', nf(PAR.regle, 0) + '\u00a0% de déficit en ' + (J.echeance_ue ? J.echeance_ue.an : AN0), 'l\'engagement européen de la France'], ['dette', 'Une dette stable en ' + AN1, 'pas plus haute qu\'à la fin ' + PJ.depart.an], ['neutre', 'Changer le budget sans changer le déficit', 'au moins 5 mesures, déficit ' + AN0 + ' à 0,1 point près de son niveau sans mesure : vous choisissez quoi financer et comment']], DJx && !DJx.faisable ? [['defi', 'Le défi du jour', DJx.x.t + ' (il faudra aussi l\'onglet Créer)']] : []); };
+  // Les fils rouges sans ligne d'arrivée (croissance, PIB par habitant, rattraper un pays) : S.obj reste « aucun », le fil est dans S.simuFil.
+  function objFils() {
+    var P = filPays(), L = [['fil:croissance', 'La croissance la plus forte', 'la croissance moyenne de ' + AN0 + ' à ' + AN1 + ' la plus haute possible ; pas de ligne d\'arrivée, un record sur cet appareil'], ['fil:pibhab', 'Le PIB par habitant le plus haut en ' + AN1, 'en euros de 2025, hors hausse des prix ; pas de ligne d\'arrivée, un record sur cet appareil']];
+    if (P && P.L.length) L.push(['fil:rattraper', 'Rattraper un pays', 'le PIB par habitant ' + P.PH.an + ' d\'un pays plus riche (FMI, parité de pouvoir d\'achat) : quelle part de l\'écart vos choix comblent']);
+    return L;
+  }
+  // Toute la liste, la même dans Voter et dans Créer : « Sans objectif » d'abord, les fils rouges avant le défi « il faudra aussi Créer ».
+  function objTous() { return OBJS().concat(objFils()); }
+  function objPris(o) { return /^fil:/.test(o) ? !!S.simuFil && (o === 'fil:' + S.simuFil || (o === 'fil:rattraper' && /^rattraper:/.test(S.simuFil))) : S.obj === o && !(o === 'aucun' && S.simuFil); }
+  // Les pays plus riches que la France, à choisir pour « Rattraper un pays ».
+  function objPaysHTML(cls) { var P = filPays(); return P ? P.L.map(function (q) { return '<button type="button" class="' + cls + '" data-o="fil:rattraper:' + esc(q.code) + '"><b>' + esc(q.nom) + '</b><span>PIB par habitant ' + P.PH.an + ' : ' + nf(Math.round((q.v / P.fr.v - 1) * 100), 0) + ' % de plus que la France (FMI)</span></button>'; }).join('') : ''; }
+  function objPaysSrc() { var P = filPays(); return P ? esc(P.PH.source) + ', ' + esc(P.PH.edition.edition) + '. <a href="' + esc(P.PH.url) + '" target="_blank" rel="noopener">Source</a>' : ''; }
+  // Choisir l'objectif (Voter, Créer ou le bouton « Objectif ») : un seul pour tout le jeu.
+  function choisirObj(o) {
+    if (/^fil:/.test(o)) { S.obj = 'aucun'; S.simuFil = o.slice(4); } else { S.obj = o; delete S.simuFil; }
+    delete S.defiDate; if (S.obj === 'defi') S.defiJour = isoJ(); S.simuObjOk = 1; garder();
+  }
+  function objNom(o) { var x = objTous().filter(function (y) { return y[0] === o; })[0]; if (x) return x[1]; var P = filPays(), q = P && /^fil:rattraper:/.test(o) ? P.PH.pays.filter(function (p) { return p.code === o.split(':')[2]; })[0] : null; return q ? 'Rattraper ' + paysLe(q) : o; }
   function carteSpeciale(k, entree) {
     if (k === 'nouveaudefi') {
       var DN = defiDuJour(), nv = nbDecisions();
@@ -2570,9 +2629,15 @@ body.q-cartes #sim-main { display: none !important; }
         '<div class="q-foy-l"><span>Vous êtes (plusieurs choix possibles) :</span><div class="q-chips q-foy">' + Object.keys(FOYERS).map(function (k) { return '<button type="button" data-f="' + k + '" aria-pressed="' + (foyersSel().indexOf(k) >= 0) + '">' + FOYERS[k].l + '</button>'; }).join('') + '</div></div>' +
         '<p class="q-note" style="margin:4px 0 0">Les mesures qui vous touchent passeront plus tôt, avec un exemple pour vous.</p><h2 style="margin-top:10px">Quel est votre objectif ?</h2>' +
         '<p class="q-note">Vous pourrez en changer à tout moment.</p><div class="q-grands q-grands2">' +
-        OBJS().map(function (o, i, T) { var r = S.reussi && S.reussi[cleRec(o[0])]; return '<button type="button" data-o="' + o[0] + '"' + (i === 0 || (i === T.length - 1 && (T.length - 1) % 2) ? ' class="large"' : '') + '><b>' + esc(o[1]) + '</b><span>' + esc(o[2]) + '</span>' + (r && o[0] !== 'aucun' ? '<span class="q-rec">✓ Votre record : atteint en ' + r + ' question' + (r > 1 ? 's' : '') + ' · à battre ?</span>' : '') + '</button>'; }).join('') + '</div></section>';
+        objTous().map(function (o, i, T) { var r = S.reussi && S.reussi[cleRec(o[0])]; return '<button type="button" data-o="' + o[0] + '"' + (i === 0 || (i === T.length - 1 && (T.length - 1) % 2) ? ' class="large"' : '') + '><b>' + esc(o[1]) + '</b><span>' + esc(o[2]) + '</span>' + (r && o[0] !== 'aucun' && !/^fil:/.test(o[0]) ? '<span class="q-rec">✓ Votre record : atteint en ' + r + ' question' + (r > 1 ? 's' : '') + ' · à battre ?</span>' : '') + '</button>'; }).join('') + '</div></section>';
       Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-foy button'), function (b) { b.onclick = function () { basculerFoyer(b.dataset.f); Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-foy button'), function (x) { x.setAttribute('aria-pressed', foyersSel().indexOf(x.dataset.f) >= 0); }); enHaut(); }; });
-      Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-grands button'), function (b) { b.onclick = function () { S.obj = b.dataset.o; delete S.defiDate; garder(); objectifs(); tout(true); pop(b.dataset.o === 'aucun' ? 'Sans objectif : votez librement' : b.dataset.o === 'defi' && defiX() ? 'Défi du jour : ' + esc(defiX().t) : 'Objectif choisi : ' + esc(b.querySelector('b').textContent)); setTimeout(function () { sousBandeau($('q-prog')); remonter(); }, 30); }; });
+      var choix = function (b) { b.onclick = function () {
+        var o = b.dataset.o;
+        // « Rattraper un pays » : le choix du pays, dans la même carte.
+        if (o === 'fil:rattraper') { var g = $('q-deck').querySelector('.q-grands'); g.innerHTML = objPaysHTML('large'); g.insertAdjacentHTML('afterend', '<p class="q-note">' + objPaysSrc() + '</p>'); Array.prototype.forEach.call(g.querySelectorAll('button'), choix); g.scrollIntoView({ block: 'nearest' }); return; }
+        choisirObj(o); objectifs(); tout(true); pop(o === 'aucun' ? 'Sans objectif : votez librement' : o === 'defi' && defiX() ? 'Défi du jour : ' + esc(defiX().t) : 'Objectif choisi : ' + esc(objNom(o))); setTimeout(function () { sousBandeau($('q-prog')); remonter(); }, 30);
+      }; };
+      Array.prototype.forEach.call($('q-deck').querySelectorAll('.q-grands button'), choix);
       return;
     }
     var r1 = an1(R), f = R[R.length - 1], rs = ressemble(r1), n = nbDecisions(), nx = SUITE[S.obj], AO = anObj(), ra = ligneAn(R, AO);
@@ -2712,6 +2777,15 @@ body.q-cartes #sim-main { display: none !important; }
   function toutEffacer() { var g = {}; ['reussi', 'defis', 'recordDefi', 'foyer', 'foyers', 'compte', 'vu', 'records', 'jours'].forEach(function (k) { if (S[k] != null) g[k] = S[k]; }); S = Object.assign({ v: {}, perso: {}, unites: {}, po: {}, macro: true, macroV: 2, taux: 0, cr: 0, filtre: 'tout', pile: [], graine: 1 + Math.floor(Math.random() * 2147483646) }, g); garder(); window.scrollTo({ top: 0 }); location.reload(); }
   // Revoter : les votes sont effacés, les cartes reviennent dans un nouvel ordre ; les mesures créées et les hypothèses restent.
   function revoter() { S.v = {}; S.pile = []; S.etape = 0; S.hist = {}; S.atteint = {}; S.filtre = 'tout'; S.graine = 1 + Math.floor(Math.random() * 2147483646); garder(); window.scrollTo({ top: 0 }); location.reload(); }
+  // Recommencer Créer seulement : les mesures créées, les options de la capitalisation, la partie en cartes (réponses, pauses) et
+  // l'historique d'annulation s'effacent ; les votes, l'objectif et les records gardés sur l'appareil restent. Créer repart de la carte 1.
+  function recommencerCreer() {
+    S.perso = {}; S.unites = {}; ['capi', 'cartesVu', 'cartesHist', 'cartesPause', 'cartesPropre', 'simuModele', 'simuFerme'].forEach(function (k) { delete S[k]; });
+    capiExclut(); garder(); if (SIMU) { SM.undo = []; SM.last = null; SM.al = []; SM.fete = null; SM.imp = null; }
+    if (CARTES) { CM.force = null; CM.back = null; CM.revu = null; CM.dernier = null; CM.cata = 0; CM.choixPays = 0; }
+    tout(); mesCreer(); pile(); onglet('creer'); if (SIMU) simMaj(); if (CARTES && SIMU) { cartesAff(); cartesHaut(); }
+    pop('Créer recommence à la carte 1 ; vos votes restent');
+  }
   function ouvrirVotes() { onglet('voter'); var d = $('q-vos-d'); d.open = true; setTimeout(function () { sousBandeau(d); }, 60); }
   var CARTE_VUE = true, VIN_VU = false, VIN_OBS = null, SUITE_VU = false, SUITE_OBS = null;
   // Texte agrandi : « Abstention » ne se coupe pas au milieu du mot ; s'il ne laisse pas un peu d'air de chaque côté dans son bouton
@@ -3624,7 +3698,7 @@ body.q-cartes #sim-main { display: none !important; }
     $('q-tabexp').innerHTML = EXPL[t].replace('{AN0}', AN0).replace('{AN1}', AN1); ONG = t; $('q-tabexp').hidden = (t === 'voter' && !$('q-intro').hidden) || S.vu[t] > 1 || !EXPL[t];
     if (POP) { clearTimeout(popT); POP = false; hud(); }
     ['voter', 'creer', 'bilan'].forEach(function (x) { $('t-' + x).setAttribute('aria-selected', x === t); $('p-' + x).hidden = x !== t; });
-    document.body.classList.toggle('q-hors-vote', t !== 'voter'); if (SIMU) { document.body.classList.toggle('q-ong-creer', t === 'creer'); if (t === 'creer') simMaj(); } document.body.classList.toggle('q-bilan', t === 'bilan');
+    document.body.classList.toggle('q-hors-vote', t !== 'voter'); if (SIMU) { document.body.classList.toggle('q-ong-creer', t === 'creer'); if (t === 'creer') { simMaj(); if (CARTES && S.obj && $('sim-cartes') && $('sim-cartes').querySelector('[data-o]')) cartesAff(); } } document.body.classList.toggle('q-bilan', t === 'bilan');
     barre(); if (t === 'bilan') bilan();
     if (autre) { reduire(false); var nv = document.querySelector('nav.site'), hn = nv ? nv.getBoundingClientRect().bottom : 0; window.scrollTo({ top: Math.max(0, $(t === 'bilan' ? 'p-bilan' : 'q-ancre').getBoundingClientRect().top + window.scrollY - hn - 4), behavior: 'instant' }); if (t === 'voter' && nbDecisions()) setTimeout(function () { sousBandeau($('q-deck').querySelector('#q-voirb2') ? $('q-deck') : $('q-top')); }, 40); }
   }
@@ -3634,8 +3708,8 @@ body.q-cartes #sim-main { display: none !important; }
   function objectifs() {
     var O = (J.cible ? [['gouv', nf(J.cible.v, 1).replace(',0', '') + '\u00a0% en ' + AN0 + ' : cible du Gouvernement']] : []).concat([['quatre', '4\u00a0% en ' + AN0 + ' (palier du jeu)'], ['trois', nf(PAR.regle, 0) + '\u00a0% en ' + (J.echeance_ue ? J.echeance_ue.an : AN0) + ' : engagement européen'], ['dette', 'Dette stable'], ['aucun', 'Aucun']]);
     ['q-objs2'].forEach(function (id) {
-      $(id).innerHTML = O.map(function (o) { return '<button type="button" data-o="' + o[0] + '" aria-pressed="' + (S.obj === o[0]) + '">' + esc(o[1]) + '</button>'; }).join('');
-      Array.prototype.forEach.call($(id).querySelectorAll('button'), function (b) { b.onclick = function () { S.obj = b.dataset.o; delete S.defiDate; garder(); objectifs(); if (id === 'q-objs2') $('q-hobj').hidden = true; tout(); }; });
+      $(id).innerHTML = O.map(function (o) { return '<button type="button" data-o="' + o[0] + '" aria-pressed="' + objPris(o[0]) + '">' + esc(o[1]) + '</button>'; }).join('');
+      Array.prototype.forEach.call($(id).querySelectorAll('button'), function (b) { b.onclick = function () { choisirObj(b.dataset.o); objectifs(); if (id === 'q-objs2') $('q-hobj').hidden = true; tout(); }; });
     });
   }
 
@@ -4857,9 +4931,14 @@ body.q-cartes #sim-main { display: none !important; }
     $('sim-undo').setAttribute('aria-label', $('sim-undo').title);
   }
   function simObjs() {
-    var L = OBJS(), el = $('sim-objs');
-    el.innerHTML = L.map(function (o) { return '<button type="button" data-o="' + o[0] + '" aria-pressed="' + (S.obj === o[0]) + '"><b>' + esc(o[1]) + '</b><small>' + esc(o[2]) + '</small></button>'; }).join('');
-    Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) { b.onclick = function () { var c0 = S.obj; S.obj = b.dataset.o; delete S.defiDate; if (S.obj === 'defi') S.defiJour = isoJ(); garder(); objectifs(); tout(); el.hidden = true; $('sim-obj').setAttribute('aria-expanded', 'false'); SM.fete = null; SM.last = c0 !== S.obj ? { L: ['Objectif choisi : ' + esc(b.querySelector('b').textContent) + ' (' + esc(b.querySelector('small').textContent) + ').'] } : SM.last; simMaj(); }; });
+    var L = objTous(), el = $('sim-objs');
+    el.innerHTML = L.map(function (o) { return '<button type="button" data-o="' + o[0] + '" aria-pressed="' + objPris(o[0]) + '"><b>' + esc(o[1]) + '</b><small>' + esc(o[2]) + '</small></button>'; }).join('');
+    var choix = function (b) { b.onclick = function () {
+      var o = b.dataset.o, c0 = S.obj + '|' + (S.simuFil || '');
+      if (o === 'fil:rattraper') { el.innerHTML = objPaysHTML('') .replace(/<span>/g, '<small>').replace(/<\/span>/g, '</small>') + '<p class="sim-l-m">' + objPaysSrc() + '</p>'; Array.prototype.forEach.call(el.querySelectorAll('button'), choix); return; }
+      choisirObj(o); objectifs(); tout(); el.hidden = true; $('sim-obj').setAttribute('aria-expanded', 'false'); SM.fete = null; SM.last = c0 !== S.obj + '|' + (S.simuFil || '') ? { L: ['Objectif choisi : ' + esc(objNom(o)) + '.'] } : SM.last; simMaj();
+    }; };
+    Array.prototype.forEach.call(el.querySelectorAll('button'), choix);
   }
   // La part de la réussite qui vient de choix dont l'effet sur l'activité n'est pas compté (règle de Concret : le dire là où on le voit).
   // Chaque ligne du plan : le budget recalculé sans ce choix ; la somme des lignes n'est qu'un ordre de grandeur.
@@ -5149,7 +5228,7 @@ body.q-cartes #sim-main { display: none !important; }
     var nVu = Object.keys(cartesVu()).filter(function (k) { return CM.ordre.indexOf(k) >= 0; }).length, N = CM.ordre.length; CM.k = null;
     var bande = cartesBande(CM.dernier); CM.dernier = null;
     var fin = function () { cartesBrancher(box); placerEx(); };
-    if (!S.simuObjOk) { box.innerHTML = cartesEntree(); return fin(); }
+    if (!S.obj) { box.innerHTML = cartesEntree(); return fin(); }
     if (CM.cata) { box.innerHTML = cartesCatalogue(nVu); return fin(); }
     if (nVu && nVu % 5 === 0 && !cartesPasse()[nVu] && !CM.force && cartesSuivante()) { box.innerHTML = bande + cartesPause(nVu); return fin(); }
     if (nVu && nVu % 15 === 0 && !cartesPropre()[nVu] && !CM.force && cartesSuivante()) { box.innerHTML = bande + cartesProg(nVu) + '<section class="card q-etape q-pause in"><span class="eyebrow">Une mesure de votre choix</span><h2>Une carte en particulier ?</h2><p class="q-ligne m">Toutes les mesures du jeu, rangées par famille, avec une recherche. Une carte déjà jouée est marquée ✓.</p><button type="button" class="q-go q-continuer" data-propre="' + nVu + '">Voir toutes les mesures</button><p class="q-actions q-pause-l"><button type="button" class="q-lien" data-passe="' + nVu + '">Non, continuer les cartes</button></p></section>'; return fin(); }
@@ -5180,17 +5259,12 @@ body.q-cartes #sim-main { display: none !important; }
       ord.filter(function (f) { return G[f]; }).map(function (f) { return '<div class="sim-c-fam"><p class="q-tags"><span class="q-chip">' + esc(f >= 0 ? TUILES[f][0] : 'Autres lignes') + '</span></p><div class="q-reps">' + G[f].sort(function (a, b) { return poids(AS[b]) - poids(AS[a]); }).map(function (k) { var v = S.perso[k] || 0; return '<button type="button" class="q-rep' + (V[k] ? ' on' : '') + '" data-carte="' + esc(k) + '" data-n="' + esc(nrm(nomL(k))) + '"><b>' + (V[k] ? '✓ ' : '') + esc(nomL(k)) + '</b>' + (v ? '<span>' + esc(pcC(AS[k], v)) + '</span>' : '') + '</button>'; }).join('') + '</div></div>'; }).join('') +
       '<p class="q-actions q-pause-l"><button type="button" class="q-lien sim-c-cata-x">Revenir aux cartes</button></p></section>';
   }
-  // L'écran d'entrée : le fil rouge.
+  // L'écran d'entrée : seulement si aucun objectif n'a été choisi (ni dans Voter ni ici) ; la même liste que Voter, gardée pour tout le jeu.
   function cartesEntree() {
-    var O = OBJS(), get = function (c) { return O.filter(function (o) { return o[0] === c; })[0]; }, L = [], P = filPays(), nv = adoptees().length;
-    ['gouv', 'dette', 'defi'].forEach(function (c) { var o = get(c); if (o) L.push({ d: 'data-obj="' + c + '"', on: S.obj === c && !S.simuFil, t: o[1], s: o[2] }); });
-    L.push({ d: 'data-fil="croissance"', on: S.simuFil === 'croissance', t: 'La croissance la plus forte', s: 'la croissance moyenne de ' + AN0 + ' à ' + AN1 + ' la plus haute possible ; pas de ligne d\'arrivée, un record sur cet appareil' });
-    L.push({ d: 'data-fil="pibhab"', on: S.simuFil === 'pibhab', t: 'Le PIB par habitant le plus haut en ' + AN1, s: 'en euros de 2025, hors hausse des prix ; pas de ligne d\'arrivée, un record sur cet appareil' });
-    if (P && P.L.length) L.push({ d: 'data-fil="rattraper"', on: /^rattraper:/.test(S.simuFil || ''), t: 'Rattraper un pays', s: 'le PIB par habitant ' + P.PH.an + ' d\'un pays plus riche (FMI, parité de pouvoir d\'achat) : quelle part de l\'écart vos choix comblent' });
-    L.push({ d: 'data-obj="aucun"', on: S.obj === 'aucun' && !S.simuFil && S.simuObjOk, t: 'Sans objectif, juste voir', s: 'choisir librement et voir le résultat' });
-    var pays = CM.choixPays && P ? '<p class="q-ligne"><b>Quel pays ?</b></p><div class="q-reps">' + P.L.map(function (q) { return '<button type="button" class="q-rep" data-pays="' + esc(q.code) + '"><b>' + esc(q.nom) + '</b><span>PIB par habitant ' + P.PH.an + ' : ' + nf(Math.round((q.v / P.fr.v - 1) * 100), 0) + ' % de plus que la France (FMI)</span></button>'; }).join('') + '</div><p class="q-ligne m">' + esc(P.PH.source) + ', ' + esc(P.PH.edition.edition) + '. <a href="' + esc(P.PH.url) + '" target="_blank" rel="noopener">Source</a></p>' : '';
-    return '<section class="card q-etape in"><span class="eyebrow">Pour commencer</span><h2>Quel est votre objectif ?</h2><p class="q-ligne m">Ensuite, un levier par carte : ' + CM.ordre.length + ' cartes, avec une pause toutes les cinq. Les quatre cases du haut suivent chaque réponse' + (nv ? ' ; elles partent de ' + (nv > 1 ? 'vos ' + nv + ' votes' : 'votre vote') + ' « pour » de l\'onglet Voter' : '') + '.</p><div class="q-reps">' +
-      L.map(function (o) { return '<button type="button" class="q-rep' + (o.on ? ' on' : '') + '" ' + o.d + '><b>' + esc(o.t) + '</b><span>' + esc(o.s) + '</span></button>'; }).join('') + '</div>' + pays + '</section>' + cartesExpert();
+    var nv = adoptees().length, L = objTous();
+    var pays = CM.choixPays ? '<p class="q-ligne"><b>Quel pays ?</b></p><div class="q-reps">' + objPaysHTML('q-rep') + '</div><p class="q-ligne m">' + objPaysSrc() + '</p>' : '';
+    return '<section class="card q-etape in"><span class="eyebrow">Pour commencer</span><h2>Quel est votre objectif ?</h2><p class="q-ligne m">Le même dans Voter et dans Créer ; vous pourrez en changer avec le bouton « Objectif ». Ensuite, un levier par carte : ' + CM.ordre.length + ' cartes, avec une pause toutes les cinq. Les quatre cases du haut suivent chaque réponse' + (nv ? ' ; elles partent de ' + (nv > 1 ? 'vos ' + nv + ' votes' : 'votre vote') + ' « pour » de l\'onglet Voter' : '') + '.</p><div class="q-reps">' +
+      L.map(function (o) { return '<button type="button" class="q-rep' + (objPris(o[0]) && S.obj ? ' on' : '') + '" data-o="' + esc(o[0]) + '"><b>' + esc(o[1]) + '</b><span>' + esc(o[2]) + '</span></button>'; }).join('') + '</div>' + pays + '</section>' + cartesExpert();
   }
   // Les quatre chiffres du haut, en grand.
   function cartesVals() { var r1 = ligneAn(R, AN0), f = R[R.length - 1], ph = parHab(R); return '<div class="sim-c-vals"><div><small>Déficit ' + AN0 + '</small><b>' + f1(-r1.solde) + '\u00a0%</b></div><div><small>Dette ' + AN1 + '</small><b>' + f1(f.d) + '\u00a0%</b></div><div><small>Croissance ' + AN0 + '</small><b>' + pcs2(croiss(R, AN0)) + '</b></div><div><small>PIB/hab. ' + AN1 + '</small><b>' + (ph ? eu10(ph[ph.length - 1].d) : '—') + '</b></div></div>'; }
@@ -5249,10 +5323,10 @@ body.q-cartes #sim-main { display: none !important; }
   }
   function cartesBrancher(box) {
     var tous = function (sel, fn) { Array.prototype.forEach.call(box.querySelectorAll(sel), fn); };
-    var depart = function () { S.simuObjOk = 1; garder(); objectifs(); tout(); simMaj(); cartesAff(); window.scrollTo(0, 0); };
-    tous('[data-fil]', function (b) { b.onclick = function () { if (b.dataset.fil === 'rattraper') { CM.choixPays = 1; cartesAff(); var q = box.querySelector('[data-pays]'); if (q) q.scrollIntoView({ block: 'center' }); return; } S.obj = 'aucun'; S.simuFil = b.dataset.fil; depart(); }; });
-    tous('[data-pays]', function (b) { b.onclick = function () { S.obj = 'aucun'; S.simuFil = 'rattraper:' + b.dataset.pays; CM.choixPays = 0; depart(); }; });
-    tous('[data-obj]', function (b) { b.onclick = function () { S.obj = b.dataset.obj; delete S.simuFil; delete S.defiDate; if (S.obj === 'defi') S.defiJour = isoJ(); depart(); }; });
+    tous('[data-o]', function (b) { b.onclick = function () {
+      var o = b.dataset.o; if (o === 'fil:rattraper') { CM.choixPays = 1; cartesAff(); var q = box.querySelector('[data-o^="fil:rattraper:"]'); if (q) q.scrollIntoView({ block: 'center' }); return; }
+      choisirObj(o); CM.choixPays = 0; objectifs(); tout(); simMaj(); cartesAff(); cartesHaut();
+    }; });
     tous('[data-propre]', function (b) { b.onclick = function () { if (/^\d+$/.test(b.dataset.propre)) { cartesPropre()[+b.dataset.propre] = 1; garder(); } CM.cata = 1; cartesAff(); cartesHaut(); }; });
     tous('[data-passe]', function (b) { b.onclick = function () { cartesPropre()[+b.dataset.passe] = 1; garder(); cartesAff(); cartesHaut(); }; });
     tous('[data-carte]', function (b) { b.onclick = function () { CM.cata = 0; CM.force = b.dataset.carte; if (cartesVu()[CM.force]) { delete cartesVu()[CM.force]; var H = cartesHist(), i = H.map(function (h) { return h.k; }).lastIndexOf(CM.force); if (i >= 0) { CM.back = H[i]; H.splice(i, 1); } garder(); } cartesAff(); cartesHaut(); }; });
@@ -5266,11 +5340,26 @@ body.q-cartes #sim-main { display: none !important; }
     // ↶ : la carte précédente revient avec sa réponse cochée ; rien n'est effacé (on peut la garder ou en changer).
     if ($('sim-c-ret')) $('sim-c-ret').onclick = function () { var h = cartesHist().pop(); if (!h) return; delete cartesVu()[h.k]; CM.force = h.k; CM.back = h; garder(); cartesAff(); cartesHaut(); };
     var card = $('sim-carte'); if (!card) return; var k = CM.k;
-    tous('.q-reps [data-cv]', function (b) { b.onclick = function () {
-      var v = +b.dataset.cv, imp = card.querySelector('.sim-c-imp'); SM.ancre = null;
+    var repondre = function (v) {
+      var imp = card.querySelector('.sim-c-imp'); SM.ancre = null;
       if (cartesRemettre(k, v)) v = S.perso[k] || 0;
       if (v !== (S.perso[k] || 0)) { simAppliquer(k, v); if (SM.imp && SM.imp.k === k) { imp.innerHTML = '<p>' + SM.imp.t + '</p>'; imp.hidden = false; brancherRaz(imp); Array.prototype.forEach.call(imp.querySelectorAll('[data-raz]'), function (r) { var f = r.onclick; r.onclick = function () { f(); imp.hidden = true; }; }); return; } }
       cartesSuite();
+    };
+    // Un réglage qui remplacerait un choix fait sur une autre carte (même argent) : on demande d'abord, dans la carte, sous la réponse touchée.
+    // « Ne rien changer » ne demande jamais (il ne retire rien).
+    tous('.q-reps [data-cv]', function (b) { b.onclick = function () {
+      var v = +b.dataset.cv, imp = card.querySelector('.sim-c-imp'), c = v && v !== (S.perso[k] || 0) ? candidat(k, v) : null;
+      if (c && (c.rP.length || c.rV.length)) {
+        var noms = c.rP.map(function (o) { return '«\u00a0' + esc(nomL(o) + ' ' + pcC(AS[o], S.perso[o])) + '\u00a0»'; }).concat(c.rV.map(function (id) { return '«\u00a0' + esc(CI[id] ? CI[id].titre || CI[id].l : id) + '\u00a0»'; })), n = noms.length;
+        b.after(imp); imp.className = 'sim-c-imp sim-c-conf'; imp.innerHTML = '<p>Cela remplace ' + (n > 1 ? 'vos choix ' : 'votre choix ') + noms.join(', ') + ' (même argent).</p><p class="sim-c-conf-b"><button type="button" class="q-go" data-conf="1">Remplacer</button><button type="button" class="q-lien" data-conf="0">Garder l\'autre</button></p>'; imp.hidden = false;
+        tous('.q-reps [data-cv]', function (r) { r.classList.toggle('vise', r === b); });
+        imp.querySelector('[data-conf="1"]').onclick = function () { imp.hidden = true; repondre(v); };
+        imp.querySelector('[data-conf="0"]').onclick = function () { imp.hidden = true; imp.innerHTML = ''; b.classList.remove('vise'); b.focus(); };
+        imp.querySelector('[data-conf="1"]').focus({ preventScroll: true }); imp.scrollIntoView({ block: 'nearest' });
+        return;
+      }
+      repondre(v);
     }; });
     tous('[data-capi]', function (b) { b.onclick = function () { capiChoisir(b.dataset.capi, b.dataset.cv, card); capiMajRow(card); tous('.q-reps [data-cv]', function (r) { var t = cartesRep(AS[k], +r.dataset.cv)[1], sp = r.querySelector('span'); if (sp && t) sp.textContent = t; }); }; });
     $('sim-c-prec').onclick = function () { var r = $('sim-c-reg'), o = r.hidden; r.hidden = !o; this.setAttribute('aria-expanded', o); if (o && !r.innerHTML) { r.innerHTML = simLigneHTML(k); Array.prototype.forEach.call(r.querySelectorAll('.sim-l-hyp'), function (h) { h.remove(); }); brancherLignes(r); simLignes(); } $('sim-c-next').hidden = !o; };
@@ -5285,7 +5374,7 @@ body.q-cartes #sim-main { display: none !important; }
   function simInit() {
     document.body.classList.add('q-simu'); document.documentElement.style.overflowAnchor = 'none';
     var tb = document.createElement('div'); tb.className = 'sim-tb'; tb.id = 'sim-tb'; tb.setAttribute('role', 'region'); tb.setAttribute('aria-label', 'Tableau de bord : déficit, dette, croissance, PIB par habitant');
-    tb.innerHTML = '<div class="sim-cap"><button type="button" class="sim-obj" id="sim-obj" aria-expanded="false" aria-controls="sim-objs">Objectif</button><button type="button" class="sim-ic" id="sim-undo" disabled>↶<span class="sim-ic-t"> Annuler</span></button><button type="button" class="sim-ic sim-pl" id="sim-plie"><span class="sim-pl-o">Replier ▴</span><span class="sim-pl-f">Voir les courbes ▾</span></button></div>' +
+    tb.innerHTML = '<div class="sim-cap"><button type="button" class="sim-obj" id="sim-obj" aria-expanded="false" aria-controls="sim-objs">Objectif</button><button type="button" class="sim-ic" id="sim-undo" disabled>↶<span class="sim-ic-t"> Annuler</span></button><button type="button" class="sim-ic sim-pl" id="sim-plie"><span class="sim-pl-o">Replier ▴</span><span class="sim-pl-f"><span class="sim-pl-lg">Voir les courbes ▾</span><span class="sim-pl-ct">Courbes ▾</span></span></button></div>' +
       '<div class="sim-objs" id="sim-objs" hidden></div>' +
       '<div class="sim-g" id="sim-g">' + ['def', 'dette', 'cr', 'ph'].map(function (c) { return '<button type="button" class="sim-c" id="sim-c-' + c + '"><span class="sim-c-t"></span><span class="sim-c-r"><span class="sim-c-v"></span><span class="sim-c-s"></span><span class="sim-c-m" hidden></span></span><span class="sim-c-g"></span></button>'; }).join('') + '</div>' +
       '<div class="sim-1" id="sim-1" role="img"></div><div class="sim-j" id="sim-j"></div>' +
@@ -5411,11 +5500,13 @@ body.q-cartes #sim-main { display: none !important; }
     // « ↺ Recommencer » en haut : le choix s'ouvre dans la page (pas de fenêtre du navigateur).
     // Trois boutons (barre des onglets ; ligne de progression de Voter quand le bandeau est réduit ; haut du Bilan) ouvrent le même choix, placé juste sous celui qu'on a touché.
     var rkDe = null, rkOuvre = function (o, b) { var c = $('q-recom-c'); if (o && b) { rkDe = b; var ref = b.closest('.q-tabsr, .q-prog, .q-actions') || $('q-rc-t'); ref.parentNode.insertBefore(c, ref.nextSibling); } c.hidden = !o;
-      Array.prototype.forEach.call(document.querySelectorAll('.q-recom-b'), function (x) { x.setAttribute('aria-expanded', o && x === rkDe); }); if (o) $('q-rk-rv').hidden ? $('q-rk-tout').focus() : $('q-rk-rv').focus(); else if (rkDe) rkDe.focus(); };
+      // Depuis Créer, « Recommencer Créer seulement » vient en premier ; ailleurs, en deuxième.
+      if (o) { if (ONG === 'creer') c.insertBefore($('q-rk-cr'), $('q-rk-rv')); else c.insertBefore($('q-rk-cr'), $('q-rk-tout')); }
+      Array.prototype.forEach.call(document.querySelectorAll('.q-recom-b'), function (x) { x.setAttribute('aria-expanded', o && x === rkDe); }); if (o) { var pr = [].slice.call(c.querySelectorAll('.q-rk')).filter(function (x) { return !x.hidden; })[0]; if (pr) pr.focus(); } else if (rkDe) rkDe.focus(); };
     Array.prototype.forEach.call(document.querySelectorAll('.q-recom-b'), function (b) { b.onclick = function () { rkOuvre($('q-recom-c').hidden || rkDe !== b, b); }; });
     $('q-rk-non').onclick = function () { rkOuvre(false); };
     $('q-recom-c').onkeydown = function (e) { if (e.key === 'Escape') rkOuvre(false); };
-    $('q-rk-rv').onclick = revoter; $('q-rk-tout').onclick = toutEffacer;
+    $('q-rk-rv').onclick = revoter; $('q-rk-tout').onclick = toutEffacer; $('q-rk-cr').onclick = function () { rkOuvre(false); recommencerCreer(); };
     $('q-revoter').onclick = function () { confirmer($('q-revoter'), 'Confirmer : revoter les ' + nbDecisions() + ' questions', revoter); };
     $('q-changer').onclick = ouvrirVotes;
     $('q-partager').onclick = partager;
