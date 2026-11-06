@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="9bb84709d08e">
+<meta name="concret-version" content="b3a59b214b4c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1187,6 +1187,28 @@ body.q-simu #sim-main { overflow-anchor: none; }
 .sim-l-p a, .sim-l-p button { display: inline; padding: 12px 6px; margin: -12px -2px; }
 .sim-raz, .sim-an button, .sim-zoom-x { min-height: 44px !important; min-width: 44px; }
 #sim-pq-o { min-height: 40px; }
+
+/* « Pourquoi ça bouge » : son fond bleu léger, liseré à gauche et titre en pastille (comme les blocs du Bilan). */
+.sim-pq { background: color-mix(in srgb, #2f5bd3 9%, var(--panel)); border: 1px solid color-mix(in srgb, #2f5bd3 22%, var(--panel)); border-left: 6px solid var(--fr); }
+.sim-pq-h { display: inline-block; padding: 4px 12px; border-radius: 999px; background: color-mix(in srgb, #2f5bd3 16%, var(--panel)); color: var(--fr); }
+.sim-pq-c p.sim-pq-r { border-top-color: color-mix(in srgb, #2f5bd3 18%, var(--panel)); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sim-pq { background: color-mix(in srgb, var(--fr) 12%, var(--panel)); border-color: color-mix(in srgb, var(--fr) 26%, var(--panel)); border-left-color: var(--fr); } :root:not([data-theme="light"]) .sim-pq-h { background: color-mix(in srgb, var(--fr) 24%, var(--panel)); color: color-mix(in srgb, var(--fr) 55%, #fff); } :root:not([data-theme="light"]) .sim-pq-c p.sim-pq-r { border-top-color: color-mix(in srgb, var(--fr) 22%, var(--panel)); } }
+:root[data-theme="dark"] .sim-pq { background: color-mix(in srgb, var(--fr) 12%, var(--panel)); border-color: color-mix(in srgb, var(--fr) 26%, var(--panel)); border-left-color: var(--fr); }
+:root[data-theme="dark"] .sim-pq-h { background: color-mix(in srgb, var(--fr) 24%, var(--panel)); color: color-mix(in srgb, var(--fr) 55%, #fff); }
+:root[data-theme="dark"] .sim-pq-c p.sim-pq-r { border-top-color: color-mix(in srgb, var(--fr) 22%, var(--panel)); }
+/* « Voir les courbes » / « Replier » : un vrai bouton, teinté de bleu. */
+.sim-cap button.sim-pl { color: var(--fr); background: color-mix(in srgb, var(--fr) 12%, var(--panel)); border: 1.5px solid var(--fr); font-weight: 700; min-height: 44px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sim-cap button.sim-pl { background: color-mix(in srgb, var(--fr) 18%, var(--panel)); } }
+:root[data-theme="dark"] .sim-cap button.sim-pl { background: color-mix(in srgb, var(--fr) 18%, var(--panel)); }
+
+/* Téléphone : le tableau de bord en haut de page tient dans environ 40 % de l'écran ; la valeur sans vos mesures reste lisible sur la courbe (pointillé) et dans la courbe agrandie. */
+@media (max-width: 699px) {
+  .sim-tb { padding: 8px; gap: 8px; }
+  .sim-g { gap: 7px; }
+  .sim-c { padding: 7px 9px 4px; }
+  .sim-c .sim-c-s, .sim-c .sim-c-m { display: none; }
+  .sim-c-v span { font-size: 19px; }
+}
 @media (min-width: 900px) { .sim-g { grid-template-columns: repeat(4, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .sim-c.flash, .sim-fete { animation: none; } }
 </style>
@@ -4367,7 +4389,7 @@ body.q-simu #sim-main { overflow-anchor: none; }
       var s = c === 'def' && v != null ? 'soit ' + f1(val(Cc.def.map(function (p) { return { an: p.an, v: p.md }; }), I.an())) + ' Md€ qui manquent' : '';
       var sans = v0 == null ? '' : 'sans vos mesures : ' + I.f(v0);
       el.querySelector('.sim-c-s').textContent = sans; el.querySelector('.sim-c-m').textContent = s; el.querySelector('.sim-c-m').hidden = !s;
-      var gz = el.querySelector('.sim-c-g'), wz = Math.max(120, Math.round(gz.clientWidth || (el.clientWidth - 16) || 160)); gz.innerHTML = svgCourbe(c, B[c], Cc[c], G ? G[c] : null, { op: op, ts: ts, W: wz });
+      var gz = el.querySelector('.sim-c-g'), wz = Math.max(120, Math.round(gz.clientWidth || (el.clientWidth - 16) || 160)); gz.innerHTML = svgCourbe(c, B[c], Cc[c], G ? G[c] : null, { op: op, ts: ts, W: wz, H: innerWidth < 700 ? Math.round(22 + 18 * Math.min(1.35, ts)) : null });
       el.setAttribute('aria-label', I.t() + ' ' + I.an() + ' : ' + (v == null ? '—' : I.f(v)) + (v0 != null ? ', sans vos mesures : ' + I.f(v0) : '') + '. Toucher pour agrandir.');
     });
     var r1 = ligneAn(R, anObj()), f = R[R.length - 1], ph = parHab(R);
