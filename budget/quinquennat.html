@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="b3a59b214b4c">
+<meta name="concret-version" content="2ae1f2d5d08f">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1209,6 +1209,11 @@ body.q-simu #sim-main { overflow-anchor: none; }
   .sim-c .sim-c-s, .sim-c .sim-c-m { display: none; }
   .sim-c-v span { font-size: 19px; }
 }
+
+/* Pourquoi ça bouge : ① ② = en colonne étroite, la dernière ligne (toute la mesure) sous un filet fin. */
+.sim-pq-c p.sim-pq-r { grid-template-columns: 1.5em minmax(0, 1fr); gap: 6px; }
+.sim-pq-n { font-weight: 800; color: var(--fr); font-size: 15px; line-height: 1.4; }
+.sim-pq-c p.sim-pq-tot { margin: 6px 0 0; padding-top: 8px; border-top: 1px solid color-mix(in srgb, var(--fr) 30%, var(--panel)); font-size: 13.5px; }
 @media (min-width: 900px) { .sim-g { grid-template-columns: repeat(4, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .sim-c.flash, .sim-fete { animation: none; } }
 </style>
@@ -4450,19 +4455,37 @@ body.q-simu #sim-main { overflow-anchor: none; }
     return L;
   }
   // Les trois lignes visibles : effet direct ; effet par l'activité (ou « non compté ») ; au total, déficit et dette. Le reste : « Le détail ».
+  // Pourquoi ça bouge, en une chaîne de phrases, toutes en Md€ de 2027 : ① ce que la mesure change d'elle-même ; ② ce qu'en fait
+  // l'activité (ou « non compté ») ; = la somme, si les chiffres affichés s'additionnent, sinon « Résultat » (le total du calcul).
   function pourquoi(ch) {
     var x = ch.k ? AS[ch.k] : null, o = ch.o, keys = ch.keys || [], nc = keys.filter(function (k) { return AS[k] && !compteAct(AS[k]); }), ok = keys.filter(function (k) { return AS[k] && compteAct(AS[k]); });
-    var dm = function (m) { return Math.abs(m) < 0.05 ? 'presque rien' : (m > 0 ? '−' : '+') + mds(Math.abs(m)); };
-    var etl = x && ((ch.v1 && etale(x, ch.v1, ch.P1)) || (ch.v0 && etale(x, ch.v0, ch.P0))), p31 = Math.abs(o['p' + AN1] - o['p' + AN0] * PIBY[AN1] / PIBY[AN0]) >= 0.5 || etl || (x && x.rampe);
-    var l1 = x && x.mix ? 'Direct : déficit inchangé, avant l\'effet sur l\'activité' : 'Direct : déficit ' + dm(o['p' + AN0]).replace('presque rien', '±0') + ' en ' + AN0 + (p31 ? ', ' + dm(o['p' + AN1]).replace('presque rien', '±0').replace(' Md€', '') + ' en ' + AN1 : '');
-    var a = o['a' + AN0], pz = o['p' + AN0], dg = o.g1 - o.g0, l2;
-    if (nc.length && !ok.length) l2 = 'Activité : <b>non compté</b> (pas de chiffrage publié)';
-    else if (Math.abs(dg) < 0.05 && Math.abs(a) < 0.1) l2 = 'Activité : moins de 0,1 point de croissance' + (nc.length ? ', une partie non comptée' : '');
-    else l2 = 'Activité : croissance ' + AN0 + ' ' + (Math.abs(dg) < 0.05 ? '±0' : sg1(dg)) + ' pt' + (Math.abs(a) >= 0.1 ? ' ; ' + (pz * a < 0 ? (pz > 0 ? 'reprend ' : 'compense ') + mds(Math.abs(a)) : dm(a)) : '') + (nc.length ? ' (en partie)' : '');
-    var dd = o.d1 - o.d0, sd = o.s1 - o.s0;
-    var l3 = 'Au total : déficit ' + anObj() + ' <b>' + (Math.abs(sd) < 0.05 ? '±0' : sg1(sd)) + ' pt</b>, dette ' + AN1 + ' <b>' + (Math.abs(dd) < 0.05 ? '±0' : sg1(dd)) + ' pt</b>';
-    var pts = function (t) { return t.replace(/±0(\u00a0| )pt/g, 'moins de 0,1 point').replace(/±0/g, 'presque rien').replace(/([+−]?)(\d+),(\d)(\u00a0| )pt\b/g, function (m, sg, a, b) { return sg + a + ',' + b + '\u00a0point' + (+(a + '.' + b) >= 2 ? 's' : ''); }); };
-    return { L: [l1, l2, l3].map(pts), D: pourquoiLong(ch) };
+    var p = o['p' + AN0], a = o['a' + AN0], t = o['t' + AN0], dg = o.g1 - o.g0, md = function (v) { return mds(Math.abs(v)); };
+    var rec = x && (x.groupe === 'recette' || x.k === 'allegements' || x.mix), sansAct = nc.length && !ok.length;
+    var l1 = x && x.mix ? 'TVA en plus et cotisations des employeurs en moins, du même montant : rien ne change au départ.'
+      : x && x.k === 'capitalisation' ? 'L\'État perçoit ' + md(p) + ' de cotisations de retraite ' + (p < 0 ? 'en moins' : 'en plus') + ' en ' + AN0 + (p < 0 ? ' : les retraites restent versées, il emprunte ce qui manque.' : ' : il emprunte d\'autant moins.')
+      : Math.abs(p) < 0.0005 ? 'Avant l\'effet sur l\'activité : rien ne change en ' + AN0 + '.'
+      : x && !rec ? 'L\'État dépense ' + md(p) + (p > 0 ? ' de moins' : ' de plus') + ' en ' + AN0 + '.'
+      : x ? 'L\'État perçoit ' + md(p) + (p > 0 ? ' de plus' : ' de moins') + ' d\'impôts et de cotisations en ' + AN0 + '.'
+      : 'Avant l\'effet sur l\'activité, le déficit ' + AN0 + ' est ' + (p > 0 ? 'plus bas' : 'plus haut') + ' de ' + md(p) + '.';
+    var l2;
+    if (sansAct) l2 = 'Effet sur l\'activité : non compté (aucun chiffrage publié pour cette mesure).';
+    else if (Math.abs(dg) < 0.05 && Math.abs(a) < 0.05) l2 = 'L\'activité ne change presque pas : moins de 0,1 point de croissance, et moins de 0,1 Md€ d\'impôts et de cotisations.';
+    else {
+      var moins = p > 0.0005 ? true : p < -0.0005 ? false : dg < 0;
+      var fam = x && x.mix ? 'la TVA monte et le coût du travail baisse' : !x ? (moins ? 'vos mesures retirent de l\'argent à l\'économie' : 'vos mesures ajoutent de l\'argent à l\'économie')
+        : rec ? (moins ? 'les ménages ou les entreprises ont moins à dépenser' : 'les ménages ou les entreprises ont plus à dépenser')
+        : x.macro === 'csg' || (x.k === 'capitalisation' && capiRet()) ? (moins ? 'les ménages dépensent moins' : 'les ménages dépensent plus')
+        : (moins ? 'moins d\'argent dépensé dans l\'économie' : 'plus d\'argent dépensé dans l\'économie');
+      var verbe = Math.abs(dg) < 0.05 ? 'l\'activité change à peine (croissance ' + AN0 + ' : moins de 0,1 point)' : 'l\'activité ' + (dg < 0 ? 'ralentit' : 'accélère') + ' (croissance ' + AN0 + ' ' + sg1(dg, ' point') + ')';
+      l2 = maj1(fam) + ', ' + verbe + ' : ' + (Math.abs(a) < 0.05 ? 'moins de 0,1 Md€' : md(a)) + ' d\'impôts et de cotisations ' + (a < 0 ? 'en moins' : 'en plus') + '.' + (nc.length ? ' Une partie de l\'effet n\'est pas comptée.' : '');
+    }
+    var disp = function (v) { return Math.abs(v) < 0.1 ? Math.round(v * 1000) / 1000 : Math.round(v * 10) / 10; };
+    var somme = !(x && x.mix) && Math.abs(disp(p) + (sansAct ? 0 : disp(a)) - disp(t)) < 1e-6 && (sansAct || Math.abs(a) >= 0.05 || Math.abs(dg) < 0.05);
+    var sd = -(ligneAn(ch.A1, AN0).solde - ligneAn(ch.A0, AN0).solde), dd = o.d1 - o.d0, qui = ch.via === 'drag' ? 'Ce changement' : ch.geste ? 'Ce clic' : 'Ce changement';
+    var l3 = (somme ? '' : 'Résultat : ') + qui + ' ' + (Math.abs(t) < 0.05 ? 'change à peine le déficit ' + AN0 + ' (moins de 0,1 Md€)' : (t > 0 ? 'baisse' : 'augmente') + ' le déficit ' + AN0 + ' de ' + md(t) + ' (' + (Math.abs(sd) < 0.05 ? 'moins de 0,1 point de PIB' : sg1(sd, ' point de PIB')) + ')') +
+      ' et ' + (Math.abs(dd) < 0.05 ? 'change la dette ' + AN1 + ' de moins de 0,1 point' : (dd < 0 ? 'baisse' : 'augmente') + ' la dette ' + AN1 + ' de ' + nf(Math.abs(dd), 1) + ' point' + (Math.abs(dd) >= 1.95 ? 's' : '')) + '.';
+    var n = function (k, t) { return '<span class="sim-pq-n" aria-hidden="true">' + k + '</span><span>' + t + '</span>'; };
+    return { L: [n('①', l1), n('②', l2), n(somme ? '=' : '', l3)], D: pourquoiLong(ch), q: qui };
   }
   // La ligne de l'ensemble : « Vos N choix : … ».
   function lourd() {
@@ -4539,7 +4562,7 @@ body.q-simu #sim-main { overflow-anchor: none; }
   function simApres(A0, P0, V0, ch) {
     var cap0 = capDe(A0, P0, V0), cap1 = capDe(R, S.perso, S.v);
     ch.A0 = A0; ch.A1 = R; ch.P0 = P0; ch.P1 = S.perso; ch.o = decomp(A0, P0, V0, R, S.perso, S.v);
-    var pq = pourquoi(ch); SM.last = { L: pq.L, D: pq.D, t: ch.titre, g: ch.geste || ch.titre, k: ch.k, v0: ch.v0, v1: ch.v1 }; SM.al = alertes(ch, A0, R, cap0, cap1, true); SM.imp = null;
+    var pq = pourquoi(ch); SM.last = { q: pq.q, L: pq.L, D: pq.D, t: ch.titre, g: ch.geste || ch.titre, k: ch.k, v0: ch.v0, v1: ch.v1 }; SM.al = alertes(ch, A0, R, cap0, cap1, true); SM.imp = null;
     SM.fete = !cap0.ok && cap1.ok && !cap1.aucun ? cap1 : (cap1.ok && SM.fete ? cap1 : null);
     SM.ghost = { de: series(A0), t0: performance.now() }; SM.drag = null; SM.apercu = null;
     ['def', 'dette', 'cr', 'ph'].forEach(function (c) { var e = $('sim-c-' + c); if (e && !moinsAnim()) { e.classList.remove('flash'); void e.offsetWidth; e.classList.add('flash'); } });
@@ -4566,9 +4589,9 @@ body.q-simu #sim-main { overflow-anchor: none; }
     var A1 = simuler({ perso: cand.P, vote: cand.V }), s1 = series(A1);
     if (garderTrace) { SM.drag = { avant: series(R), k: k }; SM.apercu = null; simDessin(s1); }
     else { SM.apercu = s1; SM.drag = null; simDessin(); }
-    var ch = { k: k, v0: S.perso[k] || 0, v1: v, rP: cand.rP, rV: cand.rV, titre: nomL(k) + ' ' + (v ? pcC(AS[k], v) : '(remis à zéro)'), geste: gesteDe(k, S.perso[k] || 0, v), keys: [k], A0: R, A1: A1, P0: S.perso, P1: cand.P };
+    var ch = { k: k, v0: S.perso[k] || 0, v1: v, rP: cand.rP, rV: cand.rV, titre: nomL(k) + ' ' + (v ? pcC(AS[k], v) : '(remis à zéro)'), geste: gesteDe(k, S.perso[k] || 0, v), via: garderTrace ? 'drag' : 'clic', keys: [k], A0: R, A1: A1, P0: S.perso, P1: cand.P };
     ch.o = decomp(R, S.perso, S.v, A1, cand.P, cand.V);
-    var pq = pourquoi(ch); SM.vif = { g: ch.geste, k: k, L: pq.L, D: pq.D, al: alertes(ch, R, A1, capDe(R, S.perso, S.v), capDe(A1, cand.P, cand.V), false), t: ch.titre };
+    var pq = pourquoi(ch); SM.vif = { q: pq.q, g: ch.geste, k: k, L: pq.L, D: pq.D, al: alertes(ch, R, A1, capDe(R, S.perso, S.v), capDe(A1, cand.P, cand.V), false), t: ch.titre };
     simPQ(); simAlertes(); simLigne(k, v);
   }
   function simFinApercu() { SM.apercu = null; SM.vif = null; SM.drag = null; SM.imp = null; simDessin(); simPQ(); simAlertes(); simLignes(); }
@@ -4613,10 +4636,10 @@ body.q-simu #sim-main { overflow-anchor: none; }
     var el = $('sim-pq-c'), src = SM.vif || SM.last, ens = ensemble(), al = (SM.vif ? SM.vif.al : SM.al) || [];
     var L = src ? src.L : ['Bougez un levier : la courbe pleine suit le geste, le pointillé (sans vos mesures) reste.'];
     var D = (src && src.D ? src.D : []).concat(al.slice(2), ens ? ['<span class="sim-pq-x">' + ens + '</span>'] : []);
-    el.innerHTML = L.map(function (t) { var m = /^(Direct|Activité|Au total) : ([\s\S]*)$/.exec(t); return m ? '<p class="sim-pq-r"><span class="sim-pq-k">' + m[1] + '</span><span>' + m[2] + '</span></p>' : '<p>' + t + '</p>'; }).join('') + (SM.ouvert && D.length ? '<div class="sim-pq-d">' + D.map(function (t) { return '<p>' + t + '</p>'; }).join('') + '</div>' : '');
+    el.innerHTML = L.map(function (t) { return t.indexOf('sim-pq-n') >= 0 ? '<p class="sim-pq-r">' + t + '</p>' : '<p>' + t + '</p>'; }).join('') + (SM.ouvert && D.length ? '<div class="sim-pq-d">' + D.map(function (t) { return '<p>' + t + '</p>'; }).join('') + '</div>' : '');
     var gEl = $('sim-pq-g'), it = src && src.k && !SM.vif ? (SM.items || []).filter(function (i) { return i.k === src.k; })[0] : null, tot = it && src.v0 && S.perso[src.k] === src.v1;
-    gEl.hidden = !(src && src.g); gEl.innerHTML = src && src.g ? 'Ce geste : <b>' + esc(src.g) + '</b>' + (src.k && !src.v0 && src.v1 && !SM.vif ? ' <span>(votre réglage en tout)</span>' : '') : '';
-    if (tot) (el.querySelector('.sim-pq-d') || el).insertAdjacentHTML(el.querySelector('.sim-pq-d') ? 'beforebegin' : 'beforeend', '<p class="sim-pq-r sim-pq-tot"><span class="sim-pq-k">En tout</span><span>Votre réglage « ' + esc(nomL(src.k) + ' ' + pcC(AS[src.k], src.v1)) + ' » : déficit ' + AN0 + ' <b>' + (Math.abs(it['t' + AN0]) < 0.05 ? 'presque rien' : (it['t' + AN0] > 0 ? '−' : '+') + mds(Math.abs(it['t' + AN0]))) + '</b>, dette ' + AN1 + ' <b>' + (Math.abs(it.dd) < 0.05 ? 'moins de 0,1 point' : sg1(it.dd, '\u00a0point' + (Math.abs(it.dd) >= 1.95 ? 's' : ''))) + '</b></span></p>');
+    gEl.hidden = !(src && src.g); gEl.innerHTML = src && src.g ? (src.q && src.k ? src.q + ' : ' : '') + '<b>' + esc(src.g) + '</b>' : '';
+    if (tot) (el.querySelector('.sim-pq-d') || el).insertAdjacentHTML(el.querySelector('.sim-pq-d') ? 'beforebegin' : 'beforeend', '<p class="sim-pq-tot">Toute votre mesure « ' + esc(nomL(src.k) + ' ' + pcC(AS[src.k], src.v1)) + ' » : déficit ' + AN0 + ' <b>' + (Math.abs(it['t' + AN0]) < 0.05 ? 'presque rien' : (it['t' + AN0] > 0 ? '−' : '+') + mds(Math.abs(it['t' + AN0]))) + '</b>, dette ' + AN1 + ' <b>' + (Math.abs(it.dd) < 0.05 ? 'moins de 0,1 point' : sg1(it.dd, '\u00a0point' + (Math.abs(it.dd) >= 1.95 ? 's' : ''))) + '</b>.</p>');
     $('sim-pq-o').hidden = !D.length; $('sim-pq-o').textContent = SM.ouvert ? 'Fermer' : 'Le détail';
     Array.prototype.forEach.call(el.querySelectorAll('[data-nc]'), function (b) { b.onclick = function () { var x = AS[b.dataset.nc], n = J.non_comptes[x.nc]; b.outerHTML = '<span class="sim-l-m">' + esc(n.t) + ' <a href="' + esc(n.src.url) + '">Source</a></span>'; }; });
   }
@@ -4625,7 +4648,7 @@ body.q-simu #sim-main { overflow-anchor: none; }
   var pasDe = function (x) { return x.u ? x.u.pas : 1; };
   var pasMoins = function (x) { var p = plage(x); return p.min < 0 ? (x.u ? pcC(x, -pasDe(x)) : '−1 %') : '−' + pcC(x, pasDe(x)).replace(/^\+/, ''); };
   var pasPlus = function (x) { var p = plage(x); return p.min < 0 ? (x.u ? pcC(x, pasDe(x)) : '+1 %') : '+' + pcC(x, pasDe(x)).replace(/^\+/, ''); };
-  function gesteDe(k, v0, v1) { var x = AS[k]; return nomL(k) + ' : ' + (v0 ? pcC(x, v0) : 'inchangé') + ' → ' + (v1 ? pcC(x, v1) : 'inchangé'); }
+  function gesteDe(k, v0, v1) { var x = AS[k]; return nomL(k) + ' ' + (v0 ? pcC(x, v0) : 'inchangé') + ' → ' + (v1 ? pcC(x, v1) : 'inchangé'); }
   var vCourt = function (x, v) { return !v ? 'inchangé' : x.u && x.u.choix ? 'choisi' : pcC(x, v); };
   function simLigneHTML(k) {
     var x = AS[k], u = x.u, v = S.perso[k] || 0, p = plage(x), ch = u && u.choix;
