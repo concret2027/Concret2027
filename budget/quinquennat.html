@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="f942bd44d961">
+<meta name="concret-version" content="089116c175ef">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -998,7 +998,7 @@ body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
 @media (prefers-reduced-motion: reduce) { .q-card, .q-card.in, .q-jauge span, .q-pop, .q-flash, .q-bravo { transition: none; animation: none; } }
 </style>
 <style>
-/* Prototype « simulateur » de Créer (adresse avec ?simu=1 seulement ; sans ce paramètre, rien de ceci ne s'affiche). */
+/* Créer en simulateur (l ancien Créer reste avec ?simu=0). */
 #sim-tb, #sim-main { display: none; }
 body.q-simu.q-ong-creer #sim-tb { display: grid; }
 body.q-simu.q-ong-creer #q-hud, body.q-simu.q-ong-creer #q-tabexp { display: none !important; }
@@ -4335,10 +4335,10 @@ body.q-simu #sim-main { overflow-anchor: none; }
     if ($('q-foyers')) Array.prototype.forEach.call($('q-foyers').querySelectorAll('button'), function (b) { b.onclick = function () { basculerFoyer(b.dataset.f); enHaut(); pile(); }; });
     if ($('q-foy-ch')) $('q-foy-ch').onclick = function () { FOYOUV = true; enHaut(); };
   }
-  // ---------- Prototype : Créer en simulateur (seulement avec ?simu=1 dans l'adresse) ----------
+  // ---------- Créer en simulateur (ancien Créer avec ?simu=0) ----------
   // Rien de ce bloc ne calcule autrement : il appelle simuler(), effetPerso(), croiss(), parHab(), horsSens(), horsModele(),
   // les mêmes que l'onglet Créer d'origine, et applique les mêmes remplacements (« exclut ») qu'« Ajouter à mon budget ».
-  var SIMU = /[?&]simu=1(?:&|$)/.test(location.search), SM = { undo: [], last: null, ghost: null, apercu: null, al: [], fete: null, ouvert: false, zoom: null, an: null, tLast: 0, tId: null, tFn: null, drag: null };
+  var SIMU = !/[?&]simu=0(?:&|$)/.test(location.search), SM = { undo: [], last: null, ghost: null, apercu: null, al: [], fete: null, ouvert: false, zoom: null, an: null, tLast: 0, tId: null, tFn: null, drag: null };
   var SIM_PRINC = ['tout-depense', 'retraites', 'ondam', 'cotis-emp', 'tva', 'csg', 'cotis-sal', 'ir'];
   var SIM_COUL = ['#7a4fc4', '#2f5bd3', '#b23a72', '#55657a', '#17806f', '#9a6a12'];
   var famDe = function (k) { for (var i = 0; i < TUILES.length; i++) if (TUILES[i][1].some(function (t) { return t[0] === k; })) return i; return -1; };
@@ -4960,7 +4960,7 @@ body.q-simu #sim-main { overflow-anchor: none; }
     var fams = SIM_FAM.map(function (f) { var L = TUILES[f[1]][1].map(function (t) { return t[0]; }).filter(function (k) { return AS[k] && SIM_PRINC.indexOf(k) < 0; }).sort(function (a, b) { return poids(AS[b]) - poids(AS[a]); }); return [f[0], L]; });
     var pr = SIM_PRINC.filter(function (k) { return AS[k]; }).sort(function (a, b) { return poids(AS[b]) - poids(AS[a]); });
     var m = document.createElement('div'); m.id = 'sim-main';
-    m.innerHTML = '<section class="card sim-sec" aria-labelledby="sim-pr-t"><h2 id="sim-pr-t"><span class="eyebrow">Les leviers principaux</span>Prototype · simulateur</h2><ul class="sim-intro"><li>Glissez un curseur ou touchez − et + : les quatre courbes du haut bougent pendant le geste.</li><li>Les leviers sont rangés par poids : ce que vaut un cran, en milliards d\'euros (Md€) par an.</li><li>↶ annule, ↺ remet un levier à zéro.</li></ul><div id="sim-pr" class="sim-ls">' + pr.map(simLigneHTML).join('') + '</div></section>' +
+    m.innerHTML = '<section class="card sim-sec" aria-labelledby="sim-pr-t"><h2 id="sim-pr-t"><span class="eyebrow">Simulateur</span>Les leviers principaux</h2><ul class="sim-intro"><li>Glissez un curseur ou touchez − et + : les quatre courbes du haut bougent pendant le geste.</li><li>Les leviers sont rangés par poids : ce que vaut un cran, en milliards d\'euros (Md€) par an.</li><li>↶ annule, ↺ remet un levier à zéro.</li></ul><div id="sim-pr" class="sim-ls">' + pr.map(simLigneHTML).join('') + '</div></section>' +
       '<section class="card sim-sec" aria-labelledby="sim-tl-t"><h2 id="sim-tl-t">Tous les leviers</h2><input type="search" class="sim-cherche" id="sim-q" placeholder="Chercher une ligne : retraites, RSA, police…" aria-label="Chercher une ligne du budget"><div id="sim-res" class="sim-ls"></div>' +
       fams.map(function (f, i) { var c = SIM_COUL[SIM_FAM[i][1]]; return '<details class="sim-fam" style="--sc:' + c + '"><summary><span class="sim-pas">' + esc(f[0]) + '</span><small>' + f[1].length + ' leviers, rangés par poids</small></summary><div class="sim-ls">' + f[1].map(simLigneHTML).join('') + '</div></details>'; }).join('') +
       '<details class="sim-fam sim-hyp" style="--sc:#55657a"><summary><span class="sim-pas">Les hypothèses</span><small>croissance, taux</small></summary><p id="sim-hyp-t"></p><div class="sim-l-c" id="sim-hyp-b"><button type="button" data-cr="-0.5">Croissance : 0,5 point de moins par an</button><button type="button" data-cr="0">Prévision du FMI</button><button type="button" data-cr="0.5">0,5 point de plus</button><button type="button" data-tx="1">Taux à 10 ans : un point de plus</button><button type="button" data-tx="0">Taux d\'aujourd\'hui</button></div><p class="sim-l-m">Réglage complet et sources : Bilan, « Changer les hypothèses ». Le calcul additionne des effets chiffrés un par un.</p></details>' +
