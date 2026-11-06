@@ -186,6 +186,8 @@
     '@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--th1:#b5a1ff;--th2:#4fd0e6;--th3:#f3a6cf;--th4:#c8d96a;--th5:#e6c3b0}}' +
     ':root[data-theme="dark"]{--th1:#b5a1ff;--th2:#4fd0e6;--th3:#f3a6cf;--th4:#c8d96a;--th5:#e6c3b0}' +
     '.th-c>h2{border-left:5px solid var(--th);padding:5px 10px 5px 12px;border-radius:0 8px 8px 0;background:color-mix(in srgb,var(--th) 9%,transparent)}' +
+    // Les blocs d'un thème (courbes, chiffres) portent le même liseré de couleur à gauche que son titre.
+    '.th-c .card:not(.card .card),.th-c.card{border-left:5px solid var(--th)}' +
     '.t-pills a.th-a,nav.jump a.th-a{border:1.5px solid var(--th);gap:7px}.t-pills a.th-a::before,nav.jump a.th-a::before{content:"";flex:none;width:10px;height:10px;border-radius:3px;background:var(--th)}' +
     'nav.jump.jx a.th-a{gap:5px;padding-left:10px}nav.jump.jx a.th-a::before{width:8px;height:8px;border-radius:2px}' +
     '.mn-btn{display:inline-flex}' +
