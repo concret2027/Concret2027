@@ -678,12 +678,17 @@ def _milieu(debut, fin):
 # président, lu dans la même source (Wikidata) ; sans chef du gouvernement connu (Russie : pas de liste des présidents du Gouvernement
 # dans la source), le pays-année est écarté, jamais remplacé par le président.
 PRES_CHEF = {'États-Unis', 'Brésil', 'Costa Rica', 'Colombie', 'Chili', 'Corée du Sud', 'Turquie', 'Mexique', 'Argentine'}
+# Pays où le président n'est chef du gouvernement qu'à partir d'une date : la Turquie, après la suppression de la fonction de Premier
+# ministre (dernier Premier ministre de la source, Binali Yıldırım, jusqu'au 9 juillet 2018) ; avant, le chef du gouvernement est le
+# Premier ministre (points « chef du gouvernement » de la source). Un mandat présidentiel commencé avant cette date est écarté.
+PRES_CHEF_DEPUIS = {'Turquie': '2018-07-09'}
 
 
 def chef_gouvernement(p, src):
     """Le chef du gouvernement d'un point de la source : (nom, qid, fonction) ou None."""
     if p['role'] in ('chef du gouvernement', 'Premier ministre'): return (p['nom'], p['wikidata'], None)
-    if p['role'] == 'président' and p['pays'] in PRES_CHEF: return (p['nom'], p['wikidata'], None)
+    if p['role'] == 'président' and p['pays'] in PRES_CHEF:
+        return (p['nom'], p['wikidata'], None) if p['debut'] >= PRES_CHEF_DEPUIS.get(p['pays'], '') else None
     pm = (src.get('france') or {}).get('premiers_ministres') if p['pays'] == 'France' else (src.get('chine') or {}).get('premiers_ministres') if p['pays'] == 'Chine' else None
     if not pm: return None
     m = _milieu(p['debut'], p['fin'])
