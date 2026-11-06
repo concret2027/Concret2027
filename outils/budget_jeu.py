@@ -8,7 +8,10 @@ donnees/budget_sources/ :
 - depenses_fiscales.json : niches fiscales d'au moins 1 Md€ (Évaluation des voies et moyens, tome II) ;
 - parametres_macro.json : effets sur l'activité et le solde (variantes du modèle Mésange, DG Trésor et Insee), taux à 10 ans,
   durée de vie de la dette, retraites ;
-- leviers_depense.json et smic_emploi_taux.json s'ils existent.
+- leviers_depense.json et smic_emploi_taux.json s'ils existent ;
+- dirigeants.json : dépense et solde publics de chaque pays l'année du milieu du mandat de ses dirigeants (Eurostat, OCDE, FMI,
+  Insee ; liste des dirigeants : Wikidata recoupée avec elysee.fr et gov.uk ; cohabitations : elysee.fr et Wikipédia) ;
+- reformes.json : réformes d'autres dirigeants comparables aux leviers du jeu (texte de loi ou document officiel, citation).
 Règle de choix des cartes (fixe, non partisane) : toutes les mesures des deux projets de loi d'au moins 300 M€ en 2027 qui
 changent le solde de l'ensemble des administrations publiques, et toutes les niches fiscales d'au moins 1 Md€ chiffrées.
 
@@ -593,6 +596,204 @@ def eurostat_pays(an):
     return {'an': an, 'pays': pays, 'absents': absents,
             'source': "Eurostat, principaux agrégats des administrations publiques (gov_10a_main) : dépenses totales (TE), recettes totales (TR) et solde (B9), % du PIB",
             'url': 'https://ec.europa.eu/eurostat/databrowser/view/gov_10a_main/default/table'}
+
+
+# ---------- La richesse par habitant : la population de chaque année ----------
+def population_proj(an0, an1):
+    """Population au 1er janvier de chaque année, projection d'Eurostat (EUROPOP2023, proj_23np, scénario de référence BSL), France ;
+    population moyenne de l'année = moyenne du 1er janvier de cette année et du suivant (calcul de Concret)."""
+    from budget import lire
+    m = lire('proj_23np', geo='FR', projection='BSL', sex='T', age='TOTAL', unit='PER', time=[str(a) for a in range(an0, an1 + 2)])
+    jan = {a: m.get(('FR', str(a))) for a in range(an0, an1 + 2)}
+    if any(v is None for v in jan.values()): return None
+    for a in range(an0, an1 + 1): assert 6.5e7 < jan[a] < 7.5e7 and abs(jan[a + 1] / jan[a] - 1) < 0.01, (a, jan[a])
+    return {'janvier': {str(a): jan[a] for a in jan}, 'moyenne': {str(a): round((jan[a] + jan[a + 1]) / 2) for a in range(an0, an1 + 1)},
+            'source': "Eurostat, projections de population EUROPOP2023 (proj_23np), scénario de référence, France, population au 1er janvier",
+            'url': 'https://ec.europa.eu/eurostat/databrowser/view/proj_23np/default/table', 'lu': date.today().isoformat()}
+
+
+# ---------- À quel dirigeant ressemble votre budget ----------
+# Chaque point est un pays à une année : l'année du milieu du mandat d'un chef du gouvernement (le président là où il dirige
+# l'exécutif), avec la dépense et le solde de toutes les administrations publiques de ce pays cette année-là (étude recopiée dans
+# donnees/budget_sources/dirigeants.json, chaque valeur avec sa source). Recettes = dépense + solde, comme pour les pays d'Europe.
+# Mandats de moins d'un an écartés : l'année du milieu porte surtout les budgets du prédécesseur. Pour la France, le président et
+# le Premier ministre en fonction au milieu du mandat ; deux points français de la même année n'en font qu'un.
+# Les pays nommés sur le graphique (choix de l'éditeur : les pays et les années, jamais le nom d'une personne) : le point le plus
+# récent de chaque pays. Les grands pays d'abord, toujours écrits ; puis les autres, autant que la place le permet, dans cet ordre.
+# Noms d'affichage seulement : aucune donnée.
+DIR_GRANDS = ['États-Unis', 'Chine', 'Japon', 'Allemagne', 'Royaume-Uni', 'Inde', 'Russie', 'Brésil', 'Italie', 'Canada', 'Corée du Sud', 'Espagne']
+DIR_AUTRES = ['Pologne', 'Pays-Bas', 'Suède', 'Grèce', 'Belgique', 'Portugal', 'Australie', 'Turquie', 'Autriche', 'Danemark', 'Finlande', 'Irlande',
+              'Hongrie', 'Norvège', 'Tchéquie', 'Roumanie', 'Israël', 'Nouvelle-Zélande', 'Chili', 'Colombie', 'Mexique', 'Suisse', 'Bulgarie', 'Croatie',
+              'Slovaquie', 'Slovénie', 'Estonie', 'Lettonie', 'Lituanie', 'Luxembourg', 'Malte', 'Islande', 'Costa Rica', 'France']
+# « de la France », « du Japon », « des Pays-Bas », « d'Israël » : la grammaire du nom du pays.
+# Code à deux lettres (drapeau) et grande région du monde de chaque pays, pour la couleur des points (Europe, Amériques,
+# Asie-Pacifique, autres) : un repère géographique, pas un classement.
+DIR_ISO2 = {'AUS': 'AU', 'AUT': 'AT', 'BEL': 'BE', 'BGR': 'BG', 'BRA': 'BR', 'CAN': 'CA', 'CHL': 'CL', 'CHN': 'CN', 'COL': 'CO', 'CRI': 'CR', 'CZE': 'CZ', 'DEU': 'DE',
+            'DNK': 'DK', 'ESP': 'ES', 'EST': 'EE', 'FIN': 'FI', 'FRA': 'FR', 'GBR': 'GB', 'GRC': 'GR', 'HRV': 'HR', 'HUN': 'HU', 'IRL': 'IE', 'ISL': 'IS', 'ISR': 'IL',
+            'ITA': 'IT', 'JPN': 'JP', 'KOR': 'KR', 'LTU': 'LT', 'LUX': 'LU', 'LVA': 'LV', 'MLT': 'MT', 'NLD': 'NL', 'NOR': 'NO', 'NZL': 'NZ', 'POL': 'PL', 'PRT': 'PT',
+            'ROU': 'RO', 'SVK': 'SK', 'SVN': 'SI', 'SWE': 'SE', 'TUR': 'TR', 'USA': 'US', 'MEX': 'MX', 'IND': 'IN', 'RUS': 'RU', 'CHE': 'CH'}
+DIR_REGION = {**{k: 'am' for k in ('BRA', 'CAN', 'CHL', 'COL', 'CRI', 'USA', 'MEX')}, **{k: 'ap' for k in ('AUS', 'CHN', 'JPN', 'KOR', 'NZL', 'IND')},
+              **{k: 'au' for k in ('TUR', 'ISR', 'RUS')}}
+DIR_DU = {'Brésil', 'Canada', 'Chili', 'Costa Rica', 'Danemark', 'Japon', 'Luxembourg', 'Portugal', 'Royaume-Uni'}
+DIR_DES = {'Pays-Bas', 'États-Unis'}
+DIR_SANS = {'Israël': "d'Israël", 'Malte': 'de Malte'}
+
+
+def _de_pays(p):
+    if p in DIR_SANS: return DIR_SANS[p]
+    if p in DIR_DES: return 'des ' + p
+    if p in DIR_DU: return 'du ' + p
+    return ("de l'" if p[0] in 'AEIOUÉÈÊÎÔ' else 'de la ') + p
+
+
+def _en_pays(p):
+    """« en Argentine », « au Canada », « aux États-Unis », « à Singapour » ; « Royaume-Uni (Angleterre) » suit « Royaume-Uni »."""
+    b = p.split(' (')[0]
+    if b in DIR_DES: return 'aux ' + p
+    if b in DIR_DU: return 'au ' + p
+    if b in ('Singapour', 'Israël', 'Malte', 'Chypre'): return 'à ' + p
+    return 'en ' + p
+
+
+def _fonction(f, femme):
+    """Le nom de la fonction (Wikidata), au féminin pour une femme : la forme féminine de Wikidata (P2521) s'il y en a une, sinon
+    l'accord du premier mot (Première ministre, présidente, chancelière). Majuscule à « Premier ministre », minuscule ailleurs."""
+    t = (f['f'] if femme and f.get('f') else f['l']).strip()
+    if femme and not f.get('f'):
+        t = re.sub(r'^([Pp])remier ministre', r'\1remière ministre', t)
+        t = re.sub(r'^([Pp])résident\b', r'\1résidente', t)
+        t = re.sub(r'^([Cc])hancelier\b', r'\1hancelière', t)
+    t = re.sub(r'^premi(er|ère) ministre', lambda m: 'Premi' + m.group(1) + ' ministre', t)
+    if re.match(r'^(Président|Présidente|Chancelier|Chancelière)\b', t): t = t[0].lower() + t[1:]
+    return t
+
+
+def _milieu(debut, fin):
+    a, b = date.fromisoformat(debut), date.fromisoformat(fin or '2026-11-05')
+    return (a + (b - a) / 2).isoformat()
+
+
+def dirigeants():
+    """Les points du nuage : un pays, une année (le milieu d'un mandat), sa dépense et ses recettes publiques. Les noms des
+    personnes restent dans la source (donnees/budget_sources/dirigeants.json, pour la vérification) et ne sont pas publiés."""
+    src = charger('dirigeants.json')
+    if not src: return None
+    pts, vus, courts = [], {}, 0
+    for p in src['points']:
+        if p['court']:
+            courts += 1; continue
+        assert 10 <= p['depense'] <= 75 and -20 <= p['solde'] <= 20, p
+        assert p['sources']['depense'] == p['sources']['solde'], p
+        x = {'pays': p['pays'], 'c': DIR_ISO2[p['code_pays']], 'rg': DIR_REGION.get(p['code_pays'], 'eu'), 'de': _de_pays(p['pays']), 'an': p['annee'],
+             'dep': round(p['depense'], 2), 'rec': round(p['depense'] + p['solde'], 2), 'src': p['sources']['depense']}
+        if p['en_cours']: x['mc'] = 1
+        k = (p['pays'], p['annee'])
+        if k in vus:   # même pays, même année (en France, le président et le Premier ministre) : un seul point, mêmes chiffres
+            o = vus[k]; assert (o['dep'], o['rec']) == (x['dep'], x['rec']), (o, x); continue
+        vus[k] = x; pts.append(x)
+    # Le pays nommé : son point le plus récent ; les grands pays toujours écrits (« g »), les autres dans l'ordre de la liste (« o »).
+    absents = []
+    for i, n in enumerate(DIR_GRANDS + DIR_AUTRES):
+        L = [x for x in pts if x['pays'] == n]
+        if not L:
+            if n in DIR_GRANDS: absents.append(n)
+            else: print('  pays à nommer absent :', n)
+            continue
+        m = max(L, key=lambda x: x['an']); m['e'] = 1; m['o'] = i
+        if n in DIR_GRANDS: m['g'] = 1
+    texte = json.dumps(pts, ensure_ascii=False)
+    for q in src['points']:   # aucun nom de personne dans ce qui est publié
+        assert q['nom'] not in texte, q['nom']
+    return {'pts': pts, 'courts': courts, 'releve': src['releve'], 'etude': src['etude'], 'note_extras': src['note_extras'], 'absents': absents,
+            'sources': src['sources'], 'liste': src['liste_des_dirigeants']}
+
+
+# Les réformes d'autres dirigeants, rattachées aux mesures du jeu (donnees/budget_sources/reformes.json). Pour chaque carte ou
+# ligne de Créer : [levier de la réforme, sens quand la carte est adoptée ou la ligne augmentée, sens quand la ligne baisse] ;
+# un dict donne le sens de chaque choix d'une ligne à choix. Le sens est celui du levier lui-même (impôt, âge, durée…), écrit comme
+# dans la fiche de la réforme. Une mesure absente de cette table n'a pas de réforme comparable : rien n'est affiché pour elle.
+APD = ['mi:aide-publique-au-développement', 'pr:aide-économique-et-financière-au-dévelop', 'pr:renforcement-des-fonds-propres-de-l-agen',
+       'pr:solidarité-à-l-égard-des-pays-en-dévelop', 'pr:fonds-de-solidarité-pour-le-développemen']
+NICHES_IMPOT = ['niche-200302', 'niche-110246', 'niche-120401', 'niche-520110', 'niche-120108', 'niche-120146', 'niche-110201', 'niche-110203', 'niche-210309',
+                'niche-800229', 'niche-120202', 'niche-800401', 'niche-210326', 'niche-800221', 'niche-940102']
+REF_LEVIERS = {
+    # Cartes (Voter) : adoptées, toujours dans le même sens
+    'ir-indemnites-rupture': ['niches_fiscales', 'baisse'], 'ir-indemnites-journalieres': ['niches_fiscales', 'baisse'], 'ir-abattement-retraites': ['niches_fiscales', 'baisse'],
+    'contribution-grandes-entreprises': ['impot_societes', 'hausse'], 'contribution-transport-maritime': ['impot_societes', 'hausse'],
+    'tva-television': ['tva', 'hausse'], 'niche-730213': ['tva', 'hausse'], 'niche-730221': ['tva', 'hausse'], 'niche-730223': ['tva', 'hausse'], 'niche-710103': ['tva', 'hausse'],
+    'allegements-complements-salaire': ['allegements_cotisations', 'baisse'], 'allegements-moins-10': ['allegements_cotisations', 'baisse'],
+    'pensions-revalorisation-2027': ['indexation', 'baisse'], 'prestations-familiales-gel': ['indexation', 'baisse'], 'prime-activite-gel': ['indexation', 'baisse'],
+    'revalo-moins-1': ['indexation', 'baisse'], 'revalo-plus-1': ['indexation', 'hausse'],
+    'retraites-fin-suspension': ['age_retraite', 'hausse'], 'retraite-65': ['age_retraite', 'hausse'], 'retraite-62': ['age_retraite', 'baisse'], 'retraite-63': ['age_retraite', 'baisse'],
+    'etrangers-residence-prestations': ['residence_prestations', 'hausse_duree'], 'univ-master-doctorat': ['droits_inscription', 'hausse'], 'univ-30': ['droits_inscription', 'hausse'],
+    'carence-3-jours': ['arrets_travail', 'hausse_carence'], 'isf': ['patrimoine', 'hausse'], 'taxe-zucman': ['patrimoine', 'hausse'],
+    'franchises-x2': ['reste_a_charge_sante', 'hausse'], 'fonctionnaires-1-sur-2': ['fonction_publique_effectifs', 'baisse'], 'point-indice-plus-1': ['fonction_publique_remunerations', 'hausse'],
+    **{k: ['niches_fiscales', 'baisse'] for k in NICHES_IMPOT},
+    # Lignes de Créer : sens si la ligne augmente, sens si elle baisse
+    'is': ['impot_societes', 'hausse', 'baisse'], 'tva': ['tva', 'hausse', 'baisse'], 'csg': ['csg', 'hausse', 'baisse'],
+    'defense': ['defense', 'hausse', 'baisse'], 'chomage': ['assurance_chomage', 'hausse', 'baisse'], 'chomage-duree': ['assurance_chomage', 'baisse', 'hausse'],
+    'ij-maladie': ['arrets_travail', 'hausse_depense_publique', 'baisse_depense_publique'], 'fp-carence': ['arrets_travail', 'hausse_carence', 'baisse_carence'],
+    'franchises': ['reste_a_charge_sante', 'hausse', 'baisse'], 'tm-dm': ['reste_a_charge_sante', 'hausse', 'baisse'],
+    'capitalisation': ['retraite_capitalisation', 'hausse', 'baisse'],
+    'allegements': ['allegements_cotisations', 'hausse_allegement', 'baisse'], 'tva-sociale': ['tva_sociale', 'hausse', 'baisse'],
+    'remunerations': ['fonction_publique_remunerations', 'hausse', 'baisse'], 'fp-non-remplacement': ['fonction_publique_effectifs', 'baisse', 'hausse'],
+    'fp-categorielles': ['fonction_publique_remunerations', 'baisse', 'hausse'], 'fp-avancements': ['fonction_publique_remunerations', 'baisse', 'hausse'],
+    'collectivites-effectifs': ['fonction_publique_effectifs', {'1': 'baisse', '2': 'baisse'}], 'tout-depense': ['depense_generale', 'hausse', 'baisse'],
+    **{k: ['aide_developpement', 'hausse', 'baisse'] for k in APD},
+    # Recrutements de Créer (policiers, gendarmes, enseignants…) : plus ou moins d'agents publics
+    'unites:emploi': ['fonction_publique_effectifs', 'hausse', 'baisse'],
+}
+# Le levier « fonction publique » des fiches mêle deux leviers du jeu : les effectifs (Chrétien, postes supprimés) et les
+# rémunérations (Rajoy, prime supprimée). La défense de Cameron (2010) porte sur les effectifs, pas sur le budget, qui monte :
+# elle n'est rattachée à aucune ligne (la ligne « Défense » de Créer change le budget).
+REF_SOUS = {'ca_fonction_publique_1995': 'fonction_publique_effectifs', 'es_fonction_publique_2012': 'fonction_publique_remunerations'}
+# Périmètre de la réforme, quand il n'est pas celui de tout le pays, lu dans la citation de la fiche.
+REF_PERIMETRE = {'ar_depense_2024': "dépense primaire du gouvernement, en caisse (« cash »), selon le FMI",
+                 'ca_depense_1995': "dépenses de programmes du budget fédéral (« program spending »)"}
+# La mesure telle qu'affichée, quand la fiche ajoute un résultat : on garde la seule mesure (texte de la fiche, coupé).
+REF_RETIRE = {'jp_tva_2012': ', sous Shinzō Abe'}
+REF_MESURE = {'ar_depense_2024': "Dépense primaire en baisse de 30 % sur un an en 2024, hors inflation (subventions, pensions, transferts aux provinces, investissement)."}
+# Ce que la mesure affichée ajoute à la fiche, et la citation de la source qui le dit.
+REF_MESURE_CITE = {'ar_depense_2024': ('hors inflation', 'citation_hors_inflation', 'real expenditures cuts of roughly 30 percent')}
+
+
+def _fonction_ref(t):
+    t = t.strip()
+    return t if re.match(r'^(Premier|Première) ministre|^Taoiseach', t) else t[0].lower() + t[1:]
+
+
+def reformes_jeu(cartes, assiettes, unites):
+    src = charger('reformes.json')
+    if not src: return None
+    ids = {c['id'] for c in cartes} | {a['k'] for a in assiettes} | ({'unites:emploi'} if any(u.get('type') == 'emploi' for u in unites) else set())
+    lev = {k: v for k, v in REF_LEVIERS.items() if k in ids}
+    absentes = sorted(k for k in REF_LEVIERS if k not in ids and not k.startswith('niche-'))
+    if absentes: print('  réformes : mesures du jeu absentes :', ', '.join(absentes))
+    noms = {REF_SOUS.get(r['id'], r['levier']) for r in src['reformes']}
+    for k, v in lev.items(): assert v[0] in noms, (k, v)
+    L = []
+    for r in src['reformes']:
+        if r['levier'] == 'deficit_dette': continue   # pas un levier du jeu
+        assert r.get('url') and r.get('citation') and r.get('date_lecture'), r['id']
+        x = {'id': r['id'], 'pays': r['pays'], 'an': r['annee'], 'lev': REF_SOUS.get(r['id'], r['levier']), 'levl': r['levier_libelle'], 'sens': r['sens'],
+             'mesure': REF_MESURE.get(r['id'], r['mesure']), 'source': r['source'], 'url': r['url'], 'lu': r['date_lecture']}
+        if r['id'] in REF_MESURE:
+            m = REF_MESURE[r['id']]; aj = REF_MESURE_CITE.get(r['id'])
+            if aj: assert aj[2] in r.get(aj[1], ''), r['id']; m = m.replace(', ' + aj[0], '')
+            assert m.rstrip('.').split(' (')[0] in r['mesure'] and m.split(' (')[1].rstrip('.') in r['mesure'], r['id']
+        if r['id'] in REF_RETIRE: assert REF_RETIRE[r['id']] in x['mesure'], r['id']; x['mesure'] = x['mesure'].replace(REF_RETIRE[r['id']], '')
+        assert r['dirigeant'] not in x['mesure'] and r['dirigeant'].split()[-1] not in x['mesure'], r['id']
+        x.pop('source')   # le titre du document peut nommer la personne : la page n'affiche que le lien « Source »
+        if r['id'] in REF_PERIMETRE: x['perimetre'] = REF_PERIMETRE[r['id']]
+        if str((r.get('regime') or {}).get('type', '')).startswith('autocratie'): x['reg'] = r['regime']['type']   # écrit tel quel (V-Dem)
+        x['en'] = _en_pays(r['pays'])
+        a = r.get('axes_personnages')
+        if a and a.get('depense_pib') is not None and a.get('solde_pib') is not None:
+            x['dep'] = a['depense_pib']; x['rec'] = round(a['depense_pib'] + a['solde_pib'], 2)
+        L.append(x)
+    libl = {}
+    for r in src['reformes']: libl.setdefault(REF_SOUS.get(r['id'], r['levier']), r['levier_libelle'])
+    return {'liste': L, 'leviers': lev, 'etude': src['etude'], 'libelles': libl}
 
 
 # ---------- Où va l'argent public : budget de l'État par mission, Sécurité sociale par branche ----------
@@ -1353,6 +1554,9 @@ def construire():
         'maj': date.today().isoformat(),
         'depart': (dep := eurostat_depart()),
         'pays_eurostat': eurostat_pays(dep['an']),
+        'dirigeants': dirigeants(),
+        'population_proj': population_proj(dep['an'], budget['projection']['ans'][-1]['an']),
+        'reformes': reformes_jeu(cartes, assiettes, unites),
         'reperes_etat': (lambda e: {'valeurs': {k: round(v / 1e9, 1) for k, v in e['valeurs'].items()}, 'page': e['page'], 'url': e['url'], 'citation': e['citation']} if e else None)(next((x for x in (json.load(open(os.path.join(SRC, 'mesures_debattues.json'), encoding='utf-8'))['elements']) if x['cle'] == 'credits_etat_2027_reperes'), None)),
         'repartition': repartition(T_PLF, MISSIONS, cartes, assiettes, unites),
         'non_comptes': non_comptes(P, cartes, assiettes),
@@ -1385,6 +1589,9 @@ def main():
     print(len(o['questions']), 'questions à plusieurs réponses :', ', '.join('%s (%s)' % (q['k'], ', '.join(q['ids'])) for q in o['questions']))
     print('Lignes de Créer :', len(o['assiettes']), '; nouvelles :', ', '.join(a['k'] for a in o['assiettes'] if a.get('u') or a['k'].startswith('secu:') or a['k'] in ('cotis-emp', 'cotis-sal', 'impots-capital')))
     pe = o['pays_eurostat']; print('Pays (Eurostat, %d) :' % pe['an'], len(pe['pays']), '; absents :', ', '.join(pe['absents']) or 'aucun')
+    di, rf = o['dirigeants'], o['reformes']
+    if di: print('Pays-années :', len(di['pts']), 'points (', di['courts'], 'mandats de moins d\'un an écartés ),', sum(1 for x in di['pts'] if x.get('e')), 'pays nommables ; grands pays absents :', ', '.join(di['absents']) or 'aucun')
+    if rf: print('Réformes :', len(rf['liste']), '; mesures du jeu rattachées :', len(rf['leviers']))
     fr = [x for x in pe['pays'] if x['code'] == 'FR'][0]; assert abs(fr['solde'] - d['solde']) < 0.05, (fr, d)
     if '--ecrire' in sys.argv:
         json.dump(o, open(SORTIE, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
