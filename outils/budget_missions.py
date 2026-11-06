@@ -63,6 +63,35 @@ def grouper(R):
         if j > i + 1 and abs(s - c) <= 2: M.append(dict(R[i], programmes=R[i + 1:j])); i = j
         else: M.append(dict(R[i], programmes=[])); i += 1
     return M
+# État B du même projet de loi : crédits de paiement par mission et programme, avec la ligne « dont titre 2 » (dépenses de
+# personnel) de chaque programme. Les missions et programmes sont retrouvés par leur montant de crédits de paiement 2027,
+# le même que dans le tableau 1 ; chaque « dont titre 2 » s'ajoute au programme qui le précède et à sa mission.
+NB2 = re.compile(r'(\d{1,3}(?: \d{3})+|\b0)\s+(\d{1,3}(?: \d{3})+|\b0)\s*$')
+def titre2(txt, M):
+    L = txt.split('\n')
+    deb = next(i for i, l in enumerate(L) if l.startswith('Etat B - Répartition des crédits pour'))
+    fin = next(i for i in range(deb + 1, len(L)) if L[i].startswith('Etat C'))
+    parcp = {}
+    for m in M:
+        parcp.setdefault(m['cp27'], []).append(('m', m))
+    mis, prog = None, None
+    for l in L[deb:fin]:
+        g = NB2.search(l.rstrip())
+        if not g: continue
+        cp = int(g.group(2).replace(' ', ''))
+        if 'dont titre 2' in l:
+            if prog is not None: prog['t2'] = prog.get('t2', 0) + cp
+            if mis is not None: mis['t2'] = mis.get('t2', 0) + cp
+            continue
+        cand = [m for t, m in parcp.get(cp, [])]
+        if cand and (mis is None or not any(r['cp27'] == cp for r in mis['programmes'])):
+            mis, prog = cand[0], None
+            if not mis['programmes']: prog = mis
+            continue
+        prog = next((r for r in (mis['programmes'] if mis else []) if r['cp27'] == cp and 't2' not in r), None)
+    return M
+
+
 def missions(url=PLF_URL):
     return grouper(lire(texte(url)))
 

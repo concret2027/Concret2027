@@ -1056,10 +1056,10 @@ CAPI_OPTIONS = {
              {'doc': "Insee, « Caractéristiques des personnes en emploi », figure 3", 'url': "https://www.insee.fr/fr/statistiques/8733041", 'citation': "En 2025, les 15-24 ans représentent 9,4 % des personnes en emploi"},
              {'doc': "Insee, « Salaires dans le secteur privé : caractéristiques des individus », Insee Références, 2 juillet 2026, figure 3", 'url': "https://www.insee.fr/fr/statistiques/8733089", 'citation': "Salaire net moyen en équivalent temps plein, par mois : moins de 25 ans 1 620 € ; ensemble 2 730 €"}]}]},
     'paie': {'q': "Comment payer les retraites d'aujourd'hui pendant le passage ?", 'choix': [
-        {'v': 'emprunt', 'l': "Par l'emprunt", 't': "Les retraites restent versées en entier : l'État emprunte ce qui manque. Pas d'étalement."},
+        {'v': 'emprunt', 'l': "Par l'emprunt", 't': "Les retraites restent versées en entier : les administrations publiques empruntent ce qui manque. Pas d'étalement."},
         {'v': 'retraites', 'l': "En baissant d'autant les retraites actuelles", 'macro': 'csg',
          'pensions_md': 401, 'systeme_md': 422.2, 'nettes_md': 394, 'pension_moy': 1750,
-         'exclut': ['retraites', 'pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'],
+         'exclut': ['retraites', 'secu:vieillesse', 'pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'],
          'notes': ["La baisse est la même pour toutes les retraites : choix de Concret, aucune source ne dit comment elle serait répartie.",
                    "Pas comptés : l'Aspa (minimum vieillesse) et l'impôt sur le revenu des retraités.",
                    "À une part élevée, beaucoup de retraites passeraient sous le minimum vieillesse."],
@@ -1074,7 +1074,7 @@ CAPI_OPTIONS = {
 ACT_DGTPE = "https://www.tresor.economie.gouv.fr/Articles/aece6a27-552a-4914-a975-1fbb06352b76/files/eb130306-d7b1-42e3-b34f-08af16fca449"
 ACT_EI = 'https://www.assemblee-nationale.fr/dyn/16/textes/l16b0760_etude-impact.pdf'
 ACTIVITE = {
-    'age': {'cartes': {'retraites-fin-suspension': {'pib': [0.15, 0.17, 0.13, 0.13, 0.13], 'emploi': [41, 47, 35, 35, 35]}, 'retraite-62': {'pib': [-0.52, -0.67, -0.84, -0.97, -1.1], 'emploi': [-141, -182, -229, -265, -300]}, 'retraite-63': {'pib': [0, 0, -0.15, -0.28, -0.41], 'emploi': [0, 0, -41, -76, -112]}, 'retraite-65': {'pib': [0, 0, 0, 0, 0], 'emploi': [0, 0, 0, 0, 0]}}, 'court': "étude d'impact de 2023", 'carte': "Hypothèse de Concret, à partir de l'étude d'impact de 2023 : ordre de grandeur. La réforme de 2023 devait ajouter 1,1 % au PIB et 300 000 emplois en 2030 ; Concret applique le même effet par mois de départ avancé ou reculé, génération par génération, selon le calendrier officiel.", 'calc': "Hypothèse de Concret, à partir de l'étude d'impact de 2023 : ordre de grandeur. Par mois de départ avancé ou reculé pour une génération entière, sur une année (« mois-génération ») : 0,0575 % de PIB et environ 15 700 emplois (1,1 % et 300 000 emplois en 2030 pour 19,1 mois-générations). Le chiffre de 2023 compte aussi la hausse de la durée d'assurance : c'est plutôt un majorant.", 'src': [{'doc': "Étude d'impact du projet de loi de financement rectificative de la sécurité sociale pour 2023", 'page': '40', 'url': ACT_EI, 'citation': 'le surcroît de PIB associé serait de 0,7 % en 2027, et de 1,1 % en 2030'}, {'doc': 'Service-public.fr, fiche F14043 « À partir de quel âge un salarié peut-il partir en retraite ? »', 'page': None, 'url': 'https://www.service-public.fr/particuliers/vosdroits/F14043', 'citation': 'Entre le 1er avril 1965 et le 31 décembre 1965 | 63 ans'}]},
+    'age': {'cartes': {'retraites-fin-suspension': {'pib': [0.15, 0.17, 0.13, 0.13, 0.13], 'emploi': [41, 47, 35, 35, 35]}, 'retraite-62': {'pib': [-0.52, -0.67, -0.84, -0.97, -1.1], 'emploi': [-141, -182, -229, -265, -300]}, 'retraite-63': {'pib': [0, 0, -0.15, -0.28, -0.41], 'emploi': [0, 0, -41, -76, -112]}, 'retraite-65': {'pib': [0, 0, 0, 0, 0], 'emploi': [0, 0, 0, 0, 0]}}, 'court': "étude d'impact de 2023", 'carte': "Hypothèse de Concret, à partir de l'étude d'impact de 2023 : ordre de grandeur. La réforme de 2023 devait ajouter 1,1 % au PIB et 300 000 emplois en 2030 ; Concret applique le même effet par mois de départ avancé ou reculé, génération par génération, selon le calendrier officiel.", 'calc': "Hypothèse de Concret, à partir de l'étude d'impact de 2023 : ordre de grandeur. Par mois de départ avancé ou reculé pour une génération entière, sur une année (« mois-génération ») : 0,0575 % de PIB et environ 15 700 emplois (1,1 % et 300 000 emplois en 2030 pour 19,1 mois-générations). Le chiffre de 2023 compte aussi la hausse de la durée d'assurance : c'est plutôt un majorant. L'effet sur le solde suit la règle de 0,45 point de solde par point de PIB, comme les autres hypothèses ; le compte rendu de la Cour des comptes ne dit pas si son chiffrage comprend déjà les cotisations que les personnes parties plus tôt ne versent plus : si c'est le cas, cette part est comptée deux fois.", 'src': [{'doc': "Étude d'impact du projet de loi de financement rectificative de la sécurité sociale pour 2023", 'page': '40', 'url': ACT_EI, 'citation': 'le surcroît de PIB associé serait de 0,7 % en 2027, et de 1,1 % en 2030'}, {'doc': 'Service-public.fr, fiche F14043 « À partir de quel âge un salarié peut-il partir en retraite ? »', 'page': None, 'url': 'https://www.service-public.fr/particuliers/vosdroits/F14043', 'citation': 'Entre le 1er avril 1965 et le 31 décembre 1965 | 63 ans'}]},
     'regle_solde': {'v': 0.45, 'doc': "DGTPE, document de travail 2007/01 (Coupet, Renne)", 'page': "16 (note 14)", 'url': ACT_DGTPE,
                     'citation': "lorsque le PIB diminue […] de 1%, les finances publiques sont amoindries d'un montant égal à 0,45% du PIB",
                     't': "Effet sur le solde : 0,45 point de PIB de solde perdu par point de PIB d'activité en moins (DG Trésor 2007, note 14) ; hypothèse de Concret."},
@@ -1103,6 +1103,22 @@ ACTIVITE = {
              'calc': "Hypothèse de Concret, à partir du groupe d'experts sur le SMIC (2024) : ordre de grandeur. Pour 1 % de SMIC en plus : −0,012 % de PIB en 2027, −0,033 % en 2028, −0,045 % en 2029, −0,052 % en 2030, −0,058 % en 2031 (rapport PIB sur emploi de la variante « cotisations des employeurs » de Mésange). La hausse des dépenses des salariés dont le salaire monte n'est pas comptée.",
              'src': [{'doc': "Groupe d'experts sur le SMIC, rapport 2024", 'page': "141", 'url': "https://strategie.gouv.fr/files/2025-02/smic-rapport-2024-11decembre15h45_vdef_complet.pdf", 'citation': "en retenant une élasticité de la demande de travail à son coût de -0,8 au niveau du Smic"},
                      {'doc': "Groupe d'experts sur le SMIC, rapport 2024", 'page': "58", 'url': "https://strategie.gouv.fr/files/2025-02/smic-rapport-2024-11decembre15h45_vdef_complet.pdf", 'citation': "Au 1er janvier 2024, 2,7 millions de salariés des entreprises du secteur privé hors agriculture ont été directement concernés par la revalorisation du Smic horaire"}]}}
+
+
+def pc1(x):
+    return ('%.1f' % x).replace('.', ',')
+
+
+def cas_pensions():
+    """Part des cotisations au CAS Pensions dans les dépenses de personnel de l'État (rapport AN n° 2847, gestion 2025),
+    lue dans la citation gardée dans leviers_depense.json."""
+    for e in (charger('leviers_depense.json') or {}).get('leviers', []):
+        for c in e.get('sources_complementaires') or []:
+            m = re.search(r'([\d,]+) milliards d.euros, dont ([\d,]+) milliards d.euros pour les dépenses de rémunération et ([\d,]+) milliards d.euros pour les contributions au CAS Pensions', c.get('citation', ''))
+            if m:
+                tot, cas = float(m.group(1).replace(',', '.')), float(m.group(3).replace(',', '.'))
+                return {'part': cas / tot, 'src': {'doc': c['document'], 'page': c.get('page'), 'url': c['url'], 'citation': c['citation']}}
+    raise SystemExit('Part du CAS Pensions introuvable dans leviers_depense.json')
 
 
 def leviers_creer(assiettes, P, MD):
@@ -1274,7 +1290,10 @@ def paires_meme_argent(assiettes):
     # - Salaires des agents publics (370 Md€, Insee, dont 97,0 Md€ pour les administrations locales) : contiennent les agents des
     #   collectivités et les dépenses de personnel des opérateurs de l'État.
     PAIRES = [('ondam', 'ij-maladie'), ('ondam', 'ij-atmp'), ('ondam', 'secu:autonomie'), ('ondam', 'secu:atmp'),
-              ('remunerations', 'collectivites-effectifs'), ('remunerations', 'operateurs')]
+              ('remunerations', 'collectivites-effectifs'), ('remunerations', 'operateurs'),
+              # Franchises et remboursement des dispositifs médicaux : des soins remboursés en moins, donc dans l'ONDAM ;
+              # minimum vieillesse : compris dans les retraites de tous les régimes (COR).
+              ('ondam', 'franchises'), ('ondam', 'tm-dm'), ('retraites', 'aspa')]
     for x, y in PAIRES:
         assert x in A and y in A, ('ligne absente', x, y)
         if y not in A[x]['exclut']: A[x]['exclut'].append(y)
@@ -1340,7 +1359,7 @@ def construire():
                            'quoi': "Le SMIC brut passe de %s € à %s € par mois." % (fr_nb(E['smic_mensuel_brut']['valeurs']['brut']), fr_nb(E['smic_mensuel_brut']['valeurs']['brut'] * (1 + pc / 100))),
                            'theme': 'travail', 'qui': ['smic', 'entreprises'], 'qui_bilan': ['smic'], 'qui_titre': 'Qui reçoit et qui paie', 'qui_texte': 'Salariés au SMIC (plus de salaire) ; employeurs (coût du travail)',
                            'macro': None, 'sens': 'depense', 'effet': {str(date.today().year + 1): round(pc * x['valeurs']['total'] / 1000, 3)},
-                           'note': "Chiffrage de la DG Trésor pour une hausse de 1 %% (coût des allègements de cotisations, salaires publics, prestations, impôts), sans effet sur l'emploi ; Concret le multiplie par %d. Effet sur l'emploi : le groupe d'experts sur le SMIC retient qu'une hausse de 1 %% du coût du travail au niveau du SMIC réduit la demande de travail à ce niveau de %s à %s %% ; aucune source officielle ne donne un nombre d'emplois, il n'est pas compté ici." % (pc, fr_nb(-el['valeurs']['basse']), fr_nb(-el['valeurs']['haute'])) if el else '',
+                           'note': "Chiffrage de la DG Trésor pour une hausse de 1 %% (coût des allègements de cotisations, salaires publics, prestations, impôts), sans effet sur l'emploi ; Concret le multiplie par %d. Effet sur l'emploi : le groupe d'experts sur le SMIC retient qu'une hausse de 1 %% du coût du travail au niveau du SMIC réduit la demande de travail à ce niveau de %s à %s %% ; effet sur l'emploi et l'activité compté avec l'hypothèse de Concret écrite ci-dessous (groupe d'experts 2024, ordre de grandeur)." % (pc, fr_nb(-el['valeurs']['basse']), fr_nb(-el['valeurs']['haute'])) if el else '',
                            'src': {'doc': x['l'], 'page': x.get('page'), 'url': x['url'], 'citation': x['citation']}})
     # Leviers de dépense chiffrés par la Commission des comptes de la Sécurité sociale (tableau de sensibilité, octobre 2026)
     # et par le Gouvernement (point d'indice, 2022). Une hausse ou une baisse de x fois l'unité est comptée x fois (hypothèse de Concret).
@@ -1513,6 +1532,11 @@ def construire():
     an_plf = date.today().year + 1
     T_PLF = budget_missions.texte()
     MISSIONS = budget_missions.grouper(budget_missions.lire(T_PLF))
+    # Hors cotisations de l'État employeur à ses propres pensions (CAS Pensions) : un flux interne aux administrations publiques,
+    # les pensions versées étant comptées dans « Retraites ». Part du titre 2 (dépenses de personnel) lue dans le rapport AN n° 2847 ;
+    # le titre 2 de chaque programme est lu dans l'état B du projet de loi.
+    budget_missions.titre2(T_PLF, MISSIONS)
+    CASP = cas_pensions()
     for m in MISSIONS:
         if m['nom'].startswith(HORS) or not m['cp27']:
             continue
@@ -1522,13 +1546,13 @@ def construire():
                     'citation': "Ligne « %s » : crédits de paiement PLF %d : %s €" % (r['nom'], an_plf, '{:,}'.format(r['cp27']).replace(',', ' '))}
         kids = [r for r in m['programmes'] if r['cp27']]
         mk = 'mi:' + re.sub(r'\W+', '-', m['nom'].lower())[:40]
-        assiettes.append({'k': mk, 'l': m['nom'], 'groupe': 'depense', 'etat': True, 'md': round(m['cp27'] / 1e9, 3), 'an': an_plf, 'qui': qui, 'macro': 'depense',
-                          'exclut': [], 'note': "Mission du budget de l'État : ce que l'État prévoit de dépenser (crédits de paiement), salaires et retraites des agents compris.", 'src': src(m)})
+        assiettes.append({'k': mk, 'l': m['nom'], 'groupe': 'depense', 'etat': True, 'md': round((m['cp27'] - CASP['part'] * m.get('t2', 0)) / 1e9, 3), 'an': an_plf, 'qui': qui, 'macro': 'depense',
+                          'exclut': [], 'note': "Mission du budget de l'État : ce que l'État prévoit de dépenser (crédits de paiement), hors cotisations de l'État employeur à ses propres pensions (comptées dans les retraites) : %s %% des dépenses de personnel (titre 2), d'après le rapport de l'Assemblée nationale n° 2847 ; crédits avec ces cotisations : %s Md€." % (pc1(CASP['part'] * 100), pc1(m['cp27'] / 1e9)), 'src': src(m), 'hors_cas': True, 'src_cas': CASP['src']})
         for r in kids:
             if len(kids) < 2: break
             k = 'pr:' + re.sub(r'\W+', '-', r['nom'].lower())[:40]
-            assiettes.append({'k': k, 'l': r['nom'], 'groupe': 'depense', 'etat': True, 'parent': mk, 'md': round(r['cp27'] / 1e9, 3), 'an': an_plf, 'qui': qui, 'macro': 'depense',
-                              'exclut': [mk], 'note': "Programme de la mission « " + m['nom'] + " ».", 'src': src(r)})
+            assiettes.append({'k': k, 'l': r['nom'], 'groupe': 'depense', 'etat': True, 'parent': mk, 'md': round((r['cp27'] - CASP['part'] * r.get('t2', 0)) / 1e9, 3), 'an': an_plf, 'qui': qui, 'macro': 'depense',
+                              'exclut': [mk], 'note': "Programme de la mission « %s », hors cotisations de l'État employeur à ses propres pensions (comptées dans les retraites) : %s %% des dépenses de personnel (titre 2), d'après le rapport de l'Assemblée nationale n° 2847 ; crédits avec ces cotisations : %s Md€." % (m['nom'], pc1(CASP['part'] * 100), pc1(r['cp27'] / 1e9)), 'src': src(r), 'hors_cas': True, 'src_cas': CASP['src']})
         # La mission exclut ses programmes (et inversement).
         M = next(a for a in assiettes if a['k'] == mk)
         M['exclut'] = [a['k'] for a in assiettes if a.get('parent') == mk]
