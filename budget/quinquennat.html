@@ -63,7 +63,19 @@
 .q-suite summary { padding: 14px 0; margin: -14px 0; }
 .q-prop-t.q-cl2p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
 .q-prop-t.q-cl1p, .q-auj.q-cl1 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; line-clamp: 1; overflow: hidden; }
-.q-auj.q-cl0, .q-enonce .q-ass.q-cl0, .q-touchez.q-cl0 { display: none; }
+.q-auj.q-cl0, .q-enonce .q-ass.q-cl0, .q-touchez.q-cl0, .q-enonce .q-prop-t.q-cl0 { display: none; }
+.q-etale { display: block; margin-top: 6px; font-size: 14px; color: var(--muted); }
+.q-ppa { display: grid; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.q-ppa > h2 { font-size: 15px; } .q-ppa > h2 > .eyebrow { font-size: 16.5px; }
+.q-hist .q-hi-gros { font-size: 15px; color: var(--muted); margin: 4px 0 0; }
+.q-hist .q-hi-qui { font-size: 26px; line-height: 1.2; font-weight: 800; margin: 2px 0 2px; letter-spacing: -.01em; }
+.q-hist .q-hi-f { font-size: 14px; color: var(--muted); margin: 0 0 10px; }
+.q-hi-b { display: grid; grid-template-columns: 5.5em 1fr 3.6em; gap: 4px 8px; align-items: center; font-size: 14px; margin: 6px 0; }
+.q-hi-b .r { height: 12px; border-radius: 6px; background: var(--piste); position: relative; overflow: hidden; }
+.q-hi-b .r i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; }
+.q-hi-b .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+.q-hi-b small { grid-column: 1 / -1; font-size: 13px; font-weight: 700; color: var(--fg); margin-top: 6px; }
+.q-rhab { margin: -6px 0 0; font-size: 14px; color: var(--muted); }
 .q-tz2 { font-size: 13px; color: var(--muted); font-weight: 400; }
 .q-clair:has(> .q-cl0:only-child) { display: none; }
 .q-qrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
@@ -72,7 +84,7 @@
 .q-lirep { justify-self: start; font: inherit; font-size: 14px; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 0 2px; min-height: 44px; margin: -8px 0 -6px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .q-ddefi { font-size: 13px; font-weight: 700; color: var(--fg); background: color-mix(in srgb, var(--c-rech) 16%, var(--panel)); border-radius: 999px; padding: 3px 9px; }
 /* Bandeau réduit pendant un vote : la ligne de progression se cache (le message dit déjà où l'on en est). */
-body.q-vote .q-collant.q-mini ~ #p-voter .q-prog, body.q-vote .q-collant.q-mini ~ #p-voter .q-ptot, .q-collant.q-mini ~ #p-voter:has(#q-card) .q-prog, .q-collant.q-mini ~ #p-voter:has(#q-card) .q-ptot { display: none; }
+body.q-vote .q-collant.q-mini ~ #p-voter .q-prog, body.q-vote .q-collant.q-mini ~ #p-voter .q-ptot, .q-collant.q-mini ~ #p-voter:has(.q-qcard) .q-prog, .q-collant.q-mini ~ #p-voter:has(.q-qcard) .q-ptot { display: none; }
 .q-sous { display: grid; gap: 12px; min-width: 0; }
 .q-sous.q-vue-off { display: none; }
 .q-sous > h2 { font-size: 15px; }
@@ -983,11 +995,12 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
       <p class="q-note">Exemples calculés par Concret avec les règles citées sur chaque carte ; votre situation peut être différente.</p>
     </section>
     <section class="card" aria-labelledby="q-res-t" id="q-res-c">
-      <h2 id="q-res-t"><span class="eyebrow">À quel pays ressemble votre budget</span>Aujourd'hui en Europe, ou dans l'histoire</h2>
+      <h2 id="q-res-t"><span class="eyebrow">À quel pays ressemble votre budget</span>Aujourd'hui, en Europe et dans le monde</h2>
       <div class="q-chips q-vues" role="group" aria-label="Vue"><button type="button" data-vue="pays" aria-pressed="true">Aujourd'hui</button><button type="button" data-vue="dir" aria-pressed="false">Dans l'histoire</button></div>
-    <section class="q-sous" data-vue="pays" aria-labelledby="q-pays-t" id="q-pays-c"><h2 id="q-pays-t"><span class="eyebrow">Le pays le plus proche aujourd'hui</span>Vos dépenses et vos recettes publiques, parmi les pays d'Europe</h2><div id="q-pays"></div><button type="button" class="q-lien q-pcourbe" data-c="q-pays">Partager ce graphique</button></section>
+    <section class="q-sous" data-vue="pays" aria-labelledby="q-pays-t" id="q-pays-c"><h2 id="q-pays-t"><span class="eyebrow">Le pays le plus proche aujourd'hui</span>Vos dépenses et vos recettes publiques, parmi les pays d'Europe et de grands pays du monde</h2><div id="q-pays"></div><button type="button" class="q-lien q-pcourbe" data-c="q-pays">Partager ce graphique</button></section>
     <section class="q-sous" data-vue="dir" aria-labelledby="q-dir-t" id="q-dir-c" hidden><h2 id="q-dir-t"><span class="eyebrow">Dans l'histoire</span>À quel pays, quelle année, ressemble votre budget ?</h2><div id="q-dir"></div><div class="q-dref" id="q-dir-r" hidden></div></section>
     </section>
+    <section class="card q-hist" aria-labelledby="q-hi-t" id="q-hist-c" hidden></section>
     <section class="card" aria-labelledby="q-vm-t" id="q-vm-c">
       <h2 id="q-vm-t"><span class="eyebrow">Vos mesures</span>Ce que chacune change au déficit</h2>
       <div class="q-chips q-ans" id="q-vm-an" role="group" aria-label="Année"></div>
@@ -1046,6 +1059,14 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
       <p class="q-leg" id="q-rh-l"></p>
       <div class="q-note" id="q-rh-n"></div>
       <button type="button" class="q-lien q-pcourbe" data-c="q-rh">Partager cette courbe</button>
+      <section class="q-ppa" aria-labelledby="q-ppa-t" id="q-ppa-c" hidden>
+        <h2 id="q-ppa-t"><span class="eyebrow">La richesse par habitant</span>Vous et les autres pays, en <span id="q-ppa-an"></span></h2>
+        <p class="q-ligne" id="q-ppa-x"></p>
+        <div class="q-chart" id="q-ppa"></div>
+        <p class="q-leg" id="q-ppa-l"></p>
+        <div class="q-note" id="q-ppa-n"></div>
+        <button type="button" class="q-lien q-pcourbe" data-c="q-ppa">Partager ce graphique</button>
+      </section>
     </section>
     </section>
     <section class="card" aria-labelledby="q-qui-t">
@@ -1122,8 +1143,14 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   // Une ligne de Créer, en Md€ de AN0 (positif = déficit plus bas). Unité propre : par_u Md€ par unité (montant de l'année de la
   // source, qui suit ensuite la croissance de l'économie), ou par_pib (une unité = un point de PIB de AN0). an : l'année, pour
   // une mesure qui monte en charge (rampe : part de l'effet la 1re, 2e… année) ; sans an, l'effet plein.
+  // Un réglage de Créer de plus de 1 point de PIB (la taille testée par le modèle de la direction du Trésor et de l'Insee) s'applique
+  // par cinquièmes, de 2027 à 2031 (choix de Concret) ; en dessous, tout de suite. Un levier qui a déjà son calendrier (rampe) le garde.
+  var ETALE = 5;
+  function etale(x, pc, P) { if (!pc || x.rampe) return false; var b = x.mix ? Math.max.apply(null, x.mix.map(function (m) { return Math.abs(pc * m.par_u); })) : Math.abs(effetPerso(x, pc, null, P)); return b / PIBY[AN0] * 100 > CHOC + 1e-9; }
+  function etaleNote() { var K = Object.keys(S.perso).filter(function (k) { return AS[k] && etale(AS[k], S.perso[k], S.perso); }); return K.length ? '<p class="q-note">' + (K.length > 1 ? 'Vos changements de plus de ' : 'Votre changement de plus de ') + nf(CHOC, 0) + '\u00a0point de PIB (' + K.map(function (k) { return esc(AS[k].l.split(' (')[0].toLowerCase()); }).join(', ') + ') ' + (K.length > 1 ? 's\'appliquent' : 's\'applique') + ' un cinquième par an, de ' + AN0 + ' à ' + (AN0 + ETALE - 1) + ' : en ' + AN0 + ', un cinquième seulement (choix de Concret).</p>' : ''; }
+  function etaleK(x, pc, an, P) { return an != null && etale(x, pc, P) ? Math.max(0, Math.min(1, (an - AN0 + 1) / ETALE)) : 1; }
   function effetPerso(x, pc, an, P) {
-    var r = (x.rampe && an != null ? x.rampe[Math.max(0, Math.min(x.rampe.length - 1, an - AN0))] : 1) * reste(x, P);
+    var r = (x.rampe && an != null ? x.rampe[Math.max(0, Math.min(x.rampe.length - 1, an - AN0))] : 1) * reste(x, P) * etaleK(x, pc, an, P);
     var ech = PIBY[AN0] / (PIBY[x.an] || PIBY[AN0]);
     if (x.u && x.u.choix) { var o = x.u.choix.filter(function (y) { return y.v === pc; })[0]; return o ? o.md * ech * r : 0; }
     if (x.mix) return x.mix.reduce(function (t, m) { return t + pc * m.par_u; }, 0) * ech * r;
@@ -1160,7 +1187,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
         C.forEach(function (c) { if (vote[c.id] === 1) { var m = montant(c, an), t = c.macro || 'aucun'; A[t] = (A[t] || 0) + m / pibSans * 100; tot += m; if (c.sens === 'recette') rec += m / pibSans * 100; else dep += m / pibSans * 100; } });
         Object.keys(perso).forEach(function (k) {
           var x = AS[k]; if (!x) return;
-          if (x.mix) { x.mix.forEach(function (m) { var pm = perso[k] * m.par_u * reste(x, perso) * (PIBY[AN0] / (PIBY[x.an] || PIBY[AN0])) / PIBY[AN0] * 100; A[m.macro] = (A[m.macro] || 0) + pm; tot += pm * pibSans / 100; rec += pm; }); return; }
+          if (x.mix) { var kx = etaleK(x, perso[k], an, perso); x.mix.forEach(function (m) { var pm = perso[k] * m.par_u * reste(x, perso) * kx * (PIBY[AN0] / (PIBY[x.an] || PIBY[AN0])) / PIBY[AN0] * 100; A[m.macro] = (A[m.macro] || 0) + pm; tot += pm * pibSans / 100; rec += pm; }); return; }
           var pts = effetPerso(x, perso[k], an, perso) / PIBY[AN0] * 100, t = x.macro || 'aucun';
           A[t] = (A[t] || 0) + pts; tot += pts * pibSans / 100; if (x.groupe === 'recette' || /^cotis/.test(x.macro || '')) rec += pts; else dep += pts;
         });
@@ -1256,7 +1283,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   // dans la part des dépenses, comme dans les comptes d'un pays. Le plus proche : le plus petit écart, dépenses et recettes comptées pareil.
   var PE = null, FR0 = null, RESS = null;
   var ISO2 = { FRA: 'FR', DEU: 'DE', ESP: 'ES', ITA: 'IT', BEL: 'BE', BGR: 'BG', CZE: 'CZ', DNK: 'DK', EST: 'EE', IRL: 'IE', GRC: 'EL', HRV: 'HR', CYP: 'CY', LVA: 'LV', LTU: 'LT', LUX: 'LU', HUN: 'HU', MLT: 'MT', NLD: 'NL', AUT: 'AT', POL: 'PL', PRT: 'PT', ROU: 'RO', SVN: 'SI', SVK: 'SK', FIN: 'FI', SWE: 'SE', NOR: 'NO', ISL: 'IS', CHE: 'CH', GBR: 'UK', USA: 'US', JPN: 'JP', CAN: 'CA' };
-  var ART = { UK: 'le', US: 'les', JP: 'le', CA: 'le', FR: 'la', DE: "l'", ES: "l'", IT: "l'", BE: 'la', BG: 'la', CZ: 'la', DK: 'le', EE: "l'", IE: "l'", EL: 'la', HR: 'la', CY: '', LV: 'la', LT: 'la', LU: 'le', HU: 'la', MT: '', NL: 'les', AT: "l'", PL: 'la', PT: 'le', RO: 'la', SI: 'la', SK: 'la', FI: 'la', SE: 'la', NO: 'la', IS: "l'", CH: 'la' };
+  var ART = { CN: 'la', KR: 'la', IN: "l'", RU: 'la', BR: 'le', AU: "l'", TR: 'la', UK: 'le', US: 'les', JP: 'le', CA: 'le', FR: 'la', DE: "l'", ES: "l'", IT: "l'", BE: 'la', BG: 'la', CZ: 'la', DK: 'le', EE: "l'", IE: "l'", EL: 'la', HR: 'la', CY: '', LV: 'la', LT: 'la', LU: 'le', HU: 'la', MT: '', NL: 'les', AT: "l'", PL: 'la', PT: 'le', RO: 'la', SI: 'la', SK: 'la', FI: 'la', SE: 'la', NO: 'la', IS: "l'", CH: 'la' };
   function structure(r) { var rc = FR0.rec + r.rec / (1 + (r.L || 0) / 100); return { dep: rc - r.solde, rec: rc }; }
   function ressemble(r) {
     if (!FR0 || !r) return null; var s = structure(r);
@@ -1605,7 +1632,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     $('q-deck').innerHTML = (filtrees().filter(function (o) { return o !== c && (S.v[o.id] == null || S.v[o.id] === 0); }).length ? '<div class="q-dessous" aria-hidden="true"></div>' : '') + '<article class="q-card' + (entree ? ' in' : '') + '" id="q-card">' +
       '<span class="q-stamp p" id="q-sp">✓ POUR</span><span class="q-stamp c" id="q-sc">✗ CONTRE</span>' +
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span>' + (vousConcerne(c) ? '<span class="q-vous">Vous concerne</span>' : '') + defiTag([c]) + '</div>' +
-      '<h2>' + nb(c.titre || c.l) + '</h2><p class="q-effet q-effet-h">' + effetTexte(c, m) + '</p>' + clair(c, true, true) +
+      '<h2>' + nb(c.titre || c.l) + '</h2><p class="q-effet q-effet-h">' + effetTexte(c, m) + '</p>' + rhCarte(c) + clair(c, true, true) +
       enonce([c.origine], 'Êtes-vous pour ?', (c.clair && c.clair.p ? '<p class="q-prop-t q-cl">' + clairP(c) + '</p><button type="button" class="q-lirep" hidden>Lire tout</button>' : '')) +
       '<div class="q-vin" role="group" aria-label="Votre vote"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button><button type="button" data-vin="-1">✗ Contre</button><button type="button" data-vin="3">Abstention</button><button type="button" data-vin="1">✓ Pour</button></div><p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette carte à la fin</button></p>' + (S.glisse || nbDecisions() >= 2 ? '' : '<p class="q-swipe"><span class="t">Astuce : glissez la carte à droite pour voter pour, à gauche contre.</span><span class="s">Astuce : flèche → pour, flèche ← contre.</span></p>') +
       (CC.indexOf('q-vous') >= 0 ? CC : '') +
@@ -1727,7 +1754,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     var bar = $('q-bar'); if (bar && !bar.hidden && bar.offsetHeight) BAR_H = bar.offsetHeight;
     var haut = (parseFloat(getComputedStyle(col).top) || 0) + col.offsetHeight + 8, lim = innerHeight - (rep1 ? 0 : (BAR_H || 76)) - 8;
     var pose = function (p, cl) { if (!p) return; p.classList.remove('q-cl', 'q-cl2', 'q-cl2p', 'q-cl1p', 'q-cl1', 'q-cl0'); if (cl) p.classList.add(cl); };
-    var E = [[[prop, 'q-cl'], [auj, 'q-cl2']], [[prop, 'q-cl2p'], [auj, 'q-cl2']], [[prop, 'q-cl2p'], [auj, 'q-cl1']], [[prop, 'q-cl2p'], [auj, 'q-cl1'], [ass, 'q-cl0']], [[prop, 'q-cl1p'], [auj, 'q-cl1'], [ass, 'q-cl0']], [[prop, 'q-cl1p'], [auj, 'q-cl0'], [ass, 'q-cl0']]];
+    var E = [[[prop, 'q-cl'], [auj, 'q-cl2']], [[prop, 'q-cl2p'], [auj, 'q-cl2']], [[prop, 'q-cl2p'], [auj, 'q-cl1']], [[prop, 'q-cl2p'], [auj, 'q-cl1'], [ass, 'q-cl0']], [[prop, 'q-cl1p'], [auj, 'q-cl1'], [ass, 'q-cl0']], [[prop, 'q-cl1p'], [auj, 'q-cl0'], [ass, 'q-cl0']], [[prop, 'q-cl0'], [auj, 'q-cl0'], [ass, 'q-cl0']]];
     for (var i = 0; i < E.length; i++) {
       E[i].forEach(function (x) { pose(x[0], x[1]); }); if (i < 3) pose(ass, null);
       if (haut + qu.getBoundingClientRect().bottom - card.getBoundingClientRect().top <= lim) break;
@@ -1778,10 +1805,23 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   }
   // Un choix trop petit pour changer le chiffre arrondi du déficit : le dire, avec le montant.
   function arrondi(A0, A1) { var AO = anObj(), a = ligneAn(A0, AO), b = ligneAn(A1, AO), d = (b.solde - a.solde) / 100 * b.pib; return defic(a.solde) === defic(b.solde) && Math.abs(d) >= 0.005 ? '<li>Moins de 0,05 point de PIB : le déficit ' + AO + ' arrondi ne change pas (' + defic(b.solde) + '), mais il ' + (d > 0 ? 'baisse' : 'augmente') + ' de ' + mdt(Math.abs(d)) + '.</li>' : ''; }
-  function miniCourbes(A0, A1, larg) {
+  // La richesse par habitant en 2031, avec et sans un choix : arrondie à la dizaine d'euros, « moins de 10 € » en dessous.
+  function rhEcart(A0, A1) { var a = parHab(A1), z = parHab(A0); if (!a || !z) return null; var d = a[a.length - 1].d - z[z.length - 1].d; return { d: d, an: a[a.length - 1].an, t: Math.abs(d) < 10 ? 'moins de 10\u00a0€' : (d < 0 ? '−' : '+') + nf(Math.round(Math.abs(d) / 10) * 10, 0) + '\u00a0€' }; }
+  // Sur une carte : la mesure seule, par rapport à « rien ne change » (le même calcul que le Bilan) ; non compté quand le modèle
+  // ne publie pas l'effet sur l'activité de ce type de mesure.
+  var RHC = {};
+  function rhCarte(c) {
+    if (!(S.macro && c.macro && J.variantes[c.macro])) return '<p class="q-rhab">Richesse par habitant : effet non compté (voir « Ce que ça change, et la source »).</p>';
+    if (RHC[c.id] == null) { var v = {}; v[c.id] = 1; var e = rhEcart(R0, simuler({ vote: v, perso: {}, unites: {} })); RHC[c.id] = e ? e : false; }
+    var e = RHC[c.id]; return e ? '<p class="q-rhab">Richesse par habitant en ' + e.an + ' : ' + e.t + ' (par rapport à sans cette mesure).</p>' : '';
+  }
+  function miniCourbes(A0, A1, larg, o) {
+    o = o || {};
     var cols = (larg || 0) >= 520 ? 2 : 1, Wc = larg ? Math.max(150, Math.floor((larg - (cols - 1) * 10) / cols) - 18) : 150;
     var ans = A1.filter(function (r) { return r.an >= AN0; }).map(function (r) { return r.an; });
-    var un = function (titre, f, fmt) {
+    var ansO = ans;
+    var un = function (titre, f, fmt, ansX) {
+      var ans = ansX || ansO;
       var a = ans.map(function (an) { return f(A0, an); }), b = ans.map(function (an) { return f(A1, an); }), T = a.concat(b);
       var lo = Math.min.apply(null, T), hi = Math.max.apply(null, T); if (hi - lo < 0.4) { var m = (hi + lo) / 2; lo = m - 0.2; hi = m + 0.2; }
       // Le chiffre de la première année est écrit aussi, à gauche, quand ce choix le change (ex. croissance 2027 : 0,7 % → −1,3 %).
@@ -1805,7 +1845,20 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     if (S.macro && Math.abs(n0) >= 1) expl = '<p class="q-mini-x">' + (n0 < 0
       ? 'Le PIB baisse de ' + nf(Math.abs(n0), 1) + '\u00a0% dès ' + AN0 + ' par rapport à « sans ce choix », et en ' + ans[ans.length - 1] + ' il reste ' + nf(Math.abs(n1), 1) + '\u00a0% plus bas. Si la croissance des dernières années repasse au-dessus, c\'est qu\'elle repart d\'un niveau plus bas : elle ne rattrape pas la perte.'
       : 'Le PIB monte de ' + nf(n0, 1) + '\u00a0% dès ' + AN0 + ' par rapport à « sans ce choix », et en ' + ans[ans.length - 1] + ' il reste ' + nf(Math.abs(n1), 1) + '\u00a0% ' + (n1 >= 0 ? 'plus haut' : 'plus bas') + '. Si la croissance des dernières années repasse en dessous, c\'est qu\'elle part d\'un niveau plus haut.') + '</p>';
-    return (ans.some(function (an) { return ligneAn(A1, an).solde > 0 || ligneAn(A0, an).solde > 0; }) ? '<div class="q-minis">' + un('Solde public, en % du PIB (− déficit, + excédent)', function (L, an) { return ligneAn(L, an).solde; }, function (v) { return (v > 0.04 ? '+' : v < -0.04 ? '−' : '') + nf(Math.abs(v), 1) + '\u00a0%'; }) : '<div class="q-minis">' + un('Déficit, en % du PIB', function (L, an) { return -ligneAn(L, an).solde; }, pcf)) + un('Croissance du PIB', function (L, an) { return croiss(L, an); }, pcf) + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>sans ce choix</p>' + expl;
+    // Le PIB par habitant (même calcul que « La richesse par habitant » du Bilan), avant la croissance : c'est le niveau qui compte.
+    var PA = parHab(A1), PZ = parHab(A0), rh = '', rhx = '';
+    if (PA && PZ) {
+      var c100 = function (v) { return Math.round(v / 100) * 100; }, eu = function (v) { return nf(c100(v), 0) + '\u00a0€'; }, pa = PA[PA.length - 1], pz = PZ[PZ.length - 1], ec = c100(pa.d) - c100(pz.d);
+      if (Math.abs(ec) >= 100 && o.courbe) {
+        rh = un('PIB par habitant, en euros de ' + D0.an + ' (hors inflation)', function (L, an) { return ((L === A1 ? PA : PZ).filter(function (x) { return x.an === an; })[0] || {}).d; }, function (v) { return nf(c100(v) / 1000, 1).replace(',0', '') + '\u00a0k€'; }, PA.map(function (x) { return x.an; }));
+        rhx = '<p class="q-mini-x">En ' + pa.an + ' : <b>' + eu(pa.d) + '</b> par habitant au lieu de ' + eu(pz.d) + ', soit ' + nf(Math.abs(ec), 0) + '\u00a0€ ' + (ec < 0 ? 'de moins' : 'de plus') + ' (k€ : milliers d\'euros).</p>';
+      }
+    }
+    if (!rhx && o.compte === false) rhx = '<p class="q-mini-x">Effet sur la richesse par habitant non compté : voir « La source, le calcul et des exemples ».</p>';
+    else if (!rhx && S.macro) { var eR = rhEcart(A0, A1); if (eR) rhx = '<p class="q-mini-x">Richesse par habitant en ' + eR.an + ' : <b>' + eR.t + '</b> (par rapport à sans ce choix).</p>'; }
+    var cr = croiss(A1, ans[ans.length - 1]), cz = croiss(A0, ans[ans.length - 1]);
+    if (S.macro && n0 <= -0.05 && cr != null && cz != null && cr > cz + 0.05) expl = '<p class="q-mini-x">La croissance repart, mais d\'un niveau plus bas : la richesse par habitant reste inférieure.</p>';
+    return (ans.some(function (an) { return ligneAn(A1, an).solde > 0 || ligneAn(A0, an).solde > 0; }) ? '<div class="q-minis">' + un('Solde public, en % du PIB (− déficit, + excédent)', function (L, an) { return ligneAn(L, an).solde; }, function (v) { return (v > 0.04 ? '+' : v < -0.04 ? '−' : '') + nf(Math.abs(v), 1) + '\u00a0%'; }) : '<div class="q-minis">' + un('Déficit, en % du PIB', function (L, an) { return -ligneAn(L, an).solde; }, pcf)) + rh + un('Croissance du PIB', function (L, an) { return croiss(L, an); }, pcf) + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>sans ce choix</p>' + rhx + expl;
   }
   function premiere(c) { for (var a = AN0; a <= AN1; a++) if (montant(c, a)) return 'rien avant ' + a + ', puis ' + quoi(c.sens, montant(c, a)) + ' en ' + a; return 'rien avant ' + (AN1 + 1); }
   // Ce que votent les joueurs : le compteur de Concret (le même que pour le quiz, un total par choix, rien qui identifie la
@@ -2223,7 +2276,9 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     $('q-pc-v').textContent = choisi.u && choisi.u.choix ? '' : pc ? pcC(choisi, pc) : 'Rien';
     Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', +b.dataset.v === pc); });
     var suf = choisi.effet_suffixe ? esc(choisi.effet_suffixe) : '', rs = reste(choisi) < 1 ? ' ; calculé sur la part de ' + (choisi.k === 'tva-sociale' ? 'la TVA' : 'l\'impôt sur le revenu') + ' qui reste dans votre budget (' + nf(reste(choisi) * 100, 0) + '\u00a0%)' : '';
-    $('q-effet').innerHTML = pc && choisi.mix ? '<b>' + mdt(Math.abs(pc * choisi.mix[0].par_u * reste(choisi))) + '</b> de TVA en plus par an, et autant de cotisations des employeurs en moins : sur le papier, le déficit ne change pas' + rs : pc ? '<b>' + mdt(Math.abs(e)) + '</b> ' + (choisi.k === 'capitalisation' ? 'de cotisations en moins pour les retraites d\'aujourd\'hui' : phrase(e, { sens: choisi.groupe === 'depense' && choisi.k !== 'allegements' ? 'depense' : 'recette' })) + ' par an' + suf + rs + (choisi.rampe ? ', une fois en place (' + mdt(Math.abs(effetPerso(choisi, pc, AN0))) + ' en ' + AN0 + ')' : ', à partir de ' + AN0) + (choisi.par_pib ? ', soit ' + nf(Math.abs(e) / choisi.md / (PIBY[AN0] / PIBY[choisi.an]) * 100, 0) + '\u00a0% de toute la dépense publique (hors intérêts de la dette)' : '') : (choisi.u && choisi.u.choix ? 'Touchez une réponse.' : 'Choisissez avec les boutons ou le curseur.');
+    var etl = pc && etale(choisi, pc, S.perso) ? '<span class="q-etale">Changement de plus de ' + nf(CHOC, 0) + '\u00a0point de PIB : appliqué progressivement, un cinquième par an de ' + AN0 + ' à ' + (AN0 + ETALE - 1) + ' (choix de Concret) ; en ' + AN0 + ' : ' + mdt(Math.abs(choisi.mix ? pc * choisi.mix[0].par_u * reste(choisi) / ETALE : effetPerso(choisi, pc, AN0))) + '.</span>' : '';
+    $('q-effet').innerHTML = pc && choisi.mix ? '<b>' + mdt(Math.abs(pc * choisi.mix[0].par_u * reste(choisi))) + '</b> de TVA en plus par an, et autant de cotisations des employeurs en moins : sur le papier, le déficit ne change pas' + rs : pc ? '<b>' + mdt(Math.abs(e)) + '</b> ' + (choisi.k === 'capitalisation' ? 'de cotisations en moins pour les retraites d\'aujourd\'hui' : phrase(e, { sens: choisi.groupe === 'depense' && choisi.k !== 'allegements' ? 'depense' : 'recette' })) + ' par an' + suf + rs + (choisi.rampe ? ', une fois en place (' + mdt(Math.abs(effetPerso(choisi, pc, AN0))) + ' en ' + AN0 + ')' : etale(choisi, pc, S.perso) ? ' une fois en place, en ' + (AN0 + ETALE - 1) : ', à partir de ' + AN0) + (choisi.par_pib ? ', soit ' + nf(Math.abs(e) / choisi.md / (PIBY[AN0] / PIBY[choisi.an]) * 100, 0) + '\u00a0% de toute la dépense publique (hors intérêts de la dette)' : '') : (choisi.u && choisi.u.choix ? 'Touchez une réponse.' : 'Choisissez avec les boutons ou le curseur.');
+    if (etl) $('q-effet').insertAdjacentHTML('beforeend', '<br>' + etl);
     $('q-ch-h').textContent = pc ? 'Calcul de Concret : ' + (choisi.par_pib ? nf(Math.abs(pc), Math.abs(pc) % 1 ? 1 : 0) + ' × 1\u00a0% du PIB de ' + AN0 + ' (' + mdt(PIBY[AN0] / 100) + ')' : choisi.par_u != null ? nf(Math.abs(pc), 0) + ' × ' + mdt(Math.abs(choisi.par_u)) + ' (' + esc(choisi.u.n) + ', ' + choisi.an + ')' + (choisi.rampe ? ' ; un quart la première année, la moitié la deuxième, les trois quarts la troisième, puis tout' : '') : choisi.par_pt ? Math.abs(pc) + ' × ' + nf(choisi.par_pt, 2) + ' milliard d\'euros par 1 % (même base que la carte des allègements)' : Math.abs(pc) + '\u00a0% de ' + mdt(choisi.md) + ' en ' + choisi.an) + ' ; le montant suit ensuite la croissance de l\'économie. On suppose que les comportements ne changent pas' + (choisi.macro && J.variantes[choisi.macro] && S.macro ? ', sauf l\'effet sur l\'activité et l\'emploi, qui est compté : ' + (e >= 0 ? 'une partie de ce gain ne réduit pas le déficit, parce que l\'activité ralentit (modèle de la direction du Trésor et de l\'Insee).' : 'une partie de ce coût est compensée, parce que l\'activité accélère (modèle de la direction du Trésor et de l\'Insee).') : (choisi.macro && J.variantes[choisi.macro] ? ' ; l\'effet sur l\'activité n\'est pas compté (case décochée, Bilan, « Changer les hypothèses »).' : ' ; aucun effet sur l\'activité n\'est compté pour ce type de ligne.')) : '';
     parPersonne(pc);
     // Aperçu : le bandeau tel qu'il serait avec ce choix.
@@ -2243,7 +2298,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     $('q-apercu').innerHTML = (pc !== (av || 0) ? '<ul class="q-pl q-ap-t">' + arrondi(R, A1) + (choisi.mix || RC.length || rempP.length ? '<li><b>Avec ce choix</b> : ' : '<li hidden>') + (choisi.mix ? 'sur le papier, rien ne change au déficit en ' + AN0 : RC.length || rempP.length ? 'au total ' + (Math.abs(nD) < 0.05 ? 'presque rien ne change' : quoi(sP, nD)) + ' en ' + AN0 + ' (cette ligne seule : ' + quoi(sP, dP) + ')' : quoi(sP, dP) + ' en ' + AN0) + '.</li><li>' + maj1(avantApres(R, A1, null, true)) + '.</li><li>' + ecoPhrase(R, A1, dPo * kP - rA, !!(choisi.macro && J.variantes[choisi.macro]), choisi.mix ? 'mix' : choisi.macro, true) + ' Pourquoi : « La source, le calcul et des exemples ».</li>' +
       // Ce que le calcul ne compte pas pour cette ligne, juste sous l'effet sur l'économie, avec sa source.
       (choisi.nc && J.non_comptes && J.non_comptes[choisi.nc] && (choisi.nc !== 'ame' || pc < 0) ? '<li>' + esc(J.non_comptes[choisi.nc].t) + ' <a href="' + esc(J.non_comptes[choisi.nc].src.url) + '">Source</a></li>' : '') + '</ul>' : '') +
-      (pc !== (av || 0) ? horsModeleCourt(A1, 'Le détail : « La source, le calcul et des exemples ».') + miniCourbes(R, A1, $('q-apercu').clientWidth) : '') + (remp.length ? '<br>Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' » (' + quoi(o.sens, montant(o, AN0)) + ')' : ''; }).join(', ') + ' : les deux portent sur le même argent, ce montant sort de votre budget.' : '') + (rempP.length ? '<br>Ce choix remplace votre ligne ' + nomsP.map(function (t) { return '« ' + t + ' »'; }).join(', ') + ' : elle porte sur le même argent et sort de votre budget.' : '');
+      (pc !== (av || 0) ? horsModeleCourt(A1, 'Le détail : « La source, le calcul et des exemples ».') + miniCourbes(R, A1, $('q-apercu').clientWidth, { courbe: etale(choisi, pc, S.perso), compte: !!(choisi.mix || (choisi.macro && J.variantes[choisi.macro])) }) : '') + (remp.length ? '<br>Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' » (' + quoi(o.sens, montant(o, AN0)) + ')' : ''; }).join(', ') + ' : les deux portent sur le même argent, ce montant sort de votre budget.' : '') + (rempP.length ? '<br>Ce choix remplace votre ligne ' + nomsP.map(function (t) { return '« ' + t + ' »'; }).join(', ') + ' : elle porte sur le même argent et sort de votre budget.' : '');
     $("q-ch-av").innerHTML = pc !== (av || 0) ? '<p>' + ecoPhrase(R, A1, dPo * kP - rA, !!(choisi.macro && J.variantes[choisi.macro]), choisi.mix ? 'mix' : choisi.macro) + '</p>' + horsModele(A1, true) + (choisi.macro_note && choisi.macro && J.variantes[choisi.macro] ? '<p>Effet sur l\'activité (modèle Mésange, le modèle de calcul de la direction du Trésor et de l\'Insee) : ' + esc(choisi.macro_note) + '</p>' : '') : '';
     GRAND = G0;
     if (hs) $('q-apercu').innerHTML = '<p class="q-alerte"><b>Pas possible :</b> ' + hs + '</p>';
@@ -2646,7 +2701,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
       (L.length ? '<li class="q-pv-r"><button type="button" class="q-lien q-pcarte" id="q-pv-p">Partager ce que ça change pour moi</button></li>' : '') + (RfL.length ? '<li class="q-pv-r"><details class="q-plie"><summary>Les mesures que vous n\'avez pas choisies (' + RfL.length + ')</summary><p class="q-note">La règle actuelle reste pour vous. Pour comparer, ce que chacune aurait changé :</p><ul class="q-pl">' + RfL.map(function (x) { return '<li>' + (x.c.q ? 'Si vous aviez choisi <b>' + esc(inf(x.t)) + '</b>' : 'Si <b>' + esc(inf(x.t)) + '</b> avait été adoptée') + ' : ' + x.e.replace(/<[^>]+>/g, '').replace(/\.$/, '') + '</li>'; }).join('') + '</ul></details></li>' : '');
     pvPartage(F, L);
   }
-  function pvPartage(F, L) { var b = $('q-pv-p'); if (!b) return; b.onclick = function () { partagerCarte('q-pv-c', { sur: 'MON BUDGET ' + AN0 + ' · CONCRET', titre: 'Ce que mes mesures changent pour moi (' + F.l.toLowerCase() + ')', lignes: L.map(function (x) { return x.t.replace(/que les prix/g, 'que l\'inflation') + ' : ' + String(x.e).replace(/<[^>]+>/g, ''); }), note: 'Exemples calculés par Concret avec les règles citées sur chaque carte ; chaque situation peut être différente.', texte: 'Ce que mes mesures du budget ' + AN0 + ' changent pour moi, sur Concret. Et pour vous ?' }); }; }
+  function pvPartage(F, L) { var b = $('q-pv-p'); if (!b) return; b.onclick = function () { partagerCarte('q-pv-c', { sur: 'MON BUDGET ' + AN0 + ' · CONCRET', titre: 'Ce que vos mesures changent pour vous (' + F.l.toLowerCase() + ')', lignes: L.map(function (x) { return x.t.replace(/que les prix/g, 'que l\'inflation') + ' : ' + String(x.e).replace(/<[^>]+>/g, ''); }), note: 'Exemples calculés par Concret avec les règles citées sur chaque carte ; chaque situation peut être différente.', texte: 'Ce que mes mesures du budget ' + AN0 + ' changent pour moi, sur Concret. Et pour vous ?' }); }; }
   // Une carte à partager en image (défi, « Pour vous ») : titre, état, lignes, note ; 1080 px de large, 1350 au plus.
   function partagerCarte(id, o) {
     stat('partages-' + isoJ());
@@ -2835,7 +2890,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     // Sans mesure : une phrase et deux boutons pour commencer, pas de partage d'un budget vide.
     $('q-rc-p').innerHTML = n ? resume('bilan') : '<p class="q-gros">Aucune mesure pour l\'instant : voici où irait la France si rien ne change.</p><p class="q-actions"><button type="button" class="q-go" data-aller="voter">Voter les mesures</button> <button type="button" class="q-lien" data-aller="creer">Créer les vôtres</button></p>';
     $('q-partager').parentNode.hidden = !n;
-    vosMesuresG(); ouVa(); pourVous(); richesse();
+    vosMesuresG(); ouVa(); pourVous(); richesse(); richessePays();
     // Défi du jour
     var DJ = defiDuJour(), x = DJ && DJ.x, cond = DJ && DJ.cond, ok = DJ && DJ.ok, faisable = DJ && DJ.faisable;
     if (x) {
@@ -2888,7 +2943,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
       return '<p class="q-ligne" style="margin:4px 0"><b>' + titre + '</b></p><div class="q-barres">' + L.slice(0, 5).map(ligneQ).join('') + '</div>' + (L.length > 5 ? '<details class="q-plie"><summary>Voir les ' + (L.length - 5) + ' autres</summary><div class="q-barres">' + L.slice(5).map(ligneQ).join('') + '</div></details>' : ''); };
     var plus = Object.keys(Q).filter(function (q) { return Q[q] > 0.0005; }).map(function (q) { return [q, Q[q]]; }).sort(function (a, b) { return b[1] - a[1]; }), moins = Object.keys(Q).filter(function (q) { return Q[q] < -0.0005; }).map(function (q) { return [q, Q[q]]; }).sort(function (a, b) { return a[1] - b[1]; });
     $('q-qui').innerHTML = (plus.length || moins.length) ? liste(plus, 'Paient plus ou reçoivent moins') + liste(moins, 'Paient moins ou reçoivent plus', 'b2') + '<p class="q-note">En ' + AN0 + ', en milliards d\'euros (Md€), au sens des textes. Une mesure qui concerne plusieurs groupes est sur une seule ligne, qui les nomme : la source ne dit pas comment le montant se partage entre eux.</p>' : '<p class="q-note">Adoptez ou créez des mesures pour voir qui est concerné.</p>';
-    $('q-eco-x0').innerHTML = horsModeleCourt(R, '<a href="#q-eco-t">Le détail</a>') + horsSensBilan();
+    $('q-eco-x0').innerHTML = etaleNote() + horsModeleCourt(R, '<a href="#q-eco-t">Le détail</a>') + horsSensBilan();
     $('q-eco-x').innerHTML = horsModele(R) + (AS['tout-depense'] && S.perso['tout-depense'] && J.non_comptes.grand ? '<p class="q-note">' + esc(J.non_comptes.grand.t) + '</p>' : '');
     var TG = tresGrand(R);
     $('q-eco').innerHTML = S.macro ? tu('PIB ' + f.an, TG ? arr(f.L, '\u00a0%') : sg(f.L, 1) + '\u00a0%', 'écart avec « rien ne change »') + tu('Emplois ' + f.an, TG ? (Math.abs(f.emploi) >= 950 ? 'environ ' + (f.emploi < 0 ? '−' : '+') + nf(Math.abs(Math.round(f.emploi / 100) / 10), 1).replace(',0', '') + '\u00a0million' + (Math.abs(f.emploi) >= 1950 ? 's' : '') : arr(Math.round(f.emploi / 100) * 100, '\u00a0000')) : (Math.round(f.emploi) ? sg(Math.round(f.emploi), 0) + '\u00a0000' : '0'), 'emplois salariés des entreprises') + tu('Chômage ' + f.an, TG ? (Math.round(f.chomage) ? arr(f.chomage, Math.abs(Math.round(f.chomage)) >= 2 ? '\u00a0points' : '\u00a0point') : 'environ 0\u00a0point') : (Math.abs(f.chomage) < 0.05 ? '0\u00a0point' : sg(f.chomage, 1) + (Math.abs(f.chomage) >= 1.95 ? '\u00a0points' : '\u00a0point')), (TG ? !Math.round(f.chomage) : Math.abs(f.chomage) < 0.05) ? 'pas de changement du taux de chômage' : 'écart du taux de chômage') : '';
@@ -2899,7 +2954,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   function sansEffet() { return adoptees().filter(function (c) { return !c.macro; }).reduce(function (t, c) { return t + Math.abs(montant(c, AN0)); }, 0) + Object.keys(S.perso).filter(function (k) { var x = AS[k]; return !(x.macro && J.variantes[x.macro]); }).reduce(function (t, k) { return t + Math.abs(effetPerso(AS[k], S.perso[k])); }, 0); }
   function hypotheses() {
     var dm = J.taux.oat10_dernier_mois.valeurs, mois = Object.keys(dm)[0], base = dm[mois], ann = J.taux.oat10_moyenne_annuelle.valeurs;
-    $('q-macro-n').innerHTML = '<b>L\'effet de vos choix sur l\'activité et l\'emploi est compté.</b> Baisser une dépense ou monter un impôt freine un peu l\'activité et l\'emploi, ce qui réduit les recettes. Effets publiés par la direction du Trésor et l\'Insee (modèle Mésange), par type de mesure. <a href="' + esc(J.variantes.depense.url) + '">Le document</a>.';
+    $('q-macro-n').innerHTML = 'Dans Créer, un changement de plus de ' + nf(CHOC, 0) + '\u00a0point de PIB (la taille testée par le modèle de la direction du Trésor et de l\'Insee) s\'applique un cinquième par an, de ' + AN0 + ' à ' + (AN0 + ETALE - 1) + ' : c\'est un choix de Concret ; l\'effet sur l\'activité porte sur le montant de chaque année. Les cartes à voter suivent le calendrier de leur source. ' + '<b>L\'effet de vos choix sur l\'activité et l\'emploi est compté.</b> Baisser une dépense ou monter un impôt freine un peu l\'activité et l\'emploi, ce qui réduit les recettes. Effets publiés par la direction du Trésor et l\'Insee (modèle Mésange), par type de mesure. <a href="' + esc(J.variantes.depense.url) + '">Le document</a>.';
     var t = $('q-taux'); t.value = base + S.taux;
     var maj = function () { $('q-taux-v').textContent = nf(base + S.taux, 2) + '\u00a0%'; };
     t.oninput = function () { S.taux = Math.round((+t.value - base) * 100) / 100; garder(); maj(); hud(); bilan(); }; maj();
@@ -2974,7 +3029,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     var rs = ressemble(an1(R)); $('q-pays-c').hidden = !rs; if (!rs) return;
     var s = rs.s, P = PE.pays, fr = FR0, pc = function (v) { return nf(v, 1) + ' %'; };
     // Le cadre : de 30 % (ou moins si votre budget y descend) au plus haut, plus 2 points ; un pays en dehors est nommé sous la carte.
-    var V = P.map(function (p) { return p.dep; }).concat(P.map(function (p) { return p.rec; }), [s.dep, s.rec]), lo = Math.min(30, Math.floor((Math.min(s.dep, s.rec) - 2) / 5) * 5), hi = Math.ceil((Math.max.apply(null, V) + 2) / 5) * 5;
+    var V = P.map(function (p) { return p.dep; }).concat(P.map(function (p) { return p.rec; }), [s.dep, s.rec]), lo = Math.max(15, Math.min(30, Math.floor((Math.min.apply(null, [s.dep, s.rec].concat(P.filter(function (p) { return p.hm; }).map(function (p) { return Math.min(p.dep, p.rec); }))) - 2) / 5) * 5)), hi = Math.ceil((Math.max.apply(null, V) + 2) / 5) * 5;
     var dedans = function (p) { return p.dep >= lo && p.rec >= lo; }, hors = P.filter(function (p) { return !dedans(p); });
     var W = 340, H = 330, l = 54, t = 12, w = W - l - 12, h = H - t - 40, X = function (v) { return l + (v - lo) / (hi - lo) * w; }, Y = function (v) { return t + h - (v - lo) / (hi - lo) * h; };
     var g = '';
@@ -2991,7 +3046,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     // Les noms sur la carte : vous, la France de départ, les trois plus proches, puis l'Allemagne, l'Espagne, l'Italie et l'UE ;
     // chaque nom va à droite, à gauche, au-dessus ou au-dessous de son point, là où il ne chevauche aucun autre ; sinon il n'est pas écrit
     // (le point garde son nom au toucher).
-    var NOMMES = { DE: 1, ES: 1, IT: 1, EU27_2020: 1 }; rs.L.slice(0, 3).forEach(function (x) { NOMMES[x.p.code] = 1; });
+    var NOMMES = { DE: 1, ES: 1, IT: 1, EU27_2020: 1 }; rs.L.slice(0, 3).forEach(function (x) { NOMMES[x.p.code] = 1; }); P.forEach(function (p) { if (p.hm) NOMMES[p.code] = 1; });
     var boites = [], etiq = [], ecrits = {};
     var poser = function (x, y, txt, fs, coul, gras) {
       if (ecrits[txt]) return; ecrits[txt] = 1;
@@ -3008,8 +3063,8 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     boites.push([X(s.dep) - 7, Y(s.rec) - 7, X(s.dep) + 7, Y(s.rec) + 7]);
     P.forEach(function (p) {
       if (p.code === 'FR' || !dedans(p)) return;
-      var ue = p.code === 'EU27_2020', pr = p.code === rs.p.code, x = X(p.dep), y = Y(p.rec), tt = '<title>' + esc(p.nom) + ' : dépenses ' + pc(p.dep) + ', recettes ' + pc(p.rec) + ' (' + PE.an + ')</title>';
-      g += ue ? '<rect x="' + (x - 4) + '" y="' + (y - 4) + '" width="8" height="8" transform="rotate(45 ' + x + ' ' + y + ')" fill="var(--ea)">' + tt + '</rect>' : '<circle cx="' + x + '" cy="' + y + '" r="' + (pr ? 5 : 3.5) + '" fill="' + (pr ? 'var(--fg)' : 'var(--muted)') + '" opacity="' + (pr ? 1 : .5) + '">' + tt + '</circle>';
+      var ue = p.code === 'EU27_2020', pr = p.code === rs.p.code, x = X(p.dep), y = Y(p.rec), tt = '<title>' + esc(p.nom) + ' : dépenses ' + pc(p.dep) + ', recettes ' + pc(p.rec) + ' (' + (p.an || PE.an) + (p.hm ? ', FMI' : '') + ')</title>';
+      g += p.hm && !pr ? '<circle cx="' + x + '" cy="' + y + '" r="3.5" fill="var(--panel)" stroke="var(--c-pol)" stroke-width="1.6">' + tt + '</circle>' : ue ? '<rect x="' + (x - 4) + '" y="' + (y - 4) + '" width="8" height="8" transform="rotate(45 ' + x + ' ' + y + ')" fill="var(--ea)">' + tt + '</rect>' : '<circle cx="' + x + '" cy="' + y + '" r="' + (pr ? 5 : 3.5) + '" fill="' + (pr ? 'var(--fg)' : 'var(--muted)') + '" opacity="' + (pr ? 1 : .5) + '">' + tt + '</circle>';
     });
     var fx = X(fr.dep), fy = Y(fr.rec), vx = X(s.dep), vy = Y(s.rec);
     if (Math.abs(vx - fx) + Math.abs(vy - fy) > 6) g += '<line x1="' + fx + '" y1="' + fy + '" x2="' + vx + '" y2="' + vy + '" stroke="var(--fr)" stroke-width="1.5" stroke-dasharray="3 3"/>';
@@ -3020,16 +3075,17 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     g += etiq.join('');
     var suite = rs.L.slice(1, 4).map(function (x) { return drapeau(x.p.code) + ' ' + esc(nomCourt(x.p)); });
     // Au doigt (ou à la souris) : le nom du pays le plus proche, avec ses chiffres.
-    var PTS = P.filter(function (p) { return dedans(p) && p.code !== 'FR'; }).map(function (p) { return { x: X(p.dep), y: Y(p.rec), t: (p.code === 'EU27_2020' ? 'Moyenne de l\'UE' : drapeau(p.code) + ' ' + p.nom) + ' : dépenses ' + pc(p.dep) + ', recettes ' + pc(p.rec) }; })
+    var PTS = P.filter(function (p) { return dedans(p) && p.code !== 'FR'; }).map(function (p) { return { x: X(p.dep), y: Y(p.rec), t: (p.code === 'EU27_2020' ? 'Moyenne de l\'UE' : drapeau(p.code) + ' ' + p.nom + (p.hm ? ' ' + p.an + ' (FMI)' : '')) + ' : dépenses ' + pc(p.dep) + ', recettes ' + pc(p.rec) }; })
       .concat([{ x: fx, y: fy, t: drapeau('FR') + ' France ' + PE.an + ' : dépenses ' + pc(fr.dep) + ', recettes ' + pc(fr.rec) }, { x: vx, y: vy, t: 'Votre budget ' + AN0 + ' : dépenses ' + pc(s.dep) + ', recettes ' + pc(s.rec) }]);
     g += '<g class="q-bulle" style="pointer-events:none" visibility="hidden"><circle r="9" fill="none" stroke="var(--fr)" stroke-width="2"/><rect rx="6" fill="var(--panel)" stroke="var(--line)"/><text font-size="11.5" font-weight="600" fill="var(--fg)"></text></g>';
-    el.innerHTML = '<p class="q-gros">En ' + AN0 + ', ' + (nbChoix() ? 'avec vos mesures' : 'sans aucune mesure') + ', les administrations publiques dépenseraient <b>' + pc(s.dep) + '</b> du PIB et recevraient <b>' + pc(s.rec) + '</b>. Le pays le plus proche : ' + drapeau(rs.p.code) + ' <b>' + esc(nomCourt(rs.p)) + '</b> (dépenses ' + pc(rs.p.dep) + ', recettes ' + pc(rs.p.rec) + ' en ' + PE.an + ').</p>' +
-      '<svg class="q-paysvg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Dépenses et recettes publiques des pays d\'Europe en ' + PE.an + ', et votre budget ' + AN0 + '">' + g + '</svg>' +
+    el.innerHTML = '<p class="q-gros">En ' + AN0 + ', ' + (nbChoix() ? 'avec vos mesures' : 'sans aucune mesure') + ', les administrations publiques dépenseraient <b>' + pc(s.dep) + '</b> du PIB et recevraient <b>' + pc(s.rec) + '</b>. Le pays le plus proche : ' + drapeau(rs.p.code) + ' <b>' + esc(nomCourt(rs.p)) + '</b> (dépenses ' + pc(rs.p.dep) + ', recettes ' + pc(rs.p.rec) + ' en ' + (rs.p.an || PE.an) + (rs.p.hm ? ', FMI' : '') + ').</p>' +
+      '<svg class="q-paysvg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Dépenses et recettes publiques des pays d\'Europe et de grands pays du monde en ' + PE.an + ', et votre budget ' + AN0 + '">' + g + '</svg>' +
       '<p class="q-ligne">Ensuite : ' + suite.join(' · ') + '.</p>' +
       '<details class="q-plie"><summary>Comment c\'est calculé</summary>' + (function () { var D = procheDeficit(an1(R)); return D.length ? '<p class="q-note">Par le déficit seul : le vôtre en ' + AN0 + ' (' + defic(an1(R).solde) + ') est le plus proche de celui que le FMI prévoit cette année-là pour ' + drapeau(D[0].p.code) + ' <b>' + esc(aPays(D[0].p).replace(/^à |^au |^aux /, function (m) { return { 'à ': '', 'au ': 'le ', 'aux ': 'les ' }[m]; })) + '</b> (' + defic(D[0].v) + ')' + (D[1] ? ', puis ' + drapeau(D[1].p.code) + ' ' + esc(lePays(D[1].p)) + ' (' + defic(D[1].v) + ')' : '') + '.</p>' : ''; })() +
       // Ce qui manque sur la carte reste écrit en clair ; la méthode est repliée sous « Comment c'est calculé ».
       ((hors.length || PE.absents.length) ? '<p class="q-note">' + [PE.absents.length ? esc(PE.absents.map(function (n) { return LePays(n); }).join(', ')) + (PE.absents.length > 1 ? ' n\'ont' : ' n\'a') + ' pas encore publié ' + (PE.absents.length > 1 ? 'leurs' : 'ses') + ' chiffres de ' + PE.an + ' : absent de la carte' : '', hors.length ? hors.map(function (p) { return esc(LePays(p.nom, p.code)) + ' est hors de la carte : ses dépenses (' + pc(p.dep) + ') et ses recettes (' + pc(p.rec) + ') sont trop basses pour y tenir'; }).join(' ; ') : ''].filter(Boolean).join('. ') + '.</p>' : '') +
-      '<p class="q-note">Les pays : chiffres de ' + PE.an + ', les derniers publiés par Eurostat ; touchez un point pour son nom. Votre budget : calcul de Concret à partir de la France de ' + PE.an + ' (dépenses ' + pc(fr.dep) + ', recettes ' + pc(fr.rec) + ') : vos hausses d\'impôt montent les recettes, qui restent sinon la même part du PIB (hypothèse de Concret, la même que le départ du jeu) ; les dépenses sont les recettes moins votre déficit : vos économies, vos dépenses nouvelles, les intérêts de votre dette et l\'effet sur l\'activité (le PIB qui change) y sont comptés. « Le plus proche » : le plus petit écart, dépenses et recettes comptées pareil. Sous la diagonale, les dépenses dépassent les recettes : c\'est un déficit. Par le déficit : prévisions du FMI pour ' + AN0 + ', les mêmes que le tableau « Se comparer ». <a href="' + esc(PE.url) + '">' + esc(PE.source.split(' :')[0]) + '</a>.</p></details>';
+      (function () { var MO = J.pays_fmi && J.pays_fmi.monde; if (!MO || !MO.pays.length) return ''; var ans = MO.pays.map(function (p) { return p.an; }).filter(function (a, i, L) { return L.indexOf(a) === i; }); return '<p class="q-note">Hors d\'Europe (cercles vides) : <a href="' + esc(MO.url) + '">FMI, Fiscal Monitor</a> (' + esc(String((MO.edition || {}).edition || '').replace(/^Fiscal Monitor \(October (\d{4})\)$/, 'octobre $1')) + '), chiffres de ' + ans.join(', ') + (ans.length === 1 && ans[0] === PE.an ? ', la même année que les pays d\'Europe' : '') + ' : une autre source qu\'Eurostat, dont les définitions peuvent un peu différer.' + (MO.sans && MO.sans.length ? ' Sans chiffre comparable : ' + esc(MO.sans.join(', ')) + '.' : '') + '</p>'; })() +
+      '<p class="q-note">Les pays d\'Europe : chiffres de ' + PE.an + ', les derniers publiés par Eurostat ; touchez un point pour son nom. Votre budget : calcul de Concret à partir de la France de ' + PE.an + ' (dépenses ' + pc(fr.dep) + ', recettes ' + pc(fr.rec) + ') : vos hausses d\'impôt montent les recettes, qui restent sinon la même part du PIB (hypothèse de Concret, la même que le départ du jeu) ; les dépenses sont les recettes moins votre déficit : vos économies, vos dépenses nouvelles, les intérêts de votre dette et l\'effet sur l\'activité (le PIB qui change) y sont comptés. « Le plus proche » : le plus petit écart, dépenses et recettes comptées pareil. Sous la diagonale, les dépenses dépassent les recettes : c\'est un déficit. Par le déficit : prévisions du FMI pour ' + AN0 + ', les mêmes que le tableau « Se comparer ». <a href="' + esc(PE.url) + '">' + esc(PE.source.split(' :')[0]) + '</a>.</p></details>';
     var sv = el.querySelector('.q-paysvg'), bu = sv && sv.querySelector('.q-bulle');
     if (sv && bu) {
       var montrer = function (ev) {
@@ -3055,6 +3111,28 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     for (var i = 0; i < L.length; i++) { var r = L[i], y = (PJ.ans || []).filter(function (a) { return a.an === r.an; })[0]; if (!y || !PP.moyenne[String(r.an)]) return null; def *= 1 + y.inflation / 100; out.push({ an: r.an, d: r.pib / def * 1e9 / PP.moyenne[String(r.an)] }); }
     return out;
   }
+  // La richesse par habitant en parité de pouvoir d'achat (FMI, Perspectives de l'économie mondiale) : les pays, la France sans vos
+  // mesures (la projection du FMI) et « Vous » : la même projection, multipliée par l'écart de niveau de PIB par habitant du jeu.
+  var PPA_VUS = { US: 1, CN: 1, JP: 1, UK: 1, DE: 1, ES: 1, IT: 1, CA: 1, KR: 1, IN: 1, BR: 1, RU: 1, AU: 1, TR: 1 };
+  function richessePays() {
+    var sec = $('q-ppa-c'), PH = J.pays_fmi && J.pays_fmi.pib_hab, A = parHab(R), Z = parHab(R0); if (!sec) return;
+    var fr = PH && PH.pays.filter(function (p) { return p.code === 'FR'; })[0]; sec.hidden = !PH || !fr || !A || !Z; if (sec.hidden) return;
+    var aA = A.filter(function (x) { return x.an === PH.an; })[0], aZ = Z.filter(function (x) { return x.an === PH.an; })[0], k = aA && aZ ? aA.d / aZ.d : null;
+    if (k == null) { sec.hidden = true; return; }
+    var vous = { code: 'VOUS', nom: 'Vous', v: fr.v * k, moi: 1 }, L = PH.pays.map(function (p) { return p.code === 'FR' ? { code: 'FR', nom: 'France sans vos mesures', v: p.v, fr: 1 } : p; }).concat([vous]).sort(function (a, b) { return b.v - a.v; });
+    var W = Math.round(320 / TS()), arr = function (v) { return nf(Math.round(v / 100) * 100, 0) + '\u00a0$'; };
+    var svg = function (M) { var mx = M[0] ? Math.max.apply(null, M.map(function (x) { return x.v; })) : 1, y = 0, o = '', lw = Math.round(W * 0.47);
+      M.forEach(function (x) { var c = x.moi ? 'var(--fr)' : x.fr ? 'var(--fg)' : 'var(--muted)', w = Math.max(2, (W - lw - 70) * x.v / mx);
+        o += '<text x="0" y="' + (y + 11) + '" font-size="11" fill="var(--fg)"' + (x.moi || x.fr ? ' font-weight="700"' : '') + '>' + esc((x.code === 'VOUS' || x.code === 'FR' ? '' : drapeau(x.code) + ' ') + x.nom) + '</text><rect x="' + lw + '" y="' + (y + 2) + '" width="' + w.toFixed(1) + '" height="10" rx="3" fill="' + c + '"' + (x.moi || x.fr ? '' : ' opacity=".55"') + '/><text x="' + (lw + w + 4).toFixed(1) + '" y="' + (y + 11) + '" font-size="11" fill="var(--fg)"' + (x.moi ? ' font-weight="700"' : '') + '>' + arr(x.v) + '</text>'; y += 17; });
+      return '<svg viewBox="0 0 ' + W + ' ' + (y + 2) + '" role="img" aria-label="' + esc('PIB par habitant en parité de pouvoir d\'achat, ' + PH.an + ', en dollars internationaux') + '">' + o + '</svg>'; };
+    // À l'écran : les grands pays, l'Allemagne, l'Espagne, l'Italie, la France et vous ; les autres pays dans un dépliant.
+    var vis = L.filter(function (x) { return x.moi || x.fr || PPA_VUS[x.code]; }), aut = L.filter(function (x) { return !(x.moi || x.fr || PPA_VUS[x.code]); });
+    $('q-ppa-an').textContent = PH.an;
+    $('q-ppa-x').innerHTML = 'En dollars corrigés des différences de prix entre pays (parité de pouvoir d\'achat), projections du FMI pour ' + PH.an + ' ; votre point applique à la France l\'effet de vos mesures calculé par le jeu (' + (k >= 1 ? '+' : '−') + nf(Math.abs(k - 1) * 100, 1) + '\u00a0% de PIB par habitant en ' + PH.an + ').';
+    $('q-ppa').innerHTML = svg(vis) + (aut.length ? '<details class="q-plie"><summary>Voir les ' + aut.length + ' autres pays de l\'UE</summary>' + svg(aut) + '</details>' : '');
+    $('q-ppa-l').innerHTML = '<span><i style="background:var(--fr)"></i>Vous, en ' + PH.an + '</span><span><i style="background:var(--fg)"></i>France sans vos mesures (projection du FMI)</span>';
+    $('q-ppa-n').innerHTML = 'Source : <a href="' + esc(PH.url) + '">FMI, Perspectives de l\'économie mondiale</a> (' + esc(String((PH.edition || {}).edition || '').replace(/^World Economic Outlook \(October (\d{4})\)$/, 'octobre $1')) + '), PIB par habitant en parité de pouvoir d\'achat, dollars internationaux, projection pour ' + PH.an + ', lue le ' + esc(dateLue(PH.lu)) + '. Arrondi à la centaine de dollars.' + (PH.sans && PH.sans.length ? ' Sans chiffre pour ' + PH.an + ' : ' + esc(PH.sans.join(', ')) + '.' : '') + (horsModele(R) ? ' Votre point est un ordre de grandeur (effet sur l\'activité au-delà de ce que le modèle a testé).' : '') + (sansEffet() >= 0.05 ? ' Pas compté : l\'effet sur l\'économie de ' + mdt(sansEffet()) + ' de vos mesures, faute de chiffre publié.' : '');
+  }
   function richesse() {
     var sec = $('q-rh-c'); if (!sec) return;
     var A = parHab(R), Z = parHab(R0); sec.hidden = !A || !Z; if (!A || !Z) return;
@@ -3072,6 +3150,55 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   // Chaque point est un pays à une année (le milieu du mandat d'un dirigeant) : dépenses publiques vers la droite, recettes vers le
   // haut, comme la carte des pays (donnees/budget_jeu.json, « dirigeants »). Votre point : le même calcul que pour le pays le plus proche
   // (structure()). Le pays et l'année passent toujours avant la personne : le point mesure le pays, pas les décisions d'une personne.
+  // Prototype, non publié : la carte « Dans l'histoire » (budgets d'hier et dirigeants) seulement avec ?histoire=1 dans l'adresse.
+  var HIST = /[?&]histoire=1\b/.test(location.search);
+  // La carte « Dans l'histoire » : le pays-année le plus proche, le ou les dirigeants de ce moment (source : Wikidata, lus dans
+  // donnees/budget_sources/dirigeants.json), deux paires de barres (dépenses, recettes), deux autres proches, la réforme du même genre.
+  var DIRSRC = null;
+  function quiDir(p) {
+    if (!DIRSRC) return [];
+    return DIRSRC.points.filter(function (q) { return !q.court && q.pays === p.pays && q.annee === p.an; }).map(function (q) { var fo = DIRSRC.fonctions[q.office] || {}, fe = DIRSRC.sexe && DIRSRC.sexe[q.wikidata] === 'F'; return { nom: q.nom, f: (fe && fo.f ? fo.f : fo.l) || q.role }; });
+  }
+  function histoireCarte(rd) {
+    var sec = $('q-hist-c'); if (!sec) return; sec.hidden = !HIST || !rd; if (!HIST || !rd) return;
+    if (!DIRSRC) { fetch('/donnees/budget_sources/dirigeants.json').then(function (r) { return r.json(); }).then(function (d) { DIRSRC = d; histoireCarte(procheDir(an1(R))); }).catch(function () {}); }
+    var p = rd.p, s = rd.s, Q = quiDir(p), pcc = function (v) { return nf(v, 1) + '\u00a0%'; }, mx = Math.max(s.dep, s.rec, p.dep, p.rec, 1);
+    var paire = function (t, a, b) { return '<div class="q-hi-b"><small>' + t + '</small><span>Vous</span><span class="r"><i style="width:' + (a / mx * 100).toFixed(1) + '%;background:var(--fr)"></i></span><span class="v">' + pcc(a) + '</span><span>' + esc(p.pays) + '</span><span class="r"><i style="width:' + (b / mx * 100).toFixed(1) + '%;background:var(--muted)"></i></span><span class="v">' + pcc(b) + '</span></div>'; };
+    var autres = rd.L.slice(1).filter(function (x) { return !(x.p.pays === p.pays && x.p.an === p.an); }).slice(0, 2).map(function (x) { var q = quiDir(x.p); return drapeau(x.p.c) + ' ' + esc(x.p.pays) + ', ' + x.p.an + (q.length ? ' · ' + esc(q.map(function (y) { return y.nom; }).join(' et ')) : ''); });
+    var rr = reformeProche(), x = rr && rr.r;
+    sec.innerHTML = '<h2 id="q-hi-t"><span class="eyebrow">Dans l\'histoire</span>Votre budget ressemble à celui de…</h2>' +
+      '<p class="q-hi-qui">' + drapeau(p.c) + ' ' + esc(p.pays) + ', ' + p.an + (Q.length ? ' · ' + esc(Q.map(function (y) { return y.nom; }).join(' et ')) : '') + '</p>' +
+      (Q.length ? '<p class="q-hi-f">' + esc(Q.map(function (y) { return y.f; }).join(' ; ')) + '</p>' : '') +
+      paire('Dépenses publiques, % du PIB', s.dep, p.dep) + paire('Recettes publiques, % du PIB', s.rec, p.rec) +
+      (autres.length ? '<p class="q-ligne">Et aussi proche : ' + autres.join(' ; ') + '.</p>' : '') +
+      (x ? '<p class="q-ligne"><b>Une réforme du même genre :</b> ' + esc(x.en.charAt(0).toUpperCase() + x.en.slice(1)) + ', en ' + x.an + ' : ' + esc(x.mesure.charAt(0).toLowerCase() + x.mesure.slice(1).replace(/\.$/, '')) + '.' + (x.reg ? ' (Régime : ' + esc(x.reg) + ', classement V-Dem.)' : '') + ' <a href="' + esc(x.url) + '">Source</a></p>' : '') +
+      '<p class="q-actions"><button type="button" class="q-go" id="q-hi-p">Partager</button></p>' +
+      '<p class="q-note">Ce sont les dépenses et recettes de tout le pays, pas les seules décisions de son gouvernement. Votre budget : ' + AN0 + ' ; ' + esc(p.pays) + ' : ' + p.an + ' (Eurostat, OCDE, FMI ; dirigeants : Wikidata). Prototype, non publié.</p>';
+    $('q-hi-p').onclick = function () { partagerHist(rd, Q, autres); };
+  }
+  // L'image de la carte : la même, lisible en miniature (gros caractères, deux paires de barres).
+  function partagerHist(rd, Q, autres) {
+    var p = rd.p, s = rd.s, W = 1080, H = 1350, M = 80, sans = 'Inter Tight, system-ui, sans-serif', c = document.createElement('canvas'); c.width = W; c.height = H; var g = c.getContext('2d');
+    var ecrire = function (t, x, y, l, lh) { var ligne = ''; String(t).split(' ').forEach(function (m) { var u = ligne ? ligne + ' ' + m : m; if (g.measureText(u).width > l && ligne) { g.fillText(ligne, x, y); y += lh; ligne = m; } else ligne = u; }); if (ligne) g.fillText(ligne, x, y); return y + lh; };
+    g.fillStyle = '#f6f5f1'; g.fillRect(0, 0, W, H); g.fillStyle = '#2f5bd3'; g.fillRect(0, 0, W, 14);
+    g.fillStyle = '#62646d'; g.font = '700 34px ' + sans; g.fillText('VOTRE BUDGET ' + AN0 + ' RESSEMBLE À CELUI DE…', M, 110);
+    g.fillStyle = '#1c1d22'; g.font = '800 84px ' + sans; var y = ecrire(drapeau(p.c) + ' ' + p.pays + ', ' + p.an, M, 220, W - 2 * M, 94);
+    if (Q.length) { g.font = '700 54px ' + sans; y = ecrire(Q.map(function (q) { return q.nom; }).join(' et '), M, y + 4, W - 2 * M, 64); g.fillStyle = '#62646d'; g.font = '400 32px ' + sans; y = ecrire(Q.map(function (q) { return q.f; }).join(' ; '), M, y - 6, W - 2 * M, 40); }
+    var mx = Math.max(s.dep, s.rec, p.dep, p.rec, 1), bw = W - 2 * M - 360;
+    var paire = function (t, a, b) { g.fillStyle = '#1c1d22'; g.font = '700 40px ' + sans; g.fillText(t, M, y + 50); y += 80;
+      [['Vous', a, '#2f5bd3'], [p.pays, b, '#8a8d96']].forEach(function (x) { g.fillStyle = '#1c1d22'; g.font = '500 38px ' + sans; g.fillText(x[0].length > 9 ? x[0].slice(0, 8) + '.' : x[0], M, y + 38); g.fillStyle = '#e3e1da'; g.fillRect(M + 190, y + 6, bw - 20, 44); g.fillStyle = x[2]; g.fillRect(M + 190, y + 6, (bw - 20) * x[1] / mx, 44); g.fillStyle = '#1c1d22'; g.font = '700 40px ' + sans; g.fillText(nf(x[1], 1) + ' %', M + 190 + bw, y + 42); y += 66; }); };
+    y += 10; paire('Dépenses publiques, % du PIB', s.dep, p.dep); paire('Recettes publiques, % du PIB', s.rec, p.rec);
+    if (autres.length) { g.fillStyle = '#1c1d22'; g.font = '400 36px ' + sans; y = ecrire('Et aussi proche : ' + autres.join(' ; ').replace(/<[^>]+>/g, ''), M, y + 46, W - 2 * M, 42); }
+    g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; y = ecrire('Ce sont les dépenses et recettes de tout le pays, pas les seules décisions de son gouvernement. Sources : Eurostat, OCDE, FMI ; Wikidata ; calcul de Concret.', M, y + 20, W - 2 * M, 34);
+    var Hf = Math.min(H, Math.max(1080, Math.round(y + 110))), c2 = document.createElement('canvas'); c2.width = W; c2.height = Hf; var g2 = c2.getContext('2d'); g2.drawImage(c, 0, 0);
+    g2.fillStyle = '#2f5bd3'; g2.font = '700 38px ' + sans; g2.fillText('À votre tour : concret2027.fr/budget', M, Hf - 56);
+    c2.toBlob(function (b) {
+      var t = 'Mon budget ' + AN0 + ' ressemble à celui ' + p.de + ' en ' + p.an + (Q.length ? ' (' + Q.map(function (q) { return q.nom; }).join(' et ') + ')' : '') + '. Et le vôtre ?', u = lienBudget(), fi = b && typeof File === 'function' ? new File([b], 'concret-histoire.png', { type: 'image/png' }) : null;
+      if (fi && navigator.canShare && navigator.canShare({ files: [fi] })) return navigator.share({ files: [fi], text: t + ' ' + u }).catch(function () {});
+      var sec = $('q-hist-c'), old = sec.querySelector('.q-pcimg'); if (old) old.remove();
+      var q = document.createElement('p'); q.className = 'q-pcimg'; q.innerHTML = '<img src="' + URL.createObjectURL(b) + '" alt="' + esc(t) + '" style="width:100%;max-width:360px;border-radius:10px;border:1px solid var(--line);display:block;margin:8px 0">Appuyez longuement sur l\'image pour l\'enregistrer ou la partager.'; sec.appendChild(q);
+    }, 'image/png');
+  }
   function procheDir(r) {
     var D = J.dirigeants; if (!D || !D.pts || !D.pts.length || !FR0 || !r) return null; var s = structure(r);
     var L = D.pts.map(function (p) { return { p: p, e: Math.sqrt(Math.pow(p.dep - s.dep, 2) + Math.pow(p.rec - s.rec, 2)) }; }).sort(function (a, b) { return a.e - b.e; });
@@ -3188,7 +3315,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   var DIR_PRUDENCE = 'Chaque point : un pays une année, au milieu d\'un mandat. Ce sont les dépenses et recettes de tout le pays, pas les seules décisions de son gouvernement.';
   function dirCarte() {
     var el = $('q-dir'), sec = $('q-dir-c'); if (!el || !sec) return;
-    var D = J.dirigeants, rd = procheDir(an1(R)); sec.hidden = !rd; if (!rd) return;
+    var D = J.dirigeants, rd = procheDir(an1(R)); sec.hidden = true; histoireCarte(rd); return;
     var s = rd.s, P = D.pts, fr = FR0, p = rd.p, pcc = function (v) { return nf(v, 1) + ' %'; };
     // Largeur en unités du dessin : celle de l'écran divisée par la taille du texte (réglage du téléphone ou zoom) : les noms
     // grandissent avec le texte. Hauteur : au plus 60 % de l'écran. Noms : les grands pays toujours, puis d'autres jusqu'à 20 sur un
@@ -3373,7 +3500,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     Array.prototype.forEach.call(clone.querySelectorAll('.q-bulle'), function (n) { n.remove(); });
     clone.querySelectorAll('*').forEach(function (n) { ['stroke', 'fill', 'style'].forEach(function (a) { if (n.getAttribute(a)) n.setAttribute(a, res(n.getAttribute(a))); }); });
     if (th === null) rac.removeAttribute('data-theme'); else rac.setAttribute('data-theme', th);
-    var vb = svg.viewBox.baseVal, W = 1080, k = (W - 160) / vb.width, nLeg = sec.querySelectorAll('.q-leg span').length, H = 1350; if (id === 'q-ou') nLeg = Math.ceil(nLeg / 2); /* au plus 1350 px (format des réseaux) : la courbe se réduit pour tenir ; l'image est recoupée sous son dernier texte */
+    var vb = svg.viewBox.baseVal, W = 1080, k = (W - 160) / vb.width, nLeg = Array.prototype.filter.call(sec.querySelectorAll('.q-leg span'), function (x) { return x.closest('section') === sec; }).length, H = 1350; if (id === 'q-ou') nLeg = Math.ceil(nLeg / 2); /* au plus 1350 px (format des réseaux) : la courbe se réduit pour tenir ; l'image est recoupée sous son dernier texte */
     clone.setAttribute('width', vb.width * k); clone.setAttribute('height', vb.height * k); clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     clone.setAttribute('font-family', 'Inter Tight, system-ui, sans-serif');
     var im = new Image();
@@ -3393,7 +3520,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
       var y0 = yt + 10; g.drawImage(im, (W - vb.width * k2) / 2, y0, vb.width * k2, vb.height * k2);
       var y = y0 + vb.height * k2 + 46;
       // La légende : sur deux colonnes quand chaque libellé est court, sinon une ligne par libellé, coupée à la largeur de l'image.
-      var LG = Array.prototype.slice.call(sec.querySelectorAll('.q-leg span')); g.font = '500 26px ' + sans;
+      var LG = Array.prototype.filter.call(sec.querySelectorAll('.q-leg span'), function (x) { return x.closest('section') === sec; }); g.font = '500 26px ' + sans;
       var deuxC = LG.length >= 3 && LG.every(function (sp) { return g.measureText(sp.textContent.trim()).width < 360; });
       LG.forEach(function (sp, n) {
         var i = sp.querySelector('i'), st = i ? getComputedStyle(i) : null, bg = st && st.backgroundColor !== 'rgba(0, 0, 0, 0)' ? st.backgroundColor : st ? st.borderTopColor : '#62646d', trait = st && st.borderTopStyle !== 'none' && st.borderTopWidth !== '0px', x = deuxC && n % 2 ? 560 : 80;
@@ -3405,7 +3532,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
       if (id === 'q-ou') { var VQ = variationsPostes(); g.fillStyle = '#1c1d22'; g.font = '400 26px ' + sans; y = ecrire('Les plus gros postes ; les deux budgets ne s\'additionnent pas (l\'État verse aussi de l\'argent à la Sécurité sociale).' + (Math.abs(VQ.hors) >= 0.05 ? ' Hors du graphique : ' + mdt(VQ.hors, true) + ' de mes changements.' : ''), 80, y + 6, W - 160, 34); }
       if (id === 'q-crc') { g.fillStyle = '#1c1d22'; g.font = '400 26px ' + sans; y = ecrire('Modèle Mésange (direction du Trésor et Insee), à taux d\'intérêt réels constants.' + (sansEffet() >= 0.05 ? ' Non compté : l\'effet de ' + mdt(sansEffet()) + ' de mesures (impôt sur les sociétés, patrimoine…).' : ''), 80, y + 6, W - 160, 34); }
       if (id === 'q-int') { g.fillStyle = '#1c1d22'; g.font = '400 26px ' + sans; y = ecrire('Trait bleu : intérêts de toutes les administrations publiques (État, Sécurité sociale, collectivités). Traits fins : d\'autres budgets de l\'État, pensions comprises, pour comparer.', 80, y + 6, W - 160, 34); }
-      g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; return ecrire(id === 'q-pays' ? 'Sources : Eurostat, dépenses et recettes publiques des pays (' + (PE ? PE.an : '') + ') ; votre budget : calcul de Concret.' : id === 'q-rh' ? 'En euros de ' + D0.an + ', hors inflation. Sources : Eurostat (PIB, projections de population), FMI (croissance), modèle Mésange (effet de mes mesures) ; calcul de Concret.' : id === 'q-dir' ? 'Chaque point : un pays une année, au milieu d\'un mandat. Ce sont les dépenses et recettes de tout le pays, pas les seules décisions de la personne. Sources : Eurostat, OCDE, FMI, Insee ; dirigeants : Wikidata ; votre budget : calcul de Concret.' : id === 'q-ou' ? 'Sources : projets de loi de finances et de financement de la sécurité sociale pour ' + AN0 + ' (crédits de chaque mission de l\'État, dépenses de chaque branche de la Sécurité sociale) ; vos choix : calcul de Concret.' : id === 'q-vm' ? 'Sources : chiffrages des projets de loi pour ' + AN0 + ' (évaluations préalables), Cour des comptes, Évaluation des voies et moyens ; calcul de Concret.' : 'Sources : FMI, Eurostat, direction du Trésor et Insee (modèle Mésange), projet de loi de finances ' + AN0 + '. Calcul de Concret.', 80, y + 16, W - 160, 34);
+      g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; return ecrire(id === 'q-pays' ? 'Sources : Eurostat, dépenses et recettes publiques des pays d\'Europe (' + (PE ? PE.an : '') + ') ; hors d\'Europe : FMI, Fiscal Monitor ; votre budget : calcul de Concret.' : id === 'q-ppa' ? 'Dollars corrigés des différences de prix entre pays (parité de pouvoir d\'achat). Source : FMI, Perspectives de l\'économie mondiale (octobre 2026), projections ; votre point : la France avec l\'effet de vos mesures calculé par le jeu.' : id === 'q-rh' ? 'En euros de ' + D0.an + ', hors inflation. Sources : Eurostat (PIB, projections de population), FMI (croissance), modèle Mésange (effet de mes mesures) ; calcul de Concret.' : id === 'q-dir' ? 'Chaque point : un pays une année, au milieu d\'un mandat. Ce sont les dépenses et recettes de tout le pays, pas les seules décisions de la personne. Sources : Eurostat, OCDE, FMI, Insee ; dirigeants : Wikidata ; votre budget : calcul de Concret.' : id === 'q-ou' ? 'Sources : projets de loi de finances et de financement de la sécurité sociale pour ' + AN0 + ' (crédits de chaque mission de l\'État, dépenses de chaque branche de la Sécurité sociale) ; vos choix : calcul de Concret.' : id === 'q-vm' ? 'Sources : chiffrages des projets de loi pour ' + AN0 + ' (évaluations préalables), Cour des comptes, Évaluation des voies et moyens ; calcul de Concret.' : 'Sources : FMI, Eurostat, direction du Trésor et Insee (modèle Mésange), projet de loi de finances ' + AN0 + '. Calcul de Concret.', 80, y + 16, W - 160, 34);
       };
       var yS = dessine(k2); if (yS + 90 > 1350) { k2 = Math.max(k2 * 0.5, k2 - (yS + 90 - 1350) / vb.height); yS = dessine(k2); }
       // Recoupe : la signature juste sous le dernier texte, sans grand vide ni texte par-dessus un autre.
@@ -3445,7 +3572,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     else g.fillText(res === defL ? 'Dette ' + f.an + ' : ' + nf(zf.d, 1) + ' % → ' + nf(f.d, 1) + ' %' : defL, 80, y);
     y += 90;
     // Dans l'histoire (le bloc du Bilan), sur sa ligne, nommé comme tel : un autre repère, pas une autre réponse.
-    var rdI = procheDir(r1); if (rdI) { g.fillStyle = '#62646d'; g.font = '400 28px ' + sans; g.fillText('Dans l\'histoire : ' + lePaysDir(rdI.p) + ' en ' + rdI.p.an + ' ' + drapeau(rdI.p.c), 80, y - 20); y += 40; }
+    var rdI = HIST ? procheDir(r1) : null; if (rdI) { g.fillStyle = '#62646d'; g.font = '400 28px ' + sans; g.fillText('Dans l\'histoire : ' + lePaysDir(rdI.p) + ' en ' + rdI.p.an + ' ' + drapeau(rdI.p.c), 80, y - 20); y += 40; }
     var L = adoptees().map(function (x) { return { t: titreSens(x), m: montant(x, AN0), r: x.sens === 'recette' }; }).concat(Object.keys(S.perso).map(function (k) { return { t: AS[k].l.split(' (')[0] + ' ' + pcT(AS[k], S.perso[k]), m: effetPerso(AS[k], S.perso[k]), r: AS[k].groupe === 'recette' || k === 'allegements' }; })).concat(Object.keys(S.unites).filter(function (k) { return UN[k]; }).map(function (k) { var n = S.unites[k]; return { t: UN[k].l + ' ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0), m: unMd(UN[k], n, AN0), r: false }; })).sort(function (a, b) { return Math.abs(b.m) - Math.abs(a.m); }).slice(0, 3);
     g.fillStyle = '#1c1d22'; g.font = '700 34px ' + sans; g.fillText(L.length ? 'Mes plus grosses mesures' : 'Aucune mesure pour l\'instant', 80, y); y += 52;
     g.font = '400 31px ' + sans; L.forEach(function (x) { var dr = (x.m >= 0 ? (x.r ? 'rapporte ' : 'économise ') : 'coûte ') + mds(Math.abs(x.m)), place = W - 160 - g.measureText(dr).width - 30, LL = lignesC(x.t, place - 30, 2); g.fillStyle = '#1c1d22'; LL.forEach(function (li, i) { g.fillText((i ? '   ' : '• ') + li, 80, y + i * 38); }); g.fillStyle = '#2f5bd3'; g.textAlign = 'right'; g.fillText(dr, W - 80, y); g.textAlign = 'left'; y += LL.length * 38 + 14; });
@@ -3463,7 +3590,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   }
   function partager(tx, rep) { if (typeof tx !== 'string') tx = null; stat('partages-' + isoJ());
     REP_IMG = null; if (rep && S.ami) { var AmI = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), xI = accordAmi(); REP_IMG = 'Ma réponse à votre budget : ' + (xI && xI.n ? 'mêmes votes sur ' + xI.ok + ' mesure' + (xI.ok > 1 ? 's' : '') + ' sur ' + xI.n + ' · ' : '') + 'déficit ' + AN0 + ' : ' + defic(an1(R).solde) + ' pour moi, ' + defic(an1(AmI).solde) + ' pour vous'; }
-    var r1 = an1(R), f = R[R.length - 1], rsP = ressemble(r1), resT = resultatTxt(), t = 'Mon budget ' + AN0 + ' : ' + (r1.solde >= 0 ? 'excédent de ' + nf(r1.solde, 1) + '\u00a0%' : 'déficit ' + deficO(r1, AN0)) + ', dette ' + nf(f.d, 1) + '\u00a0% en ' + f.an + (rsP && rsP.p.code !== 'FR' ? '. Il ressemble ' + aPays(rsP.p) + ' ' + drapeau(rsP.p.code) + (procheDir(r1) ? ' (dans l\'histoire : ' + lePaysDir(procheDir(r1).p).replace(/^(La|Le|Les|L')(?=[ '])/, function (m) { return m.toLowerCase(); }) + ' en ' + procheDir(r1).p.an + ')' : '') : procheDir(r1) ? '. ' + phraseDir(procheDir(r1)).replace(/^Votre budget/, 'Dans l\'histoire, il') : '') + '. À votre tour, avec les mêmes cartes :'; if (/^✓/.test(resT)) t = resT.replace(/^✓ /, '') + '. ' + t; if (S.obj === 'defi' && !/^✓/.test(resT) && defiX()) t = 'Mon défi : « ' + defiX().t.replace(/\.$/, '') + ' ». ' + t;
+    var r1 = an1(R), f = R[R.length - 1], rsP = ressemble(r1), resT = resultatTxt(), t = 'Mon budget ' + AN0 + ' : ' + (r1.solde >= 0 ? 'excédent de ' + nf(r1.solde, 1) + '\u00a0%' : 'déficit ' + deficO(r1, AN0)) + ', dette ' + nf(f.d, 1) + '\u00a0% en ' + f.an + (rsP && rsP.p.code !== 'FR' ? '. Il ressemble ' + aPays(rsP.p) + ' ' + drapeau(rsP.p.code) + (HIST && procheDir(r1) ? ' (dans l\'histoire : ' + lePaysDir(procheDir(r1).p).replace(/^(La|Le|Les|L')(?=[ '])/, function (m) { return m.toLowerCase(); }) + ' en ' + procheDir(r1).p.an + ')' : '') : HIST && procheDir(r1) ? '. ' + phraseDir(procheDir(r1)).replace(/^Votre budget/, 'Dans l\'histoire, il') : '') + '. À votre tour, avec les mêmes cartes :'; if (/^✓/.test(resT)) t = resT.replace(/^✓ /, '') + '. ' + t; if (S.obj === 'defi' && !/^✓/.test(resT) && defiX()) t = 'Mon défi : « ' + defiX().t.replace(/\.$/, '') + ' ». ' + t;
     var u = lienBudget(rep); if (tx) t = tx;
     // Sans partage du téléphone : le texte, puis le lien dans un champ qui ne déborde jamais, avec « Copier ».
     var dit = function (m) { var p = $('q-partage-t') || document.createElement('div'); p.id = 'q-partage-t'; p.className = 'q-partage-t'; p.innerHTML = '<span>' + m + '</span><span class="q-lienb"><input type="text" readonly value="' + esc(u) + '" aria-label="Lien de votre budget"><button type="button">Copier</button></span>'; $('q-partager').parentNode.after(p);
@@ -3537,7 +3664,9 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     J = j; B = b; PJ = J.projection; D0 = J.depart; C = J.cartes.slice();
     C.forEach(function (c) { CI[c.id] = c; }); (J.questions || []).forEach(function (q) { QS[q.k] = q; });
     CHOC = J.mesange_choc ? J.mesange_choc.v : 1;
-    PE = J.pays_eurostat || null; FR0 = PE && PE.an === D0.an ? PE.pays.filter(function (p) { return p.code === 'FR'; })[0] || null : null;
+    PE = J.pays_eurostat || null;
+    var MO = J.pays_fmi && J.pays_fmi.monde; if (PE && MO && MO.pays) MO.pays.forEach(function (p) { if (!PE.pays.some(function (q) { return q.code === p.code; })) PE.pays.push({ code: p.code, nom: p.nom, dep: p.dep, rec: p.rec, an: p.an, hm: 1 }); });
+    FR0 = PE && PE.an === D0.an ? PE.pays.filter(function (p) { return p.code === 'FR'; })[0] || null : null;
     AN0 = PJ.premier_budget; ANS = PJ.ans; AN1 = ANS[ANS.length - 1].an;
     var duree = J.taux.dette_etat_duree_vie_moyenne.valeurs['fin 2025'], m = /(\d+) ans? et (\d+) jours/.exec(duree);
     PAR.duree = m ? +m[1] + m[2] / 365 : 8.5; PAR.regle = J.regle.v;
