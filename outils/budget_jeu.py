@@ -1069,6 +1069,40 @@ CAPI_OPTIONS = {
              {'doc': "Conseil d'orientation des retraites, rapport annuel, juin 2026, tableau 3.2 (Drees, EACR, modèle Ancètre)", 'page': "163 (page imprimée 161)", 'url': CAPI_COR, 'citation': "Ensemble des retraités de droit direct 1 750"}]}]}}
 
 
+# Effet sur l'activité des leviers sans variante Mésange (impôt sur les sociétés, patrimoine, SMIC) : hypothèses de Concret,
+# sources lues le 6 novembre 2026 (note d'économiste). Le jeu les applique comme les variantes (même règle de linéarité).
+ACT_DGTPE = "https://www.tresor.economie.gouv.fr/Articles/aece6a27-552a-4914-a975-1fbb06352b76/files/eb130306-d7b1-42e3-b34f-08af16fca449"
+ACTIVITE = {
+    'regle_solde': {'v': 0.45, 'doc': "DGTPE, document de travail 2007/01 (Coupet, Renne)", 'page': "16 (note 14)", 'url': ACT_DGTPE,
+                    'citation': "lorsque le PIB diminue […] de 1%, les finances publiques sont amoindries d'un montant égal à 0,45% du PIB",
+                    't': "Effet sur le solde : 0,45 point de PIB de solde perdu par point de PIB d'activité en moins (DG Trésor 2007, note 14) ; hypothèse de Concret."},
+    'profils': {
+        'is': {'pib': [-0.13, -0.26, -0.39, -0.52, -0.65], 'emploi': [-10, -20, -30, -40, -50], 'court': "DG Trésor (2007)",
+               'carte': "Hypothèse de Concret, à partir de la DG Trésor (2007) : ordre de grandeur. Une hausse durable de l'IS d'un point de PIB réduirait le PIB de 1,3 % à long terme ; Concret fait monter cet effet d'un dixième par an sur 10 ans, la durée observée aux États-Unis après la baisse de 2017.",
+               'calc': "Hypothèse de Concret, à partir de la DG Trésor (2007, effet de long terme, de 0,7 à 1,9 %) et de Chodorow-Reich, Zidar et Zwick (2024, 10 ans pour l'atteindre) : ordre de grandeur. Le modèle Mésange, utilisé pour les autres mesures, n'a pas de variante pour l'impôt sur les sociétés.",
+               'src': [{'doc': "DGTPE, document de travail 2007/01 (Coupet, Renne), tableau 4", 'page': "17", 'url': ACT_DGTPE, 'citation': "Effet d'une hausse des recettes prélevées sur le secteur marchand d'un montant égal à 1% du PIB marchand ex ante"},
+                       {'doc': "Chodorow-Reich, Zidar, Zwick, NBER w32672 (2024)", 'page': "22", 'url': "https://nber.org/system/files/working_papers/w32672/w32672.pdf", 'citation': "Most of this increase occurs within the first 10 years"}]},
+        'is_temp': {'pib': [-0.13, -0.13, -0.13, -0.13, -0.13], 'emploi': [-10, -10, -10, -10, -10], 'court': "DG Trésor (2007)",
+                    'carte': "Hypothèse de Concret, à partir de la DG Trésor (2007) : ordre de grandeur. Seul l'effet de la première année est compté, l'année où la surtaxe est payée.",
+                    'calc': "Hypothèse de Concret, à partir de la DG Trésor (2007) : ordre de grandeur. Seul l'effet de la première année est compté, l'année où la surtaxe est payée (−0,13 % de PIB par point de PIB d'impôt) ; aucune source ne chiffre une surtaxe d'un an.",
+                    'src': [{'doc': "DGTPE, document de travail 2007/01 (Coupet, Renne), tableau 4", 'page': "17", 'url': ACT_DGTPE, 'citation': "Effet d'une hausse des recettes prélevées sur le secteur marchand d'un montant égal à 1% du PIB marchand ex ante"}]},
+        'patrimoine': {'pib': [-0.09, -0.23, -0.34, -0.40, -0.40], 'emploi': None, 'court': "Banque de France (2020)",
+                       'carte': "Hypothèse de Concret, à partir de la Banque de France (modèle FR-BDF, 2020) : ordre de grandeur. Effet compté comme un impôt direct sur les ménages, qui réduit leurs dépenses ; l'OCDE (2021) ne trouve pas d'autre effet net démontré sur l'activité.",
+                       'calc': "Hypothèse de Concret, à partir de la Banque de France (variante « impôts directs » du modèle FR-BDF, 2020) : ordre de grandeur. Le modèle Mésange n'a pas de variante pour ces impôts ; 2031 reprend l'effet de 2030, dernière année publiée. L'évaluation officielle de la suppression de l'ISF (France Stratégie, 2023) trouve un effet nul sur l'investissement des entreprises. Effet sur l'emploi non compté (publié en %, pas en nombre).",
+                       'src': [{'doc': "Banque de France, document de travail n° 750 (Aldama, Ouvrard, 2020), tableau 12", 'page': "33", 'url': "https://www.banque-france.fr/system/files/2023-01/wp750.pdf", 'citation': "leur offre de travail n'est pas affectée par la hausse des prélèvements"},
+                               {'doc': "OCDE, Inheritance Taxation in OECD Countries (2021)", 'page': "3", 'url': "https://doi.org/10.1787/e2879a7d-en", 'citation': "the empirical literature generally suggests that inheritance taxes tend to have more limited effects on savings than other taxes levied on wealthy taxpayers"}]},
+        'nul': {'pib': [0, 0, 0, 0, 0], 'emploi': [0, 0, 0, 0, 0], 'court': "Concret",
+                'carte': "Pas d'effet sur l'activité compté : ces avoirs n'ont pas de titulaire qui les dépense (hypothèse de Concret).",
+                'calc': "Pas d'effet sur l'activité compté : ces avoirs n'ont pas de titulaire connu dont le revenu baisserait (hypothèse de Concret, sans source chiffrée).", 'src': []}},
+    'macro': {'is': ['is'], 'is_temp': ['contribution-grandes-entreprises', 'contribution-transport-maritime'],
+              'patrimoine': ['impots-capital', 'isf', 'taxe-zucman', 'niche-520110', 'apport-cession'], 'nul': ['avoirs-desherence']},
+    'smic': {'cartes': {'smic-2': 2, 'smic-5': 5}, 'pib': [-0.012, -0.033, -0.045, -0.052, -0.058], 'emploi': [-5.0, -12.5, -17.3, -18.1, -18.9], 'court': "groupe d'experts sur le SMIC (2024)",
+             'carte': "Hypothèse de Concret, à partir du groupe d'experts sur le SMIC (2024) : ordre de grandeur. Une hausse de 1 % du coût du travail au niveau du SMIC réduit l'emploi à ce niveau de 0,8 % (de 0,6 à 0,9 %), appliqué aux 2,7 millions de salariés concernés ; montée dans le temps reprise du modèle Mésange. La hausse des dépenses des salariés dont le salaire monte n'est pas comptée.",
+             'calc': "Hypothèse de Concret, à partir du groupe d'experts sur le SMIC (2024) : ordre de grandeur. Pour 1 % de SMIC en plus : −0,012 % de PIB en 2027, −0,033 % en 2028, −0,045 % en 2029, −0,052 % en 2030, −0,058 % en 2031 (rapport PIB sur emploi de la variante « cotisations des employeurs » de Mésange). La hausse des dépenses des salariés dont le salaire monte n'est pas comptée.",
+             'src': [{'doc': "Groupe d'experts sur le SMIC, rapport 2024", 'page': "141", 'url': "https://strategie.gouv.fr/files/2025-02/smic-rapport-2024-11decembre15h45_vdef_complet.pdf", 'citation': "en retenant une élasticité de la demande de travail à son coût de -0,8 au niveau du Smic"},
+                     {'doc': "Groupe d'experts sur le SMIC, rapport 2024", 'page': "58", 'url': "https://strategie.gouv.fr/files/2025-02/smic-rapport-2024-11decembre15h45_vdef_complet.pdf", 'citation': "Au 1er janvier 2024, 2,7 millions de salariés des entreprises du secteur privé hors agriculture ont été directement concernés par la revalorisation du Smic horaire"}]}}
+
+
 def leviers_creer(assiettes, P, MD):
     """Lignes ajoutées à Créer le 5 novembre 2026 : grands changements (toute la dépense, cotisations, impôts en capital) et
     règles chiffrées par une source (capitalisation, durée du chômage, carence des agents publics, reste à charge en santé).
@@ -1641,7 +1675,7 @@ def construire():
         'mesange_choc': (lambda x: {'v': x['valeurs']['taille du choc testé (% du PIB ex ante)'], 'url': x['url'], 'page': x['page'], 'citation': x['citation'], 'citation2': x['citations_complementaires'][0]['citation'], 'citation3': x['citations_complementaires'][1]['citation'], 'page3': x['citations_complementaires'][1]['page']} if x else None)({e['cle']: e for e in (charger('leviers_creer.json') or {'elements': []})['elements']}.get('mesange2017_taille_choc')),
         'cartes': cartes, 'assiettes': assiettes, 'population': population, 'cas': cas, 'unites': unites, 'ecartees': ecartees, 'themes': THEMES, 'qui': QUI,
         'groupes': json.load(open(os.path.join(RACINE, 'donnees', 'votes.json'), encoding='utf-8'))['GROUPES'],
-        'variantes': var, 'regle': REGLE,
+        'variantes': var, 'regle': REGLE, 'activite': ACTIVITE,
         'echeance_ue': ({'an': AE['ue_deficit_excessif_2029']['valeurs']['annee_limite'], 'v': AE['ue_deficit_excessif_2029']['valeurs']['seuil_pct_pib'], 'source': AE['ue_deficit_excessif_2029']['document'] + ', ' + AE['ue_deficit_excessif_2029']['page'], 'url': AE['ue_deficit_excessif_2029']['url'], 'citation': AE['ue_deficit_excessif_2029']['citation']} if 'ue_deficit_excessif_2029' in AE else None),
         'defis': [dict(d, src=({'v': 3, 'source': AE['ue_deficit_excessif_2029']['document'], 'url': AE['ue_deficit_excessif_2029']['url']} if d.get('src') == 'UE2029' else {'v': -AE['cible_solde_2027']['valeurs']['2027_plf_pct_pib'], 'source': AE['cible_solde_2027']['document'] + ', ' + AE['cible_solde_2027']['page'], 'url': AE['cible_solde_2027']['url']} if d.get('src') == 'CIBLE' else d.get('src'))) for d in DEFIS if (d.get('src') != 'UE2029' or 'ue_deficit_excessif_2029' in AE) and (d.get('src') != 'CIBLE' or 'cible_solde_2027' in AE)],
         'pays_fmi': charger('fmi_pays.json'),
