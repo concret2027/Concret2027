@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="b52c914f920d">
+<meta name="concret-version" content="770fa511c41c">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1324,7 +1324,7 @@ body.q-grand .sim-t-v { font-size: 12px; }
 
 /* Créer en cartes : les composants de Voter (carte, réponses, progression, pause, ↶) ; seuls ajouts : la réponse choisie, les quatre chiffres du point. */
 body.q-cartes #sim-main { display: none !important; }
-.sim-cartes { display: grid; gap: 12px; margin-top: 14px; }
+.sim-cartes { display: grid; gap: 8px; margin-top: 14px; }
 .sim-cartes [hidden] { display: none !important; }
 .sim-cartes .q-rep.on { background: color-mix(in srgb, var(--fr) 12%, var(--panel)); }
 .sim-cartes .q-rep.on::before { background: radial-gradient(circle, var(--fr) 45%, var(--panel) 50%); }
@@ -1367,8 +1367,15 @@ body.q-cartes #sim-main { display: none !important; }
 .sim-c-sc button { font: inherit; font-size: 14px; font-weight: 600; min-height: 40px; padding: 6px 12px; border-radius: 999px; border: 1.5px solid var(--fr); background: var(--panel); color: var(--fr); cursor: pointer; text-align: left; }
 .sim-c-sc button[aria-pressed="true"] { background: var(--fr); color: #fff; }
 .sim-c-sc button small { font-weight: 500; opacity: .9; }
-.sim-carte { padding-top: 12px; gap: 10px; }
-.sim-c-pt { margin: -4px 0 0; }
+.sim-c-sell { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-weight: 600; font-size: 15px; }
+.sim-c-sell > span:first-child { flex: 0 0 auto; }
+.sim-c-selw { position: relative; flex: 1 1 12em; min-width: 0; }
+.sim-c-selw::after { content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--fr); pointer-events: none; font-size: 14px; }
+.sim-c-sel { -webkit-appearance: none; appearance: none; width: 100%; min-height: 44px; padding: 8px 32px 8px 14px; border-radius: 999px; border: 1.5px solid var(--fr); background: var(--panel); color: var(--fr); font: inherit; font-size: 15px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; cursor: pointer; }
+/* La carte reste compacte : la barre de progression sur le bord haut (hors du flux), « Ne rien changer » sur une ligne. */
+.sim-carte { padding-top: 14px; gap: 8px; }
+.sim-c-pt { position: absolute; top: 6px; left: 16px; right: 16px; margin: 0; }
+.sim-carte .q-rep.aucune { min-height: 44px; padding-top: 6px; padding-bottom: 6px; }
 .sim-c-n { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 /* Créer en cartes : l'objectif tient sur une ligne et « Courbes » remplace « Voir les courbes », pour laisser la place à la carte. */
 body.q-cartes .sim-cap { flex-wrap: nowrap; gap: 6px; }
@@ -5336,7 +5343,7 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
   // Les choix déjà faits qu'une réponse sur cette carte remplacerait (même argent : « exclut » dans un sens ou dans l'autre).
   function cartesRivaux(k) { var x = AS[k]; return Object.keys(S.perso).filter(function (o) { return o !== k && AS[o] && ((x.exclut || []).indexOf(o) >= 0 || (AS[o].exclut || []).indexOf(k) >= 0); }).map(function (o) { return nomL(o) + ' ' + pcC(AS[o], S.perso[o]); }).concat((x.exclut || []).filter(function (id) { return S.v[id] === 1 && CI[id]; }).map(function (id) { return CI[id].titre || CI[id].l; })); }
   // Ramène la carte juste sous le bandeau collant (le compteur reste visible).
-  function cartesHaut() { var box = $('sim-cartes'), c = $('q-collant'); if (!box || !c) return; var top = parseFloat(getComputedStyle(c).top) || 0; window.scrollTo(0, Math.max(0, box.getBoundingClientRect().top + scrollY - top - c.offsetHeight - 8)); }
+  function cartesHaut() { var box = $('sim-cartes'), c = $('q-collant'); if (!box || !c) return; var top = parseFloat(getComputedStyle(c).top) || 0; window.scrollTo(0, Math.max(0, box.getBoundingClientRect().top + scrollY - top - c.offsetHeight - 4)); }
   // L'état avant la carte, pour dire ensuite ce que la réponse a changé (même calcul que « Pourquoi ça bouge »).
   function cartesSnap(k) { CM.snap = { k: k, A0: R, P0: copie(S.perso), V0: copie(S.v), capi0: S.capi ? copie(S.capi) : null }; }
   function cartesFait() {
@@ -5385,17 +5392,20 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
     var desc = cartesPaie(k), nrm = function (t) { return String(t).toLowerCase().replace(/[^a-zà-ÿ]/g, ''); }; if (desc && nrm(desc) === nrm(nomL(k))) desc = x.l.split(' (')[0];
     var rc = recoupe(k); if (/^mi:/.test(k)) desc = '';
     // « Sur quoi agir ? » : les parties d'un même tout, une seule réponse pour la carte.
-    var scope = gk ? '<div class="sim-c-scope"><p class="q-ligne m">Sur quoi agir ?</p><div class="sim-c-sc" role="group" aria-label="Sur quoi agir ?">' + CGR[gk].m.map(function (y) { var w = S.perso[y[0]]; return '<button type="button" data-scope="' + esc(y[0]) + '" aria-pressed="' + (y[0] === k) + '">' + esc(y[1]) + (w ? ' <small>· ' + esc(pcC(AS[y[0]], w)) + '</small>' : '') + '</button>'; }).join('') + '</div></div>' : '';
+    // Quatre parties ou plus : une seule ligne, « Sur quoi agir ? » et une liste (les réponses restent à l'écran) ; sinon des puces.
+    var scope = gk && CGR[gk].m.length >= 4 ? '<div class="sim-c-scope sim-c-scope1"><label class="sim-c-sell"><span>Sur quoi agir ?</span><span class="sim-c-selw"><select class="sim-c-sel" data-scopesel="1">' + CGR[gk].m.map(function (y) { var w = S.perso[y[0]]; return '<option value="' + esc(y[0]) + '"' + (y[0] === k ? ' selected' : '') + '>' + esc(y[1]) + (w ? ' · ' + esc(pcC(AS[y[0]], w)) : '') + '</option>'; }).join('') + '</select></span></label></div>' : gk ? '<div class="sim-c-scope"><p class="q-ligne m">Sur quoi agir ?</p><div class="sim-c-sc" role="group" aria-label="Sur quoi agir ?">' + CGR[gk].m.map(function (y) { var w = S.perso[y[0]]; return '<button type="button" data-scope="' + esc(y[0]) + '" aria-pressed="' + (y[0] === k) + '">' + esc(y[1]) + (w ? ' <small>· ' + esc(pcC(AS[y[0]], w)) + '</small>' : '') + '</button>'; }).join('') + '</div></div>' : '';
     // L'exemple complet de « Concrètement », pour le plus grand réglage proposé, sous « En savoir plus ».
     var vEx = pr.length ? pr[pr.length - 1] : 0, exL = []; try { if (vEx && !(x.u && x.u.choix)) { var e0 = exemplesLigne(k, 0).L; exL = exemplesLigne(k, vEx).L.filter(function (t) { return e0.indexOf(t) < 0; }); } } catch (e) { exL = []; }
     // La progression tient dans l'en-tête de la carte (une ligne), pour que la question et les premières réponses restent à l'écran.
     var pp = Math.min(N, (Math.floor(nVu / 5) + 1) * 5), cavs = [], REP = [0].concat(pr).map(function (r) { var t = cartesRep(x, r); if (t[2]) { var sp = cavSplit(t[2]); t[2] = sp[0]; sp[1].forEach(function (c) { if (cavs.indexOf(c) < 0) cavs.push(c); }); } return t; }), autre = !(x.u && x.u.choix);
+    // Carte à quatre parties ou plus : la question, « Sur quoi agir ? », les réponses, puis ce que c'est (les réponses restent à l'écran).
+    var sel1 = !!(gk && CGR[gk].m.length >= 4), quoiH = '<p class="q-ligne sim-c-quoi">' + (x.carte ? esc(cartesTexte(x)) + ' <span class="m"><a href="' : esc(cartesQuoi(k)) + ' <span class="m">' + esc(maj1(montantTxt(x) || poidsTxt(x))) + '. ' + (cavs.length ? 'Dans les réponses : ' + esc(cavs.join(' ; ')) + '. ' : '') + '<a href="') + esc(x.src.url) + '" target="_blank" rel="noopener">Source</a>' + (x.src_cas ? ', <a href="' + esc(x.src_cas.url) + '" target="_blank" rel="noopener">part des pensions</a>' : '') + '</span></p>';
     box.innerHTML = bande + '<article class="q-card q-qcard sim-carte in" id="sim-carte" data-c="' + esc(k) + '"><div class="q-ptot sim-c-pt" aria-hidden="true"><span style="width:' + (100 * nVu / N).toFixed(1) + '%"></span></div>' +
       '<div class="q-tags"><span class="q-chip">' + esc(fnom) + '</span><span class="sim-c-n">Carte ' + (nVu + 1) + ' sur ' + N + (pp > nVu + 1 ? ' · pause à ' + pp : '') + '</span></div><h2>' + esc(gk ? CGR[gk].q : cartesQ(k)) + '</h2>' +
-      '<p class="q-ligne sim-c-quoi">' + (x.carte ? esc(cartesTexte(x)) + ' <span class="m"><a href="' : esc(cartesQuoi(k)) + ' <span class="m">' + esc(maj1(montantTxt(x) || poidsTxt(x))) + '. ' + (cavs.length ? 'Dans les réponses : ' + esc(cavs.join(' ; ')) + '. ' : '') + '<a href="') + esc(x.src.url) + '" target="_blank" rel="noopener">Source</a>' + (x.src_cas ? ', <a href="' + esc(x.src_cas.url) + '" target="_blank" rel="noopener">part des pensions</a>' : '') + '</span></p>' +
-      scope +
+      (sel1 ? scope : quoiH + scope) +
       (nVu ? '' : '<p class="q-ligne m q-touchez">Touchez une réponse : la carte suivante arrive aussitôt.</p>') + '<div class="q-reps" role="group" aria-label="' + esc(nomL(k)) + '">' + [0].concat(pr).map(function (r, ir) { var t = REP[ir], on = r === v && (r !== 0 || back); return '<button type="button" class="q-rep' + (r ? '' : ' aucune') + (on ? ' on' : '') + '" data-cv="' + r + '"' + (on ? ' aria-pressed="true"' : '') + '><b>' + esc(t[0]) + '</b>' + (t[1] ? '<span>' + esc(t[1]) + '</span>' : '') + (t[2] ? '<span class="sim-c-cc">' + esc(t[2]) + '</span>' : '') + '</button>'; }).join('') + (autre ? '<button type="button" class="q-rep sim-c-autre-b' + (pr.indexOf(v) < 0 && v ? ' on' : '') + '" aria-expanded="false" aria-controls="sim-c-autre"><b>Autre montant…</b><span>' + (pr.indexOf(v) < 0 && v ? 'Aujourd\'hui : ' + esc(pcC(x, v)) : 'Choisir une valeur exacte') + '</span></button>' : '') + '</div>' + (autre ? cartesAutreHTML(x, v) : '') +
       '<div class="sim-c-imp" hidden></div>' +
+      (sel1 ? quoiH : '') +
       (desc || actHyp(x) || rc || exL.length ? '<details class="sim-c-plus"><summary>En savoir plus</summary>' + (exL.length ? '<p class="q-ligne m">Concrètement, avec ' + esc(pcC(x, vEx)) + ' : ' + exL.join(' ') + '</p>' : '') + (desc ? '<p class="q-ligne m">' + (/^Comprend/.test(desc) ? esc(desc) : esc(nomL(k)) + ' : ' + esc(minL(desc))) + '</p>' : '') + (actHyp(x) ? '<p class="q-ligne m">' + esc(actHyp(x).carte) + '</p>' : '') + (rc ? '<p class="q-ligne m">' + esc(rc) + '</p>' : '') + '</details>' : '') +
       (k === 'capitalisation' && x.options ? capiHTML() : '') +
       '<p class="sim-l-e"></p>' + cartesRet() + '</article>' + cartesExpert();
@@ -5505,6 +5515,7 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
       repondre(v);
     };
     tous('.q-reps [data-cv]', function (b) { b.onclick = function () { if (au) fermer(); essayer(+b.dataset.cv, b); }; });
+    tous('[data-scopesel]', function (sl) { sl.onchange = function () { if (au) fermer(); CM.scope = CM.scope || {}; CM.scope[CM.g] = sl.value; CM.back = CM.revu; var y = scrollY; cartesAff(); window.scrollTo(0, y); var c = box.querySelector('[data-scopesel]'); if (c) c.focus({ preventScroll: true }); }; });
     tous('[data-scope]', function (b) { b.onclick = function () { if (au) fermer(); CM.scope = CM.scope || {}; CM.scope[CM.g] = b.dataset.scope; CM.back = CM.revu; var y = scrollY; cartesAff(); window.scrollTo(0, y); var c = box.querySelector('[data-scope="' + b.dataset.scope + '"]'); if (c) c.focus({ preventScroll: true }); }; });
     // « Autre montant… » : les cases du haut suivent le curseur ou la valeur tapée (aperçu) ; rien n'est appliqué avant « Valider ».
     var au = card.querySelector('#sim-c-autre'), ab = card.querySelector('.sim-c-autre-b'), x = AS[k], pg = plage(x), cur = S.perso[k] || 0;
