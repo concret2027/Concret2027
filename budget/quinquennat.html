@@ -525,7 +525,7 @@ body.q-grand .q-bar button { min-height: 46px; }
 body.q-grand .q-bar { padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
 /* Écran étroit (téléphone zoomé, petit téléphone) : même bandeau réduit sur une ligne, barre du bas plus basse. */
 /* (q-etroit : le bandeau fait moins de 320 px CSS de large, mesuré par le jeu ; une règle @media ne voit pas le zoom de la page.) */
-body.q-etroit .q-collant.q-mini .q-an { display: none; }
+body.q-etroit .q-collant.q-mini .q-an { display: inline; }
 body.q-etroit .q-collant.q-mini .q-hs.q-msg { line-height: 1.25; }
 body.q-etroit .q-collant.q-mini .q-hd { flex-wrap: wrap; min-height: 26px; }
 body.q-etroit .q-collant.q-mini .q-hd small, body.q-etroit .q-collant.q-mini .q-hd b { white-space: nowrap; overflow: visible; overflow-wrap: normal; word-break: normal; -webkit-hyphens: none; hyphens: none; }
@@ -535,7 +535,8 @@ body.q-etroit .q-collant.q-mini .q-hd b { font-size: 16px; }
 body.q-etroit .q-collant.q-mini .q-hud { padding: 2px 8px; row-gap: 0; }
 /* Écran étroit, bandeau réduit : « Déficit 5,7 % · Dette 132,3 % » sur une ligne (la croissance revient dans le bandeau entier), puis le message. */
 body.q-etroit .q-collant.q-mini .q-hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-body.q-etroit .q-collant.q-mini .q-hd.c { display: none; }
+body.q-etroit .q-collant.q-mini .q-hd.d { display: none; }
+body.q-etroit .q-collant.q-mini .q-hd.c { justify-content: flex-end; text-align: right; }
 body.q-etroit .q-bar { padding-top: 4px; padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)); }
 body.q-etroit .q-bar button { min-height: 44px; font-size: 14px; }
 .q-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 4px 0; border-radius: 12px; background: var(--bg); }
@@ -916,7 +917,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   <div class="q-collant" id="q-collant">
   <div class="q-hud" id="q-hud">
     <button type="button" class="q-hd" data-x="d" aria-label="Déficit : ce que veut dire ce chiffre"><small id="h-l1">Déficit</small><b id="h-v1">—</b><i class="q-hd-s">du PIB ⓘ</i></button>
-    <button type="button" class="q-hd c" data-x="c" aria-label="Croissance : ce que veut dire ce chiffre"><small id="h-l3">Croissance</small><b id="h-v3">—</b><i class="q-hd-s" id="h-s3"></i></button>
+    <button type="button" class="q-hd c" data-x="c" aria-label="Richesse par habitant : ce que veut dire ce chiffre"><small id="h-l3">Par habitant 2031</small><b id="h-v3">—</b><i class="q-hd-s" id="h-s3"></i></button>
     <button type="button" class="q-hd d" data-x="t" aria-label="Dette : ce que veut dire ce chiffre"><small id="h-l2">Dette</small><b id="h-v2">—</b><i class="q-hd-s">du PIB ⓘ</i></button>
     <p class="q-jauge-t" id="q-jauge-t" hidden></p>
     <div class="q-jauge" id="q-jauge" role="img" aria-label="Chemin fait vers votre objectif"><span></span><em></em></div>
@@ -1416,11 +1417,14 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   function hud(anime) {
     R = simuler(); R0 = simuler({ rien: true }); GRAND = tresGrand(R);
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1];
-    var AOh = anObj ? anObj() : AN0, rO = ligneAn(R, AOh); $('h-l1').innerHTML = (/^excédent/.test(defic(rO.solde)) ? 'Excédent' : 'Déficit') + '<span class="q-an"> ' + AOh + '</span>'; r1 = rO; $('h-l2').innerHTML = 'Dette<span class="q-an"> ' + AN1 + '</span>'; $('h-l3').textContent = 'Croissance';
-    var g1 = croiss(R, AN0), g0 = croiss(R0, AN0), gz = croiss(R, AN1), v3 = g1 == null ? '—' : GRAND ? (Math.round(g1) < 0 ? '−' : '') + nf(Math.abs(Math.round(g1)), 0) + '\u00a0%' : pcs(g1); $('h-s3').textContent = (GRAND ? 'environ, ' : '') + 'en ' + AN0 + ' ⓘ';
+    var AOh = anObj ? anObj() : AN0, rO = ligneAn(R, AOh); $('h-l1').innerHTML = (/^excédent/.test(defic(rO.solde)) ? 'Excédent' : 'Déficit') + '<span class="q-an"> ' + AOh + '</span>'; r1 = rO; $('h-l2').innerHTML = 'Dette<span class="q-an"> ' + AN1 + '</span>'; $('h-l3').innerHTML = 'Par habitant<span class="q-an"> ' + AN1 + '</span>';
+    // La richesse par habitant en 2031 (PIB par habitant, euros de 2025 hors inflation, même calcul que le Bilan) et son écart avec « sans mesure ».
+    var g1 = croiss(R, AN0), g0 = croiss(R0, AN0), gz = croiss(R, AN1), PHa = parHab(R), PHz = parHab(R0), c100 = function (v) { return Math.round(v / 100) * 100; };
+    var v3 = PHa ? nf(c100(PHa[PHa.length - 1].d), 0) + '\u00a0€' : '—', eH = PHa && PHz ? c100(PHa[PHa.length - 1].d) - c100(PHz[PHz.length - 1].d) : 0;
+    $('h-s3').textContent = (Math.abs(eH) < 50 ? 'comme sans mesure' : (GRAND ? '≈\u00a0' : '') + (eH < 0 ? '−' : '+') + nf(Math.abs(eH), 0) + '\u00a0€') + ' ⓘ';
     // « environ » va dans la petite ligne, jamais dans le grand chiffre (il tient ainsi dans sa case).
     $('h-v1').nextElementSibling.textContent = (GRAND ? 'du PIB, environ ⓘ' : 'du PIB ⓘ'); $('h-v2').nextElementSibling.textContent = GRAND ? 'du PIB, environ ⓘ' : 'du PIB ⓘ';
-    $('h-v3').parentNode.title = g0 == null ? '' : 'Prévision du FMI pour ' + AN0 + ' : ' + pcs(g0) + (S.macro ? ' ; avec l\'effet de vos choix sur l\'activité : ' + pcs(g1) : ' (effet de vos choix sur l\'activité non compté)');
+    $('h-v3').parentNode.title = 'PIB par habitant en ' + AN1 + ', en euros de ' + D0.an + ' hors inflation' + (PHz ? ' ; sans mesure : ' + nf(c100(PHz[PHz.length - 1].d), 0) + ' €' : '');
     var sansEnv = function (t) { return String(t).replace(/^environ /, ''); };
     var T0 = seuil(), v1 = T0 != null && anObj() === AN0 && -r1.solde > T0 && -r1.solde - T0 < 0.05 ? nf(-r1.solde, 2) + '\u00a0%' : /^excédent/.test(defic(r1.solde)) ? sansEnv(defic(r1.solde).replace(/^excédent (?:de |d')/, '')) : sansEnv(defic(r1.solde)), v2 = sansEnv(dpc(f.d));
     [['h-v1', v1], ['h-v2', v2], ['h-v3', v3]].forEach(function (x) { var el = $(x[0]); if (anime && el.textContent !== x[1]) { el.classList.remove('q-flash'); void el.offsetWidth; el.classList.add('q-flash'); } el.textContent = x[1]; });
@@ -1460,6 +1464,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     var AO = anObj(), r = ligneAn(R, AO), f = R[R.length - 1], g1 = croiss(R, AN0), gz = croiss(R, AN1), p1 = croiss(R0, AN0), pz = croiss(R0, AN1), t;
     if (x === 'd') t = 'Déficit ' + AO + ' : ce que l\'État, la Sécurité sociale et les collectivités dépensent de plus qu\'ils ne reçoivent dans l\'année, rapporté au PIB, la richesse produite en France en un an (' + mdt(r.pib) + ' en ' + AO + '). ' + defic(r.solde) + ' du PIB, c\'est ' + mdt(Math.max(0, -r.solde) / 100 * r.pib) + '.';
     else if (x === 't') t = 'Dette ' + f.an + ' : ce que doivent l\'État, la Sécurité sociale et les collectivités, rapporté au PIB, la richesse produite en un an. ' + nf(f.d, 1) + '\u00a0% du PIB, c\'est ' + mdt(f.d / 100 * f.pib) + ' (fin ' + PJ.depart.an + ' : ' + nf(PJ.depart.dette, 1) + '\u00a0%).';
+    else if (x === 'c') { var Ha = parHab(R), Hz = parHab(R0), cc = function (v) { return nf(Math.round(v / 100) * 100, 0) + '\u00a0€'; }; t = '<ul class="q-pl"><li><b>Par habitant ' + AN1 + '</b> : la richesse produite en France (PIB) divisée par le nombre d\'habitants, en euros de ' + D0.an + ', hors hausse des prix.</li>' + (Ha && Hz ? '<li>Avec votre budget : ' + cc(Ha[Ha.length - 1].d) + ' en ' + AN1 + ' ; sans mesure : ' + cc(Hz[Hz.length - 1].d) + ' (' + cc(Ha[0].d) + ' en ' + D0.an + ').</li>' : '') + '<li>Vos mesures le changent par leur effet sur l\'activité (modèle de la direction du Trésor et de l\'Insee) ; le détail est dans le Bilan, « La richesse par habitant ».</li>' + (sansEffet() >= 0.05 ? '<li>Pas compté : l\'effet sur l\'activité de ' + mdt(sansEffet()) + ' de vos mesures, faute de chiffre publié.</li>' : '') + '</ul>'; }
     else t = '<ul class="q-pl"><li><b>Croissance</b> : la hausse du PIB, hors hausse des prix.</li><li>Prévision du FMI : ' + pcs(p1) + ' en ' + AN0 + ', ' + pcs(pz) + ' en ' + AN1 + '.</li><li>' + (Math.abs(g1 - p1) >= 0.05 || Math.abs(gz - pz) >= 0.05 ? 'Avec vos choix (modèle de la direction du Trésor et de l\'Insee) : ' + pcs(g1) + ' et ' + pcs(gz) + '.' : 'Vos choix ne la changent presque pas pour l\'instant.') + '</li>' + (sansEffet() >= 0.05 ? '<li>Pas compté : l\'effet de ' + mdt(sansEffet()) + ' de vos mesures (impôt sur les sociétés, patrimoine, âge de la retraite…).</li>' : '') + '</ul>';
     pop(t, true, t);
     var h = $('q-hs'); h.querySelector('.q-det').click(); var hb = $('q-hud').getBoundingClientRect(); if (hb.bottom > innerHeight || hb.top < 0) $('q-hud').scrollIntoView({ block: 'nearest' });
