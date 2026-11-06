@@ -1149,9 +1149,12 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   var ETALE = 5;
   function etale(x, pc, P) { if (!pc || x.rampe) return false; var b = x.mix ? Math.max.apply(null, x.mix.map(function (m) { return Math.abs(pc * m.par_u); })) : Math.abs(effetPerso(x, pc, null, P)); return b / PIBY[AN0] * 100 > CHOC + 1e-9; }
   function etaleNote() { var K = Object.keys(S.perso).filter(function (k) { return AS[k] && etale(AS[k], S.perso[k], S.perso); }); return K.length ? '<p class="q-note">' + (K.length > 1 ? 'Vos changements de plus de ' : 'Votre changement de plus de ') + nf(CHOC, 0) + '\u00a0point de PIB (' + K.map(function (k) { return esc(AS[k].l.split(' (')[0].toLowerCase()); }).join(', ') + ') ' + (K.length > 1 ? 's\'appliquent' : 's\'applique') + ' un cinquième par an, de ' + AN0 + ' à ' + (AN0 + ETALE - 1) + ' : en ' + AN0 + ', un cinquième seulement (choix de Concret).</p>' : ''; }
+  // « (toute la dépense publique : 633,0 milliards d'euros par an en 2031) » pour chaque réglage étalé.
+  function plein2031() { var K = Object.keys(S.perso).filter(function (k) { return AS[k] && etale(AS[k], S.perso[k], S.perso); }); return K.length ? ' (' + K.map(function (k) { return esc(AS[k].l.split(' (')[0].toLowerCase()) + ' : ' + mdt(Math.abs(effetPerso(AS[k], S.perso[k], null, S.perso))) + ' par an en ' + (AN0 + ETALE - 1); }).join(' ; ') + ')' : ''; }
   function etaleK(x, pc, an, P) { return an != null && etale(x, pc, P) ? Math.max(0, Math.min(1, (an - AN0 + 1) / ETALE)) : 1; }
+  // Sans année : le montant de 2027 pour un réglage étalé (un cinquième), le montant plein sinon ; « null » : toujours le montant plein.
   function effetPerso(x, pc, an, P) {
-    var r = (x.rampe && an != null ? x.rampe[Math.max(0, Math.min(x.rampe.length - 1, an - AN0))] : 1) * reste(x, P) * etaleK(x, pc, an, P);
+    var r = (x.rampe && an != null ? x.rampe[Math.max(0, Math.min(x.rampe.length - 1, an - AN0))] : 1) * reste(x, P) * etaleK(x, pc, an === undefined ? AN0 : an, P);
     var ech = PIBY[AN0] / (PIBY[x.an] || PIBY[AN0]);
     if (x.u && x.u.choix) { var o = x.u.choix.filter(function (y) { return y.v === pc; })[0]; return o ? o.md * ech * r : 0; }
     if (x.mix) return x.mix.reduce(function (t, m) { return t + pc * m.par_u; }, 0) * ech * r;
@@ -1404,7 +1407,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     }
     var n = nbChoix(), E0 = effort(), t = E0.imp + E0.eco - E0.baisse - E0.dep;
     if (!S.obj) return { ok: false, prog: null, t: 'Choisissez un objectif sur la carte ci-dessous.' };
-    return { ok: false, prog: null, t: n ? (n > 1 ? 'Vos ' + n + ' mesures ' : 'Votre mesure ') + (t >= 0 ? 'rapporte' + (n > 1 ? 'nt' : '') + ' <b>' : 'coûte' + (n > 1 ? 'nt' : '') + ' <b>') + mdt(t) + '</b> en ' + AN0 + '.' : 'Votez des mesures : leur effet s\'affiche ici.' };
+    return { ok: false, prog: null, t: n ? (n > 1 ? 'Vos ' + n + ' mesures ' : 'Votre mesure ') + (t >= 0 ? 'rapporte' + (n > 1 ? 'nt' : '') + ' <b>' : 'coûte' + (n > 1 ? 'nt' : '') + ' <b>') + mdt(t) + '</b> en ' + AN0 + plein2031() + '.' : 'Votez des mesures : leur effet s\'affiche ici.' };
   }
 
   // ---------- Le bandeau ----------
@@ -2291,7 +2294,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   }
   function majCreer() {
     if (!choisi) return;
-    var pc = +$('q-pc').value, e = effetPerso(choisi, pc);
+    var pc = +$('q-pc').value, e = effetPerso(choisi, pc, null);
     $('q-pc-v').textContent = choisi.u && choisi.u.choix ? '' : pc ? pcC(choisi, pc) : 'Rien';
     Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', +b.dataset.v === pc); });
     var suf = choisi.effet_suffixe ? esc(choisi.effet_suffixe) : '', rs = reste(choisi) < 1 ? ' ; calculé sur la part de ' + (choisi.k === 'tva-sociale' ? 'la TVA' : 'l\'impôt sur le revenu') + ' qui reste dans votre budget (' + nf(reste(choisi) * 100, 0) + '\u00a0%)' : '';
@@ -3592,7 +3595,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     y += 90;
     // Dans l'histoire (le bloc du Bilan), sur sa ligne, nommé comme tel : un autre repère, pas une autre réponse.
     var rdI = HIST ? procheDir(r1) : null; if (rdI) { g.fillStyle = '#62646d'; g.font = '400 28px ' + sans; g.fillText('Dans l\'histoire : ' + lePaysDir(rdI.p) + ' en ' + rdI.p.an + ' ' + drapeau(rdI.p.c), 80, y - 20); y += 40; }
-    var L = adoptees().map(function (x) { return { t: titreSens(x), m: montant(x, AN0), r: x.sens === 'recette' }; }).concat(Object.keys(S.perso).map(function (k) { return { t: AS[k].l.split(' (')[0] + ' ' + pcT(AS[k], S.perso[k]), m: effetPerso(AS[k], S.perso[k]), r: AS[k].groupe === 'recette' || k === 'allegements' }; })).concat(Object.keys(S.unites).filter(function (k) { return UN[k]; }).map(function (k) { var n = S.unites[k]; return { t: UN[k].l + ' ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0), m: unMd(UN[k], n, AN0), r: false }; })).sort(function (a, b) { return Math.abs(b.m) - Math.abs(a.m); }).slice(0, 3);
+    var L = adoptees().map(function (x) { return { t: titreSens(x), m: montant(x, AN0), r: x.sens === 'recette' }; }).concat(Object.keys(S.perso).map(function (k) { return { t: AS[k].l.split(' (')[0] + ' ' + pcT(AS[k], S.perso[k]) + (etale(AS[k], S.perso[k], S.perso) ? ' (' + mds(Math.abs(effetPerso(AS[k], S.perso[k], null, S.perso))) + ' par an en ' + (AN0 + ETALE - 1) + ')' : ''), m: effetPerso(AS[k], S.perso[k]), r: AS[k].groupe === 'recette' || k === 'allegements' }; })).concat(Object.keys(S.unites).filter(function (k) { return UN[k]; }).map(function (k) { var n = S.unites[k]; return { t: UN[k].l + ' ' + (n > 0 ? '+' : '−') + nf(Math.abs(n), 0), m: unMd(UN[k], n, AN0), r: false }; })).sort(function (a, b) { return Math.abs(b.m) - Math.abs(a.m); }).slice(0, 3);
     g.fillStyle = '#1c1d22'; g.font = '700 34px ' + sans; g.fillText(L.length ? 'Mes plus grosses mesures' : 'Aucune mesure pour l\'instant', 80, y); y += 52;
     g.font = '400 31px ' + sans; L.forEach(function (x) { var dr = (x.m >= 0 ? (x.r ? 'rapporte ' : 'économise ') : 'coûte ') + mds(Math.abs(x.m)), place = W - 160 - g.measureText(dr).width - 30, LL = lignesC(x.t, place - 30, 2); g.fillStyle = '#1c1d22'; LL.forEach(function (li, i) { g.fillText((i ? '   ' : '• ') + li, 80, y + i * 38); }); g.fillStyle = '#2f5bd3'; g.textAlign = 'right'; g.fillText(dr, W - 80, y); g.textAlign = 'left'; y += LL.length * 38 + 14; });
     var yb = Math.max(y + 10, 1150); g.fillStyle = '#2f5bd3'; g.fillRect(80, yb, W - 160, 4);
