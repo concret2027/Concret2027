@@ -1059,7 +1059,7 @@ CAPI_OPTIONS = {
         {'v': 'emprunt', 'l': "Par l'emprunt", 't': "Les retraites restent versées en entier : les administrations publiques empruntent ce qui manque. Pas d'étalement."},
         {'v': 'retraites', 'l': "En baissant d'autant les retraites actuelles", 'macro': 'csg',
          'pensions_md': 401, 'systeme_md': 422.2, 'nettes_md': 394, 'pension_moy': 1750,
-         'exclut': ['retraites', 'secu:vieillesse', 'pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'],
+         'exclut': ['pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'],
          'notes': ["La baisse est la même pour toutes les retraites : choix de Concret, aucune source ne dit comment elle serait répartie.",
                    "Pas comptés : l'Aspa (minimum vieillesse) et l'impôt sur le revenu des retraités.",
                    "À une part élevée, beaucoup de retraites passeraient sous le minimum vieillesse."],
@@ -1408,7 +1408,7 @@ def leviers_creer(assiettes, P, MD):
       src=ES('D91', "recettes fiscales et cotisations des administrations publiques (gov_10a_taxag), impôts en capital (D91)"))
     x = E['cotisations_retraite_2025']; v = x['valeurs']['2025 (Md€)']
     a('capitalisation', l="Retraite par capitalisation : une part des cotisations placée dans des fonds", groupe='recette', md=v, an=2025, qui=['salaries', 'retraites'], nc='capitalisation',
-      u={'n': '% des cotisations de retraite', 'np': '% des cotisations de retraite', 'c': '%', 'q': 'Part des cotisations placée', 'min': 0, 'max': 100, 'pas': 1, 'p': [1, 5, 10, 20, 50]}, par_u=-round(v / 100, 3), lib='des cotisations placées dans des fonds', exclut=['cotis-emp', 'cotis-sal'], options=CAPI_OPTIONS,
+      u={'n': '% des cotisations de retraite', 'np': '% des cotisations de retraite', 'c': '%', 'q': 'Part des cotisations placée', 'min': 0, 'max': 100, 'pas': 1, 'p': [1, 5, 10, 20, 50]}, par_u=-round(v / 100, 3), lib='des cotisations placées dans des fonds', exclut=[], options=CAPI_OPTIONS,
       note="Cotisations de retraite versées en 2025 : %s Md€ (Conseil d'orientation des retraites). Chaque %% placé dans des fonds manque aux retraites d'aujourd'hui, qui restent à payer : %s Md€ par an. Concret suppose des fonds hors des comptes publics (épargne retraite des salariés) ; un fonds public, comme le Fonds de réserve pour les retraites, serait compté autrement. Pour les employeurs publics (collectivités, hôpitaux), la cotisation reste une dépense publique : la part placée sort quand même des comptes publics. Montant de 2025, qui suit ensuite la croissance de l'économie. Ne s'ajoute pas aux lignes « Cotisations », qui portent en partie sur le même argent." % (fr_nb(v), fr_nb(v / 100)),
       src=src(x))
     x = E['chomage_duree_reforme_2023']; e = x['valeurs']['moindres dépenses d\'allocation en régime de croisière (Md€ par an)']; b = x['valeurs']['baisse de durée (%)']
@@ -1650,9 +1650,9 @@ def construire():
         ass('retraites', 'Retraites (toutes les pensions)', 'depense', LV['retraites-depense']['montant']['2025, ensemble du système de retraite (Md€)'], 2025, ['retraites'], 'csg', LV['retraites-depense'],
             "Ensemble du système de retraite, régimes de base et complémentaires (Conseil d'orientation des retraites).", ['pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'])
         ass('ondam', "Assurance maladie (soins remboursés, hôpitaux)", 'depense', 278.7, 2027, ['assures', 'soignants'], 'depense', LV['sante-ondam'], "Objectif de dépenses de l'assurance maladie (ONDAM) proposé par le Gouvernement pour 2027.", ['ondam-moins-1', 'ondam-plus-1'])
-        ass('remunerations', 'Salaires des agents publics (État, collectivités, hôpitaux, sécurité sociale)', 'depense', LV['fp-masse-salariale-apu']['montant']['2025 (Md€, toutes administrations publiques)'], 2025, ['agents_publics'], 'depense', LV['fp-masse-salariale-apu'], "Rémunérations versées par l'ensemble des administrations publiques (Insee), enseignants et militaires compris.", ['point-indice-plus-1', 'enseignement', 'defense'])
-        ass('enseignement', "Enseignement scolaire (écoles, collèges, lycées)", 'depense', LV['education-enseignement-scolaire']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['ecoles'], 'depense', LV['education-enseignement-scolaire'], "Crédits de la mission Enseignement scolaire du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
-        ass('defense', 'Défense', 'depense', LV['defense-credits']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['defense'], 'depense', LV['defense-credits'], "Crédits de la mission Défense du budget de l'État, hors pensions (comptées dans les retraites).", ['remunerations'])
+        ass('remunerations', 'Salaires des agents publics (État, collectivités, hôpitaux, sécurité sociale)', 'depense', LV['fp-masse-salariale-apu']['montant']['2025 (Md€, toutes administrations publiques)'], 2025, ['agents_publics'], 'depense', LV['fp-masse-salariale-apu'], "Rémunérations versées par l'ensemble des administrations publiques (Insee), enseignants et militaires compris.", ['point-indice-plus-1'])
+        ass('enseignement', "Enseignement scolaire (écoles, collèges, lycées)", 'depense', LV['education-enseignement-scolaire']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['ecoles'], 'depense', LV['education-enseignement-scolaire'], "Crédits de la mission Enseignement scolaire du budget de l'État, hors pensions (comptées dans les retraites).", [])
+        ass('defense', 'Défense', 'depense', LV['defense-credits']['montant']['crédits de paiement hors CAS Pensions (Md€)']['PLF 2027'], 2027, ['defense'], 'depense', LV['defense-credits'], "Crédits de la mission Défense du budget de l'État, hors pensions (comptées dans les retraites).", [])
         ass('chomage', "Allocations chômage", 'depense', LV['chomage-depense']['montant']['allocations brutes et aides (Md€)']['2027'], 2027, ['chomeurs'], 'csg', LV['chomage-depense'], "Allocations et aides versées par l'Unédic (prévision).")
         ass('apl', 'Aides au logement (APL)', 'depense', LV['prestations-apl']['montant']["dépense d'aides personnelles au logement (Md€)"]['2025'], 2025, ['familles'], 'csg', LV['prestations-apl'], '')
         ass('alloc-familiales', 'Allocations familiales', 'depense', LV['prestations-allocations-familiales']['montant']['allocations familiales (M€)']['2027 prévision'] / 1000, 2027, ['familles'], 'csg', LV['prestations-allocations-familiales'], '', ['prestations-familiales-gel'])
@@ -1788,6 +1788,15 @@ def construire():
     # le titre 2 de chaque programme est lu dans l'état B du projet de loi.
     budget_missions.titre2(T_PLF, MISSIONS)
     CASP = cas_pensions()
+    # Écoles et Défense se cumulent avec « Salaires des agents publics » : le pourcentage choisi pour la mission porte sur ce qui
+    # reste après le changement des salaires. Il faut la part des salaires (titre 2, hors cotisations au CAS Pensions) dans les crédits.
+    for m in MISSIONS:
+        kk = {'Enseignement scolaire': 'enseignement', 'Défense': 'defense'}.get(m['nom'])
+        a = next((x for x in assiettes if x['k'] == kk), None) if kk else None
+        if a and m.get('t2'):
+            hc = m['cp27'] - CASP['part'] * m['t2']
+            a['part_salaires'] = round(m['t2'] * (1 - CASP['part']) / hc, 4)
+            a['part_salaires_note'] = "Part des salaires (dépenses de personnel, titre 2, sans les cotisations au CAS Pensions) dans les crédits de la mission, projet de loi de finances %d (état B) : %s %%." % (an_plf, pc1(a['part_salaires'] * 100))
     for m in MISSIONS:
         if m['nom'].startswith(HORS) or not m['cp27']:
             continue
