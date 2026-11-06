@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="f942bd44d961">
+<meta name="concret-version" content="5da81bc0264b">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1267,6 +1267,25 @@ body.q-simu #sim-main { overflow-anchor: none; }
 .sim-tb.v-plie #sim-j, body.sim-cherche .sim-tb #sim-j { display: flex; }
 @media (max-width: 699px) { .q-collant.q-mini .sim-tb.v-auto #sim-j { display: flex; } }
 .sim-l-v, .sim-l-pas, .sim-pq-c b { white-space: nowrap; }
+
+/* Bande compacte : quatre tuiles colorées (déficit, dette, croissance, PIB par habitant). */
+.sim-1 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.sim-tb.v-plie #sim-1, body.sim-cherche .sim-tb #sim-1 { display: grid !important; }
+@media (max-width: 699px) { .q-collant.q-mini .sim-tb.v-auto #sim-1 { display: grid !important; } }
+body.q-grand .sim-1 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sim-t { position: relative; --kc: #2f5bd3; --kt: #2f5bd3; display: grid; gap: 1px; min-width: 0; padding: 5px 6px 4px; border-radius: 10px; background: color-mix(in srgb, var(--kc) 9%, var(--panel)); border: 1px solid color-mix(in srgb, var(--kc) 24%, var(--panel)); }
+.sim-t[data-c="dette"] { --kc: #7a4fc4; --kt: #6a40b3; } .sim-t[data-c="cr"] { --kc: #17806f; --kt: #12695b; } .sim-t[data-c="ph"] { --kc: #9a6a12; --kt: #80580e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sim-t { --kc: #7a9cff; --kt: #8fadff; background: color-mix(in srgb, var(--kc) 13%, var(--panel)); border-color: color-mix(in srgb, var(--kc) 30%, var(--panel)); } :root:not([data-theme="light"]) .sim-t[data-c="dette"] { --kc: #b89cff; --kt: #c4adff; } :root:not([data-theme="light"]) .sim-t[data-c="cr"] { --kc: #4fc9b0; --kt: #5fd3bb; } :root:not([data-theme="light"]) .sim-t[data-c="ph"] { --kc: #d9b25a; --kt: #e2bf6d; } }
+:root[data-theme="dark"] .sim-t { --kc: #7a9cff; --kt: #8fadff; background: color-mix(in srgb, var(--kc) 13%, var(--panel)); border-color: color-mix(in srgb, var(--kc) 30%, var(--panel)); }
+:root[data-theme="dark"] .sim-t[data-c="dette"] { --kc: #b89cff; --kt: #c4adff; } :root[data-theme="dark"] .sim-t[data-c="cr"] { --kc: #4fc9b0; --kt: #5fd3bb; } :root[data-theme="dark"] .sim-t[data-c="ph"] { --kc: #d9b25a; --kt: #e2bf6d; }
+.sim-t-l { font-size: 11px; font-weight: 700; color: var(--kt); line-height: 1.15; min-height: 2.3em; overflow-wrap: normal; word-break: normal; hyphens: none; }
+body.q-grand .sim-t-l { min-height: 0; }
+.sim-t-r { position: absolute; top: -10px; right: 3px; font-style: normal; font-weight: 700; font-size: 10px; line-height: 1.4; padding: 0 5px; border-radius: 999px; background: var(--panel); color: var(--fg); border: 1px solid color-mix(in srgb, var(--kc) 40%, var(--panel)); }
+.sim-t-v { font-size: 15px; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sim-t-s { display: grid; gap: 1px; min-width: 0; }
+.sim-t-s svg { display: block; width: 100%; height: 14px; overflow: visible; }
+.sim-t-e { flex: 0 0 auto; font-size: 11px; font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+body.q-grand .sim-t-v { font-size: 17px; }
 @media (min-width: 900px) { .sim-g { grid-template-columns: repeat(4, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .sim-c.flash, .sim-fete { animation: none; } }
 </style>
@@ -4477,7 +4496,7 @@ body.q-simu #sim-main { overflow-anchor: none; }
   function simJauge(L) {
     var el = $('sim-j'); if (!el || !R0) return; var c = capDe(L, S.perso, S.v), a = anObj(), z = R0, k = null;
     var fl = function (v) { return Math.abs(v) < 0.05 ? '=' : v < 0 ? '↓' : '↑'; };
-    if (c.aucun) { var dd = -ligneAn(L, AN0).solde + ligneAn(z, AN0).solde, de = L[L.length - 1].d - z[z.length - 1].d; el.innerHTML = '<span>Par rapport à sans vos mesures : déficit ' + AN0 + ' <b>' + fl(dd) + ' ' + (Math.abs(dd) < 0.05 ? '' : nf(Math.abs(dd), 1) + ' pt') + '</b> · dette ' + AN1 + ' <b>' + fl(de) + ' ' + (Math.abs(de) < 0.05 ? '' : nf(Math.abs(de), 1) + ' pt') + '</b></span>'; return; }
+    if (c.aucun) { el.innerHTML = ''; el.hidden = true; return; } el.hidden = false;
     var T = seuil();
     if (T != null) { var s0 = -ligneAn(z, a).solde, s1 = -ligneAn(L, a).solde; k = s0 - T > 0 ? (s0 - s1) / (s0 - T) : 1; }
     else if (S.obj === 'dette') { var d0 = z[z.length - 1].d, d1 = L[L.length - 1].d, cible = PJ.depart.dette; k = d0 - cible > 0 ? (d0 - d1) / (d0 - cible) : 1; }
@@ -4502,7 +4521,17 @@ body.q-simu #sim-main { overflow-anchor: none; }
       el.setAttribute('aria-label', I.t() + ' ' + I.an() + ' : ' + (v == null ? '—' : I.f(v)) + (v0 != null ? ', sans vos mesures : ' + I.f(v0) : '') + '. Toucher pour agrandir.');
     });
     var LL = Lv || R, r1 = ligneAn(LL, AN0), f = LL[LL.length - 1], d27 = ligneAn(LL, AN0).d, ph = parHab(LL), ph27 = ph ? ph.filter(function (q) { return q.an === AN0; })[0] : null;
-    $('sim-1').innerHTML = 'En ' + AN0 + ' : déficit <b>' + f1(-r1.solde) + '\u00a0%</b> · dette <b>' + f1(d27) + '\u00a0%</b> (' + AN1 + ' : ' + f1(f.d) + '\u00a0%) · croissance <b>' + pcs2(croiss(LL, AN0)) + '</b>' + (croiss(LL, AN0) < 0 ? ' (récession)' : '') + ' · PIB par hab. <b>' + (ph27 ? eu10(ph27.d) : '—') + '</b>';
+    // La bande compacte : quatre petites tuiles (mêmes couleurs que les cartes), valeur, mini-courbe et écart avec « sans vos mesures ».
+    var tuile = function (c, an, lab, fmt, ecart) {
+      var cu = Cc[c], ba = B[c], v = val(cu, an), v0 = val(ba, an), pts = cu.concat(ba).filter(function (q) { return q.v != null; }), mn = Math.min.apply(null, pts.map(function (q) { return q.v; })), mx = Math.max.apply(null, pts.map(function (q) { return q.v; }));
+      if (mx - mn < 1e-6) { mx += 1; mn -= 1; } var W = 60, H = 16, X = function (a) { return (a - D0.an) / (AN1 - D0.an) * W; }, Y = function (y) { return 1.5 + (mx - y) / (mx - mn) * (H - 3); };
+      var d = function (S2) { return S2.filter(function (q) { return q.v != null; }).map(function (q, i) { return (i ? 'L' : 'M') + X(q.an).toFixed(1) + ' ' + Y(q.v).toFixed(1); }).join(''); };
+      var e = v != null && v0 != null ? v - v0 : 0, rec = c === 'cr' && v != null && v < 0;
+      return '<div class="sim-t" data-c="' + c + '">' + (rec ? '<i class="sim-t-r">récession</i>' : '') + '<span class="sim-t-l">' + lab + ' ' + an + '</span><b class="sim-t-v">' + (v == null ? '—' : fmt(v)) + '</b><span class="sim-t-s"><svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true"><path d="' + d(ba) + '" fill="none" stroke="var(--kpt)" stroke-width="1.2" stroke-dasharray="3 2"/><path d="' + d(cu) + '" fill="none" stroke="var(--kc)" stroke-width="2" stroke-linecap="round"/></svg><span class="sim-t-e">' + ecart(e) + '</span></span></div>';
+    };
+    var ePt = function (e) { return Math.abs(e) < 0.05 ? '= 0' : (e < 0 ? '↓ ' : '↑ ') + nf(Math.abs(e), 1) + ' pt'; };
+    $('sim-1').innerHTML = tuile('def', AN0, 'Déficit', function (v) { return f1(v) + ' %'; }, ePt) + tuile('dette', AN1, 'Dette', function (v) { return f1(v) + ' %'; }, ePt) + tuile('cr', AN0, 'Croissance', function (v) { return pcs2(v); }, ePt) + tuile('ph', AN1, 'PIB/hab.', function (v) { return eu10(v); }, function (e) { return Math.abs(e) < 5 ? '= 0' : (e < 0 ? '↓ ' : '↑ ') + eu10(Math.abs(e)); });
+    $('sim-1').setAttribute('aria-label', 'Déficit ' + AN0 + ' ' + f1(val(Cc.def, AN0)) + ' %, dette ' + AN1 + ' ' + f1(val(Cc.dette, AN1)) + ' %, croissance ' + AN0 + ' ' + pcs2(val(Cc.cr, AN0)) + ', PIB par habitant ' + AN1 + ' ' + eu10(val(Cc.ph, AN1)));
     simJauge(LL);
     if (SM.zoom && !SM.ghost) simZoom(SM.zoom, true);
     if (SM.ghost && !SM.drag && !SM.apercu && !moinsAnim()) requestAnimationFrame(function () { simDessin(); });
@@ -4941,7 +4970,7 @@ body.q-simu #sim-main { overflow-anchor: none; }
     tb.innerHTML = '<div class="sim-cap"><button type="button" class="sim-obj" id="sim-obj" aria-expanded="false" aria-controls="sim-objs">Objectif</button><button type="button" class="sim-ic" id="sim-undo" disabled>↶<span class="sim-ic-t"> Annuler</span></button><button type="button" class="sim-ic sim-pl" id="sim-plie"><span class="sim-pl-o">Replier ▴</span><span class="sim-pl-f">Voir les courbes ▾</span></button></div>' +
       '<div class="sim-objs" id="sim-objs" hidden></div>' +
       '<div class="sim-g" id="sim-g">' + ['def', 'dette', 'cr', 'ph'].map(function (c) { return '<button type="button" class="sim-c" id="sim-c-' + c + '"><span class="sim-c-t"></span><span class="sim-c-r"><span class="sim-c-v"></span><span class="sim-c-s"></span><span class="sim-c-m" hidden></span></span><span class="sim-c-g"></span></button>'; }).join('') + '</div>' +
-      '<p class="sim-1" id="sim-1"></p><div class="sim-j" id="sim-j"></div>' +
+      '<div class="sim-1" id="sim-1" role="img"></div><div class="sim-j" id="sim-j"></div>' +
       '';
     var ex = document.createElement('div'); ex.className = 'sim-ex'; ex.id = 'sim-ex'; ex.innerHTML = '<div class="sim-fete" id="sim-fete" hidden></div><div class="sim-al" id="sim-al" role="status" hidden></div><div class="sim-pq" id="sim-pq"><div class="sim-pq-top"><p class="sim-pq-h">Pourquoi ça bouge</p><button type="button" class="sim-pq-b" id="sim-pq-o" aria-expanded="false" aria-controls="sim-pq-c">Le détail</button></div><p class="sim-pq-g" id="sim-pq-g" hidden></p><div class="sim-pq-c" id="sim-pq-c" aria-live="polite"></div></div>'; $('p-creer').insertBefore(ex, $('p-creer').firstChild);
     $('q-collant').appendChild(tb);
