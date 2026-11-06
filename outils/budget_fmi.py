@@ -28,12 +28,59 @@ PAYS = [('FRA', 'France', True), ('DEU', 'Allemagne', True), ('ESP', 'Espagne', 
         ('SVK', 'Slovaquie', False), ('FIN', 'Finlande', False), ('SWE', 'Suède', False), ('NOR', 'Norvège', False), ('ISL', 'Islande', False),
         ('CHE', 'Suisse', False), ('GBR', 'Royaume-Uni', False), ('USA', 'États-Unis', False), ('JPN', 'Japon', False), ('CAN', 'Canada', False)]
 IND = {'solde': 'GGXCNL_NGDP', 'dette': 'GGXWDG_NGDP'}
+# Les grands pays hors d'Europe placés sur le nuage « À quel pays ressemble votre budget » (dépenses et recettes des administrations
+# publiques, Fiscal Monitor, % du PIB, la même année que les pays d'Europe d'Eurostat), et ceux du graphe de la richesse par habitant.
+MONDE = [('USA', 'États-Unis', 'US'), ('CHN', 'Chine', 'CN'), ('JPN', 'Japon', 'JP'), ('GBR', 'Royaume-Uni', 'UK'), ('CAN', 'Canada', 'CA'),
+         ('KOR', 'Corée du Sud', 'KR'), ('IND', 'Inde', 'IN'), ('RUS', 'Russie', 'RU'), ('BRA', 'Brésil', 'BR'), ('AUS', 'Australie', 'AU'),
+         ('TUR', 'Turquie', 'TR')]
+IND_MONDE = {'dep': 'G_X_G01_GDP_PT', 'rec': 'GGR_G01_GDP_PT'}
+# PIB par habitant en parité de pouvoir d'achat (dollars internationaux), Perspectives de l'économie mondiale : l'UE et les grands pays.
+UE27 = [('AUT', 'Autriche', 'AT'), ('BEL', 'Belgique', 'BE'), ('BGR', 'Bulgarie', 'BG'), ('HRV', 'Croatie', 'HR'), ('CYP', 'Chypre', 'CY'),
+        ('CZE', 'Tchéquie', 'CZ'), ('DNK', 'Danemark', 'DK'), ('EST', 'Estonie', 'EE'), ('FIN', 'Finlande', 'FI'), ('FRA', 'France', 'FR'),
+        ('DEU', 'Allemagne', 'DE'), ('GRC', 'Grèce', 'EL'), ('HUN', 'Hongrie', 'HU'), ('IRL', 'Irlande', 'IE'), ('ITA', 'Italie', 'IT'),
+        ('LVA', 'Lettonie', 'LV'), ('LTU', 'Lituanie', 'LT'), ('LUX', 'Luxembourg', 'LU'), ('MLT', 'Malte', 'MT'), ('NLD', 'Pays-Bas', 'NL'),
+        ('POL', 'Pologne', 'PL'), ('PRT', 'Portugal', 'PT'), ('ROU', 'Roumanie', 'RO'), ('SVK', 'Slovaquie', 'SK'), ('SVN', 'Slovénie', 'SI'),
+        ('ESP', 'Espagne', 'ES'), ('SWE', 'Suède', 'SE')]
 
 
 def lire(ind):
     # Par curl, comme les autres outils (il passe par le proxy de l'environnement).
     out = subprocess.run(['curl', '-sS', '-m', '90', API + ind], capture_output=True, text=True, check=True).stdout
     return json.loads(out)['values'][ind]
+
+
+def meta(ind):
+    """L'édition de la base (« Fiscal Monitor (October 2026) ») et la date de mise à jour, lues dans la liste des indicateurs."""
+    out = subprocess.run(['curl', '-sS', '-m', '90', API + 'indicators'], capture_output=True, text=True, check=True).stdout
+    m = json.loads(out)['indicators'][ind]
+    return {'edition': m.get('source'), 'maj': m.get('last-modified'), 'unite': m.get('unit')}
+
+
+def monde(an):
+    """Dépenses et recettes des administrations publiques (% du PIB) des grands pays hors d'Europe, l'année an."""
+    V = {k: lire(i) for k, i in IND_MONDE.items()}
+    out, sans = [], []
+    for code, nom, c2 in MONDE:
+        d, r = (V['dep'].get(code) or {}).get(str(an)), (V['rec'].get(code) or {}).get(str(an))
+        if d is None or r is None: sans.append(nom); continue
+        out.append({'code': c2, 'imf': code, 'nom': nom, 'an': an, 'dep': round(d, 1), 'rec': round(r, 1)})
+    return {'an': an, 'source': 'FMI, base DataMapper, Fiscal Monitor : dépenses (G_X_G01_GDP_PT) et recettes (GGR_G01_GDP_PT) des administrations publiques, % du PIB',
+            'url': 'https://www.imf.org/external/datamapper/G_X_G01_GDP_PT@FM', 'edition': meta('G_X_G01_GDP_PT'), 'lu': date.today().isoformat(), 'pays': out, 'sans': sans}
+
+
+def pib_hab():
+    """PIB par habitant en parité de pouvoir d'achat (PPPPC), dernière année projetée commune à tous les pays retenus."""
+    V = lire('PPPPC')
+    L = UE27 + [(c, n, c2) for c, n, c2 in MONDE]
+    dispo = [max([int(a) for a, v in (V.get(c) or {}).items() if v is not None] or [0]) for c, n, c2 in L]
+    an = min([a for a in dispo if a > 0])
+    out, sans = [], []
+    for c, n, c2 in L:
+        v = (V.get(c) or {}).get(str(an))
+        if v is None: sans.append(n)
+        else: out.append({'code': c2, 'imf': c, 'nom': n, 'v': round(v)})
+    return {'an': an, 'source': "FMI, base DataMapper, Perspectives de l'économie mondiale : PIB par habitant en parité de pouvoir d'achat (PPPPC), dollars internationaux courants, projection",
+            'url': 'https://www.imf.org/external/datamapper/PPPPC@WEO', 'edition': meta('PPPPC'), 'lu': date.today().isoformat(), 'pays': out, 'sans': sans}
 
 
 def main():
@@ -57,6 +104,10 @@ def main():
     if ecarts:
         print('Édition différente de la projection du jeu (dette de la France) :', ecarts, '— rien écrit.')
         return 1
+    res['monde'] = monde(an0 - 1)
+    res['pib_hab'] = pib_hab()
+    print('Hors d\'Europe,', res['monde']['an'], ':', ', '.join('%s %s/%s' % (p['nom'], p['dep'], p['rec']) for p in res['monde']['pays']), '· sans chiffre :', res['monde']['sans'])
+    print('PIB par habitant (PPA),', res['pib_hab']['an'], ':', ', '.join('%s %s' % (p['nom'], p['v']) for p in res['pib_hab']['pays'] if p['code'] in ('FR', 'DE', 'US', 'CN')), '· sans chiffre :', res['pib_hab']['sans'], '·', res['pib_hab']['edition'])
     sans = [p['nom'] for p in res['pays'] if p['solde'].get(str(an0 + 1)) is None]
     if sans: print('Sans prévision de solde pour', an0 + 1, ':', ', '.join(sans))
     for p in res['pays']:
@@ -67,7 +118,8 @@ def main():
     else:
         try:
             old = json.load(open(SORTIE))
-            print('Inchangé' if old['pays'] == res['pays'] else 'Différent du fichier : relancer avec --ecrire')
+            memes = old['pays'] == res['pays'] and (old.get('monde') or {}).get('pays') == res['monde']['pays'] and (old.get('pib_hab') or {}).get('pays') == res['pib_hab']['pays']
+            print('Inchangé' if memes else 'Différent du fichier : relancer avec --ecrire')
         except FileNotFoundError:
             print('Pas encore de fichier : relancer avec --ecrire')
     return 0
