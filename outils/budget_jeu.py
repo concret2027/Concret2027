@@ -1501,6 +1501,14 @@ def leviers_plus(assiettes):
       src=S(t['src']))
     lc = {e['cle']: e for e in (charger('leviers_creer.json') or {'elements': []})['elements']}; ms = lc.get('masse_salariale_cotisations')
     HC = round(ms['valeurs']['salaires et traitements bruts (Md€)'] / ms['valeurs']['total (Md€)'], 4) if ms else 1
+    # « Salaires des agents publics » (Insee, rémunérations, cotisations des employeurs comprises) : l'économie comptée est la même
+    # part des salaires bruts que pour les autres lignes de la fonction publique ; les cotisations vont à des caisses publiques.
+    rm = next((x for x in assiettes if x['k'] == 'remunerations'), None)
+    if rm and ms:
+        rm['part_eco'] = HC
+        rm['part_eco_note'] = ("Économie comptée : %s %% du montant, la part des salaires bruts (%s Md€ sur %s Md€ en 2024, Cour des comptes, note sur la masse salariale de la fonction publique, septembre 2026) : "
+                               "les cotisations des employeurs publics vont à des caisses publiques. Pas compté : les cotisations, la CSG et l'impôt que les agents ne paieraient plus, qui réduiraient l'économie."
+                               % (pc1(HC * 100), pc1(ms['valeurs']['salaires et traitements bruts (Md€)']), pc1(ms['valeurs']['total (Md€)'])))
     hc = (" Les chiffres de la Cour comprennent les cotisations des employeurs publics, qui vont à des caisses publiques : Concret n'en retient que la part des salaires bruts, %s %% (244,6 Md€ sur 362,1 Md€ en 2024, même note), la même pour les trois versants faute de détail par versant (les taux de cotisation des employeurs publics ne sont pas les mêmes pour l'État, les collectivités et les hôpitaux). Pas compté : les cotisations, la CSG et l'impôt que les agents ne paieraient plus sur ces salaires, qui réduiraient l'économie." % fr_nb(round(HC * 100, 1))) if ms else ''
     x = L['fp-non-remplacement-3-versants']; sv = x['src_variantes']
     a('fp-non-remplacement', l="Fonction publique : une partie des départs à la retraite non remplacée (État, collectivités, hôpitaux)", md=round(18.2 * HC, 3), an=2032, qui=['agents_publics'],
@@ -1747,16 +1755,20 @@ def construire():
         noteR = "Chiffrage de la Cour des comptes pour 2035 (système de retraite). "
         cal = "D'après le calendrier en vigueur (service-public.fr), l'âge minimum est de 63 ans pour les personnes nées d'avril à décembre 1965 (départs en 2028), de 63 ans et 3 mois pour celles nées en 1966 (en 2029), et atteint 64 ans pour celles nées en 1969 (en 2033). "
         c62 = ra.get('retour à 62 ans : coût selon la Cour des comptes (Md€, horizon 2030 selon un député)')
+        pf62 = [abs(v) for v in ACTIVITE['age']['cartes']['retraite-62']['pib']]
         n62 = ("Chiffrage de la Cour des comptes : « un abaissement à 62 ans de l'âge du départ à la retraite coûterait 10,4 milliards d'euros », à l'horizon 2030 selon un député (même compte rendu) ; "
                "la Cour ajoute que l'effet d'un changement d'âge « monte rapidement en puissance – cela rapporte ou coûte vite ». L'âge de 62 ans change les départs dès %d (aujourd'hui, 62 ans et 9 mois) ; "
-               "Concret fait monter l'effet en ligne droite de %d à 2030, puis le garde (hypothèse). ") % (a1, a1)
+               "Concret répartit ce coût dans le temps comme l'effet sur l'activité, génération par génération (étude d'impact de 2023, même calendrier) : en %d, %s %% du coût de 2030, "
+               "qui est ensuite gardé (hypothèse ; jusqu'au 6 novembre 2026, le jeu le faisait monter en ligne droite de %d à 2030, plus lentement que l'effet sur l'activité). ") % (a1, a1, pc1(pf62[0] / pf62[2030 - a1] * 100).replace(',0', ''), a1)
+        # Le coût direct de 62 ans suit le même profil que l'effet sur l'activité (mois-générations, ACTIVITE['age']) : coût de l'année =
+        # coût de 2030 × profil de l'année / profil de 2030, au plus le coût de 2030.
         n63 = noteR + cal + "S'arrêter à 63 ans change donc les départs à partir de 2029 environ ; Concret fait monter l'effet en ligne droite de 2029 à 2035 (hypothèse). "
         n65 = noteR + cal + "Passer à 65 ans ne change donc les départs qu'après 2031 : rien n'est compté dans les cinq ans du jeu. "
 
         debat('retraite-63', "Ramener l'âge légal de départ à la retraite à 63 ans", "L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026). La hausse s'arrête à 63 ans au lieu de 64 ans. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], None, 'depense',
               sans_susp(rampe(-ra['âge ramené de 64 à 63 ans : dépense supplémentaire en 2035 (Md€)'], 2029)), 'retraite_age_cour_comptes_2025', n63 + nsp + "Dépense en plus en 2035, par rapport à 64 ans : 5,8 Md€.", [x for x in age if x != 'retraite-63'], 'Qui reçoit')
         debat('retraite-62', "Revenir à la retraite à 62 ans", "L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026). L'âge minimum est ramené à 62 ans pour tous, au lieu de 64 ans à terme. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], None, 'depense',
-              sans_susp({str(a): round(-c62 * min(1, (a - a1 + 1) / (2030 - a1 + 1)), 3) for a in range(a1, 2032)}), 'retraite_age_cour_comptes_2025', n62 + nsp, [x for x in age if x != 'retraite-62'], 'Qui reçoit')
+              sans_susp({str(a): round(-c62 * min(1, pf62[min(a - a1, len(pf62) - 1)] / pf62[2030 - a1]), 3) for a in range(a1, 2032)}), 'retraite_age_cour_comptes_2025', n62 + nsp, [x for x in age if x != 'retraite-62'], 'Qui reçoit')
         debat('retraite-65', "Porter l'âge légal de départ à la retraite à 65 ans", "L'âge minimum de départ est de 62 ans et 9 mois pour les personnes nées entre le 1er janvier 1963 et le 31 mars 1965, puis monte jusqu'à 64 ans pour celles nées à partir de 1969 (réforme de 2023, suspendue en 2026). L'âge minimum est porté à 65 ans à terme, au lieu de 64 ans. Le chiffrage de la Cour des comptes compare à 64 ans.", 'retraites', ['salaries'], None, 'depense',
               rampe(ra['âge porté à 65 ans : gain en 2035 (Md€)'], 2032), 'retraite_age_cour_comptes_2025', n65 + "Économie en 2035 : 8,4 Md€, après les cinq ans du jeu. Se vote avec « Revenir à la réforme des retraites », qui accélère la hausse jusqu'à 64 ans.", ['retraite-62', 'retraite-63'])
         cartes[-1]['hors_jeu'] = {'an': 2035, 'md': ra['âge porté à 65 ans : gain en 2035 (Md€)']}
