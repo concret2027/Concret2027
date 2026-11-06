@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="26ae43f29fb2">
+<meta name="concret-version" content="dd132968f481">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1355,6 +1355,20 @@ body.q-cartes #sim-main { display: none !important; }
 .sim-c-conf-b { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 0 !important; }
 .sim-c-conf-b .q-go { min-height: 44px; padding: 0 20px; }
 .sim-cartes .q-rep.vise { border-color: var(--fr); background: color-mix(in srgb, var(--fr) 7%, var(--panel)); }
+.sim-c-quoi { margin: 0; font-size: 15px; line-height: 1.4; }
+.sim-carte { padding-top: 12px; gap: 10px; }
+.sim-c-pt { margin: -4px 0 0; }
+.sim-c-n { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* Créer en cartes : l'objectif tient sur une ligne et « Courbes » remplace « Voir les courbes », pour laisser la place à la carte. */
+body.q-cartes .sim-cap { flex-wrap: nowrap; gap: 6px; }
+body.q-cartes .sim-cap .sim-obj { flex: 1 1 0; padding: 0 10px; }
+body.q-cartes .sim-cap-t { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: none; line-clamp: none; }
+body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: inline; }
+.sim-c-quoi .m { color: var(--muted); }
+.sim-c-plus { margin: 0; font-size: 14px; }
+.sim-c-plus summary { cursor: pointer; color: var(--fr); font-weight: 600; min-height: 32px; display: inline-flex; align-items: center; }
+.sim-c-plus p { margin: 4px 0 0; }
+.sim-cartes .q-rep .sim-c-cc { color: var(--fg); font-size: 13px; }
 .sim-c-res { margin: 2px 0 0; font-size: 30px; font-weight: 800; line-height: 1.15; letter-spacing: -.01em; font-variant-numeric: tabular-nums; color: var(--fr); }
 @keyframes simBande { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sim-c-bande { animation: none; } }
@@ -5163,17 +5177,75 @@ body.q-cartes #sim-main { display: none !important; }
     if (!neg.length) return pos.slice(0, 4).reverse(); if (!pos.length) return neg.slice(0, 4);
     return neg.slice(0, 2).concat(pos.slice(0, 2).reverse());
   }
+  // ---------- Chaque carte de Créer pose une question, comme Voter, et dit en une ou deux lignes de quoi il s'agit ----------
+  // Aucun chiffre écrit ici : les chiffres viennent des données (montant, taux du « cas »), avec leur source sur la carte.
+  var CQ = {
+    'tva-sociale': ['Basculer des cotisations des employeurs vers la TVA ?', 'Plus de TVA sur les achats, et autant de cotisations des employeurs en moins.'],
+    'cotis-emp': ['Changer les cotisations des employeurs ?', 'Ce que les employeurs versent sur les salaires pour la Sécurité sociale, les retraites complémentaires et l\'assurance chômage.'],
+    'tva': ['Changer la TVA ?', function () { var T = CAS('tva_taux'); return 'La TVA est la taxe payée sur ce que l\'on achète' + (T ? ' (taux normal : ' + pcx(T.normal.taux_pct) + ')' : '') + '.'; }],
+    'csg': ['Changer la CSG ?', 'La contribution sociale généralisée est prélevée sur les revenus d\'activité, les retraites et les revenus du capital ; elle finance la Sécurité sociale.'],
+    'cotis-sal': ['Changer les cotisations des salariés et des indépendants ?', 'Ce qui est prélevé sur le salaire brut, ou sur le revenu des indépendants, pour la protection sociale.'],
+    'ir': ['Changer l\'impôt sur le revenu ?', 'Impôt payé par les foyers selon leurs revenus et leur situation familiale, avec un barème par tranches.'],
+    'is': ['Changer l\'impôt sur les sociétés ?', function () { var t = CAS('is_taux_normal'); return 'Impôt payé par les entreprises sur leurs bénéfices' + (t ? ' (taux normal : ' + pcx(t) + ')' : '') + '.'; }],
+    'allegements': ['Changer les allègements de cotisations des employeurs ?', 'Réductions de cotisations sur les salaires : les réduire, c\'est faire payer plus de cotisations aux employeurs.'],
+    'impots-capital': ['Changer les droits de succession et de donation ?', 'Ce qui est payé sur ce que l\'on reçoit par héritage ou par donation (impôts en capital).'],
+    'pfu-bareme': ['Imposer les revenus du capital au barème de l\'impôt sur le revenu ?', 'Dividendes, intérêts et plus-values : aujourd\'hui souvent imposés à un taux unique (la « flat tax »), au lieu du barème des salaires.'],
+    'carburants': ['Changer les taxes sur les carburants ?', 'L\'accise (ex-TICPE) payée sur chaque litre d\'essence et de gazole ; montant : la part de l\'État seulement.'],
+    'quotient-familial': ['Changer le quotient familial ?', 'Il réduit l\'impôt sur le revenu des foyers avec enfants ; l\'avantage de chaque demi-part est plafonné.'],
+    'retraites': ['Changer le montant des retraites ?', 'Les retraites de base et complémentaires, de tous les régimes.'],
+    'chomage': ['Changer les allocations chômage ?', 'Les allocations versées par l\'assurance chômage (Unédic) aux demandeurs d\'emploi indemnisés.'],
+    'apl': ['Changer les aides au logement ?', 'Les APL aident à payer le loyer, selon les revenus ; montant : la part de l\'État.'],
+    'aah': ['Changer l\'allocation aux adultes handicapés ?', 'Allocation versée aux personnes handicapées qui ont peu ou pas de revenus.'],
+    'alloc-familiales': ['Changer les allocations familiales ?', 'Versées chaque mois aux familles qui ont au moins deux enfants.'],
+    'ij-maladie': ['Changer les indemnités des arrêts maladie ?', 'Ce que l\'assurance maladie verse aux salariés en arrêt maladie, à la place d\'une partie du salaire.'],
+    'rsa': ['Changer le RSA ?', 'Le revenu de solidarité active, versé par les départements aux personnes sans revenu ou avec de faibles revenus.'],
+    'prime-activite': ['Changer la prime d\'activité ?', 'Complément de revenu versé aux personnes qui travaillent et ont des revenus modestes.'],
+    'aspa': ['Changer le minimum vieillesse ?', 'L\'allocation de solidarité aux personnes âgées (ASPA) complète les ressources des retraités jusqu\'à un minimum ; montant : régime général seulement.'],
+    'ame': ['Changer l\'aide médicale de l\'État ?', 'Elle prend en charge les soins des étrangers en situation irrégulière qui ont de faibles ressources.'],
+    'remunerations': ['Changer les salaires des agents publics ?', 'Ce que l\'État, les collectivités, les hôpitaux et la Sécurité sociale versent à leurs agents, enseignants et militaires compris.'],
+    'ondam': ['Changer le budget de l\'assurance maladie ?', 'Les soins remboursés et les hôpitaux : l\'objectif de dépenses (ONDAM) proposé par le Gouvernement.'],
+    'enseignement': ['Changer le budget des écoles, collèges et lycées ?', 'Les crédits de l\'État pour l\'enseignement scolaire, hors pensions.'],
+    'defense': ['Changer le budget de la Défense ?', 'Les crédits de l\'État pour les armées, hors pensions.'],
+    'audiovisuel': ['Changer le budget de l\'audiovisuel public ?', 'France Télévisions, Radio France, Arte… : la part de TVA qui leur est affectée.'],
+    'secu:vieillesse': ['Changer les dépenses des retraites de base ?', 'Toute la branche retraite de la Sécurité sociale (régimes obligatoires de base), sans les retraites complémentaires.'],
+    'secu:famille': ['Changer les dépenses de la branche famille ?', 'Toute la branche famille de la Sécurité sociale (prestations familiales).'],
+    'secu:autonomie': ['Changer les dépenses de la branche autonomie ?', 'Toute la branche autonomie de la Sécurité sociale : personnes âgées et personnes handicapées.'],
+    'secu:atmp': ['Changer les dépenses de la branche accidents du travail ?', 'Toute la branche accidents du travail et maladies professionnelles de la Sécurité sociale.'],
+    'operateurs': ['Réduire les coûts des opérateurs de l\'État ?', 'Agences et établissements publics, comme Météo-France ou les agences régionales de santé : leurs coûts de personnel et de fonctionnement.'],
+    'fp-non-remplacement': ['Remplacer moins de départs à la retraite d\'agents publics ?', 'Une partie des agents qui partent à la retraite ne sont pas remplacés (État, collectivités, hôpitaux).'],
+    'fp-carence': ['Ajouter un jour de carence pour les agents publics ?', 'Aujourd\'hui, le premier jour d\'un arrêt maladie n\'est pas payé aux agents publics ; ce serait aussi le cas du deuxième.'],
+    'fp-avancements': ['Ralentir les avancements des agents publics ?', 'Les passages de grade et d\'échelon, qui augmentent le salaire, arrivent plus tard.'],
+    'fp-categorielles': ['Réduire les hausses de salaire décidées métier par métier ?', 'Les revalorisations propres à certains métiers de la fonction publique ; le point d\'indice n\'est pas concerné.'],
+    'collectivites-effectifs': ['Réduire les effectifs des collectivités ?', 'Communes, départements et régions : deux scénarios chiffrés par la Cour des comptes.'],
+    'capitalisation': ['Placer une part des cotisations de retraite dans des fonds ?', 'Cette part va dans des fonds au lieu de payer les retraites d\'aujourd\'hui, qui restent à payer.'],
+    'chomage-duree': ['Raccourcir la durée d\'indemnisation du chômage ?', function () { var x = AS['chomage-duree']; return 'Le nombre de jours pendant lesquels un demandeur d\'emploi est indemnisé' + (x && x.duree_max ? ' (aujourd\'hui ' + nf(x.duree_max, 0) + ' jours au plus avant 55 ans)' : '') + '.'; }],
+    'tm-dm': ['Rembourser moins les dispositifs médicaux ?', 'Pansements, appareils, matériel : la part payée par le patient ou sa complémentaire santé augmente (« ticket modérateur »).'],
+    'franchises': ['Augmenter les franchises médicales ?', 'Ce que le patient paie lui-même sur les boîtes de médicaments, les consultations et les transports.']
+  };
+  function cartesQ(k) { var c = CQ[k]; if (c) return c[0]; return /^mi:/.test(k) ? 'Changer le budget «\u00a0' + nomL(k) + '\u00a0» ?' : 'Changer «\u00a0' + nomL(k) + '\u00a0» ?'; }
+  // Une mission de l'État : ses plus gros programmes (projet de loi de finances), ce qui dit à quoi sert l'argent.
+  function cartesQuoi(k) { var c = CQ[k]; if (c) return typeof c[1] === 'function' ? c[1]() : c[1]; if (/^mi:/.test(k)) { var Q = Object.keys(AS).filter(function (q) { return AS[q].parent === k; }).map(function (q) { return AS[q]; }).sort(function (a, b) { return b.md - a.md; }); return 'Budget de l\'État' + (Q.length ? ' : ' + Q.slice(0, 2).map(function (q) { return q.l; }).join(', ') + (Q.length > 2 ? '…' : '.') : '.'); } return ''; }
+  // Ce que veut dire une réponse pour une personne : un calcul simple à partir de chiffres sourcés (« environ »), sinon rien.
+  var CMOY = { retraites: ['la retraite moyenne', 'bruts par mois'], chomage: ['l\'allocation moyenne', 'nets par mois'], 'prime-activite': ['la prime d\'activité moyenne d\'un foyer', 'par mois'] };
+  function cartesConcret(x, v) {
+    if (!v || x.mix) return ''; var f = v / 100, k = x.k, m = x.pp && x.pp.moyenne;
+    if (k === 'tva') { var T = CAS('tva_taux'); return T ? 'Le taux normal passerait de ' + pcx(T.normal.taux_pct) + ' à environ ' + pcx(Math.round(T.normal.taux_pct * (1 + f) * 10) / 10) + ' (si tous les taux changent dans la même proportion).' : ''; }
+    if (CMOY[k] && m && !x.u) { var d = (f < 0 ? -1 : 1) * Math.round(Math.abs(m.v * f)); return 'Environ ' + (d < 0 ? '−' : '+') + eu(Math.abs(d)) + ' ' + CMOY[k][1] + ' sur ' + CMOY[k][0] + ' (' + eu(m.v) + '), si le changement est le même pour chacun.'; }
+    try { var L0 = exemplesLigne(k, 0).L, L = exemplesLigne(k, v).L.filter(function (t) { return L0.indexOf(t) < 0 && !/^Si |^Allocation de 30|^Tarifs publiés/.test(t); }); return L.length ? cartesCourt(L[0]) : ''; } catch (e) { return ''; }
+  }
+  // Une phrase, sans les précisions entre parenthèses (« aujourd'hui… », « exemple ») : la carte reste courte.
+  function cartesCourt(t) { t = String(t).replace(/<[^>]+>/g, '').replace(/ \((aujourd'hui|exemple)[^)]*\)/g, ''); var i = t.search(/\. (?=[A-ZÀ-Ý])/); if (i > 0) t = t.slice(0, i + 1); if (t.length > 120) { var j = t.indexOf(', ', 30); if (j > 0) t = t.slice(0, j) + '.'; } return t; }
   // Une réponse : le réglage en gras, ce qu'il change sur la ligne elle-même en 2027 dessous (2031 aussi pour une mesure qui monte en charge).
   function cartesRep(x, v) {
     if (!v) return ['Ne rien changer', ''];
     var lab = x.u && x.u.choix ? (x.u.choix.filter(function (o) { return o.v === v; })[0] || {}).l || pcC(x, v) : x.u ? pcT(x, v) : pcC(x, v);
     if (x.k === 'allegements') lab += ' d\'allègements';
-    if (x.k === 'capitalisation') return [lab, mds(Math.abs(capiBrut(v, AN0))) + ' placés en ' + AN0];
-    if (x.mix) return [lab, 'TVA +' + mds(Math.abs(v * x.mix[0].par_u)) + ', autant de cotisations des employeurs en moins'];
+    if (x.k === 'capitalisation') return [lab, mds(Math.abs(capiBrut(v, AN0))) + ' placés en ' + AN0, cartesConcret(x, v)];
+    if (x.mix) return [lab, 'TVA +' + mds(Math.abs(v * x.mix[0].par_u)) + ', autant de cotisations des employeurs en moins', (function () { try { var L = exemplesLigne(x.k, v).L; return L.length ? cartesCourt(L[0]) : ''; } catch (e) { return ''; } })()];
     var sQ = x.k === 'allegements' ? 'recette' : x.groupe, sgn = function (e) { var c = sQ === 'depense' ? -e : e; return Math.abs(c) < 0.005 ? 'moins de 0,01 Md€' : (c < 0 ? '−' : '+') + nf(Math.abs(c), Math.abs(c) < 1 ? 2 : 1) + ' Md€'; };
     var t = sgn(effetPerso(x, v, AN0, S.perso)) + (sQ === 'depense' ? ' de dépenses' : ' de recettes') + ' en ' + AN0;
     if (x.rampe) t += ', ' + sgn(effetPerso(x, v, AN1, S.perso) * PIBY[AN1] / PIBY[AN0]) + ' en ' + AN1;
-    return [lab, t + cartesNet(x.k, v)];
+    return [lab, t + cartesNet(x.k, v), cartesConcret(x, v)];
   }
   // Quand la réponse retire un autre choix (même argent) : ce qu'elle change au total, avant l'effet sur l'activité.
   function cartesNet(k, v) {
@@ -5237,14 +5309,17 @@ body.q-cartes #sim-main { display: none !important; }
     var x = AS[k], fi = cfam(k), fnom = fi >= 0 ? TUILES[fi][0] : 'Autre ligne du budget', v = S.perso[k] || 0, pr = cartesReglages(x), back = CM.back && CM.back.k === k ? CM.back : null;
     CM.k = k; CM.v0 = back ? back.v0 : v; CM.revu = back; CM.back = null; cartesSnap(k);
     var desc = cartesPaie(k), nrm = function (t) { return String(t).toLowerCase().replace(/[^a-zà-ÿ]/g, ''); }; if (desc && nrm(desc) === nrm(nomL(k))) desc = x.l.split(' (')[0];
-    var riv = cartesRivaux(k), rc = recoupe(k);
-    box.innerHTML = bande + cartesProg(nVu) + '<article class="q-card q-qcard sim-carte in" id="sim-carte" data-c="' + esc(k) + '">' +
-      '<div class="q-tags"><span class="q-chip">' + esc(fnom) + '</span></div><h2>' + esc(nomL(k)) + '</h2>' +
-      '<p class="q-ligne m">' + (desc ? esc(desc) + (/[….]$/.test(desc) ? ' ' : '. ') : '') + esc(montantTxt(x) || poidsTxt(x)) + '. <a href="' + esc(x.src.url) + '" target="_blank" rel="noopener">Source</a>' + (x.src_cas ? ', <a href="' + esc(x.src_cas.url) + '" target="_blank" rel="noopener">part des pensions</a>' : '') + '</p>' +
-      (actHyp(x) ? '<p class="q-ligne m">' + esc(actHyp(x).carte) + '</p>' : '') + (rc ? '<p class="q-ligne m">' + esc(rc) + '</p>' : '') +
+    var riv = cartesRivaux(k), rc = recoupe(k); if (/^mi:/.test(k)) desc = '';
+    // La progression tient dans l'en-tête de la carte (une ligne), pour que la question et les premières réponses restent à l'écran.
+    var pp = Math.min(N, (Math.floor(nVu / 5) + 1) * 5);
+    box.innerHTML = bande + '<article class="q-card q-qcard sim-carte in" id="sim-carte" data-c="' + esc(k) + '"><div class="q-ptot sim-c-pt" aria-hidden="true"><span style="width:' + (100 * nVu / N).toFixed(1) + '%"></span></div>' +
+      '<div class="q-tags"><span class="q-chip">' + esc(fnom) + '</span><span class="sim-c-n">Carte ' + (nVu + 1) + ' sur ' + N + (pp > nVu + 1 ? ' · pause à ' + pp : '') + '</span></div><h2>' + esc(cartesQ(k)) + '</h2>' +
+      '<p class="q-ligne sim-c-quoi">' + esc(cartesQuoi(k)) + ' <span class="m">' + esc(maj1(montantTxt(x) || poidsTxt(x))) + '. <a href="' + esc(x.src.url) + '" target="_blank" rel="noopener">Source</a>' + (x.src_cas ? ', <a href="' + esc(x.src_cas.url) + '" target="_blank" rel="noopener">part des pensions</a>' : '') + '</span></p>' +
       (riv.length ? '<p class="q-ligne sim-c-riv">Un réglage ici (pas « Ne rien changer ») remplace ' + riv.map(function (t) { return '«\u00a0' + esc(t) + '\u00a0»'; }).join(', ') + (riv.length > 1 ? ' : ces lignes portent' : ' : les deux portent') + ' sur le même argent.</p>' : '') +
-      '<p class="q-ligne m q-touchez">Touchez une réponse : la carte suivante arrive aussitôt.</p><div class="q-reps" role="group" aria-label="' + esc(nomL(k)) + '">' + [0].concat(pr).map(function (r) { var t = cartesRep(x, r), on = r === v && (r !== 0 || back); return '<button type="button" class="q-rep' + (r ? '' : ' aucune') + (on ? ' on' : '') + '" data-cv="' + r + '"' + (on ? ' aria-pressed="true"' : '') + '><b>' + esc(t[0]) + '</b>' + (t[1] ? '<span>' + esc(t[1]) + '</span>' : '') + '</button>'; }).join('') + '</div>' +
-      '<div class="sim-c-imp" hidden></div>' + (k === 'capitalisation' && x.options ? capiHTML() : '') +
+      (nVu ? '' : '<p class="q-ligne m q-touchez">Touchez une réponse : la carte suivante arrive aussitôt.</p>') + '<div class="q-reps" role="group" aria-label="' + esc(nomL(k)) + '">' + [0].concat(pr).map(function (r) { var t = cartesRep(x, r), on = r === v && (r !== 0 || back); return '<button type="button" class="q-rep' + (r ? '' : ' aucune') + (on ? ' on' : '') + '" data-cv="' + r + '"' + (on ? ' aria-pressed="true"' : '') + '><b>' + esc(t[0]) + '</b>' + (t[1] ? '<span>' + esc(t[1]) + '</span>' : '') + (t[2] ? '<span class="sim-c-cc">' + esc(t[2]) + '</span>' : '') + '</button>'; }).join('') + '</div>' +
+      '<div class="sim-c-imp" hidden></div>' +
+      (desc || actHyp(x) || rc ? '<details class="sim-c-plus"><summary>En savoir plus</summary>' + (desc ? '<p class="q-ligne m">' + (/^Comprend/.test(desc) ? esc(desc) : esc(nomL(k)) + ' : ' + esc(minL(desc))) + '</p>' : '') + (actHyp(x) ? '<p class="q-ligne m">' + esc(actHyp(x).carte) + '</p>' : '') + (rc ? '<p class="q-ligne m">' + esc(rc) + '</p>' : '') + '</details>' : '') +
+      (k === 'capitalisation' && x.options ? capiHTML() : '') +
       '<p class="q-tard"><button type="button" id="sim-c-prec" aria-expanded="false">Régler précisément</button></p><div class="sim-c-reg" id="sim-c-reg" hidden></div>' +
       '<p class="sim-l-e"></p><button type="button" class="q-go q-continuer" id="sim-c-next" hidden>Carte suivante →</button>' + cartesRet() + '</article>' + cartesExpert();
     var card = $('sim-carte'); if (k === 'capitalisation' && x.options) capiMajRow(card);
@@ -5361,7 +5436,7 @@ body.q-cartes #sim-main { display: none !important; }
       }
       repondre(v);
     }; });
-    tous('[data-capi]', function (b) { b.onclick = function () { capiChoisir(b.dataset.capi, b.dataset.cv, card); capiMajRow(card); tous('.q-reps [data-cv]', function (r) { var t = cartesRep(AS[k], +r.dataset.cv)[1], sp = r.querySelector('span'); if (sp && t) sp.textContent = t; }); }; });
+    tous('[data-capi]', function (b) { b.onclick = function () { capiChoisir(b.dataset.capi, b.dataset.cv, card); capiMajRow(card); tous('.q-reps [data-cv]', function (r) { var t = cartesRep(AS[k], +r.dataset.cv)[1], sp = r.querySelector('span:not(.sim-c-cc)'); if (sp && t) sp.textContent = t; }); }; });
     $('sim-c-prec').onclick = function () { var r = $('sim-c-reg'), o = r.hidden; r.hidden = !o; this.setAttribute('aria-expanded', o); if (o && !r.innerHTML) { r.innerHTML = simLigneHTML(k); Array.prototype.forEach.call(r.querySelectorAll('.sim-l-hyp'), function (h) { h.remove(); }); brancherLignes(r); simLignes(); } $('sim-c-next').hidden = !o; };
     $('sim-c-next').onclick = cartesSuite;
   }
