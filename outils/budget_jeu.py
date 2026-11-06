@@ -1109,6 +1109,257 @@ def pc1(x):
     return ('%.1f' % x).replace('.', ',')
 
 
+# Textes des cartes de Créer (question et explication), réécrits par un correcteur indépendant le 6 novembre 2026. Les chiffres n'y
+# sont pas écrits : la page remplace {md} (montant), {an} (année du montant), {montant} (montant et périmètre), {p1} (effet d'une
+# unité en 2027), {pp} (effet une fois en place), {max}, {mix}, {tva}, {is}, {dmax}, {AN0}, {AN1} par les chiffres des données.
+CARTES_TEXTES = {
+ "tva-sociale": {
+  "q": "Remplacer des cotisations des employeurs par de la TVA ?",
+  "d": "La TVA augmente et les cotisations des employeurs baissent du même montant. 1 point de TVA rapporte {mix}, rendus aux employeurs en cotisations en moins. Dans les réponses, la hausse de TVA se retrouve entièrement dans les prix."
+ },
+ "cotis-emp": {
+  "q": "Changer les cotisations des employeurs ?",
+  "d": "Les employeurs versent des cotisations sur les salaires pour la Sécurité sociale, les retraites complémentaires et l'assurance chômage. Elles ont rapporté {md} en {an}."
+ },
+ "tva": {
+  "q": "Changer la TVA ?",
+  "d": "La TVA est la taxe payée sur ce que l'on achète. Son taux normal est de {tva}, et elle a rapporté {md} en {an}. Dans les réponses, tous les taux changent dans la même proportion."
+ },
+ "csg": {
+  "q": "Changer la CSG ?",
+  "d": "La contribution sociale généralisée (CSG) est prélevée sur les revenus du travail, les retraites et les revenus du capital. Elle finance la Sécurité sociale : {md} de recettes en {an}. Dans les réponses, tous les taux changent dans la même proportion."
+ },
+ "cotis-sal": {
+  "q": "Changer les cotisations des salariés et des indépendants ?",
+  "d": "Ces cotisations sont prélevées sur le salaire brut, ou sur le revenu des indépendants, pour la protection sociale. Elles ont rapporté {md} en {an}."
+ },
+ "ir": {
+  "q": "Changer l'impôt sur le revenu ?",
+  "d": "Les foyers le paient selon leurs revenus et leur situation familiale, d'après un barème par tranches. {md} de recettes en {an}."
+ },
+ "is": {
+  "q": "Changer l'impôt sur les sociétés ?",
+  "d": "Les entreprises le paient sur leurs bénéfices. Son taux normal est de {is} : {md} de recettes en {an}. Dans les réponses, tous les taux changent dans la même proportion."
+ },
+ "allegements": {
+  "q": "Changer les allègements de cotisations des employeurs ?",
+  "d": "Ce sont des baisses de cotisations accordées aux employeurs sur les salaires. Moins d'allègements, c'est plus de cotisations à payer pour les employeurs. {md} d'allègements en {an}."
+ },
+ "impots-capital": {
+  "q": "Changer les droits de succession et de donation ?",
+  "d": "Ce sont les impôts payés sur ce que l'on reçoit en héritage ou en donation. {md} de recettes en {an}, comptés parmi les impôts en capital."
+ },
+ "pfu-bareme": {
+  "q": "Imposer les revenus du capital au barème de l'impôt sur le revenu ?",
+  "d": "Dividendes, intérêts et plus-values sont aujourd'hui souvent imposés à un taux unique, la « flat tax ». Les imposer au barème, comme les salaires, rapporterait jusqu'à {max} par an."
+ },
+ "carburants": {
+  "q": "Changer les taxes sur les carburants ?",
+  "d": "L'accise (l'ancienne TICPE) est une taxe payée sur chaque litre d'essence et de gazole. Part de l'État seulement : {md} de recettes en {an}."
+ },
+ "quotient-familial": {
+  "q": "Changer le quotient familial ?",
+  "d": "Le quotient familial réduit l'impôt sur le revenu des foyers avec enfants, grâce à des parts en plus. La baisse d'impôt de chaque demi-part est plafonnée. Effet : jusqu'à {max} par an."
+ },
+ "retraites": {
+  "q": "Changer le montant des retraites ?",
+  "d": "Les retraites de base et complémentaires, tous régimes confondus. {md} de dépenses en {an}. Dans les réponses, chaque retraite change du même pourcentage."
+ },
+ "chomage": {
+  "q": "Changer les allocations chômage ?",
+  "d": "L'assurance chômage (Unédic) verse des allocations aux demandeurs d'emploi indemnisés. {md} de dépenses en {an}. Dans les réponses, chaque allocation change du même pourcentage."
+ },
+ "apl": {
+  "q": "Changer les aides au logement ?",
+  "d": "Les APL aident les ménages à payer leur loyer, selon leurs revenus. Part de l'État : {md} de dépenses en {an}."
+ },
+ "aah": {
+  "q": "Changer l'allocation aux adultes handicapés ?",
+  "d": "L'allocation aux adultes handicapés (AAH) est versée aux personnes handicapées qui ont peu ou pas de revenus. {md} de dépenses en {an}. Dans les réponses, chaque allocation change du même pourcentage."
+ },
+ "alloc-familiales": {
+  "q": "Changer les allocations familiales ?",
+  "d": "Elles sont versées chaque mois aux familles qui ont au moins deux enfants. {md} de dépenses en {an}. Dans les réponses, chaque allocation change du même pourcentage."
+ },
+ "ij-maladie": {
+  "q": "Changer les indemnités des arrêts maladie ?",
+  "d": "Pendant un arrêt maladie, l'Assurance maladie verse au salarié des indemnités qui remplacent une partie de son salaire. {md} de dépenses en {an}."
+ },
+ "rsa": {
+  "q": "Changer le RSA ?",
+  "d": "Le revenu de solidarité active (RSA) est versé par les départements aux personnes sans revenu ou à faibles revenus. {md} de dépenses en {an}. Dans les réponses, chaque allocation change du même pourcentage."
+ },
+ "prime-activite": {
+  "q": "Changer la prime d'activité ?",
+  "d": "La prime d'activité est versée en plus du salaire aux personnes qui travaillent et ont des revenus modestes. {md} de dépenses en {an}. Dans les réponses, chaque prime change du même pourcentage."
+ },
+ "aspa": {
+  "q": "Changer le minimum vieillesse ?",
+  "d": "L'allocation de solidarité aux personnes âgées (ASPA) complète les ressources des retraités pour atteindre un minimum. Dépense du régime général seulement : {md} en {an}."
+ },
+ "remunerations": {
+  "q": "Changer les salaires des agents publics ?",
+  "d": "Les salaires versés par l'État, les collectivités, les hôpitaux et la Sécurité sociale à leurs agents, enseignants et militaires compris. {md} de dépenses en {an}. Dans les réponses, le même pourcentage s'applique au salaire de chaque agent."
+ },
+ "ondam": {
+  "q": "Changer le budget de l'assurance maladie ?",
+  "d": "Le Gouvernement propose un objectif de dépenses pour les soins remboursés et les hôpitaux (l'ONDAM). {md} de dépenses en {an}."
+ },
+ "enseignement": {
+  "q": "Changer le budget des écoles, collèges et lycées ?",
+  "d": "Ce que l'État dépense pour l'enseignement scolaire : {md} en {an}, sans les cotisations de retraite que l'État paie pour ses agents."
+ },
+ "defense": {
+  "q": "Changer le budget de la Défense ?",
+  "d": "Ce que l'État dépense pour les armées : {md} en {an}, sans les cotisations de retraite que l'État paie pour ses agents."
+ },
+ "mi:solidarité-insertion-et-égalité-des-chan": {
+  "q": "Changer le budget « Solidarité, insertion et égalité des chances » ?",
+  "d": "Crédits de l'État, notamment pour le handicap et la dépendance, l'inclusion sociale et la protection des personnes. {montant}."
+ },
+ "mi:recherche-et-enseignement-supérieur": {
+  "q": "Changer le budget « Universités et recherche » ?",
+  "d": "Crédits de l'État, notamment pour les formations supérieures et la recherche universitaire, et pour la recherche scientifique et technologique. {montant}."
+ },
+ "mi:cohésion-des-territoires": {
+  "q": "Changer le budget « Cohésion des territoires » ?",
+  "d": "Crédits de l'État, notamment pour l'aide à l'accès au logement, l'hébergement et l'insertion des personnes vulnérables. {montant}."
+ },
+ "mi:écologie-développement-et-mobilité-durab": {
+  "q": "Changer le budget « Écologie et transports » ?",
+  "d": "Crédits de l'État, notamment pour le service public de l'énergie, les infrastructures et les services de transport. {montant}."
+ },
+ "mi:sécurités": {
+  "q": "Changer le budget « Police et gendarmerie » ?",
+  "d": "Crédits de l'État, notamment pour la police nationale et la gendarmerie nationale. {montant}."
+ },
+ "mi:travail-emploi-et-administration-des-min": {
+  "q": "Changer le budget « Travail, emploi et administration des ministères sociaux » ?",
+  "d": "Crédits de l'État, notamment pour l'accompagnement des mutations économiques, le développement de l'emploi, l'accès et le retour à l'emploi. {montant}."
+ },
+ "mi:justice": {
+  "q": "Changer le budget « Justice et prisons » ?",
+  "d": "Crédits de l'État, notamment pour les prisons (administration pénitentiaire) et les tribunaux (justice judiciaire). {montant}."
+ },
+ "mi:gestion-des-finances-publiques-et-lutte-": {
+  "q": "Changer le budget « Gestion des finances publiques et lutte contre les fraudes » ?",
+  "d": "Crédits de l'État, notamment pour la gestion des impôts et des comptes publics de l'État et des collectivités locales, et pour les douanes. {montant}."
+ },
+ "mi:administration-générale-et-territoriale-": {
+  "q": "Changer le budget « Administration générale et territoriale de l’État » ?",
+  "d": "Crédits de l'État pour l'administration de l'État dans les territoires (préfectures) et pour la vie politique. {montant}."
+ },
+ "mi:investir-pour-la-france-de-2030": {
+  "q": "Changer le budget « Investir pour la France de 2030 » ?",
+  "d": "Crédits de l'État, notamment pour les investissements stratégiques et l'innovation. {montant}."
+ },
+ "audiovisuel": {
+  "q": "Changer le budget de l'audiovisuel public ?",
+  "d": "L'audiovisuel public (France Télévisions, Radio France, Arte…) reçoit une part de la TVA. {md} de dépenses en {an}."
+ },
+ "mi:outre-mer": {
+  "q": "Changer le budget « Outre-mer » ?",
+  "d": "Crédits de l'État, notamment pour l'emploi et les conditions de vie outre-mer. {montant}."
+ },
+ "mi:culture": {
+  "q": "Changer le budget « Culture » ?",
+  "d": "Crédits de l'État, notamment pour le patrimoine et la création. {montant}."
+ },
+ "mi:agriculture-et-alimentation": {
+  "q": "Changer le budget « Agriculture et alimentation » ?",
+  "d": "Crédits de l'État, notamment pour l'agriculture et l'agroalimentaire, et pour la sécurité sanitaire de l'alimentation. {montant}."
+ },
+ "mi:économie": {
+  "q": "Changer le budget « Économie » ?",
+  "d": "Crédits de l'État, notamment pour le développement des entreprises, la régulation et les stratégies économiques. {montant}."
+ },
+ "mi:aide-publique-au-développement": {
+  "q": "Changer le budget « Aide au développement » ?",
+  "d": "Crédits de l'État, notamment pour l'aide aux pays en développement, y compris l'aide économique et financière. {montant}."
+ },
+ "mi:action-extérieure-de-l-état": {
+  "q": "Changer le budget « Action extérieure de l’État » ?",
+  "d": "Crédits de l'État, notamment pour la diplomatie de la France en Europe et dans le monde, et pour son action culturelle à l'étranger. {montant}."
+ },
+ "mi:immigration-asile-et-intégration": {
+  "q": "Changer le budget « Immigration et asile » ?",
+  "d": "Crédits de l'État pour l'immigration et l'asile, l'intégration et l'accès à la nationalité française. {montant}."
+ },
+ "mi:santé": {
+  "q": "Changer le budget « Santé » ?",
+  "d": "Crédits de l'État, notamment pour la protection maladie, la prévention, la sécurité sanitaire et l'offre de soins. {montant}."
+ },
+ "mi:monde-combattant-mémoire-et-liens-avec-l": {
+  "q": "Changer le budget « Monde combattant, mémoire et liens avec la Nation » ?",
+  "d": "Crédits de l'État pour les anciens combattants et la mémoire, et pour l'indemnisation des victimes des persécutions antisémites et des actes de barbarie de la Seconde Guerre mondiale. {montant}."
+ },
+ "mi:sport-jeunesse-et-vie-associative": {
+  "q": "Changer le budget « Sport, jeunesse et vie associative » ?",
+  "d": "Crédits de l'État, notamment pour la jeunesse, la vie associative et le sport. {montant}."
+ },
+ "mi:pouvoirs-publics": {
+  "q": "Changer le budget « Pouvoirs publics » ?",
+  "d": "Crédits de l'État, notamment pour l'Assemblée nationale et le Sénat. {montant}."
+ },
+ "mi:direction-de-l-action-du-gouvernement": {
+  "q": "Changer le budget « Direction de l’action du Gouvernement » ?",
+  "d": "Crédits de l'État pour la coordination du travail du Gouvernement et la protection des droits et libertés. {montant}."
+ },
+ "mi:médias-livre-et-industries-culturelles": {
+  "q": "Changer le budget « Médias, livre et industries culturelles » ?",
+  "d": "Crédits de l'État pour la presse et les médias, le livre et les industries culturelles. {montant}."
+ },
+ "mi:conseil-et-contrôle-de-l-état": {
+  "q": "Changer le budget « Conseil et contrôle de l’État » ?",
+  "d": "Crédits de l'État, notamment pour le Conseil d'État, la Cour des comptes et les autres juridictions administratives et financières. {montant}."
+ },
+ "mi:transformation-et-fonction-publiques": {
+  "q": "Changer le budget « Transformation et fonction publiques » ?",
+  "d": "Crédits de l'État, notamment pour les bâtiments de l'État et de ses agences, et pour la fonction publique. {montant}."
+ },
+ "operateurs": {
+  "q": "Réduire les coûts des opérateurs de l'État ?",
+  "d": "Ce sont les agences et établissements publics de l'État, comme Météo-France ou les agences régionales de santé. La baisse porte sur leurs coûts de personnel et de fonctionnement : 1 % de moins économise {p1} en {AN0}, puis {pp} par an une fois en place."
+ },
+ "fp-non-remplacement": {
+  "q": "Remplacer moins de départs à la retraite d'agents publics ?",
+  "d": "Une partie des agents publics qui partent à la retraite ne sont pas remplacés (État, collectivités, hôpitaux). Ne pas remplacer 1 % des départs économise {p1} en {AN0}, puis {pp} par an une fois en place. Ce chiffre vient de la Cour des comptes pour {an}, ramené au PIB de {AN0} avec la croissance prévue par le FMI jusqu'en {AN1}, sa dernière année de prévision."
+ },
+ "fp-carence": {
+  "q": "Ajouter un jour de carence pour les agents publics ?",
+  "d": "Aujourd'hui, le premier jour d'un arrêt maladie n'est pas payé aux agents publics. Le deuxième jour ne le serait plus non plus. Un jour de carence en plus économise {p1} en {AN0}."
+ },
+ "fp-avancements": {
+  "q": "Ralentir les avancements des agents publics ?",
+  "d": "Les passages de grade et d'échelon, qui augmentent le salaire, arrivent plus tard. 1 mois de retard économise {p1} en {AN0}, puis {pp} par an une fois en place. Ce chiffre vient de la Cour des comptes pour {an}, ramené au PIB de {AN0} avec la croissance prévue par le FMI jusqu'en {AN1}, sa dernière année de prévision."
+ },
+ "fp-categorielles": {
+  "q": "Réduire les hausses de salaire décidées métier par métier ?",
+  "d": "Ce sont les hausses de salaire propres à certains métiers de la fonction publique ; le point d'indice, commun à tous les agents, n'est pas concerné. 1 % de hausses en moins économise {p1} en {AN0}, puis {pp} par an une fois en place. Ce chiffre vient de la Cour des comptes pour {an}, ramené au PIB de {AN0} avec la croissance prévue par le FMI jusqu'en {AN1}, sa dernière année de prévision."
+ },
+ "collectivites-effectifs": {
+  "q": "Réduire les effectifs des collectivités ?",
+  "d": "Les communes, départements et régions emploieraient moins d'agents. La Cour des comptes a chiffré deux scénarios, jusqu'à {max} d'économie par an."
+ },
+ "capitalisation": {
+  "q": "Placer une part des cotisations de retraite dans des fonds ?",
+  "d": "Une part des cotisations de retraite est placée dans des fonds. Elle ne paie donc plus les retraites d'aujourd'hui, qu'il faut toujours verser. {md} de cotisations de retraite en {an}."
+ },
+ "chomage-duree": {
+  "q": "Raccourcir la durée d'indemnisation du chômage ?",
+  "d": "Un demandeur d'emploi est indemnisé pendant un nombre de jours limité : aujourd'hui {dmax} jours au plus avant 55 ans. 1 % de durée en moins économise {p1} en {AN0}, puis {pp} par an une fois en place."
+ },
+ "tm-dm": {
+  "q": "Rembourser moins les dispositifs médicaux ?",
+  "d": "Pour les pansements, appareils et autres matériels médicaux, l'Assurance maladie rembourserait moins. La part payée par le patient ou sa complémentaire santé (le « ticket modérateur ») augmente d'autant. 1 point de remboursement en moins économise {p1} en {AN0}."
+ },
+ "franchises": {
+  "q": "Augmenter les franchises médicales ?",
+  "d": "Les franchises sont ce que le patient paie lui-même sur les boîtes de médicaments, les consultations et les transports. 1 % de hausse économise {p1} en {AN0}."
+ }
+}
+
+
 def cas_pensions():
     """Part des cotisations au CAS Pensions dans les dépenses de personnel de l'État (rapport AN n° 2847, gestion 2025),
     lue dans la citation gardée dans leviers_depense.json."""
@@ -1232,7 +1483,7 @@ def leviers_plus(assiettes):
     x = L['quotient-familial']; e1, e2 = x['variantes'][0], x['variantes'][1]
     a('quotient-familial', l="Quotient familial de l'impôt sur le revenu", groupe='recette', md=x['assiette'][0]['v'], an=date.today().year + 1, qui=['familles', 'menages_imposables'], macro='ir',
       u={'n': 'choix', 'np': 'choix', 'c': '', 'q': 'Votre choix', 'min': 0, 'max': 2, 'pas': 1, 'p': [1, 2],
-         'choix': [{'v': 1, 'l': "Compter les enfants comme l'Insee pour le niveau de vie (moins de parts : les familles avec enfants paient plus d'impôt)", 'md': e1['effet_md']}, {'v': 2, 'l': "Supprimer la limite de la baisse d'impôt par enfant (le plafond : les familles aux revenus élevés paient moins)", 'md': e2['effet_md']}]},
+         'choix': [{'v': 1, 'l': "Compter les enfants comme l'Insee pour le niveau de vie (moins de parts)", 'md': e1['effet_md']}, {'v': 2, 'l': "Supprimer le plafond de la baisse d'impôt par enfant", 'md': e2['effet_md']}]},
       note="Le quotient familial réduit l'impôt des foyers avec enfants (environ %s Md€, estimation de l'Insee reprise par la Cour des comptes) ; l'avantage de chaque demi-part est plafonné. La Cour chiffre deux changements : compter les enfants comme l'échelle de l'Insee, %s Md€ d'impôt en plus (3,75 millions de foyers paient en moyenne 784 € de plus) ; supprimer le plafond, %s Md€ de moins (chiffré sur les revenus de 2020 ; l'échelle de l'Insee, sans année précisée). Montants de la Cour, non actualisés, comptés tels quels en %d. La Cour rappelle que le quotient familial « n'est pas un avantage mais une modalité de calcul de l'impôt »." % (fr_nb(x['assiette'][0]['v']), fr_nb(e1['effet_md']), fr_nb(-e2['effet_md']), date.today().year + 1),
       src=S(e1['src']), src2={'doc': e2['src']['document'], 'url': e2['src']['url'], 'citation': e2['src']['citation']}, moyenne_perte=784, perdants=3.75)
     x = L['tva-sociale']; t = x['variantes'][0]
@@ -1687,6 +1938,9 @@ def construire():
                   'solde': {k: round(sg * v, 3) for k, v in (x.get('solde_primaire_pts_pib') or {}).items()},
                   'l': x['l'], 'page': x.get('page'), 'url': x['url']}
     budget = json.load(open(os.path.join(RACINE, 'donnees', 'budget.json'), encoding='utf-8'))
+    for a in assiettes:
+        if a['k'] in CARTES_TEXTES:
+            a['carte'] = CARTES_TEXTES[a['k']]
     o = {
         'maj': date.today().isoformat(),
         'depart': (dep := eurostat_depart()),
