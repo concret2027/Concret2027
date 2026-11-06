@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="1404d29756c2">
+<meta name="concret-version" content="de4ef69b74ad">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -5339,11 +5339,13 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
   // Un record ne compte que s'il fait mieux que « sans vos mesures » (pour rattraper : un écart comblé, pas creusé).
   function recFil(c) { var rk = (S.simuRecFil || {})[c.fil]; return rk != null && rk > c.v0 + 1e-9 ? rk : null; }
   function filRecord() { var c = capDe(R, S.perso, S.v); if (!c.fil || !nbChoix()) return null; var rk = recFil(c), nouveau = c.v > c.v0 + 1e-9 && (rk == null || c.v > rk + 1e-9); if (nouveau) { S.simuRecFil = S.simuRecFil || {}; S.simuRecFil[c.fil] = c.v; garder(); } return { c: c, avant: rk, nouveau: nouveau }; }
+  // « Justice et prisons » : une espace insécable après « et avant », pour qu'un guillemet ne reste jamais seul en bout ou en début de ligne.
+  function guillemets(el) { if (!el) return; var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), n; while ((n = w.nextNode())) { var t = n.nodeValue, u = t.replace(/«[ \u00a0\u202f]*/g, '«\u00a0').replace(/[ \u00a0\u202f]*»/g, '\u00a0»'); if (u !== t) n.nodeValue = u; } }
   function cartesAff() {
     var box = $('sim-cartes'); if (!box) return; SM.ancre = null; SM.last = null; SM.al = []; SM.imp = null; var exx = $('sim-ex'); if (exx && box.contains(exx)) $('sim-main').insertBefore(exx, $('sim-main').firstChild);
     var nVu = Object.keys(cartesVu()).filter(function (k) { return CM.ordre.indexOf(k) >= 0; }).length, N = CM.ordre.length; CM.k = null;
     var bande = cartesBande(CM.dernier); CM.dernier = null;
-    var fin = function () { cartesBrancher(box); placerEx(); };
+    var fin = function () { guillemets(box); cartesBrancher(box); placerEx(); };
     if (!S.obj) { box.innerHTML = cartesEntree(); return fin(); }
     if (CM.cata) { box.innerHTML = cartesCatalogue(nVu); return fin(); }
     if (nVu && nVu % 5 === 0 && !cartesPasse()[nVu] && !CM.force && cartesSuivante()) { box.innerHTML = bande + cartesPause(nVu); return fin(); }
@@ -5472,7 +5474,7 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
       var imp = card.querySelector('.sim-c-imp'), c = v && v !== (S.perso[k] || 0) ? candidat(k, v) : null;
       if (c && (c.rP.length || c.rV.length)) {
         var noms = c.rP.map(function (o) { return '«\u00a0' + esc(nomL(o) + ' ' + pcC(AS[o], S.perso[o])) + '\u00a0»'; }).concat(c.rV.map(function (id) { return '«\u00a0' + esc(CI[id] ? CI[id].titre || CI[id].l : id) + '\u00a0»'; })), n = noms.length;
-        b.after(imp); imp.className = 'sim-c-imp sim-c-conf'; imp.innerHTML = '<p>Cela remplace ' + (n > 1 ? 'vos choix ' : 'votre choix ') + noms.join(', ') + ' (même argent).</p><p class="sim-c-conf-b"><button type="button" class="q-go" data-conf="1">Remplacer</button><button type="button" class="q-lien" data-conf="0">Garder l\'autre</button></p>'; imp.hidden = false;
+        b.after(imp); imp.className = 'sim-c-imp sim-c-conf'; setTimeout(function () { guillemets(imp); }, 0); imp.innerHTML = '<p>Cela remplace ' + (n > 1 ? 'vos choix ' : 'votre choix ') + noms.join(', ') + ' (même argent).</p><p class="sim-c-conf-b"><button type="button" class="q-go" data-conf="1">Remplacer</button><button type="button" class="q-lien" data-conf="0">Garder l\'autre</button></p>'; imp.hidden = false;
         tous('.q-reps [data-cv]', function (r) { r.classList.toggle('vise', r === b); });
         imp.querySelector('[data-conf="1"]').onclick = function () { imp.hidden = true; repondre(v); };
         imp.querySelector('[data-conf="0"]').onclick = function () { imp.hidden = true; imp.innerHTML = ''; b.classList.remove('vise'); b.focus(); };
