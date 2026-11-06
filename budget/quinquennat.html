@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="2326b0a8caf4">
+<meta name="concret-version" content="4f7cbc1708c5">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1801,6 +1801,8 @@ body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
     for (var a = AN0; a <= AN1; a++) { var x = montantIds(ids, a); if (Math.abs(x) >= 0.0005) return 'rien en ' + AN0 + ' ; ' + quoi(sens, x) + ' en ' + a + (Math.abs(f - x) >= 0.05 ? ', ' + mdt(Math.abs(f)) + ' en ' + AN1 : ''); }
     return 'rien avant ' + (AN1 + 1);
   }
+  // Les cases cochées d'une question restent cochées quand la carte se redessine (bandeau qui se réduit en faisant défiler, etc.).
+  var QSEL = null;
   function carteQ(c, entree) {
     var Q = QS[c.q], M = membres(c), vc = vousConcerne(c);
     var org = M.map(function (m) { return ORIG[m.origine]; }).filter(function (x, i, a) { return x && a.indexOf(x) === i; }).join(' · ');
@@ -1816,7 +1818,7 @@ body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
       '<div class="q-tags"><span class="q-chip">' + esc(J.themes[c.theme] || c.theme) + '</span>' + (vc ? '<span class="q-vous">Vous concerne</span>' : '') + defiTag(M) + '<span class="q-org">' + esc(org) + '</span></div>' +
       '<h2>' + nb(Q.t) + '</h2>' +
       (function () { var m0 = M.filter(function (m) { return m.clair && m.clair.a; })[0]; return m0 ? clair(m0, true, true) : ''; })() + enonce(M.map(function (m) { return m.origine; }), nb(Q.q).replace(/\bCSG\b(?! \()/, 'CSG (un prélèvement sur les revenus qui finance la Sécurité sociale)')) + '<p class="q-ligne m q-touchez">' + (multi ? 'Cochez une ou plusieurs réponses, puis Valider.' : 'Touchez votre réponse (une seule) :') + '</p><div class="q-reps" role="group" aria-label="' + esc(Q.q) + '">' +
-      (multi ? '' : opt('a', Q.aucune, null, 'aucune')) + reps + '</div>' + (multi ? '<div class="q-valider"><span class="q-combo" id="q-combo"></span><div class="q-val-b"><button type="button" class="q-val" id="b-valq" disabled>Valider ma réponse</button><button type="button" class="q-rien" data-qo="a">' + nb(Q.aucune.split(' : ')[0]) + '</button></div>' + (/ : /.test(Q.aucune) ? '<p class="q-note" style="text-align:center">« ' + nb(Q.aucune.split(' : ')[0]) + ' » : ' + nb(Q.aucune.split(' : ').slice(1).join(' : ')) + '.</p>' : '') + '</div>' : '') +
+      (multi ? opt('a', Q.aucune, null, 'aucune q-case', 'data-qn') : opt('a', Q.aucune, null, 'aucune')) + reps + '</div>' + (multi ? '<div class="q-valider"><span class="q-combo" id="q-combo"></span><div class="q-val-b"><button type="button" class="q-val" id="b-valq" disabled>Valider ma réponse</button></div></div>' : '') +
       '<div class="q-vin q-vin2" role="group" aria-label="Autres choix"><button type="button" data-vin="u" aria-label="Annuler le dernier vote" title="Annuler le dernier vote"' + (S.pile.length ? '' : ' disabled') + '>↶</button></div>' +
       '<p class="q-tard"><button type="button" id="b-tard">Plus tard : remettre cette question à la fin</button></p>' +
       '<details class="q-src q-qdet"><summary>Le détail de chaque mesure, et ses sources</summary>' + M.map(function (m) { var mm = montant(m, AN0); return '<div class="q-qm"><h3>' + nb(m.titre || m.l) + '</h3>' + clair(m) + '<p class="q-ligne"><b>' + quiTitre(m, mm) + ' :</b> ' + nb(m.qui_texte || m.qui.map(function (q) { return J.qui[q]; }).join(', ')) + '</p>' + concretCarte(m, mm) + detailsSrc(m, mm, (m.statut_court ? 'À l\'Assemblée, ce que ça change, la source' : 'Ce que ça change, et la source')) + '</div>'; }).join('') + '</details>' +
@@ -1825,7 +1827,7 @@ body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
     serrer($("q-deck")); unLire(); ajusterCarte();
     Array.prototype.forEach.call($('q-deck').querySelectorAll('[data-qo]'), function (b) { b.onclick = function () { var v = b.dataset.qo; voterQ(c, /^\d+$/.test(v) ? +v : v); }; });
     if (multi) {
-      var sel = [], cases = $('q-deck').querySelectorAll('[data-qm]'), bv = $('b-valq');
+      var sel = QSEL && QSEL.k === qk(c) ? QSEL.sel.slice() : [], rien = !!(QSEL && QSEL.k === qk(c) && QSEL.rien), cases = $('q-deck').querySelectorAll('[data-qm]'), bn = $('q-deck').querySelector('[data-qn]'), bv = $('b-valq');
       var union = function (L) { var u = []; L.forEach(function (i) { Q.o[i].ids.forEach(function (id) { if (u.indexOf(id) < 0) u.push(id); }); }); return u; };
       var maj = function () {
         // Une réponse grisée dit pourquoi : déjà comprise dans votre réponse, ou incompatible avec elle.
@@ -1837,10 +1839,15 @@ body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
           var dedans = b.disabled && Q.o[j].ids.every(function (id) { return U.indexOf(id) >= 0; }), contre = b.disabled ? sel.filter(function (i) { return !(cle(union([i, j])) in PAR); }) : [];
           b.querySelector('.q-pq').textContent = !b.disabled ? '' : dedans ? 'Cette réponse est déjà comprise dans ' + court(sel[0]) + '.' : 'Incompatible avec ' + (contre.length ? contre : sel).map(court).join(' et ') + ' : décochez-la pour choisir celle-ci.';
         });
-        var k = sel.length ? cle(union(sel)) : null; bv.disabled = !(k && k in PAR); var i0 = k && k in PAR ? PAR[k] : -1; $('q-combo').textContent = i0 >= 0 && combo[i0] ? Q.o[i0].l.replace(/ :.*$/, '') === 'Projet du Gouvernement' ? 'C\'est le projet du Gouvernement.' : '' : '';
+        QSEL = { k: qk(c), sel: sel.slice(), rien: rien };
+        if (bn) { bn.classList.toggle('on', rien); bn.setAttribute('aria-pressed', rien ? 'true' : 'false'); }
+        var k = sel.length ? cle(union(sel)) : null; bv.disabled = !(rien || (k && k in PAR)); var i0 = k && k in PAR ? PAR[k] : -1; $('q-combo').textContent = i0 >= 0 && combo[i0] ? Q.o[i0].l.replace(/ :.*$/, '') === 'Projet du Gouvernement' ? 'C\'est le projet du Gouvernement.' : '' : '';
       };
-      Array.prototype.forEach.call(cases, function (b) { b.onclick = function () { var j = +b.dataset.qm, x = sel.indexOf(j); if (x >= 0) sel.splice(x, 1); else sel.push(j); maj(); }; });
-      bv.onclick = function () { var k = cle(union(sel)); if (k in PAR) voterQ(c, PAR[k]); };
+      Array.prototype.forEach.call(cases, function (b) { b.onclick = function () { var j = +b.dataset.qm, x = sel.indexOf(j); rien = false; if (x >= 0) sel.splice(x, 1); else sel.push(j); maj(); }; });
+      // « Ne rien changer » : une case comme les autres, en premier ; la cocher décoche les autres.
+      if (bn) bn.onclick = function () { rien = !rien; if (rien) sel = []; maj(); };
+      if (sel.length || rien) maj();
+      bv.onclick = function () { if (rien) { voterQ(c, 'a'); return; } var k = cle(union(sel)); if (k in PAR) voterQ(c, PAR[k]); };
     }
     var u = $('q-deck').querySelector('[data-vin="u"]'); if (u) u.onclick = annuler;
     VIN_VU = true; barre();
@@ -1849,6 +1856,7 @@ body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
   // Voter une question : choix = numéro de réponse, 'a' (rien ne change) ou 'x' (abstention). Chaque carte reçoit son vote :
   // Pour si elle fait partie de la réponse, Contre sinon (Abstention pour toutes en cas d'abstention).
   function voterQ(c, choix) {
+    QSEL = null;
     CASSE0 = casses(); joueDuJour(); stat('votes-' + isoJ()); if (S.prochaine === qk(c)) delete S.prochaine;
     var Q = QS[c.q], M = membres(c), ids = typeof choix === 'number' ? Q.o[choix].ids : [], A0 = simuler(), grp = [], retP = [];
     var avant = M.filter(function (m) { return S.v[m.id] === 1; }).map(function (m) { return m.id; });
@@ -1891,7 +1899,7 @@ body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
     var card = $('q-card'), col = $('q-collant'), qu = card && card.querySelector('.q-enonce .q-question'); if (!qu || card.classList.contains('q-tout')) return;
     var auj = card.querySelector('.q-auj'), prop = card.querySelector('.q-enonce .q-prop-t'), ass = card.querySelector('.q-enonce .q-ass'), b = card.querySelector('.q-qrow .q-lirep');
     // Question à choix : on vise la première réponse entière (pas de barre de vote en bas).
-    var rep1 = card.querySelector('.q-reps [data-qo], .q-reps [data-qm]'); if (rep1) qu = rep1;
+    var rep1 = card.querySelector('.q-reps [data-qo], .q-reps [data-qn], .q-reps [data-qm]'); if (rep1) qu = rep1;
     var bar = $('q-bar'); if (bar && !bar.hidden && bar.offsetHeight) BAR_H = bar.offsetHeight;
     var haut = (parseFloat(getComputedStyle(col).top) || 0) + col.offsetHeight + 8, lim = innerHeight - (rep1 ? 0 : (BAR_H || 76)) - 8;
     var pose = function (p, cl) { if (!p) return; p.classList.remove('q-cl', 'q-cl2', 'q-cl2p', 'q-cl1p', 'q-cl1', 'q-cl0'); if (cl) p.classList.add(cl); };
