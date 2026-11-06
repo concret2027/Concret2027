@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="dd132968f481">
+<meta name="concret-version" content="5e11fbf7671e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1339,7 +1339,13 @@ body.q-cartes #sim-main { display: none !important; }
 .sim-c-dern li { display: grid; gap: 1px; padding: 6px 0; border-top: 1px solid var(--line); }
 .sim-c-dern b { font-weight: 600; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .sim-c-fam { display: grid; gap: 6px; }
-.sim-c-reg .sim-l { box-shadow: none; border-style: dashed; }
+.sim-c-autre { display: grid; gap: 8px; padding: 10px 12px; border-radius: 14px; border: 1.5px dashed var(--fr); }
+.sim-c-autre .sim-l-r { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 8px; align-items: center; }
+.sim-c-autre .sim-l-r button { min-height: 44px; border-radius: 12px; border: 1.5px solid var(--fr); background: var(--panel); color: var(--fr); font: inherit; font-size: 22px; font-weight: 700; }
+.sim-c-autre input[type=range] { width: 100%; accent-color: var(--fr); }
+.sim-c-av { margin: 0; font-size: 15px; } .sim-c-av .m { display: block; font-size: 13.5px; } .sim-c-av input { width: 4.2em; font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
+.sim-c-ae { margin: 0; font-size: 14.5px; line-height: 1.4; } .sim-c-an { margin: 0; font-size: 13.5px; color: var(--muted); }
+.sim-c-autre .q-continuer { margin: 0; }
 .sim-c-exp { margin: 0; }
 .sim-j { flex-wrap: wrap; row-gap: 2px; }
 .sim-j-al { flex: 1 1 100%; font-weight: 700; }
@@ -5229,11 +5235,21 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
   var CMOY = { retraites: ['la retraite moyenne', 'bruts par mois'], chomage: ['l\'allocation moyenne', 'nets par mois'], 'prime-activite': ['la prime d\'activité moyenne d\'un foyer', 'par mois'] };
   function cartesConcret(x, v) {
     if (!v || x.mix) return ''; var f = v / 100, k = x.k, m = x.pp && x.pp.moyenne;
-    if (k === 'tva') { var T = CAS('tva_taux'); return T ? 'Le taux normal passerait de ' + pcx(T.normal.taux_pct) + ' à environ ' + pcx(Math.round(T.normal.taux_pct * (1 + f) * 10) / 10) + ' (si tous les taux changent dans la même proportion).' : ''; }
+    if (k === 'tva') { var T = CAS('tva_taux'); return T ? 'Taux normal : environ ' + pcx(Math.round(T.normal.taux_pct * (1 + f) * 10) / 10) + ', si tous les taux changent dans la même proportion.' : ''; }
     if (CMOY[k] && m && !x.u) { var d = (f < 0 ? -1 : 1) * Math.round(Math.abs(m.v * f)); return 'Environ ' + (d < 0 ? '−' : '+') + eu(Math.abs(d)) + ' ' + CMOY[k][1] + ' sur ' + CMOY[k][0] + ' (' + eu(m.v) + '), si le changement est le même pour chacun.'; }
     try { var L0 = exemplesLigne(k, 0).L, L = exemplesLigne(k, v).L.filter(function (t) { return L0.indexOf(t) < 0 && !/^Si |^Allocation de 30|^Tarifs publiés/.test(t); }); return L.length ? cartesCourt(L[0]) : ''; } catch (e) { return ''; }
   }
   // Une phrase, sans les précisions entre parenthèses (« aujourd'hui… », « exemple ») : la carte reste courte.
+  // Les précisions qui se répètent d'une réponse à l'autre (« si tous les taux changent… ») : retirées des réponses, dites une fois sur la carte.
+  var CAV = [/,? si tous les taux changent dans la même proportion/, /,? si le changement est le même pour chacun/, /,? si la hausse passe entièrement dans les prix/, /,? si le changement porte sur les salaires/, /,? si les taux changent dans la même proportion/];
+  function cavSplit(t) { var c = []; t = String(t || ''); CAV.forEach(function (r) { var m = r.exec(t); if (m) { c.push(m[0].replace(/^,? /, '')); t = t.replace(r, ''); } }); return [t.replace(/\s+\./g, '.').replace(/,\s*$/, '.'), c]; }
+  // « Autre montant… » : le curseur, − et +, et un champ pour taper la valeur exacte, dans la carte ; « Valider » applique et passe à la suite.
+  function cartesAutreHTML(x, v) {
+    var p = plage(x), u = !x.u ? '%' : x.u.c === 'points' ? 'point(s)' : x.u.c === 'jour' ? 'jour(s)' : x.u.c;
+    return '<div class="sim-c-autre" id="sim-c-autre" hidden><div class="sim-l-r"><button type="button" data-ap="-1" aria-label="Moins (' + esc(pcC(x, -p.step).replace(/^\+/, '')) + ')">−</button><input type="range" min="' + p.min + '" max="' + p.max + '" step="' + p.step + '" value="' + v + '" aria-label="Autre montant : ' + esc(nomL(x.k)) + '"><button type="button" data-ap="1" aria-label="Plus">+</button></div>' +
+      '<p class="sim-c-av"><label>Valeur : <input type="number" min="' + p.min + '" max="' + p.max + '" step="' + p.step + '" value="' + v + '"> ' + esc(u) + '</label> <span class="m">de ' + esc(pcC(x, p.min)) + ' à ' + esc(pcC(x, p.max)) + '</span></p>' +
+      '<p class="sim-c-ae" aria-live="polite"></p><p class="sim-c-an" hidden></p><button type="button" class="q-go q-continuer" data-valider="1">Valider</button></div>';
+  }
   function cartesCourt(t) { t = String(t).replace(/<[^>]+>/g, '').replace(/ \((aujourd'hui|exemple)[^)]*\)/g, ''); var i = t.search(/\. (?=[A-ZÀ-Ý])/); if (i > 0) t = t.slice(0, i + 1); if (t.length > 120) { var j = t.indexOf(', ', 30); if (j > 0) t = t.slice(0, j) + '.'; } return t; }
   // Une réponse : le réglage en gras, ce qu'il change sur la ligne elle-même en 2027 dessous (2031 aussi pour une mesure qui monte en charge).
   function cartesRep(x, v) {
@@ -5311,17 +5327,16 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
     var desc = cartesPaie(k), nrm = function (t) { return String(t).toLowerCase().replace(/[^a-zà-ÿ]/g, ''); }; if (desc && nrm(desc) === nrm(nomL(k))) desc = x.l.split(' (')[0];
     var riv = cartesRivaux(k), rc = recoupe(k); if (/^mi:/.test(k)) desc = '';
     // La progression tient dans l'en-tête de la carte (une ligne), pour que la question et les premières réponses restent à l'écran.
-    var pp = Math.min(N, (Math.floor(nVu / 5) + 1) * 5);
+    var pp = Math.min(N, (Math.floor(nVu / 5) + 1) * 5), cavs = [], REP = [0].concat(pr).map(function (r) { var t = cartesRep(x, r); if (t[2]) { var sp = cavSplit(t[2]); t[2] = sp[0]; sp[1].forEach(function (c) { if (cavs.indexOf(c) < 0) cavs.push(c); }); } return t; }), autre = !(x.u && x.u.choix);
     box.innerHTML = bande + '<article class="q-card q-qcard sim-carte in" id="sim-carte" data-c="' + esc(k) + '"><div class="q-ptot sim-c-pt" aria-hidden="true"><span style="width:' + (100 * nVu / N).toFixed(1) + '%"></span></div>' +
       '<div class="q-tags"><span class="q-chip">' + esc(fnom) + '</span><span class="sim-c-n">Carte ' + (nVu + 1) + ' sur ' + N + (pp > nVu + 1 ? ' · pause à ' + pp : '') + '</span></div><h2>' + esc(cartesQ(k)) + '</h2>' +
-      '<p class="q-ligne sim-c-quoi">' + esc(cartesQuoi(k)) + ' <span class="m">' + esc(maj1(montantTxt(x) || poidsTxt(x))) + '. <a href="' + esc(x.src.url) + '" target="_blank" rel="noopener">Source</a>' + (x.src_cas ? ', <a href="' + esc(x.src_cas.url) + '" target="_blank" rel="noopener">part des pensions</a>' : '') + '</span></p>' +
+      '<p class="q-ligne sim-c-quoi">' + esc(cartesQuoi(k)) + ' <span class="m">' + esc(maj1(montantTxt(x) || poidsTxt(x))) + '. <a href="' + esc(x.src.url) + '" target="_blank" rel="noopener">Source</a>' + (x.src_cas ? ', <a href="' + esc(x.src_cas.url) + '" target="_blank" rel="noopener">part des pensions</a>' : '') + '</span>' + (cavs.length ? ' <span class="m">Dans les réponses : ' + esc(cavs.join(' ; ')) + '.</span>' : '') + '</p>' +
       (riv.length ? '<p class="q-ligne sim-c-riv">Un réglage ici (pas « Ne rien changer ») remplace ' + riv.map(function (t) { return '«\u00a0' + esc(t) + '\u00a0»'; }).join(', ') + (riv.length > 1 ? ' : ces lignes portent' : ' : les deux portent') + ' sur le même argent.</p>' : '') +
-      (nVu ? '' : '<p class="q-ligne m q-touchez">Touchez une réponse : la carte suivante arrive aussitôt.</p>') + '<div class="q-reps" role="group" aria-label="' + esc(nomL(k)) + '">' + [0].concat(pr).map(function (r) { var t = cartesRep(x, r), on = r === v && (r !== 0 || back); return '<button type="button" class="q-rep' + (r ? '' : ' aucune') + (on ? ' on' : '') + '" data-cv="' + r + '"' + (on ? ' aria-pressed="true"' : '') + '><b>' + esc(t[0]) + '</b>' + (t[1] ? '<span>' + esc(t[1]) + '</span>' : '') + (t[2] ? '<span class="sim-c-cc">' + esc(t[2]) + '</span>' : '') + '</button>'; }).join('') + '</div>' +
+      (nVu ? '' : '<p class="q-ligne m q-touchez">Touchez une réponse : la carte suivante arrive aussitôt.</p>') + '<div class="q-reps" role="group" aria-label="' + esc(nomL(k)) + '">' + [0].concat(pr).map(function (r, ir) { var t = REP[ir], on = r === v && (r !== 0 || back); return '<button type="button" class="q-rep' + (r ? '' : ' aucune') + (on ? ' on' : '') + '" data-cv="' + r + '"' + (on ? ' aria-pressed="true"' : '') + '><b>' + esc(t[0]) + '</b>' + (t[1] ? '<span>' + esc(t[1]) + '</span>' : '') + (t[2] ? '<span class="sim-c-cc">' + esc(t[2]) + '</span>' : '') + '</button>'; }).join('') + (autre ? '<button type="button" class="q-rep sim-c-autre-b' + (pr.indexOf(v) < 0 && v ? ' on' : '') + '" aria-expanded="false" aria-controls="sim-c-autre"><b>Autre montant…</b><span>' + (pr.indexOf(v) < 0 && v ? 'Aujourd\'hui : ' + esc(pcC(x, v)) : 'Choisir une valeur exacte') + '</span></button>' : '') + '</div>' + (autre ? cartesAutreHTML(x, v) : '') +
       '<div class="sim-c-imp" hidden></div>' +
       (desc || actHyp(x) || rc ? '<details class="sim-c-plus"><summary>En savoir plus</summary>' + (desc ? '<p class="q-ligne m">' + (/^Comprend/.test(desc) ? esc(desc) : esc(nomL(k)) + ' : ' + esc(minL(desc))) + '</p>' : '') + (actHyp(x) ? '<p class="q-ligne m">' + esc(actHyp(x).carte) + '</p>' : '') + (rc ? '<p class="q-ligne m">' + esc(rc) + '</p>' : '') + '</details>' : '') +
       (k === 'capitalisation' && x.options ? capiHTML() : '') +
-      '<p class="q-tard"><button type="button" id="sim-c-prec" aria-expanded="false">Régler précisément</button></p><div class="sim-c-reg" id="sim-c-reg" hidden></div>' +
-      '<p class="sim-l-e"></p><button type="button" class="q-go q-continuer" id="sim-c-next" hidden>Carte suivante →</button>' + cartesRet() + '</article>' + cartesExpert();
+      '<p class="sim-l-e"></p>' + cartesRet() + '</article>' + cartesExpert();
     var card = $('sim-carte'); if (k === 'capitalisation' && x.options) capiMajRow(card);
     fin();
   }
@@ -5423,8 +5438,8 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
     };
     // Un réglage qui remplacerait un choix fait sur une autre carte (même argent) : on demande d'abord, dans la carte, sous la réponse touchée.
     // « Ne rien changer » ne demande jamais (il ne retire rien).
-    tous('.q-reps [data-cv]', function (b) { b.onclick = function () {
-      var v = +b.dataset.cv, imp = card.querySelector('.sim-c-imp'), c = v && v !== (S.perso[k] || 0) ? candidat(k, v) : null;
+    var essayer = function (v, b) {
+      var imp = card.querySelector('.sim-c-imp'), c = v && v !== (S.perso[k] || 0) ? candidat(k, v) : null;
       if (c && (c.rP.length || c.rV.length)) {
         var noms = c.rP.map(function (o) { return '«\u00a0' + esc(nomL(o) + ' ' + pcC(AS[o], S.perso[o])) + '\u00a0»'; }).concat(c.rV.map(function (id) { return '«\u00a0' + esc(CI[id] ? CI[id].titre || CI[id].l : id) + '\u00a0»'; })), n = noms.length;
         b.after(imp); imp.className = 'sim-c-imp sim-c-conf'; imp.innerHTML = '<p>Cela remplace ' + (n > 1 ? 'vos choix ' : 'votre choix ') + noms.join(', ') + ' (même argent).</p><p class="sim-c-conf-b"><button type="button" class="q-go" data-conf="1">Remplacer</button><button type="button" class="q-lien" data-conf="0">Garder l\'autre</button></p>'; imp.hidden = false;
@@ -5435,10 +5450,33 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
         return;
       }
       repondre(v);
-    }; });
+    };
+    tous('.q-reps [data-cv]', function (b) { b.onclick = function () { if (au) fermer(); essayer(+b.dataset.cv, b); }; });
+    // « Autre montant… » : les cases du haut suivent le curseur ou la valeur tapée (aperçu) ; rien n'est appliqué avant « Valider ».
+    var au = card.querySelector('#sim-c-autre'), ab = card.querySelector('.sim-c-autre-b'), x = AS[k], pg = plage(x), cur = S.perso[k] || 0;
+    var fermer = function () { if (!au || au.hidden) return; au.hidden = true; ab.setAttribute('aria-expanded', 'false'); annulerLimite(); simFinApercu(); };
+    if (au) {
+      var rg = au.querySelector('input[type=range]'), nb = au.querySelector('input[type=number]'), ae = au.querySelector('.sim-c-ae'), an = au.querySelector('.sim-c-an');
+      var arr = function (w) { return Math.round(w / pg.step) * pg.step; }, nf2 = function (w) { return String(Math.round(w * 100) / 100); };
+      var montrer = function (w, note) {
+        cur = w; rg.value = w; if (document.activeElement !== nb) nb.value = nf2(w);
+        var t = cartesRep(x, w); ae.innerHTML = w ? '<b>' + esc(t[0]) + '</b> · ' + esc(t[1]) + (t[2] ? ' · ' + esc(cavSplit(t[2])[0]) : '') : 'Rien ne change.';
+        an.hidden = !note; an.textContent = note || '';
+        limiter(function () { simApercu(k, w, true); });
+      };
+      var lire = function () {
+        var brut = parseFloat(String(nb.value).replace(',', '.')); if (isNaN(brut)) return null;
+        var w = arr(Math.max(pg.min, Math.min(pg.max, brut)));
+        return { w: w, note: brut < pg.min - 1e-9 || brut > pg.max + 1e-9 ? 'Ramené à ' + pcC(x, w) + ' : ce levier va de ' + pcC(x, pg.min) + ' à ' + pcC(x, pg.max) + '.' : Math.abs(w - brut) > 1e-9 ? 'Arrondi à ' + pcC(x, w) + ' (pas de ' + nf2(pg.step) + ').' : '' };
+      };
+      ab.onclick = function () { var o = au.hidden; if (!o) { fermer(); return; } au.hidden = false; ab.setAttribute('aria-expanded', 'true'); montrer(S.perso[k] || 0); au.scrollIntoView({ block: 'nearest' }); };
+      rg.oninput = function () { montrer(arr(+rg.value)); };
+      nb.oninput = function () { var r = lire(); if (r) montrer(r.w, r.note); };
+      nb.onchange = function () { var r = lire(); if (r) { nb.value = nf2(r.w); montrer(r.w, r.note); } };
+      Array.prototype.forEach.call(au.querySelectorAll('[data-ap]'), function (b) { b.onclick = function () { montrer(arr(Math.max(pg.min, Math.min(pg.max, cur + +b.dataset.ap * pg.step)))); }; });
+      au.querySelector('[data-valider]').onclick = function () { var r = lire(), w = r ? r.w : cur; annulerLimite(); simFinApercu(); essayer(w, this); };
+    }
     tous('[data-capi]', function (b) { b.onclick = function () { capiChoisir(b.dataset.capi, b.dataset.cv, card); capiMajRow(card); tous('.q-reps [data-cv]', function (r) { var t = cartesRep(AS[k], +r.dataset.cv)[1], sp = r.querySelector('span:not(.sim-c-cc)'); if (sp && t) sp.textContent = t; }); }; });
-    $('sim-c-prec').onclick = function () { var r = $('sim-c-reg'), o = r.hidden; r.hidden = !o; this.setAttribute('aria-expanded', o); if (o && !r.innerHTML) { r.innerHTML = simLigneHTML(k); Array.prototype.forEach.call(r.querySelectorAll('.sim-l-hyp'), function (h) { h.remove(); }); brancherLignes(r); simLignes(); } $('sim-c-next').hidden = !o; };
-    $('sim-c-next').onclick = cartesSuite;
   }
   function cartesInit() {
     document.body.classList.add('q-cartes'); CM.ordre = cartesOrdre();
