@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="770fa511c41c">
+<meta name="concret-version" content="290d3df47a92">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -5410,6 +5410,10 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
       (k === 'capitalisation' && x.options ? capiHTML() : '') +
       '<p class="sim-l-e"></p>' + cartesRet() + '</article>' + cartesExpert();
     var card = $('sim-carte'); if (k === 'capitalisation' && x.options) capiMajRow(card);
+    // Si la première réponse chiffrée ne tient pas à l'écran (carte placée sous le bandeau, comme après une réponse), l'explication et
+    // sa source passent sous les réponses ; sinon elles restent au-dessus.
+    var qq = card.querySelector('.sim-c-quoi'), r1 = card.querySelectorAll('.q-reps [data-cv]')[1], cl = $('q-collant');
+    if (!sel1 && qq && r1 && cl) { var hb = (parseFloat(getComputedStyle(cl).top) || 0) + cl.offsetHeight + 4; if (hb + r1.getBoundingClientRect().bottom - box.getBoundingClientRect().top > innerHeight) card.querySelector('.sim-c-imp').after(qq); }
     fin();
   }
   function cartesExpert() { return '<p class="q-actions q-pause-l sim-c-exp"><a class="q-lien" href="?cartes=0">Tous les leviers d\'un coup</a> · <button type="button" class="q-lien" data-propre="lien">Choisir une carte</button></p>'; }
