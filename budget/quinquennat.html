@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c4b8a958f30b">
+<meta name="concret-version" content="1ed348c88d20">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -856,6 +856,10 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
 .q-sl .b { position: relative; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); min-height: 1.4em; }
 .q-sl .b .z { position: absolute; top: 0; transform: translateX(-50%); }
 .q-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Les leviers à choix (quotient familial…) : une réponse par ligne, le texte passe à la ligne au lieu de sortir de l'écran. */
+.q-presets button { max-width: 100%; white-space: normal; }
+#q-pc-p.q-choix { flex-direction: column; align-items: stretch; }
+#q-pc-p.q-choix button { justify-content: flex-start; text-align: left; border-radius: 14px; padding: 10px 14px; line-height: 1.35; }
 .q-presets button { display: inline-flex; align-items: center; justify-content: center; font: inherit; font-size: 13px; font-weight: 600; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 44px; font-variant-numeric: tabular-nums; }
 .q-effet { margin: 0; font-size: 15px; }
 /* Créer : une seule police (celle du site), le gras pour les valeurs seulement ; trois tuiles identiques au-dessus de la courbe. */
@@ -2419,7 +2423,7 @@ body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
     var bout = function (v) { return u && !u.choix ? (v < 0 ? '−' : v > 0 && u.min < 0 ? '+' : '') + nf(Math.abs(v), 0) + (/%/.test(u.n) ? '\u00a0%' : '') : (v < 0 ? '−' : '+') + nf(Math.abs(v), 0) + '\u00a0%'; };
     $('q-pc-b').innerHTML = '<span>' + bout(mn) + '</span>' + (u && u.min === 0 || fz < 0.2 || fz > 0.8 ? '' : '<span class="z" style="left:calc(11px + (100% - 22px) * ' + fz.toFixed(4) + ')">0</span>') + '<span>' + bout(mx) + '</span>';
     $('q-pc-l').textContent = u && u.choix ? 'Votre choix (touchez une réponse)' : u ? u.q + (choisi.par_pib ? ' (1 point ≈ ' + mdt(PIBY[AN0] / 100) + ')' : '') : 'De combien ?';
-    $('q-pc-p').innerHTML = (u && u.choix ? [[0, 'Rien ne change']].concat(u.choix.map(function (o) { return [o.v, o.l]; })) : u ? u.p.filter(function (v) { return v < 0; }).map(function (v) { return [v]; }).concat([[0]], u.p.filter(function (v) { return v > 0; }).map(function (v) { return [v]; })) : P0).map(function (v) { return '<button type="button" data-v="' + v[0] + '">' + (v[1] ? v[1] + (u && u.choix ? '' : ' (' + pcT(choisi, v[0]) + ')') : v[0] ? pcC(choisi, v[0]) : 'Rien') + '</button>'; }).join('');
+    $('q-pc-p').classList.toggle('q-choix', !!(u && u.choix)); $('q-pc-p').innerHTML = (u && u.choix ? [[0, 'Rien ne change']].concat(u.choix.map(function (o) { return [o.v, o.l]; })) : u ? u.p.filter(function (v) { return v < 0; }).map(function (v) { return [v]; }).concat([[0]], u.p.filter(function (v) { return v > 0; }).map(function (v) { return [v]; })) : P0).map(function (v) { return '<button type="button" data-v="' + v[0] + '">' + (v[1] ? v[1] + (u && u.choix ? '' : ' (' + pcT(choisi, v[0]) + ')') : v[0] ? pcC(choisi, v[0]) : 'Rien') + '</button>'; }).join('');
     Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.onclick = function () { $('q-pc').value = b.dataset.v; majCreer(); }; });
     pc.setAttribute('aria-label', u ? 'Choix : ' + u.np : 'Pourcentage de baisse ou de hausse');
     pc.value = S.perso[k] || 0; majCreer();
