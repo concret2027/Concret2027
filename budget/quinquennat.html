@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="4d703cc9518d">
+<meta name="concret-version" content="2326b0a8caf4">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -47,6 +47,7 @@
 .q-et-i { font-size: 20px; line-height: 1.2; text-align: center; }
 /* « Ce qui est proposé » : la mesure à voter, bien visible ; « Aujourd'hui » en retrait au-dessus. */
 .q-clair .q-auj { color: var(--muted); }
+.q-lireauj { display: inline-flex; align-items: center; justify-self: start; min-height: 40px; margin-top: -14px; padding: 0; border: 0; background: none; font: inherit; font-size: 14.5px; font-weight: 600; color: var(--fr); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .q-clair .q-prop { display: grid; gap: 4px; margin-top: 4px; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--fr); background: color-mix(in srgb, var(--fr) 9%, var(--panel)); }
 .q-prop-l { font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--fr); }
 .q-prop-t { font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--fg); }
@@ -1881,7 +1882,7 @@ body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
     Array.prototype.forEach.call(card.querySelectorAll('.q-lirep'), function (b) { b.remove(); });
     var row = document.createElement('div'); row.className = 'q-qrow'; qu.parentNode.insertBefore(row, qu); row.appendChild(qu);
     var b = document.createElement('button'); b.type = 'button'; b.className = 'q-lirep'; b.textContent = 'Lire tout'; b.hidden = true; row.appendChild(b);
-    b.onclick = function () { card.classList.add('q-tout'); Array.prototype.forEach.call(card.querySelectorAll('.q-cl, .q-cl2, .q-cl2p, .q-cl1p, .q-cl1, .q-cl0'), function (p) { p.classList.remove('q-cl', 'q-cl2', 'q-cl2p', 'q-cl1p', 'q-cl1', 'q-cl0'); }); b.hidden = true; };
+    b.onclick = function () { card.classList.add('q-tout'); var la = card.querySelector('.q-lireauj'); if (la) la.remove(); Array.prototype.forEach.call(card.querySelectorAll('.q-cl, .q-cl2, .q-cl2p, .q-cl1p, .q-cl1, .q-cl0'), function (p) { p.classList.remove('q-cl', 'q-cl2', 'q-cl2p', 'q-cl1p', 'q-cl1', 'q-cl0'); }); b.hidden = true; };
   }
   // La question « Êtes-vous pour ? » au-dessus de la barre de vote du bas : on replie davantage tant qu'elle passerait dessous
   // (la carte une fois sous le bandeau réduit). Le texte entier reste à un geste (« Lire tout »).
@@ -1905,6 +1906,10 @@ body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
     var tz = card.querySelector('.q-touchez'), row = card.querySelector('.q-qrow');
     if (rep1 && tz && row && !row.querySelector('.q-tz2') && haut + qu.getBoundingClientRect().bottom - card.getBoundingClientRect().top > lim) { tz.classList.add('q-cl0'); var sm = document.createElement('small'); sm.className = 'q-tz2'; sm.textContent = /Cochez/.test(tz.textContent) ? 'Cochez, puis Valider' : 'Une seule réponse'; row.insertBefore(sm, row.querySelector('.q-lirep')); }
     if (b) b.hidden = ![auj, prop, rhb].some(function (p) { return p && (p.classList.contains('q-cl0') || p.scrollHeight > p.clientHeight + 2); });
+    // « Aujourd'hui » coupé : son propre « Lire la suite » juste dessous (le même geste que « Lire tout »).
+    var la = card.querySelector('.q-lireauj'), coupe = !!(auj && b && !auj.classList.contains('q-cl0') && auj.scrollHeight > auj.clientHeight + 2);
+    if (coupe && !la) { la = document.createElement('button'); la.type = 'button'; la.className = 'q-lireauj'; la.textContent = 'Lire la suite'; la.onclick = function () { b.onclick(); }; auj.parentNode.insertBefore(la, auj.nextSibling); }
+    if (la) la.hidden = !coupe;
   }
   // Ce qui n'est pas compté : sa phrase courte reste visible (sans parenthèse, coupée au « ; »), le détail et la source se replient.
   function ncCourt(t, url) {
