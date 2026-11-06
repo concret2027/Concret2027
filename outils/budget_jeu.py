@@ -1198,6 +1198,26 @@ def leviers_plus(assiettes):
       src=S(m2['src']))
 
 
+
+def paires_meme_argent(assiettes):
+    """Lignes de Créer qui portent sur le même argent : choisir l'une retire l'autre (appelée une fois toutes les lignes créées,
+    branches de la Sécurité sociale comprises)."""
+    A = {a['k']: a for a in assiettes}
+    # Même argent, en entier ou en partie (audit du 6 novembre 2026) : un choix remplace l'autre, comme une mission et ses programmes.
+    # - Assurance maladie (ONDAM) : les indemnités journalières maladie et AT-MP sont dans ses « soins de ville » (Commission des comptes
+    #   de la Sécurité sociale, octobre 2026, fiche 2.3, tableau 1 : « Indemnités journalières 16 637 … IJ Maladie 11 122 … IJ AT-MP 5 515 ») ;
+    #   34,9 Md€ des prestations de la branche Autonomie en 2027 « entrant dans le champ de l'ONDAM (OGD) » (même rapport, chapitre 4,
+    #   tableau 3), et la part AT-MP de l'ONDAM est dans la branche AT-MP (le jeu la range déjà ainsi : « poste » de l'ONDAM).
+    # - Salaires des agents publics (370 Md€, Insee, dont 97,0 Md€ pour les administrations locales) : contiennent les agents des
+    #   collectivités et les dépenses de personnel des opérateurs de l'État.
+    PAIRES = [('ondam', 'ij-maladie'), ('ondam', 'ij-atmp'), ('ondam', 'secu:autonomie'), ('ondam', 'secu:atmp'),
+              ('remunerations', 'collectivites-effectifs'), ('remunerations', 'operateurs')]
+    for x, y in PAIRES:
+        assert x in A and y in A, ('ligne absente', x, y)
+        if y not in A[x]['exclut']: A[x]['exclut'].append(y)
+        if x not in A[y]['exclut']: A[y]['exclut'].append(x)
+
+
 def construire():
     mes, nic, mac = charger('mesures_2027.json'), charger('depenses_fiscales.json'), charger('parametres_macro.json')
     P = {x['cle']: x for x in mac['parametres']}
@@ -1473,6 +1493,9 @@ def construire():
             a['exclut'] += ['ame']; A.get('ame', {'exclut': []})['exclut'].append(a['k'])
         if a['l'].startswith('Cohésion des territoires'):
             a['exclut'] += ['apl']; A['apl']['exclut'].append(a['k'])
+        # La prime d'activité est payée sur la mission Solidarité (programme « Inclusion sociale et protection des personnes »).
+        if a['l'].startswith('Solidarité, insertion') or a['l'].startswith('Inclusion sociale et protection des personnes'):
+            if 'prime-activite' in A: a['exclut'] += ['prime-activite']; A['prime-activite']['exclut'].append(a['k'])
     # Pour une personne : règles en vigueur et montant moyen, lus à la source (budget_sources/par_personne.json).
     # La moyenne n'est recalculée avec le pourcentage choisi que si elle a le même champ que la ligne du budget
     # (enseignement : dépense de tous les financeurs ; arrêts maladie : moyenne de 2023, avant le plafond actuel).
@@ -1577,7 +1600,7 @@ def construire():
                   'solde': {k: round(sg * v, 3) for k, v in (x.get('solde_primaire_pts_pib') or {}).items()},
                   'l': x['l'], 'page': x.get('page'), 'url': x['url']}
     budget = json.load(open(os.path.join(RACINE, 'donnees', 'budget.json'), encoding='utf-8'))
-    return {
+    o = {
         'maj': date.today().isoformat(),
         'depart': (dep := eurostat_depart()),
         'pays_eurostat': eurostat_pays(dep['an']),
@@ -1603,6 +1626,8 @@ def construire():
         'projection': budget['projection'],
         'sources': {'mesures': mes.get('sources'), 'niches': nic['source']},
     }
+    paires_meme_argent(o['assiettes'])
+    return o
 
 
 def main():
