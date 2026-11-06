@@ -1042,6 +1042,33 @@ def eurostat_grands(an):
     return {'TE': g(m, 'TE'), 'D41PAY': g(m, 'D41PAY'), 'D611': g(t, 'D611'), 'D613': g(t, 'D613'), 'D91': g(t, 'D91')}
 
 
+# Retraite par capitalisation : les deux questions de la carte (qui place, comment payer les retraites d'aujourd'hui), sources lues
+# le 6 novembre 2026 (COR, rapport annuel de juin 2026 ; Insee). Recopié tel quel dans donnees/budget_jeu.json.
+CAPI_COR = "https://www.cor-retraites.fr/sites/default/files/2026-06/RA_2026_def.pdf"
+CAPI_OPTIONS = {
+    'qui': {'q': "Qui place une part de ses cotisations ?", 'choix': [
+        {'v': 'tous', 'l': "Tout le monde"},
+        {'v': 'nouveaux', 'l': "Seulement ceux qui commencent à travailler à partir de 2027",
+         'part': {'2027': 1.1, '2028': 2.2, '2029': 3.4, '2030': 4.5, '2031': 5.6},
+         'hyp': "Hypothèse de Concret : chaque année, une nouvelle génération d'environ 1,1 % des cotisations (les moins de 25 ans versent au plus 5,6 % des cotisations, Insee 2025). Ordre de grandeur : le coût continue de monter pendant une quarantaine d'années après 2031, au-delà du jeu.",
+         'calc': "Les 15-24 ans sont 9,4 % des personnes en emploi, avec un salaire moyen de 1 620 € contre 2 730 € pour l'ensemble : ils versent au plus 9,4 % × 1 620 / 2 730 = 5,6 % des cotisations (calcul de Concret). Une génération de plus chaque année : environ un cinquième de ces 5,6 %, soit 1,1 % en 2027, 2,2 % en 2028, 3,4 % en 2029, 4,5 % en 2030 et 5,6 % en 2031.",
+         'src': [
+             {'doc': "Insee, « Caractéristiques des personnes en emploi », figure 3", 'url': "https://www.insee.fr/fr/statistiques/8733041", 'citation': "En 2025, les 15-24 ans représentent 9,4 % des personnes en emploi"},
+             {'doc': "Insee, « Salaires dans le secteur privé : caractéristiques des individus », Insee Références, 2 juillet 2026, figure 3", 'url': "https://www.insee.fr/fr/statistiques/8733089", 'citation': "Salaire net moyen en équivalent temps plein, par mois : moins de 25 ans 1 620 € ; ensemble 2 730 €"}]}]},
+    'paie': {'q': "Comment payer les retraites d'aujourd'hui pendant le passage ?", 'choix': [
+        {'v': 'emprunt', 'l': "Par l'emprunt", 't': "Les retraites restent versées en entier : l'État emprunte ce qui manque. Pas d'étalement."},
+        {'v': 'retraites', 'l': "En baissant d'autant les retraites actuelles", 'macro': 'csg',
+         'pensions_md': 401, 'systeme_md': 422.2, 'nettes_md': 394, 'pension_moy': 1750,
+         'exclut': ['retraites', 'pensions-revalorisation-2027', 'revalo-moins-1', 'revalo-plus-1'],
+         'notes': ["La baisse est la même pour toutes les retraites : choix de Concret, aucune source ne dit comment elle serait répartie.",
+                   "Pas comptés : l'Aspa (minimum vieillesse) et l'impôt sur le revenu des retraités.",
+                   "À une part élevée, beaucoup de retraites passeraient sous le minimum vieillesse."],
+         'src': [
+             {'doc': "Conseil d'orientation des retraites, rapport annuel, juin 2026", 'page': "67 (page imprimée 65)", 'url': CAPI_COR, 'citation': "Parmi ces 422 milliards d'euros versés en 2025, 401 Md€ sont consacrés aux prestations de retraite de base et complémentaire (hors Aspa)"},
+             {'doc': "Conseil d'orientation des retraites, rapport annuel, juin 2026", 'page': "67 (page imprimée 65)", 'url': CAPI_COR, 'citation': "Une fois pris en compte les prélèvements pesant sur les retraites (CSG, CRDS, CASA et assurance-maladie pour les retraites complémentaires), dont une partie sert à financer le système de retraite lui-même, les dépenses nettes de prélèvements du système de retraite s'élevaient à 394 milliards d'euros en 2025"},
+             {'doc': "Conseil d'orientation des retraites, rapport annuel, juin 2026, tableau 3.2 (Drees, EACR, modèle Ancètre)", 'page': "163 (page imprimée 161)", 'url': CAPI_COR, 'citation': "Ensemble des retraités de droit direct 1 750"}]}]}}
+
+
 def leviers_creer(assiettes, P, MD):
     """Lignes ajoutées à Créer le 5 novembre 2026 : grands changements (toute la dépense, cotisations, impôts en capital) et
     règles chiffrées par une source (capitalisation, durée du chômage, carence des agents publics, reste à charge en santé).
@@ -1078,7 +1105,7 @@ def leviers_creer(assiettes, P, MD):
       src=ES('D91', "recettes fiscales et cotisations des administrations publiques (gov_10a_taxag), impôts en capital (D91)"))
     x = E['cotisations_retraite_2025']; v = x['valeurs']['2025 (Md€)']
     a('capitalisation', l="Retraite par capitalisation : une part des cotisations placée dans des fonds", groupe='recette', md=v, an=2025, qui=['salaries', 'retraites'], nc='capitalisation',
-      u={'n': '% des cotisations de retraite', 'np': '% des cotisations de retraite', 'c': '%', 'q': 'Part des cotisations placée', 'min': 0, 'max': 100, 'pas': 1, 'p': [1, 5, 10, 20, 50]}, par_u=-round(v / 100, 3), lib='des cotisations placées dans des fonds', exclut=['cotis-emp', 'cotis-sal'],
+      u={'n': '% des cotisations de retraite', 'np': '% des cotisations de retraite', 'c': '%', 'q': 'Part des cotisations placée', 'min': 0, 'max': 100, 'pas': 1, 'p': [1, 5, 10, 20, 50]}, par_u=-round(v / 100, 3), lib='des cotisations placées dans des fonds', exclut=['cotis-emp', 'cotis-sal'], options=CAPI_OPTIONS,
       note="Cotisations de retraite versées en 2025 : %s Md€ (Conseil d'orientation des retraites). Chaque %% placé dans des fonds manque aux retraites d'aujourd'hui, qui restent à payer : %s Md€ par an. Concret suppose des fonds hors des comptes publics (épargne retraite des salariés) ; un fonds public, comme le Fonds de réserve pour les retraites, serait compté autrement. Pour les employeurs publics (collectivités, hôpitaux), la cotisation reste une dépense publique : la part placée sort quand même des comptes publics. Montant de 2025, qui suit ensuite la croissance de l'économie. Ne s'ajoute pas aux lignes « Cotisations », qui portent en partie sur le même argent." % (fr_nb(v), fr_nb(v / 100)),
       src=src(x))
     x = E['chomage_duree_reforme_2023']; e = x['valeurs']['moindres dépenses d\'allocation en régime de croisière (Md€ par an)']; b = x['valeurs']['baisse de durée (%)']
