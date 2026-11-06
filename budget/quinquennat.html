@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="eb21e552e3e5">
+<meta name="concret-version" content="9bb84709d08e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1004,97 +1004,140 @@ body.q-simu.q-ong-creer #sim-tb { display: grid; }
 body.q-simu.q-ong-creer #q-hud, body.q-simu.q-ong-creer #q-tabexp { display: none !important; }
 body.q-simu #sim-main { display: grid; gap: 22px; margin-top: 14px; }
 body.q-simu #p-creer > section.card:not(.sim-ancien-ouvert) { display: none; }
-.sim-tb { gap: 7px; min-width: 0; padding: 8px 9px 9px; border: 1px solid var(--sable-bd); border-radius: 14px; background: var(--sable); box-shadow: 0 6px 18px rgba(0,0,0,.06); }
-.q-collant.q-mini .sim-tb { border: 0; box-shadow: none; padding: 2px 0 4px; background: transparent; }
-.sim-cap { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 12.5px; line-height: 1.25; }
-.sim-cap .sim-obj { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 6px; text-align: left; border-radius: 10px; padding: 0 9px; }
-.sim-cap-t { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 500; }
-.sim-cap .sim-ic { width: 36px; padding: 0; font-size: 16px; }
+.sim-tb { gap: 10px; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.07); }
+.q-collant.q-mini .sim-tb { border: 0; box-shadow: none; padding: 2px 0 6px; background: transparent; }
+.sim-cap { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; line-height: 1.25; }
+.sim-cap .sim-obj { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 6px; text-align: left; border-radius: 12px; padding: 0 12px; background: var(--sable); border-color: var(--sable-bd); }
+.sim-cap-t { flex: 1 1 auto; min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; white-space: normal; font-weight: 500; line-height: 1.3; padding: 4px 0; }
+.sim-cap .sim-ic { padding: 0 12px; font-size: 13px; white-space: nowrap; }
+.sim-cap { flex-wrap: wrap; }
+.sim-cap .sim-obj { flex-basis: 150px; }
+.sim-pl-f { display: none; }
 .sim-cap-t b { font-variant-numeric: tabular-nums; }
 .sim-cap-t .ok { font-weight: 700; color: var(--fr); }
-.sim-cap button, .sim-btn { flex: 0 0 auto; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 0 9px; min-height: 30px; min-width: 30px; cursor: pointer; }
+.sim-cap button, .sim-btn { flex: 0 0 auto; font: inherit; font-size: 13px; font-weight: 600; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 0 10px; min-height: 44px; min-width: 44px; cursor: pointer; }
 .sim-cap button[disabled] { opacity: .4; cursor: default; }
-.sim-objs { display: flex; flex-wrap: wrap; gap: 6px; }
-.sim-objs button { font: inherit; font-size: 13px; text-align: left; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; min-height: 36px; cursor: pointer; }
+.sim-objs { display: flex; flex-wrap: wrap; gap: 8px; }
+.sim-objs button { font: inherit; font-size: 13.5px; line-height: 1.3; text-align: left; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 8px 12px; min-height: 44px; cursor: pointer; }
 .sim-objs button[aria-pressed="true"] { border-color: var(--fr); box-shadow: inset 0 0 0 1px var(--fr); }
-.sim-objs small { display: block; color: var(--muted); font-size: 11.5px; }
-.sim-g { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; min-width: 0; }
-.sim-c { display: grid; gap: 1px; min-width: 0; text-align: left; font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04); padding: 6px 8px 4px; cursor: zoom-in; }
-.sim-c-r { display: flex; align-items: baseline; justify-content: space-between; gap: 5px; min-width: 0; }
+.sim-objs small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.sim-g { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 0; }
+/* Chaque courbe sa couleur (déjà employées sur le site), sans rien juger : bleu, violet, sarcelle, ocre. --kt : la même, assez foncée pour le texte (4,5:1). */
+:root { --kpt: #55575f; }
+#sim-c-def, .sim-zoom[data-c="def"] { --kc: #2f5bd3; --kt: #2f5bd3; }
+#sim-c-dette, .sim-zoom[data-c="dette"] { --kc: #7a4fc4; --kt: #6a40b3; }
+#sim-c-cr, .sim-zoom[data-c="cr"] { --kc: #17806f; --kt: #12695b; }
+#sim-c-ph, .sim-zoom[data-c="ph"] { --kc: #9a6a12; --kt: #80580e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --kpt: #b4b6bd; } :root:not([data-theme="light"]) :is(#sim-c-def, .sim-zoom[data-c="def"]) { --kc: #7a9cff; --kt: #8fadff; } :root:not([data-theme="light"]) :is(#sim-c-dette, .sim-zoom[data-c="dette"]) { --kc: #b89cff; --kt: #c4adff; } :root:not([data-theme="light"]) :is(#sim-c-cr, .sim-zoom[data-c="cr"]) { --kc: #4fc9b0; --kt: #5fd3bb; } :root:not([data-theme="light"]) :is(#sim-c-ph, .sim-zoom[data-c="ph"]) { --kc: #d9b25a; --kt: #e2bf6d; } }
+:root[data-theme="dark"] { --kpt: #b4b6bd; }
+:root[data-theme="dark"] :is(#sim-c-def, .sim-zoom[data-c="def"]) { --kc: #7a9cff; --kt: #8fadff; }
+:root[data-theme="dark"] :is(#sim-c-dette, .sim-zoom[data-c="dette"]) { --kc: #b89cff; --kt: #c4adff; }
+:root[data-theme="dark"] :is(#sim-c-cr, .sim-zoom[data-c="cr"]) { --kc: #4fc9b0; --kt: #5fd3bb; }
+:root[data-theme="dark"] :is(#sim-c-ph, .sim-zoom[data-c="ph"]) { --kc: #d9b25a; --kt: #e2bf6d; }
+.sim-c { display: grid; gap: 2px; min-width: 0; text-align: left; font: inherit; color: var(--fg); background: color-mix(in srgb, var(--kc) 9%, var(--panel)); border: 1px solid color-mix(in srgb, var(--kc) 24%, var(--panel)); border-radius: 14px; padding: 8px 10px 5px; cursor: zoom-in; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sim-c { background: color-mix(in srgb, var(--kc) 13%, var(--panel)); border-color: color-mix(in srgb, var(--kc) 30%, var(--panel)); } }
+:root[data-theme="dark"] .sim-c { background: color-mix(in srgb, var(--kc) 13%, var(--panel)); border-color: color-mix(in srgb, var(--kc) 30%, var(--panel)); }
+.sim-c-r { display: grid; gap: 1px; min-width: 0; }
 .sim-c-h { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; min-width: 0; }
-.sim-c-t { font-size: 11.5px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
-.sim-c-v { flex: 0 0 auto; font-size: 16px; line-height: 1.15; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -.01em; }
-.sim-c-s { min-width: 0; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sim-c-t { font-size: 13px; font-weight: 700; color: var(--kt); line-height: 1.2; overflow-wrap: anywhere; }
+.sim-c-v { font-variant-numeric: tabular-nums; line-height: 1.15; }
+.sim-c-v small { font-size: 12px; font-weight: 600; color: var(--muted); }
+.sim-c-v span { font-size: 20px; font-weight: 800; letter-spacing: -.01em; white-space: nowrap; }
+.sim-c-s, .sim-c-m { min-width: 0; font-size: 12px; line-height: 1.3; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sim-c-m[hidden] { display: none; }
 .sim-c-g { display: block; width: 100%; }
-.sim-c svg { display: block; width: 100%; height: auto; overflow: visible; margin-top: 2px; }
+.sim-c svg { display: block; width: 100%; height: auto; overflow: visible; margin-top: 3px; }
 .sim-c.flash { animation: simflash 0.9s ease-out; }
-@keyframes simflash { 0% { box-shadow: 0 0 0 2px var(--fr); } 100% { box-shadow: 0 0 0 0 transparent; } }
-.sim-1 { font-size: 13px; font-variant-numeric: tabular-nums; line-height: 1.35; }
+@keyframes simflash { 0% { box-shadow: 0 0 0 3px var(--kc, var(--fr)); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.sim-1 { font-size: 13px; font-variant-numeric: tabular-nums; line-height: 1.4; }
 .sim-1 b { font-weight: 800; }
-.sim-ex { display: grid; gap: 8px; }
-.sim-pq-h { margin: 0 0 4px; font-size: 12.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--fr); }
-.sim-pq { font-size: 13.5px; line-height: 1.45; min-width: 0; display: flow-root; padding: 6px 10px 7px; background: var(--sable); border: 1px solid var(--sable-bd); border-radius: 12px; }
+.sim-ex { display: grid; gap: 10px; }
+/* Pourquoi ça bouge : un en-tête, puis une idée par ligne (étiquette à gauche, chiffre à droite). */
+.sim-pq { font-size: 14px; line-height: 1.5; min-width: 0; padding: 12px 14px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 18px rgba(0,0,0,.05); }
+.sim-pq-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.sim-pq-h { margin: 0; font-size: 12.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--fr); }
 .sim-pq-c { min-width: 0; }
 .sim-pq.ouvert .sim-pq-c { max-height: 45vh; overflow-y: auto; }
-.sim-pq-c p { margin: 0 0 3px; }
+.sim-pq-c p { margin: 0 0 6px; }
 .sim-pq-c p:last-child { margin-bottom: 0; }
+.sim-pq-c p.sim-pq-r { display: grid; grid-template-columns: 5.4em minmax(0, 1fr); gap: 10px; align-items: baseline; margin: 0; padding: 7px 0; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.sim-pq-c p.sim-pq-r:first-child { border-top: 0; padding-top: 2px; }
+.sim-pq-k { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .02em; text-transform: uppercase; }
 body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
-.sim-pq-d { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--line); }
-.sim-pq-d p { margin: 0 0 4px; }
+.sim-pq-d { margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.sim-pq-d p { margin: 0 0 8px; }
 .sim-pq-c .sim-pq-x { color: var(--muted); }
 .sim-pq-b { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--fr); background: none; border: 0; padding: 0; min-height: 24px; cursor: pointer; text-decoration: underline; }
-#sim-pq-o { float: right; margin: 0 0 2px 6px; font-size: 12px; min-height: 26px !important; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 0 9px; min-height: 30px; text-decoration: none; }
-.sim-al { font-size: 13px; line-height: 1.45; border-left: 3px solid var(--c-rech); background: color-mix(in srgb, var(--c-rech) 9%, var(--panel)); border-radius: 0 8px 8px 0; padding: 5px 8px; }
-.sim-al p { margin: 0 0 3px; }
+#sim-pq-o { flex: 0 0 auto; font-size: 12.5px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 0 12px; min-height: 32px; text-decoration: none; }
+.sim-al { font-size: 13.5px; line-height: 1.5; border-left: 4px solid var(--c-rech); background: color-mix(in srgb, var(--c-rech) 9%, var(--panel)); border-radius: 4px 14px 14px 4px; padding: 10px 12px; }
+.sim-al p { margin: 0 0 6px; }
 .sim-al p:last-child { margin: 0; }
-.sim-al button { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 0 10px; min-height: 30px; margin: 3px 4px 0 0; cursor: pointer; }
-.sim-fete { font-size: 14px; line-height: 1.35; border: 2px solid var(--fr); background: color-mix(in srgb, var(--fr) 10%, var(--panel)); border-radius: 10px; padding: 7px 10px; animation: simfete .8s ease-out; }
+.sim-al button { font: inherit; font-size: 13px; font-weight: 600; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 0 12px; min-height: 36px; margin: 6px 6px 0 0; cursor: pointer; }
+.sim-fete { font-size: 14px; line-height: 1.45; border: 2px solid var(--fr); background: color-mix(in srgb, var(--fr) 10%, var(--panel)); border-radius: 14px; padding: 10px 12px; animation: simfete .8s ease-out; }
 .sim-fete b { font-size: 15px; }
-.sim-fete button { font: inherit; font-size: 13px; font-weight: 700; color: var(--on-fr); background: var(--fr); border: 0; border-radius: 999px; padding: 0 12px; min-height: 34px; margin: 5px 6px 0 0; cursor: pointer; }
+.sim-fete button { font: inherit; font-size: 13px; font-weight: 700; color: var(--on-fr); background: var(--fr); border: 0; border-radius: 999px; padding: 0 14px; min-height: 38px; margin: 8px 6px 0 0; cursor: pointer; }
 .sim-fete button.sec { color: var(--fg); background: var(--panel); border: 1px solid var(--line); }
 @keyframes simfete { 0% { transform: scale(.96); opacity: .3; } 60% { transform: scale(1.02); } 100% { transform: none; opacity: 1; } }
 .sim-est { font-size: 11.5px; font-weight: 700; color: var(--fg); background: color-mix(in srgb, var(--c-rech) 16%, var(--panel)); border-radius: 999px; padding: 2px 8px; border: 0; min-height: 24px; cursor: pointer; }
 #sim-main h2 { margin: 0; }
-#sim-main > section.card { border-radius: 18px; box-shadow: 0 8px 24px rgba(0,0,0,.05); }
-#sim-main > section.sim-sec { background: transparent; border: 0; box-shadow: none; padding: 0; }
-.sim-intro { font-size: 14px; line-height: 1.4; margin: 0; }
-.sim-l { --sc: #2f5bd3; display: grid; gap: 9px; padding: 16px 16px 16px; min-width: 0; background: var(--panel); border: 1px solid var(--line); border-left: 6px solid var(--sc); border-radius: 18px; box-shadow: 0 8px 24px rgba(0,0,0,.06); }
-.sim-ls { display: grid; gap: 16px; }
-.sim-l.mod { border-color: var(--fr); border-left-color: var(--sc); box-shadow: 0 0 0 1px var(--fr), 0 8px 24px rgba(0,0,0,.06); }
-.sim-pas { display: table; justify-self: start; font-size: 12.5px; font-weight: 700; color: var(--sc); background: color-mix(in srgb, var(--sc) 12%, var(--panel)); border-radius: 999px; padding: 3px 11px; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sim-pas, :root:not([data-theme="light"]) .sim-fam > summary .sim-pas { background: color-mix(in srgb, var(--sc) 24%, var(--panel)); color: color-mix(in srgb, var(--sc) 55%, #fff); } }
-:root[data-theme="dark"] .sim-pas { background: color-mix(in srgb, var(--sc) 24%, var(--panel)); color: color-mix(in srgb, var(--sc) 55%, #fff); }
-.sim-l-h { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
-.sim-l-n { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; font-size: 17px; font-weight: 800; line-height: 1.25; }
-.sim-l-v { flex: 0 0 auto; max-width: 45%; text-align: right; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.sim-l.mod .sim-l-v { color: var(--fr); }
-.sim-l-p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+#sim-main > section.card { border-radius: 20px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06); }
+#sim-main > section.sim-sec { background: transparent; border: 0; box-shadow: none; padding: 0; gap: 14px; }
+#sim-main > section.sim-sec > h2 { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+#sim-main > section.sim-sec > h2 > .eyebrow { font-size: 22px; font-weight: 800; color: var(--fg); letter-spacing: -.01em; text-transform: none; margin-bottom: 2px; }
+.sim-intro { font-size: 14px; line-height: 1.5; margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; color: var(--muted); }
+.sim-intro li { position: relative; padding-left: 16px; }
+.sim-intro li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 6px; height: 6px; border-radius: 50%; background: var(--fr); }
+/* Les cartes de leviers : comme les cartes de Voter (coins ronds, ombre douce, pastille de famille colorée, gros boutons ronds). */
+.sim-l { --sc: #2f5bd3; --sct: color-mix(in srgb, var(--sc) 80%, #000); display: grid; gap: 12px; padding: 18px 16px; min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.07); }
+.sim-fam, .sim-pas { --sct: color-mix(in srgb, var(--sc) 80%, #000); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) :is(.sim-l, .sim-fam, .sim-pas) { --sct: color-mix(in srgb, var(--sc) 55%, #fff); } :root:not([data-theme="light"]) .sim-l { box-shadow: 0 8px 24px rgba(0,0,0,.3); } }
+:root[data-theme="dark"] :is(.sim-l, .sim-fam, .sim-pas) { --sct: color-mix(in srgb, var(--sc) 55%, #fff); }
+:root[data-theme="dark"] .sim-l { box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.sim-ls { display: grid; gap: 18px; }
+.sim-l.mod { border-color: color-mix(in srgb, var(--sc) 60%, var(--panel)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--sc) 60%, var(--panel)), 0 8px 24px rgba(0,0,0,.08); }
+.sim-pas { display: table; justify-self: start; font-size: 12.5px; font-weight: 700; color: var(--sct); background: color-mix(in srgb, var(--sc) 12%, var(--panel)); border-radius: 999px; padding: 4px 12px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sim-pas, :root:not([data-theme="light"]) .sim-fam > summary .sim-pas { background: color-mix(in srgb, var(--sc) 24%, var(--panel)); } }
+:root[data-theme="dark"] .sim-pas { background: color-mix(in srgb, var(--sc) 24%, var(--panel)); }
+.sim-l-h { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.sim-l-n { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; font-size: 19px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; }
+.sim-l-v { flex: 0 0 auto; max-width: 45%; text-align: right; font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.sim-l.mod .sim-l-v { color: var(--sct); }
+.sim-l-p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
 .sim-l-p a, .sim-l-p button { color: var(--fg); font: inherit; font-size: 12.5px; background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
-.sim-l-r { display: grid; grid-template-columns: 46px 1fr 46px; align-items: center; gap: 6px; min-width: 0; }
-.sim-l-r button { font: inherit; font-size: 24px; font-weight: 700; line-height: 1; color: var(--fr); background: var(--panel); border: 2px solid var(--fr); border-radius: 999px; min-height: 46px; cursor: pointer; touch-action: manipulation; }
-.sim-l-r input[type=range] { width: 100%; min-width: 0; margin: 0; height: 44px; accent-color: var(--fr); touch-action: pan-y; }
-.sim-l-b { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); padding: 0 52px; margin-top: -8px; }
-.sim-l-c { display: flex; flex-wrap: wrap; gap: 6px; }
-.sim-l-c button { font: inherit; font-size: 14px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px 10px; min-height: 40px; cursor: pointer; text-align: left; }
-.sim-l-c button[aria-pressed="true"] { border-color: var(--fr); box-shadow: inset 0 0 0 1px var(--fr); font-weight: 700; }
+.sim-l-r { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; gap: 10px; min-width: 0; margin-top: 2px; }
+.sim-l-r button { font: inherit; font-size: 26px; font-weight: 700; line-height: 1; color: var(--sct); background: color-mix(in srgb, var(--sc) 11%, var(--panel)); border: 2px solid color-mix(in srgb, var(--sc) 55%, var(--panel)); border-radius: 50%; width: 52px; height: 52px; padding: 0; cursor: pointer; touch-action: manipulation; box-shadow: 0 2px 6px rgba(0,0,0,.08); transition: transform .12s ease; }
+.sim-l-r button:active { transform: scale(.93); }
+.sim-l-r input[type=range] { width: 100%; min-width: 0; margin: 0; height: 44px; accent-color: var(--sc); touch-action: pan-y; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sim-l-r input[type=range] { accent-color: var(--sct); } }
+:root[data-theme="dark"] .sim-l-r input[type=range] { accent-color: var(--sct); }
+.sim-l-b { font-size: 12px; color: var(--muted); }
+.sim-l-c { display: flex; flex-wrap: wrap; gap: 8px; }
+.sim-l-c button { font: inherit; font-size: 14px; line-height: 1.3; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; min-height: 44px; cursor: pointer; text-align: left; }
+.sim-l-c button[aria-pressed="true"] { border-color: var(--sc); background: color-mix(in srgb, var(--sc) 11%, var(--panel)); box-shadow: inset 0 0 0 1px var(--sc); font-weight: 700; }
+/* L'effet : la ligne qui compte en gros, le reste en petit gris dessous. */
 .sim-l-e { margin: 0; font-size: 14px; line-height: 1.4; font-variant-numeric: tabular-nums; }
-.sim-l-e:not(:empty) { padding: 9px 12px; border-radius: 12px; border: 2px solid var(--fr); background: color-mix(in srgb, var(--fr) 9%, var(--panel)); }
-.sim-l-x { margin: 0; font-size: 13.5px; line-height: 1.4; }
-.sim-l-x:not(:empty) { padding: 8px 12px; border-radius: 12px; background: var(--sable); border: 1px solid var(--sable-bd); }
+.sim-l-e:not(:empty) { display: grid; gap: 3px; padding: 11px 14px; border-radius: 14px; border-left: 5px solid var(--sc); background: color-mix(in srgb, var(--sc) 10%, var(--panel)); }
+.sim-l-e b { font-size: 16.5px; font-weight: 800; line-height: 1.3; }
+.sim-l-e2 { font-size: 13px; color: var(--muted); line-height: 1.45; }
+.sim-l-x { margin: 0; font-size: 13.5px; line-height: 1.5; }
+.sim-l-x:not(:empty) { padding: 10px 14px; border-radius: 14px; background: var(--sable); }
 .sim-l-x b { font-weight: 700; }
-.sim-l-m { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.35; }
-.sim-raz { font: inherit; font-size: 13px; font-weight: 600; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 0 10px; min-height: 32px; cursor: pointer; }
-.sim-l-s { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.4; }
-.sim-fam { display: grid; gap: 12px; }
-.sim-fam > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 15px; font-weight: 700; padding: 10px 12px; min-height: 44px; box-sizing: border-box; cursor: pointer; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); border-left: 6px solid var(--sc); }
+.sim-l-m { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.sim-raz { font: inherit; font-size: 13px; font-weight: 600; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 0 12px; min-height: 36px; cursor: pointer; }
+.sim-l-s { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.sim-fam { display: grid; gap: 14px; }
+.sim-fam > summary { list-style: none; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 15px; font-weight: 700; padding: 12px 14px; min-height: 52px; box-sizing: border-box; cursor: pointer; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.05); }
+.sim-fam > summary::-webkit-details-marker { display: none; }
+.sim-fam > summary::after { content: "▾"; margin-left: auto; color: var(--muted); font-size: 14px; }
+.sim-fam:not([open]) > summary::after { content: "▸"; }
 .sim-fam > summary .sim-pas { font-size: 14px; }
-.sim-fam > summary small { font-weight: 400; color: var(--muted); }
-.sim-plan-l { display: grid; gap: 3px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 13.5px; line-height: 1.35; }
+.sim-fam > summary small { font-weight: 400; color: var(--muted); font-size: 12.5px; }
+.sim-plan-l { display: grid; gap: 6px; padding: 14px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.45; }
 .sim-plan-l .t { display: flex; gap: 8px; align-items: baseline; }
 .sim-plan-l .t b { flex: 1 1 auto; min-width: 0; }
 .sim-plan-l .t span { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .sim-bar { height: 10px; border-radius: 3px; min-width: 2px; }
-.sim-plan-l .d { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.sim-plan-l .d { color: var(--muted); font-size: 12.5px; line-height: 1.5; font-variant-numeric: tabular-nums; }
 .sim-leg { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--muted); }
 .sim-leg i { display: inline-block; width: 12px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
 .sim-an { display: flex; gap: 6px; }
@@ -1112,8 +1155,38 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
 .sim-zoom td:first-child, .sim-zoom th:first-child { text-align: left; }
 .sim-zoom-x { justify-self: end; }
 .sim-zoom-c { display: grid; gap: 8px; min-width: 0; }
+.sim-leg svg { display: inline-block !important; width: 22px !important; height: 8px !important; margin-right: 5px; vertical-align: 1px; }
 .sim-hyp p { margin: 4px 0; font-size: 13px; line-height: 1.4; }
 .sim-hyp .sim-l-c { margin: 4px 0 8px; }
+
+/* Le tableau de bord replié en une ligne : choisi (« Replier »), ou d'office sur téléphone quand on défile vers les leviers, et pendant une recherche. */
+#sim-1 { display: none; margin: 0; }
+.sim-tb.v-plie #sim-g, body.sim-cherche .sim-tb #sim-g { display: none; }
+.sim-tb.v-plie #sim-1, body.sim-cherche .sim-tb #sim-1 { display: block; }
+.sim-tb.v-plie .sim-pl-o, body.sim-cherche .sim-tb .sim-pl-o { display: none; }
+.sim-tb.v-plie .sim-pl-f, body.sim-cherche .sim-tb .sim-pl-f { display: inline; }
+@media (max-width: 699px) {
+  .q-collant.q-mini .sim-tb.v-auto #sim-g { display: none; }
+  .q-collant.q-mini .sim-tb.v-auto #sim-1 { display: block; }
+  .q-collant.q-mini .sim-tb.v-auto .sim-pl-o { display: none; }
+  .q-collant.q-mini .sim-tb.v-auto .sim-pl-f { display: inline; }
+  .sim-cap .sim-ic-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+/* En défilant, seuls l'objectif et la ligne des chiffres restent collés (pas les onglets ni « Recommencer »). */
+body.q-simu.q-ong-creer .q-collant.q-mini .q-tabsr, body.q-simu.q-ong-creer .q-collant.q-mini .q-recom-c { display: none !important; }
+.q-collant.q-mini .sim-tb { gap: 6px; }
+.sim-objs { max-height: 55vh; overflow-y: auto; }
+body.q-simu #sim-main { overflow-anchor: none; }
+.sim-pq-g { margin: 0 0 6px; font-size: 13.5px; line-height: 1.4; }
+.sim-pq-g span { color: var(--muted); }
+.sim-pq-c p.sim-pq-tot { border-top: 2px solid var(--line); }
+.sim-l-b { display: grid; grid-template-columns: 62px minmax(0, 1fr) 62px; align-items: start; padding: 0; margin-top: -6px; text-align: center; }
+.sim-l-bo { font-size: 12px; }
+.sim-l-pas { font-size: 12.5px; font-weight: 700; color: var(--sct); }
+.sim-l-r button[disabled] { opacity: .35; cursor: default; box-shadow: none; }
+.sim-l-p a, .sim-l-p button { display: inline; padding: 12px 6px; margin: -12px -2px; }
+.sim-raz, .sim-an button, .sim-zoom-x { min-height: 44px !important; min-width: 44px; }
+#sim-pq-o { min-height: 40px; }
 @media (min-width: 900px) { .sim-g { grid-template-columns: repeat(4, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .sim-c.flash, .sim-fete { animation: none; } }
 </style>
@@ -2279,7 +2352,7 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
   (function () { var y0 = window.scrollY; window.addEventListener('scroll', function () { var y = window.scrollY, c = $('q-collant'), now = Date.now(); if (!c) return; if (now - MINI_T0 < 400) { y0 = y; return; } var mini = c.classList.contains('q-mini');
       if (!colle()) { if (mini) reduire(false); y0 = y; return; }
       // Une carte à voter à l'écran : le bandeau reste réduit tant qu'il est collé (la carte garde la place) ; il revient en entier en haut de page.
-      if ((ONG === 'voter' && ($('q-card') || $('q-deck').querySelector('.q-etape'))) || (ONG === 'creer' && (!$('q-choisi').hidden || !$('q-un').hidden))) { if (!mini) reduire(true); y0 = y; return; }
+      if ((ONG === 'voter' && ($('q-card') || $('q-deck').querySelector('.q-etape'))) || (ONG === 'creer' && (SIMU || !$('q-choisi').hidden || !$('q-un').hidden))) { if (!mini) reduire(true); y0 = y; return; }
       if (!mini && y > y0 + 24) reduire(true); else if (mini && y < y0 - 40) reduire(false); if (Math.abs(y - y0) > 24) y0 = y; }, { passive: true }); })();
   // Le bandeau change de hauteur avec le message : on revérifie une fois le défilement fini, pour que la ligne de progression reste visible.
   // La ligne de progression, ou la carte quand le bandeau réduit la cache : son haut juste sous le bandeau, après chaque geste.
@@ -4155,7 +4228,7 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
   var copie = function (o) { return JSON.parse(JSON.stringify(o || {})); };
   var smd = function (L, an) { var r = ligneAn(L, an); return r.solde / 100 * r.pib; };
   var imd = function (L, an) { var r = ligneAn(L, an); return r.interets / 100 * r.pib; };
-  var f1 = function (v) { return nf(v, 1); };
+  var f1 = function (v) { return nf(v, 1).replace(/^-/, '−'); };
   var sg1 = function (v, u) { return (v > 0.049 ? '+' : v < -0.049 ? '−' : '') + nf(Math.abs(v), 1) + (u || ''); };
   var eu10 = function (v) { return nf(Math.round(v / 10) * 10, 0) + ' €'; };
   var nomL = function (k) { var x = AS[k]; if (!x) return k; for (var i = 0; i < TUILES.length; i++) { var t = TUILES[i][1].filter(function (y) { return y[0] === k; })[0]; if (t) return t[1].replace(/ \((branche entière|toute la branche)\)/, '').replace(/ \(branche Autonomie\)/, ''); } return x.l.split(' (')[0]; };
@@ -4195,7 +4268,7 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     return { min: mn, max: mx, step: u.pas, quad: (mx - mn) / u.pas >= 60 && !x.par_pib, cr: cr };
   }
   function versPos(x, v) { var p = plage(x); if (!p.quad) return v; var m = Math.max(Math.abs(p.min), Math.abs(p.max)); return (v < 0 ? -1 : 1) * Math.sqrt(Math.abs(v) / m) * m; }
-  function versVal(x, pos) { var p = plage(x); if (!p.quad) return Math.round(pos / p.step) * p.step; var m = Math.max(Math.abs(p.min), Math.abs(p.max)), v = (pos < 0 ? -1 : 1) * pos * pos / m; return Math.max(p.min, Math.min(p.max, Math.round(v / p.step) * p.step)); }
+  function versVal(x, pos) { var p = plage(x); if (!p.quad) return Math.round(pos / p.step) * p.step; var m = Math.max(Math.abs(p.min), Math.abs(p.max)); if (Math.abs(pos) < m * 0.06) return 0; var v = (pos < 0 ? -1 : 1) * pos * pos / m; return Math.max(p.min, Math.min(p.max, Math.round(v / p.step) * p.step)); }
   // Le budget avec ce levier à cette valeur, et ce qu'il remplace (mêmes règles qu'« Ajouter à mon budget » dans Créer).
   function candidat(k, v) {
     var x = AS[k], P = copie(S.perso), V = copie(S.v), rP = [], rV = [];
@@ -4240,10 +4313,10 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     };
   }
   var IND = {
-    def: { t: function () { return 'Déficit ' + anObj(); }, an: function () { return anObj(); }, f: function (v) { return f1(v) + ' %'; }, fb: function (v) { return f1(v); }, u: '% du PIB' },
-    dette: { t: function () { return 'Dette ' + AN1; }, an: function () { return AN1; }, f: function (v) { return f1(v) + ' %'; }, fb: function (v) { return f1(v); }, u: '% du PIB' },
-    cr: { t: function () { return 'Croissance ' + AN0; }, an: function () { return AN0; }, f: function (v) { return pcs(v); }, fb: function (v) { return pcs(v).replace(' %', ''); }, u: '% par an' },
-    ph: { t: function () { return 'PIB par habitant ' + AN1; }, an: function () { return AN1; }, f: function (v) { return eu10(v); }, fb: function (v) { return nf(Math.round(v / 10) * 10, 0); }, u: '€ de ' + 2025 + ', hors inflation' }
+    def: { t: function () { return 'Déficit'; }, an: function () { return AN0; }, f: function (v) { return f1(v) + ' %'; }, fb: function (v) { return f1(v); }, u: '% du PIB' },
+    dette: { t: function () { return 'Dette'; }, an: function () { return AN0; }, f: function (v) { return f1(v) + ' %'; }, fb: function (v) { return f1(v); }, u: '% du PIB' },
+    cr: { t: function () { return 'Croissance'; }, an: function () { return AN0; }, f: function (v) { return pcs(v); }, fb: function (v) { return pcs(v).replace(' %', '').replace(/^-/, '−'); }, u: '% par an' },
+    ph: { t: function () { return 'PIB par habitant'; }, an: function () { return AN0; }, f: function (v) { return eu10(v); }, fb: function (v) { return nf(Math.round(v / 10) * 10, 0); }, u: '€ de ' + 2025 + ', hors inflation' }
   };
   var val = function (s, an) { var x = s.filter(function (p) { return p.an === an; })[0]; return x ? x.v : null; };
   // La ligne du cap sur la courbe concernée (déficit : seuil de l'objectif ; dette : fin 2025 ou le seuil du défi).
@@ -4256,7 +4329,7 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
   }
   // Une petite courbe : pointillé « sans vos mesures », plein « avec vos mesures », trait clair (ancienne position, ou aperçu).
   function svgCourbe(c, base, cur, clair, o) {
-    o = o || {}; var ts = o.ts || TS(), fz = (o.axe ? 11 : 10) * Math.min(1.35, ts), W = o.W || 200, H = o.H || Math.round(30 + fz * 1.5), l = o.axe ? 34 : 4, r = o.axe ? 54 : 6, t = 6, b = o.axe ? 20 : Math.round(fz * 1.45), a0 = D0.an, a1 = AN1;
+    o = o || {}; var ts = o.ts || TS(), fz = 12 * Math.min(1.35, ts), W = o.W || 200, H = o.H || Math.round(30 + fz * 1.5), l = o.axe ? 34 : 4, r = o.axe ? 54 : 6, t = 6, b = o.axe ? 20 : Math.round(fz * 1.45), a0 = D0.an, a1 = AN1;
     var cap = capLigne(c), tous = base.concat(cur, clair || []).map(function (p) { return p.v; }).filter(function (v) { return v != null && isFinite(v); });
     if (cap) tous.push(cap.v); if (c === 'cr') tous.push(0);
     var mn = Math.min.apply(null, tous), mx = Math.max.apply(null, tous); if (mx - mn < 1e-6) { mx += 1; mn -= 1; } var pad = (mx - mn) * 0.12; mn -= pad; mx += pad;
@@ -4266,14 +4339,15 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     if (o.axe) { for (var an0 = a0; an0 <= a1; an0++) (function (an) { g += '<text x="' + X(an).toFixed(1) + '" y="' + (H - 5) + '" font-size="' + fs + '" text-anchor="middle" fill="var(--muted)">' + an + '</text>'; })(an0); [mn + pad, mx - pad].forEach(function (v) { g += '<line x1="' + l + '" x2="' + (W - r) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '" stroke="var(--grid)"/><text x="' + (l - 4) + '" y="' + (Y(v) + 4).toFixed(1) + '" font-size="' + fs + '" text-anchor="end" fill="var(--muted)">' + IND[c].fb(v) + '</text>'; }); }
     if (c === 'cr' && 0 > mn && 0 < mx) g += '<line x1="' + l + '" x2="' + (W - r) + '" y1="' + Y(0).toFixed(1) + '" y2="' + Y(0).toFixed(1) + '" stroke="var(--axis)" stroke-width="1"/>';
     if (cap) g += '<line x1="' + l + '" x2="' + (W - r) + '" y1="' + Y(cap.v).toFixed(1) + '" y2="' + Y(cap.v).toFixed(1) + '" stroke="var(--fg)" stroke-opacity=".55" stroke-width="1" stroke-dasharray="1 3"/><circle cx="' + X(cap.an).toFixed(1) + '" cy="' + Y(cap.v).toFixed(1) + '" r="3.2" fill="none" stroke="var(--fg)" stroke-width="1.3"/>' + (o.axe ? '<text x="' + (l + 2) + '" y="' + (Y(cap.v) - 4).toFixed(1) + '" font-size="' + fs + '" fill="var(--fg)">' + esc(cap.t) + '</text>' : '');
-    g += '<path d="' + d(base) + '" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="3 3"/>';
-    if (clair) g += '<path d="' + d(clair) + '" fill="none" stroke="var(--fr)" stroke-opacity="' + (o.op != null ? o.op : 0.4) + '" stroke-width="3.2" stroke-linecap="round"/>';
-    g += '<path d="' + d(cur) + '" fill="none" stroke="var(--fr)" stroke-width="2.2" stroke-linejoin="round"/>';
+    var pc = cur.filter(function (p) { return p.v != null; }); if (pc.length > 1) g += '<path d="' + d(cur) + 'L' + X(pc[pc.length - 1].an).toFixed(1) + ' ' + (H - b) + 'L' + X(pc[0].an).toFixed(1) + ' ' + (H - b) + 'Z" fill="var(--kc, var(--fr))" fill-opacity=".13" stroke="none"/>';
+    g += '<path d="' + d(base) + '" fill="none" stroke="var(--kpt)" stroke-width="1.7" stroke-dasharray="4 3"/>';
+    if (clair) g += '<path d="' + d(clair) + '" fill="none" stroke="var(--kc, var(--fr))" stroke-opacity="' + (o.op != null ? o.op : 0.4) + '" stroke-width="4" stroke-linecap="round"/>';
+    g += '<path d="' + d(cur) + '" fill="none" stroke="var(--kc, var(--fr))" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
     var ka = IND[c].an(), kv = val(cur, ka), lv = val(cur, a1);
-    var v27 = val(cur, AN0); if (v27 != null) g += '<circle cx="' + X(AN0).toFixed(1) + '" cy="' + Y(v27).toFixed(1) + '" r="3" fill="var(--fr)"/>';
-    if (ka !== AN0 && kv != null) g += '<circle cx="' + X(ka).toFixed(1) + '" cy="' + Y(kv).toFixed(1) + '" r="3" fill="var(--fr)"/>';
-    if (!o.axe) { var yb = H - 3; g += '<text x="' + X(a0).toFixed(1) + '" y="' + yb + '" font-size="' + fs + '" fill="var(--muted)">' + a0 + '</text><text x="' + X(AN0).toFixed(1) + '" y="' + yb + '" font-size="' + fs + '" text-anchor="middle" fill="var(--muted)">' + AN0 + '</text>' + (lv != null ? '<text x="' + X(a1).toFixed(1) + '" y="' + yb + '" font-size="' + fs + '" text-anchor="end" font-weight="700" fill="var(--fr)">' + a1 + ' : ' + IND[c].fb(lv) + '</text>' : ''); }
-    if (o.axe && lv != null) g += '<text x="' + (X(a1) + 3).toFixed(1) + '" y="' + (Y(lv) + fs * 0.35).toFixed(1) + '" font-size="' + fs + '" font-weight="700" fill="var(--fr)">' + IND[c].fb(lv) + '</text>';
+    var v27 = val(cur, AN0); if (v27 != null) g += '<circle cx="' + X(AN0).toFixed(1) + '" cy="' + Y(v27).toFixed(1) + '" r="3.6" fill="var(--kc, var(--fr))" stroke="var(--panel)" stroke-width="1.5"/>';
+    if (ka !== AN0 && kv != null) g += '<circle cx="' + X(ka).toFixed(1) + '" cy="' + Y(kv).toFixed(1) + '" r="3.6" fill="var(--kc, var(--fr))" stroke="var(--panel)" stroke-width="1.5"/>';
+    if (!o.axe) { var yb = H - 3; g += '<text x="' + X(a0).toFixed(1) + '" y="' + yb + '" font-size="' + fs + '" fill="var(--muted)">' + a0 + '</text>' + (lv != null ? '<circle cx="' + X(a1).toFixed(1) + '" cy="' + Y(lv).toFixed(1) + '" r="3.6" fill="var(--kc, var(--fr))" stroke="var(--panel)" stroke-width="1.5"/><text x="' + X(a1).toFixed(1) + '" y="' + yb + '" font-size="' + fs + '" text-anchor="end" font-weight="700" fill="var(--kt, var(--fr))">' + a1 + ' : ' + IND[c].fb(lv) + '</text>' : ''); }
+    if (o.axe && lv != null) g += '<text x="' + (X(a1) + 3).toFixed(1) + '" y="' + (Y(lv) + fs * 0.35).toFixed(1) + '" font-size="' + fs + '" font-weight="700" fill="var(--kt, var(--fr))">' + IND[c].fb(lv) + '</text>';
     if (o.axe) { var lb = val(base, a1); if (lb != null && Math.abs(Y(lb) - Y(lv)) > fs) g += '<text x="' + (X(a1) + 3).toFixed(1) + '" y="' + (Y(lb) + fs * 0.35).toFixed(1) + '" font-size="' + fs + '" fill="var(--muted)">' + IND[c].fb(lb) + '</text>'; }
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true" focusable="false">' + g + '</svg>';
   }
@@ -4289,12 +4363,12 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     ['def', 'dette', 'cr', 'ph'].forEach(function (c) {
       var el = $('sim-c-' + c); if (!el) return; var I = IND[c], v = val(Cc[c], I.an()), v0 = val(B[c], I.an());
       el.querySelector('.sim-c-t').textContent = I.t() + (c !== 'dette' && horsModele(R) ? ' ⓘ' : '');
-      el.querySelector('.sim-c-v').textContent = v == null ? '—' : I.f(v);
-      var s = c === 'def' ? (v == null ? '' : f1(val(Cc.def.map(function (p) { return { an: p.an, v: p.md }; }), I.an())) + ' Md€') : '';
-      var sans = v0 == null ? '' : 'sans : ' + I.f(v0);
-      el.querySelector('.sim-c-s').textContent = c === 'def' ? s : sans;
+      el.querySelector('.sim-c-v').innerHTML = '<small>' + I.an() + ' :</small> <span>' + (v == null ? '—' : esc(I.f(v))) + '</span>';
+      var s = c === 'def' && v != null ? 'soit ' + f1(val(Cc.def.map(function (p) { return { an: p.an, v: p.md }; }), I.an())) + ' Md€ qui manquent' : '';
+      var sans = v0 == null ? '' : 'sans vos mesures : ' + I.f(v0);
+      el.querySelector('.sim-c-s').textContent = sans; el.querySelector('.sim-c-m').textContent = s; el.querySelector('.sim-c-m').hidden = !s;
       var gz = el.querySelector('.sim-c-g'), wz = Math.max(120, Math.round(gz.clientWidth || (el.clientWidth - 16) || 160)); gz.innerHTML = svgCourbe(c, B[c], Cc[c], G ? G[c] : null, { op: op, ts: ts, W: wz });
-      el.setAttribute('aria-label', I.t() + ' : ' + (v == null ? '—' : I.f(v)) + (v0 != null ? ', sans vos mesures : ' + I.f(v0) : '') + '. Toucher pour agrandir.');
+      el.setAttribute('aria-label', I.t() + ' ' + I.an() + ' : ' + (v == null ? '—' : I.f(v)) + (v0 != null ? ', sans vos mesures : ' + I.f(v0) : '') + '. Toucher pour agrandir.');
     });
     var r1 = ligneAn(R, anObj()), f = R[R.length - 1], ph = parHab(R);
     $('sim-1').innerHTML = 'Déficit ' + anObj() + ' <b>' + f1(-r1.solde) + ' %</b> · Dette ' + AN1 + ' <b>' + f1(f.d) + ' %</b> · Croissance ' + AN0 + ' <b>' + pcs(croiss(R, AN0)) + '</b> · PIB par hab. ' + AN1 + ' <b>' + (ph ? eu10(ph[ph.length - 1].d) : '—') + '</b>';
@@ -4308,8 +4382,8 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     var expl = { def: 'Ce que l\'État, la Sécurité sociale et les collectivités dépensent de plus qu\'ils ne reçoivent dans l\'année, en part du PIB (la richesse produite en un an). 2025 : Eurostat ; ensuite, calcul du jeu.', dette: 'Ce que doivent l\'État, la Sécurité sociale et les collectivités, en part du PIB. Fin 2025 : ' + f1(PJ.depart.dette) + ' %. Elle monte avec chaque déficit, avec les intérêts, et baisse quand le PIB grandit.', cr: 'La hausse du PIB d\'une année sur l\'autre, hors hausse des prix : la prévision du FMI, plus l\'effet de vos choix sur l\'activité (modèle de la direction du Trésor et de l\'Insee). La courbe commence en 2026 : la croissance de 2025 n\'est pas dans les données du jeu.', ph: 'Le PIB divisé par le nombre d\'habitants, en euros de 2025, hors hausse des prix (population : projection de l\'Insee).' }[c];
     var hm = horsModele(R) ? '<p class="sim-l-m"><b>ⓘ Estimation.</b> Vos choix vont au-delà de ce que le modèle a testé (1 point de PIB par type de mesure) : l\'effet sur l\'activité est prolongé en ligne droite, c\'est une estimation.</p>' : '';
     var cap = capLigne(c), capT = cap ? '<p>Objectif tracé : ' + esc(cap.t) + ' en ' + cap.an + ' (' + esc(capDe(R, S.perso, S.v).nom || '') + ').</p>' : '';
-    z.querySelector('.sim-zoom-c').innerHTML = '<h3>' + esc(I.t().replace(/ \d{4}$/, '')) + ', de ' + D0.an + ' à ' + AN1 + '</h3><p class="sim-l-m">' + esc(I.u) + '</p>' + svgCourbe(c, B[c], Cc[c], null, { W: 560, H: 230, axe: true, ts: 1 }) +
-      '<div class="sim-leg"><span><i style="background:var(--fr)"></i>avec vos mesures</span><span><i style="background:repeating-linear-gradient(90deg,var(--muted) 0 3px,transparent 3px 6px)"></i>sans vos mesures</span>' + (cap ? '<span><i style="border:1.5px dotted var(--fg);height:0;margin-top:5px"></i>objectif</span>' : '') + '</div>' + capT +
+    z.setAttribute('data-c', c); z.querySelector('.sim-zoom-c').innerHTML = '<h3>' + esc(I.t().replace(/ \d{4}$/, '')) + ', de ' + D0.an + ' à ' + AN1 + '</h3><p class="sim-l-m">' + esc(I.u) + '</p>' + svgCourbe(c, B[c], Cc[c], null, { W: Math.max(280, Math.min(560, Math.round(innerWidth - 64))), H: 230, axe: true }) +
+      '<div class="sim-leg"><span><i style="background:var(--kc)"></i>avec vos mesures</span><span><svg width="22" height="8" aria-hidden="true"><line x1="0" x2="22" y1="4" y2="4" stroke="var(--kpt)" stroke-width="1.7" stroke-dasharray="4 3"/></svg>sans vos mesures</span>' + (cap ? '<span><i style="border:1.5px dotted var(--fg);height:0;margin-top:5px"></i>objectif</span>' : '') + '</div>' + capT +
       '<table><tr><th>Année</th><th>Avec vos mesures</th><th>Sans</th></tr>' + ans.map(function (an) { var a = val(Cc[c], an), b = val(B[c], an); return '<tr><td>' + an + '</td><td>' + (a == null ? '—' : I.f(a)) + (c === 'def' && a != null ? ' · ' + f1(val(Cc.def.map(function (p) { return { an: p.an, v: p.md }; }), an)) + ' Md€' : '') + '</td><td>' + (b == null ? '—' : I.f(b)) + '</td></tr>'; }).join('') + '</table><p>' + esc(expl) + '</p>' + hm;
     z.hidden = false; $('sim-zoom-x').onclick = function () { SM.zoom = null; z.hidden = true; var b = $('sim-c-' + c); if (b) b.focus(); };
     if (!maj) $('sim-zoom-x').focus();
@@ -4330,10 +4404,10 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
   // « 54,6 Md€ de recettes en moins » ; pour la capitalisation, ce que ça veut dire dans le jeu.
   function directMots(x, m) { if (x && x.k === 'capitalisation') return mdt(Math.abs(m)) + (m < 0 ? ' de cotisations en moins pour payer les retraites d\'aujourd\'hui, qui restent versées : le jeu les fait payer en empruntant' : ' de cotisations rendues aux retraites d\'aujourd\'hui'); if (x && x.mix) return 'TVA en plus et cotisations des employeurs en moins, du même montant'; return x ? quoi(x.k === 'allegements' ? 'recette' : x.groupe, m) : (m > 0 ? 'déficit plus bas de ' : 'déficit plus haut de ') + mdt(Math.abs(m)); }
   function pourquoiLong(ch) {
-    var x = ch.k ? AS[ch.k] : null, o = ch.o, L = [], nm = ch.titre;
+    var x = ch.k ? AS[ch.k] : null, o = ch.o, L = [], nm = ch.geste || ch.titre;
     // 1. L'effet direct, sur le papier (2027, et une fois en place quand il change), étalement compris.
     var etl = x && ch.v1 && etale(x, ch.v1, ch.P1), etl0 = x && ch.v0 && etale(x, ch.v0, ch.P0), rp = x && x.rampe;
-    var p1 = '<b>' + esc(nm) + '</b> : sur le papier, ' + (Math.abs(o['p' + AN0]) < 0.05 && !(x && x.mix) ? 'presque rien en ' + AN0 : directMots(x, o['p' + AN0]) + ' en ' + AN0);
+    var p1 = '<b>' + esc(nm) + '</b> : avant l\'effet sur l\'activité, ' + (Math.abs(o['p' + AN0]) < 0.05 && !(x && x.mix) ? 'presque rien en ' + AN0 : directMots(x, o['p' + AN0]) + ' en ' + AN0);
     if (Math.abs(o['p' + AN1] - o['p' + AN0] * PIBY[AN1] / PIBY[AN0]) >= 0.5 || etl || rp) p1 += ', ' + mds(Math.abs(o['p' + AN1])) + ' en ' + AN1;
     if (etl || etl0) p1 += ' (au-delà de 1 point de PIB, la part en plus est étalée sur cinq ans : choix de Concret)'; else if (rp) p1 += ' (la mesure monte en charge année après année, selon sa source)';
     if (ch.rP && ch.rP.length) p1 += ' ; ce choix remplace votre ligne ' + ch.rP.map(function (k) { return '« ' + esc(nomL(k)) + ' »'; }).join(', ') + ', qui porte sur le même argent';
@@ -4358,14 +4432,15 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     var x = ch.k ? AS[ch.k] : null, o = ch.o, keys = ch.keys || [], nc = keys.filter(function (k) { return AS[k] && !compteAct(AS[k]); }), ok = keys.filter(function (k) { return AS[k] && compteAct(AS[k]); });
     var dm = function (m) { return Math.abs(m) < 0.05 ? 'presque rien' : (m > 0 ? '−' : '+') + mds(Math.abs(m)); };
     var etl = x && ((ch.v1 && etale(x, ch.v1, ch.P1)) || (ch.v0 && etale(x, ch.v0, ch.P0))), p31 = Math.abs(o['p' + AN1] - o['p' + AN0] * PIBY[AN1] / PIBY[AN0]) >= 0.5 || etl || (x && x.rampe);
-    var l1 = x && x.mix ? 'Direct : déficit inchangé sur le papier' : 'Direct : déficit ' + dm(o['p' + AN0]).replace('presque rien', '±0') + ' en ' + AN0 + (p31 ? ', ' + dm(o['p' + AN1]).replace('presque rien', '±0').replace(' Md€', '') + ' en ' + AN1 : '');
+    var l1 = x && x.mix ? 'Direct : déficit inchangé, avant l\'effet sur l\'activité' : 'Direct : déficit ' + dm(o['p' + AN0]).replace('presque rien', '±0') + ' en ' + AN0 + (p31 ? ', ' + dm(o['p' + AN1]).replace('presque rien', '±0').replace(' Md€', '') + ' en ' + AN1 : '');
     var a = o['a' + AN0], pz = o['p' + AN0], dg = o.g1 - o.g0, l2;
     if (nc.length && !ok.length) l2 = 'Activité : <b>non compté</b> (pas de chiffrage publié)';
     else if (Math.abs(dg) < 0.05 && Math.abs(a) < 0.1) l2 = 'Activité : moins de 0,1 point de croissance' + (nc.length ? ', une partie non comptée' : '');
     else l2 = 'Activité : croissance ' + AN0 + ' ' + (Math.abs(dg) < 0.05 ? '±0' : sg1(dg)) + ' pt' + (Math.abs(a) >= 0.1 ? ' ; ' + (pz * a < 0 ? (pz > 0 ? 'reprend ' : 'compense ') + mds(Math.abs(a)) : dm(a)) : '') + (nc.length ? ' (en partie)' : '');
     var dd = o.d1 - o.d0, sd = o.s1 - o.s0;
     var l3 = 'Au total : déficit ' + anObj() + ' <b>' + (Math.abs(sd) < 0.05 ? '±0' : sg1(sd)) + ' pt</b>, dette ' + AN1 + ' <b>' + (Math.abs(dd) < 0.05 ? '±0' : sg1(dd)) + ' pt</b>';
-    return { L: [l1, l2, l3], D: pourquoiLong(ch) };
+    var pts = function (t) { return t.replace(/±0(\u00a0| )pt/g, 'moins de 0,1 point').replace(/±0/g, 'presque rien').replace(/([+−]?)(\d+),(\d)(\u00a0| )pt\b/g, function (m, sg, a, b) { return sg + a + ',' + b + '\u00a0point' + (+(a + '.' + b) >= 2 ? 's' : ''); }); };
+    return { L: [l1, l2, l3].map(pts), D: pourquoiLong(ch) };
   }
   // La ligne de l'ensemble : « Vos N choix : … ».
   function lourd() {
@@ -4377,7 +4452,7 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     var n = Object.keys(S.perso).length + Object.keys(S.unites).length, nv = adoptees().length; if (!n && !nv) return '';
     var p27 = papier(S.perso, S.v, AN0), p31 = papier(S.perso, S.v, AN1), r1 = ligneAn(R, anObj()), z1 = ligneAn(R0, anObj()), f = R[R.length - 1], zf = R0[R0.length - 1];
     var se = sansEffet(), ncK = Object.keys(S.perso).filter(function (k) { return !compteAct(AS[k]); });
-    return '<b>' + (n ? 'Vos ' + n + ' choix' + (n > 1 ? '' : '') : '') + (n && nv ? ' et ' : '') + (nv ? (n ? 'vos ' : 'Vos ') + nv + ' vote' + (nv > 1 ? 's' : '') + ' « pour »' : '') + '</b> : sur le papier, ' + (Math.abs(p27) < 0.05 ? 'presque rien' : 'déficit ' + (p27 > 0 ? 'plus bas' : 'plus haut') + ' de ' + mds(Math.abs(p27))) + ' en ' + AN0 + ' (' + mds(Math.abs(p31)) + (p31 > 0 ? ' plus bas' : ' plus haut') + ' en ' + AN1 + ') ; avec l\'activité et les intérêts, déficit ' + anObj() + ' : ' + f1(-z1.solde) + ' → ' + f1(-r1.solde) + ' %, dette ' + AN1 + ' : ' + f1(zf.d) + ' → ' + f1(f.d) + ' %.' + lourd() + (se >= 0.05 ? ' Non compté : l\'effet sur l\'activité de ' + mds(se) + ' de vos mesures' + (ncK.length ? ' (' + ncK.slice(0, 3).map(function (k) { return esc(nomL(k)); }).join(', ') + (ncK.length > 3 ? '…' : '') + ')' : '') + ', faute de chiffre publié.' : '');
+    return '<b>' + (n ? (n > 1 ? 'Vos ' + n + ' choix' : 'Votre choix') : '') + (n && nv ? ' et ' : '') + (nv ? (nv > 1 ? (n ? 'vos ' : 'Vos ') + nv + ' votes' : (n ? 'votre' : 'Votre') + ' vote') + ' « pour »' : '') + '</b> : avant l\'effet sur l\'activité, ' + (Math.abs(p27) < 0.05 ? 'presque rien' : 'déficit ' + (p27 > 0 ? 'plus bas' : 'plus haut') + ' de ' + mds(Math.abs(p27))) + ' en ' + AN0 + ' (' + mds(Math.abs(p31)) + (p31 > 0 ? ' plus bas' : ' plus haut') + ' en ' + AN1 + ') ; avec l\'activité et les intérêts, déficit ' + anObj() + ' : ' + f1(-z1.solde) + ' → ' + f1(-r1.solde) + ' %, dette ' + AN1 + ' : ' + f1(zf.d) + ' → ' + f1(f.d) + ' %.' + lourd() + (se >= 0.05 ? ' Non compté : l\'effet sur l\'activité de ' + mds(se) + ' de vos mesures' + (ncK.length ? ' (' + ncK.slice(0, 3).map(function (k) { return esc(nomL(k)); }).join(', ') + (ncK.length > 3 ? '…' : '') + ')' : '') + ', faute de chiffre publié.' : '');
   }
   // ---------- Votre plan : chaque choix et ce qu'il change, le budget recalculé sans lui ----------
   function plan() {
@@ -4394,8 +4469,8 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     return items;
   }
   function planHTML(items) {
-    var an = SM.an || AN1, box = $('sim-plan'); if (!box) return;
-    $('sim-plan-n').textContent = items.length ? items.length + ' choix, rangés par effet sur la dette ' + AN1 : 'Aucun choix pour l\'instant';
+    var an = SM.an || AN0, box = $('sim-plan'); if (!box) return;
+    $('sim-plan-n').textContent = items.length ? (nbChoix() > 1 ? nbChoix() + ' choix' : 'Votre choix') + (adoptees().length ? ' (votes compris)' : '') + ', rangés par effet sur la dette ' + AN1 : 'Aucun choix pour l\'instant';
     if (!items.length) { box.innerHTML = '<p class="sim-l-m">Bougez un levier : il apparaît ici avec ce qu\'il change.</p>'; $('sim-plan-an').hidden = true; return; }
     $('sim-plan-an').hidden = false; $('sim-plan-an').innerHTML = [AN0, AN1].map(function (a) { return '<button type="button" data-a="' + a + '" aria-pressed="' + (a === an) + '">Chiffres de ' + a + '</button>'; }).join('');
     Array.prototype.forEach.call($('sim-plan-an').querySelectorAll('button'), function (b) { b.onclick = function () { SM.an = +b.dataset.a; planHTML(SM.items || plan()); }; });
@@ -4403,10 +4478,10 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     var somme = items.reduce(function (t, it) { return t + it.dd; }, 0);
     box.innerHTML = (lourd() ? '<p class="sim-l-e">' + lourd().trim() + '</p>' : '') + '<div class="sim-leg"><span><i style="background:var(--fr)"></i>fait baisser la dette ' + AN1 + '</span><span><i style="background:var(--c-rech)"></i>fait monter la dette ' + AN1 + '</span></div>' + items.map(function (it, i) {
       var c = it.dd < 0 ? 'var(--fr)' : 'var(--c-rech)', act = it.ok ? (Math.abs(it['a' + an]) < 0.05 ? 'moins de 0,1 Md€' : sg1(-it['a' + an], ' Md€') + ' de déficit') : 'non compté';
-      return '<div class="sim-plan-l"><div class="t"><b>' + esc(it.t) + '</b><span>' + (Math.abs(it.dd) < 0.05 ? 'moins de 0,1 pt' : sg1(it.dd, ' pt')) + '</span></div><div class="sim-bar" style="width:' + Math.max(1, 100 * Math.abs(it.dd) / mx).toFixed(1) + '%;background:' + c + '"></div>' +
-        '<div class="d">En ' + an + ' : sur le papier ' + sg1(-it['p' + an], ' Md€') + ' de déficit · effet sur l\'activité ' + act + (Math.abs(it['i' + an]) >= 0.05 ? ' · intérêts ' + sg1(-it['i' + an], ' Md€') : '') + ' · au total ' + sg1(-it['t' + an], ' Md€') + '</div>' +
+      return '<div class="sim-plan-l"><div class="t"><b>' + esc(it.t) + '</b><span>' + (Math.abs(it.dd) < 0.05 ? 'moins de 0,1 point' : sg1(it.dd, '\u00a0point' + (Math.abs(it.dd) >= 1.95 ? 's' : ''))) + '</span></div><div class="sim-bar" style="width:' + Math.max(1, 100 * Math.abs(it.dd) / mx).toFixed(1) + '%;background:' + c + '"></div>' +
+        '<div class="d">En ' + an + ' : avant l\'effet sur l\'activité ' + sg1(-it['p' + an], ' Md€') + ' de déficit · effet sur l\'activité ' + act + (Math.abs(it['i' + an]) >= 0.05 ? ' · intérêts ' + sg1(-it['i' + an], ' Md€') : '') + ' · au total ' + sg1(-it['t' + an], ' Md€') + '</div>' +
         (it.k ? '<div><button type="button" class="sim-raz" data-raz="' + esc(it.k) + '">↺ Remettre à zéro</button></div>' : it.u ? '<div><button type="button" class="sim-raz" data-razu="' + esc(it.u) + '">↺ Retirer</button></div>' : '') + '</div>';
-    }).join('') + '<p class="sim-l-m">Chaque ligne : le budget recalculé sans ce choix (dette ' + AN1 + ' et déficits). Ensemble : dette ' + AN1 + ' ' + f1(z.d) + ' → ' + f1(f.d) + ' % (' + sg1(f.d - z.d) + ' point' + (Math.abs(f.d - z.d) >= 1.95 ? 's' : '') + ') ; la somme des lignes (' + sg1(somme) + ') n\'est pas exactement ce total : les intérêts et le PIB de chaque choix dépendent des autres. Les montants « sur le papier » sont ceux du Bilan (« Vos mesures »).</p>';
+    }).join('') + '<p class="sim-l-m">Chaque ligne : le budget recalculé sans ce choix (dette ' + AN1 + ' et déficits). Ensemble : dette ' + AN1 + ' ' + f1(z.d) + ' → ' + f1(f.d) + ' % (' + sg1(f.d - z.d) + ' point' + (Math.abs(f.d - z.d) >= 1.95 ? 's' : '') + ') ; la somme des lignes (' + sg1(somme) + ') n\'est pas exactement ce total : les intérêts et le PIB de chaque choix dépendent des autres. Les montants avant l\'effet sur l\'activité sont ceux du Bilan (« Vos mesures »).</p>';
     brancherRaz(box);
   }
   function brancherRaz(el) {
@@ -4436,14 +4511,14 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     var A0 = R, P0 = copie(S.perso), V0 = copie(S.v), v0 = S.perso[k] || 0;
     SM.undo.push({ P: P0, V: V0, U: copie(S.unites), t: nomL(k) });
     S.perso = cand.P; S.v = cand.V; garder(); simHud(); mesCreer(); pile();
-    simApres(A0, P0, V0, { k: k, v0: v0, v1: v, rP: cand.rP, rV: cand.rV, titre: nomL(k) + ' ' + (v ? pcC(AS[k], v) : '(remis à zéro)'), keys: [k] });
+    simApres(A0, P0, V0, { k: k, v0: v0, v1: v, rP: cand.rP, rV: cand.rV, titre: nomL(k) + ' ' + (v ? pcC(AS[k], v) : '(remis à zéro)'), geste: gesteDe(k, v0, v), keys: [k] });
     return true;
   }
   function simApres(A0, P0, V0, ch) {
     var cap0 = capDe(A0, P0, V0), cap1 = capDe(R, S.perso, S.v);
     ch.A0 = A0; ch.A1 = R; ch.P0 = P0; ch.P1 = S.perso; ch.o = decomp(A0, P0, V0, R, S.perso, S.v);
-    var pq = pourquoi(ch); SM.last = { L: pq.L, D: pq.D, t: ch.titre }; SM.al = alertes(ch, A0, R, cap0, cap1, true); SM.imp = null;
-    SM.fete = !cap0.ok && cap1.ok && !cap1.aucun ? cap1 : (cap1.ok ? SM.fete : null);
+    var pq = pourquoi(ch); SM.last = { L: pq.L, D: pq.D, t: ch.titre, g: ch.geste || ch.titre, k: ch.k, v0: ch.v0, v1: ch.v1 }; SM.al = alertes(ch, A0, R, cap0, cap1, true); SM.imp = null;
+    SM.fete = !cap0.ok && cap1.ok && !cap1.aucun ? cap1 : (cap1.ok && SM.fete ? cap1 : null);
     SM.ghost = { de: series(A0), t0: performance.now() }; SM.drag = null; SM.apercu = null;
     ['def', 'dette', 'cr', 'ph'].forEach(function (c) { var e = $('sim-c-' + c); if (e && !moinsAnim()) { e.classList.remove('flash'); void e.offsetWidth; e.classList.add('flash'); } });
     simMaj();
@@ -4469,9 +4544,9 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     var A1 = simuler({ perso: cand.P, vote: cand.V }), s1 = series(A1);
     if (garderTrace) { SM.drag = { avant: series(R), k: k }; SM.apercu = null; simDessin(s1); }
     else { SM.apercu = s1; SM.drag = null; simDessin(); }
-    var ch = { k: k, v0: S.perso[k] || 0, v1: v, rP: cand.rP, rV: cand.rV, titre: nomL(k) + ' ' + (v ? pcC(AS[k], v) : '(remis à zéro)'), keys: [k], A0: R, A1: A1, P0: S.perso, P1: cand.P };
+    var ch = { k: k, v0: S.perso[k] || 0, v1: v, rP: cand.rP, rV: cand.rV, titre: nomL(k) + ' ' + (v ? pcC(AS[k], v) : '(remis à zéro)'), geste: gesteDe(k, S.perso[k] || 0, v), keys: [k], A0: R, A1: A1, P0: S.perso, P1: cand.P };
     ch.o = decomp(R, S.perso, S.v, A1, cand.P, cand.V);
-    var pq = pourquoi(ch); SM.vif = { L: pq.L, D: pq.D, al: alertes(ch, R, A1, capDe(R, S.perso, S.v), capDe(A1, cand.P, cand.V), false), t: ch.titre };
+    var pq = pourquoi(ch); SM.vif = { g: ch.geste, k: k, L: pq.L, D: pq.D, al: alertes(ch, R, A1, capDe(R, S.perso, S.v), capDe(A1, cand.P, cand.V), false), t: ch.titre };
     simPQ(); simAlertes(); simLigne(k, v);
   }
   function simFinApercu() { SM.apercu = null; SM.vif = null; SM.drag = null; SM.imp = null; simDessin(); simPQ(); simAlertes(); simLignes(); }
@@ -4502,31 +4577,39 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     fe.hidden = !F || !!SM.vif;
     if (F && !SM.vif) {
       var n = nbChoix(), sx = SUITE[S.obj];
-      fe.innerHTML = '<b>🏅 ' + (S.obj === 'defi' ? 'Défi du jour réussi' : 'Objectif atteint') + ' : ' + esc(F.nom || '') + '</b>, avec ' + n + ' choix' + (adoptees().length ? ' (votes compris)' : '') + '. ' + esc(F.reste && /^atteint/.test(F.reste) ? maj1(F.reste) + '.' : '') + ' Dette ' + AN1 + ' : ' + f1(R[R.length - 1].d) + ' % · croissance ' + AN0 + ' : ' + pcs(croiss(R, AN0)) + '.' + (F.attente ? ' Le défi compte dès votre premier vote (onglet Voter).' : '') +
+      fe.innerHTML = '<b>🏅 ' + (S.obj === 'defi' ? esc(F.nom || 'Défi du jour') + ' réussi : ' + (F.t || '') : 'Objectif atteint : ' + esc(F.nom || '')) + '</b>, avec ' + (n > 1 ? n + ' choix' : 'un choix') + (adoptees().length ? ' (votes compris)' : '') + '. ' + esc(F.reste && /^atteint/.test(F.reste) ? maj1(F.reste) + '.' : '') + ' Dette ' + AN1 + ' : ' + f1(R[R.length - 1].d) + ' % · croissance ' + AN0 + ' : ' + pcs(croiss(R, AN0)) + '.' + (F.attente ? ' Le défi compte dès votre premier vote (onglet Voter).' : '') +
         '<br><button type="button" id="sim-fete-p">Partager</button>' + (sx ? '<button type="button" class="sec" id="sim-fete-s">Viser ' + (sx === 'quatre' ? '4 % en ' + AN0 : nf(PAR.regle, 0) + ' % en ' + (J.echeance_ue ? J.echeance_ue.an : AN0)) + ' →</button>' : '') + '<button type="button" class="sec" id="sim-fete-x">Fermer</button>';
       $('sim-fete-x').onclick = function () { SM.fete = null; simAlertes(); };
       if ($('sim-fete-s')) $('sim-fete-s').onclick = function () { S.obj = sx; garder(); objectifs(); tout(); SM.fete = null; simMaj(); };
-      $('sim-fete-p').onclick = function () { var it = (SM.items || []).slice(0, 5); partagerCarte('sim-fete', { sur: 'MON BUDGET ' + AN0 + ' · CONCRET', titre: (S.obj === 'defi' ? 'Défi du jour réussi' : 'Objectif atteint') + ' : ' + (F.nom || ''), etat: 'Déficit ' + anObj() + ' : ' + f1(-ligneAn(R, anObj()).solde) + ' % · dette ' + AN1 + ' : ' + f1(R[R.length - 1].d) + ' % · croissance ' + AN0 + ' : ' + pcs(croiss(R, AN0)).replace(/ /g, ' '), lignes: it.map(function (x) { return x.t.replace(/ /g, ' ') + ' : dette ' + AN1 + ' ' + sg1(x.dd).replace(/ /g, ' ') + ' point'; }), note: 'Calcul de Concret avec les montants officiels et le modèle de la direction du Trésor et de l\'Insee ; ce qui n\'est pas compté est écrit dans le jeu.', texte: 'Mon budget ' + AN0 + ' sur Concret. À votre tour ?' }); };
+      $('sim-fete-p').onclick = function () { var it = (SM.items || []).slice(0, 5); partagerCarte('sim-fete', { sur: 'MON BUDGET ' + AN0 + ' · CONCRET', titre: S.obj === 'defi' ? (F.nom || 'Défi du jour') + ' réussi : ' + (F.x && F.x.t ? F.x.t : '') : 'Objectif atteint : ' + (F.nom || ''), etat: 'Déficit ' + anObj() + ' : ' + f1(-ligneAn(R, anObj()).solde) + ' % · dette ' + AN1 + ' : ' + f1(R[R.length - 1].d) + ' % · croissance ' + AN0 + ' : ' + pcs(croiss(R, AN0)).replace(/ /g, ' '), lignes: it.map(function (x) { return x.t.replace(/ /g, ' ') + ' : dette ' + AN1 + ' ' + sg1(x.dd).replace(/ /g, ' ') + ' point' + (Math.abs(x.dd) >= 1.95 ? 's' : ''); }), note: 'Calcul de Concret avec les montants officiels et le modèle de la direction du Trésor et de l\'Insee ; ce qui n\'est pas compté est écrit dans le jeu.', texte: 'Mon budget ' + AN0 + ' sur Concret. À votre tour ?' }); };
     }
   }
   // La place de l'explication : dans la carte du levier touché (sous son curseur), sinon en tête des leviers.
-  function placerEx() { var ex = $('sim-ex'), row = SM.ancre; if (!ex) return; if (row && document.body.contains(row) && row.querySelector('.sim-l-e')) { if (ex.parentNode !== row) row.insertBefore(ex, row.querySelector('.sim-l-e')); } else if (ex.parentNode !== $('sim-main')) $('sim-main').insertBefore(ex, $('sim-main').firstChild); }
+  function placerEx() { var ex = $('sim-ex'), row = SM.ancre, ici = row && document.body.contains(row) && row.querySelector('.sim-l-e'); if (!ex) return; if (ici ? ex.parentNode === row : ex.parentNode === $('sim-main')) return; var y0 = row && document.body.contains(row) ? row.getBoundingClientRect().top : null; if (ici) row.insertBefore(ex, row.querySelector('.sim-l-e')); else $('sim-main').insertBefore(ex, $('sim-main').firstChild); if (y0 != null) { var dy = row.getBoundingClientRect().top - y0; if (Math.abs(dy) > 0.5) window.scrollBy(0, dy); } }
   function simPQ() {
     placerEx();
     var el = $('sim-pq-c'), src = SM.vif || SM.last, ens = ensemble(), al = (SM.vif ? SM.vif.al : SM.al) || [];
     var L = src ? src.L : ['Bougez un levier : la courbe pleine suit le geste, le pointillé (sans vos mesures) reste.'];
     var D = (src && src.D ? src.D : []).concat(al.slice(2), ens ? ['<span class="sim-pq-x">' + ens + '</span>'] : []);
-    el.innerHTML = L.map(function (t) { return '<p>' + t + '</p>'; }).join('') + (SM.ouvert && D.length ? '<div class="sim-pq-d">' + D.map(function (t) { return '<p>' + t + '</p>'; }).join('') + '</div>' : '');
+    el.innerHTML = L.map(function (t) { var m = /^(Direct|Activité|Au total) : ([\s\S]*)$/.exec(t); return m ? '<p class="sim-pq-r"><span class="sim-pq-k">' + m[1] + '</span><span>' + m[2] + '</span></p>' : '<p>' + t + '</p>'; }).join('') + (SM.ouvert && D.length ? '<div class="sim-pq-d">' + D.map(function (t) { return '<p>' + t + '</p>'; }).join('') + '</div>' : '');
+    var gEl = $('sim-pq-g'), it = src && src.k && !SM.vif ? (SM.items || []).filter(function (i) { return i.k === src.k; })[0] : null, tot = it && src.v0 && S.perso[src.k] === src.v1;
+    gEl.hidden = !(src && src.g); gEl.innerHTML = src && src.g ? 'Ce geste : <b>' + esc(src.g) + '</b>' + (src.k && !src.v0 && src.v1 && !SM.vif ? ' <span>(votre réglage en tout)</span>' : '') : '';
+    if (tot) (el.querySelector('.sim-pq-d') || el).insertAdjacentHTML(el.querySelector('.sim-pq-d') ? 'beforebegin' : 'beforeend', '<p class="sim-pq-r sim-pq-tot"><span class="sim-pq-k">En tout</span><span>Votre réglage « ' + esc(nomL(src.k) + ' ' + pcC(AS[src.k], src.v1)) + ' » : déficit ' + AN0 + ' <b>' + (Math.abs(it['t' + AN0]) < 0.05 ? 'presque rien' : (it['t' + AN0] > 0 ? '−' : '+') + mds(Math.abs(it['t' + AN0]))) + '</b>, dette ' + AN1 + ' <b>' + (Math.abs(it.dd) < 0.05 ? 'moins de 0,1 point' : sg1(it.dd, '\u00a0point' + (Math.abs(it.dd) >= 1.95 ? 's' : ''))) + '</b></span></p>');
     $('sim-pq-o').hidden = !D.length; $('sim-pq-o').textContent = SM.ouvert ? 'Fermer' : 'Le détail';
     Array.prototype.forEach.call(el.querySelectorAll('[data-nc]'), function (b) { b.onclick = function () { var x = AS[b.dataset.nc], n = J.non_comptes[x.nc]; b.outerHTML = '<span class="sim-l-m">' + esc(n.t) + ' <a href="' + esc(n.src.url) + '">Source</a></span>'; }; });
   }
   // ---------- Les leviers : une ligne, un curseur, − et + ----------
-  var vCourt = function (x, v) { return !v ? '0' : x.u && x.u.choix ? 'choisi' : pcC(x, v); };
+  // Le pas des boutons − et + : 1 % (ou le pas du levier), toujours le même.
+  var pasDe = function (x) { return x.u ? x.u.pas : 1; };
+  var pasMoins = function (x) { var p = plage(x); return p.min < 0 ? (x.u ? pcC(x, -pasDe(x)) : '−1 %') : '−' + pcC(x, pasDe(x)).replace(/^\+/, ''); };
+  var pasPlus = function (x) { var p = plage(x); return p.min < 0 ? (x.u ? pcC(x, pasDe(x)) : '+1 %') : '+' + pcC(x, pasDe(x)).replace(/^\+/, ''); };
+  function gesteDe(k, v0, v1) { var x = AS[k]; return nomL(k) + ' : ' + (v0 ? pcC(x, v0) : 'inchangé') + ' → ' + (v1 ? pcC(x, v1) : 'inchangé'); }
+  var vCourt = function (x, v) { return !v ? 'inchangé' : x.u && x.u.choix ? 'choisi' : pcC(x, v); };
   function simLigneHTML(k) {
     var x = AS[k], u = x.u, v = S.perso[k] || 0, p = plage(x), ch = u && u.choix;
     var lab = esc(nomL(k)), nc = !compteAct(x) ? ' · <span>effet sur l\'activité non compté</span>' : '';
     var ctrl = ch ? '<div class="sim-l-c" role="group" aria-label="' + lab + '">' + [[0, 'Rien ne change']].concat(u.choix.map(function (o) { return [o.v, o.l]; })).map(function (o) { return '<button type="button" data-v="' + o[0] + '" aria-pressed="' + (o[0] === v) + '">' + esc(o[1]) + '</button>'; }).join('') + '</div>'
-      : '<div class="sim-l-r"><button type="button" data-pas="-1" aria-label="' + lab + ' : un cran de moins">−</button><input type="range" min="' + versPos(x, p.min) + '" max="' + versPos(x, p.max) + '" step="' + (p.quad ? 0.5 : p.step) + '" value="' + versPos(x, v) + '" aria-label="' + lab + '" aria-valuetext="' + esc(v ? pcT(x, v) : 'rien ne change') + '"><button type="button" data-pas="1" aria-label="' + lab + ' : un cran de plus">+</button></div><div class="sim-l-b"><span>' + esc(pcC(x, p.min)) + '</span><span>' + esc(pcC(x, p.max)) + '</span></div>';
+      : '<div class="sim-l-r"><button type="button" data-pas="-1" aria-label="' + lab + ' : ' + esc(pcC(x, -pasDe(x)).replace(/^\+/, '−')) + '">−</button><input type="range" min="' + versPos(x, p.min) + '" max="' + versPos(x, p.max) + '" step="' + (p.quad ? 0.5 : p.step) + '" value="' + versPos(x, v) + '" aria-label="' + lab + '" aria-valuetext="' + esc(v ? pcT(x, v) : 'rien ne change') + '"><button type="button" data-pas="1" aria-label="' + lab + ' : ' + esc(pasPlus(x)) + '">+</button></div><div class="sim-l-b"><span class="sim-l-pas">' + esc(pasMoins(x)) + '</span><span class="sim-l-bo">' + esc(pcC(x, p.min)) + ' à ' + esc(pcC(x, p.max)) + '</span><span class="sim-l-pas">' + esc(pasPlus(x)) + '</span></div>';
     var fi = famDe(k), coul = fi >= 0 ? SIM_COUL[fi] : '#55657a', fnom = fi >= 0 ? TUILES[fi][0] : 'Autre ligne du budget';
     return '<div class="sim-l" data-k="' + esc(k) + '" style="--sc:' + coul + '"><span class="sim-pas">' + esc(fnom) + '</span><div class="sim-l-h"><span class="sim-l-n">' + lab + '</span><output class="sim-l-v">' + esc(vCourt(x, v)) + '</output><button type="button" class="sim-raz" data-raz="' + esc(k) + '" aria-label="Remettre ' + lab + ' à zéro"' + (v ? '' : ' hidden') + '>↺</button></div>' +
       '<p class="sim-l-p">' + esc(poidsTxt(x)) + (montantTxt(x) ? ' · ' + esc(montantTxt(x)) : '') + ' · <a href="' + esc(x.src.url) + '" target="_blank" rel="noopener">Source</a> · <button type="button" data-note="1" aria-expanded="false">ⓘ</button>' + nc + '</p><p class="sim-l-s" hidden>' + esc(x.note || '') + (x.src2 ? ' <a href="' + esc(x.src2.url) + '">Règle en vigueur</a>.' : '') + '</p>' + ctrl +
@@ -4540,12 +4623,12 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
       var e = row.querySelector('.sim-l-e'), ex = row.querySelector('.sim-l-x');
       if (!v) { e.innerHTML = ''; ex.innerHTML = ''; return; }
       var sQ = x.k === 'allegements' ? 'recette' : x.groupe, P = candidat(k, v).P, a = effetPerso(x, v, AN0, P), plein = effetPerso(x, v, null, P), it = (SM.items || []).filter(function (i) { return i.k === k; })[0];
-      e.innerHTML = '<b>' + esc(x.mix ? 'TVA ' + pcT(x, v) + ', autant de cotisations en moins' : x.k === 'capitalisation' ? mds(Math.abs(a)) + ' de cotisations en moins en ' + AN0 : quoi(sQ, a).replace(/milliards? d'euros/, 'Md€').replace(/millions? d'euros/, 'M€') + ' en ' + AN0) + '</b>' + (Math.abs(plein - a) >= 0.05 ? ' · ' + mds(Math.abs(plein)) + ' par an une fois en place' + (etale(x, v, P) ? ' (étalé sur cinq ans au-delà de 1 point de PIB)' : '') : '') + (it && S.perso[k] === v ? ' · dette ' + AN1 + ' : ' + (Math.abs(it.dd) < 0.05 ? 'moins de 0,1 point' : sg1(it.dd, ' point' + (Math.abs(it.dd) >= 1.95 ? 's' : ''))) : '');
+      e.innerHTML = '<b>' + esc(x.mix ? 'TVA ' + pcT(x, v) + ', autant de cotisations en moins' : x.k === 'capitalisation' ? mds(Math.abs(a)) + ' de cotisations en moins en ' + AN0 : quoi(sQ, a).replace(/milliards? d'euros/, 'Md€').replace(/millions? d'euros/, 'M€') + ' en ' + AN0) + '</b>' + (function (t2) { return t2.length ? '<span class="sim-l-e2">' + t2.join(' · ') + '</span>' : ''; })([Math.abs(plein - a) >= 0.05 ? mds(Math.abs(plein)) + ' par an une fois en place' + (etale(x, v, P) ? ' (étalé sur cinq ans au-delà de 1 point de PIB)' : '') : '', it && S.perso[k] === v ? 'dette ' + AN1 + ' : ' + (Math.abs(it.dd) < 0.05 ? 'moins de 0,1 point' : sg1(it.dd, ' point' + (Math.abs(it.dd) >= 1.95 ? 's' : ''))) : ''].filter(Boolean));
       var o = x.u ? { L: [] } : exemplesLigne(k, v), L = (o.L || []).filter(function (t) { return /<b>/.test(t); }), pp = x.u ? '' : ppLigne(x, v);
       ex.innerHTML = L.length || pp ? 'Concrètement : ' + (L[0] || pp) : '';
     });
   }
-  function simLignes() { Array.prototype.forEach.call(document.querySelectorAll('#sim-main .sim-l'), function (row) { var k = row.dataset.k, x = AS[k], v = S.perso[k] || 0, r = row.querySelector('input[type=range]'); if (r && document.activeElement !== r) { r.value = versPos(x, v); r.setAttribute('aria-valuetext', v ? pcT(x, v) : 'rien ne change'); } Array.prototype.forEach.call(row.querySelectorAll('.sim-l-c button'), function (b) { b.setAttribute('aria-pressed', +b.dataset.v === v); }); simLigne(k); }); }
+  function simLignes() { Array.prototype.forEach.call(document.querySelectorAll('#sim-main .sim-l'), function (row) { var k = row.dataset.k, x = AS[k], v = S.perso[k] || 0, r = row.querySelector('input[type=range]'); if (r && document.activeElement !== r) { r.value = versPos(x, v); r.setAttribute('aria-valuetext', v ? pcT(x, v) : 'rien ne change'); } Array.prototype.forEach.call(row.querySelectorAll('.sim-l-c button'), function (b) { b.setAttribute('aria-pressed', +b.dataset.v === v); }); var pg = plage(x); Array.prototype.forEach.call(row.querySelectorAll('[data-pas]'), function (b) { b.disabled = +b.dataset.pas < 0 ? v <= pg.min + 1e-9 : v >= pg.max - 1e-9; }); simLigne(k); }); }
   function brancherLignes(box) {
     Array.prototype.forEach.call(box.querySelectorAll('.sim-l'), function (row) {
       if (row.dataset.b) return; row.dataset.b = 1; var k = row.dataset.k, x = AS[k], r = row.querySelector('input[type=range]'), p = plage(x);
@@ -4555,34 +4638,30 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
         r.addEventListener('input', function () { SM.ancre = row; var v = versVal(x, +r.value); row.querySelector('.sim-l-v').textContent = vCourt(x, v); limiter(function () { simApercu(k, v, true); }); });
         r.addEventListener('change', function () { annulerLimite(); var v = versVal(x, +r.value); SM.vif = null; SM.drag = null; if (!simAppliquer(k, v)) simFinApercu(); });
         Array.prototype.forEach.call(row.querySelectorAll('[data-pas]'), function (b) {
-          var cible = function () { var v = S.perso[k] || 0, d = +b.dataset.pas, L = p.cr.filter(function (c) { return d > 0 ? c > v + 1e-9 : c < v - 1e-9; }); return L.length ? (d > 0 ? L[0] : L[L.length - 1]) : v; };
-          b.onclick = function () { var v = cible(); SM.apercu = null; SM.vif = null; SM.ancre = row; simAppliquer(k, v); };
-          b.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') simApercu(k, cible(), false); });
-          b.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') simFinApercu(); });
+          var cible = function () { var v = S.perso[k] || 0, d = +b.dataset.pas, st = pasDe(x), n = Math.round((v + d * st) / st) * st; n = Math.round(n * 100) / 100; return Math.max(p.min, Math.min(p.max, n)); };
+          b.onclick = function () { var v = cible(); SM.apercu = null; SM.vif = null; SM.ancre = row; if (v === (S.perso[k] || 0)) { SM.imp = { t: '<b>' + esc(nomL(k)) + ' : ' + (+b.dataset.pas > 0 ? 'déjà au plus haut' : 'déjà au plus bas') + ' que permet le jeu (' + esc(pcC(x, v)) + ').</b>' }; simAlertes(); return; } simAppliquer(k, v); };
         });
       }
       Array.prototype.forEach.call(row.querySelectorAll('.sim-l-c button'), function (b) {
         b.onclick = function () { SM.apercu = null; SM.vif = null; SM.ancre = row; simAppliquer(k, +b.dataset.v); };
-        b.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') simApercu(k, +b.dataset.v, false); });
-        b.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') simFinApercu(); });
       });
     });
   }
   function simMaj() {
     if (!SIMU || !$('sim-main') || !R) return;
     SM.items = plan(); simCap(); simDessin(); simPQ(); simAlertes(); planHTML(SM.items); simLignes();
-    var pl = $('sim-plie').getAttribute('aria-pressed') === 'true'; $('sim-g').hidden = pl; $('sim-1').hidden = !pl;
+    var pl = getComputedStyle($('sim-g')).display === 'none'; $('sim-plie').setAttribute('aria-expanded', !pl); $('sim-plie').setAttribute('aria-label', pl ? 'Voir les quatre courbes' : 'Replier le tableau de bord en une ligne');
     $('sim-hyp-t').innerHTML = 'Croissance : ' + (S.cr ? 'prévision du FMI ' + sg(S.cr, 1) + ' point par an' : 'prévision du FMI') + ' · taux à 10 ans : ' + (S.taux ? sg(S.taux, 2) + ' point' : 'celui d\'aujourd\'hui') + ' · effet sur l\'activité : compté quand le modèle le publie.';
   }
   function simInit() {
     document.body.classList.add('q-simu');
     var tb = document.createElement('div'); tb.className = 'sim-tb'; tb.id = 'sim-tb'; tb.setAttribute('role', 'region'); tb.setAttribute('aria-label', 'Tableau de bord : déficit, dette, croissance, PIB par habitant');
-    tb.innerHTML = '<div class="sim-cap"><button type="button" class="sim-obj" id="sim-obj" aria-expanded="false" aria-controls="sim-objs">Objectif</button><button type="button" class="sim-ic" id="sim-undo" disabled>↶</button><button type="button" class="sim-ic" id="sim-plie" aria-pressed="false" aria-label="Replier le tableau de bord en une ligne">▴</button></div>' +
+    tb.innerHTML = '<div class="sim-cap"><button type="button" class="sim-obj" id="sim-obj" aria-expanded="false" aria-controls="sim-objs">Objectif</button><button type="button" class="sim-ic" id="sim-undo" disabled>↶<span class="sim-ic-t"> Annuler</span></button><button type="button" class="sim-ic sim-pl" id="sim-plie"><span class="sim-pl-o">Replier ▴</span><span class="sim-pl-f">Voir les courbes ▾</span></button></div>' +
       '<div class="sim-objs" id="sim-objs" hidden></div>' +
-      '<div class="sim-g" id="sim-g">' + ['def', 'dette', 'cr', 'ph'].map(function (c) { return '<button type="button" class="sim-c" id="sim-c-' + c + '"><span class="sim-c-t"></span><span class="sim-c-r"><span class="sim-c-v"></span><span class="sim-c-s"></span></span><span class="sim-c-g"></span></button>'; }).join('') + '</div>' +
-      '<p class="sim-1" id="sim-1" hidden></p><div class="sim-fete" id="sim-fete" hidden></div>' +
+      '<div class="sim-g" id="sim-g">' + ['def', 'dette', 'cr', 'ph'].map(function (c) { return '<button type="button" class="sim-c" id="sim-c-' + c + '"><span class="sim-c-t"></span><span class="sim-c-r"><span class="sim-c-v"></span><span class="sim-c-s"></span><span class="sim-c-m" hidden></span></span><span class="sim-c-g"></span></button>'; }).join('') + '</div>' +
+      '<p class="sim-1" id="sim-1"></p>' +
       '';
-    var ex = document.createElement('div'); ex.className = 'sim-ex'; ex.id = 'sim-ex'; ex.innerHTML = '<div class="sim-al" id="sim-al" role="status" hidden></div><div class="sim-pq" id="sim-pq"><button type="button" class="sim-pq-b" id="sim-pq-o" aria-expanded="false" aria-controls="sim-pq-c">Le détail</button><p class="sim-pq-h">Pourquoi ça bouge</p><div class="sim-pq-c" id="sim-pq-c" aria-live="polite"></div></div>'; $('p-creer').insertBefore(ex, $('p-creer').firstChild);
+    var ex = document.createElement('div'); ex.className = 'sim-ex'; ex.id = 'sim-ex'; ex.innerHTML = '<div class="sim-fete" id="sim-fete" hidden></div><div class="sim-al" id="sim-al" role="status" hidden></div><div class="sim-pq" id="sim-pq"><div class="sim-pq-top"><p class="sim-pq-h">Pourquoi ça bouge</p><button type="button" class="sim-pq-b" id="sim-pq-o" aria-expanded="false" aria-controls="sim-pq-c">Le détail</button></div><p class="sim-pq-g" id="sim-pq-g" hidden></p><div class="sim-pq-c" id="sim-pq-c" aria-live="polite"></div></div>'; $('p-creer').insertBefore(ex, $('p-creer').firstChild);
     $('q-collant').appendChild(tb);
     var z = document.createElement('div'); z.className = 'sim-zoom'; z.id = 'sim-zoom'; z.hidden = true; z.setAttribute('role', 'dialog'); z.setAttribute('aria-modal', 'true'); z.setAttribute('aria-labelledby', 'sim-zoom-h'); z.innerHTML = '<div><button type="button" class="sim-btn sim-zoom-x" id="sim-zoom-x">Fermer ✕</button><div class="sim-zoom-c" id="sim-zoom-h"></div></div>'; document.body.appendChild(z);
     z.onclick = function (e) { if (e.target === z) { SM.zoom = null; z.hidden = true; } };
@@ -4590,14 +4669,16 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     ['def', 'dette', 'cr', 'ph'].forEach(function (c) { $('sim-c-' + c).onclick = function () { simZoom(c); }; });
     $('sim-obj').onclick = function () { var o = $('sim-objs').hidden; if (o) simObjs(); $('sim-objs').hidden = !o; this.setAttribute('aria-expanded', o); };
     $('sim-undo').onclick = simAnnuler;
-    $('sim-plie').onclick = function () { var p = this.getAttribute('aria-pressed') !== 'true'; this.setAttribute('aria-pressed', p); this.textContent = p ? '▾' : '▴'; this.setAttribute('aria-label', p ? 'Déplier le tableau de bord' : 'Replier le tableau de bord en une ligne'); S.simuPlie = p ? 1 : 0; garder(); simMaj(); };
-    if (S.simuPlie) { $('sim-plie').setAttribute('aria-pressed', 'true'); $('sim-plie').textContent = '▾'; }
+    var vue = function (v) { tb.classList.remove('v-auto', 'v-plie', 'v-courbes'); tb.classList.add('v-' + v); };
+    vue(S.simuVue === 'plie' || S.simuPlie || (!S.simuVue && TS() >= 1.2) ? 'plie' : S.simuVue === 'courbes' ? 'courbes' : 'auto');
+    $('sim-plie').onclick = function () { var replie = getComputedStyle($('sim-g')).display === 'none'; S.simuVue = replie ? 'courbes' : 'plie'; delete S.simuPlie; vue(S.simuVue); garder(); simMaj(); };
+
     $('sim-pq-o').onclick = function () { SM.ouvert = !SM.ouvert; $('sim-pq').classList.toggle('ouvert', SM.ouvert); document.body.classList.toggle('sim-ouvert', SM.ouvert); this.setAttribute('aria-expanded', SM.ouvert); simPQ(); };
     // La page : les leviers principaux, tous les leviers par famille, la recherche, votre plan.
     var fams = SIM_FAM.map(function (f) { var L = TUILES[f[1]][1].map(function (t) { return t[0]; }).filter(function (k) { return AS[k] && SIM_PRINC.indexOf(k) < 0; }).sort(function (a, b) { return poids(AS[b]) - poids(AS[a]); }); return [f[0], L]; });
     var pr = SIM_PRINC.filter(function (k) { return AS[k]; }).sort(function (a, b) { return poids(AS[b]) - poids(AS[a]); });
     var m = document.createElement('div'); m.id = 'sim-main';
-    m.innerHTML = '<section class="card sim-sec" aria-labelledby="sim-pr-t"><h2 id="sim-pr-t"><span class="eyebrow">Prototype · simulateur</span>Les leviers principaux</h2><p class="sim-intro">Glissez un curseur ou touchez − et + : les quatre courbes du haut bougent pendant le geste. Les leviers sont rangés par poids : ce que vaut un cran, en milliards d\'euros (Md€) par an. ↶ annule, ↺ remet un levier à zéro.</p><div id="sim-pr" class="sim-ls">' + pr.map(simLigneHTML).join('') + '</div></section>' +
+    m.innerHTML = '<section class="card sim-sec" aria-labelledby="sim-pr-t"><h2 id="sim-pr-t"><span class="eyebrow">Les leviers principaux</span>Prototype · simulateur</h2><ul class="sim-intro"><li>Glissez un curseur ou touchez − et + : les quatre courbes du haut bougent pendant le geste.</li><li>Les leviers sont rangés par poids : ce que vaut un cran, en milliards d\'euros (Md€) par an.</li><li>↶ annule, ↺ remet un levier à zéro.</li></ul><div id="sim-pr" class="sim-ls">' + pr.map(simLigneHTML).join('') + '</div></section>' +
       '<section class="card sim-sec" aria-labelledby="sim-tl-t"><h2 id="sim-tl-t">Tous les leviers</h2><input type="search" class="sim-cherche" id="sim-q" placeholder="Chercher une ligne : retraites, RSA, police…" aria-label="Chercher une ligne du budget"><div id="sim-res" class="sim-ls"></div>' +
       fams.map(function (f, i) { var c = SIM_COUL[SIM_FAM[i][1]]; return '<details class="sim-fam" style="--sc:' + c + '"><summary><span class="sim-pas">' + esc(f[0]) + '</span><small>' + f[1].length + ' leviers, rangés par poids</small></summary><div class="sim-ls">' + f[1].map(simLigneHTML).join('') + '</div></details>'; }).join('') +
       '<details class="sim-fam sim-hyp" style="--sc:#55657a"><summary><span class="sim-pas">Les hypothèses</span><small>croissance, taux</small></summary><p id="sim-hyp-t"></p><div class="sim-l-c" id="sim-hyp-b"><button type="button" data-cr="-0.5">Croissance : 0,5 point de moins par an</button><button type="button" data-cr="0">Prévision du FMI</button><button type="button" data-cr="0.5">0,5 point de plus</button><button type="button" data-tx="1">Taux à 10 ans : un point de plus</button><button type="button" data-tx="0">Taux d\'aujourd\'hui</button></div><p class="sim-l-m">Réglage complet et sources : Bilan, « Changer les hypothèses ». Le calcul additionne des effets chiffrés un par un.</p></details>' +
@@ -4608,11 +4689,20 @@ body.q-simu:not(.sim-ouvert) .sim-al p + p { display: none; }
     Array.prototype.forEach.call(m.querySelectorAll('#sim-hyp-b button'), function (b) { b.onclick = function () { var A0 = R, P0 = copie(S.perso), V0 = copie(S.v); if (b.dataset.cr != null) S.cr = +b.dataset.cr; else S.taux = +b.dataset.tx; garder(); simHud(); simApres(A0, P0, V0, { titre: 'Hypothèse : ' + b.textContent, keys: [] }); }; });
     $('sim-ancien').onclick = function () { Array.prototype.forEach.call($('p-creer').querySelectorAll(':scope > section.card'), function (x) { x.classList.toggle('sim-ancien-ouvert'); }); var o = $('p-creer').querySelector(':scope > section.card.sim-ancien-ouvert'); this.textContent = o ? 'cacher la grille d\'origine' : 'la grille d\'origine'; if (o) o.scrollIntoView({ block: 'start' }); };
     var norm = function (t) { return String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
+    $('sim-q').onfocus = function () { var f = this; document.body.classList.add('sim-cherche'); setTimeout(function () { var c = $('q-collant').getBoundingClientRect().bottom; window.scrollBy(0, f.getBoundingClientRect().top - c - 8); }, 60); };
+    $('sim-q').onblur = function () { setTimeout(function () { document.body.classList.remove('sim-cherche'); }, 150); };
     $('sim-q').oninput = function () {
-      var q = norm(this.value.trim()), q1 = q.length > 3 ? q.replace(/[sx]$/, '') : q, box = $('sim-res');
-      var L = q.length < 2 ? [] : J.assiettes.filter(function (x) { return norm(x.l + ' ' + nomL(x.k)).indexOf(q1) >= 0; }); if (q.length >= 2 && !L.length) L = J.assiettes.filter(function (x) { return norm(x.note || '').indexOf(q1) >= 0; });
+      var q = norm(this.value.trim()), box = $('sim-res'), sing = function (w) { return w.length > 3 ? w.replace(/[sx]$/, '') : w; };
+      var mots = q.split(/[^a-z0-9]+/).filter(function (w) { return w.length >= 2 && ['de', 'des', 'du', 'la', 'le', 'les', 'et', 'en', 'un', 'une', 'aux', 'au', 'pour', 'sur'].indexOf(w) < 0; }).map(sing);
+      // Un mot trouve les lignes dont un mot commence par lui (un sigle de 4 lettres au plus : le mot entier) ; quelques mots du quotidien mènent aux bonnes lignes.
+      var SYN = { hopital: ['ondam'], medicament: ['ondam', 'franchises'], mutuelle: ['ondam', 'c2s', 'tm-dm'], malade: ['ondam', 'ij-maladie', 'franchises'], soin: ['ondam', 'franchises', 'tm-dm'], sante: ['ondam', 'franchises', 'tm-dm', 'c2s'], medecin: ['ondam', 'franchises'], arret: ['ij-maladie', 'fp-carence', 'ij-atmp'], fonctionnaire: ['remunerations', 'fp-non-remplacement', 'fp-categorielles', 'fp-avancements', 'fp-carence', 'collectivites-effectifs'], agent: ['remunerations', 'fp-non-remplacement', 'fp-categorielles', 'fp-avancements', 'fp-carence', 'collectivites-effectifs'], economie: ['tout-depense', 'retraites', 'ondam', 'remunerations', 'operateurs', 'fp-non-remplacement'], retraite: ['retraites', 'capitalisation', 'aspa'], pension: ['retraites', 'capitalisation', 'aspa'] };
+      var SEULS = ['economie'], ok = function (x, w) { var syn = SYN[w] || (w.length > 4 ? SYN[w.slice(0, -1)] : null); if (syn && syn.indexOf(x.k) >= 0) return true; if (SEULS.indexOf(w) >= 0) return false; var ws = norm(x.l + ' ' + nomL(x.k)).split(/[^a-z0-9]+/); return ws.some(function (m) { return w.length <= 4 && /^[a-z]+$/.test(w) && w.length <= 3 ? m === w : m.indexOf(w) === 0 || sing(m) === w; }); };
+      var L = !mots.length ? [] : J.assiettes.filter(function (x) { return mots.every(function (w) { return ok(x, w); }); });
+      if (mots.length > 1 && !L.length) L = J.assiettes.filter(function (x) { return mots.some(function (w) { return ok(x, w); }); });
+      if (mots.length && !L.length) L = J.assiettes.filter(function (x) { var ws = norm(x.note || '').split(/[^a-z0-9]+/); return mots.every(function (w) { return ws.some(function (m) { return m.indexOf(w) === 0; }); }); });
       L = L.sort(function (a, b) { return poids(b) - poids(a); }).slice(0, 8);
-      box.innerHTML = q.length < 2 ? '' : L.length ? L.map(function (x) { return simLigneHTML(x.k); }).join('') : '<p class="sim-l-m">Aucune ligne du budget de l\'État ou de la Sécurité sociale ne porte ce nom : certaines dépenses (propreté des rues, cantines, transports urbains) sont payées par les communes, les départements ou les régions, qui ont leur propre budget ; elles ne sont pas dans ce jeu.</p>';
+      var local = /proprete|cantine|transport|bus|tram|voirie|route|dechet|poubelle|piscine|bibliotheque|creche|college|lycee|ecole/.test(q);
+      box.innerHTML = q.length < 2 ? '' : L.length ? L.map(function (x) { return simLigneHTML(x.k); }).join('') : '<p class="sim-l-m">' + (local ? 'Aucune ligne de ce simulateur ne porte ce nom : certaines dépenses (propreté des rues, cantines, transports urbains) sont payées par les communes, les départements ou les régions, qui ont leur propre budget ; elles ne sont pas dans ce jeu.' : 'Aucun levier de ce simulateur ne porte ce nom. Les 166 lignes du budget sont dans la grille d\'origine (bouton plus bas).') + '</p>';
       brancherLignes(box); simLignes();
     };
     simMaj();
