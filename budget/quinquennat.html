@@ -77,6 +77,7 @@
 .q-hi-b small { grid-column: 1 / -1; font-size: 13px; font-weight: 700; color: var(--fg); margin-top: 6px; }
 .q-rhab { margin: -6px 0 0; font-size: 14px; color: var(--muted); }
 .q-nc { display: inline; } .q-nc summary { display: inline; padding: 0; margin: 0; font-weight: 600; color: var(--fr); cursor: pointer; } .q-nc[open] { display: block; margin-top: 4px; }
+.q-asc { display: inline-block; font-size: 12.5px; font-weight: 700; color: var(--fr); background: color-mix(in srgb, var(--fr) 12%, var(--panel)); border-radius: 999px; padding: 0 8px; margin-right: 4px; line-height: 1.6; vertical-align: 1px; }
 .q-signe { display: grid; gap: 4px; margin: 0; font-size: 14px; } .q-signe input { font: inherit; font-size: 16px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--fg); min-height: 44px; max-width: 260px; }
 #q-amis-c, #q-amis { min-width: 0; max-width: 100%; } #q-amis > div, #q-amis details > div { max-width: 100%; overflow-x: auto; }
 .q-amis { width: 100%; border-collapse: collapse; font-size: 14px; } .q-amis th, .q-amis td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; } .q-amis th:first-child, .q-amis td:first-child { text-align: left; } .q-amis tr.moi td { font-weight: 700; color: var(--fr); }
@@ -1629,11 +1630,15 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   // Au-dessus de la question : ce que l'on vote, sur un fond à part. Les mesures des deux projets de budget 2027 sont celles
   // que le Parlement examine : on vote comme un député ; les autres sont des pistes chiffrées, hors des projets du Gouvernement.
   function enonce(origines, q, avant) {
-    var t = origines.some(function (o) { return o === 'plf' || o === 'plfss'; }) ? 'Comme un député : une mesure du budget 2027'
-      : origines.indexOf('debat') >= 0 ? 'Comme un député : une mesure débattue, hors du budget du Gouvernement'
+    var reel = origines.some(function (o) { return o === 'plf' || o === 'plfss' || o === 'debat'; });
+    var t = origines.some(function (o) { return o === 'plf' || o === 'plfss'; }) ? 'Votez comme un député : une mesure du budget 2027'
+      : origines.indexOf('debat') >= 0 ? 'Votez comme un député : une mesure débattue, hors du budget du Gouvernement'
       : 'À vous de voter : une piste chiffrée, hors du budget du Gouvernement';
     var dejaVu = nbDecisions() >= 1 && ENONCE_D && ENONCE_D[0] === t && ENONCE_D[1] !== q + (avant || '').length; ENONCE_D = [t, q + (avant || '').length];
-    return '<div class="q-enonce">' + (dejaVu ? '' : '<span class="q-ass">' + t + '</span>') + (avant || '') + '<p class="q-question">' + q + '</p></div>';
+    // Après la première carte : une étiquette courte, sur la ligne du texte (pas de ligne en plus au-dessus de la barre de vote).
+    var et = '<span class="q-asc">' + (reel ? '🏛️ Vote de l\'Assemblée' : 'Piste chiffrée') + '</span> ';
+    if (dejaVu && avant) avant = avant.replace(/(<p class="q-prop-t[^"]*">)/, '$1' + et);
+    return '<div class="q-enonce">' + (dejaVu ? '' : '<span class="q-ass">' + t + '</span>') + (avant || '') + '<p class="q-question">' + (dejaVu && !avant ? et : '') + q + '</p></div>';
   }
   // Le texte « proposé » d'une mesure (mêmes remplacements que dans clair()).
   function clairP(c) { var x = clair(c); var m = /<span class="q-prop-t">([\s\S]*?)<\/span>/.exec(x); return m ? m[1] : nb(c.clair.p); }
