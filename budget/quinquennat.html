@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="385dc41617f8">
+<meta name="concret-version" content="d407e7d0aa11">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1297,9 +1297,9 @@ body.q-cartes #sim-main { display: none !important; }
 .sim-c-vin { grid-template-columns: 44px; }
 .sim-c-u { min-height: 44px; border-radius: 14px; border: 1.5px solid var(--fg); background: color-mix(in srgb, var(--muted) 12%, var(--panel)); font: inherit; font-size: 22px; font-weight: 700; color: var(--fg); cursor: pointer; }
 .sim-c-u:disabled { opacity: .45; border-color: var(--muted); cursor: default; }
-.sim-c-v { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.sim-c-v > div { display: grid; gap: 1px; padding: 7px 10px 8px; border-radius: 10px; background: var(--sable); border: 1px solid var(--sable-bd); }
-.sim-c-v small { font-size: 12.5px; color: var(--muted); } .sim-c-v b { font-size: 19px; font-variant-numeric: tabular-nums; }
+.sim-c-vals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.sim-c-vals > div { display: grid; gap: 1px; padding: 7px 10px 8px; border-radius: 10px; background: var(--sable); border: 1px solid var(--sable-bd); }
+.sim-c-vals small { font-size: 12.5px; color: var(--muted); } .sim-c-vals b { font-size: 19px; font-variant-numeric: tabular-nums; }
 .sim-c-dern { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 14px; line-height: 1.4; }
 .sim-c-dern li { display: grid; gap: 1px; padding: 6px 0; border-top: 1px solid var(--line); }
 .sim-c-dern b { font-weight: 600; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -1641,7 +1641,9 @@ body.q-cartes #sim-main { display: none !important; }
   function actSrc(h) { return (h.src || []).map(function (y) { return '<a href="' + esc(y.url) + '" target="_blank" rel="noopener">' + esc(y.doc.split(',')[0]) + (y.page ? ', p. ' + esc(String(y.page).split(' ')[0]) : '') + '</a>'; }).join(' · '); }
   // « Comment c'est calculé » : la phrase de l'hypothèse, la règle du solde, les sources.
   function actTexte(h) { return esc(h.calc) + (h === (J.activite.profils || {}).nul ? '' : ' ' + esc(J.activite.regle_solde.t)) + (h.src && h.src.length ? ' ' + actSrc(h) + (h === (J.activite.profils || {}).nul ? '' : ' · <a href="' + esc(J.activite.regle_solde.url) + '" target="_blank" rel="noopener">DG Trésor, 2007, p. 16</a>') : ''); }
-  function simuler(opt) {
+  // Un budget reçu garde ses options de la carte capitalisation (qui place, comment payer) : on les prend le temps du calcul.
+  function simuler(opt) { if (!opt || opt.capi === undefined) return simuler0(opt); var sv = S.capi; S.capi = opt.capi || undefined; try { return simuler0(opt); } finally { S.capi = sv; capiExclut(); } }
+  function simuler0(opt) {
     opt = opt || {}; capiExclut();
     var vote = opt.vote || (opt.rien ? {} : S.v), perso = opt.rien ? {} : (opt.perso || S.perso), uni = opt.rien ? {} : (opt.unites || S.unites), macro = opt.rien ? false : (opt.macro != null ? opt.macro : S.macro), dtx = opt.brut ? 0 : S.taux, dcr = (opt.brut ? 0 : S.cr) + (opt.dg || 0);
     var pib = D0.pib_md, d = PJ.depart.dette, L = 0, out = [], prevA = {}, inc = {};
@@ -1813,7 +1815,7 @@ body.q-cartes #sim-main { display: none !important; }
   // La date du défi joué : celle du lien reçu, sinon aujourd'hui.
   // Un défi reçu d'un autre jour : celui d'aujourd'hui est proposé (« Le jouer »), au lieu de « un nouveau défi demain ».
   // Fin de partie de l'ami : sa réponse à renvoyer, en tête de l'écran de fin.
-  function finAmi() { if (!S.ami) return ''; var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), a1 = an1(Am), r1 = an1(R), x = accordAmi();
+  function finAmi() { if (!S.ami) return ''; var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites, capi: S.ami.capi || null }), a1 = an1(Am), r1 = an1(R), x = accordAmi();
           return '<div class="q-ami" style="margin:0 0 12px"><p><b>Vous et le budget reçu</b> : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' mesure' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + '. ' : '') + 'Déficit ' + AN0 + ' : ' + defic(r1.solde) + ' pour vous, ' + defic(a1.solde) + ' pour le budget reçu' + (Math.abs(r1.solde - a1.solde) < 0.05 ? ', à égalité.' : -r1.solde < -a1.solde ? ' : le vôtre est plus bas.' : ' : le sien est plus bas.') + '</p><div class="q-chips"><button type="button" id="q-ami-r">Renvoyer ma réponse</button></div></div>'; }
   function autreJour() { return S.obj === 'defi' && S.defiDate && S.defiDate !== isoJ(); }
   function defiAuj() { var D = J.defis || []; return D.length ? D[defiIdx(isoJ())] : null; }
@@ -2633,7 +2635,7 @@ body.q-cartes #sim-main { display: none !important; }
         resume('etape') +
         '<div class="q-actions" style="margin-top:12px"><button type="button" class="q-danger" id="q-chg2">Changer mes réponses</button></div></section>';
       $('q-voirb2').onclick = function () { onglet('bilan'); }; $('q-cr2').onclick = function () { onglet('creer'); }; brancherDefiAuj($('q-deck'));
-      $('q-chg2').onclick = ouvrirVotes; if ($('q-ami-r')) $('q-ami-r').onclick = function () { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), x = accordAmi(); partager('Ma réponse à votre budget sur Concret : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' mesure' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + ' ; ' : '') + 'déficit ' + AN0 + ' : ' + defic(an1(R).solde) + ' pour moi, ' + defic(an1(Am).solde) + ' pour vous. Ouvrez le lien pour comparer :', true); }; 
+      $('q-chg2').onclick = ouvrirVotes; if ($('q-ami-r')) $('q-ami-r').onclick = function () { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites, capi: S.ami.capi || null }), x = accordAmi(); partager('Ma réponse à votre budget sur Concret : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' mesure' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + ' ; ' : '') + 'déficit ' + AN0 + ' : ' + defic(an1(R).solde) + ' pour moi, ' + defic(an1(Am).solde) + ' pour vous. Ouvrez le lien pour comparer :', true); }; 
     }
     vos();
   }
@@ -2809,13 +2811,13 @@ body.q-cartes #sim-main { display: none !important; }
       if (rs0 && rs0.p.code !== 'FR' && !(prec && S.hist[prec].p === rs0.p.code)) lignes.push('<li><span class="q-et-i">' + drapeau(rs0.p.code) + '</span><span>Votre budget ressemble <b>' + esc(aPays(rs0.p)) + '</b> (dépenses et recettes publiques). <button type="button" class="q-lien" data-pays="1">Voir la carte</button></span></li>');
       var px = (proximite(proches(), MINP, true).match(/^<p class="q-(?:gros|note)">([\s\S]*?)<\/p>/) || [])[1];
       if (px && !(prec && S.hist[prec].g === px)) lignes.push('<li><span class="q-et-i" aria-hidden="true">🏛️</span><span><b>Les députés</b> : ' + px.replace(/^(.)/, function (m) { return m.toLowerCase(); }) + '</span></li>');
-      var amiH = (mode === 'etape' && S.ami ? (function () { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), x = accordAmi(); return '<p class="q-ligne"><b>Budget reçu</b> : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' mesure' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + ' ; ' : '') + 'son déficit ' + AN0 + ' : ' + defic(an1(Am).solde) + ', le vôtre : ' + defic(r1.solde) + '.</p>'; })() : ''); if (amiH) lignes.push('<li><span class="q-et-i">⇄</span><span>' + amiH.replace(/^<p class="q-ligne">|<\/p>$/g, '') + '</span></li>');
+      var amiH = (mode === 'etape' && S.ami ? (function () { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites, capi: S.ami.capi || null }), x = accordAmi(); return '<p class="q-ligne"><b>Budget reçu</b> : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' mesure' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + ' ; ' : '') + 'son déficit ' + AN0 + ' : ' + defic(an1(Am).solde) + ', le vôtre : ' + defic(r1.solde) + '.</p>'; })() : ''); if (amiH) lignes.push('<li><span class="q-et-i">⇄</span><span>' + amiH.replace(/^<p class="q-ligne">|<\/p>$/g, '') + '</span></li>');
       return '<div class="q-res q-res-et">' + av + '<div class="q-et-tuiles">' + t1 + t2 + t3 + '</div>' + (lignes.length ? '<ul class="q-et-l">' + lignes.join('') + '</ul>' : '') + '</div>';
     }
     return '<div class="q-res"><p class="q-gros">' + (nbChoix() ? 'Vos mesures ' + (net >= 0 ? 'réduisent le déficit de <b>' + mdt(net) + '</b>' : 'augmentent le déficit de <b>' + mdt(-net) + '</b>') + ' en ' + AN0 + ' (sur le papier).' : 'Vous n\'avez encore adopté aucune mesure.') +
       ' Le déficit de ' + AN0 + (deficP(z1.solde) === defic(r1.solde) ? ' reste ' + (/^excédent/.test(defic(r1.solde)) ? 'à un <b>' : 'à <b>') + defic(r1.solde) + '</b> du PIB' + (nbChoix() && r1.solde !== z1.solde ? ' (moins de 0,1 point d\'écart)' : '') + ',' : ' passe ' + deX(deficP(z1.solde)) + (/^excédent/.test(defic(r1.solde)) ? ' à un <b>' : ' à <b>') + defic(r1.solde) + '</b> du PIB,') + ' la dette de ' + f.an + ' serait de <b>' + nf(f.d, 1) + '\u00a0%</b>' + (nf(f.d, 1) === nf(zf.d, 1) ? ', comme sans vos mesures' : ' au lieu de ' + nf(zf.d, 1) + '\u00a0%') + '.</p>' +
       (prec ? '<p class="q-depuis">Depuis l\'étape des ' + prec + ' votes : ' + chg('le déficit ' + AN0, defic(S.hist[prec].s), defic(r1.solde)) + ' ; ' + chg('la dette ' + AN1, nf(S.hist[prec].d, 1) + '\u00a0%', nf(f.d, 1) + '\u00a0%') + '.</p>' : '') +
-      (mode === 'bilan' && (barresE || act) ? '<details class="q-plie"><summary>Ce qui réduit et ce qui augmente le déficit</summary>' + barresE + act + '</details>' : barresE + act) + (mode === 'etape' && S.ami ? (function () { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), x = accordAmi(); return '<p class="q-ligne"><b>Budget reçu</b> : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' mesure' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + ' ; ' : '') + 'son déficit ' + AN0 + ' : ' + defic(an1(Am).solde) + ', le vôtre : ' + defic(r1.solde) + '.</p>'; })() : '') + (S.obj && S.obj !== 'aucun' ? '<p class="q-gros" style="font-size:15px">' + o.t + '</p>' : '') +
+      (mode === 'bilan' && (barresE || act) ? '<details class="q-plie"><summary>Ce qui réduit et ce qui augmente le déficit</summary>' + barresE + act + '</details>' : barresE + act) + (mode === 'etape' && S.ami ? (function () { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites, capi: S.ami.capi || null }), x = accordAmi(); return '<p class="q-ligne"><b>Budget reçu</b> : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' mesure' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + ' ; ' : '') + 'son déficit ' + AN0 + ' : ' + defic(an1(Am).solde) + ', le vôtre : ' + defic(r1.solde) + '.</p>'; })() : '') + (S.obj && S.obj !== 'aucun' ? '<p class="q-gros" style="font-size:15px">' + o.t + '</p>' : '') +
       (function () {
         if (mode === 'bilan') return ''; var rs = ressemble(r1), D = procheDeficit(r1); if (!rs) return '';
         return '<p class="q-ligne">Votre budget ressemble <b>' + esc(aPays(rs.p)) + '</b> ' + drapeau(rs.p.code) + ' (dépenses et recettes publiques)' + (D.length ? ' ; votre déficit ' + AN0 + ' est proche de celui que le FMI prévoit pour ' + esc(lePays(D[0].p)) + ' ' + drapeau(D[0].p.code) + ' (' + defic(D[0].v) + ')' : '') + '. <button type="button" class="q-lien" data-pays="1">Voir la carte des pays</button></p>';
@@ -4062,7 +4064,7 @@ body.q-cartes #sim-main { display: none !important; }
     var de = function (L, an, moi) { var r = L.filter(function (x) { return x.an === an; })[0]; return r ? (moi ? defic : deficP)(r.solde) : '—'; }, dd = function (L) { var r = L[L.length - 1]; return r ? nf(r.d, 1) + ' %' : '—'; };
     var G = simPreset('gouv'), A = simPreset('an'), rows = [];
     rows.push(ligne('<b>Vous</b>', de(R, a, 1), de(R, z, 1), dd(R), 'moi'));
-    if (S.ami) { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }); rows.push(ligne('Le budget qu\'on vous a envoyé', de(Am, a, 1), de(Am, z, 1), dd(Am))); }
+    if (S.ami) { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites, capi: S.ami.capi || null }); rows.push(ligne('Le budget qu\'on vous a envoyé', de(Am, a, 1), de(Am, z, 1), dd(Am))); }
     rows.push(ligne('Le budget du Gouvernement¹', de(G, a), '—', '—'));
     rows.push(ligne('Les votes des députés, mesure par mesure¹', de(A, a), '—', '—'));
     if (PRESETS.senat) rows.push(ligne('Les votes des sénateurs, mesure par mesure¹', de(simPreset('senat'), a), '—', '—'));
@@ -4116,7 +4118,7 @@ body.q-cartes #sim-main { display: none !important; }
   function amis() { var L = lireLS(CLE_AMIS); return Array.isArray(L) ? L.filter(function (a) { return a && a.v; }) : []; }
   function ajouterAmi(o) {
     if (o.id && o.id === lireLS('concret-budget-id')) return; // son propre lien, ouvert sur le même appareil
-    var L = amis(), cle = o.id || o.nom || JSON.stringify(o.v).length + ':' + Object.keys(o.v).length, x = { cle: cle, nom: o.nom || '', v: o.v, perso: o.perso, unites: o.unites, le: isoJ(), reponse: !!o.reponse };
+    var L = amis(), cle = o.id || o.nom || JSON.stringify(o.v).length + ':' + Object.keys(o.v).length, x = { cle: cle, nom: o.nom || '', v: o.v, perso: o.perso, unites: o.unites, capi: o.capi || null, le: isoJ(), reponse: !!o.reponse };
     L = L.filter(function (a) { return a.cle !== cle; }); L.unshift(x); ecrireLS(CLE_AMIS, L.slice(0, 12));
   }
   // Le bloc du Bilan : une ligne par personne (vous d'abord), le détail mesure par mesure, « Retirer », l'image du groupe.
@@ -4125,7 +4127,7 @@ body.q-cartes #sim-main { display: none !important; }
   function lignesAmis() {
     var L = amis(), c100 = function (v) { return Math.round(v / 100) * 100; };
     var une = function (nom, A, x, moi) { var r1 = an1(A), f = A[A.length - 1], ph = parHab(A), rs = ressemble(r1), G0 = GRAND, gA = tresGrand(A); GRAND = false; var dv = (gA ? '≈\u00a0' : '') + deficO(r1, AN0); GRAND = G0; return { nom: nom, moi: moi, x: x, def: dv, dette: nf(f.d, 1) + '\u00a0%', ph: ph ? nf(c100(ph[ph.length - 1].d), 0) + '\u00a0€' : '—', pays: rs ? drapeau(rs.p.code) + '\u00a0' + nomCourt(rs.p) : '—', acc: moi ? '' : (function () { var a = accordAvec(x.v); return a.n ? nf(Math.round(100 * a.ok / a.n), 0) + '\u00a0%' : '—'; })() }; };
-    return [une('Vous', R, null, true)].concat(L.map(function (a, i) { return une(a.nom || 'Ami ' + (i + 1), simuler({ vote: a.v, perso: a.perso || {}, unites: a.unites || {} }), a, false); }));
+    return [une('Vous', R, null, true)].concat(L.map(function (a, i) { return une(a.nom || 'Ami ' + (i + 1), simuler({ vote: a.v, perso: a.perso || {}, unites: a.unites || {}, capi: a.capi || null }), a, false); }));
   }
   // Le champ du prénom ou pseudo (Bilan, et écran de réussite avant de partager) : gardé sur l'appareil, porté par vos liens.
   function brancherPseudo(ps, msg) { if (!ps || ps._ok) return; ps._ok = 1; ps.value = monPseudo(); var f = function () { var v = ps.value.trim(), ok = pseudoOk(v); if (v && !ok) { msg.textContent = grossier(v) ? 'Choisissez un autre pseudo.' : 'De 3 à 20 caractères : lettres, chiffres, espace, point, tiret.'; ps.value = ''; ecrireLS('concret-budget-pseudo', ''); return; } ecrireLS('concret-budget-pseudo', ok); msg.textContent = ok ? 'Vos liens porteront « ' + ok + ' ».' : 'Vos liens ne portent pas de nom.'; }; ps.onchange = f; ps._f = f; }
@@ -4171,7 +4173,7 @@ body.q-cartes #sim-main { display: none !important; }
     v = v.replace(/A+$/, '');
     var K = Object.keys(AS).sort(), U = Object.keys(UN).sort();
     var p = Object.keys(S.perso).map(function (k) { return K.indexOf(k).toString(36) + '~' + S.perso[k]; }).join('_'), u = Object.keys(S.unites).map(function (k) { return U.indexOf(k).toString(36) + '~' + S.unites[k]; }).join('_');
-    return 'https://concret2027.fr/budget/#b=' + empreinte() + '.' + v + (p || u ? '.' + p : '') + (u ? '.' + u : '') + (S.obj && S.obj !== 'aucun' ? '!o' + S.obj + (S.obj === 'defi' ? '.' + defiDate() : '') : '') + (rep ? '!r' : '') + '!i' + monId() + (monPseudo() ? '!n' + encodeURIComponent(monPseudo()) : '');
+    return 'https://concret2027.fr/budget/#b=' + empreinte() + '.' + v + (p || u ? '.' + p : '') + (u ? '.' + u : '') + (S.perso.capitalisation && (capiO().qui !== 'tous' || capiO().paie !== 'emprunt') ? '!c' + (capiO().qui === 'nouveaux' ? 'n' : 't') + (capiO().paie === 'retraites' ? 'r' : 'e') : '') + (S.obj && S.obj !== 'aucun' ? '!o' + S.obj + (S.obj === 'defi' ? '.' + defiDate() : '') : '') + (rep ? '!r' : '') + '!i' + monId() + (monPseudo() ? '!n' + encodeURIComponent(monPseudo()) : '');
   }
   function lireLien() {
     var c2 = /#b=([0-9a-z]+)\.([A-Za-z0-9_-]*)(?:\.([0-9a-z~_-]*))?(?:\.([0-9a-z~_-]*))?/.exec(location.hash || '');
@@ -4182,6 +4184,7 @@ body.q-cartes #sim-main { display: none !important; }
       (c2[3] || '').split('_').filter(Boolean).forEach(function (y) { var q = y.split('~'), k = K[parseInt(q[0], 36)]; if (k && isFinite(+q[1])) o2.perso[k] = Math.max(-100, Math.min(100, +q[1])); });
       (c2[4] || '').split('_').filter(Boolean).forEach(function (y) { var q = y.split('~'), k = U[parseInt(q[0], 36)]; if (k && isFinite(+q[1])) o2.unites[k] = Math.round(+q[1]); });
       var oo = /!o([a-z]+)(?:\.(\d{4}-\d{2}-\d{2}))?/.exec(location.hash); if (oo && ['defi', 'gouv', 'quatre', 'trois', 'dette', 'neutre'].indexOf(oo[1]) >= 0) { o2.obj = oo[1]; if (oo[2]) o2.defiDate = oo[2]; } if (/!r/.test(location.hash)) o2.reponse = 1;
+      var cc = /!c([nt])([er])/.exec(location.hash); if (cc && o2.perso.capitalisation) o2.capi = { qui: cc[1] === 'n' ? 'nouveaux' : 'tous', paie: cc[2] === 'r' ? 'retraites' : 'emprunt' };
       var ii = /!i([a-z0-9]{6,16})/.exec(location.hash), nn = /!n([^!]*)/.exec(location.hash); if (ii) o2.id = ii[1]; if (nn) { try { var brut = decodeURIComponent(nn[1]), ps = pseudoOk(brut); o2.nom = ps || (brut.trim() ? 'Un ami' : ''); } catch (e) {} }
       o2.neuf = 1; o2.recu = isoJ(); S.ami = o2; garder(); ajouterAmi(o2); stat((o2.reponse ? 'reponses-' : 'liens-') + isoJ());
       try { history.replaceState(null, '', location.pathname); } catch (e) {}
@@ -4302,7 +4305,7 @@ body.q-cartes #sim-main { display: none !important; }
     return 'Déficit ' + AN0 + ' : ' + deficP(z1.solde) + ' → ' + deficO(r1, AN0);
   }
   function partager(tx, rep) { if (typeof tx !== 'string') tx = null; stat('partages-' + isoJ());
-    REP_IMG = null; if (rep && S.ami) { var AmI = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), xI = accordAmi(); REP_IMG = 'Ma réponse à votre budget : ' + (xI && xI.n ? 'mêmes votes sur ' + xI.ok + ' mesure' + (xI.ok > 1 ? 's' : '') + ' sur ' + xI.n + ' · ' : '') + 'déficit ' + AN0 + ' : ' + defic(an1(R).solde) + ' pour moi, ' + defic(an1(AmI).solde) + ' pour vous'; }
+    REP_IMG = null; if (rep && S.ami) { var AmI = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites, capi: S.ami.capi || null }), xI = accordAmi(); REP_IMG = 'Ma réponse à votre budget : ' + (xI && xI.n ? 'mêmes votes sur ' + xI.ok + ' mesure' + (xI.ok > 1 ? 's' : '') + ' sur ' + xI.n + ' · ' : '') + 'déficit ' + AN0 + ' : ' + defic(an1(R).solde) + ' pour moi, ' + defic(an1(AmI).solde) + ' pour vous'; }
     var r1 = an1(R), f = R[R.length - 1], rsP = ressemble(r1), resT = resultatTxt(), t = 'Mon budget ' + AN0 + ' : ' + (r1.solde >= 0 ? 'excédent de ' + nf(r1.solde, 1) + '\u00a0%' : 'déficit ' + deficO(r1, AN0)) + ', dette ' + nf(f.d, 1) + '\u00a0% en ' + f.an + (rsP && rsP.p.code !== 'FR' ? '. Il ressemble ' + aPays(rsP.p) + ' ' + drapeau(rsP.p.code) + (HIST && procheDir(r1) ? ' (dans l\'histoire : ' + lePaysDir(procheDir(r1).p).replace(/^(La|Le|Les|L')(?=[ '])/, function (m) { return m.toLowerCase(); }) + ' en ' + procheDir(r1).p.an + ')' : '') : HIST && procheDir(r1) ? '. ' + phraseDir(procheDir(r1)).replace(/^Votre budget/, 'Dans l\'histoire, il') : '') + '. À votre tour, avec les mêmes cartes :'; if (/^✓/.test(resT)) t = resT.replace(/^✓ /, '') + '. ' + t; if (S.obj === 'defi' && !/^✓/.test(resT) && defiX()) t = 'Mon défi : « ' + defiX().t.replace(/\.$/, '') + ' ». ' + t;
     var u = lienBudget(rep); if (tx) t = tx;
     // Sans partage du téléphone : le texte, puis le lien dans un champ qui ne déborde jamais, avec « Copier ».
@@ -4348,7 +4351,7 @@ body.q-cartes #sim-main { display: none !important; }
     }
     var nomA = S.ami && S.ami.nom && S.ami.nom !== 'Un ami' ? S.ami.nom : '';
     if (S.ami && S.ami.recu && S.ami.recu !== isoJ() && nbChoix()) h += '<div class="q-ami q-ami-c1"><p><b>' + (S.ami.reponse ? 'Réponse ' + (nomA ? 'de ' + esc(nomA) : 'à votre budget') : 'Budget ' + (nomA ? 'de ' + esc(nomA) : 'reçu')) + '</b> (reçu le ' + dateLue(S.ami.recu).replace(/ \d{4}$/, '') + ')</p><div class="q-chips"><button type="button" id="q-ami-c">Comparer</button><button type="button" id="q-ami-x">Ne plus l\'afficher</button></div></div>';
-    else if (S.ami) { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), n = Object.keys(S.ami.v).filter(function (k) { return S.ami.v[k] === 1; }).length + Object.keys(S.ami.perso).length + Object.keys(S.ami.unites).length, a1 = an1(Am), r1 = an1(R);
+    else if (S.ami) { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites, capi: S.ami.capi || null }), n = Object.keys(S.ami.v).filter(function (k) { return S.ami.v[k] === 1; }).length + Object.keys(S.ami.perso).length + Object.keys(S.ami.unites).length, a1 = an1(Am), r1 = an1(R);
       h += '<div class="q-ami"><p><b>' + (S.ami.reponse ? 'La réponse ' + (nomA ? 'de ' + esc(nomA) : 'à votre budget') : nomA ? 'Le budget de ' + esc(nomA) : 'Le budget qu\'on vous a envoyé') + ' :</b> ' + n + ' mesure' + (n > 1 ? 's' : '') + ', ' + soldeA(a1.solde, AN0) + ', dette ' + AN1 + ' à ' + nf(Am[Am.length - 1].d, 1) + ' %. Vous : ' + defic(r1.solde) + ' et ' + nf(R[R.length - 1].d, 1) + ' %' + (nbChoix() ? (-r1.solde < -a1.solde - 0.05 ? ' : votre déficit est plus bas.' : -r1.solde > -a1.solde + 0.05 ? ' : le sien est plus bas.' : ' : à égalité.') : '.') +
         (function () { var x = accordAmi(); return x && x.n ? ' <b>Mêmes votes sur ' + x.ok + ' mesure' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + '</b> votée' + (x.n > 1 ? 's' : '') + ' tous les deux.' : (Object.keys(S.ami.v).length ? ' Après chacun de vos votes, vous verrez le sien.' : ''); })() +
         (S.ami.ancien ? ' (Ce lien vient d\'une version plus ancienne du jeu : ses votes ne sont pas repris, seulement ses mesures de Créer.)' : '') + '</p>' +
@@ -4362,16 +4365,16 @@ body.q-cartes #sim-main { display: none !important; }
     var ai = $('q-ami-i'), objAmi = S.ami && S.ami.obj && S.ami.obj !== 'aucun' ? (S.ami.obj === 'defi' ? 'le défi ' + (S.ami.defiDate ? 'du ' + dateLue(S.ami.defiDate).replace(/ \d{4}$/, '') : 'du jour') + ' (« ' + ((J.defis || [])[defiIdx(S.ami.defiDate || isoJ())] || {}).t + ' »)' : (OBJS().filter(function (o) { return o[0] === S.ami.obj; })[0] || [])[1]) : null;
     if (S.ami && S.ami.reponse) {
       // Une réponse à votre budget : les deux budgets côte à côte, tout de suite, même si vous avez déjà voté.
-      var Ar = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), xr = accordAmi(); ai.hidden = false;
+      var Ar = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites, capi: S.ami.capi || null }), xr = accordAmi(); ai.hidden = false;
       ai.innerHTML = '<b>' + (nomA ? esc(nomA) + ' répond à votre budget' : 'Réponse à votre budget') + '</b> : ' + (xr && xr.n ? 'mêmes votes sur ' + xr.ok + ' mesure' + (xr.ok > 1 ? 's' : '') + ' sur ' + xr.n + ' ; ' : '') + 'déficit ' + AN0 + ' : ' + defic(an1(Ar).solde) + (nomA ? ' pour ' + esc(nomA) + ',' : ' pour la réponse,') + ' ' + defic(an1(R).solde) + ' pour votre budget sur cet appareil.' + (objAmi ? ' Son objectif : ' + esc(objAmi) + '.' : '');
       $('q-voir').textContent = nbDecisions() ? 'Reprendre ↓' : 'Commencer ↓';
       // Annoncée une seule fois, à l'ouverture du lien (pas à chaque chargement).
       if (S.ami.neuf && !REP_VU) { REP_VU = true; delete S.ami.neuf; garder(); var mr = ai.innerHTML; setTimeout(function () { pop(mr, true); }, 400); }
-    } else if (S.ami && !nbDecisions()) { var Ai = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), ri = ressemble(an1(Ai)); ai.hidden = false; ai.innerHTML = '<b>' + (nomA ? esc(nomA) + ' vous a envoyé son budget' : 'On vous a envoyé un budget') + '</b> : ' + soldeA(an1(Ai).solde, AN0) + (ri ? ', il ressemble ' + esc(aPays(ri.p)) + ' ' + drapeau(ri.p.code) : '') + '.' + (objAmi ? ' Son objectif : ' + esc(objAmi) + '.' : '') + ' Votez les mêmes cartes : après chacun de vos votes, vous verrez le sien, et à la fin, vos deux budgets côte à côte.'; $('q-voir').textContent = nomA ? 'Relever le défi de ' + nomA + ' ↓' : 'Relever le défi ↓'; } else { ai.hidden = true; $('q-voir').textContent = 'Commencer ↓'; }
-    if ($('q-ami-p')) $('q-ami-p').onclick = function () { var A0 = simuler(); S.v = JSON.parse(JSON.stringify(S.ami.v)); S.perso = JSON.parse(JSON.stringify(S.ami.perso)); S.unites = JSON.parse(JSON.stringify(S.ami.unites)); S.pile = []; S.etape = ETAPES.filter(function (e) { return e <= nbDecisions(); }).pop() || 0; delete S.ami; garder(); mesCreer(); tout(true); pop('Vous partez du budget reçu · ' + avantApres(A0, R)); };
+    } else if (S.ami && !nbDecisions()) { var Ai = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites, capi: S.ami.capi || null }), ri = ressemble(an1(Ai)); ai.hidden = false; ai.innerHTML = '<b>' + (nomA ? esc(nomA) + ' vous a envoyé son budget' : 'On vous a envoyé un budget') + '</b> : ' + soldeA(an1(Ai).solde, AN0) + (ri ? ', il ressemble ' + esc(aPays(ri.p)) + ' ' + drapeau(ri.p.code) : '') + '.' + (objAmi ? ' Son objectif : ' + esc(objAmi) + '.' : '') + ' Votez les mêmes cartes : après chacun de vos votes, vous verrez le sien, et à la fin, vos deux budgets côte à côte.'; $('q-voir').textContent = nomA ? 'Relever le défi de ' + nomA + ' ↓' : 'Relever le défi ↓'; } else { ai.hidden = true; $('q-voir').textContent = 'Commencer ↓'; }
+    if ($('q-ami-p')) $('q-ami-p').onclick = function () { var A0 = simuler(); if (S.ami.capi) S.capi = JSON.parse(JSON.stringify(S.ami.capi)); else delete S.capi; S.v = JSON.parse(JSON.stringify(S.ami.v)); S.perso = JSON.parse(JSON.stringify(S.ami.perso)); S.unites = JSON.parse(JSON.stringify(S.ami.unites)); S.pile = []; S.etape = ETAPES.filter(function (e) { return e <= nbDecisions(); }).pop() || 0; delete S.ami; garder(); mesCreer(); tout(true); pop('Vous partez du budget reçu · ' + avantApres(A0, R)); };
     if ($('q-ami-x')) $('q-ami-x').onclick = function () { delete S.ami; garder(); enHaut(); };
     if ($('q-ami-c')) $('q-ami-c').onclick = function () { onglet('bilan'); setTimeout(function () { var e = $('q-amis-c'); if (e && !e.hidden) e.scrollIntoView({ block: 'start' }); }, 80); };
-    if ($('q-ami-rr')) $('q-ami-rr').onclick = function () { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites }), x = accordAmi(); partager('Ma réponse à votre budget sur Concret : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' mesure' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + ' ; ' : '') + 'déficit ' + AN0 + ' : ' + defic(an1(R).solde) + ' pour moi, ' + defic(an1(Am).solde) + ' pour vous. Ouvrez le lien pour comparer :', true); };
+    if ($('q-ami-rr')) $('q-ami-rr').onclick = function () { var Am = simuler({ vote: S.ami.v, perso: S.ami.perso, unites: S.ami.unites, capi: S.ami.capi || null }), x = accordAmi(); partager('Ma réponse à votre budget sur Concret : ' + (x && x.n ? 'mêmes votes sur ' + x.ok + ' mesure' + (x.ok > 1 ? 's' : '') + ' sur ' + x.n + ' ; ' : '') + 'déficit ' + AN0 + ' : ' + defic(an1(R).solde) + ' pour moi, ' + defic(an1(Am).solde) + ' pour vous. Ouvrez le lien pour comparer :', true); };
     if ($('q-dep-x')) $('q-dep-x').onclick = function () { DEPUIS = []; enHaut(); };
     if ($('q-defm-b')) $('q-defm-b').onclick = function () { onglet('bilan'); setTimeout(function () { $('q-defi').scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); };
     if ($('q-defm-j')) $('q-defm-j').onclick = jouerDefi;
@@ -5096,7 +5099,7 @@ body.q-cartes #sim-main { display: none !important; }
   function cartesBilan() {
     var c = capDe(R, S.perso, S.v), r1 = ligneAn(R, AN0), f = R[R.length - 1], ph = parHab(R);
     return '<p class="q-res1">' + (c.fil ? 'Votre fil rouge : ' + esc(c.nom) + ' · <b>' + esc(c.reste) + '</b>' + (/^rattraper/.test(c.fil) && c.v < 50 ? '. En cinq ans de budget, combler tout l\'écart est rare : ' + esc(c.pays.nom) + ' a, sans vos mesures, ' + nf(Math.round((c.pays.v / (c.pays.v - c.ecart) - 1) * 100), 0) + ' % de PIB par habitant de plus que la France en ' + AN1 + ' (FMI).' : '') : c.aucun ? 'Sans objectif.' : c.ok ? '<b>Objectif atteint</b> : ' + esc(c.nom || c.t) + '.' : 'Objectif : ' + esc(c.t) + ' · <b>' + esc(c.reste || '') + '</b>') + '</p>' +
-      '<div class="sim-c-v"><div><small>Déficit ' + AN0 + '</small><b>' + f1(-r1.solde) + ' %</b></div><div><small>Dette ' + AN1 + '</small><b>' + f1(f.d) + ' %</b></div><div><small>Croissance ' + AN0 + '</small><b>' + pcs2(croiss(R, AN0)) + '</b></div><div><small>PIB/hab. ' + AN1 + '</small><b>' + (ph ? eu10(ph[ph.length - 1].d) : '—') + '</b></div></div>';
+      '<div class="sim-c-vals"><div><small>Déficit ' + AN0 + '</small><b>' + f1(-r1.solde) + ' %</b></div><div><small>Dette ' + AN1 + '</small><b>' + f1(f.d) + ' %</b></div><div><small>Croissance ' + AN0 + '</small><b>' + pcs2(croiss(R, AN0)) + '</b></div><div><small>PIB/hab. ' + AN1 + '</small><b>' + (ph ? eu10(ph[ph.length - 1].d) : '—') + '</b></div></div>';
   }
   // La pause toutes les cinq cartes, comme dans Voter.
   function cartesPause(nVu) {
