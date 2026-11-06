@@ -10,6 +10,8 @@ var META = /<meta name="concret-version" content="[^"]*">\n?/;
 var pages = ['index.html'].concat(fs.readdirSync(ROOT).filter(function (d) {
   return fs.existsSync(path.join(ROOT, d, 'index.html')) && !/^(\.|node_modules)/.test(d);
 }).sort().map(function (d) { return d + '/index.html'; }));
+// Les autres pages HTML qui ne sont pas un index de dossier : le jeu « Votre quinquennat » (budget/index.html n'en est que l'adresse courte).
+['budget/quinquennat.html'].forEach(function (f) { if (fs.existsSync(path.join(ROOT, f)) && pages.indexOf(f) < 0) pages.push(f); });
 var communs = fs.readdirSync(path.join(ROOT, 'commun')).filter(function (f) { return /\.js$/.test(f); }).sort().map(function (f) { return 'commun/' + f; });
 
 var h = crypto.createHash('sha256');

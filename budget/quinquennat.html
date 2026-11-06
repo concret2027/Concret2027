@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<meta name="concret-version" content="0a3400bcfb1d">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -85,7 +86,12 @@
 .q-mpm { width: 100%; border-collapse: collapse; font-size: 13px; } .q-mpm td, .q-mpm th { padding: 4px 3px; border-bottom: 1px solid var(--line); text-align: center; } .q-mpm td:first-child, .q-mpm th:first-child { text-align: left; }
 .q-pane .nt-btn, .q-pane .q-plie > summary.q-lienp, .q-plus > summary { border: 0 !important; background: none !important; box-shadow: none !important; padding: 2px 0 !important; min-height: 0 !important; margin: 0 !important; font-size: 13.5px; font-weight: 600; color: var(--fr); text-decoration: underline; text-underline-offset: 3px; display: inline; width: auto; }
 .q-plus { margin-top: 4px; } .q-plus > summary { text-decoration: none !important; display: block !important; } .q-plus > summary .q-une { font-weight: 400; color: var(--muted); font-size: 13.5px; } .q-plus > summary u { text-underline-offset: 3px; white-space: nowrap; } .q-plus[open] > summary { margin-bottom: 6px !important; display: block; }
+.q-ref { font-size: 13.5px; color: var(--muted); font-weight: 400; }
 .q-res1 { margin: 2px 0 0; font-size: 15px; line-height: 1.4; } .q-une { margin: 0; } .q-une .q-lien { font-size: inherit; padding: 0; min-height: 0; }
+.q-pause .q-continuer { width: 100%; min-height: 52px; font-size: 16.5px; margin-top: 4px; }
+.q-pause-l { justify-content: center; gap: 6px; margin: 0; font-size: 14px; } .q-pause-n { margin: 0; text-align: center; }
+.q-ptot-c { height: 6px; border-radius: 3px; background: var(--piste); overflow: hidden; margin: -2px 0 2px; } .q-ptot-c span { display: block; height: 100%; background: var(--fr); }
+.q-et-ts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
 .q-tz2 { font-size: 13px; color: var(--muted); font-weight: 400; }
 .q-clair:has(> .q-cl0:only-child) { display: none; }
 .q-qrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
@@ -867,6 +873,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
 .q-tuile span { font-size: 13px; color: var(--muted); }
 .q-tuile { align-content: start; }
 .q-tuile.large { grid-column: 1 / -1; }
+.q-tl-x { grid-column: 1 / -1; margin: 0; font-size: 14px; color: var(--muted); }
 .q-tuile.deux b { font-size: 21px; white-space: nowrap; }
 .q-tuile span.ecart { color: var(--fg); font-weight: 600; }
 .q-chart svg { width: 100%; height: auto; display: block; }
@@ -895,6 +902,27 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
 .q-hyp { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
 .q-sw { display: flex; gap: 12px; align-items: flex-start; }
 .q-sw input { width: 22px; height: 22px; margin: 2px 0 0; accent-color: var(--fr); flex: none; }
+/* « ↺ Recommencer » : en haut du jeu, dans une couleur à part (brique), le choix s'ouvre dans la page. */
+:root { --brique: #a23b17; --brique-bg: #fbeee8; --on-brique: #fff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --brique: #f2a27e; --brique-bg: #2a211d; --on-brique: #15161a; } }
+:root[data-theme="dark"] { --brique: #f2a27e; --brique-bg: #2a211d; --on-brique: #15161a; }
+.q-tabsr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center; background: var(--bg); border-radius: 12px; }
+.q-recom-b[hidden] { display: none !important; }
+/* Dans Voter, quand le bandeau réduit cache la barre des onglets : le bouton passe dans la ligne de progression. */
+.q-collant:not(.q-mini) ~ #p-voter .q-recom-v { display: none; }
+.q-prog .q-recom-v { margin-left: auto; min-height: 40px; }
+.q-recom-bil { float: right; margin: 0 0 6px 10px; }
+.q-recom-c { clear: both; }
+.q-collant.q-mini .q-tabsr, .q-collant.q-mini .q-recom-c { display: none !important; }
+.q-recom-b { font: inherit; font-size: 13.5px; font-weight: 700; line-height: 1.2; min-height: 44px; max-width: 9.5em; padding: 4px 12px; border-radius: 10px; border: 1.5px solid var(--brique); background: var(--brique-bg); color: var(--brique); cursor: pointer; }
+.q-recom-b[aria-expanded="true"] { background: var(--brique); color: var(--on-brique); }
+.q-recom-c { display: grid; gap: 8px; padding: 12px; border-radius: 12px; border: 1.5px solid var(--brique); background: var(--brique-bg); }
+.q-recom-c[hidden] { display: none; }
+.q-recom-c p { margin: 0; font-weight: 700; color: var(--fg); }
+.q-recom-c button { font: inherit; font-size: 15px; font-weight: 700; min-height: 44px; padding: 8px 14px; border-radius: 10px; cursor: pointer; text-align: left; }
+.q-recom-c .q-rk { border: 0; background: var(--brique); color: var(--on-brique); }
+.q-recom-c .q-rk small { font-size: 13.5px; font-weight: 500; }
+.q-recom-c .q-rk-non { border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-align: center; }
 .q-danger { font: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 44px; }
 @media (min-width: 760px) {
   .q-collant, .q-tabexp { width: 100%; max-width: 760px; margin-inline: auto; }
@@ -933,17 +961,24 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     <div class="q-hobj" id="q-hobj" hidden><div class="q-chips" id="q-objs2"></div></div>
   </div>
 
+  <div class="q-tabsr">
   <div class="q-tabs" role="tablist" aria-label="Parties du jeu">
     <button type="button" role="tab" id="t-voter" aria-controls="p-voter" aria-selected="true">Voter</button>
     <button type="button" role="tab" id="t-creer" aria-controls="p-creer" aria-selected="false">Créer</button>
     <button type="button" role="tab" id="t-bilan" aria-controls="p-bilan" aria-selected="false">Bilan</button>
   </div>
+  <button type="button" class="q-recom-b" id="q-recom-b" aria-expanded="false" aria-controls="q-recom-c" hidden>↺ Recommencer</button>
+  </div>
+  <div class="q-recom-c" id="q-recom-c" role="group" aria-labelledby="q-rk-t" hidden><p id="q-rk-t">Que voulez-vous recommencer ?</p>
+    <button type="button" class="q-rk" id="q-rk-rv">Revoter toutes les questions <small>(vos mesures créées restent)</small></button>
+    <button type="button" class="q-rk" id="q-rk-tout">Tout recommencer <small>(tout effacer)</small></button>
+    <button type="button" class="q-rk-non" id="q-rk-non">Annuler</button></div>
   </div>
   <p class="q-tabexp" id="q-tabexp" aria-live="polite"></p>
 
   <div class="q-pane" id="p-voter" role="tabpanel" aria-labelledby="t-voter">
     <div class="q-top" id="q-top"></div>
-    <div class="q-prog"><span id="q-prog"></span><button type="button" class="q-filtrer" id="q-filtrer" aria-expanded="false">Filtrer</button></div>
+    <div class="q-prog"><span id="q-prog"></span><button type="button" class="q-recom-b q-recom-v" aria-expanded="false" aria-controls="q-recom-c" hidden>↺ Recommencer</button><button type="button" class="q-filtrer" id="q-filtrer" aria-expanded="false">Filtrer</button></div>
     <div class="q-ptot" id="q-ptot" aria-hidden="true"><span></span></div>
     <div class="q-filtres" id="q-filtres" hidden aria-label="Filtrer les mesures"></div>
     <div class="q-deck" id="q-deck"></div>
@@ -994,6 +1029,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   <div class="q-pane" id="p-bilan" role="tabpanel" aria-labelledby="t-bilan" hidden>
     <nav class="q-som deb" id="q-som" aria-label="Les parties du Bilan"><div class="q-som-r" id="q-som-r"></div><span class="q-som-g" aria-hidden="true"><b>‹</b></span><span class="q-som-d" aria-hidden="true"><b>›</b></span></nav>
     <section class="card" aria-labelledby="q-rc-t">
+      <button type="button" class="q-recom-b q-recom-bil" aria-expanded="false" aria-controls="q-recom-c" hidden>↺ Recommencer</button>
       <h2 id="q-rc-t"><span class="eyebrow">Votre quinquennat</span><span id="q-rc-h"></span></h2>
       <div class="q-tuiles" id="q-tuiles"></div>
       <div class="q-actions"><button type="button" class="q-go" id="q-partager">Partager mon budget</button></div>
@@ -1166,14 +1202,15 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   function etaleK(x, pc, an, P) { return an != null && etale(x, pc, P) ? Math.max(0, Math.min(1, (an - AN0 + 1) / ETALE)) : 1; }
   // Sans année : le montant de 2027 pour un réglage étalé (un cinquième), le montant plein sinon ; « null » : toujours le montant plein.
   function effetPerso(x, pc, an, P) {
-    var r = (x.rampe && an != null ? x.rampe[Math.max(0, Math.min(x.rampe.length - 1, an - AN0))] : 1) * reste(x, P) * etaleK(x, pc, an === undefined ? AN0 : an, P);
+    // kE : l'étalement sur cinq ans des réglages de plus de 1 point de PIB, le même pour tous les leviers (en points, en %, par unité).
+    var kE = etaleK(x, pc, an === undefined ? AN0 : an, P), r = (x.rampe && an != null ? x.rampe[Math.max(0, Math.min(x.rampe.length - 1, an - AN0))] : 1) * reste(x, P) * kE;
     var ech = PIBY[AN0] / (PIBY[x.an] || PIBY[AN0]);
     if (x.u && x.u.choix) { var o = x.u.choix.filter(function (y) { return y.v === pc; })[0]; return o ? o.md * ech * r : 0; }
     if (x.mix) return x.mix.reduce(function (t, m) { return t + pc * m.par_u; }, 0) * ech * r;
     if (x.par_pib) return -pc * PIBY[AN0] / 100 * r;
     if (x.par_u != null) return pc * x.par_u * (PIBY[AN0] / (PIBY[x.an] || PIBY[AN0])) * r;
-    if (x.par_pt) return -pc * x.par_pt;
-    return (x.groupe === 'depense' ? -1 : 1) * pc / 100 * x.md / PIBY[x.an] * PIBY[AN0];
+    if (x.par_pt) return -pc * x.par_pt * kE;
+    return (x.groupe === 'depense' ? -1 : 1) * pc / 100 * x.md / PIBY[x.an] * PIBY[AN0] * kE;
   }
   // En court, pour les boutons et le curseur : « −20 pt », « 10 % », « 1 jour ».
   function pcC(x, pc) { if (!x.u || x.u.choix) return pcT(x, pc); var a = Math.abs(pc); return (x.u.min < 0 ? (pc > 0 ? '+' : '−') : '') + nf(a, a % 1 ? 1 : 0) + '\u00a0' + (x.u.c === 'jour' && a >= 2 ? 'jours' : x.u.c === 'points' && a < 2 ? 'point' : x.u.c); }
@@ -1278,6 +1315,10 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   var aDef = function (x) { return (/^excédent/.test(String(x)) ? 'à un ' : 'à ') + x; };
   var soldeA = function (s, an) { return !/^excédent/.test(defic(s)) ? 'déficit ' + an + ' à ' + defic(s) : 'excédent ' + an + ' ' + deX(defic(s).replace(/^excédent (?:de |d')/, '')); };
   // Le point de départ et les prévisions ne sont pas des estimations du modèle : toujours avec une décimale.
+  // « 172 Md€ qui manquent » / « 94 Md€ en plus » ; en long, la phrase en mots courants (une fois par écran).
+  function soldeMots(r, court) { var md = Math.abs(r.solde) / 100 * r.pib, ex = /^excédent/.test(defic(r.solde)), t = (GRAND ? 'environ ' + nf(Math.round(md / 10) * 10, 0) : nf(md, 0)) + '\u00a0Md€';
+    if (court) { t = t.replace(/^environ /, '≈\u00a0'); return ex ? t + ' en plus' : t + ' qui manquent'; }
+    return ex ? 'il reste ' + t + ' en plus (' + defic(r.solde).replace(/^excédent (?:de |d')/, '') + ' du PIB) : les recettes dépassent les dépenses' : 'il manque ' + t + ' (' + defic(r.solde) + ' du PIB) : l\'État, la Sécurité sociale et les collectivités dépensent plus qu\'ils ne reçoivent'; }
   var deficP = function (s) { if (s >= 0 && Math.round(s * 10) === 0) return '0,0\u00a0%'; return s < 0 ? nf(-s, 1) + '\u00a0%' : 'excédent de ' + nf(s, 1) + '\u00a0%'; };
   // « de 5,7 % », « d'environ 6 % », « d'excédent ».
   var deX = function (x) { return (/^excédent/.test(String(x)) ? 'd\'un ' : /^[aeiouéèêh]/i.test(String(x)) ? 'd\'' : 'de ') + x; };
@@ -1425,6 +1466,8 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   // ---------- Le bandeau ----------
   function hud(anime) {
     R = simuler(); R0 = simuler({ rien: true }); GRAND = tresGrand(R);
+    // « ↺ Recommencer » : seulement quand il y a quelque chose à recommencer.
+    var nDq = nbDecisions(); Array.prototype.forEach.call(document.querySelectorAll('.q-recom-b'), function (b) { b.hidden = !(nDq || nbChoix()); }); $('q-rk-rv').hidden = !nDq;
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1];
     var AOh = anObj ? anObj() : AN0, rO = ligneAn(R, AOh); $('h-l1').innerHTML = (/^excédent/.test(defic(rO.solde)) ? 'Excédent' : 'Déficit') + '<span class="q-an"> ' + AOh + '</span>'; r1 = rO; $('h-l2').innerHTML = 'Dette<span class="q-an"> ' + AN1 + '</span>'; $('h-l3').innerHTML = 'Par habitant<span class="q-an"> ' + AN1 + '</span>';
     // La richesse par habitant en 2031 (PIB par habitant, euros de 2025 hors inflation, même calcul que le Bilan) et son écart avec « sans mesure ».
@@ -1432,7 +1475,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     var v3 = PHa ? nf(c100(PHa[PHa.length - 1].d), 0) + '\u00a0€' : '—', eH = PHa && PHz ? c100(PHa[PHa.length - 1].d) - c100(PHz[PHz.length - 1].d) : 0;
     $('h-s3').textContent = (Math.abs(eH) < 50 ? 'comme sans mesure' : (GRAND ? '≈\u00a0' : '') + (eH < 0 ? '−' : '+') + nf(Math.abs(eH), 0) + '\u00a0€') + ' ⓘ';
     // « environ » va dans la petite ligne, jamais dans le grand chiffre (il tient ainsi dans sa case).
-    $('h-v1').nextElementSibling.textContent = (GRAND ? 'du PIB, environ ⓘ' : 'du PIB ⓘ'); $('h-v2').nextElementSibling.textContent = GRAND ? 'du PIB, environ ⓘ' : 'du PIB ⓘ';
+    $('h-v1').nextElementSibling.textContent = soldeMots(rO, true) + ' ⓘ'; $('h-v2').nextElementSibling.textContent = '≈\u00a0' + nf(Math.round(f.d / 100 * f.pib / 100) * 100, 0) + '\u00a0Md€ ⓘ';
     $('h-v3').parentNode.title = 'PIB par habitant en ' + AN1 + ', en euros de ' + D0.an + ' hors inflation' + (PHz ? ' ; sans mesure : ' + nf(c100(PHz[PHz.length - 1].d), 0) + ' €' : '');
     var sansEnv = function (t) { return String(t).replace(/^environ /, ''); };
     var T0 = seuil(), v1 = T0 != null && anObj() === AN0 && -r1.solde > T0 && -r1.solde - T0 < 0.05 ? nf(-r1.solde, 2) + '\u00a0%' : /^excédent/.test(defic(r1.solde)) ? sansEnv(defic(r1.solde).replace(/^excédent (?:de |d')/, '')) : sansEnv(defic(r1.solde)), v2 = sansEnv(dpc(f.d));
@@ -1471,8 +1514,8 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   // Toucher un chiffre du bandeau : ce qu'il veut dire, en une phrase, avec son montant en euros.
   function expliquer(x) {
     var AO = anObj(), r = ligneAn(R, AO), f = R[R.length - 1], g1 = croiss(R, AN0), gz = croiss(R, AN1), p1 = croiss(R0, AN0), pz = croiss(R0, AN1), t;
-    if (x === 'd') t = 'Déficit ' + AO + ' : ce que l\'État, la Sécurité sociale et les collectivités dépensent de plus qu\'ils ne reçoivent dans l\'année, rapporté au PIB, la richesse produite en France en un an (' + mdt(r.pib) + ' en ' + AO + '). ' + defic(r.solde) + ' du PIB, c\'est ' + mdt(Math.max(0, -r.solde) / 100 * r.pib) + '.';
-    else if (x === 't') t = 'Dette ' + f.an + ' : ce que doivent l\'État, la Sécurité sociale et les collectivités, rapporté au PIB, la richesse produite en un an. ' + nf(f.d, 1) + '\u00a0% du PIB, c\'est ' + mdt(f.d / 100 * f.pib) + ' (fin ' + PJ.depart.an + ' : ' + nf(PJ.depart.dette, 1) + '\u00a0%).';
+    if (x === 'd') t = (/^excédent/.test(defic(r.solde)) ? 'Excédent ' : 'Déficit ') + AO + ' : ' + soldeMots(r) + '. En part du PIB, la richesse produite en France en un an (' + mdt(r.pib) + ' en ' + AO + ').';
+    else if (x === 't') t = 'Dette ' + f.an + ' : ce que doivent l\'État, la Sécurité sociale et les collectivités : ' + nf(f.d, 1) + '\u00a0% du PIB, soit environ ' + nf(Math.round(f.d / 100 * f.pib / 100) * 100, 0) + '\u00a0milliards d\'euros (fin ' + PJ.depart.an + ' : ' + nf(PJ.depart.dette, 1) + '\u00a0%).';
     else if (x === 'c') { var Ha = parHab(R), Hz = parHab(R0), cc = function (v) { return nf(Math.round(v / 100) * 100, 0) + '\u00a0€'; }; t = '<ul class="q-pl"><li><b>Par habitant ' + AN1 + '</b> : la richesse produite en France (PIB) divisée par le nombre d\'habitants, en euros de ' + D0.an + ', hors hausse des prix.</li>' + (Ha && Hz ? '<li>Avec votre budget : ' + cc(Ha[Ha.length - 1].d) + ' en ' + AN1 + ' ; sans mesure : ' + cc(Hz[Hz.length - 1].d) + ' (' + cc(Ha[0].d) + ' en ' + D0.an + ').</li>' : '') + '<li>Vos mesures le changent par leur effet sur l\'activité (modèle de la direction du Trésor et de l\'Insee) ; le détail est dans le Bilan, « La richesse par habitant ».</li>' + (sansEffet() >= 0.05 ? '<li>Pas compté : l\'effet sur l\'activité de ' + mdt(sansEffet()) + ' de vos mesures, faute de chiffre publié.</li>' : '') + '</ul>'; }
     else t = '<ul class="q-pl"><li><b>Croissance</b> : la hausse du PIB, hors hausse des prix.</li><li>Prévision du FMI : ' + pcs(p1) + ' en ' + AN0 + ', ' + pcs(pz) + ' en ' + AN1 + '.</li><li>' + (Math.abs(g1 - p1) >= 0.05 || Math.abs(gz - pz) >= 0.05 ? 'Avec vos choix (modèle de la direction du Trésor et de l\'Insee) : ' + pcs(g1) + ' et ' + pcs(gz) + '.' : 'Vos choix ne la changent presque pas pour l\'instant.') + '</li>' + (sansEffet() >= 0.05 ? '<li>Pas compté : l\'effet de ' + mdt(sansEffet()) + ' de vos mesures (impôt sur les sociétés, patrimoine, âge de la retraite…).</li>' : '') + '</ul>';
     pop(t, true, t);
@@ -1895,16 +1938,17 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     if (PA && PZ) {
       var c100 = function (v) { return Math.round(v / 100) * 100; }, eu = function (v) { return nf(c100(v), 0) + '\u00a0€'; }, pa = PA[PA.length - 1], pz = PZ[PZ.length - 1], ec = c100(pa.d) - c100(pz.d);
       if (Math.abs(ec) >= 100 && o.courbe && S.macro) {
-        rh = un('Par habitant, en euros de ' + D0.an + ' hors inflation', function (L, an) { return ((L === A1 ? PA : PZ).filter(function (x) { return x.an === an; })[0] || {}).d; }, function (v) { return nf(c100(v) / 1000, 1).replace(',0', '') + '\u00a0k€'; }, PA.map(function (x) { return x.an; }));
-        rhx = '<p class="q-mini-x">En ' + pa.an + ' : <b>' + eu(pa.d) + '</b> par habitant au lieu de ' + eu(pz.d) + ', soit ' + nf(Math.abs(ec), 0) + '\u00a0€ ' + (ec < 0 ? 'de moins' : 'de plus') + ' (k€ : milliers d\'euros).</p>';
+        rh = un('Richesse par habitant (PIB par habitant), en euros de ' + D0.an, function (L, an) { return ((L === A1 ? PA : PZ).filter(function (x) { return x.an === an; })[0] || {}).d; }, function (v) { return nf(c100(v) / 1000, 1).replace(',0', '') + '\u00a0k€'; }, PA.map(function (x) { return x.an; }));
+        var e10 = Math.round((pa.d - pz.d) / 10) * 10;
+        rhx = '<p class="q-mini-x mentions">Richesse produite en France divisée par le nombre d\'habitants, hors inflation. En ' + pa.an + ' : <b>' + eu(pa.d) + '</b> avec ce choix, ' + eu(pz.d) + ' ' + (o.ref ? (/^sans/.test(o.ref) ? 'sans' : 'avec ' + o.ref) : 'sans') + ', soit ' + (e10 < 0 ? '−' : '+') + nf(Math.abs(e10), 0) + '\u00a0€ par habitant.</p>';
       }
     }
-    if (!rhx && o.compte === false) rhx = '<p class="q-mini-x">Effet sur la richesse par habitant non compté : voir « La source, le calcul et des exemples ».</p>';
+    if (!rhx && o.compte === false) rhx = '<p class="q-mini-x">Effet sur la richesse par habitant non compté' + (o.pourquoi ? ' : ' + esc(o.pourquoi) : '') + '.</p>';
     else if (!rhx && S.macro) { var eR = rhEcart(A0, A1); if (eR) rhx = '<p class="q-mini-x">Richesse par habitant en ' + eR.an + ' : <b>' + eR.t + '</b> (par rapport à sans ce choix).</p>'; }
     var cr = croiss(A1, ans[ans.length - 1]), cz = croiss(A0, ans[ans.length - 1]);
     if (S.macro && n0 <= -0.05 && cr != null && cz != null && cr > cz + 0.05) expl = '<p class="q-mini-x">La croissance repart, mais d\'un niveau plus bas : la richesse par habitant reste inférieure.</p>';
-    if (o.part === 'rh') return rh ? '<div class="q-minis">' + rh + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>sans ce choix</p>' : (rhx && !/<b>/.test(rhx) ? rhx : '');
-    if (o.part === 'autres') { rh = ''; }
+    if (o.part === 'rh') return rh ? '<div class="q-minis">' + rh + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>' + esc(o.ref || 'sans ce choix') + '</p>' + rhx : (rhx && !/<b>/.test(rhx) ? rhx : '');
+    if (o.part === 'autres') { rh = ''; rhx = ''; }
     return (ans.some(function (an) { return ligneAn(A1, an).solde > 0 || ligneAn(A0, an).solde > 0; }) ? '<div class="q-minis">' + un('Solde public, en % du PIB (− déficit, + excédent)', function (L, an) { return ligneAn(L, an).solde; }, function (v) { return (v > 0.04 ? '+' : v < -0.04 ? '−' : '') + nf(Math.abs(v), 1) + '\u00a0%'; }) : '<div class="q-minis">' + un('Déficit, en % du PIB', function (L, an) { return -ligneAn(L, an).solde; }, pcf)) + rh + un('Croissance du PIB', function (L, an) { return croiss(L, an); }, pcf) + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>sans ce choix</p>' + rhx + expl;
   }
   function premiere(c) { for (var a = AN0; a <= AN1; a++) if (montant(c, a)) return 'rien avant ' + a + ', puis ' + quoi(c.sens, montant(c, a)) + ' en ' + a; return 'rien avant ' + (AN1 + 1); }
@@ -2063,6 +2107,18 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     if ($('q-br-n')) $('q-br-n').onclick = function () { fini(); S.obj = nx; garder(); objectifs(); tout(true); var nom = esc(OBJS().filter(function (o) { return o[0] === nx; })[0][1]); pop('Nouvel objectif : ' + nom + ' · ' + objectif().t, true, 'Nouvel objectif : ' + nom); };
   }
   // La phrase des députés d'une étape (pour ne pas la répéter quand elle n'a pas changé).
+  // Le contenu d'une étape : la ligne du résultat (avec les milliards qui manquent), vos mesures en une valeur, le pays qui ressemble,
+  // les députés en une phrase.
+  function etapeCourt(et) {
+    var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1], zf = R0[R0.length - 1], E = effort(), net = E.imp + E.eco - E.baisse - E.dep, rs = ressemble(r1), P = proches();
+    var d0 = deficP(z1.solde), d1 = defic(r1.solde), t0 = nf(zf.d, 1) + '\u00a0%', t1 = nf(f.d, 1) + '\u00a0%';
+    var ligne = '<p class="q-et-av"><b>' + (/^excédent/.test(d1) ? 'Excédent' : 'Déficit') + ' ' + AN0 + ' : ' + d0 + ' → ' + d1 + '</b> (' + soldeMots(r1, true) + ') · <b>Dette ' + f.an + ' : ' + t0 + ' → ' + t1 + '</b></p>';
+    var tu = function (l, v) { return '<div class="q-et-t"><small>' + l + '</small><b>' + v + '</b></div>'; };
+    var tuiles = '<div class="q-et-ts">' + tu('Vos mesures', nbChoix() ? (net >= 0 ? '−' : '+') + mds(Math.abs(net)) + ' de déficit en ' + AN0 : 'aucune adoptée') + (rs && rs.p.code !== 'FR' ? tu('Votre budget ressemble', drapeau(rs.p.code) + ' ' + esc(aPays(rs.p))) : '') + '</div>';
+    var k = Math.max(MINP - P.n, 1);
+    var dep = P.n < MINP ? 'Encore ' + k + ' mesure' + (k > 1 ? 's votées' : ' votée') + ' par les députés, et vous verrez de quels groupes vous êtes le plus proche.' : (function () { var G = P.G.slice().sort(function (a, b) { return b.v - a.v; }); return G.length ? 'Vos votes ressemblent le plus à ceux du groupe ' + esc(G[0].g.n) + ' (' + nf(G[0].v, 0) + '\u00a0% d\'accord).' : 'Pas encore assez de mesures comparables avec les groupes de députés.'; })();
+    return ligne + tuiles + '<p class="q-ligne">🏛️ ' + dep + '</p>';
+  }
   function pxEtape() { return (proximite(proches(), MINP, true).match(/^<p class="q-(?:gros|note)">([\s\S]*?)<\/p>/) || [])[1] || ''; }
   // Le titre d'une étape : ce qui vient d'apparaître (le pays qui ressemble, les députés, l'objectif), sinon le nombre de questions.
   function titreEtape(et) {
@@ -2082,14 +2138,19 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     $('q-ptot').querySelector('span').style.width = (100 * (NQ - rest) / NQ) + '%';
     if (sp && (c || sp === 'nouveaudefi')) carteSpeciale(sp, entree);
     else if (et && c) {
-      $('q-deck').innerHTML = '<section class="card q-etape' + (entree ? ' in' : '') + '"><span class="eyebrow">Votre budget après ' + et + ' questions</span><h2>' + titreEtape(et) + '</h2>' + resume('etape') +
-        '<div class="q-actions"><button type="button" class="q-go" id="q-suite">Encore ' + ((ETAPES[ETAPES.indexOf(et) + 1] || et + 10) - et) + ' questions</button><button type="button" class="q-lien" id="q-voirb">Voir tout le bilan</button><button type="button" class="q-lien" id="q-etp">Partager</button></div></section>';
+      // Une pause dans la partie : où l'on en est, une ligne de résultat, deux tuiles au plus, puis « Continuer à voter » en premier.
+      var nq = NQ - rest;
+      $('q-deck').innerHTML = '<section class="card q-etape q-pause' + (entree ? ' in' : '') + '"><span class="eyebrow">' + titreEtape(et) + '</span><h2>Pause : ' + nq + ' question' + (nq > 1 ? 's' : '') + ' sur ' + NQ + '</h2>' +
+        '<div class="q-ptot q-ptot-c" aria-hidden="true"><span style="width:' + (100 * nq / NQ).toFixed(1) + '%"></span></div>' + etapeCourt(et) +
+        '<button type="button" class="q-go q-continuer" id="q-suite">Continuer à voter → question ' + Math.min(NQ, nq + 1) + ' sur ' + NQ + '</button>' +
+        '<p class="q-actions q-pause-l"><button type="button" class="q-lien" id="q-voirb">Voir tout le bilan</button> · <button type="button" class="q-lien" id="q-etp">Partager</button></p>' +
+        (c ? '<p class="q-note q-pause-n">Question ' + Math.min(NQ, nq + 1) + ' : ' + esc(c.q && QS[c.q] ? QS[c.q].t : (c.titre || c.l)) + '</p>' : '') + '</section>';
       $('q-etp').onclick = function () { partager(); };
       var rsH = ressemble(an1(R)); S.hist = S.hist || {}; S.hist[et] = { s: an1(R).solde, d: R[R.length - 1].d, p: rsH ? rsH.p.code : null, g: pxEtape() }; garder();
       var suite = function () { S.etape = et; garder(); tout(true); remonter(); }, voirb = function () { S.etape = et; garder(); onglet('bilan'); };
       $('q-suite').onclick = suite; $('q-voirb').onclick = voirb;
       Array.prototype.forEach.call($('q-deck').querySelectorAll('[data-pays]'), function (b) { b.onclick = function () { S.etape = et; garder(); $('q-ress').click(); }; }); $('b-suite').onclick = suite; $('b-bilan').onclick = voirb;
-      $('b-suite').textContent = 'Continuer : ' + $('q-suite').textContent.toLowerCase();
+      $('b-suite').textContent = $('q-suite').textContent;
       SUITE_VU = false; if (window.IntersectionObserver) { if (SUITE_OBS) SUITE_OBS.disconnect(); SUITE_OBS = new IntersectionObserver(function (E) { var v = E.some(function (x) { return x.isIntersecting; }); if (v !== SUITE_VU) { SUITE_VU = v; barre(); } }, { rootMargin: '0px 0px -60px 0px' }); SUITE_OBS.observe($('q-suite')); }
     } else if (c) (c.q ? carteQ : carte)(c, entree);
     else {
@@ -2350,16 +2411,25 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     var REMP = (remp.length ? '<p class="q-ligne">Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' » (' + quoi(o.sens, montant(o, AN0)) + ')' : ''; }).join(', ') + ' : les deux portent sur le même argent, ce montant sort de votre budget.</p>' : '') + (rempP.length ? '<p class="q-ligne">Ce choix remplace votre ligne ' + nomsP.map(function (t) { return '« ' + t + ' »'; }).join(', ') + ' : elle porte sur le même argent et sort de votre budget.</p>' : '');
     var compte = !!(choisi.mix || (choisi.macro && J.variantes[choisi.macro])), eR = S.macro && compte ? rhEcart(R, A1) : null, r0d = ligneAn(R, anObj()), r1d = ligneAn(A1, anObj());
     var dD = (r1d.solde - r0d.solde) / 100 * r1d.pib, meme = deficP(r0d.solde) === defic(r1d.solde);
-    var RES = '<p class="q-res1"><b>Déficit ' + anObj() + ' : ' + deficP(r0d.solde) + ' → ' + defic(r1d.solde) + (meme && Math.abs(dD) >= 0.005 ? ' (' + (dD > 0 ? '−' : '+') + mdt(Math.abs(dD)) + ')' : '') + (eR ? ' · Par habitant ' + eR.an + ' : ' + eR.t : '') + '</b></p>';
-    var NCC = (function () { var L = []; if (!compte) L.push('l\'effet sur l\'activité'); var x = choisi.nc && J.non_comptes && J.non_comptes[choisi.nc] && (choisi.nc !== 'ame' || pc < 0) ? J.non_comptes[choisi.nc] : null; if (x) L.push(NC_COURT[choisi.nc] || ncMots(x.t)); return L.join(', '); })();
+    // La référence : sans changement de cette ligne, ou votre réglage actuel quand la ligne est déjà dans votre budget.
+    var REF = av ? 'votre réglage actuel (' + pcT(choisi, av) + ')' : 'sans ce choix';
+    var g0c = croiss(R, AN0), g1c = croiss(A1, AN0), fG = function (v) { return GRAND ? 'environ ' + (Math.round(v) < 0 ? '−' : '') + nf(Math.abs(Math.round(v)), 0) + '\u00a0%' : pcs(v); };
+    var CRO = !S.macro || !compte ? 'Croissance : effet non compté' : g0c != null && g1c != null ? 'Croissance ' + AN0 + ' : ' + pcs(g0c) + ' → ' + fG(g1c) : '';
+    var x0 = /^excédent/.test(deficP(r0d.solde)), x1 = /^excédent/.test(defic(r1d.solde)), m0 = soldeMots(r0d, true).replace(/ (qui manquent|en plus)$/, ''), m1 = soldeMots(r1d, true).replace(/ (qui manquent|en plus)$/, ''), pc0 = deficP(r0d.solde).replace(/^excédent (?:de |d')/, ''), pc1 = defic(r1d.solde).replace(/^excédent (?:de |d')/, '');
+    var SOL = !x0 && !x1 ? 'Ce qui manque en ' + anObj() + ' : ' + m0 + ' → ' + m1 + ' (' + pc0 + ' → ' + pc1 + ' du PIB)' : !x0 && x1 ? 'En ' + anObj() + ' : plus de déficit, il reste ' + m1 + ' en plus (' + pc1 + ' du PIB)' : x0 && x1 ? 'En ' + anObj() + ', en plus : ' + m0 + ' → ' + m1 + ' (' + pc0 + ' → ' + pc1 + ' du PIB)' : 'En ' + anObj() + ' : de ' + m0 + ' en plus à ' + m1 + ' qui manquent (' + pc1 + ' du PIB)';
+    var RES = '<p class="q-res1"><b>' + SOL + (meme && Math.abs(dD) >= 0.005 ? ' (' + (dD > 0 ? '−' : '+') + mdt(Math.abs(dD)) + ')' : '') + (CRO ? ' · ' + CRO : '') + (eR ? ' · Par habitant ' + eR.an + ' : ' + eR.t : '') + '</b>' + (av ? ' <span class="q-ref">Par rapport à ' + esc(REF) + '.</span>' : '') + '</p>';
+    var NCC = (function () { var L = []; if (!compte) L.push('l\'effet sur l\'activité'); var x = choisi.nc && J.non_comptes && J.non_comptes[choisi.nc] && (choisi.nc !== 'ame' || pc < 0) ? J.non_comptes[choisi.nc] : null; if (x) { var m = NC_COURT[choisi.nc] || ncMots(x.t); if (L.indexOf(m) < 0) L.push(m); } return L.join(', '); })();
+    // Pourquoi l'effet sur l'activité n'est pas compté : la première phrase de la source, sinon le modèle sans variante pour ce type.
+    var POURQ = compte ? '' : (function () { var x = choisi.nc && J.non_comptes && J.non_comptes[choisi.nc]; var m = x && /^(?:Effet sur l'activité non compté|Pas compté)\s*:\s*([^.]*)/.exec(x.t); return m ? m[1].trim() : 'le modèle de la direction du Trésor et de l\'Insee ne publie pas de variante pour ce type de mesure'; })();
     var UNE = [horsModele(A1) ? (tresGrand(A1) ? 'Ordre de grandeur (au-delà de ce que le modèle a testé)' : 'Estimation (au-delà de ce que le modèle a testé)') : '', NCC ? 'non compté : ' + esc(NCC) : ''].filter(Boolean);
-    $('q-apercu').innerHTML = pc !== (av || 0) ? RES + miniCourbes(R, A1, $('q-apercu').clientWidth, { part: 'rh', courbe: true, compte: compte }) + REMP +
-      '<details class="q-plie q-plus"><summary>' + (UNE.length ? '<span class="q-une">' + maj1(UNE.join(' · ')) + '</span> ' : '') + '<u>Plus de détails</u></summary>' + LISTE + horsModeleCourt(A1, '') + miniCourbes(R, A1, $('q-apercu').clientWidth, { part: 'autres', courbe: true, compte: compte }) + '</details>' : '';
+    $('q-apercu').innerHTML = pc !== (av || 0) ? RES + miniCourbes(R, A1, $('q-apercu').clientWidth, { part: 'rh', courbe: true, compte: compte, ref: REF, pourquoi: POURQ }) + REMP +
+      '<details class="q-plie q-plus"><summary>' + (UNE.length ? '<span class="q-une">' + maj1(UNE.join(' · ')) + '</span> ' : '') + '<u>Plus de détails</u></summary>' + LISTE + horsModeleCourt(A1, '') + miniCourbes(R, A1, $('q-apercu').clientWidth, { part: 'autres', courbe: true, compte: compte, ref: REF }) + '</details>' : '';
 
     $("q-ch-av").innerHTML = pc !== (av || 0) ? '<p>' + ecoPhrase(R, A1, dPo * kP - rA, !!(choisi.macro && J.variantes[choisi.macro]), choisi.mix ? 'mix' : choisi.macro) + '</p>' + horsModele(A1, true) + (choisi.macro_note && choisi.macro && J.variantes[choisi.macro] ? '<p>Effet sur l\'activité (modèle Mésange, le modèle de calcul de la direction du Trésor et de l\'Insee) : ' + esc(choisi.macro_note) + '</p>' : '') : '';
     GRAND = G0;
     if (hs) $('q-apercu').innerHTML = '<p class="q-alerte"><b>Pas possible :</b> ' + hs + '</p>';
-    var court0 = pc && !hs ? ' · ' + (choisi.mix ? 'déficit inchangé' : quoi(sP, dP).replace(/milliards? d'euros/, 'Md€').replace(/millions? d'euros/, 'M€')) : '';
+    var cM = function (t) { return t.replace(/milliards? d'euros/, 'Md€').replace(/millions? d'euros/, 'M€'); }, nouv = effetPerso(choisi, pc, AN0), anc = av ? effetPerso(choisi, av, AN0) : 0;
+    var court0 = pc && !hs ? ' · ' + (choisi.mix ? 'déficit inchangé' : cM(quoi(sP, nouv)) + (av ? ' au lieu de ' + cM(quoi(sP, anc)) : '')) : '';
     $('q-ajout').disabled = !pc || pc === av || !!hs; $('q-ajout').textContent = pc && pc === av ? 'Déjà dans votre budget' : (S.perso[choisi.k] != null ? 'Mettre à jour mon budget' : 'Ajouter à mon budget') + (court0 || '');
   }
   // ---------- Concrètement : des cas types calculés par Concret avec les règles officielles en vigueur ----------
@@ -2939,11 +3009,14 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     // Une seule ligne : « comme sans vos mesures », ou l'écart et le chiffre sans vos mesures (l'effet sur l'activité est détaillé sous les tuiles).
     var sous = function (a, b, txt) { var e = ecartPt(a, b); return e === 'comme sans vos mesures' ? sp(e) : sp(e, 'ecart') + sp('sans vos mesures : ' + txt); };
     var ti = f.interets * f.pib / 100, zi = zf.interets * zf.pib / 100;
-    $('q-tuiles').innerHTML = tu('Déficit ' + AN0, deficO(r1, AN0), n ? sous(-r1.solde, -z1.solde, deficP(z1.solde)) : sp('du PIB')) +
-      tu('Déficit ' + f.an, defic(f.solde), n ? sous(-f.solde, -zf.solde, deficP(zf.solde)) : sp('si rien ne change')) +
-      tu('Dette ' + f.an, dpc(f.d), n ? sous(f.d, zf.d, nf(zf.d, 1) + '\u00a0%') : sp('du PIB ; fin ' + PJ.depart.an + ' : ' + nf(PJ.depart.dette, 1) + '\u00a0%')) +
+    // Le solde dit aussi en milliards (« 172 Md€ qui manquent »), la dette en milliards ; la phrase qui l'explique une fois, sous les tuiles.
+    var mdD = function (r) { return '≈\u00a0' + nf(Math.round(r.d / 100 * r.pib / 100) * 100, 0) + '\u00a0Md€'; };
+    $('q-tuiles').innerHTML = tu('Déficit ' + AN0, deficO(r1, AN0), sp(soldeMots(r1, true)) + (n ? sous(-r1.solde, -z1.solde, deficP(z1.solde)) : sp('du PIB'))) +
+      tu('Déficit ' + f.an, defic(f.solde), sp(soldeMots(f, true)) + (n ? sous(-f.solde, -zf.solde, deficP(zf.solde)) : sp('si rien ne change'))) +
+      tu('Dette ' + f.an, dpc(f.d), sp('soit ' + mdD(f)) + (n ? sous(f.d, zf.d, nf(zf.d, 1) + '\u00a0%') : sp('du PIB ; fin ' + PJ.depart.an + ' : ' + nf(PJ.depart.dette, 1) + '\u00a0%'))) +
       tu('Croissance du PIB', tresGrand(R) ? arr(croiss(R, AN0), '\u00a0%').replace(/^environ /, '') + ' → ' + arr(croiss(R, f.an), '\u00a0%').replace(/^environ /, '') : pcs(croiss(R, AN0)) + ' → ' + pcs(croiss(R, f.an)), sp((tresGrand(R) ? 'environ, ' : '') + 'en ' + AN0 + ' → en ' + f.an) + sp(n && (pcs(croiss(R0, AN0)) !== pcs(croiss(R, AN0)) || pcs(croiss(R0, f.an)) !== pcs(croiss(R, f.an))) ? 'prévision du FMI : ' + pcs(croiss(R0, AN0)) + ' → ' + pcs(croiss(R0, f.an)) : 'prévision du FMI'), 'deux') +
-      tu('Intérêts de la dette en ' + f.an, nf(ti, 0) + '\u00a0milliards d\'euros', sp(nf(f.interets, 1) + '\u00a0% du PIB' + (n && Math.abs(ti - zi) >= 0.5 ? ' ; sans vos mesures : ' + nf(zi, 0) + '\u00a0milliards' : '')), 'large');
+      tu('Intérêts de la dette en ' + f.an, nf(ti, 0) + '\u00a0milliards d\'euros', sp(nf(f.interets, 1) + '\u00a0% du PIB' + (n && Math.abs(ti - zi) >= 0.5 ? ' ; sans vos mesures : ' + nf(zi, 0) + '\u00a0milliards' : '')), 'large') +
+      '<p class="q-tl-x">En ' + AN0 + ', ' + soldeMots(r1) + '.</p>';
     // Sans mesure : une phrase et deux boutons pour commencer, pas de partage d'un budget vide.
     $('q-rc-p').innerHTML = n ? resume('bilan') : '<p class="q-gros">Aucune mesure pour l\'instant : voici où irait la France si rien ne change.</p><p class="q-actions"><button type="button" class="q-go" data-aller="voter">Voter les mesures</button> <button type="button" class="q-lien" data-aller="creer">Créer les vôtres</button></p>';
     $('q-partager').parentNode.hidden = !n;
@@ -3696,11 +3769,11 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     var lignesC = function (t, l, n) { var L = [''], mots = String(t).split(' '); mots.forEach(function (m) { var u = L[L.length - 1] ? L[L.length - 1] + ' ' + m : m; if (g.measureText(u).width > l && L[L.length - 1]) L.push(m); else L[L.length - 1] = u; }); if (L.length > n) { L = L.slice(0, n); var d = L[n - 1]; while (d.length > 4 && g.measureText(d + '…').width > l) d = d.slice(0, -1); L[n - 1] = d.replace(/\s+\S*$/, '') + '…'; } return L; };
     // Le résultat obtenu, en tête : objectif atteint (en combien de questions), défi du jour réussi, sinon ce que devient le déficit.
     var res = REP_IMG || resultatTxt(), y = 250; g.fillStyle = '#2f5bd3'; g.font = '700 36px ' + sans; lignesC(res, W - 160, 3).forEach(function (li) { g.fillText(li, 80, y); y += 48; });
-    var tuile = function (x, y, l, v, s2) { g.fillStyle = '#62646d'; g.font = '600 30px ' + sans; g.fillText(l, x, y); g.fillStyle = '#1c1d22'; g.font = '400 112px ' + serif; g.fillText(v, x, y + 112); g.fillStyle = '#62646d'; g.font = '400 28px ' + sans; g.fillText(s2, x, y + 158); };
+    var tuile = function (x, y, l, v, s2, s3) { g.fillStyle = '#62646d'; g.font = '600 30px ' + sans; g.fillText(l, x, y); g.fillStyle = '#1c1d22'; g.font = '400 112px ' + serif; g.fillText(v, x, y + 112); g.fillStyle = '#62646d'; g.font = '400 28px ' + sans; if (s3) { g.fillStyle = '#1c1d22'; g.fillText(s3, x, y + 156); g.fillStyle = '#62646d'; } g.fillText(s2, x, y + (s3 ? 194 : 158)); };
     // « environ » va sous le grand chiffre, jamais dedans (il tiendrait mal dans sa colonne).
     var vD = deficO(r1, AN0).replace(/^excédent (?:de |d')/, ''), vT = dpc(f.d), env = function () { return ''; };
-    y += 30; tuile(80, y, (/^excédent/.test(deficO(r1, AN0)) ? 'EXCÉDENT ' : 'DÉFICIT ') + AN0, (/^environ /.test(vD) ? '≈ ' : '') + vD.replace(/^environ /, ''), env(vD) + 'sans aucune mesure : ' + (/^excédent/.test(deficO(r1, AN0)) && !/^excédent/.test(deficP(z1.solde)) ? 'déficit de ' : '') + deficP(z1.solde)); tuile(580, y, 'DETTE ' + f.an, (/^environ /.test(vT) ? '≈ ' : '') + vT.replace(/^environ /, ''), env(vT) + 'sans aucune mesure : ' + nf(zf.d, 1) + ' %');
-    y += 245;
+    y += 30; tuile(80, y, (/^excédent/.test(deficO(r1, AN0)) ? 'EXCÉDENT ' : 'DÉFICIT ') + AN0, (/^environ /.test(vD) ? '≈ ' : '') + vD.replace(/^environ /, ''), env(vD) + 'sans aucune mesure : ' + (/^excédent/.test(deficO(r1, AN0)) && !/^excédent/.test(deficP(z1.solde)) ? 'déficit de ' : '') + deficP(z1.solde), soldeMots(r1, true)); tuile(580, y, 'DETTE ' + f.an, (/^environ /.test(vT) ? '≈ ' : '') + vT.replace(/^environ /, ''), env(vT) + 'sans aucune mesure : ' + nf(zf.d, 1) + ' %', 'soit ≈ ' + nf(Math.round(f.d / 100 * f.pib / 100) * 100, 0) + ' Md€');
+    y += 270;
     var rs = ressemble(r1), defL = 'Déficit ' + AN0 + ' : ' + deficP(z1.solde) + ' → ' + deficO(r1, AN0);
     g.fillStyle = '#1c1d22'; g.font = '600 36px ' + sans;
     if (rs && rs.p.code !== 'FR') { g.fillText('Il ressemble ' + aPays(rs.p) + ' ' + drapeau(rs.p.code), 80, y); g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; g.fillText('dépenses et recettes publiques (Eurostat, ' + PE.an + ')', 80, y + 38); }
@@ -3867,6 +3940,14 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     document.addEventListener('keydown', function (e) { if ($('p-voter').hidden || $('q-bar').hidden || /input|textarea|select/i.test((e.target || {}).tagName)) return; var c = suivante(); if (!c) return; if (c.q) { if (e.key === 'ArrowDown') { e.preventDefault(); voterQ(c, 'x'); } if (e.key === 'ArrowLeft') voterQ(c, 'a'); return; } if (e.key === 'ArrowDown') { e.preventDefault(); voter(c, 3); } if (e.key === 'ArrowRight') voter(c, 1); if (e.key === 'ArrowLeft') voter(c, -1); });
     $('q-reset').onclick = function () { confirmer($('q-reset'), 'Confirmer : effacer tous vos votes et vos mesures', toutEffacer); };
     $('q-reset2').onclick = function () { confirmer($('q-reset2'), 'Confirmer : effacer tous vos votes et vos mesures', toutEffacer); };
+    // « ↺ Recommencer » en haut : le choix s'ouvre dans la page (pas de fenêtre du navigateur).
+    // Trois boutons (barre des onglets ; ligne de progression de Voter quand le bandeau est réduit ; haut du Bilan) ouvrent le même choix, placé juste sous celui qu'on a touché.
+    var rkDe = null, rkOuvre = function (o, b) { var c = $('q-recom-c'); if (o && b) { rkDe = b; var ref = b.closest('.q-tabsr, .q-prog') || $('q-rc-t'); ref.parentNode.insertBefore(c, ref.nextSibling); } c.hidden = !o;
+      Array.prototype.forEach.call(document.querySelectorAll('.q-recom-b'), function (x) { x.setAttribute('aria-expanded', o && x === rkDe); }); if (o) $('q-rk-rv').hidden ? $('q-rk-tout').focus() : $('q-rk-rv').focus(); else if (rkDe) rkDe.focus(); };
+    Array.prototype.forEach.call(document.querySelectorAll('.q-recom-b'), function (b) { b.onclick = function () { rkOuvre($('q-recom-c').hidden || rkDe !== b, b); }; });
+    $('q-rk-non').onclick = function () { rkOuvre(false); };
+    $('q-recom-c').onkeydown = function (e) { if (e.key === 'Escape') rkOuvre(false); };
+    $('q-rk-rv').onclick = revoter; $('q-rk-tout').onclick = toutEffacer;
     $('q-revoter').onclick = function () { confirmer($('q-revoter'), 'Confirmer : revoter les ' + nbDecisions() + ' questions', revoter); };
     $('q-changer').onclick = ouvrirVotes;
     $('q-partager').onclick = partager;
