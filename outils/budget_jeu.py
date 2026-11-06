@@ -673,15 +673,36 @@ def _milieu(debut, fin):
     return (a + (b - a) / 2).isoformat()
 
 
+# Le dirigeant montré pour un pays-année : le chef du gouvernement (choix de l'éditeur, lot 6). Là où le président dirige lui-même le
+# gouvernement, le président ; là où il y a aussi un Premier ministre (France, Chine), celui en fonction au milieu du mandat du
+# président, lu dans la même source (Wikidata) ; sans chef du gouvernement connu (Russie : pas de liste des présidents du Gouvernement
+# dans la source), le pays-année est écarté, jamais remplacé par le président.
+PRES_CHEF = {'États-Unis', 'Brésil', 'Costa Rica', 'Colombie', 'Chili', 'Corée du Sud', 'Turquie', 'Mexique', 'Argentine'}
+
+
+def chef_gouvernement(p, src):
+    """Le chef du gouvernement d'un point de la source : (nom, qid, fonction) ou None."""
+    if p['role'] in ('chef du gouvernement', 'Premier ministre'): return (p['nom'], p['wikidata'], None)
+    if p['role'] == 'président' and p['pays'] in PRES_CHEF: return (p['nom'], p['wikidata'], None)
+    pm = (src.get('france') or {}).get('premiers_ministres') if p['pays'] == 'France' else (src.get('chine') or {}).get('premiers_ministres') if p['pays'] == 'Chine' else None
+    if not pm: return None
+    m = _milieu(p['debut'], p['fin'])
+    for q in pm:
+        if q['debut'] <= m < (q['fin'] or '2026-11-05'): return (q['nom'], q['qid'], 'pm')
+    return None
+
+
 def dirigeants():
     """Les points du nuage : un pays, une année (le milieu d'un mandat), sa dépense et ses recettes publiques. Les noms des
     personnes restent dans la source (donnees/budget_sources/dirigeants.json, pour la vérification) et ne sont pas publiés."""
     src = charger('dirigeants.json')
     if not src: return None
-    pts, vus, courts = [], {}, 0
+    pts, vus, courts, sans_chef = [], {}, 0, []
     for p in src['points']:
         if p['court']:
             courts += 1; continue
+        if not chef_gouvernement(p, src):
+            sans_chef.append('%s %s (%s)' % (p['pays'], p['annee'], p['role'])); continue
         assert 10 <= p['depense'] <= 75 and -20 <= p['solde'] <= 20, p
         assert p['sources']['depense'] == p['sources']['solde'], p
         x = {'pays': p['pays'], 'c': DIR_ISO2[p['code_pays']], 'rg': DIR_REGION.get(p['code_pays'], 'eu'), 'de': _de_pays(p['pays']), 'an': p['annee'],
@@ -704,7 +725,8 @@ def dirigeants():
     texte = json.dumps(pts, ensure_ascii=False)
     for q in src['points']:   # aucun nom de personne dans ce qui est publié
         assert q['nom'] not in texte, q['nom']
-    return {'pts': pts, 'courts': courts, 'releve': src['releve'], 'etude': src['etude'], 'note_extras': src['note_extras'], 'absents': absents,
+    if sans_chef: print('  pays-années écartés, sans chef du gouvernement dans la source :', len(sans_chef), '·', ', '.join(sans_chef))
+    return {'pts': pts, 'courts': courts, 'sans_chef': len(sans_chef), 'releve': src['releve'], 'etude': src['etude'], 'note_extras': src['note_extras'], 'absents': absents,
             'sources': src['sources'], 'liste': src['liste_des_dirigeants']}
 
 

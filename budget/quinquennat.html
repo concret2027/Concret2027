@@ -3209,7 +3209,21 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   var DIRSRC = null;
   function quiDir(p) {
     if (!DIRSRC) return [];
-    return DIRSRC.points.filter(function (q) { return !q.court && q.pays === p.pays && q.annee === p.an; }).map(function (q) { var fo = DIRSRC.fonctions[q.office] || {}, fe = DIRSRC.sexe && DIRSRC.sexe[q.wikidata] === 'F'; return { nom: q.nom, f: (fe && fo.f ? fo.f : fo.l) || q.role }; });
+    // Le chef du gouvernement (choix de l'éditeur) : là où il y a aussi un président (France, Chine), le Premier ministre en fonction
+    // au milieu du mandat du président, lu dans la même source ; sinon le dirigeant du point (outils/budget_jeu.py, chef_gouvernement).
+    var milieu = function (a, b) { var t0 = Date.parse(a), t1 = Date.parse(b || '2026-11-05'); return new Date((t0 + t1) / 2).toISOString().slice(0, 10); };
+    var L = [];
+    DIRSRC.points.filter(function (q) { return !q.court && q.pays === p.pays && q.annee === p.an; }).forEach(function (q) {
+      var x = null, fe;
+      if (q.role === 'président de la République' || (q.role === 'président' && q.pays === 'Chine')) {
+        var PM = q.pays === 'France' ? (DIRSRC.france || {}).premiers_ministres : (DIRSRC.chine || {}).premiers_ministres, m = milieu(q.debut, q.fin);
+        var pm = (PM || []).filter(function (y) { return y.debut <= m && m < (y.fin || '2026-11-05'); })[0]; if (!pm) return;
+        fe = DIRSRC.sexe && DIRSRC.sexe[pm.qid] === 'F';
+        x = { nom: pm.nom, f: q.pays === 'Chine' ? DIRSRC.chine.fonction_pm : (fe ? 'Première ministre' : 'Premier ministre') + ' (au milieu du mandat présidentiel, ' + dateLue(m) + ')' };
+      } else { var fo = DIRSRC.fonctions[q.office] || {}; fe = DIRSRC.sexe && DIRSRC.sexe[q.wikidata] === 'F'; x = { nom: q.nom, f: (fe && fo.f ? fo.f : fo.l) || q.role }; }
+      if (x && !L.some(function (y) { return y.nom === x.nom; })) L.push(x);
+    });
+    return L;
   }
   function histoireCarte(rd) {
     var sec = $('q-hist-c'); if (!sec) return; sec.hidden = !HIST || !rd; if (!HIST || !rd) return;
@@ -3225,7 +3239,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
       (autres.length ? '<p class="q-ligne">Et aussi proche : ' + autres.join(' ; ') + '.</p>' : '') +
       (x ? '<p class="q-ligne"><b>Une réforme du même genre :</b> ' + esc(x.en.charAt(0).toUpperCase() + x.en.slice(1)) + ', en ' + x.an + ' : ' + esc(x.mesure.charAt(0).toLowerCase() + x.mesure.slice(1).replace(/\.$/, '')) + '.' + (x.reg ? ' (Régime : ' + esc(x.reg) + ', classement V-Dem.)' : '') + ' <a href="' + esc(x.url) + '">Source</a></p>' : '') +
       '<p class="q-actions"><button type="button" class="q-go" id="q-hi-p">Partager</button></p>' +
-      '<p class="q-note mentions">Ce sont les dépenses et recettes de tout le pays, pas les seules décisions de son gouvernement. Votre budget : ' + AN0 + ' ; ' + esc(p.pays) + ' : ' + p.an + ' (Eurostat, OCDE, FMI ; dirigeants : Wikidata).</p>';
+      '<p class="q-note mentions">Ce sont les dépenses et recettes de tout le pays, pas les seules décisions de son gouvernement. Votre budget : ' + AN0 + ' ; ' + esc(p.pays) + ' : ' + p.an + ' (Eurostat, OCDE, FMI ; dirigeants : Wikidata). Le dirigeant montré est le chef du gouvernement ; pour un président qui a aussi un Premier ministre (France, Chine), le Premier ministre en fonction au milieu de son mandat. Un pays-année sans chef du gouvernement connu dans la source n\'est pas proposé' + (J.dirigeants && J.dirigeants.sans_chef ? ' (' + J.dirigeants.sans_chef + ', en Russie : la source n\'a pas la liste des présidents du Gouvernement)' : '') + '.</p>';
     $('q-hi-p').onclick = function () { partagerHist(rd, Q, autres); };
   }
   // L'image de la carte : la même, lisible en miniature (gros caractères, deux paires de barres).
