@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="0a3400bcfb1d">
+<meta name="concret-version" content="c4b8a958f30b">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -36,11 +36,11 @@
 #q-vos-d .vos-s { font-size: 14px; font-weight: 400; color: var(--muted); line-height: 1.35; }
 /* L'étape des votes : trois tuiles de chiffres, puis des lignes courtes. */
 .q-et-tuiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 10px; }
-.q-et-t { display: grid; gap: 2px; align-content: start; padding: 10px 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--fr) 9%, var(--panel)); }
-.q-et-t small { font-size: 13px; font-weight: 700; color: var(--muted); line-height: 1.25; }
-.q-et-t b { font-family: var(--serif); font-weight: 400; font-size: clamp(18px, 5vw, 24px); line-height: 1.15; color: var(--fg); overflow-wrap: anywhere; }
-.q-et-t span { font-size: 13px; color: var(--muted); line-height: 1.3; }
-.q-et-av { margin: 0 0 8px; font-size: 16px; line-height: 1.45; }
+.q-et-t { display: grid; gap: 1px; align-content: start; min-width: 0; padding: 7px 10px 8px; border-radius: 10px; background: var(--sable); border: 1px solid var(--sable-bd); }
+.q-et-t small { font-size: 13px; font-weight: 400; color: var(--muted); line-height: 1.25; }
+.q-et-t b { font-weight: 700; font-size: 17.5px; line-height: 1.2; color: var(--fg); font-variant-numeric: tabular-nums; }
+.q-et-t span { font-size: 13px; color: var(--muted); line-height: 1.25; }
+.q-et-av { margin: 0 0 8px; font-size: 15px; line-height: 1.45; }
 .q-et-av b { font-variant-numeric: tabular-nums; }
 .q-et-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .q-et-l li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 15px; line-height: 1.4; }
@@ -463,6 +463,9 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-collant { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--navh, 52px)); z-index: 9; display: grid; gap: 6px; margin-top: -6px; padding-top: 6px; background: var(--bg); }
 .q-hud { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--sable-bd); border-radius: 14px; background: var(--sable); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
 .q-hd { display: grid; align-content: center; min-height: 44px; line-height: 1.1; font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer; min-width: 0; }
+/* « PIB par habitant » au bandeau ; « PIB/hab. » quand la place manque (bandeau réduit, texte agrandi, téléphone). */
+.q-l-c { display: none; } .q-collant.q-mini .q-l-l, body.q-grand .q-l-l { display: none; } .q-collant.q-mini .q-l-c, body.q-grand .q-l-c { display: inline; }
+@media (max-width: 440px) { .q-l-l { display: none; } .q-l-c { display: inline; } }
 .q-hd small { font-size: 13px; font-weight: 700; color: var(--muted); white-space: normal; overflow-wrap: anywhere; line-height: 1.2; }
 .q-hd b { font-family: var(--serif); font-weight: 400; font-size: clamp(17px, 5.6vw, 22px); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 .q-hd.d { text-align: right; }
@@ -855,26 +858,44 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
 .q-presets { display: flex; flex-wrap: wrap; gap: 6px; }
 .q-presets button { display: inline-flex; align-items: center; justify-content: center; font: inherit; font-size: 13px; font-weight: 600; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 44px; font-variant-numeric: tabular-nums; }
 .q-effet { margin: 0; font-size: 15px; }
-.q-effet b { font-family: var(--serif); font-weight: 400; font-size: 26px; color: var(--fr); }
+/* Créer : une seule police (celle du site), le gras pour les valeurs seulement ; trois tuiles identiques au-dessus de la courbe. */
+.q-effet b { font: inherit; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; }
+.q-pill, .q-tuiles-c .q-pill { display: inline-block; font: inherit; font-size: 13px; font-weight: 400; line-height: 1.3; min-height: 0; color: var(--muted); background: var(--sable); border: 1px solid var(--sable-bd); border-radius: 999px; padding: 2px 9px; margin: 0 0 0 2px; white-space: nowrap; cursor: pointer; vertical-align: 1px; text-align: center; }
+.q-pill[aria-expanded="true"] { color: var(--fg); }
+.q-pill-x { display: block; margin-top: 4px; font-size: 13px; color: var(--muted); }
+.q-pill-x[hidden] { display: none; }
 .q-apercu { margin: 0; font-size: 14.5px; font-weight: 600; }
+#q-apercu { font-weight: 400; }
+#q-apercu .q-mini figcaption { font-weight: 400; }
+.q-r3 { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr) minmax(0, 1.1fr); gap: 6px; margin: 2px 0 0; }
+.q-ppv:empty { display: none; }
+.q-r3 > div { display: grid; gap: 1px; align-content: start; min-width: 0; padding: 7px 6px 8px 8px; border-radius: 10px; background: var(--sable); border: 1px solid var(--sable-bd); }
+.q-r3 small, .q-r3 span { font-size: 12.5px; font-weight: 400; line-height: 1.25; color: var(--muted); }
+.q-r3 small { text-wrap: balance; }
+.q-r3 b { white-space: nowrap; letter-spacing: -0.01em; font-size: 17px; font-weight: 700; line-height: 1.2; color: var(--fg); font-variant-numeric: tabular-nums; }
+.q-r3 b.nc { font-size: 15px; white-space: normal; }
+body.q-etroit .q-r3 { grid-template-columns: minmax(0, 1fr); }
+.q-r3-ref { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+.q-r3-x { margin: 6px 0 0; font-size: 13px; line-height: 1.35; color: var(--muted); }
 .q-minis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 10px; margin-top: 8px; max-width: 680px; }
 .q-mini { margin: 0; padding: 6px 8px 2px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); min-width: 0; }
 .q-mini figcaption { font-size: 13px; font-weight: 700; color: var(--muted); }
 .q-mini svg { display: block; width: 100%; height: auto; }
-.q-mini-l { margin: 4px 0 0; font-size: 13px; font-weight: 400; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.q-mini-l { margin: 4px 0 0; font-size: 13px; font-weight: 400; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; }
+.q-mini-l > span { display: inline-flex; align-items: center; gap: 6px; margin-right: 8px; } .q-mini-l > span i.s { margin-left: 0; }
 .q-mini-l i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; background: var(--fr); }
 .q-mini-l i.s { background: none; border-top: 2px dashed var(--muted); height: 0; margin-left: 8px; }
 /* Bilan */
 .q-tuiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.q-tuile { padding: 10px 12px; border-radius: 12px; background: var(--band); display: grid; gap: 2px; }
-.q-tuile small { font-size: 13px; font-weight: 700; color: var(--muted); }
-.q-tuile b { font-family: var(--serif); font-weight: 400; font-size: 25px; line-height: 1.1; font-variant-numeric: tabular-nums; overflow-wrap: break-word; }
+.q-tuile { padding: 8px 10px 9px; border-radius: 10px; background: var(--sable); border: 1px solid var(--sable-bd); display: grid; gap: 1px; }
+.q-tuile small { font-size: 13px; font-weight: 400; color: var(--muted); }
+.q-tuile b { font-weight: 700; font-size: 18px; line-height: 1.2; font-variant-numeric: tabular-nums; overflow-wrap: break-word; }
 .q-tuile { min-width: 0; }
 .q-tuile span { font-size: 13px; color: var(--muted); }
 .q-tuile { align-content: start; }
 .q-tuile.large { grid-column: 1 / -1; }
 .q-tl-x { grid-column: 1 / -1; margin: 0; font-size: 14px; color: var(--muted); }
-.q-tuile.deux b { font-size: 21px; white-space: nowrap; }
+.q-tuile.deux b { font-size: 18px; white-space: nowrap; }
 .q-tuile span.ecart { color: var(--fg); font-weight: 600; }
 .q-chart svg { width: 100%; height: auto; display: block; }
 .q-ans { margin: 0; }
@@ -952,7 +973,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   <div class="q-collant" id="q-collant">
   <div class="q-hud" id="q-hud">
     <button type="button" class="q-hd" data-x="d" aria-label="Déficit : ce que veut dire ce chiffre"><small id="h-l1">Déficit</small><b id="h-v1">—</b><i class="q-hd-s">du PIB ⓘ</i></button>
-    <button type="button" class="q-hd c" data-x="c" aria-label="Richesse par habitant : ce que veut dire ce chiffre"><small id="h-l3">Par habitant 2031</small><b id="h-v3">—</b><i class="q-hd-s" id="h-s3"></i></button>
+    <button type="button" class="q-hd c" data-x="c" aria-label="Richesse par habitant : ce que veut dire ce chiffre"><small id="h-l3"><span class="q-l-l">PIB par habitant</span><span class="q-l-c">PIB/hab.</span><span class="q-an"> 2031</span></small><b id="h-v3">—</b><i class="q-hd-s" id="h-s3"></i></button>
     <button type="button" class="q-hd d" data-x="t" aria-label="Dette : ce que veut dire ce chiffre"><small id="h-l2">Dette</small><b id="h-v2">—</b><i class="q-hd-s">du PIB ⓘ</i></button>
     <p class="q-jauge-t" id="q-jauge-t" hidden></p>
     <div class="q-jauge" id="q-jauge" role="img" aria-label="Chemin fait vers votre objectif"><span></span><em></em></div>
@@ -1469,7 +1490,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     // « ↺ Recommencer » : seulement quand il y a quelque chose à recommencer.
     var nDq = nbDecisions(); Array.prototype.forEach.call(document.querySelectorAll('.q-recom-b'), function (b) { b.hidden = !(nDq || nbChoix()); }); $('q-rk-rv').hidden = !nDq;
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1];
-    var AOh = anObj ? anObj() : AN0, rO = ligneAn(R, AOh); $('h-l1').innerHTML = (/^excédent/.test(defic(rO.solde)) ? 'Excédent' : 'Déficit') + '<span class="q-an"> ' + AOh + '</span>'; r1 = rO; $('h-l2').innerHTML = 'Dette<span class="q-an"> ' + AN1 + '</span>'; $('h-l3').innerHTML = 'Par habitant<span class="q-an"> ' + AN1 + '</span>';
+    var AOh = anObj ? anObj() : AN0, rO = ligneAn(R, AOh); $('h-l1').innerHTML = (/^excédent/.test(defic(rO.solde)) ? 'Excédent' : 'Déficit') + '<span class="q-an"> ' + AOh + '</span>'; r1 = rO; $('h-l2').innerHTML = 'Dette<span class="q-an"> ' + AN1 + '</span>'; $('h-l3').innerHTML = '<span class="q-l-l">PIB par habitant</span><span class="q-l-c">PIB/hab.</span><span class="q-an"> ' + AN1 + '</span>';
     // La richesse par habitant en 2031 (PIB par habitant, euros de 2025 hors inflation, même calcul que le Bilan) et son écart avec « sans mesure ».
     var g1 = croiss(R, AN0), g0 = croiss(R0, AN0), gz = croiss(R, AN1), PHa = parHab(R), PHz = parHab(R0), c100 = function (v) { return Math.round(v / 100) * 100; };
     var v3 = PHa ? nf(c100(PHa[PHa.length - 1].d), 0) + '\u00a0€' : '—', eH = PHa && PHz ? c100(PHa[PHa.length - 1].d) - c100(PHz[PHz.length - 1].d) : 0;
@@ -1516,7 +1537,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     var AO = anObj(), r = ligneAn(R, AO), f = R[R.length - 1], g1 = croiss(R, AN0), gz = croiss(R, AN1), p1 = croiss(R0, AN0), pz = croiss(R0, AN1), t;
     if (x === 'd') t = (/^excédent/.test(defic(r.solde)) ? 'Excédent ' : 'Déficit ') + AO + ' : ' + soldeMots(r) + '. En part du PIB, la richesse produite en France en un an (' + mdt(r.pib) + ' en ' + AO + ').';
     else if (x === 't') t = 'Dette ' + f.an + ' : ce que doivent l\'État, la Sécurité sociale et les collectivités : ' + nf(f.d, 1) + '\u00a0% du PIB, soit environ ' + nf(Math.round(f.d / 100 * f.pib / 100) * 100, 0) + '\u00a0milliards d\'euros (fin ' + PJ.depart.an + ' : ' + nf(PJ.depart.dette, 1) + '\u00a0%).';
-    else if (x === 'c') { var Ha = parHab(R), Hz = parHab(R0), cc = function (v) { return nf(Math.round(v / 100) * 100, 0) + '\u00a0€'; }; t = '<ul class="q-pl"><li><b>Par habitant ' + AN1 + '</b> : la richesse produite en France (PIB) divisée par le nombre d\'habitants, en euros de ' + D0.an + ', hors hausse des prix.</li>' + (Ha && Hz ? '<li>Avec votre budget : ' + cc(Ha[Ha.length - 1].d) + ' en ' + AN1 + ' ; sans mesure : ' + cc(Hz[Hz.length - 1].d) + ' (' + cc(Ha[0].d) + ' en ' + D0.an + ').</li>' : '') + '<li>Vos mesures le changent par leur effet sur l\'activité (modèle de la direction du Trésor et de l\'Insee) ; le détail est dans le Bilan, « La richesse par habitant ».</li>' + (sansEffet() >= 0.05 ? '<li>Pas compté : l\'effet sur l\'activité de ' + mdt(sansEffet()) + ' de vos mesures, faute de chiffre publié.</li>' : '') + '</ul>'; }
+    else if (x === 'c') { var Ha = parHab(R), Hz = parHab(R0), cc = function (v) { return nf(Math.round(v / 100) * 100, 0) + '\u00a0€'; }; t = '<ul class="q-pl"><li><b>PIB par habitant ' + AN1 + '</b> : la richesse produite en France (PIB) divisée par le nombre d\'habitants, en euros de ' + D0.an + ', hors hausse des prix.</li>' + (Ha && Hz ? '<li>Avec votre budget : ' + cc(Ha[Ha.length - 1].d) + ' en ' + AN1 + ' ; sans mesure : ' + cc(Hz[Hz.length - 1].d) + ' (' + cc(Ha[0].d) + ' en ' + D0.an + ').</li>' : '') + '<li>Vos mesures le changent par leur effet sur l\'activité (modèle de la direction du Trésor et de l\'Insee) ; le détail est dans le Bilan, « La richesse par habitant ».</li>' + (sansEffet() >= 0.05 ? '<li>Pas compté : l\'effet sur l\'activité de ' + mdt(sansEffet()) + ' de vos mesures, faute de chiffre publié.</li>' : '') + '</ul>'; }
     else t = '<ul class="q-pl"><li><b>Croissance</b> : la hausse du PIB, hors hausse des prix.</li><li>Prévision du FMI : ' + pcs(p1) + ' en ' + AN0 + ', ' + pcs(pz) + ' en ' + AN1 + '.</li><li>' + (Math.abs(g1 - p1) >= 0.05 || Math.abs(gz - pz) >= 0.05 ? 'Avec vos choix (modèle de la direction du Trésor et de l\'Insee) : ' + pcs(g1) + ' et ' + pcs(gz) + '.' : 'Vos choix ne la changent presque pas pour l\'instant.') + '</li>' + (sansEffet() >= 0.05 ? '<li>Pas compté : l\'effet de ' + mdt(sansEffet()) + ' de vos mesures (impôt sur les sociétés, patrimoine, âge de la retraite…).</li>' : '') + '</ul>';
     pop(t, true, t);
     var h = $('q-hs'); h.querySelector('.q-det').click(); var hb = $('q-hud').getBoundingClientRect(); if (hb.bottom > innerHeight || hb.top < 0) $('q-hud').scrollIntoView({ block: 'nearest' });
@@ -1842,7 +1863,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   // Ce qui n'est pas compté, en quelques mots (la phrase entière et la source sont dans « Plus de détails »).
   var NC_COURT = { grand: 'taux d\'intérêt, ce que deviennent les services', ame: 'les soins reportés sur l\'hôpital', chomage_duree: 'le retour plus rapide à l\'emploi', reste_charge: 'la hausse des cotisations des complémentaires', operateurs: 'les missions abandonnées', capitalisation: 'l\'effet sur l\'activité' };
   function ncMots(t) { var m = /^(?:Effet sur l'activité non compté|Pas compté)\s*:\s*([^.;(]*)/.exec(String(t)); return /^Effet sur l'activité/.test(t) ? 'l\'effet sur l\'activité' : m ? m[1].trim() : 'voir le détail'; }
-  var REPLI = '#p-bilan p.q-note, #p-bilan .q-note > p, #p-bilan p.q-ligne, #p-bilan p.q-mini-x, #q-choisi .q-ap-t > li, #q-choisi p.q-mini-x, #q-choisi p.q-note, #q-un .q-ap-t > li, #q-un p.q-mini-x, #q-deck .q-etape p.q-note, #q-deck .q-etape p.q-ligne, #q-deck .q-etape .q-mini-x, #q-deck .q-etape p.q-et-av';
+  var REPLI = '#p-bilan p.q-note, #p-bilan .q-note > p, #p-bilan p.q-ligne, #p-bilan p.q-mini-x, #q-choisi .q-ap-t > li, #q-choisi p.q-mini-x, #q-choisi p.q-note, #q-un .q-ap-t > li, #q-un p.q-mini-x, #q-deck .q-etape p.q-note, #q-deck .q-etape p.q-ligne, #q-deck .q-etape .q-mini-x';
   function marquerReplis() {
     Array.prototype.forEach.call(document.querySelectorAll(REPLI), function (e) {
       if (e.id === 'q-ou-x' || e.classList.contains('replie') || e.classList.contains('q-gros') || e.classList.contains('mentions') || e.closest('details') || e.querySelector('button, input, select, details, svg') || e.textContent.length < 120) return;
@@ -1895,6 +1916,29 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   function arrondi(A0, A1) { var AO = anObj(), a = ligneAn(A0, AO), b = ligneAn(A1, AO), d = (b.solde - a.solde) / 100 * b.pib; return defic(a.solde) === defic(b.solde) && Math.abs(d) >= 0.005 ? '<li>Moins de 0,05 point de PIB : le déficit ' + AO + ' arrondi ne change pas (' + defic(b.solde) + '), mais il ' + (d > 0 ? 'baisse' : 'augmente') + ' de ' + mdt(Math.abs(d)) + '.</li>' : ''; }
   // La richesse par habitant en 2031, avec et sans un choix : arrondie à la dizaine d'euros, « moins de 10 € » en dessous.
   function rhEcart(A0, A1) { var a = parHab(A1), z = parHab(A0); if (!a || !z) return null; var d = a[a.length - 1].d - z[z.length - 1].d; return { d: d, an: a[a.length - 1].an, t: Math.abs(d) < 10 ? 'moins de 10\u00a0€' : (d < 0 ? '−' : '+') + nf(Math.round(Math.abs(d) / 10) * 10, 0) + '\u00a0€' }; }
+  // Les trois résultats d'un choix, en trois tuiles identiques : ce qui manque (ou ce qui reste en plus) l'année de l'objectif,
+  // la croissance 2027 (« non comptée » quand l'effet sur l'activité ne l'est pas), la richesse par habitant en 2031 ;
+  // sous chaque valeur, le chiffre d'avant (A0). o : { compte, av } (av : la ligne est déjà réglée dans votre budget).
+  function tuiles3(A0, A1, o) {
+    o = o || {};
+    var AO = anObj(), a = ligneAn(A0, AO), b = ligneAn(A1, AO), ex = function (r) { return /^excédent/.test(defic(r.solde)); };
+    var md = function (r) { return Math.abs(r.solde) / 100 * r.pib; }, d = 0;
+    var fM = function (v) { return GRAND ? '≈ ' + nf(Math.round(v / 10) * 10, 0) + ' Md€' : nf(v, d) + ' Md€'; };
+    // Deux montants qui s'arrondissent pareil : une décimale, pour que l'écart se voie.
+    if (!GRAND && ex(a) === ex(b) && nf(md(a), 0) === nf(md(b), 0) && Math.abs(md(a) - md(b)) >= 0.05) d = 1;
+    var tu = function (l, v, s1, s2, nc) { return '<div><small>' + l + '</small><b' + (nc ? ' class="nc"' : '') + '>' + v + '</b>' + (s1 ? '<span>' + s1 + '</span>' : '') + (s2 ? '<span>' + s2 + '</span>' : '') + '</div>'; };
+    var t1 = tu(ex(b) ? 'En plus en ' + AO : 'Ce qui manque en ' + AO, fM(md(b)), defic(b.solde).replace(/^excédent (?:de |d')/, '').replace(/^environ /, '≈\u00a0') + ' du PIB',
+      'avant\u00a0: ' + (ex(a) === ex(b) ? fM(md(a)) : ex(a) ? fM(md(a)) + ' en plus' : 'il manquait ' + fM(md(a))));
+    var g0 = croiss(A0, AN0), g1 = croiss(A1, AN0), nc = !S.macro || o.compte === false;
+    var fG = function (v) { return GRAND ? '≈ ' + (Math.round(v) < 0 ? '−' : '') + nf(Math.abs(Math.round(v)), 0) + ' %' : pcs(v); };
+    var t2 = g0 == null || g1 == null ? '' : tu('Croissance ' + AN0, nc ? 'non comptée' : fG(g1), '', 'avant\u00a0: ' + pcs(g0), nc);
+    var PA = parHab(A1), PZ = parHab(A0), t3 = '';
+    if (PA && PZ) {
+      var z = PZ[PZ.length - 1], e = rhEcart(A0, A1), lv = nf(Math.round(z.d / 100) * 100, 0) + ' €';
+      t3 = tu('PIB par habitant ' + z.an, nc ? 'non compté' : e.t, '', (o.av || nc ? 'avant\u00a0: ' : 'sans ce choix\u00a0: ') + lv, nc);
+    }
+    return '<div class="q-r3">' + t1 + t2 + t3 + '</div>';
+  }
   // Sur une carte : la mesure seule, par rapport à « rien ne change » (le même calcul que le Bilan) ; non compté quand le modèle
   // ne publie pas l'effet sur l'activité de ce type de mesure.
   var RHC = {};
@@ -1947,9 +1991,10 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     else if (!rhx && S.macro) { var eR = rhEcart(A0, A1); if (eR) rhx = '<p class="q-mini-x">Richesse par habitant en ' + eR.an + ' : <b>' + eR.t + '</b> (par rapport à sans ce choix).</p>'; }
     var cr = croiss(A1, ans[ans.length - 1]), cz = croiss(A0, ans[ans.length - 1]);
     if (S.macro && n0 <= -0.05 && cr != null && cz != null && cr > cz + 0.05) expl = '<p class="q-mini-x">La croissance repart, mais d\'un niveau plus bas : la richesse par habitant reste inférieure.</p>';
-    if (o.part === 'rh') return rh ? '<div class="q-minis">' + rh + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>' + esc(o.ref || 'sans ce choix') + '</p>' + rhx : (rhx && !/<b>/.test(rhx) ? rhx : '');
+    // Dans Créer : la courbe, puis une phrase qui dit ce qu'est le PIB par habitant (les valeurs sont au bout des lignes et dans les tuiles).
+    if (o.part === 'rh') return rh ? '<div class="q-minis">' + rh + '</div><p class="q-mini-l"><span><i></i>' + esc(o.lib || 'avec ce choix') + '</span><span><i class="s"></i>' + esc(o.ref || 'sans ce choix') + '</span></p><p class="q-r3-x">PIB par habitant : richesse produite divisée par le nombre d\'habitants, hors inflation.</p>' : '';
     if (o.part === 'autres') { rh = ''; rhx = ''; }
-    return (ans.some(function (an) { return ligneAn(A1, an).solde > 0 || ligneAn(A0, an).solde > 0; }) ? '<div class="q-minis">' + un('Solde public, en % du PIB (− déficit, + excédent)', function (L, an) { return ligneAn(L, an).solde; }, function (v) { return (v > 0.04 ? '+' : v < -0.04 ? '−' : '') + nf(Math.abs(v), 1) + '\u00a0%'; }) : '<div class="q-minis">' + un('Déficit, en % du PIB', function (L, an) { return -ligneAn(L, an).solde; }, pcf)) + rh + un('Croissance du PIB', function (L, an) { return croiss(L, an); }, pcf) + '</div><p class="q-mini-l"><i></i>avec ce choix <i class="s"></i>sans ce choix</p>' + rhx + expl;
+    return (ans.some(function (an) { return ligneAn(A1, an).solde > 0 || ligneAn(A0, an).solde > 0; }) ? '<div class="q-minis">' + un('Solde public, en % du PIB (− déficit, + excédent)', function (L, an) { return ligneAn(L, an).solde; }, function (v) { return (v > 0.04 ? '+' : v < -0.04 ? '−' : '') + nf(Math.abs(v), 1) + '\u00a0%'; }) : '<div class="q-minis">' + un('Déficit, en % du PIB', function (L, an) { return -ligneAn(L, an).solde; }, pcf)) + rh + un('Croissance du PIB', function (L, an) { return croiss(L, an); }, pcf) + '</div><p class="q-mini-l"><span><i></i>' + esc(o.lib || 'avec ce choix') + '</span><span><i class="s"></i>' + esc(o.ref || 'sans ce choix') + '</span></p>' + rhx + expl;
   }
   function premiere(c) { for (var a = AN0; a <= AN1; a++) if (montant(c, a)) return 'rien avant ' + a + ', puis ' + quoi(c.sens, montant(c, a)) + ' en ' + a; return 'rien avant ' + (AN1 + 1); }
   // Ce que votent les joueurs : le compteur de Concret (le même que pour le quiz, un total par choix, rien qui identifie la
@@ -2112,9 +2157,11 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
   function etapeCourt(et) {
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1], zf = R0[R0.length - 1], E = effort(), net = E.imp + E.eco - E.baisse - E.dep, rs = ressemble(r1), P = proches();
     var d0 = deficP(z1.solde), d1 = defic(r1.solde), t0 = nf(zf.d, 1) + '\u00a0%', t1 = nf(f.d, 1) + '\u00a0%';
-    var ligne = '<p class="q-et-av"><b>' + (/^excédent/.test(d1) ? 'Excédent' : 'Déficit') + ' ' + AN0 + ' : ' + d0 + ' → ' + d1 + '</b> (' + soldeMots(r1, true) + ') · <b>Dette ' + f.an + ' : ' + t0 + ' → ' + t1 + '</b></p>';
-    var tu = function (l, v) { return '<div class="q-et-t"><small>' + l + '</small><b>' + v + '</b></div>'; };
-    var tuiles = '<div class="q-et-ts">' + tu('Vos mesures', nbChoix() ? (net >= 0 ? '−' : '+') + mds(Math.abs(net)) + ' de déficit en ' + AN0 : 'aucune adoptée') + (rs && rs.p.code !== 'FR' ? tu('Votre budget ressemble', drapeau(rs.p.code) + ' ' + esc(aPays(rs.p))) : '') + '</div>';
+    // En mots courants : ce qui manque (ou ce qui reste en plus) en milliards, puis la dette, en % et en milliards.
+    var ex1 = /^excédent/.test(d1), mdR = soldeMots(r1, true).replace(/ (qui manquent|en plus)$/, '').replace(/^≈\u00a0/, 'environ '), mdT = nf(Math.round(f.d / 100 * f.pib / 100) * 100, 0) + ' milliards';
+    var ligne = '<p class="q-et-av">En ' + AN0 + ', ' + (ex1 ? 'il reste <b>' + mdR + '</b> en plus (' + d1.replace(/^excédent (?:de |d')/, '') : 'il manque <b>' + mdR + '</b> (' + d1) + ' du PIB, ' + d0 + ' sans vos mesures) · Dette ' + f.an + ' : <b>' + t1 + '</b> du PIB, soit environ ' + mdT + '</p>';
+    var tu = function (l, v, sb) { return '<div class="q-et-t"><small>' + l + '</small><b>' + v + '</b>' + (sb ? '<span>' + sb + '</span>' : '') + '</div>'; };
+    var tuiles = '<div class="q-et-ts">' + (nbChoix() ? tu('Vos mesures', (net >= 0 ? '−' : '+') + mds(Math.abs(net)), 'de déficit en ' + AN0) : tu('Vos mesures', 'aucune', 'adoptée pour l\'instant')) + (rs && rs.p.code !== 'FR' ? tu('Votre budget ressemble', drapeau(rs.p.code) + ' ' + esc(aPays(rs.p))) : '') + '</div>';
     var k = Math.max(MINP - P.n, 1);
     var dep = P.n < MINP ? 'Encore ' + k + ' mesure' + (k > 1 ? 's votées' : ' votée') + ' par les députés, et vous verrez de quels groupes vous êtes le plus proche.' : (function () { var G = P.G.slice().sort(function (a, b) { return b.v - a.v; }); return G.length ? 'Vos votes ressemblent le plus à ceux du groupe ' + esc(G[0].g.n) + ' (' + nf(G[0].v, 0) + '\u00a0% d\'accord).' : 'Pas encore assez de mesures comparables avec les groupes de députés.'; })();
     return ligne + tuiles + '<p class="q-ligne">🏛️ ' + dep + '</p>';
@@ -2138,13 +2185,13 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     $('q-ptot').querySelector('span').style.width = (100 * (NQ - rest) / NQ) + '%';
     if (sp && (c || sp === 'nouveaudefi')) carteSpeciale(sp, entree);
     else if (et && c) {
-      // Une pause dans la partie : où l'on en est, une ligne de résultat, deux tuiles au plus, puis « Continuer à voter » en premier.
+      // Une pause dans la partie : où l'on en est, « Continuer à voter » en premier, puis une ligne de résultat, deux tuiles au plus, les députés.
       var nq = NQ - rest;
       $('q-deck').innerHTML = '<section class="card q-etape q-pause' + (entree ? ' in' : '') + '"><span class="eyebrow">' + titreEtape(et) + '</span><h2>Pause : ' + nq + ' question' + (nq > 1 ? 's' : '') + ' sur ' + NQ + '</h2>' +
-        '<div class="q-ptot q-ptot-c" aria-hidden="true"><span style="width:' + (100 * nq / NQ).toFixed(1) + '%"></span></div>' + etapeCourt(et) +
+        '<div class="q-ptot q-ptot-c" aria-hidden="true"><span style="width:' + (100 * nq / NQ).toFixed(1) + '%"></span></div>' +
         '<button type="button" class="q-go q-continuer" id="q-suite">Continuer à voter → question ' + Math.min(NQ, nq + 1) + ' sur ' + NQ + '</button>' +
-        '<p class="q-actions q-pause-l"><button type="button" class="q-lien" id="q-voirb">Voir tout le bilan</button> · <button type="button" class="q-lien" id="q-etp">Partager</button></p>' +
-        (c ? '<p class="q-note q-pause-n">Question ' + Math.min(NQ, nq + 1) + ' : ' + esc(c.q && QS[c.q] ? QS[c.q].t : (c.titre || c.l)) + '</p>' : '') + '</section>';
+        (c ? '<p class="q-note q-pause-n">Question ' + Math.min(NQ, nq + 1) + ' : ' + esc(c.q && QS[c.q] ? QS[c.q].t : (c.titre || c.l)) + '</p>' : '') + etapeCourt(et) +
+        '<p class="q-actions q-pause-l"><button type="button" class="q-lien" id="q-voirb">Voir tout le bilan</button> · <button type="button" class="q-lien" id="q-etp">Partager</button></p></section>';
       $('q-etp').onclick = function () { partager(); };
       var rsH = ressemble(an1(R)); S.hist = S.hist || {}; S.hist[et] = { s: an1(R).solde, d: R[R.length - 1].d, p: rsH ? rsH.p.code : null, g: pxEtape() }; garder();
       var suite = function () { S.etape = et; garder(); tout(true); remonter(); }, voirb = function () { S.etape = et; garder(); onglet('bilan'); };
@@ -2384,11 +2431,18 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     $('q-pc-v').textContent = choisi.u && choisi.u.choix ? '' : pc ? pcC(choisi, pc) : 'Rien';
     Array.prototype.forEach.call($('q-pc-p').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', +b.dataset.v === pc); });
     var suf = choisi.effet_suffixe ? esc(choisi.effet_suffixe) : '', rs = reste(choisi) < 1 ? ' ; calculé sur la part de ' + (choisi.k === 'tva-sociale' ? 'la TVA' : 'l\'impôt sur le revenu') + ' qui reste dans votre budget (' + nf(reste(choisi) * 100, 0) + '\u00a0%)' : '';
-    var etl = pc && etale(choisi, pc, S.perso) ? '<span class="q-etale">Plus de ' + nf(CHOC, 0) + '\u00a0point de PIB : appliqué un cinquième par an, de ' + AN0 + ' à ' + (AN0 + ETALE - 1) + ' (choix de Concret) ; en ' + AN0 + ' : ' + mdt(Math.abs(choisi.mix ? pc * choisi.mix[0].par_u * reste(choisi) / ETALE : effetPerso(choisi, pc, AN0))) + '.</span>' : '';
-    $('q-effet').innerHTML = pc && choisi.mix ? '<b>' + mdt(Math.abs(pc * choisi.mix[0].par_u * reste(choisi))) + '</b> de TVA en plus par an, et autant de cotisations des employeurs en moins : sur le papier, le déficit ne change pas' + rs : pc ? '<b>' + mdt(Math.abs(e)) + '</b> ' + (choisi.k === 'capitalisation' ? 'de cotisations en moins pour les retraites d\'aujourd\'hui' : phrase(e, { sens: choisi.groupe === 'depense' && choisi.k !== 'allegements' ? 'depense' : 'recette' })) + ' par an' + suf + rs + (choisi.rampe ? ', une fois en place (' + mdt(Math.abs(effetPerso(choisi, pc, AN0))) + ' en ' + AN0 + ')' : etale(choisi, pc, S.perso) ? ' une fois en place, en ' + (AN0 + ETALE - 1) : ', à partir de ' + AN0) + (choisi.par_pib ? ', soit ' + nf(Math.abs(e) / choisi.md / (PIBY[AN0] / PIBY[choisi.an]) * 100, 0) + '\u00a0% de toute la dépense publique' : '') : (choisi.u && choisi.u.choix ? 'Touchez une réponse.' : 'Choisissez avec les boutons ou le curseur.');
-    // Réglage étalé : le montant en une ligne, 2027 puis 2031 (le détail de l'étalement reste écrit, en petit).
-    if (etl && !choisi.mix) $('q-effet').innerHTML = '<b>' + mds(Math.abs(effetPerso(choisi, pc, AN0))) + '</b> ' + (choisi.groupe === 'depense' && choisi.k !== 'allegements' ? (e > 0 ? 'de dépenses en moins' : 'de dépenses en plus') : (e > 0 ? 'de recettes en plus' : 'de recettes en moins')) + ' en ' + AN0 + ', ' + mds(Math.abs(e)) + ' par an en ' + (AN0 + ETALE - 1) + ' <span class="q-etale" style="display:inline">(plus de ' + nf(CHOC, 0) + '\u00a0point de PIB : étalé sur cinq ans, choix de Concret)</span>';
-    else if (etl) $('q-effet').insertAdjacentHTML('beforeend', '<br>' + etl);
+    // La ligne du montant, en texte normal : le montant en gras, signé ; étalé sur cinq ans (plus de 1 point de PIB) : 2027 puis 2031,
+    // avec une petite pastille qui dit pourquoi.
+    var etl = pc && etale(choisi, pc, S.perso), sensC = choisi.groupe === 'depense' && choisi.k !== 'allegements' ? 'depense' : 'recette';
+    var sgC = function (v) { return sensC === 'depense' ? (v > 0 ? '−' : '+') : (v > 0 ? '+' : '−'); }, motC = sensC === 'depense' ? 'de dépenses' : 'de recettes';
+    var PILL = etl ? ' <button type="button" class="q-pill" id="q-pill" aria-expanded="false" aria-controls="q-pill-x">étalé sur ' + ETALE + ' ans ⓘ</button><span class="q-pill-x" id="q-pill-x" hidden>Plus de ' + nf(CHOC, 0) + ' point de PIB : un cinquième par an, de ' + AN0 + ' à ' + (AN0 + ETALE - 1) + ' (choix de Concret).</span>' : '';
+    var mixA = choisi.mix ? Math.abs(pc * choisi.mix[0].par_u * reste(choisi)) : 0;
+    $('q-effet').innerHTML = !pc ? (choisi.u && choisi.u.choix ? 'Touchez une réponse.' : 'Choisissez avec les boutons ou le curseur.')
+      : choisi.mix ? (etl ? '<b>+' + mds(mixA / ETALE) + '</b> de TVA en ' + AN0 + ' · <b>' + mds(mixA) + '</b> par an en ' + (AN0 + ETALE - 1) : '<b>+' + mds(mixA) + '</b> de TVA par an') + ', et autant de cotisations des employeurs en moins : sur le papier, le déficit ne change pas' + rs + PILL
+      : choisi.k === 'capitalisation' ? '<b>' + mds(Math.abs(e)) + '</b> de cotisations en moins pour les retraites d\'aujourd\'hui par an' + suf + rs + (etl ? ' une fois en place, en ' + (AN0 + ETALE - 1) + PILL : ', à partir de ' + AN0)
+      : etl ? '<b>' + sgC(e) + mds(Math.abs(effetPerso(choisi, pc, AN0))) + '</b> ' + motC + ' en ' + AN0 + ' · <b>' + mds(Math.abs(e)) + '</b> par an en ' + (AN0 + ETALE - 1) + suf + rs + PILL
+      : '<b>' + sgC(e) + mds(Math.abs(e)) + '</b> ' + motC + ' par an' + suf + rs + (choisi.rampe ? ', une fois en place (' + mds(Math.abs(effetPerso(choisi, pc, AN0))) + ' en ' + AN0 + ')' : ', à partir de ' + AN0) + (choisi.par_pib ? ', soit ' + nf(Math.abs(e) / choisi.md / (PIBY[AN0] / PIBY[choisi.an]) * 100, 0) + ' % de toute la dépense publique' : '');
+    if ($('q-pill')) $('q-pill').onclick = function () { var o = this.getAttribute('aria-expanded') !== 'true'; this.setAttribute('aria-expanded', o); $('q-pill-x').hidden = !o; };
     $('q-ch-h').textContent = pc ? 'Calcul de Concret : ' + (choisi.par_pib ? nf(Math.abs(pc), Math.abs(pc) % 1 ? 1 : 0) + ' × 1\u00a0% du PIB de ' + AN0 + ' (' + mdt(PIBY[AN0] / 100) + ')' : choisi.par_u != null ? nf(Math.abs(pc), 0) + ' × ' + mdt(Math.abs(choisi.par_u)) + ' (' + esc(choisi.u.n) + ', ' + choisi.an + ')' + (choisi.rampe ? ' ; un quart la première année, la moitié la deuxième, les trois quarts la troisième, puis tout' : '') : choisi.par_pt ? Math.abs(pc) + ' × ' + nf(choisi.par_pt, 2) + ' milliard d\'euros par 1 % (même base que la carte des allègements)' : Math.abs(pc) + '\u00a0% de ' + mdt(choisi.md) + ' en ' + choisi.an) + ' ; le montant suit ensuite la croissance de l\'économie. On suppose que les comportements ne changent pas' + (choisi.macro && J.variantes[choisi.macro] && S.macro ? ', sauf l\'effet sur l\'activité et l\'emploi, qui est compté : ' + (e >= 0 ? 'une partie de ce gain ne réduit pas le déficit, parce que l\'activité ralentit (modèle de la direction du Trésor et de l\'Insee).' : 'une partie de ce coût est compensée, parce que l\'activité accélère (modèle de la direction du Trésor et de l\'Insee).') : (choisi.macro && J.variantes[choisi.macro] ? ' ; l\'effet sur l\'activité n\'est pas compté (case décochée, Bilan, « Changer les hypothèses »).' : ' ; aucun effet sur l\'activité n\'est compté pour ce type de ligne.')) : '';
     parPersonne(pc);
     // Aperçu : le bandeau tel qu'il serait avec ce choix.
@@ -2411,26 +2465,25 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     var REMP = (remp.length ? '<p class="q-ligne">Ce choix remplace votre vote pour : ' + remp.map(function (id) { var o = C.filter(function (x) { return x.id === id; })[0]; return o ? '« ' + esc(o.titre || o.l) + ' » (' + quoi(o.sens, montant(o, AN0)) + ')' : ''; }).join(', ') + ' : les deux portent sur le même argent, ce montant sort de votre budget.</p>' : '') + (rempP.length ? '<p class="q-ligne">Ce choix remplace votre ligne ' + nomsP.map(function (t) { return '« ' + t + ' »'; }).join(', ') + ' : elle porte sur le même argent et sort de votre budget.</p>' : '');
     var compte = !!(choisi.mix || (choisi.macro && J.variantes[choisi.macro])), eR = S.macro && compte ? rhEcart(R, A1) : null, r0d = ligneAn(R, anObj()), r1d = ligneAn(A1, anObj());
     var dD = (r1d.solde - r0d.solde) / 100 * r1d.pib, meme = deficP(r0d.solde) === defic(r1d.solde);
-    // La référence : sans changement de cette ligne, ou votre réglage actuel quand la ligne est déjà dans votre budget.
-    var REF = av ? 'votre réglage actuel (' + pcT(choisi, av) + ')' : 'sans ce choix';
-    var g0c = croiss(R, AN0), g1c = croiss(A1, AN0), fG = function (v) { return GRAND ? 'environ ' + (Math.round(v) < 0 ? '−' : '') + nf(Math.abs(Math.round(v)), 0) + '\u00a0%' : pcs(v); };
-    var CRO = !S.macro || !compte ? 'Croissance : effet non compté' : g0c != null && g1c != null ? 'Croissance ' + AN0 + ' : ' + pcs(g0c) + ' → ' + fG(g1c) : '';
-    var x0 = /^excédent/.test(deficP(r0d.solde)), x1 = /^excédent/.test(defic(r1d.solde)), m0 = soldeMots(r0d, true).replace(/ (qui manquent|en plus)$/, ''), m1 = soldeMots(r1d, true).replace(/ (qui manquent|en plus)$/, ''), pc0 = deficP(r0d.solde).replace(/^excédent (?:de |d')/, ''), pc1 = defic(r1d.solde).replace(/^excédent (?:de |d')/, '');
-    var SOL = !x0 && !x1 ? 'Ce qui manque en ' + anObj() + ' : ' + m0 + ' → ' + m1 + ' (' + pc0 + ' → ' + pc1 + ' du PIB)' : !x0 && x1 ? 'En ' + anObj() + ' : plus de déficit, il reste ' + m1 + ' en plus (' + pc1 + ' du PIB)' : x0 && x1 ? 'En ' + anObj() + ', en plus : ' + m0 + ' → ' + m1 + ' (' + pc0 + ' → ' + pc1 + ' du PIB)' : 'En ' + anObj() + ' : de ' + m0 + ' en plus à ' + m1 + ' qui manquent (' + pc1 + ' du PIB)';
-    var RES = '<p class="q-res1"><b>' + SOL + (meme && Math.abs(dD) >= 0.005 ? ' (' + (dD > 0 ? '−' : '+') + mdt(Math.abs(dD)) + ')' : '') + (CRO ? ' · ' + CRO : '') + (eR ? ' · Par habitant ' + eR.an + ' : ' + eR.t : '') + '</b>' + (av ? ' <span class="q-ref">Par rapport à ' + esc(REF) + '.</span>' : '') + '</p>';
-    var NCC = (function () { var L = []; if (!compte) L.push('l\'effet sur l\'activité'); var x = choisi.nc && J.non_comptes && J.non_comptes[choisi.nc] && (choisi.nc !== 'ame' || pc < 0) ? J.non_comptes[choisi.nc] : null; if (x) { var m = NC_COURT[choisi.nc] || ncMots(x.t); if (L.indexOf(m) < 0) L.push(m); } return L.join(', '); })();
+    // Une seule référence pour les tuiles, la courbe et le bouton : sans ce choix, ou votre réglage actuel quand la ligne est déjà réglée.
+    var REF = av ? 'avec ' + pcT(choisi, av) + ' (réglage actuel)' : 'sans ce choix', LIB = av ? 'avec ' + pcT(choisi, pc) : 'avec ce choix';
+    var RES = (av ? '<p class="q-r3-ref">Comparé à votre réglage actuel (' + esc(pcT(choisi, av)) + ') :</p>' : '') + tuiles3(R, A1, { compte: compte, av: !!av });
+    // Ce qui n'est pas compté : l'effet sur l'activité est dit sous les tuiles (avec pourquoi), le reste dans « Plus de détails », sans doublon.
+    var NCC = (function () { var L = []; var x = choisi.nc && J.non_comptes && J.non_comptes[choisi.nc] && (choisi.nc !== 'ame' || pc < 0) ? J.non_comptes[choisi.nc] : null; if (x) { var m = NC_COURT[choisi.nc] || ncMots(x.t); if (m !== 'l\'effet sur l\'activité' && L.indexOf(m) < 0) L.push(m); } return L.join(', '); })();
     // Pourquoi l'effet sur l'activité n'est pas compté : la première phrase de la source, sinon le modèle sans variante pour ce type.
     var POURQ = compte ? '' : (function () { var x = choisi.nc && J.non_comptes && J.non_comptes[choisi.nc]; var m = x && /^(?:Effet sur l'activité non compté|Pas compté)\s*:\s*([^.]*)/.exec(x.t); return m ? m[1].trim() : 'le modèle de la direction du Trésor et de l\'Insee ne publie pas de variante pour ce type de mesure'; })();
     var UNE = [horsModele(A1) ? (tresGrand(A1) ? 'Ordre de grandeur (au-delà de ce que le modèle a testé)' : 'Estimation (au-delà de ce que le modèle a testé)') : '', NCC ? 'non compté : ' + esc(NCC) : ''].filter(Boolean);
-    $('q-apercu').innerHTML = pc !== (av || 0) ? RES + miniCourbes(R, A1, $('q-apercu').clientWidth, { part: 'rh', courbe: true, compte: compte, ref: REF, pourquoi: POURQ }) + REMP +
-      '<details class="q-plie q-plus"><summary>' + (UNE.length ? '<span class="q-une">' + maj1(UNE.join(' · ')) + '</span> ' : '') + '<u>Plus de détails</u></summary>' + LISTE + horsModeleCourt(A1, '') + miniCourbes(R, A1, $('q-apercu').clientWidth, { part: 'autres', courbe: true, compte: compte, ref: REF }) + '</details>' : '';
+    var NCA = !S.macro ? '<p class="q-r3-x">Effet sur l\'activité non compté : case décochée (Bilan, « Changer les hypothèses »).</p>' : !compte ? '<p class="q-r3-x">Effet sur l\'activité non compté : ' + esc(POURQ) + '.</p>' : '';
+    $('q-apercu').innerHTML = pc !== (av || 0) ? RES + NCA + miniCourbes(R, A1, $('q-apercu').clientWidth, { part: 'rh', courbe: true, compte: compte, ref: REF, lib: LIB }) + REMP +
+      '<details class="q-plie q-plus"><summary>' + (UNE.length ? '<span class="q-une">' + maj1(UNE.join(' · ')) + '</span> ' : '') + '<u>Plus de détails</u></summary>' + LISTE + horsModeleCourt(A1, '') + miniCourbes(R, A1, $('q-apercu').clientWidth, { part: 'autres', courbe: true, compte: compte, ref: REF, lib: LIB }) + '</details>' : '';
 
     $("q-ch-av").innerHTML = pc !== (av || 0) ? '<p>' + ecoPhrase(R, A1, dPo * kP - rA, !!(choisi.macro && J.variantes[choisi.macro]), choisi.mix ? 'mix' : choisi.macro) + '</p>' + horsModele(A1, true) + (choisi.macro_note && choisi.macro && J.variantes[choisi.macro] ? '<p>Effet sur l\'activité (modèle Mésange, le modèle de calcul de la direction du Trésor et de l\'Insee) : ' + esc(choisi.macro_note) + '</p>' : '') : '';
     GRAND = G0;
     if (hs) $('q-apercu').innerHTML = '<p class="q-alerte"><b>Pas possible :</b> ' + hs + '</p>';
     var cM = function (t) { return t.replace(/milliards? d'euros/, 'Md€').replace(/millions? d'euros/, 'M€'); }, nouv = effetPerso(choisi, pc, AN0), anc = av ? effetPerso(choisi, av, AN0) : 0;
-    var court0 = pc && !hs ? ' · ' + (choisi.mix ? 'déficit inchangé' : cM(quoi(sP, nouv)) + (av ? ' au lieu de ' + cM(quoi(sP, anc)) : '')) : '';
-    $('q-ajout').disabled = !pc || pc === av || !!hs; $('q-ajout').textContent = pc && pc === av ? 'Déjà dans votre budget' : (S.perso[choisi.k] != null ? 'Mettre à jour mon budget' : 'Ajouter à mon budget') + (court0 || '');
+    // Ligne déjà réglée : le bouton donne le nouveau réglage et l'ancien ; sinon le montant de 2027.
+    var court0 = pc && !hs ? (av ? ' : ' + pcC(choisi, pc) + ' au lieu de ' + pcC(choisi, av) : ' · ' + (choisi.mix ? 'déficit inchangé' : cM(quoi(sP, nouv)) + (etl ? ' en ' + AN0 : ''))) : '';
+    $('q-ajout').disabled = !pc || pc === av || !!hs; $('q-ajout').textContent = pc && pc === av ? 'Déjà dans votre budget' : (av != null ? 'Mettre à jour mon budget' : 'Ajouter à mon budget') + (court0 || '');
   }
   // ---------- Concrètement : des cas types calculés par Concret avec les règles officielles en vigueur ----------
   // Chaque paramètre vient de donnees/budget_sources/parametres_cas.json (lu à la source) ; les montants d'exemple
@@ -3631,7 +3684,7 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     var ps = $('q-pseudo'); if (ps && !ps._ok) { ps._ok = 1; ps.value = monPseudo(); ps.onchange = function () { var v = ps.value.trim(), ok = pseudoOk(v); if (v && !ok) { $('q-pseudo-m').textContent = grossier(v) ? 'Choisissez un autre pseudo.' : 'De 3 à 20 caractères : lettres, chiffres, espace, point, tiret.'; ps.value = ''; ecrireLS('concret-budget-pseudo', ''); return; } ecrireLS('concret-budget-pseudo', ok); $('q-pseudo-m').textContent = ok ? 'Vos liens porteront « ' + ok + ' ».' : 'Vos liens ne portent pas de nom.'; }; }
     if (!L.length) return;
     var G = lignesAmis();
-    var tab = '<div style="overflow-x:auto"><table class="q-amis"><thead><tr><th></th><th>Déficit ' + AN0 + '</th><th>Dette ' + AN1 + '</th><th>Par habitant ' + AN1 + '</th><th>Pays le plus proche</th><th>Votes en commun</th><th></th></tr></thead><tbody>' +
+    var tab = '<div style="overflow-x:auto"><table class="q-amis"><thead><tr><th></th><th>Déficit ' + AN0 + '</th><th>Dette ' + AN1 + '</th><th>PIB par habitant ' + AN1 + '</th><th>Pays le plus proche</th><th>Votes en commun</th><th></th></tr></thead><tbody>' +
       G.map(function (g, i) { return '<tr' + (g.moi ? ' class="moi"' : '') + '><td>' + esc(g.nom) + '</td><td>' + g.def + '</td><td>' + g.dette + '</td><td>' + g.ph + '</td><td>' + esc(g.pays) + '</td><td>' + (g.moi ? '' : g.acc) + '</td><td>' + (g.moi ? '' : '<button type="button" data-retirer="' + (i - 1) + '">Retirer</button>') + '</td></tr>'; }).join('') + '</tbody></table></div>';
     // Mesure par mesure : les cartes où quelqu'un a voté pour, contre ou abstention.
     var cartes = C.filter(function (c) { return MOTS[S.v[c.id]] || L.some(function (a) { return MOTS[a.v[c.id]]; }); });
@@ -3647,10 +3700,10 @@ body.q-grand .q-tuile b { white-space: normal; overflow-wrap: anywhere; }
     g.fillStyle = '#f6f5f1'; g.fillRect(0, 0, W, H); g.fillStyle = '#2f5bd3'; g.fillRect(0, 0, W, 14);
     g.fillStyle = '#62646d'; g.font = '700 30px ' + sans; g.fillText('NOS BUDGETS ' + AN0 + ' · CONCRET', M, 100);
     g.fillStyle = '#1c1d22'; g.font = '800 58px ' + sans; g.fillText('Vous et vos amis', M, 172);
-    var cols = [['', M], ['Déficit ' + AN0, 380], ['Dette ' + AN1, 610], ['Par hab. ' + AN1, 820]], y = 260, fs = G.length > 6 ? 40 : 50;
+    var cols = [['', M], ['Déficit ' + AN0, 380], ['Dette ' + AN1, 610], ['PIB/hab. ' + AN1, 820]], y = 260, fs = G.length > 6 ? 40 : 50;
     g.fillStyle = '#62646d'; g.font = '700 30px ' + sans; cols.forEach(function (k) { g.fillText(k[0], k[1], y); }); y += 24;
     G.slice(0, 9).forEach(function (r) { y += fs + 44; g.fillStyle = r.moi ? '#2f5bd3' : '#1c1d22'; g.font = '800 ' + fs + 'px ' + sans; var n = r.nom.length > 10 ? r.nom.slice(0, 9) + '.' : r.nom; g.fillText(n, M, y); g.font = '600 ' + fs + 'px ' + sans; g.fillText(r.def.replace(/^environ /, '≈ ').replace(/^excédent (?:de |d'environ )/, '+'), 380, y); g.fillText(r.dette, 610, y); g.fillText(r.ph, 820, y); g.fillStyle = '#62646d'; g.font = '400 30px ' + sans; g.fillText((r.pays || '') + (r.moi ? '' : r.acc ? ' · votes en commun : ' + r.acc : ''), M, y + 44); g.strokeStyle = '#d9d7cf'; g.beginPath(); g.moveTo(M, y + 64); g.lineTo(W - M, y + 64); g.stroke(); y += 30; });
-    g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; g.fillText('Par habitant : PIB par habitant, euros de ' + D0.an + ' hors inflation. Calcul de Concret.', M, y + 70);
+    g.fillStyle = '#62646d'; g.font = '400 26px ' + sans; g.fillText('PIB/hab. : PIB par habitant, euros de ' + D0.an + ' hors inflation. Calcul de Concret.', M, y + 70);
     var Hf = Math.min(H, Math.max(1080, y + 190)), c2 = document.createElement('canvas'); c2.width = W; c2.height = Hf; var g2 = c2.getContext('2d'); g2.drawImage(c, 0, 0);
     g2.fillStyle = '#2f5bd3'; g2.font = '700 38px ' + sans; g2.fillText('À votre tour : concret2027.fr/budget', M, Hf - 56);
     c2.toBlob(function (b) {
