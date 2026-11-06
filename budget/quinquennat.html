@@ -479,6 +479,27 @@ footer p { margin: 0; } footer a { color: inherit; }
 .q-collant.q-mini .q-hd b { font-size: 17px; }
 .q-collant.q-mini .q-hs.q-msg { font-size: 13px; min-height: 0; }
 .q-collant.q-mini .q-hs.q-msg.q-cm:not(.ouvert) .q-court { -webkit-line-clamp: 2; line-clamp: 2; }
+/* Texte agrandi : dans le bandeau réduit, l'intitulé et le chiffre sur une ligne (l'année est dans le bandeau entier). */
+body.q-grand .q-collant.q-mini .q-an { display: none; }
+body.q-grand .q-collant.q-mini .q-hd { flex-wrap: nowrap; white-space: nowrap; min-height: 36px; }
+body.q-grand .q-collant.q-mini .q-hd small { font-size: 12px; }
+body.q-grand .q-collant.q-mini .q-hd b { font-size: 16px; }
+body.q-grand .q-collant.q-mini .q-hud { padding: 3px 8px; }
+body.q-grand .q-bar button { min-height: 46px; }
+body.q-grand .q-bar { padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
+/* Écran étroit (téléphone zoomé, petit téléphone) : même bandeau réduit sur une ligne, barre du bas plus basse. */
+/* (q-etroit : le bandeau fait moins de 320 px CSS de large, mesuré par le jeu ; une règle @media ne voit pas le zoom de la page.) */
+body.q-etroit .q-collant.q-mini .q-an { display: none; }
+body.q-etroit .q-collant.q-mini .q-hd { flex-wrap: nowrap; white-space: nowrap; min-height: 28px; overflow-wrap: normal; -webkit-hyphens: none; hyphens: none; }
+body.q-etroit .q-collant.q-mini { padding-top: 2px; }
+body.q-etroit .q-collant.q-mini .q-hd small { font-size: 12px; }
+body.q-etroit .q-collant.q-mini .q-hd b { font-size: 16px; }
+body.q-etroit .q-collant.q-mini .q-hud { padding: 2px 8px; row-gap: 0; }
+/* Écran étroit, bandeau réduit : « Déficit 5,7 % · Dette 132,3 % » sur une ligne (la croissance revient dans le bandeau entier), puis le message. */
+body.q-etroit .q-collant.q-mini .q-hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body.q-etroit .q-collant.q-mini .q-hd.c { display: none; }
+body.q-etroit .q-bar { padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
+body.q-etroit .q-bar button { min-height: 44px; font-size: 14px; }
 .q-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 4px 0; border-radius: 12px; background: var(--bg); }
 .q-tabs button { font: inherit; font-size: 15px; font-weight: 700; min-height: 44px; border: 1.5px solid var(--fr); border-radius: 9px; background: var(--panel); color: var(--fr); cursor: pointer; }
 .q-tabs button[aria-selected="true"] { background: var(--fr); color: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
@@ -824,6 +845,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
 .q-danger { font: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 44px; }
 @media (min-width: 760px) {
   .q-collant, .q-tabexp { width: 100%; max-width: 760px; margin-inline: auto; }
+  .q-collant { box-shadow: 0 0 0 100vmax var(--bg); clip-path: inset(0 -100vmax); }
   .q-deck, .q-prog, .q-ptot, .q-filtres { width: 100%; max-width: 560px; margin-inline: auto; }
   .q-bar div { max-width: 560px; }
 }
@@ -1269,7 +1291,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
   function hud(anime) {
     R = simuler(); R0 = simuler({ rien: true }); GRAND = tresGrand(R);
     var r1 = an1(R), z1 = an1(R0), f = R[R.length - 1];
-    var AOh = anObj ? anObj() : AN0, rO = ligneAn(R, AOh); $('h-l1').textContent = 'Déficit ' + AOh; r1 = rO; $('h-l2').textContent = 'Dette ' + AN1; $('h-l3').textContent = 'Croissance';
+    var AOh = anObj ? anObj() : AN0, rO = ligneAn(R, AOh); $('h-l1').innerHTML = 'Déficit<span class="q-an"> ' + AOh + '</span>'; r1 = rO; $('h-l2').innerHTML = 'Dette<span class="q-an"> ' + AN1 + '</span>'; $('h-l3').textContent = 'Croissance';
     var g1 = croiss(R, AN0), g0 = croiss(R0, AN0), gz = croiss(R, AN1), v3 = g1 == null ? '—' : GRAND ? (Math.round(g1) < 0 ? '−' : '') + nf(Math.abs(Math.round(g1)), 0) + '\u00a0%' : pcs(g1); $('h-s3').textContent = (GRAND ? 'environ, ' : '') + 'en ' + AN0 + ' ⓘ';
     // « environ » va dans la petite ligne, jamais dans le grand chiffre (il tient ainsi dans sa case).
     $('h-v1').nextElementSibling.textContent = GRAND ? 'du PIB, environ ⓘ' : 'du PIB ⓘ'; $('h-v2').nextElementSibling.textContent = GRAND ? 'du PIB, environ ⓘ' : 'du PIB ⓘ';
@@ -1695,7 +1717,8 @@ body.q-bilan .q-collant { position: relative; top: auto; }
         : '✓ Adoptée' + (Math.abs(mc) >= 0.05 ? verbe + mdt(Math.abs(mc)).replace(' d\'euros', '') : '') + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver');
     } else {
       plein = [(v === -1 ? '<b>Contre</b> : la règle actuelle reste.' : '<b>Abstention</b> : la mesure n\'est pas adoptée.'), m0 ? maj1(hors) + ' : pas dans votre budget.' : '', maj1(reste) + '.'];
-      court = (v === -1 ? '✗ Contre' : 'Abstention') + (m0 ? ' · sans ces ' + quoi(c.sens, m0).replace(' d\'euros', '') : '') + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver');
+      // Ce qui reste à trouver d'abord : c'est ce qui guide (le bandeau réduit n'en montre parfois qu'une ligne).
+      court = (v === -1 ? '✗ Contre' : 'Abstention') + ' · ' + reste.replace(' d\'euros à trouver', ' à trouver') + (m0 ? ' · sans ces ' + quoi(c.sens, m0).replace(' d\'euros', '') : '');
     }
     // Le détail en points, un par ligne : le montant, ce qui reste, l'économie, le pays, le budget reçu, l'Assemblée, le Sénat.
     var L = plein.concat([pays.replace(/^ · /, ''), dl.replace(/^ · /, '')], echoAssemblee(c, v).split('<br>')).filter(function (t) { return t && t.replace(/<[^>]+>/g, '').trim(); });
@@ -1906,7 +1929,7 @@ body.q-bilan .q-collant { position: relative; top: auto; }
     });
   }
   window.addEventListener('resize', function () { ajusterBoutons(); });
-  function grand() { document.body.classList.toggle('q-grand', TS() > 1.15); }
+  function grand() { document.body.classList.toggle('q-grand', TS() > 1.15); var cw = $('q-collant') ? $('q-collant').clientWidth : 400; document.body.classList.toggle('q-etroit', cw > 0 && cw < 320); }
   function barre() { grand(); var sv = suivante(), v = !$('p-voter').hidden && !!sv && !sv.q && CARTE_VUE && !speciale(), on = v && !etapeDue(), et = v && !!etapeDue(); $('q-bar').hidden = !on || VIN_VU; $('q-bar2').hidden = !et || SUITE_VU; setTimeout(ajusterBoutons, 50); document.body.classList.toggle('q-vote', on || et); $('b-undo').disabled = $('b-undo2').disabled = !S.pile.length; }
 
   // ---------- Le résumé (étapes, fin, bilan) ----------
