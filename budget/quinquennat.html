@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="5e11fbf7671e">
+<meta name="concret-version" content="20777681a419">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -5234,10 +5234,25 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
   // Ce que veut dire une réponse pour une personne : un calcul simple à partir de chiffres sourcés (« environ »), sinon rien.
   var CMOY = { retraites: ['la retraite moyenne', 'bruts par mois'], chomage: ['l\'allocation moyenne', 'nets par mois'], 'prime-activite': ['la prime d\'activité moyenne d\'un foyer', 'par mois'] };
   function cartesConcret(x, v) {
-    if (!v || x.mix) return ''; var f = v / 100, k = x.k, m = x.pp && x.pp.moyenne;
+    if (!v || (x.mix && x.k !== 'tva-sociale')) return ''; var f = v / 100, k = x.k, m = x.pp && x.pp.moyenne;
     if (k === 'tva') { var T = CAS('tva_taux'); return T ? 'Taux normal : environ ' + pcx(Math.round(T.normal.taux_pct * (1 + f) * 10) / 10) + ', si tous les taux changent dans la même proportion.' : ''; }
     if (CMOY[k] && m && !x.u) { var d = (f < 0 ? -1 : 1) * Math.round(Math.abs(m.v * f)); return 'Environ ' + (d < 0 ? '−' : '+') + eu(Math.abs(d)) + ' ' + CMOY[k][1] + ' sur ' + CMOY[k][0] + ' (' + eu(m.v) + '), si le changement est le même pour chacun.'; }
-    try { var L0 = exemplesLigne(k, 0).L, L = exemplesLigne(k, v).L.filter(function (t) { return L0.indexOf(t) < 0 && !/^Si |^Allocation de 30|^Tarifs publiés/.test(t); }); return L.length ? cartesCourt(L[0]) : ''; } catch (e) { return ''; }
+    // Une ligne par réponse, à son échelle : « avant → après » pour un cas type, calculé comme dans « Concrètement » (mêmes données).
+    var r = function (a) { return Math.round(a); }, T = CAS('tva_taux');
+    if (k === 'tva-sociale' && T) { var t0 = 100 + T.normal.taux_pct; return 'Un achat de ' + eu(t0) + ' TTC (taux normal) : environ ' + eu(t0 + v, v % 1 ? 2 : 0) + ', si la hausse passe entièrement dans les prix.'; }
+    if (k === 'ij-maladie') { var ij = CAS('ij_maladie'); if (!ij) return ''; var jr = Math.min(ij.taux_pct_salaire_journalier_de_base / 100 * 3 * 2000 / ij.diviseur, ij.ij_max_brute_eur), n = 10 - ij.carence_jours; return 'Un salarié payé 2 000 € bruts, 10 jours d\'arrêt : environ ' + eu(r(jr * n * (1 + f))) + ' d\'indemnités au lieu de ' + eu(r(jr * n)) + '.'; }
+    if (k === 'chomage-duree' && x.duree_max) return nf(x.duree_max, 0) + ' jours d\'indemnisation au plus (avant 55 ans) → environ ' + nf(r(x.duree_max * (1 - v / 100)), 0) + ' jours.';
+    if (k === 'tm-dm') return 'Un dispositif médical de 100 € : 50 € remboursés → ' + eu(50 - v) + '.';
+    if (k === 'fp-carence') { var t5 = traitement500(); return t5 ? 'Un agent à l\'indice majoré 500, 5 jours d\'arrêt : 2 jours non payés au lieu de 1, environ ' + eu(r(t5 / 30)) + ' bruts de moins.' : ''; }
+    if (k === 'franchises') { var fr = CAS('franchises'); return fr ? 'Par boîte de médicament : ' + eu(fr.franchise_par_boite_medicament_eur) + ' → ' + eu(fr.franchise_par_boite_medicament_eur * (1 + f), 2) + '.' : ''; }
+    if (k === 'csg') { var tx = CAS('csg_activite_taux'); return tx ? 'CSG sur les salaires : ' + pcx(tx) + ' → environ ' + pcx(Math.round(tx * (1 + f) * 100) / 100) + ', si tous les taux changent dans la même proportion.' : ''; }
+    if (k === 'ir') { var i3 = impotSeul(30000); return i3 != null ? 'Personne seule, 30 000 € de revenu imposable : impôt de ' + eu(i3) + ' → environ ' + eu(r(i3 * (1 + f))) + '.' : ''; }
+    if (k === 'is') { var tn = CAS('is_taux_normal'), tr = CAS('is_taux_reduit'); if (!tn || !tr) return ''; var i0 = tr.plafond_benefice_eur * tr.taux_pct / 100 + (100000 - tr.plafond_benefice_eur) * tn / 100; return 'Une PME qui fait 100 000 € de bénéfice : impôt de ' + eu(i0) + ' → environ ' + eu(r(i0 * (1 + f))) + ', si les taux changent dans la même proportion.'; }
+    if (k === 'carburants') { var g = CAS('accise_gazole'); return g && g.eur_par_hl ? 'Taxe sur le gazole : ' + eu(g.eur_par_hl / 100, 4) + ' → environ ' + eu(g.eur_par_hl / 100 * (1 + f), 4) + ' par litre.' : ''; }
+    if (k === 'mi:sécurités' && B && B.concret && B.concret.policier) return 'L\'équivalent d\'environ ' + nf(Math.round(Math.abs(f) * x.md * 1e9 / B.concret.policier.v / 100) * 100, 0) + ' policiers et gendarmes ' + (f < 0 ? 'en moins' : 'en plus') + ' (dépense moyenne par agent).';
+    if (k === 'mi:justice') { var dt = CAS('detention'); return dt ? 'Autant que le coût d\'un an de détention pour environ ' + nf(Math.round(Math.abs(f) * x.md * 1e9 / (dt.cout_journee_2024_eur * 365) / 100) * 100, 0) + ' détenus.' : ''; }
+    // Sinon, la première ligne de « Concrètement » propre à cette réponse, en entier ; trop longue ou pareille pour toutes les réponses : rien.
+    try { var L0 = exemplesLigne(k, 0).L, L = exemplesLigne(k, v).L.filter(function (t) { return L0.indexOf(t) < 0 && !/^Si |^Allocation de 30|^Tarifs publiés/.test(t); }); var t1 = L.length ? cartesPropre1(L[0]) : ''; return t1; } catch (e) { return ''; }
   }
   // Une phrase, sans les précisions entre parenthèses (« aujourd'hui… », « exemple ») : la carte reste courte.
   // Les précisions qui se répètent d'une réponse à l'autre (« si tous les taux changent… ») : retirées des réponses, dites une fois sur la carte.
@@ -5250,14 +5265,16 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
       '<p class="sim-c-av"><label>Valeur : <input type="number" min="' + p.min + '" max="' + p.max + '" step="' + p.step + '" value="' + v + '"> ' + esc(u) + '</label> <span class="m">de ' + esc(pcC(x, p.min)) + ' à ' + esc(pcC(x, p.max)) + '</span></p>' +
       '<p class="sim-c-ae" aria-live="polite"></p><p class="sim-c-an" hidden></p><button type="button" class="q-go q-continuer" data-valider="1">Valider</button></div>';
   }
-  function cartesCourt(t) { t = String(t).replace(/<[^>]+>/g, '').replace(/ \((aujourd'hui|exemple)[^)]*\)/g, ''); var i = t.search(/\. (?=[A-ZÀ-Ý])/); if (i > 0) t = t.slice(0, i + 1); if (t.length > 120) { var j = t.indexOf(', ', 30); if (j > 0) t = t.slice(0, j) + '.'; } return t; }
+  // Une ligne entière (sans balises ni « (exemple) »), jamais coupée ; trop longue ou parenthèse non fermée : rien.
+  function cartesPropre1(t) { t = String(t).replace(/<[^>]+>/g, '').replace(/ \(exemple\)/g, '').trim(); var o = (t.match(/\(/g) || []).length, c = (t.match(/\)/g) || []).length; return t.length > 170 || o !== c ? '' : t; }
+  function cartesCourt(t) { return cartesPropre1(t); }
   // Une réponse : le réglage en gras, ce qu'il change sur la ligne elle-même en 2027 dessous (2031 aussi pour une mesure qui monte en charge).
   function cartesRep(x, v) {
     if (!v) return ['Ne rien changer', ''];
     var lab = x.u && x.u.choix ? (x.u.choix.filter(function (o) { return o.v === v; })[0] || {}).l || pcC(x, v) : x.u ? pcT(x, v) : pcC(x, v);
     if (x.k === 'allegements') lab += ' d\'allègements';
     if (x.k === 'capitalisation') return [lab, mds(Math.abs(capiBrut(v, AN0))) + ' placés en ' + AN0, cartesConcret(x, v)];
-    if (x.mix) return [lab, 'TVA +' + mds(Math.abs(v * x.mix[0].par_u)) + ', autant de cotisations des employeurs en moins', (function () { try { var L = exemplesLigne(x.k, v).L; return L.length ? cartesCourt(L[0]) : ''; } catch (e) { return ''; } })()];
+    if (x.mix) return [lab, 'TVA +' + mds(Math.abs(v * x.mix[0].par_u)) + ', autant de cotisations des employeurs en moins', cartesConcret(x, v)];
     var sQ = x.k === 'allegements' ? 'recette' : x.groupe, sgn = function (e) { var c = sQ === 'depense' ? -e : e; return Math.abs(c) < 0.005 ? 'moins de 0,01 Md€' : (c < 0 ? '−' : '+') + nf(Math.abs(c), Math.abs(c) < 1 ? 2 : 1) + ' Md€'; };
     var t = sgn(effetPerso(x, v, AN0, S.perso)) + (sQ === 'depense' ? ' de dépenses' : ' de recettes') + ' en ' + AN0;
     if (x.rampe) t += ', ' + sgn(effetPerso(x, v, AN1, S.perso) * PIBY[AN1] / PIBY[AN0]) + ' en ' + AN1;
@@ -5326,6 +5343,8 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
     CM.k = k; CM.v0 = back ? back.v0 : v; CM.revu = back; CM.back = null; cartesSnap(k);
     var desc = cartesPaie(k), nrm = function (t) { return String(t).toLowerCase().replace(/[^a-zà-ÿ]/g, ''); }; if (desc && nrm(desc) === nrm(nomL(k))) desc = x.l.split(' (')[0];
     var riv = cartesRivaux(k), rc = recoupe(k); if (/^mi:/.test(k)) desc = '';
+    // L'exemple complet de « Concrètement », pour le plus grand réglage proposé, sous « En savoir plus ».
+    var vEx = pr.length ? pr[pr.length - 1] : 0, exL = []; try { if (vEx && !(x.u && x.u.choix)) { var e0 = exemplesLigne(k, 0).L; exL = exemplesLigne(k, vEx).L.filter(function (t) { return e0.indexOf(t) < 0; }); } } catch (e) { exL = []; }
     // La progression tient dans l'en-tête de la carte (une ligne), pour que la question et les premières réponses restent à l'écran.
     var pp = Math.min(N, (Math.floor(nVu / 5) + 1) * 5), cavs = [], REP = [0].concat(pr).map(function (r) { var t = cartesRep(x, r); if (t[2]) { var sp = cavSplit(t[2]); t[2] = sp[0]; sp[1].forEach(function (c) { if (cavs.indexOf(c) < 0) cavs.push(c); }); } return t; }), autre = !(x.u && x.u.choix);
     box.innerHTML = bande + '<article class="q-card q-qcard sim-carte in" id="sim-carte" data-c="' + esc(k) + '"><div class="q-ptot sim-c-pt" aria-hidden="true"><span style="width:' + (100 * nVu / N).toFixed(1) + '%"></span></div>' +
@@ -5334,7 +5353,7 @@ body.q-cartes .sim-pl-lg { display: none; } body.q-cartes .sim-pl-ct { display: 
       (riv.length ? '<p class="q-ligne sim-c-riv">Un réglage ici (pas « Ne rien changer ») remplace ' + riv.map(function (t) { return '«\u00a0' + esc(t) + '\u00a0»'; }).join(', ') + (riv.length > 1 ? ' : ces lignes portent' : ' : les deux portent') + ' sur le même argent.</p>' : '') +
       (nVu ? '' : '<p class="q-ligne m q-touchez">Touchez une réponse : la carte suivante arrive aussitôt.</p>') + '<div class="q-reps" role="group" aria-label="' + esc(nomL(k)) + '">' + [0].concat(pr).map(function (r, ir) { var t = REP[ir], on = r === v && (r !== 0 || back); return '<button type="button" class="q-rep' + (r ? '' : ' aucune') + (on ? ' on' : '') + '" data-cv="' + r + '"' + (on ? ' aria-pressed="true"' : '') + '><b>' + esc(t[0]) + '</b>' + (t[1] ? '<span>' + esc(t[1]) + '</span>' : '') + (t[2] ? '<span class="sim-c-cc">' + esc(t[2]) + '</span>' : '') + '</button>'; }).join('') + (autre ? '<button type="button" class="q-rep sim-c-autre-b' + (pr.indexOf(v) < 0 && v ? ' on' : '') + '" aria-expanded="false" aria-controls="sim-c-autre"><b>Autre montant…</b><span>' + (pr.indexOf(v) < 0 && v ? 'Aujourd\'hui : ' + esc(pcC(x, v)) : 'Choisir une valeur exacte') + '</span></button>' : '') + '</div>' + (autre ? cartesAutreHTML(x, v) : '') +
       '<div class="sim-c-imp" hidden></div>' +
-      (desc || actHyp(x) || rc ? '<details class="sim-c-plus"><summary>En savoir plus</summary>' + (desc ? '<p class="q-ligne m">' + (/^Comprend/.test(desc) ? esc(desc) : esc(nomL(k)) + ' : ' + esc(minL(desc))) + '</p>' : '') + (actHyp(x) ? '<p class="q-ligne m">' + esc(actHyp(x).carte) + '</p>' : '') + (rc ? '<p class="q-ligne m">' + esc(rc) + '</p>' : '') + '</details>' : '') +
+      (desc || actHyp(x) || rc || exL.length ? '<details class="sim-c-plus"><summary>En savoir plus</summary>' + (exL.length ? '<p class="q-ligne m">Concrètement, avec ' + esc(pcC(x, vEx)) + ' : ' + exL.join(' ') + '</p>' : '') + (desc ? '<p class="q-ligne m">' + (/^Comprend/.test(desc) ? esc(desc) : esc(nomL(k)) + ' : ' + esc(minL(desc))) + '</p>' : '') + (actHyp(x) ? '<p class="q-ligne m">' + esc(actHyp(x).carte) + '</p>' : '') + (rc ? '<p class="q-ligne m">' + esc(rc) + '</p>' : '') + '</details>' : '') +
       (k === 'capitalisation' && x.options ? capiHTML() : '') +
       '<p class="sim-l-e"></p>' + cartesRet() + '</article>' + cartesExpert();
     var card = $('sim-carte'); if (k === 'capitalisation' && x.options) capiMajRow(card);
