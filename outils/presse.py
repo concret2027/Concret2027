@@ -271,6 +271,37 @@ def recompte(a, noms):
     return cites
 
 
+VIDES = set(norm(w) for w in '''a à au aux avec ce ces cet cette dans de des du elle en et est être il ils je la le les leur leurs lui mais me même ne ni nos notre nous on ou où par pas pour qu que qui sa se ses si son sont sur ta te tes toi ton tous tout tu un une vos votre vous y c d j l m n s t qu' ça dont été fait faire fut plus moins très après avant contre entre sans sous chez depuis vers face selon comme aussi alors encore déjà bien quand ans an jour jours hier demain soir matin semaine mois
+dit dire déclare estime assure affirme lance juge appelle annonce veut va peut doit faut ont avait avoir sera serait était
+direct vidéo video live info infos actu actualité politique présidentielle presidentielle 2027 2026 élection election candidat candidate candidats campagne france français française français pourquoi comment quoi ce qu'il qu'elle selon après face nouveau nouvelle premier première tour'''.split())
+
+
+def mots(titres24, regs):
+    """Pour chaque candidat cité dans au moins 5 titres de 3 médias en 24 heures : les 3 mots repris par le plus de médias
+    (au moins 3 médias chacun : un média qui publie beaucoup ne pèse pas plus), sans les mots courants ni les noms et prénoms des candidats."""
+    noms = set()
+    for c, r in regs.items():
+        for x in [c] + list((r.get('prenoms') if isinstance(r, dict) else None) or []):
+            n = norm(x if isinstance(x, str) else ' '.join(x)); noms |= set(n.split()) | set(n.replace('-', ' ').split())
+    sortie = {}
+    for c, L in titres24.items():
+        if len(L) < 5 or len({m for m, _ in L}) < 3:
+            continue
+        compte, forme = {}, {}
+        for m, t in L:
+            vus = set()
+            for w in re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'-]+", t):
+                w = re.sub(r"^[a-zA-Z]'", '', w).strip("'-")
+                k = norm(w)
+                if len(k) < 4 or k in VIDES or k in noms or k in vus:
+                    continue
+                vus.add(k); compte.setdefault(k, set()).add(m); forme.setdefault(k, {}); forme[k][w] = forme[k].get(w, 0) + 1
+        top = [k for k, n in sorted(compte.items(), key=lambda x: (-len(x[1]), x[0])) if len(n) >= 3][:3]
+        if top:
+            sortie[c] = {'mots': [max(forme[k], key=lambda w: (forme[k][w], w.islower())) for k in top], 'titres': len(L)}
+    return sortie
+
+
 def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
     debut = archive['debut']
     cands = list(regs)
@@ -278,8 +309,10 @@ def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
     # Titres relus avec la règle en vigueur (noms) : chaque candidat est compté depuis le début du relevé ;
     # ses chapeaux, eux, ne sont lus que depuis le relevé où il est entré dans la liste (chapeaux_depuis).
     depuis = {c: debut if noms is not None else max(debut, suivis.get(c, debut)[:10]) for c in cands}
-    jours = {}
+    jours, medias = {}, {}
     exemples = {c: [] for c in cands}
+    titres24 = {c: [] for c in cands}
+    fin24 = dt.datetime.fromisoformat(archive['releves'][-1]['t']) - dt.timedelta(hours=24) if archive['releves'] else None
     for a in sorted(archive['articles'], key=lambda a: (a['jour'], a.get('quand') or a['vu'])):
         if a['jour'] < debut:  # article publié avant le premier relevé : flux de profondeur inégale, pas compté
             continue
@@ -292,6 +325,9 @@ def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
             if c not in j:
                 continue
             j[c] += 1
+            medias.setdefault(a['jour'], {}).setdefault(c, set()).add(a['media'])
+            if fin24 and dt.datetime.fromisoformat(a['vu']) >= fin24 and a['cites'][c] == 'titre':
+                titres24[c].append((a['media'], a['titre']))
             exemples[c].append({'champ': a['cites'][c], 'titre': a['titre'], 'lien': a['lien'], 'media': a['media'], 'jour': a['jour']})
     # Par jour : un média est « lu » s'il a répondu à au moins un relevé ce jour-là ; sinon il est indisponible.
     media = lambda f: f.split(' · ')[0]
@@ -326,6 +362,10 @@ def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
         'panel': [{'name': s['name'], 'family': s['family'], 'active': bool(s.get('active')), 'flux': sum(1 for x in actifs if x['name'] == s['name']), **({'raison': s['raison']} if s.get('raison') else {})} for s in premiers(sources)],
         # Un candidat pas encore suivi ce jour-là n'a pas de chiffre (null), ce n'est pas zéro.
         'jours': {d: {c: (jours.get(d, {}).get(c, 0) if d >= depuis[c] else None) for c in cands} for d in sorted(set(jours) | set(statut)) if d >= debut},
+        # Par jour : les médias (pas les articles) qui citent chaque candidat ; un média compte une fois, quel que soit son nombre d'articles.
+        'medias_jours': {d: {c: sorted(v) for c, v in medias[d].items()} for d in sorted(medias) if d >= debut},
+        # Les mots les plus fréquents dans les titres des 24 dernières heures (candidats cités dans au moins 5 titres de 3 médias).
+        'mots_24h': mots(titres24, regs),
         'statut': {d: statut[d] for d in sorted(statut)},
         # Un média est lu si au moins un de ses flux a répondu ; les flux en erreur d'un média lu sont listés à part.
         'dernier_releve': {'t': der['t'], 'attendus': len({media(f) for f in der['noms_lus']} | {media(f) for f in der_err}), 'lus': len(der_lus),

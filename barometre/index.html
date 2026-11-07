@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="f47fdc8c6487">
+<meta name="concret-version" content="1b6d37af7d76">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -106,7 +106,8 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-pbar .n i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
 .bx-pbar .t { height: 12px; border-radius: 6px; background: var(--color-border-line); overflow: hidden; }
 .bx-pbar .t b { display: block; height: 100%; border-radius: 6px; }
-.bx-pbar .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.bx-pbar .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; line-height: 1.1; }
+.bx-pbar .v small { display: block; font-size: 11px; font-weight: 500; color: var(--color-fg-muted); white-space: nowrap; }
 @media (max-width: 560px) { .bx-pbar { grid-template-columns: minmax(0, 10rem) minmax(0, 1fr) 2.6rem; gap: 6px; font-size: 13.5px; } }
 .bx-presse details summary { cursor: pointer; font-size: var(--cds-font-size-caption); font-weight: 600; }
 .bx-presse ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; overflow-wrap: anywhere; }
@@ -449,12 +450,13 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
         <p class="bx-note" id="presse-periode">Chargement des articles relevés…</p>
         <div class="bx-chart" id="chart-presse" hidden></div>
         <div class="bx-bars" id="presse-bars" role="list" aria-label="Articles de presse qui citent chaque candidat"></div>
+        <p class="bx-note" id="presse-mots" hidden></p>
         <details class="pt-hors" id="presse-plus" hidden><summary>Voir tous les candidats</summary><div class="bx-bars" id="presse-tous" role="list" aria-label="Articles de presse qui citent les autres candidats"></div></details>
         <p class="bx-note pt-hors" id="presse-courbe"></p>
         <p class="bx-note pt-hors" id="presse-court"></p>
         <p class="bx-note pt-hors" id="presse-statut"></p>
         <details class="pt-hors"><summary>Voir des exemples</summary><div class="bx-note" id="presse-ex"></div></details>
-        <details class="pt-hors"><summary>Méthode, médias et limites</summary><p class="bx-note">Chaque candidat est cherché par son nom de famille ; on écarte les homonymes évidents (autre prénom, la Hollande, Palais-Royal…).</p><p class="bx-note">Titres et chapeaux des flux publics de ces médias, relevés toutes les 30 minutes ; un article compte une fois par candidat.</p><p class="bx-note" id="presse-noms"></p><div class="bx-note" id="presse-panel"></div></details>
+        <details class="pt-hors"><summary>Méthode, médias et limites</summary><p class="bx-note">Chaque candidat est cherché par son nom de famille ; on écarte les homonymes évidents (autre prénom, la Hollande, Palais-Royal…).</p><p class="bx-note">Titres et chapeaux des flux publics de ces médias, relevés toutes les 30 minutes. On compte les médias, pas les articles : un média qui publie beaucoup de courts articles (alertes, directs) ne pèse pas plus qu'un autre ; le nombre d'articles est donné en petit. Les mots du jour sont ceux repris par le plus de médias dans leurs titres, sans les mots courants ni les noms des candidats.</p><p class="bx-note" id="presse-noms"></p><div class="bx-note" id="presse-panel"></div></details>
       </div>
       <div class="bx-part" id="part" hidden>
         <h3>Part de visibilité</h3>
@@ -1755,10 +1757,13 @@ window.addEventListener('baro:data', function () {
     el('presse').dataset.src = actifs.length + ' médias français, titres et chapeaux, relevé toutes les 30 minutes';
     var J = Object.keys(P.jours).sort(), D = J.slice(-7), auj = J[J.length - 1];
     var tot = {}, tous = {}; D.forEach(function (d) { Object.keys(P.jours[d] || {}).forEach(function (c) { tous[c] = 1; }); }); Object.keys(tous).forEach(function (c) { tot[c] = D.reduce(function (s, d) { return s + (P.jours[d][c] || 0); }, 0); });
-    var C = Object.keys(tot).sort(function (a, b) { return tot[b] - tot[a] || a.localeCompare(b, 'fr'); }), mx = Math.max(1, tot[C[0]] || 0);
+    // Le classement : le nombre de médias qui citent le candidat (un média compte une fois, quel que soit son nombre d'articles).
+    var MJ = P.medias_jours, art = tot;
+    if (MJ) { tot = {}; Object.keys(art).forEach(function (c) { var u = {}; D.forEach(function (d) { ((MJ[d] || {})[c] || []).forEach(function (m) { u[m] = 1; }); }); tot[c] = Object.keys(u).length; }); }
+    var C = Object.keys(tot).sort(function (a, b) { return tot[b] - tot[a] || art[b] - art[a] || a.localeCompare(b, 'fr'); }), mx = Math.max(1, tot[C[0]] || 0);
     var hm = new Date(P.dernier_releve.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).split(':'), h = hm[0] + ' h ' + hm[1];
     var ajd = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Paris' }), lAuj = auj === ajd ? 'aujourd\'hui, en cours' : 'le ' + jour(auj);
-    el('presse-periode').textContent = 'Nombre d\'articles distincts qui citent chaque candidat, ' + (D.length < 7 ? 'depuis le ' + jour(D[0]) + (J[0] === '2026-11-07' ? ' à 18 h 00' : '') + ', début du relevé' : 'sur les 7 derniers jours, du ' + jour(D[0]) + ' au ' + jour(auj)) + ' ; ' + lAuj + ' : compté jusqu\'au relevé à ' + h + '.' + (secours ? ' Les relevés plus récents n\'ont pas pu être chargés : rechargez la page.' : '');
+    el('presse-periode').textContent = (MJ ? 'Nombre de médias qui citent chaque candidat (un média compte une fois, quel que soit son nombre d\'articles ; en petit, les articles), ' : 'Nombre d\'articles distincts qui citent chaque candidat, ') + (D.length < 7 ? 'depuis le ' + jour(D[0]) + (J[0] === '2026-11-07' ? ' à 18 h 00' : '') + ', début du relevé' : 'sur les 7 derniers jours, du ' + jour(D[0]) + ' au ' + jour(auj)) + ' ; ' + lAuj + ' : compté jusqu\'au relevé à ' + h + '.' + (secours ? ' Les relevés plus récents n\'ont pas pu être chargés : rechargez la page.' : '');
     // Candidat entré dans la liste en cours de période : compté à partir de son premier relevé (pas avant : ce n'est pas zéro).
     var suivi = P.suivis || {}, entre = C.filter(function (c) { var s = suivi[c]; return s && s.length > 10 && s.slice(0, 10) >= D[0]; });
     var plein = function (c, d) { var s = suivi[c] || P.debut; return s.length > 10 ? d > s.slice(0, 10) : d >= s; };
@@ -1770,22 +1775,25 @@ window.addEventListener('baro:data', function () {
     (window.BXV = window.BXV || {}).p = { tot: totP, per: fin.length >= 7 ? 'des 7 derniers jours complets, du ' + jour(DP[0]) + ' au ' + jour(DP[DP.length - 1]) : 'depuis le ' + jour(J[0]) + ', début du relevé' };
     window.BXPart();
     if (J.length >= 7 && fin.length >= 7 && BX.lignes && window.d3) {
-      var H = []; fin.forEach(function (d, i) { if (i < 6) return; var w = fin.slice(i - 6, i + 1); C.forEach(function (c) { if (!plein(c, w[0])) return; H.push({ candidat: c, date: d, probabilite: w.reduce(function (s, x) { return s + ((P.jours[x] || {})[c] || 0); }, 0) / 7 }); }); });
+      var H = []; fin.forEach(function (d, i) { if (i < 6) return; var w = fin.slice(i - 6, i + 1); C.forEach(function (c) { if (!plein(c, w[0])) return; H.push({ candidat: c, date: d, probabilite: w.reduce(function (s, x) { return s + (MJ ? ((MJ[x] || {})[c] || []).length : ((P.jours[x] || {})[c] || 0)); }, 0) / 7 }); }); });
       el('chart-presse').hidden = false; el('presse-bars').hidden = true;
-      var dess = function () { BX.lignes('chart-presse', H, C.map(function (c) { return { short: c, name: BX.full(c) }; }), 'Articles', { n: 8, mR: 120, fmt: function (v) { return (Math.round(v * 10) / 10).toLocaleString('fr-FR'); }, tick: String,
-        aria: 'Articles de presse qui citent chaque candidat, par jour, en moyenne sur 7 jours', tete: function (d) { return '7 jours jusqu\'au ' + BX.fmtDay(d) + ' · articles par jour'; } }); };
+      var dess = function () { BX.lignes('chart-presse', H, C.map(function (c) { return { short: c, name: BX.full(c) }; }), MJ ? 'Médias' : 'Articles', { n: 8, mR: 120, fmt: function (v) { return (Math.round(v * 10) / 10).toLocaleString('fr-FR'); }, tick: String,
+        aria: (MJ ? 'Médias qui citent' : 'Articles de presse qui citent') + ' chaque candidat, par jour, en moyenne sur 7 jours', tete: function (d) { return '7 jours jusqu\'au ' + BX.fmtDay(d) + (MJ ? ' · médias par jour' : ' · articles par jour'); } }); };
       dess(); addEventListener('resize', dess);
-      el('presse-courbe').textContent = 'Articles par jour, en moyenne sur 7 jours, jusqu\'au dernier jour complet relevé (' + jour(fin[fin.length - 1]) + ').';
+      el('presse-courbe').textContent = (MJ ? 'Médias qui citent le candidat, par jour' : 'Articles par jour') + ', en moyenne sur 7 jours, jusqu\'au dernier jour complet relevé (' + jour(fin[fin.length - 1]) + ').';
     } else {
       el('presse-courbe').textContent = (J.length === 1 ? 'Un jour de relevé pour l\'instant' : J.length + ' jours de relevé pour l\'instant') + ' : la courbe paraîtra au 7e jour et s\'allongera chaque jour.';
     }
     var barre = function (c) {
-      return '<div class="bx-pbar" role="listitem"><div class="n"><i style="background:' + BX.col(c) + '"></i>' + esc(BX.full(c)) + '</div><div class="t"><b style="width:' + (100 * tot[c] / mx).toFixed(1) + '%;background:' + BX.col(c) + '"></b></div><div class="v">' + nf(tot[c]) + '</div></div>';
+      return '<div class="bx-pbar" role="listitem"><div class="n"><i style="background:' + BX.col(c) + '"></i>' + esc(BX.full(c)) + '</div><div class="t"><b style="width:' + (100 * tot[c] / mx).toFixed(1) + '%;background:' + BX.col(c) + '"></b></div><div class="v">' + nf(tot[c]) + (MJ ? '<small>' + nf(art[c]) + ' art.</small>' : '') + '</div></div>';
     };
     // Les 10 premiers en barres, les autres repliés ; avec la courbe (8 premiers), tous repliés dans le tableau.
     var courbe = !el('chart-presse').hidden, haut = courbe ? [] : C.slice(0, 10), bas = courbe ? C : C.slice(10);
     el('presse-bars').innerHTML = haut.map(barre).join('');
     el('presse-tous').innerHTML = bas.map(barre).join('');
+    var MO = P.mots_24h || {}, LM = C.filter(function (c) { return MO[c]; });
+    el('presse-mots').hidden = !LM.length;
+    el('presse-mots').innerHTML = LM.length ? 'Mots les plus repris dans les titres des dernières 24 heures (chacun par au moins 3 médias) : ' + LM.map(function (c) { return '<b>' + esc(c) + '</b> : ' + MO[c].mots.map(esc).join(', '); }).join(' · ') + '.' : '';
     el('presse-plus').hidden = !bas.length;
     el('presse-noms').textContent = (P.candidats || '') + (entre.length ? ' Comptés seulement depuis le relevé du ' + jour(suivi[entre[0]].slice(0, 10)) + ' à ' + suivi[entre[0]].slice(11, 13) + ' h ' + suivi[entre[0]].slice(14, 16) + ', quand la liste s\'est étendue : ' + entre.map(BX.full).join(', ') + '.' : '') +
       (function () { var H = P.chapeaux_depuis || {}, L = C.filter(function (c) { return H[c]; }); if (!L.length) return ''; var t = H[L[0]];
@@ -1809,7 +1817,7 @@ window.addEventListener('baro:data', function () {
   // sans la liste complète, les exemples, la méthode ni les notes (.pt-hors). Le bloc garde aussi son bouton « Partager ».
   var pb = document.createElement('button'); pb.type = 'button'; pb.className = 'share pt-share pt-hors'; pb.style.marginTop = '10px'; pb.textContent = 'Partager';
   pb.addEventListener('click', function () { if (window.ConcretPartage) ConcretPartage.partager(el('presse'), pb); });
-  el('presse-bars').parentNode.insertBefore(pb, el('presse-bars').nextSibling);
+  el('presse-mots').parentNode.insertBefore(pb, el('presse-mots').nextSibling);
   var wb = el('wiki-share'); if (wb) wb.addEventListener('click', function () { if (window.ConcretPartage) ConcretPartage.partager(el('wiki'), wb); });
 })();
 </script>
