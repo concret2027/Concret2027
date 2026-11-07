@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="eeb139cfce9f">
+<meta name="concret-version" content="410d5098e904">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1748,7 +1748,7 @@ window.addEventListener('baro:data', function () {
     var C = Object.keys(tot).sort(function (a, b) { return tot[b] - tot[a] || a.localeCompare(b, 'fr'); }), mx = Math.max(1, tot[C[0]] || 0);
     var hm = new Date(P.dernier_releve.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).split(':'), h = hm[0] + ' h ' + hm[1];
     var ajd = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Paris' }), lAuj = auj === ajd ? 'aujourd\'hui, en cours' : 'le ' + jour(auj);
-    el('presse-periode').textContent = 'Nombre d\'articles distincts qui citent chaque candidat, ' + (D.length < 7 ? 'depuis le ' + jour(D[0]) + ', début du relevé' : 'sur les 7 derniers jours, du ' + jour(D[0]) + ' au ' + jour(auj)) + ' ; ' + lAuj + ' : compté jusqu\'au relevé à ' + h + '.';
+    el('presse-periode').textContent = 'Nombre d\'articles distincts qui citent chaque candidat, ' + (D.length < 7 ? 'depuis le ' + jour(D[0]) + (J[0] === '2026-11-07' ? ' à 18 h 00' : '') + ', début du relevé' : 'sur les 7 derniers jours, du ' + jour(D[0]) + ' au ' + jour(auj)) + ' ; ' + lAuj + ' : compté jusqu\'au relevé à ' + h + '.';
     // Candidat entré dans la liste en cours de période : compté à partir de son premier relevé (pas avant : ce n'est pas zéro).
     var suivi = P.suivis || {}, entre = C.filter(function (c) { var s = suivi[c]; return s && s.length > 10 && s.slice(0, 10) >= D[0]; });
     var plein = function (c, d) { var s = suivi[c] || P.debut; return s.length > 10 ? d > s.slice(0, 10) : d >= s; };
