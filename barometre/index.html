@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="359c7aac74ab">
+<meta name="concret-version" content="d4c767b69f55">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -856,6 +856,9 @@ dash.calc('duels_recents', {
     // Mentions obligatoires sous les barres, toujours en entier (plusieurs sondages : la liste plus bas, une ligne par sondage).
     var src = document.getElementById('last-src'); src.hidden = P.length !== 1; src.innerHTML = P.length === 1 ? mention(P[0]) : '';
     var max = rows[0].score;
+    // Total au-delà de 100 % : des candidats ne sont testés que dans une partie des hypothèses ; on le dit sous le titre.
+    var tot = rows.reduce(function (x, r) { return x + (+r.score || 0); }, 0), ln = document.getElementById('last-note');
+    if (ln && tot > 100.5) ln.textContent += ' Le total dépasse 100 % (' + Math.round(tot) + ' %) : certains candidats ne sont testés que dans une partie des hypothèses, et la moyenne de chacun porte sur celles où il figure.';
     // Écart avec la moyenne des sondages dont le terrain finit dans les 30 jours précédents (même règle que « L'essentiel »).
     var fin = P[0].date, deb = new Date(Date.parse(fin) - 30 * 864e5).toISOString().slice(0, 10), av = {}, nbp = {};
     ((dash.data('sondages_t1') || {}).data || []).filter(function (r) { return r.date < fin && r.date >= deb; }).forEach(function (r) {
