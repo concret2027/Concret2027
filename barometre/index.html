@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="f7d2c8cc334a">
+<meta name="concret-version" content="b7b87533bf55">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -334,7 +334,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
     <div class="bx-stale" id="bx-stale" hidden>Données en cours d’actualisation : la dernière mise à jour date de plus d’un jour.</div>
   </header>
   <nav class="jump" aria-label="Aller à">
-    <div class="jump-l1"><a href="#aujourdhui" data-g="moment">En ce moment</a><a href="#sondages" data-g="sondages">Sondages</a><a href="#parieurs" data-g="parieurs">Parieurs</a><a href="#wikipedia" data-g="wikipedia">Wikipédia</a><a href="#detail" data-g="detail">Tous les sondages</a><a href="#agenda" data-g="agenda">Actualité</a><a href="#methode" data-g="methode">Méthode</a></div>
+    <div class="jump-l1"><a href="#aujourdhui" data-g="moment">En ce moment</a><a href="#sondages" data-g="sondages">Sondages</a><a href="#parieurs" data-g="parieurs">Parieurs</a><a href="#wikipedia" data-g="wikipedia">Visibilité</a><a href="#detail" data-g="detail">Tous les sondages</a><a href="#agenda" data-g="agenda">Actualité</a><a href="#methode" data-g="methode">Méthode</a></div>
   </nav>
 
   <!-- En tête : l'essentiel du moment (la synthèse, puis ce qui a bougé), puis tout de suite les sondages ; l'actualité et l'agenda sont en bas de page.
@@ -428,15 +428,18 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <div class="bx-chart" id="chart-pmh" data-source="polymarket_hist"></div>
     </section>
 
+    <span id="visibilite" aria-hidden="true"></span>
     <details class="bx-card bx-fold wide" id="wikipedia" open>
-      <summary><h2>Par ailleurs : qui fait parler de lui</h2><span class="bx-fold-hint">Les lectures de leur page Wikipédia, en moyenne sur 28 jours. Ce n'est ni un sondage ni un soutien.</span></summary>
+      <summary><h2>Visibilité en ligne : Wikipédia, presse</h2><span class="bx-fold-hint">Par ailleurs : lectures Wikipédia et articles de presse. Ce n'est ni un sondage ni un soutien.</span></summary>
       <p class="bx-note">Ce n'est ni un sondage ni un soutien : le nombre de fois où la page Wikipédia en français de chaque candidat est lue, par semaine, en moyenne sur les 28 derniers jours, jusqu'à la veille de la mise à jour (relevé chaque matin), pour que le pic d'une seule semaine ne masque pas la tendance. Une hausse peut suivre une annonce, une polémique ou un passage à la télévision. Les candidats : les 8 premiers des sondages des 30 derniers jours, parmi ceux testés dans au moins la moitié de ces sondages.</p>
       <div class="bx-chart" id="chart-wiki" data-source="wikipedia_vues"></div>
       <p class="bx-note bx-lastsrc" id="wiki-src"></p>
       <div class="bx-presse" id="presse">
         <h3 id="presse-titre">Articles de presse : médias français</h3>
         <p class="bx-note" id="presse-periode">Chargement des articles relevés…</p>
+        <div class="bx-chart" id="chart-presse" hidden></div>
         <div class="bx-bars" id="presse-bars" role="list" aria-label="Articles de presse qui citent chaque candidat"></div>
+        <p class="bx-note" id="presse-courbe"></p>
         <details><summary>Voir des exemples</summary><div class="bx-note" id="presse-ex"></div></details>
         <p class="bx-note" id="presse-statut"></p>
         <details><summary>Les médias du panel</summary><div class="bx-note" id="presse-panel"></div></details>
@@ -1282,6 +1285,7 @@ dash.calc('duels_recents', {
     });
   }
 
+  window.BX.lignes = drawPMLines;
   function drawT2(rows) {
     BX.perVis('second-tour', rows);
     var cut2 = BX.coupe(rows); if (cut2) rows = rows.filter(function (r) { return r.date >= cut2; });
@@ -1696,6 +1700,18 @@ window.addEventListener('baro:data', function () {
     var C = Object.keys(tot).sort(function (a, b) { return tot[b] - tot[a]; }), mx = Math.max(1, tot[C[0]] || 0);
     var h = new Date(P.dernier_releve.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     el('presse-periode').textContent = 'Nombre d\'articles distincts qui citent chaque candidat, ' + (D.length < 7 ? 'depuis le ' + jour(D[0]) + ', début du relevé' : 'sur les 7 derniers jours, du ' + jour(D[0]) + ' au ' + jour(auj)) + ' ; le ' + jour(auj) + ' est compté jusqu\'au relevé de ' + h + '.';
+    // À partir de 7 jours relevés : la courbe des articles par jour, en moyenne glissante sur 7 jours (jours complets seulement).
+    var fin = J.slice(); if (P.dernier_releve && new Date(P.dernier_releve.t).getUTCHours() < 21 && P.dernier_releve.t.slice(0, 10) === auj) fin.pop();
+    if (J.length >= 7 && fin.length >= 7 && BX.lignes && window.d3) {
+      var H = []; fin.forEach(function (d, i) { if (i < 6) return; var w = fin.slice(i - 6, i + 1); C.forEach(function (c) { H.push({ candidat: c, date: d, probabilite: w.reduce(function (s, x) { return s + ((P.jours[x] || {})[c] || 0); }, 0) / 7 }); }); });
+      el('chart-presse').hidden = false; el('presse-bars').hidden = true;
+      var dess = function () { BX.lignes('chart-presse', H, C.map(function (c) { return { short: c, name: BX.full(c) }; }), 'Articles', { n: 8, mR: 120, fmt: function (v) { return (Math.round(v * 10) / 10).toLocaleString('fr-FR'); }, tick: String,
+        aria: 'Articles de presse qui citent chaque candidat, par jour, en moyenne sur 7 jours', tete: function (d) { return '7 jours jusqu\'au ' + BX.fmtDay(d) + ' · articles par jour'; } }); };
+      dess(); addEventListener('resize', dess);
+      el('presse-courbe').textContent = 'Articles par jour, en moyenne sur 7 jours, jusqu\'au dernier jour complet relevé (' + jour(fin[fin.length - 1]) + ').';
+    } else {
+      el('presse-courbe').textContent = (J.length === 1 ? 'Un jour de relevé pour l\'instant' : J.length + ' jours de relevé pour l\'instant') + ' : la courbe paraîtra au 7e jour et s\'allongera chaque jour.';
+    }
     el('presse-bars').innerHTML = C.map(function (c) {
       return '<div class="bx-pbar" role="listitem"><div class="n"><i style="background:' + BX.col(c) + '"></i>' + esc(BX.full(c)) + '</div><div class="t"><b style="width:' + (100 * tot[c] / mx).toFixed(1) + '%;background:' + BX.col(c) + '"></b></div><div class="v">' + nf(tot[c]) + '</div></div>';
     }).join('');
