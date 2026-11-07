@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="b7b87533bf55">
+<meta name="concret-version" content="386203f6df32">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -439,11 +439,13 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
         <p class="bx-note" id="presse-periode">Chargement des articles relevés…</p>
         <div class="bx-chart" id="chart-presse" hidden></div>
         <div class="bx-bars" id="presse-bars" role="list" aria-label="Articles de presse qui citent chaque candidat"></div>
+        <details id="presse-plus" hidden><summary>Voir tous les candidats</summary><div class="bx-bars" id="presse-tous" role="list" aria-label="Articles de presse qui citent les autres candidats"></div></details>
         <p class="bx-note" id="presse-courbe"></p>
+        <p class="bx-note" id="presse-noms"></p>
         <details><summary>Voir des exemples</summary><div class="bx-note" id="presse-ex"></div></details>
         <p class="bx-note" id="presse-statut"></p>
         <details><summary>Les médias du panel</summary><div class="bx-note" id="presse-panel"></div></details>
-        <p class="bx-note">Titres et chapeaux des flux publics de ces médias, relevés toutes les 30 minutes ; Édouard Philippe compté seulement sous son nom complet. Ce n'est ni un sondage ni un soutien : un nom cité dans un article peut l'être en bien ou en mal.</p>
+        <p class="bx-note">Titres et chapeaux des flux publics de ces médias, relevés toutes les 30 minutes. Ce n'est ni un sondage ni un soutien : un nom cité dans un article peut l'être en bien ou en mal.</p>
       </div>
     </details>
 
@@ -1691,19 +1693,29 @@ window.addEventListener('baro:data', function () {
   var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var jour = function (d) { var p = d.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
   var nf = function (v) { return v.toLocaleString('fr-FR'); };
-  fetch('../donnees/presse.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (P) {
+  // D'abord le compte du moment (branche donnees-presse, écrit à chaque relevé), sinon la copie du jour sur le site.
+  var lire = function (u, ms) {
+    var ac = window.AbortController ? new AbortController() : null, t = ac && setTimeout(function () { ac.abort(); }, ms);
+    return fetch(u, { cache: 'no-cache', signal: ac ? ac.signal : undefined }).then(function (r) { if (t) clearTimeout(t); if (!r.ok) throw new Error(r.status); return r.json(); });
+  };
+  lire('https://raw.githubusercontent.com/concret2027/Concret2027/donnees-presse/presse_live.json?t=' + Math.floor(Date.now() / 60000), 4000)
+    .catch(function () { return lire('../donnees/presse.json', 15000); }).then(function (P) {
     var BX = window.BX || { full: function (c) { return c; }, col: function () { return '#888'; } };
     var actifs = P.panel.filter(function (m) { return m.active; });
     el('presse-titre').textContent = 'Articles de presse : ' + actifs.length + ' médias français';
     var J = Object.keys(P.jours).sort(), D = J.slice(-7), auj = J[J.length - 1];
     var tot = {}; Object.keys(P.jours[auj] || {}).forEach(function (c) { tot[c] = D.reduce(function (s, d) { return s + (P.jours[d][c] || 0); }, 0); });
-    var C = Object.keys(tot).sort(function (a, b) { return tot[b] - tot[a]; }), mx = Math.max(1, tot[C[0]] || 0);
-    var h = new Date(P.dernier_releve.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    el('presse-periode').textContent = 'Nombre d\'articles distincts qui citent chaque candidat, ' + (D.length < 7 ? 'depuis le ' + jour(D[0]) + ', début du relevé' : 'sur les 7 derniers jours, du ' + jour(D[0]) + ' au ' + jour(auj)) + ' ; le ' + jour(auj) + ' est compté jusqu\'au relevé de ' + h + '.';
+    var C = Object.keys(tot).sort(function (a, b) { return tot[b] - tot[a] || a.localeCompare(b, 'fr'); }), mx = Math.max(1, tot[C[0]] || 0);
+    var hm = new Date(P.dernier_releve.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).split(':'), h = hm[0] + ' h ' + hm[1];
+    var ajd = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Paris' }), lAuj = auj === ajd ? 'aujourd\'hui, en cours' : 'le ' + jour(auj);
+    el('presse-periode').textContent = 'Nombre d\'articles distincts qui citent chaque candidat, ' + (D.length < 7 ? 'depuis le ' + jour(D[0]) + ', début du relevé' : 'sur les 7 derniers jours, du ' + jour(D[0]) + ' au ' + jour(auj)) + ' ; ' + lAuj + ' : compté jusqu\'au relevé à ' + h + '.';
+    // Candidat entré dans la liste en cours de période : compté à partir de son premier relevé (pas avant : ce n'est pas zéro).
+    var suivi = P.suivis || {}, entre = C.filter(function (c) { var s = suivi[c]; return s && s.length > 10 && s.slice(0, 10) >= D[0]; });
+    var plein = function (c, d) { var s = suivi[c] || P.debut; return s.length > 10 ? d > s.slice(0, 10) : d >= s; };
     // À partir de 7 jours relevés : la courbe des articles par jour, en moyenne glissante sur 7 jours (jours complets seulement).
     var fin = J.slice(); if (P.dernier_releve && new Date(P.dernier_releve.t).getUTCHours() < 21 && P.dernier_releve.t.slice(0, 10) === auj) fin.pop();
     if (J.length >= 7 && fin.length >= 7 && BX.lignes && window.d3) {
-      var H = []; fin.forEach(function (d, i) { if (i < 6) return; var w = fin.slice(i - 6, i + 1); C.forEach(function (c) { H.push({ candidat: c, date: d, probabilite: w.reduce(function (s, x) { return s + ((P.jours[x] || {})[c] || 0); }, 0) / 7 }); }); });
+      var H = []; fin.forEach(function (d, i) { if (i < 6) return; var w = fin.slice(i - 6, i + 1); C.forEach(function (c) { if (!plein(c, w[0])) return; H.push({ candidat: c, date: d, probabilite: w.reduce(function (s, x) { return s + ((P.jours[x] || {})[c] || 0); }, 0) / 7 }); }); });
       el('chart-presse').hidden = false; el('presse-bars').hidden = true;
       var dess = function () { BX.lignes('chart-presse', H, C.map(function (c) { return { short: c, name: BX.full(c) }; }), 'Articles', { n: 8, mR: 120, fmt: function (v) { return (Math.round(v * 10) / 10).toLocaleString('fr-FR'); }, tick: String,
         aria: 'Articles de presse qui citent chaque candidat, par jour, en moyenne sur 7 jours', tete: function (d) { return '7 jours jusqu\'au ' + BX.fmtDay(d) + ' · articles par jour'; } }); };
@@ -1712,21 +1724,31 @@ window.addEventListener('baro:data', function () {
     } else {
       el('presse-courbe').textContent = (J.length === 1 ? 'Un jour de relevé pour l\'instant' : J.length + ' jours de relevé pour l\'instant') + ' : la courbe paraîtra au 7e jour et s\'allongera chaque jour.';
     }
-    el('presse-bars').innerHTML = C.map(function (c) {
+    var barre = function (c) {
       return '<div class="bx-pbar" role="listitem"><div class="n"><i style="background:' + BX.col(c) + '"></i>' + esc(BX.full(c)) + '</div><div class="t"><b style="width:' + (100 * tot[c] / mx).toFixed(1) + '%;background:' + BX.col(c) + '"></b></div><div class="v">' + nf(tot[c]) + '</div></div>';
-    }).join('');
+    };
+    // Les 10 premiers en barres, les autres repliés ; avec la courbe (8 premiers), tous repliés dans le tableau.
+    var courbe = !el('chart-presse').hidden, haut = courbe ? [] : C.slice(0, 10), bas = courbe ? C : C.slice(10);
+    el('presse-bars').innerHTML = haut.map(barre).join('');
+    el('presse-tous').innerHTML = bas.map(barre).join('');
+    el('presse-plus').hidden = !bas.length;
+    // Sous-comptés : cherchés seulement sous leur nom complet (presse_noms.json, règle de chacun dans P.noms).
+    var sous = C.filter(function (c) { return P.noms && /sous-compt/.test(P.noms[c] || ''); }).map(BX.full);
+    el('presse-noms').textContent = (P.candidats || '') + (entre.length ? ' Comptés seulement depuis le relevé du ' + jour(suivi[entre[0]].slice(0, 10)) + ' à ' + suivi[entre[0]].slice(11, 13) + ' h ' + suivi[entre[0]].slice(14, 16) + ', quand la liste s\'est étendue : ' + entre.map(BX.full).join(', ') + '.' : '') +
+      (sous.length ? ' Sous-comptés, car cherchés seulement sous leur nom complet (le nom seul désigne aussi d\'autres personnes, un pays ou un mot courant) : ' + sous.join(', ') + '.' : '');
     el('presse-ex').innerHTML = C.map(function (c) {
       var ex = P.exemples[c] || [];
       return '<h4>' + esc(BX.full(c)) + '</h4>' + (ex.length ? '<ul>' + ex.map(function (a) { return '<li><a href="' + esc(a.lien) + '" target="_blank" rel="noopener">' + esc(a.titre) + '</a> · ' + esc(a.media) + ', ' + jour(a.jour) + '</li>'; }).join('') + '</ul>' : '<p>Aucun article relevé.</p>');
     }).join('');
     var dr = P.dernier_releve, pb = D.filter(function (d) { return P.statut[d] && P.statut[d].erreurs.length; });
     el('presse-statut').textContent = 'Dernier relevé : ' + dr.lus + ' médias lus sur ' + dr.attendus + (dr.erreurs.length ? ' ; indisponibles : ' + dr.erreurs.join(', ') + ' (pas lus, donc pas comptés : ce n\'est pas zéro article).' : '.') +
+      (dr.flux_erreurs && dr.flux_erreurs.length ? ' Flux non lus d\'un média lu par ailleurs : ' + dr.flux_erreurs.join(', ') + '.' : '') +
       (pb.length ? ' Pas lus de toute la journée : ' + pb.map(function (d) { return jour(d) + ', ' + P.statut[d].erreurs.join(', '); }).join(' ; ') + '.' : '');
     var fam = []; P.panel.forEach(function (m) { if (fam.indexOf(m.family) < 0) fam.push(m.family); });
     var hors = P.panel.filter(function (m) { return !m.active; });
-    el('presse-panel').innerHTML = '<ul>' + fam.map(function (f) { var L = actifs.filter(function (m) { return m.family === f; }); return L.length ? '<li><b>' + esc(f) + ' (' + L.length + ')</b> : ' + L.map(function (m) { return esc(m.name); }).join(', ') + '</li>' : ''; }).join('') + '</ul>' +
-      (hors.length ? '<p><b>Pas dans le panel</b> : ' + hors.filter(function (m) { return !/flux public qui r/.test(m.raison || ''); }).map(function (m) { return esc(m.name) + ' (' + esc(m.raison) + ')'; }).join(' ; ') +
-      ' ; et, faute de flux public qui réponde avec des articles : ' + hors.filter(function (m) { return /flux public qui r/.test(m.raison || ''); }).map(function (m) { return esc(m.name); }).join(', ') + '.</p>' : '');
+    el('presse-panel').innerHTML = '<ul>' + fam.map(function (f) { var L = actifs.filter(function (m) { return m.family === f; }); return L.length ? '<li><b>' + esc(f) + ' (' + L.length + ')</b> : ' + L.map(function (m) { return esc(m.name) + (m.flux > 1 ? ' (' + m.flux + ' flux)' : ''); }).join(', ') + '</li>' : ''; }).join('') + '</ul>' +
+      (hors.length ? '<p><b>Pas dans le panel</b></p><ul>' + (function () { var R = []; hors.forEach(function (m) { var r = m.raison || ''; if (R.indexOf(r) < 0) R.push(r); });
+        return R.map(function (r) { return '<li>' + esc(hors.filter(function (m) { return (m.raison || '') === r; }).map(function (m) { return m.name; }).join(', ')) + ' : ' + esc(r) + '</li>'; }).join(''); })() + '</ul>' : '');
   }).catch(function () { el('presse-periode').textContent = 'Les articles relevés n\'ont pas pu être chargés.'; });
 })();
 </script>

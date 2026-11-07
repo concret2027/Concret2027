@@ -40,12 +40,12 @@ jobs:
       - name: Relevé des flux
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then MODE=--agreger; else MODE=--agreger-si-besoin; fi
-          python3 outils/presse.py --archive arch/presse_archive.json --ecrire $MODE
+          python3 outils/presse.py --archive arch/presse_archive.json --ecrire --live arch/presse_live.json $MODE
 
       - name: Archive sur donnees-presse
         working-directory: arch
         run: |
-          git add presse_archive.json
+          git add presse_archive.json presse_live.json
           git diff --cached --quiet && exit 0
           git commit -q -m "Presse : relevé $(date -u +%Y-%m-%dT%H:%MZ)"
           git push origin donnees-presse || { git fetch --depth 1 origin donnees-presse && git rebase FETCH_HEAD && git push origin donnees-presse; }
