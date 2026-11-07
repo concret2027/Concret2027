@@ -7,15 +7,16 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: presse
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   releve:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,3 +57,13 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -q -m "Presse : articles qui citent les candidats, $(date -u +%Y-%m-%d)"
           git push origin HEAD:main || { git pull -q --rebase origin main && git push origin HEAD:main; }
+
+      # GitHub ne lance pas toujours les relevés programmés : chaque relevé relance le suivant 30 minutes plus tard.
+      # Un relevé lancé entre-temps (programmé ou à la main) annule celui qui attend : une seule chaîne à la fois.
+      - name: Relance dans 30 minutes
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sleep 1680
+          gh workflow run presse.yml --ref main -R "${{ github.repository }}"
