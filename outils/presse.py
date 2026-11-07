@@ -14,6 +14,8 @@ candidat (donnees/presse_noms.json). Un flux en erreur est « indisponible », j
 Candidats suivis : tous ceux testés dans les sondages de premier tour des 60 derniers jours (data.json,
 datasets.sondages_t1), plus Jordan Bardella, testé à la place de Marine Le Pen. Chacun est compté à partir
 du relevé où il entre dans la liste (archive['suivis']) : l'archive ne garde pas les chapeaux, on ne recompte pas le passé.
+Chaque candidat est cherché par son nom de famille (règle dans presse_noms.json) ; à chaque compte, les titres archivés
+sont relus avec la règle en vigueur (les chapeaux, non gardés, gardent ce qui y a été trouvé au relevé).
 Bibliothèque standard seulement. Jamais de saisie à la main.
 """
 import concurrent.futures as cf, datetime as dt, email.utils, html, json, os, re, sys, unicodedata, urllib.request
@@ -56,7 +58,7 @@ def candidats_sondages(aujourdhui):
 
 
 def regles(cfg, cands):
-    """La règle de chaque candidat suivi ; un nom sans règle écrite est cherché sous son nom complet (page Wikipédia)."""
+    """La règle de chaque candidat suivi ; un nom sans règle écrite est cherché par son nom de famille, son prénom lu dans sa page Wikipédia."""
     out, sans = {}, []
     try:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -67,28 +69,71 @@ def regles(cfg, cands):
         if c in cfg['candidats']:
             out[c] = cfg['candidats'][c]
         elif c in PAGES:
-            out[c] = {'motifs': [norm(PAGES[c])], 'note': 'Compté seulement sous son nom complet « %s » (règle par défaut, à revoir).' % PAGES[c]}
+            out[c] = {'nom': c, 'prenoms': [PAGES[c].replace('_', ' ').split(' ')[0]], 'note': 'Cherché par son nom de famille, comme les autres (règle par défaut, sans exclusion propre, à revoir).'}
         else:
             sans.append(c)
     return out, sans
 
 
-def compile_noms(cfg):
+def norm_c(s):
+    """Comme norm, mais garde les majuscules : le nom est cherché avec sa majuscule."""
+    s = unicodedata.normalize('NFKD', s or '')
+    s = ''.join(c for c in s if not unicodedata.combining(c))
+    return re.sub(r'[’‘`]', "'", re.sub(r'[‐-–­]', '-', re.sub(r'\s+', ' ', s)))
+
+
+def compile_noms(cfg, autorises=()):
+    """Règle commune (presse_noms.json) : le nom de famille, mot entier, avec sa majuscule (ou tout en capitales)."""
+    aut = {norm(w) for w in autorises}
     out = {}
     for c, r in cfg.items():
-        out[c] = ([re.compile(r'(?<![\w-])' + re.escape(m) + r'(?![\w])') for m in r['motifs']],
-                  r.get('exclure_avant', []), r.get('exclure_apres', []))
+        nom = norm_c(r.get('nom') or c)
+        rx = re.compile(r"(?<![\w-])(?:" + re.escape(nom) + '|' + re.escape(nom.upper()) + r")(?![\w])")
+        out[c] = {'rx': rx, 'prenoms': {norm(x) for x in r.get('prenoms', [])}, 'aut': aut,
+                  'avant': {norm(x) for x in r.get('exclure_avant', [])}, 'apres': [norm_c(x) for x in r.get('exclure_apres', [])],
+                  'apres_rx': [re.compile(x) for x in r.get('exclure_apres_rx', [])], 'contient': [norm_c(x) for x in r.get('exclure_si_contient', [])],
+                  'prenom_si_suivi': r.get('prenom_si_suivi', False), 'particule': r.get('particule', False)}
     return out
 
 
-def trouve(t, regle):
-    motifs, avant, apres = regle
-    for rx in motifs:
-        for m in rx.finditer(t):
-            if any(t[:m.start()].endswith(a) for a in avant) or any(t[m.end():].startswith(a) for a in apres):
-                continue
-            return True
-    return False
+MOT_AVANT = re.compile(r"([\w'.-]+) $")
+
+
+def _prenom(tok, R):
+    """Un mot à majuscule juste avant le nom, qui n'est ni le prénom du candidat, ni un titre, ni un mot courant : un autre prénom."""
+    tok = re.sub(r"^[dlDL]'", '', tok)
+    if not tok or not tok[0].isupper() or tok.isupper() or any(ch.isdigit() for ch in tok):
+        return False
+    return norm(tok) not in R['prenoms'] and norm(tok) not in R['aut']
+
+
+def pourquoi_pas(t, m, R):
+    """None si l'occurrence compte, sinon la raison de l'écarter."""
+    av = MOT_AVANT.search(t[:m.start()])
+    tok = av.group(1) if av else ''
+    if tok and norm(re.sub(r"^[dlDL]'", '', tok)) in R['prenoms']:
+        return None  # « Édouard Philippe », « François Hollande »
+    if tok and norm(tok) in R['avant']:
+        return 'avant'
+    suite = t[m.end():]
+    if any(suite.startswith(a) for a in R['apres']) or any(x.search(suite) for x in R['apres_rx']):
+        return 'apres'
+    if any(x in t for x in R['contient']):
+        return 'contient'
+    if R['prenom_si_suivi'] and re.match(r" (?:(?:de|du|d') ?)?[A-Z][a-z]", suite):
+        return 'prenom'  # « Philippe Martinez », « Philippe de Villiers »
+    if tok and _prenom(tok, R):
+        return 'autre prenom'
+    if R['particule'] and tok in ('de', 'du'):
+        av2 = MOT_AVANT.search(t[:av.start()])
+        if av2 and norm(av2.group(1)) not in R['prenoms'] and _prenom(av2.group(1), R):
+            return 'autre prenom'
+    return None
+
+
+def trouve(t, R):
+    """t : texte passé par norm_c (accents retirés, majuscules gardées)."""
+    return any(pourquoi_pas(t, m, R) is None for m in R['rx'].finditer(t))
 
 
 def local(tag):
@@ -185,7 +230,7 @@ def releve(archive, sources, noms, maintenant):
             k = cle_lien(it['lien'])
             if (it['guid'] and it['guid'] in vus_guid) or (k and k in vus_lien):
                 continue
-            titre_n, desc_n = norm(it['titre']), norm(it['desc'])
+            titre_n, desc_n = norm_c(it['titre']), norm_c(it['desc'])
             cites = {}
             for c, regle in noms.items():
                 if trouve(titre_n, regle):
@@ -215,11 +260,24 @@ def _essai(s):
         return (type(e).__name__ + ': ' + str(e))[:160]
 
 
-def agreger(archive, sources, noms_cfg, regs, sans):
+def recompte(a, noms):
+    """Les candidats cités, selon la règle en vigueur : le titre est relu (il est gardé dans l'archive) ; le chapeau ne l'est pas
+    (il n'est pas gardé) : un candidat trouvé dans le chapeau lors du relevé reste compté."""
+    t = norm_c(a['titre'])
+    cites = {c: 'titre' for c, R in noms.items() if trouve(t, R)}
+    for c, ou in a.get('cites', {}).items():
+        if ou == 'chapeau' and c not in cites:
+            cites[c] = 'chapeau'
+    return cites
+
+
+def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
     debut = archive['debut']
     cands = list(regs)
     suivis = archive.get('suivis', {})
-    depuis = {c: max(debut, suivis.get(c, debut)[:10]) for c in cands}  # jour du premier relevé qui le compte
+    # Titres relus avec la règle en vigueur (noms) : chaque candidat est compté depuis le début du relevé ;
+    # ses chapeaux, eux, ne sont lus que depuis le relevé où il est entré dans la liste (chapeaux_depuis).
+    depuis = {c: debut if noms is not None else max(debut, suivis.get(c, debut)[:10]) for c in cands}
     jours = {}
     exemples = {c: [] for c in cands}
     for a in sorted(archive['articles'], key=lambda a: (a['jour'], a.get('quand') or a['vu'])):
@@ -228,6 +286,8 @@ def agreger(archive, sources, noms_cfg, regs, sans):
         if a['jour'] > dt.datetime.fromisoformat(a['vu']).astimezone(PARIS).date().isoformat():  # daté après le jour où il a été vu (agenda) : pas compté
             continue
         j = jours.setdefault(a['jour'], {c: 0 for c in cands})
+        if noms is not None:
+            a['cites'] = recompte(a, noms)
         for c in a['cites']:
             if c not in j:
                 continue
@@ -257,7 +317,8 @@ def agreger(archive, sources, noms_cfg, regs, sans):
         'methode': noms_cfg['regle'] + ' Chaque jour (heure de Paris, date de publication du flux) : le nombre d\'articles distincts qui citent chaque candidat, tous médias ensemble ; un même article repris dans deux flux compte une fois. Les articles publiés avant le premier relevé ne comptent pas.',
         'noms': {c: r.get('note', '') for c, r in regs.items()},
         'candidats': 'Tous les candidats testés dans les sondages de premier tour des %d derniers jours, plus Jordan Bardella, testé à la place de Marine Le Pen.' % JOURS_SONDAGES,
-        'suivis': {c: suivis.get(c, debut) for c in cands},
+        'suivis': {c: (debut if noms is not None else suivis.get(c, debut)) for c in cands},
+        'chapeaux_depuis': {c: suivis[c] for c in cands if noms is not None and len(suivis.get(c, '')) > 10},
         'sans_regle': sans,
         'debut': debut,
         'mis_a_jour': der['t'],
@@ -285,7 +346,7 @@ def main():
         archive = json.load(open(chemin, encoding='utf-8'))
     maintenant = dt.datetime.now(dt.timezone.utc).replace(second=0, microsecond=0)
     regs, sans = regles(noms_cfg, candidats_sondages(maintenant.astimezone(PARIS).date()))
-    noms = compile_noms(regs)
+    noms = compile_noms(regs, noms_cfg.get('autorises', []))
     if 'suivis' not in archive:  # les 8 premiers candidats sont suivis depuis le début du relevé
         archive['suivis'] = {c: archive['debut'] for c in PREMIERS} if archive.get('debut') else {}
     for c in regs:  # un nouveau nom : depuis ce relevé
@@ -308,7 +369,7 @@ def main():
         except Exception:
             ancien = {}
         besoin = (maintenant.hour, maintenant.minute) >= (23, 30) or (hier >= archive['debut'] and hier not in ancien.get('jours', {}))
-    agg = agreger(archive, sources, noms_cfg, regs, sans)
+    agg = agreger(archive, sources, noms_cfg, regs, sans, noms)
     der = sorted(agg['jours'])[-7:]
     for c in regs:
         print('  %-13s %s' % (c, sum(agg['jours'][d][c] or 0 for d in der)))
