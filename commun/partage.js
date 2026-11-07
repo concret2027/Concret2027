@@ -16,8 +16,10 @@
   }
   var txt = function (el) { return el ? el.textContent.replace(/\s+/g, ' ').replace(/\bexemple\b/i, '').trim() : ''; };
   // Titre d'un h2 avec sur-titre : { sur: « Dette, % du PIB », main: la phrase }.
+  // data-pt-h : le titre d'une partie partagée seule (Baromètre : les articles de presse, sous un h3).
+  function tete(card) { return card.querySelector('[data-pt-h]') || card.querySelector('h1, h2, .acc-h, .lab, .mo-lab, .eyebrow'); }
   function parties(card) {
-    var h = card.querySelector('h1, h2, .acc-h, .lab, .mo-lab, .eyebrow');
+    var h = tete(card);
     if (!h) return { sur: '', main: document.title.replace(' · Concret', '') };
     var eb = h.querySelector('.eyebrow'), clone = h.cloneNode(true);
     Array.prototype.forEach.call(clone.querySelectorAll('.eyebrow, .ex'), function (e) { e.remove(); });
@@ -103,7 +105,7 @@
     if (window.ConcretMenu && ConcretMenu.presser) ConcretMenu.presser(card);
     lib().then(function (h2c) {
       // Le titre est déjà écrit en haut de l'image : on le retire de la capture pour ne pas le répéter.
-      var h = card.querySelector('h1, h2, .acc-h, .lab, .mo-lab, .eyebrow'); if (h) h.setAttribute('data-pt-titre', ''); card.setAttribute('data-pt-bloc', '');
+      var h = tete(card); if (h) h.setAttribute('data-pt-titre', ''); card.setAttribute('data-pt-bloc', '');
       var lg = legende(card); if (lg) lg.setAttribute('data-pt-legende', '');
       return h2c(card, { backgroundColor: getComputedStyle(document.body).backgroundColor, scale: 2, useCORS: true, logging: false,
         ignoreElements: function (el) { return el.classList && (el.classList.contains('share') || el.classList.contains('pt-share') || el.classList.contains('nt-btn') || el.classList.contains('cp-bar')); },
@@ -176,5 +178,7 @@
     if (window.requestIdleCallback) requestIdleCallback(pre, { timeout: 4000 }); else setTimeout(pre, 2000);
     var t; new MutationObserver(function () { clearTimeout(t); t = setTimeout(equiper, 200); }).observe(document.body, { childList: true, subtree: true });
   }
+  // Une partie d'un bloc partagée seule par la page, avec son propre bouton (Baromètre : les articles de presse).
+  window.ConcretPartage = { partager: partager };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
