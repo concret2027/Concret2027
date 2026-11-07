@@ -45,6 +45,8 @@ Phrases d'actualité, d'agenda et d'événements : une phrase neutre et factuell
 
 - Pays à ajouter (menu « + Ajouter un pays » de la toile et des courbes) : dès qu'un chiffre nouveau a été écrit ce jour dans une série annuelle d'une page (Eurostat, OCDE, OTAN, Banque mondiale, PISA ; outils vie.py, defense.py, demographie.py, ue_calc.py compris), lance `python3 outils/pays.py --ecrire` après eux : il relit les mêmes séries pour les autres pays et ne garde que celles qui redonnent les chiffres publiés de la France, de l'Allemagne et de l'Espagne. Recopie dans le compte rendu toute série « Écartée » qu'il affiche (la toile et les courbes restent justes, seul le pays ajouté manque pour cette série). Sinon, il passe chaque mois (indicateur pays_ajout).
 
+- Presse (bloc « Visibilité ») : déclenche un relevé du workflow GitHub presse.yml (outil GitHub `actions_run_trigger`, méthode run_workflow, owner concret2027, repo concret2027, workflow_id presse.yml, ref main), puis vérifie qu'il a réussi (`actions_list`). GitHub ne lance pas toujours les relevés programmés : ce déclenchement garantit au moins un relevé par passage. S'il échoue, écris-le dans la notification (« Presse : relevé non lancé : <erreur> ») et continue.
+
 ## 2 bis. Jeu du budget (quand il est publié, pendant l'examen des budgets 2027)
 Lance `python3 outils/senat.py --ecrire` (scrutins publics du Sénat sur les deux textes de 2027) ; s'il y a des scrutins nouveaux, lance `python3 outils/budget_jeu.py --ecrire` et recopie dans le compte rendu chaque mesure dont le statut au Sénat a changé. Les statuts de l'Assemblée restent écrits dans `donnees/budget_sources/mesures_2027.json`, avec le numéro de chaque scrutin relu à la source.
 
