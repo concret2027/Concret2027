@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '7,37 * * * *'
   workflow_dispatch:
+    inputs:
+      chaine:
+        description: 'relancé par le relevé précédent'
+        required: false
+        default: 'non'
 
 permissions:
   contents: write
@@ -40,7 +45,7 @@ jobs:
 
       - name: Relevé des flux
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then MODE=--agreger; else MODE=--agreger-si-besoin; fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.chaine }}" != "oui" ]; then MODE=--agreger; else MODE=--agreger-si-besoin; fi
           python3 outils/presse.py --archive arch/presse_archive.json --ecrire --live arch/presse_live.json $MODE
 
       - name: Archive sur donnees-presse
@@ -66,4 +71,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           sleep 1680
-          gh workflow run presse.yml --ref main -R "${{ github.repository }}"
+          gh workflow run presse.yml --ref main -R "${{ github.repository }}" -f chaine=oui
