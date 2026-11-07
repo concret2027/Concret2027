@@ -91,6 +91,8 @@
   window.addEventListener('resize', tableaux);
 })();
 (function () {
+  // Jeu du budget retiré du site (choix de l'éditeur, 7 novembre 2026) : remettre true pour le réafficher partout (menu, barre du haut, liens des pages).
+  var JEU_BUDGET = false;
   var PAGES = [
     { u: '/', l: 'Accueil', t: 'La France mandat par mandat, et son pouls', ic: 'accueil', large: 1 },
     { u: '/barometre/', l: 'Baromètre 2027', t: 'Présidentielle : sondages, parieurs, Wikipédia', ic: 'barometre', g: 'Chaque jour' },
@@ -106,6 +108,7 @@
     { u: '/demographie/', l: 'Démographie', t: 'Naissances, âges, migrations', ic: 'demographie', g: 'Repères, sans calcul' },
     { u: '/politique/', l: 'La vie politique', t: 'Lois, votes, grandes dates', ic: 'politique', g: 'Repères, sans calcul' }
   ];
+  if (!JEU_BUDGET) PAGES = PAGES.filter(function (p) { return p.u !== '/budget/'; });
   // Icônes des pages, au trait, dans la couleur d'accent.
   var IC = {
     accueil: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
@@ -809,13 +812,14 @@
     document.addEventListener('toggle', plierBientot, true);
     // Les blocs d'actualité restent ouverts : leur titre n'est pas un bouton (le bouton Partager qu'il porte, si.)
     document.addEventListener('click', function (e) { var su = e.target.closest && e.target.closest('details.acc-fixe > summary'); if (su && !e.target.closest('button, a')) e.preventDefault(); }, true);
+    if (!JEU_BUDGET && pageNom !== 'budget') css += 'a.une[href^="/budget/"],a.auj-l[href^="/budget/"],a.qz-jeu,.jeu-l,.vz-jeu,p.vz-comme:has(>a[href^="/budget/"]),nav.site>a[href="/budget/"]{display:none!important}';
     if (!document.getElementById('mn-css')) { var st = document.createElement('style'); st.id = 'mn-css'; st.textContent = css; document.head.appendChild(st); }
     var nav = document.querySelector('nav.site');
     if (nav) {
       var lgo = nav.querySelector('a.logo');
       if (lgo && !lgo.querySelector('.lc')) { lgo.innerHTML = '<span class="lc" aria-hidden="true">C</span><span class="ln">Concret</span>'; lgo.setAttribute('aria-label', 'Concret, accueil'); }
       // Le jeu du budget dans la barre, après Votez ; retiré le premier quand la place manque (barreAjuste).
-      if (!nav.querySelector('a[href="/budget/"]')) {
+      if (JEU_BUDGET && !nav.querySelector('a[href="/budget/"]')) {
         var ab = document.createElement('a'); ab.href = '/budget/'; ab.innerHTML = 'Budget<span class="lg"> 2027</span>';
         if (pageNom === 'budget') ab.setAttribute('aria-current', 'page');
         var vz = nav.querySelector('a[href="/votez/"]'), ap = vz ? vz.nextSibling : null;
