@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="2df4f0c4fb0d">
+<meta name="concret-version" content="f47fdc8c6487">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1719,9 +1719,9 @@ window.addEventListener('baro:data', function () {
   var jour = function (d) { var p = d.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
   var nf = function (v) { return v.toLocaleString('fr-FR'); };
   // D'abord le compte du moment (branche donnees-presse, écrit à chaque relevé), sinon la copie du jour sur le site.
-  var lire = function (u, ms) {
+  var lire = function (u, ms, h) {
     var ac = window.AbortController ? new AbortController() : null, t = ac && setTimeout(function () { ac.abort(); }, ms);
-    return fetch(u, { cache: 'no-cache', signal: ac ? ac.signal : undefined }).then(function (r) { if (t) clearTimeout(t); if (!r.ok) throw new Error(r.status); return r.json(); });
+    return fetch(u, { cache: 'no-cache', signal: ac ? ac.signal : undefined, headers: h || undefined }).then(function (r) { if (t) clearTimeout(t); if (!r.ok) throw new Error(r.status); return r.json(); });
   };
   // Part de visibilité : part de chaque candidat suivi par Wikipédia, dans les lectures (dernier point de la courbe) et dans les articles de presse.
   window.BXPart = function () {
@@ -1744,18 +1744,21 @@ window.addEventListener('baro:data', function () {
     el('part-p-st').textContent = 'Articles ' + V.p.per + '.';
     el('part').hidden = true; // part de visibilité retirée pour l'instant (choix de l'éditeur, 7 novembre 2026) : remettre false pour la réafficher
   };
-  lire('https://raw.githubusercontent.com/concret2027/Concret2027/donnees-presse/presse_live.json?t=' + Math.floor(Date.now() / 60000), 4000)
-    .catch(function () { return lire('../donnees/presse.json', 15000); }).then(function (P) {
+  // Le relevé le plus récent (branche donnees-presse), par deux adresses ; sinon la copie publiée avec le site (une fois par jour), et c'est dit.
+  var secours = false;
+  lire('https://raw.githubusercontent.com/concret2027/Concret2027/donnees-presse/presse_live.json?t=' + Math.floor(Date.now() / 60000), 8000)
+    .catch(function () { return lire('https://api.github.com/repos/concret2027/Concret2027/contents/presse_live.json?ref=donnees-presse', 8000, { Accept: 'application/vnd.github.raw+json' }); })
+    .catch(function () { secours = true; return lire('../donnees/presse.json', 15000); }).then(function (P) {
     var BX = window.BX || { full: function (c) { return c; }, col: function () { return '#888'; } };
     var actifs = P.panel.filter(function (m) { return m.active; });
     el('presse-titre').textContent = 'Articles de presse : ' + actifs.length + ' médias français';
     el('presse').dataset.src = actifs.length + ' médias français, titres et chapeaux, relevé toutes les 30 minutes';
     var J = Object.keys(P.jours).sort(), D = J.slice(-7), auj = J[J.length - 1];
-    var tot = {}; Object.keys(P.jours[auj] || {}).forEach(function (c) { tot[c] = D.reduce(function (s, d) { return s + (P.jours[d][c] || 0); }, 0); });
+    var tot = {}, tous = {}; D.forEach(function (d) { Object.keys(P.jours[d] || {}).forEach(function (c) { tous[c] = 1; }); }); Object.keys(tous).forEach(function (c) { tot[c] = D.reduce(function (s, d) { return s + (P.jours[d][c] || 0); }, 0); });
     var C = Object.keys(tot).sort(function (a, b) { return tot[b] - tot[a] || a.localeCompare(b, 'fr'); }), mx = Math.max(1, tot[C[0]] || 0);
     var hm = new Date(P.dernier_releve.t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).split(':'), h = hm[0] + ' h ' + hm[1];
     var ajd = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Paris' }), lAuj = auj === ajd ? 'aujourd\'hui, en cours' : 'le ' + jour(auj);
-    el('presse-periode').textContent = 'Nombre d\'articles distincts qui citent chaque candidat, ' + (D.length < 7 ? 'depuis le ' + jour(D[0]) + (J[0] === '2026-11-07' ? ' à 18 h 00' : '') + ', début du relevé' : 'sur les 7 derniers jours, du ' + jour(D[0]) + ' au ' + jour(auj)) + ' ; ' + lAuj + ' : compté jusqu\'au relevé à ' + h + '.';
+    el('presse-periode').textContent = 'Nombre d\'articles distincts qui citent chaque candidat, ' + (D.length < 7 ? 'depuis le ' + jour(D[0]) + (J[0] === '2026-11-07' ? ' à 18 h 00' : '') + ', début du relevé' : 'sur les 7 derniers jours, du ' + jour(D[0]) + ' au ' + jour(auj)) + ' ; ' + lAuj + ' : compté jusqu\'au relevé à ' + h + '.' + (secours ? ' Les relevés plus récents n\'ont pas pu être chargés : rechargez la page.' : '');
     // Candidat entré dans la liste en cours de période : compté à partir de son premier relevé (pas avant : ce n'est pas zéro).
     var suivi = P.suivis || {}, entre = C.filter(function (c) { var s = suivi[c]; return s && s.length > 10 && s.slice(0, 10) >= D[0]; });
     var plein = function (c, d) { var s = suivi[c] || P.debut; return s.length > 10 ? d > s.slice(0, 10) : d >= s; };
