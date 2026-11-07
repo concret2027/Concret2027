@@ -1,0 +1,58 @@
+name: Presse (articles qui citent les candidats)
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: presse
+  cancel-in-progress: false
+
+jobs:
+  releve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Branche donnees-presse dans arch/
+        run: |
+          git config --global user.name "Concret"
+          git config --global user.email "noreply@concret2027.fr"
+          if git ls-remote --exit-code --heads origin donnees-presse >/dev/null; then
+            git fetch --depth 1 origin donnees-presse
+            git worktree add -B donnees-presse arch FETCH_HEAD
+          else
+            git worktree add --orphan -b donnees-presse arch
+          fi
+
+      - name: Relevé des flux
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then MODE=--agreger; else MODE=--agreger-si-besoin; fi
+          python3 outils/presse.py --archive arch/presse_archive.json --ecrire $MODE
+
+      - name: Archive sur donnees-presse
+        working-directory: arch
+        run: |
+          git add presse_archive.json
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Presse : relevé $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push origin donnees-presse || { git fetch --depth 1 origin donnees-presse && git rebase FETCH_HEAD && git push origin donnees-presse; }
+
+      - name: Compte du jour sur main
+        run: |
+          git add donnees/presse.json
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Presse : articles qui citent les candidats, $(date -u +%Y-%m-%d)"
+          git push origin HEAD:main || { git pull -q --rebase origin main && git push origin HEAD:main; }
