@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="1b6d37af7d76">
+<meta name="concret-version" content="a790d12542f6">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1747,7 +1747,8 @@ window.addEventListener('baro:data', function () {
     el('part').hidden = true; // part de visibilité retirée pour l'instant (choix de l'éditeur, 7 novembre 2026) : remettre false pour la réafficher
   };
   // Le relevé le plus récent (branche donnees-presse), par deux adresses ; sinon la copie publiée avec le site (une fois par jour), et c'est dit.
-  var secours = false;
+  var secours = false, chargeA = 0;
+  var charger = function () { chargeA = Date.now(); secours = false;
   lire('https://raw.githubusercontent.com/concret2027/Concret2027/donnees-presse/presse_live.json?t=' + Math.floor(Date.now() / 60000), 8000)
     .catch(function () { return lire('https://api.github.com/repos/concret2027/Concret2027/contents/presse_live.json?ref=donnees-presse', 8000, { Accept: 'application/vnd.github.raw+json' }); })
     .catch(function () { secours = true; return lire('../donnees/presse.json', 15000); }).then(function (P) {
@@ -1779,7 +1780,7 @@ window.addEventListener('baro:data', function () {
       el('chart-presse').hidden = false; el('presse-bars').hidden = true;
       var dess = function () { BX.lignes('chart-presse', H, C.map(function (c) { return { short: c, name: BX.full(c) }; }), MJ ? 'Médias' : 'Articles', { n: 8, mR: 120, fmt: function (v) { return (Math.round(v * 10) / 10).toLocaleString('fr-FR'); }, tick: String,
         aria: (MJ ? 'Médias qui citent' : 'Articles de presse qui citent') + ' chaque candidat, par jour, en moyenne sur 7 jours', tete: function (d) { return '7 jours jusqu\'au ' + BX.fmtDay(d) + (MJ ? ' · médias par jour' : ' · articles par jour'); } }); };
-      dess(); addEventListener('resize', dess);
+      if (!window.BXdessP) addEventListener('resize', function () { window.BXdessP(); }); window.BXdessP = dess; dess();
       el('presse-courbe').textContent = (MJ ? 'Médias qui citent le candidat, par jour' : 'Articles par jour') + ', en moyenne sur 7 jours, jusqu\'au dernier jour complet relevé (' + jour(fin[fin.length - 1]) + ').';
     } else {
       el('presse-courbe').textContent = (J.length === 1 ? 'Un jour de relevé pour l\'instant' : J.length + ' jours de relevé pour l\'instant') + ' : la courbe paraîtra au 7e jour et s\'allongera chaque jour.';
@@ -1813,6 +1814,11 @@ window.addEventListener('baro:data', function () {
       (hors.length ? '<p><b>Pas dans le panel</b></p><ul>' + (function () { var R = []; hors.forEach(function (m) { var r = m.raison || ''; if (R.indexOf(r) < 0) R.push(r); });
         return R.map(function (r) { return '<li>' + esc(hors.filter(function (m) { return (m.raison || '') === r; }).map(function (m) { return m.name; }).join(', ')) + ' : ' + esc(r) + '</li>'; }).join(''); })() + '</ul>' : '');
   }).catch(function () { el('presse-periode').textContent = 'Les articles relevés n\'ont pas pu être chargés.'; });
+  };
+  charger();
+  // Page rouverte plus tard (onglet gardé en mémoire par le téléphone) : le relevé est relu s'il a plus de 10 minutes.
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && Date.now() - chargeA > 6e5) charger(); });
+  addEventListener('pageshow', function (e) { if (e.persisted && Date.now() - chargeA > 6e5) charger(); });
   // « Partager ce graphique » : l'image ne montre que les articles de presse (titre, période, barres ou courbe, source),
   // sans la liste complète, les exemples, la méthode ni les notes (.pt-hors). Le bloc garde aussi son bouton « Partager ».
   var pb = document.createElement('button'); pb.type = 'button'; pb.className = 'share pt-share pt-hors'; pb.style.marginTop = '10px'; pb.textContent = 'Partager';
