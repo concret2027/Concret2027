@@ -19,3 +19,9 @@ Pour l'éditeur : rien de tout cela n'est fait. Ce sont des idées à décider e
 ## 3. Presse : médias sur 7 jours
 - Même logique : mettre la presse et Wikipédia sur la même période (7 jours) pour les comparer et pour le tableau « Part de visibilité » (qui prend le dernier point Wikipédia et les articles des 7 derniers jours).
 - La presse a déjà « Aujourd'hui / Hier / 7 derniers jours » ; à décider si 7 jours devient le choix par défaut.
+
+## 4. Presse : suivis, panel, médias absents (8 novembre 2026)
+- Règle des suivis ramenée à 30 jours de sondages (60 avant) : Royal, Faure, Guedj et Maurel sortent. À revoir : un minimum d'instituts ou de sondages pour sortir aussi Hollande et Villepin ?
+- Panel passé de 104 à 108 médias : La Nouvelle République, La Voix du Nord, Capital, Contexte ajoutés (flux vérifiés le 8 novembre). Lecture des flux compressés corrigée dans `outils/presse.py`.
+- Gros médias encore absents : Le Monde (conditions du flux : usage personnel seulement), Les Échos, Le Point, Le Télégramme (erreur 403, pas contourné), RTL, La Provence, Le Courrier picard (pas de flux trouvé). Décider : demande d'accès au flux auprès du média, ou les laisser en explication sur la page.
+- Après une semaine de relevé : comparer le classement des candidats par famille de médias, pour voir si le panel penche d'un côté. Les 47 médias qui n'ont rien cité les 7 et 8 novembre sont surtout thématiques ; à revérifier sur une semaine.
