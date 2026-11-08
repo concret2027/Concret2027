@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="9a13c5350f55">
+<meta name="concret-version" content="347933531100">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1308,7 +1308,10 @@ dash.calc('duels_recents', {
     var line = d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); });
     var labs = [];
     C.forEach(function (c) {
-      svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', line);
+      // o.partiel : le dernier point est une journée en cours, son segment est en pointillé.
+      var plein_ = o.partiel && c.pts.length > 1 ? c.pts.slice(0, -1) : c.pts;
+      svg.append('path').datum(plein_).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', line);
+      if (plein_ !== c.pts) svg.append('path').datum(c.pts.slice(-2)).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2).attr('stroke-dasharray', '3 4').attr('d', line);
       var l = c.pts[c.pts.length - 1]; labs.push({ c: c, y: y(l.v), v: l.v });
     });
     labs.sort(function (a, b) { return a.y - b.y; });
@@ -1830,12 +1833,12 @@ window.addEventListener('baro:data', function () {
       else if (g === 'lisse') fin.forEach(function (d, i) { if (i < 6) return; var w = fin.slice(i - 6, i + 1); top.forEach(function (c) { if (!plein(c, w[0])) return; H.push({ candidat: c, date: d, probabilite: w.reduce(function (s, x) { return s + nm(x, c); }, 0) / 7 }); }); });
       else J.forEach(function (d) { top.forEach(function (c) { if (!plein(c, d) && d !== J[0]) return; var n = nm(d, c); if (g === 'intensite') { if (n) H.push({ candidat: c, date: d, probabilite: na(d, c) / n }); } else H.push({ candidat: c, date: d, probabilite: n }); }); });
       var f1 = function (v) { return (Math.round(v * 10) / 10).toLocaleString('fr-FR'); };
-      BX.lignes('chart-presse', H, top.map(function (c) { return { short: c, name: BX.full(c) }; }), g === 'intensite' ? 'Articles par média' : g === 'part' ? 'Part' : 'Médias', { n: 8, mR: 128, jours: true, pas: g === 'intensite' ? 1 : 10,
+      BX.lignes('chart-presse', H, top.map(function (c) { return { short: c, name: BX.full(c) }; }), g === 'intensite' ? 'Articles par média' : g === 'part' ? 'Part' : 'Médias', { n: 8, mR: 128, jours: true, partiel: g !== 'lisse' && auj === ajd, pas: g === 'intensite' ? 1 : 10,
         fmt: g === 'medias' ? function (v) { return String(Math.round(v)); } : g === 'part' ? function (v) { return Math.round(v) + ' %'; } : f1, tick: g === 'part' ? function (v) { return v + ' %'; } : String,
         aria: { part: 'Part de chaque candidat dans les médias qui citent les candidats, chaque jour', medias: 'Nombre de médias qui citent chaque candidat, chaque jour', intensite: 'Articles par média qui cite chaque candidat, chaque jour', lisse: 'Médias qui citent chaque candidat, par jour, en moyenne sur 7 jours' }[g],
         tete: function (d) { return g === 'lisse' ? '7 jours jusqu\'au ' + BX.fmtDay(d) + ' · médias par jour' : BX.fmtDay(d) + (g === 'intensite' ? ' · articles par média' : g === 'part' ? ' · part du jour' : ' · médias'); } });
       el('presse-g-titre').textContent = { part: 'Chaque jour : part de chaque candidat', medias: 'Chaque jour : médias qui citent chaque candidat', intensite: 'Chaque jour : articles par média qui cite le candidat', lisse: 'Médias qui citent chaque candidat, par jour, en moyenne sur 7 jours' }[g];
-      var part = (J[0] === '2026-11-07' ? ' Le 7 novembre ne compte qu\'à partir de 18 h, début du relevé.' : '') + (auj === ajd && g !== 'lisse' ? ' Le dernier point est la journée en cours.' : '');
+      var part = (J[0] === '2026-11-07' ? ' Le 7 novembre ne compte qu\'à partir de 18 h, début du relevé.' : '') + (auj === ajd && g !== 'lisse' ? ' En pointillé : la journée en cours.' : '');
       el('presse-courbe').textContent = { part: 'Part de chaque candidat, chaque jour, sur 100 : le nombre de médias qui le citent, divisé par le total des médias cités pour tous les candidats suivis ce jour-là (un média qui cite trois candidats compte pour chacun). Les 8 candidats les plus cités sur la période ; les autres se partagent le reste.', medias: 'Nombre de médias, sur ' + actifs.length + ', qui ont cité le candidat au moins une fois dans la journée. Les 8 candidats les plus cités sur la période.',
         intensite: 'Nombre d\'articles divisé par le nombre de médias qui citent le candidat ce jour-là : 1, c\'est un article par média ; plus le chiffre est haut, plus les médias qui en parlent y reviennent dans la journée.',
         lisse: 'Médias qui citent le candidat, par jour, en moyenne sur 7 jours, jusqu\'au dernier jour complet relevé (' + jour(fin[fin.length - 1]) + ').' }[g] + part;
