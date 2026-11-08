@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="347933531100">
+<meta name="concret-version" content="182c267af4c1">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1825,12 +1825,13 @@ window.addEventListener('baro:data', function () {
     var graphe = function () {
       if (J.length < 2 || !MJ || !BX.lignes || !window.d3) { el('presse-g').hidden = true; return; }
       el('presse-g').hidden = false;
-      var lisseOk = fin.length >= 7; if (PR.g === 'lisse' && !lisseOk) PR.g = 'medias';
+      // La moyenne sur 7 jours ne prend que des journées complètes : pas le 7 novembre (relevé commencé à 18 h).
+      var finL = fin.filter(function (d) { return d !== '2026-11-07'; }), lisseOk = finL.length >= 7; if (PR.g === 'lisse' && !lisseOk) PR.g = 'medias';
       var g = PR.g, top = C.slice(0, 8), H = [];
       // Part du jour : médias qui citent le candidat / total, ce jour-là, des médias cités pour tous les candidats (base 100).
       var totJ = function (d) { return Object.keys((P.jours[d] || {})).reduce(function (s, c) { return s + nm(d, c); }, 0); };
       if (g === 'part') J.forEach(function (d) { var T = totJ(d); if (!T) return; top.forEach(function (c) { if (!plein(c, d) && d !== J[0]) return; H.push({ candidat: c, date: d, probabilite: 100 * nm(d, c) / T }); }); });
-      else if (g === 'lisse') fin.forEach(function (d, i) { if (i < 6) return; var w = fin.slice(i - 6, i + 1); top.forEach(function (c) { if (!plein(c, w[0])) return; H.push({ candidat: c, date: d, probabilite: w.reduce(function (s, x) { return s + nm(x, c); }, 0) / 7 }); }); });
+      else if (g === 'lisse') finL.forEach(function (d, i) { if (i < 6) return; var w = finL.slice(i - 6, i + 1); top.forEach(function (c) { if (!plein(c, w[0])) return; H.push({ candidat: c, date: d, probabilite: w.reduce(function (s, x) { return s + nm(x, c); }, 0) / 7 }); }); });
       else J.forEach(function (d) { top.forEach(function (c) { if (!plein(c, d) && d !== J[0]) return; var n = nm(d, c); if (g === 'intensite') { if (n) H.push({ candidat: c, date: d, probabilite: na(d, c) / n }); } else H.push({ candidat: c, date: d, probabilite: n }); }); });
       var f1 = function (v) { return (Math.round(v * 10) / 10).toLocaleString('fr-FR'); };
       BX.lignes('chart-presse', H, top.map(function (c) { return { short: c, name: BX.full(c) }; }), g === 'intensite' ? 'Articles par média' : g === 'part' ? 'Part' : 'Médias', { n: 8, mR: 128, jours: true, partiel: g !== 'lisse' && auj === ajd, pas: g === 'intensite' ? 1 : 10,
@@ -1841,7 +1842,7 @@ window.addEventListener('baro:data', function () {
       var part = (J[0] === '2026-11-07' ? ' Le 7 novembre ne compte qu\'à partir de 18 h, début du relevé.' : '') + (auj === ajd && g !== 'lisse' ? ' En pointillé : la journée en cours.' : '');
       el('presse-courbe').textContent = { part: 'Part de chaque candidat, chaque jour, sur 100 : le nombre de médias qui le citent, divisé par le total des médias cités pour tous les candidats suivis ce jour-là (un média qui cite trois candidats compte pour chacun). Les 8 candidats les plus cités sur la période ; les autres se partagent le reste.', medias: 'Nombre de médias, sur ' + actifs.length + ', qui ont cité le candidat au moins une fois dans la journée. Les 8 candidats les plus cités sur la période.',
         intensite: 'Nombre d\'articles divisé par le nombre de médias qui citent le candidat ce jour-là : 1, c\'est un article par média ; plus le chiffre est haut, plus les médias qui en parlent y reviennent dans la journée.',
-        lisse: 'Médias qui citent le candidat, par jour, en moyenne sur 7 jours, jusqu\'au dernier jour complet relevé (' + jour(fin[fin.length - 1]) + ').' }[g] + part;
+        lisse: 'Médias qui citent le candidat, par jour, en moyenne sur 7 jours, jusqu\'au dernier jour complet relevé (' + jour(finL[finL.length - 1] || auj) + ').' }[g] + part;
       Array.prototype.forEach.call(el('presse-gmode').querySelectorAll('button'), function (bt) { bt.setAttribute('aria-pressed', bt.dataset.g === g ? 'true' : 'false'); if (bt.dataset.g === 'lisse') bt.hidden = !lisseOk; });
     };
     PR.barres = barres; PR.graphe = graphe; barres(); graphe();
