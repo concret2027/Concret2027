@@ -12,7 +12,7 @@ candidat (donnees/presse_noms.json). Un flux en erreur est « indisponible », j
   ... --agreger-si-besoin                        seulement après 23 h 30 UTC, ou si hier manque
   ... --live L                                   écrit aussi, à chaque relevé, le compte du moment dans L
 Candidats suivis : tous ceux testés dans les sondages de premier tour des 60 derniers jours (data.json,
-datasets.sondages_t1), plus Jordan Bardella, testé à la place de Marine Le Pen. Chacun est compté à partir
+datasets.sondages_t1), et seulement eux (règle de l'éditeur, 8 novembre 2026). Chacun est compté à partir
 du relevé où il entre dans la liste (archive['suivis']) : l'archive ne garde pas les chapeaux, on ne recompte pas le passé.
 Chaque candidat est cherché par son nom de famille (règle dans presse_noms.json) ; à chaque compte, les titres archivés
 sont relus avec la règle en vigueur (les chapeaux, non gardés, gardent ce qui y a été trouvé au relevé).
@@ -29,7 +29,7 @@ SORTIE = os.path.join(RACINE, 'donnees', 'presse.json')
 DATA = os.path.join(RACINE, 'data.json')
 JOURS_SONDAGES = 60
 PREMIERS = ['Le Pen', 'Mélenchon', 'Philippe', 'Glucksmann', 'Attal', 'Retailleau', 'Lisnard', 'Zemmour']
-TOUJOURS = ['Bardella']  # testé à la place de Marine Le Pen
+TOUJOURS = []  # aucune exception : seulement les personnes testées dans les sondages (règle du 8 novembre 2026)
 UA = 'Mozilla/5.0 (compatible; Concret/1.0; +https://concret2027.fr)'
 PARIS = ZoneInfo('Europe/Paris')
 GARDE_RELEVES = 2000  # relevés gardés dans l'archive (environ 40 jours)
@@ -47,7 +47,7 @@ def texte(s):
 
 
 def candidats_sondages(aujourdhui):
-    """Tous les candidats testés dans les sondages de premier tour des 60 derniers jours, plus Bardella."""
+    """Toutes les personnes testées dans au moins un sondage de premier tour des 60 derniers jours."""
     rows = json.load(open(DATA, encoding='utf-8'))['datasets'].get('sondages_t1', [])
     debut = (aujourdhui - dt.timedelta(days=JOURS_SONDAGES)).isoformat()
     L = []
@@ -352,7 +352,7 @@ def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
         'source': 'Flux RSS publics de %d médias français (%d flux ; titres et chapeaux), relevés toutes les 30 minutes par outils/presse.py' % (len(med_act), len(actifs)),
         'methode': noms_cfg['regle'] + ' Chaque jour (heure de Paris, date de publication du flux) : le nombre d\'articles distincts qui citent chaque candidat, tous médias ensemble ; un même article repris dans deux flux compte une fois. Les articles publiés avant le premier relevé ne comptent pas.',
         'noms': {c: r.get('note', '') for c, r in regs.items()},
-        'candidats': 'Tous les candidats testés dans les sondages de premier tour des %d derniers jours, plus Jordan Bardella, testé à la place de Marine Le Pen.' % JOURS_SONDAGES,
+        'candidats': 'Suivies : toutes les personnes testées dans au moins un sondage de premier tour publié ces %d derniers jours (on entre quand un institut teste la personne, on sort quand plus aucun ne l\'a testée depuis %d jours). À la publication de la liste officielle des candidats par le Conseil constitutionnel, seuls ceux-là seront suivis.' % (JOURS_SONDAGES, JOURS_SONDAGES),
         'suivis': {c: (debut if noms is not None else suivis.get(c, debut)) for c in cands},
         'chapeaux_depuis': {c: suivis[c] for c in cands if noms is not None and len(suivis.get(c, '')) > 10},
         'sans_regle': sans,
