@@ -7,6 +7,9 @@ Pour l'éditeur : rien de tout cela n'est fait. Ce sont des idées à décider e
 - Les données existent déjà dans l'archive de `outils/presse.py` (titre, lien, date, candidats ; jamais le texte). Reste la page.
 - Aujourd'hui seuls les 3 derniers liens s'affichent, et seulement quand la courbe est active.
 
+- Ajouter au-dessus des barres une ligne : « N médias sur 104 citent au moins un candidat » (aujourd'hui, hier, 7 jours), calculée dans la page à partir des médias par candidat (`medias_jours`). Un média non lu reste compté dans les 104, jamais zéro.
+- Au toucher d'un nom : quelques articles (récents d'abord, avec média et lien) puis « Voir tous ». Repère du 8 novembre : Attal, 15 articles pour 5 médias.
+
 ## 2. Wikipédia : fenêtre de lissage
 - Aujourd'hui : moyenne sur 28 jours qui finissent la veille, un point tous les 7 jours (`outils/wikipedia.py`, `range(28)`).
 - Idée : l'objectif est de voir si les gens réagissent à l'actualité, donc une fenêtre plus courte convient mieux qu'aux sondages.
