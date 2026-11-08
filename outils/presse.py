@@ -11,8 +11,8 @@ candidat (donnees/presse_noms.json). Un flux en erreur est « indisponible », j
   ... --agreger                                  écrit aussi donnees/presse.json
   ... --agreger-si-besoin                        seulement après 23 h 30 UTC, ou si hier manque
   ... --live L                                   écrit aussi, à chaque relevé, le compte du moment dans L
-Candidats suivis : tous ceux testés dans les sondages de premier tour des 60 derniers jours (data.json,
-datasets.sondages_t1), et seulement eux (règle de l'éditeur, 8 novembre 2026). Chacun est compté à partir
+Candidats suivis : tous ceux testés dans les sondages de premier tour des 30 derniers jours (data.json,
+datasets.sondages_t1), et seulement eux (règle de l'éditeur, 8 novembre 2026, ramenée de 60 à 30 jours le même jour). Chacun est compté à partir
 du relevé où il entre dans la liste (archive['suivis']) : l'archive ne garde pas les chapeaux, on ne recompte pas le passé.
 Chaque candidat est cherché par son nom de famille (règle dans presse_noms.json) ; à chaque compte, les titres archivés
 sont relus avec la règle en vigueur (les chapeaux, non gardés, gardent ce qui y a été trouvé au relevé).
@@ -27,7 +27,7 @@ SOURCES = os.path.join(RACINE, 'donnees', 'presse_sources.json')
 NOMS = os.path.join(RACINE, 'donnees', 'presse_noms.json')
 SORTIE = os.path.join(RACINE, 'donnees', 'presse.json')
 DATA = os.path.join(RACINE, 'data.json')
-JOURS_SONDAGES = 60
+JOURS_SONDAGES = 30
 PREMIERS = ['Le Pen', 'Mélenchon', 'Philippe', 'Glucksmann', 'Attal', 'Retailleau', 'Lisnard', 'Zemmour']
 TOUJOURS = []  # aucune exception : seulement les personnes testées dans les sondages (règle du 8 novembre 2026)
 UA = 'Mozilla/5.0 (compatible; Concret/1.0; +https://concret2027.fr)'
@@ -47,7 +47,7 @@ def texte(s):
 
 
 def candidats_sondages(aujourdhui):
-    """Toutes les personnes testées dans au moins un sondage de premier tour des 60 derniers jours."""
+    """Toutes les personnes testées dans au moins un sondage de premier tour des 30 derniers jours."""
     rows = json.load(open(DATA, encoding='utf-8'))['datasets'].get('sondages_t1', [])
     debut = (aujourdhui - dt.timedelta(days=JOURS_SONDAGES)).isoformat()
     L = []
