@@ -176,9 +176,12 @@ def date_de(s, lien):
 
 
 def lire(src):
-    req = urllib.request.Request(src['rss_url'], headers={'User-Agent': UA, 'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml'})
+    req = urllib.request.Request(src['rss_url'], headers={'User-Agent': UA, 'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml', 'Accept-Encoding': 'identity'})
     with urllib.request.urlopen(req, timeout=15) as r:
         b = r.read(8_000_000)
+    if b[:2] == b'\x1f\x8b':  # certains serveurs compressent sans qu'on l'ait demandé
+        import gzip
+        b = gzip.decompress(b)
     racine = ET.fromstring(b)
     items = []
     for el in racine.iter():
