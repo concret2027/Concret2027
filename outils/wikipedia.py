@@ -12,7 +12,7 @@ Wikimedia quand il répond « trop de requêtes » (en-tête Retry-After) ; un c
 chiffres précédents, et c'est dit.
 
   python3 outils/wikipedia.py            compare à data.json, sans rien écrire
-  python3 outils/wikipedia.py --ecrire   écrit datasets.wikipedia_vues ({candidat, jusqu_au, vues}) et datasets.wikipedia_info ; chaque matin
+  python3 outils/wikipedia.py --ecrire   écrit datasets.wikipedia_vues ({candidat, jusqu_au, vues}), datasets.wikipedia_jours ({candidat, jour, vues} : lectures de chaque jour, 120 derniers jours) et datasets.wikipedia_info ; chaque matin
 """
 import json, os, subprocess, sys, time, urllib.parse
 from datetime import date, timedelta
@@ -99,10 +99,22 @@ def main():
     info = [{'releve': auj.isoformat(), 'jusqu_au': fin.isoformat(), 'candidats': ', '.join(C), 'source': 'Wikimedia, consultations des pages Wikipédia en français (personnes, robots exclus)',
              'url': 'https://pageviews.wmcloud.org/?project=fr.wikipedia.org&platform=all-access&agent=user&range=latest-90&pages=' + '|'.join(urllib.parse.quote(PAGES[c].replace(' ', '_')) for c in C if c in PAGES),
              'manque': ', '.join(manque)}]
+    # Lectures par jour des 120 derniers jours (courbes par jour, moyennes sur 7 et 30 jours, part du jour) ;
+    # un candidat non lu garde ses chiffres précédents.
+    av_j = {}
+    for r in D.get('wikipedia_jours', []): av_j.setdefault(r['candidat'], []).append(r)
+    jours = []
+    for c in C:
+        if c not in lus: jours += av_j.get(c, []); continue
+        for k in range(119, -1, -1):
+            j = fin - timedelta(days=k)
+            if j in lus[c]: jours.append({'candidat': c, 'jour': j.isoformat(), 'vues': str(lus[c][j])})
+    print('Par jour : %d lignes, du %s au %s' % (len(jours), (fin - timedelta(days=119)).isoformat(), fin.isoformat()))
+    print('Dernier jour publié, par candidat : ' + ', '.join('%s %s' % (c, max(v).isoformat()) for c, v in lus.items()))
     if ecrire:
-        D['wikipedia_vues'] = out; D['wikipedia_info'] = info
+        D['wikipedia_vues'] = out; D['wikipedia_info'] = info; D['wikipedia_jours'] = jours
         open(os.path.join(ROOT, 'data.json'), 'w', encoding='utf-8').write(json.dumps(o, indent=0, ensure_ascii=False))
-        print('Écrit : datasets.wikipedia_vues (%d lignes) et wikipedia_info.' % len(out))
+        print('Écrit : datasets.wikipedia_vues (%d lignes), wikipedia_jours (%d lignes) et wikipedia_info.' % (len(out), len(jours)))
 
 
 if __name__ == '__main__':
