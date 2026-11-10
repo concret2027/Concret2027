@@ -1,20 +1,23 @@
-import datetime as dt, os, sys, traceback
+import datetime as dt, os, sys, traceback, re, io, zipfile, csv, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import presse as P, urllib.request, io, zipfile, csv, re
-der = urllib.request.urlopen(P.GDELT + 'lastupdate-translation.txt', timeout=30).read().decode()
-print(der)
-t = re.search(r'/(\d{14})\.translation\.gkg', der).group(1); print('t', t)
-u = P.GDELT + t + '.translation.gkg.csv.zip'
-try:
-    z = zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(u, timeout=60).read()))
-    n = 0
-    for row in csv.reader(io.TextIOWrapper(z.open(z.namelist()[0]), encoding='utf-8', errors='replace'), delimiter='\t'):
-        n += 1
-        if n < 2: print(len(row), row[1], row[3], row[25][:40])
-    print('lignes', n)
-except Exception:
-    traceback.print_exc()
-a = {}
-G, err = P.lire_gdelt(a, dt.datetime.now(dt.timezone.utc), {'rtl.fr', 'laprovence.com', 'franceantilles.fr', 'corsematin.com', 'lesinrocks.com'})
-print('err', err, a)
-if G: print({k: len(v) for k, v in G.items()}); print([x['titre'] for v in G.values() for x in v][:5])
+import presse as P
+csv.field_size_limit(10 ** 9)
+fin = dt.datetime(2026, 11, 10, 5, 0)
+for k in range(8):
+    t = fin - dt.timedelta(minutes=15 * k)
+    u = P.GDELT + t.strftime('%Y%m%d%H%M%S') + '.translation.gkg.csv.zip'
+    try:
+        z = zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(u, timeout=60).read()))
+        n = m = 0
+        for row in csv.reader(io.TextIOWrapper(z.open(z.namelist()[0]), encoding='utf-8', errors='replace'), delimiter='\t'):
+            n += 1
+            if len(row) < 27 or 'srclc:fra' not in row[25]: continue
+            dom = '.'.join(row[3].lower().split('.')[-2:])
+            if dom in ('rtl.fr', 'laprovence.com', 'corsematin.com', 'franceantilles.fr', 'lesinrocks.com'):
+                m += 1
+                mt = re.search(r'<PAGE_TITLE>(.*?)</PAGE_TITLE>', row[26])
+                q = dt.datetime.strptime(row[1], '%Y%m%d%H%M%S').replace(tzinfo=dt.timezone.utc).astimezone(P.PARIS)
+                if m < 3: print(dom, q, P.texte(mt.group(1)) if mt else None)
+        print(u[-40:], 'lignes', n, 'nos médias', m)
+    except Exception:
+        print(u[-40:]); traceback.print_exc(limit=2)
