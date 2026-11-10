@@ -14,6 +14,8 @@
 // POST /pseudo?id=&pseudo= : choisit, change ou retire (pseudo vide) le pseudo affiché dans le classement.
 // POST /oubli?id= : efface le pseudo et tous les scores de cet identifiant.
 const ORIGINES = ['https://concret2027.fr', 'https://www.concret2027.fr'];
+// Lecture seule (GET /get) autorisée aussi pour Le Petit Préf (demande de l'éditeur, 10 novembre 2026) ; rien d'autre ne change pour lui.
+const LECTURE = ['https://lepetitpref.fr'];
 const CLE = /^(quiz|score)-[a-z0-9-]{1,80}$/;
 const ID = /^[A-Za-z0-9_-]{16,40}$/;
 const JOUR = /^\d{4}-\d{2}-\d{2}$/;
@@ -53,10 +55,11 @@ async function classement(env, id, jour) {
 export default {
   async fetch(req, env) {
     const url = new URL(req.url), o = req.headers.get('Origin') || '', q = (k) => url.searchParams.get(k) || '';
-    const h = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': ORIGINES.includes(o) ? o : ORIGINES[0], 'Vary': 'Origin' };
+    const lecture = url.pathname === '/get' && LECTURE.includes(o);
+    const h = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': ORIGINES.includes(o) || lecture ? o : ORIGINES[0], 'Vary': 'Origin' };
     const rep = (x, s) => new Response(JSON.stringify(x), { status: s || 200, headers: h });
     const non = (s, m) => rep({ erreur: m || 'requête refusée' }, s);
-    if (req.method === 'OPTIONS') return new Response(null, { headers: { ...h, 'Access-Control-Allow-Methods': 'GET, POST', 'Access-Control-Max-Age': '86400' } });
+    if (req.method === 'OPTIONS') return new Response(null, { headers: { ...h, 'Access-Control-Allow-Methods': lecture ? 'GET' : 'GET, POST', 'Access-Control-Max-Age': '86400' } });
     const chemin = url.pathname;
 
     // Compteurs des réponses.
