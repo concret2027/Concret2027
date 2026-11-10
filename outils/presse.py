@@ -358,6 +358,26 @@ def mots(titres24, regs):
     return sortie
 
 
+def derniers(v, n=10):
+    """Les n derniers titres d'un candidat, du plus récent au plus ancien ; un même titre repris par plusieurs médias
+    (dépêche, journaux d'un même groupe) n'en fait qu'un, avec la liste des médias."""
+    out, vu = [], {}
+    def t(x):
+        try: return dt.datetime.fromisoformat(x['quand']).timestamp()
+        except Exception: return 0
+    for x in sorted(v, key=t, reverse=True):
+        k = norm(x['titre'])
+        if k in vu:
+            if x['media'] not in vu[k]['medias']: vu[k]['medias'].append(x['media'])
+            continue
+        if len(out) >= n: continue
+        vu[k] = {'titre': x['titre'], 'lien': html.unescape(x['lien'] or ''), 'media': x['media'], 'medias': [x['media']], 'quand': x['quand']}
+        out.append(vu[k])
+    for o in out:
+        o['autres'] = o.pop('medias')[1:]
+    return out
+
+
 def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
     debut = archive['debut']
     cands = list(regs)
@@ -384,7 +404,7 @@ def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
             medias.setdefault(a['jour'], {}).setdefault(c, set()).add(a['media'])
             if fin24 and dt.datetime.fromisoformat(a['vu']) >= fin24 and a['cites'][c] == 'titre':
                 titres24[c].append((a['media'], a['titre']))
-            exemples[c].append({'champ': a['cites'][c], 'titre': a['titre'], 'lien': a['lien'], 'media': a['media'], 'jour': a['jour']})
+            exemples[c].append({'champ': a['cites'][c], 'titre': a['titre'], 'lien': a['lien'], 'media': a['media'], 'jour': a['jour'], 'quand': a.get('quand') or a['vu']})
     # Par jour : un média est « lu » s'il a répondu à au moins un relevé ce jour-là ; sinon il est indisponible.
     media = lambda f: f.split(' · ')[0]
     statut = {}
@@ -428,6 +448,8 @@ def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
                            'erreurs': sorted({media(f) for f in der_err} - der_lus), 'flux_attendus': der['attendus'], 'flux_lus': der['lus'],
                            'flux_erreurs': [f for f in der_err if media(f) in der_lus]},
         # Exemples : les 3 derniers articles qui ont le nom dans le titre, complétés au besoin par ceux qui l'ont dans le chapeau.
+        # Les 10 derniers articles de chaque candidat (titre ou chapeau), du plus récent au plus ancien : affichés quand on touche son nom.
+        'derniers': {c: derniers(v) for c, v in exemples.items()},
         'exemples': {c: (list(reversed([x for x in v if x['champ'] == 'titre'][-3:])) + list(reversed([x for x in v if x['champ'] != 'titre'][-3:])))[:3] for c, v in exemples.items()},
     }
 

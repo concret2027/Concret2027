@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="a7c97b5783e9">
+<meta name="concret-version" content="31a079abd28e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -109,6 +109,9 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-pbar .t { height: 12px; border-radius: 6px; background: var(--color-border-line); overflow: hidden; }
 .bx-pbar .t b { display: block; height: 100%; border-radius: 6px; }
 .bx-pbar .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; line-height: 1.1; }
+.bx-pclic { cursor: pointer; border-radius: 6px; } .bx-pclic:hover .n, .bx-pclic[aria-expanded="true"] .n { text-decoration: underline; }
+.bx-pder { margin: -2px 0 8px; padding: 8px 10px 8px 26px; display: grid; gap: 6px; font-size: 13px; line-height: 1.35; background: var(--color-border-line); border-radius: 8px; list-style: disc; }
+.bx-pder a { color: inherit; } .bx-pder span { color: var(--color-fg-muted); white-space: nowrap; }
 .bx-pbar .v small { display: block; font-size: 11px; font-weight: 500; color: var(--color-fg-muted); white-space: nowrap; }
 @media (max-width: 560px) { .bx-pbar { grid-template-columns: minmax(0, 10rem) minmax(0, 1fr) 2.6rem; gap: 6px; font-size: 13.5px; } }
 .bx-presse details summary { cursor: pointer; font-size: var(--cds-font-size-caption); font-weight: 600; }
@@ -1801,6 +1804,18 @@ window.addEventListener('baro:data', function () {
   el('presse-mode').addEventListener('click', function (e) { var bt = e.target.closest('button'); if (!bt || !PR.barres) return; PR.b = bt.dataset.m; PR.barres(); });
   el('presse-gmode').addEventListener('click', function (e) { var bt = e.target.closest('button'); if (!bt || !PR.graphe) return; PR.g = bt.dataset.g; PR.graphe(); });
   if (!window.BXdessP) addEventListener('resize', function () { if (PR.graphe) PR.graphe(); });
+  // Toucher un nom : ses 10 derniers articles (titre, média, heure, lien), sous la barre ; toucher à nouveau pour refermer.
+  var ouvrir = function (e) {
+    var bar = e.target.closest('.bx-pclic'); if (!bar || !PR.P || (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ')) return;
+    if (e.type === 'keydown') e.preventDefault();
+    var suiv = bar.nextElementSibling;
+    if (suiv && suiv.classList.contains('bx-pder')) { suiv.remove(); bar.setAttribute('aria-expanded', 'false'); return; }
+    var L = (PR.P.derniers || {})[bar.dataset.c] || [], d = document.createElement('ul'); d.className = 'bx-pder pt-hors';
+    d.innerHTML = L.length ? L.map(function (a) { var q = a.quand ? new Date(a.quand) : null;
+      return '<li><a href="' + esc(a.lien) + '" target="_blank" rel="noopener">' + esc(a.titre) + '</a> <span>' + esc(a.media) + (a.autres && a.autres.length ? ' et ' + (a.autres.length === 1 ? esc(a.autres[0]) : a.autres.length + ' autres médias') : '') + (q ? ', ' + q.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'Europe/Paris' }) + ' ' + q.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }) : '') + '</span></li>'; }).join('') : '<li>Aucun article relevé.</li>';
+    bar.parentNode.insertBefore(d, bar.nextSibling); bar.setAttribute('aria-expanded', 'true');
+  };
+  ['presse-bars', 'presse-tous'].forEach(function (id) { el(id).addEventListener('click', ouvrir); el(id).addEventListener('keydown', ouvrir); });
   var gb = el('presse-g-share'); gb.addEventListener('click', function () { if (window.ConcretPartage) ConcretPartage.partager(el('presse-g'), gb); });
   var charger = function () { chargeA = Date.now(); secours = false;
   lire('https://raw.githubusercontent.com/concret2027/Concret2027/donnees-presse/presse_live.json?t=' + Math.floor(Date.now() / 60000), 8000)
@@ -1837,7 +1852,7 @@ window.addEventListener('baro:data', function () {
       var m = PR.b === 'hier' && !hier ? 'jour' : PR.b, k = m === 'jour' ? compte([auj]) : m === 'hier' ? compte([hier]) : k7;
       var Cb = Object.keys(k.t).sort(function (a, b) { return k.t[b] - k.t[a] || k.a[b] - k.a[a] || a.localeCompare(b, 'fr'); }), mxb = Math.max(1, k.t[Cb[0]] || 0);
       var barre = function (c) {
-        return '<div class="bx-pbar" role="listitem"><div class="n"><i style="background:' + BX.col(c) + '"></i>' + esc(BX.full(c)) + '</div><div class="t"><b style="width:' + (100 * k.t[c] / mxb).toFixed(1) + '%;background:' + BX.col(c) + '"></b></div><div class="v">' + nf(k.t[c]) + (MJ ? '<small>' + nf(k.a[c]) + ' art.</small>' : '') + '</div></div>';
+        return '<div class="bx-pbar' + (P.derniers ? ' bx-pclic' : '') + '" role="listitem"' + (P.derniers ? ' tabindex="0" aria-expanded="false" data-c="' + esc(c) + '"' : '') + '><div class="n"><i style="background:' + BX.col(c) + '"></i>' + esc(BX.full(c)) + '</div><div class="t"><b style="width:' + (100 * k.t[c] / mxb).toFixed(1) + '%;background:' + BX.col(c) + '"></b></div><div class="v">' + nf(k.t[c]) + (MJ ? '<small>' + nf(k.a[c]) + ' art.</small>' : '') + '</div></div>';
       };
       el('presse-bars').innerHTML = Cb.slice(0, 10).map(barre).join('');
       el('presse-tous').innerHTML = Cb.slice(10).map(barre).join('');
@@ -1845,7 +1860,7 @@ window.addEventListener('baro:data', function () {
       var per = m === 'jour' ? (auj === ajd ? 'aujourd\'hui, en cours' : 'le ' + jour(auj)) + debut(auj) + ', relevé de ' + h
         : m === 'hier' ? 'le ' + jour(hier) + debut(hier)
         : (D.length < 7 ? 'depuis le ' + jour(D[0]) + (J[0] === '2026-11-07' ? ' à 18 h 00' : '') + ', début du relevé' : 'sur les 7 derniers jours, du ' + jour(D[0]) + ' au ' + jour(auj)) + ', relevé de ' + h;
-      el('presse-periode').textContent = (MJ ? 'Médias qui citent chaque candidat (en petit : articles), ' : 'Articles qui citent chaque candidat, ') + per + '.' + (secours ? ' Les relevés plus récents n\'ont pas pu être chargés : rechargez la page.' : '');
+      el('presse-periode').textContent = (MJ ? 'Médias qui citent chaque candidat (en petit : articles), ' : 'Articles qui citent chaque candidat, ') + per + '.' + (P.derniers ? ' Touchez un nom pour ses derniers articles.' : '') + (secours ? ' Les relevés plus récents n\'ont pas pu être chargés : rechargez la page.' : '');
       Array.prototype.forEach.call(el('presse-mode').querySelectorAll('button'), function (bt) {
         var v = bt.dataset.m; bt.setAttribute('aria-pressed', v === m ? 'true' : 'false');
         if (v === 'jour') bt.textContent = auj === ajd ? 'Aujourd\'hui' : jour(auj);
@@ -1877,7 +1892,7 @@ window.addEventListener('baro:data', function () {
         lisse: 'Médias par jour, en moyenne sur 7 jours complets.' }[g] + part;
       Array.prototype.forEach.call(el('presse-gmode').querySelectorAll('button'), function (bt) { bt.setAttribute('aria-pressed', bt.dataset.g === g ? 'true' : 'false'); if (bt.dataset.g === 'lisse') bt.hidden = !lisseOk; });
     };
-    PR.barres = barres; PR.graphe = graphe; barres(); graphe();
+    PR.barres = barres; PR.graphe = graphe; PR.P = P; barres(); graphe();
     var MO = P.mots_24h || {}, LM = C.filter(function (c) { return MO[c]; });
     el('presse-mots').hidden = !LM.length;
     el('presse-mots').innerHTML = LM.length ? 'Mots les plus repris en 24 h : ' + LM.map(function (c) { return '<b>' + esc(c) + '</b> : ' + MO[c].mots.map(esc).join(', '); }).join(' · ') + '.' : '';
