@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="dac043a620ed">
+<meta name="concret-version" content="707f37cdbc8f">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -465,7 +465,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
         <p class="bx-note pt-hors" id="presse-court"></p>
         <p class="bx-note pt-hors" id="presse-statut"></p>
         <details class="pt-hors"><summary>Voir des exemples</summary><div class="bx-note" id="presse-ex"></div></details>
-        <details class="pt-hors"><summary>Méthode, médias et limites</summary><p class="bx-note">Chaque candidat est cherché par son nom de famille ; on écarte les homonymes évidents (autre prénom, la Hollande, Palais-Royal…).</p><p class="bx-note">Titres et chapeaux des flux publics de ces médias, relevés toutes les 30 minutes. Part du jour : le nombre de médias qui citent le candidat, divisé par le total des médias cités pour tous les candidats suivis ce jour-là (un média qui cite trois candidats compte pour chacun) ; les courbes montrent les 8 candidats les plus cités. On compte les médias, pas les articles : un média qui publie beaucoup de courts articles (alertes, directs) ne pèse pas plus qu'un autre ; le nombre d'articles est donné en petit. Les mots du jour sont ceux repris par le plus de médias (au moins 3) dans leurs titres des dernières 24 heures, sans les mots courants ni les noms des candidats.</p><p class="bx-note" id="presse-noms"></p><div class="bx-note" id="presse-panel"></div></details>
+        <details class="pt-hors"><summary>Méthode, médias et limites</summary><p class="bx-note">Chaque candidat est cherché par son nom de famille ; on écarte les homonymes évidents (autre prénom, la Hollande, Palais-Royal…).</p><p class="bx-note">Titres et chapeaux des flux publics de ces médias, relevés toutes les 30 minutes ; pour les quelques médias sans flux utilisable, marqués « via GDELT », les titres seulement, lus dans les fichiers publics de GDELT (projet qui relève la presse mondiale toutes les 15 minutes). Part du jour : le nombre de médias qui citent le candidat, divisé par le total des médias cités pour tous les candidats suivis ce jour-là (un média qui cite trois candidats compte pour chacun) ; les courbes montrent les 8 candidats les plus cités. On compte les médias, pas les articles : un média qui publie beaucoup de courts articles (alertes, directs) ne pèse pas plus qu'un autre ; le nombre d'articles est donné en petit. Les mots du jour sont ceux repris par le plus de médias (au moins 3) dans leurs titres des dernières 24 heures, sans les mots courants ni les noms des candidats.</p><p class="bx-note" id="presse-noms"></p><div class="bx-note" id="presse-panel"></div></details>
       </div>
       <div class="bx-part" id="part" hidden>
         <h3>Part de visibilité</h3>
@@ -1895,7 +1895,7 @@ window.addEventListener('baro:data', function () {
       (pb.length ? ' Pas lus de toute la journée : ' + pb.map(function (d) { return jour(d) + ', ' + P.statut[d].erreurs.join(', '); }).join(' ; ') + '.' : '');
     var fam = []; P.panel.forEach(function (m) { if (fam.indexOf(m.family) < 0) fam.push(m.family); });
     var hors = P.panel.filter(function (m) { return !m.active; });
-    el('presse-panel').innerHTML = '<ul>' + fam.map(function (f) { var L = actifs.filter(function (m) { return m.family === f; }); return L.length ? '<li><b>' + esc(f) + ' (' + L.length + ')</b> : ' + L.map(function (m) { return esc(m.name) + (m.flux > 1 ? ' (' + m.flux + ' flux)' : ''); }).join(', ') + '</li>' : ''; }).join('') + '</ul>' +
+    el('presse-panel').innerHTML = '<ul>' + fam.map(function (f) { var L = actifs.filter(function (m) { return m.family === f; }); return L.length ? '<li><b>' + esc(f) + ' (' + L.length + ')</b> : ' + L.map(function (m) { return esc(m.name) + (m.flux > 1 ? ' (' + m.flux + ' flux)' : '') + (m.via ? ' (via GDELT)' : ''); }).join(', ') + '</li>' : ''; }).join('') + '</ul>' +
       (hors.length ? '<p><b>Pas dans le panel</b></p><ul>' + (function () { var R = []; hors.forEach(function (m) { var r = m.raison || ''; if (R.indexOf(r) < 0) R.push(r); });
         return R.map(function (r) { return '<li>' + esc(hors.filter(function (m) { return (m.raison || '') === r; }).map(function (m) { return m.name; }).join(', ')) + ' : ' + esc(r) + '</li>'; }).join(''); })() + '</ul>' : '');
   }).catch(function () { el('presse-periode').textContent = 'Les articles relevés n\'ont pas pu être chargés.'; });

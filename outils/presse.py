@@ -199,6 +199,49 @@ def lire(src):
     return items
 
 
+GDELT = 'http://data.gdeltproject.org/gdeltv2/'
+
+
+def lire_gdelt(archive, maintenant, domaines):
+    """Pour les médias sans flux public utilisable : leurs articles en français dans les fichiers publics GKG de GDELT
+    (flux « translation », un fichier toutes les 15 minutes), depuis le dernier fichier lu (archive['gdelt_t']).
+    Renvoie ({domaine: [articles]}, None) ou (None, erreur). Titre seulement (PAGE_TITLE), pas de chapeau."""
+    import csv, io, zipfile
+    csv.field_size_limit(10 ** 9)
+    try:
+        der = urllib.request.urlopen(GDELT + 'lastupdate-translation.txt', timeout=30).read().decode()
+        t_fin = dt.datetime.strptime(re.search(r'/(\d{14})\.translation\.gkg', der).group(1), '%Y%m%d%H%M%S').replace(tzinfo=dt.timezone.utc)
+    except Exception as e:
+        return None, ('GDELT : ' + type(e).__name__ + ': ' + str(e))[:160]
+    t0 = archive.get('gdelt_t')
+    t = dt.datetime.fromisoformat(t0) + dt.timedelta(minutes=15) if t0 else t_fin - dt.timedelta(hours=3)
+    t = max(t, t_fin - dt.timedelta(hours=12))
+    out, lus = {d: [] for d in domaines}, 0
+    while t <= t_fin:
+        u = GDELT + t.strftime('%Y%m%d%H%M%S') + '.translation.gkg.csv.zip'
+        try:
+            z = zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(u, timeout=60).read()))
+            for row in csv.reader(io.TextIOWrapper(z.open(z.namelist()[0]), encoding='utf-8', errors='replace'), delimiter='\t'):
+                if len(row) < 27 or 'srclc:fra' not in row[25]:
+                    continue
+                dom = '.'.join(row[3].lower().split('.')[-2:])
+                if dom not in out:
+                    continue
+                m = re.search(r'<PAGE_TITLE>(.*?)</PAGE_TITLE>', row[26])
+                if not m:
+                    continue
+                q = dt.datetime.strptime(row[1], '%Y%m%d%H%M%S').replace(tzinfo=dt.timezone.utc).astimezone(PARIS)
+                out[dom].append({'guid': '', 'lien': row[4], 'titre': texte(m.group(1)), 'desc': '', 'jour': q.date().isoformat(), 'quand': q.isoformat(timespec='minutes')})
+            lus += 1
+        except Exception:
+            pass  # fichier absent (GDELT en saute parfois un) : on passe au suivant
+        archive['gdelt_t'] = t.isoformat()
+        t += dt.timedelta(minutes=15)
+    if not lus:
+        return None, 'GDELT : aucun fichier lu'
+    return out, None
+
+
 def fid(s):
     """Identifiant d'un flux : le nom du média, suivi du nom du flux quand le média en a plusieurs."""
     return s['name'] + (' · ' + s['flux'] if s.get('flux') else '')
@@ -218,8 +261,14 @@ def cle_lien(u):
 
 def releve(archive, sources, noms, maintenant):
     actifs = [s for s in sources if s.get('active')]
+    rss = [s for s in actifs if not s.get('gdelt')]
     with cf.ThreadPoolExecutor(24) as ex:
-        res = dict(zip([fid(s) for s in actifs], ex.map(lambda s: _essai(s), actifs)))
+        res = dict(zip([fid(s) for s in rss], ex.map(lambda s: _essai(s), rss)))
+    gd = [s for s in actifs if s.get('gdelt')]
+    if gd:
+        G, err = lire_gdelt(archive, maintenant, {s['gdelt'] for s in gd})
+        for s in gd:
+            res[fid(s)] = err if err else G.get(s['gdelt'], [])
     vus_guid = {a['guid'] for a in archive['articles'] if a.get('guid')}
     vus_lien = {cle_lien(a['lien']) for a in archive['articles'] if a.get('lien')}
     jour_releve = maintenant.astimezone(PARIS).date().isoformat()
@@ -352,7 +401,7 @@ def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
     der_lus = {media(f) for f in der['noms_lus']}
     der_err = [e['media'] for e in der['erreurs']]
     return {
-        'source': 'Flux RSS publics de %d médias français (%d flux ; titres et chapeaux), relevés toutes les 30 minutes par outils/presse.py' % (len(med_act), len(actifs)),
+        'source': 'Flux RSS publics de %d médias français (%d flux ; titres et chapeaux), et titres de %d médias sans flux utilisable relevés via GDELT, toutes les 30 minutes par outils/presse.py' % (len(med_act) - len({s['name'] for s in actifs if s.get('gdelt')}), len([s for s in actifs if not s.get('gdelt')]), len({s['name'] for s in actifs if s.get('gdelt')})),
         'methode': noms_cfg['regle'] + ' Chaque jour (heure de Paris, date de publication du flux) : le nombre d\'articles distincts qui citent chaque candidat, tous médias ensemble ; un même article repris dans deux flux compte une fois. Les articles publiés avant le premier relevé ne comptent pas.',
         'noms': {c: r.get('note', '') for c, r in regs.items()},
         'candidats': 'Suivies : toutes les personnes testées dans au moins un sondage de premier tour publié ces %d derniers jours (on entre quand un institut teste la personne, on sort quand plus aucun ne l\'a testée depuis %d jours). À la publication de la liste officielle des candidats par le Conseil constitutionnel, seuls ceux-là seront suivis.' % (JOURS_SONDAGES, JOURS_SONDAGES),
@@ -362,7 +411,7 @@ def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
         'debut': debut,
         'mis_a_jour': der['t'],
         # Un média par ligne (ses flux comptés dans « flux »).
-        'panel': [{'name': s['name'], 'family': s['family'], 'active': bool(s.get('active')), 'flux': sum(1 for x in actifs if x['name'] == s['name']), **({'raison': s['raison']} if s.get('raison') else {})} for s in premiers(sources)],
+        'panel': [{'name': s['name'], 'family': s['family'], 'active': bool(s.get('active')), 'flux': sum(1 for x in actifs if x['name'] == s['name']), **({'raison': s['raison']} if s.get('raison') else {}), **({'via': 'GDELT'} if s.get('gdelt') else {})} for s in premiers(sources)],
         # Un candidat pas encore suivi ce jour-là n'a pas de chiffre (null), ce n'est pas zéro.
         'jours': {d: {c: (jours.get(d, {}).get(c, 0) if d >= depuis[c] else None) for c in cands} for d in sorted(set(jours) | set(statut)) if d >= debut},
         # Par jour : les médias (pas les articles) qui citent chaque candidat ; un média compte une fois, quel que soit son nombre d'articles.
