@@ -216,6 +216,10 @@ def lire_gdelt(archive, maintenant, domaines):
     t0 = archive.get('gdelt_t')
     t = dt.datetime.fromisoformat(t0) + dt.timedelta(minutes=15) if t0 else t_fin - dt.timedelta(hours=3)
     t = max(t, t_fin - dt.timedelta(hours=12))
+    # Rattrapage, une seule fois : depuis le début du relevé (7 novembre 2026, 18 h), pour que ces médias aient les mêmes jours que les autres.
+    if not archive.get('gdelt_rattrape'):
+        t = dt.datetime(2026, 11, 7, 17, 0, tzinfo=dt.timezone.utc)
+        archive['gdelt_rattrape'] = maintenant.isoformat(timespec='minutes')
     out, lus = {d: [] for d in domaines}, 0
     while t <= t_fin:
         u = GDELT + t.strftime('%Y%m%d%H%M%S') + '.translation.gkg.csv.zip'
