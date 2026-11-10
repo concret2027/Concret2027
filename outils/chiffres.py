@@ -35,6 +35,14 @@ def get(url):
         r = subprocess.run(['curl', '-sS', '-m', '90', '-A', 'Mozilla/5.0 (concret2027.fr)', url], capture_output=True, text=True)
         if not r.returncode and r.stdout: return r.stdout
         time.sleep(10)
+    if url == OAT:
+        # Le site refuse parfois la connexion depuis l'environnement de la tâche : la même page, téléchargée par le relevé
+        # de presse sur GitHub (toutes les 30 minutes, branche donnees-presse), est lue à la place. Le chiffre et sa date
+        # restent ceux affichés par la page source.
+        r2 = subprocess.run(['curl', '-sS', '-m', '60', 'https://raw.githubusercontent.com/concret2027/Concret2027/donnees-presse/taux_oat_bund.html'], capture_output=True, text=True)
+        if not r2.returncode and 'OAT' in r2.stdout:
+            print('  (taux à 10 ans : page lue dans la copie du relevé de presse, le site refuse la connexion directe)')
+            return r2.stdout
     raise IOError('lecture impossible : ' + url + ' ' + r.stderr.strip()[:200])
 
 

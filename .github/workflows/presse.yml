@@ -47,11 +47,14 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.chaine }}" != "oui" ]; then MODE=--agreger; else MODE=--agreger-si-besoin; fi
           python3 outils/presse.py --archive arch/presse_archive.json --ecrire --live arch/presse_live.json $MODE
+          # Page du taux d'emprunt à 10 ans (Idéal Investisseur) : la mise à jour quotidienne la lit ici quand le site refuse sa connexion directe.
+          curl -sS -m 60 -A 'Mozilla/5.0 (concret2027.fr)' -o arch/taux_oat_bund.html.tmp https://www.ideal-investisseur.fr/en/markets/oat-bund-spread.html && grep -q 'OAT' arch/taux_oat_bund.html.tmp && mv arch/taux_oat_bund.html.tmp arch/taux_oat_bund.html || rm -f arch/taux_oat_bund.html.tmp
 
       - name: Archive sur donnees-presse
         working-directory: arch
         run: |
           git add presse_archive.json presse_live.json
+          git add taux_oat_bund.html 2>/dev/null || true
           git diff --cached --quiet && exit 0
           git commit -q -m "Presse : relevé $(date -u +%Y-%m-%dT%H:%MZ)"
           git push origin donnees-presse || { git fetch --depth 1 origin donnees-presse && git rebase FETCH_HEAD && git push origin donnees-presse; }
