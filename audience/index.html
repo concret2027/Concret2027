@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="concret-version" content="c03d3d202bc0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Concret, audience</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+:root { --bg: #f6f6f3; --panel: #ffffff; --fg: #1c1d22; --muted: #62646d; --line: #e2e2dc; --fr: #2f5bd3; --ok: #1a7a43;
+  --serif: "Newsreader", Georgia, serif; --sans: "Inter Tight", -apple-system, system-ui, sans-serif; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #15161a; --panel: #1d1f24; --fg: #ececea; --muted: #a4a6ad; --line: #2e3037; --fr: #7a9cff; --ok: #4cc27f; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 var(--sans); padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left)); }
+.wrap { max-width: 860px; margin: 0 auto; display: grid; gap: 16px; }
+h1 { font: 400 30px/1.15 var(--serif); margin: 6px 0 0; }
+h2 { font: 400 21px/1.2 var(--serif); margin: 0 0 8px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+.note { color: var(--muted); font-size: 13px; margin: 0; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.kpi b { display: block; font: 500 30px/1.1 var(--serif); color: var(--fr); }
+.kpi span { font-size: 13px; color: var(--muted); }
+.tab { overflow-x: auto; } table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; } th:first-child, td:first-child { text-align: left; }
+th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
+.bar { display: grid; grid-template-columns: minmax(0, 9rem) 1fr 3.5rem; gap: 8px; align-items: center; font-size: 14px; margin: 4px 0; }
+.bar i { display: block; height: 10px; border-radius: 5px; background: var(--fr); }
+.bar .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.haut { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+button { font: inherit; font-weight: 600; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="haut"><div><p class="note">Concret · pour l'éditeur seulement</p><h1>Audience en direct</h1></div><button type="button" id="maj">Actualiser</button></div>
+  <p class="note" id="etat">Chargement…</p>
+  <div id="contenu" hidden>
+    <section class="card"><div class="kpis" id="kpis"></div></section>
+    <section class="card"><h2>Par jour</h2><p class="note">Appareils différents (nouveaux : venus pour la première fois ce jour-là), joueurs du quiz, votes sur Votez les lois. Sans les appareils de l'éditeur.</p><div class="tab"><table id="jours"></table></div></section>
+    <section class="card"><h2>Visites par page</h2><p class="note">Depuis le début du comptage, une par visite de la page ; et ce que les visiteurs y ouvrent.</p><div class="tab"><table id="pages"></table></div></section>
+    <section class="card"><h2>Pages d'arrivée</h2><div id="entrees"></div></section>
+    <section class="card"><h2>Durée et profondeur des visites</h2><div id="visites"></div></section>
+  </div>
+</div>
+<script>
+(function () {
+  var API = 'https://compteur.square-brook-9d65.workers.dev/get?k=', $ = function (id) { return document.getElementById(id); };
+  // Réservée aux appareils de l'éditeur (concret2027.fr/?moi=1) ; cette page n'envoie rien au compteur, elle ne fait que lire les totaux.
+  var ed = false; try { ed = localStorage.getItem('concret-editeur') === '1'; } catch (e) {}
+  if (!ed) { $('etat').textContent = 'Page réservée à l\'éditeur.'; $('maj').hidden = true; return; }
+  var PAGES = ['accueil', 'finances', 'education', 'sante', 'securite', 'defense', 'vie', 'demographie', 'politique', 'barometre', 'quiz', 'votez', 'contact', 'mentions-legales', 'application'];
+  var NOMS = { accueil: 'Accueil', finances: 'Finances', education: 'Éducation', sante: 'Santé', securite: 'Sécurité', defense: 'Défense', vie: 'Vie des Français', demographie: 'Démographie', politique: 'Vie politique', barometre: 'Baromètre', quiz: 'Quiz', votez: 'Votez', contact: 'Contact', 'mentions-legales': 'Mentions légales', application: 'Application' };
+  var Q = [['courbe', 'courbes agrandies'], ['chiffres', '« Voir les chiffres »'], ['replis', 'dépliants'], ['detail', '« Détail du graphe »']];
+  var lire = function (k, n) { return fetch(API + encodeURIComponent('quiz-' + k) + '&n=' + (n || 1), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) { return n ? j.v || [] : (j.v || [])[0] || 0; }).catch(function () { return n ? [] : 0; }); };
+  var tout = function (ks) { var o = [], i = 0; var lot = function () { if (i >= ks.length) return Promise.resolve(o); var p = ks.slice(i, i + 16); i += 16; return Promise.all(p.map(function (k) { return lire(k); })).then(function (v) { o = o.concat(v); return lot(); }); }; return lot(); };
+  var jour = function (n) { return new Date(Date.now() - n * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' }); };
+  var nf = function (v) { return v == null ? '–' : Number(v).toLocaleString('fr-FR'); };
+  var barres = function (L, max) { return L.map(function (x) { return '<div class="bar"><span>' + x[0] + '</span><i style="width:' + (100 * x[1] / (max || 1)).toFixed(1) + '%"></i><span class="v">' + nf(x[1]) + '</span></div>'; }).join(''); };
+  function charger() {
+    $('etat').textContent = 'Lecture du compteur…';
+    var ds = []; for (var n = 13; n >= 0; n--) ds.push(jour(n));
+    var kj = []; ds.forEach(function (d) { kj.push('vue-appareils-' + d, 'vue-appareils-nouveaux-' + d, 'vue-joueurs-nouveaux-' + d, 'vue-joueurs-revenus-' + d, 'votez-jour-' + d); });
+    var kp = []; PAGES.forEach(function (p) { kp.push('vue-' + p); Q.forEach(function (q) { kp.push('vue-' + p + '-' + q[0]); }); });
+    var ke = PAGES.map(function (p) { return 'vue-chemin-entree-' + p; });
+    var kv = ['vue-visite-10s', 'vue-visite-30s', 'vue-visite-60s', 'vue-visite-180s', 'vue-visite-600s', 'vue-visite-pages-2', 'vue-visite-pages-3', 'vue-visite-pages-5', 'vue-visite-pages-10', 'vue-appareils'];
+    tout(kj.concat(kp, ke, kv)).then(function (v) {
+      var a = 0, J = ds.map(function (d) { var r = { d: d, app: v[a], nouv: v[a + 1], jn: v[a + 2], jr: v[a + 3], votes: v[a + 4] }; a += 5; return r; });
+      var P = PAGES.map(function (p) { var r = { p: p, vis: v[a++] }; Q.forEach(function (q) { r[q[0]] = v[a++]; }); return r; }).filter(function (r) { return r.vis; }).sort(function (x, y) { return y.vis - x.vis; });
+      var E = PAGES.map(function (p) { return [NOMS[p], v[a++]]; }).filter(function (x) { return x[1]; }).sort(function (x, y) { return y[1] - x[1]; });
+      var V = kv.map(function () { return v[a++]; }), ent = E.reduce(function (s, x) { return s + x[1]; }, 0), auj = J[J.length - 1], hier = J[J.length - 2];
+      $('kpis').innerHTML = [[nf(auj.app), 'appareils aujourd\'hui (' + nf(auj.nouv) + ' nouveaux)'], [nf(hier.app), 'appareils hier'], [nf(V[9]), 'appareils depuis le début'], [nf(ent), 'visites suivies depuis le début'], [nf((auj.jn || 0) + (auj.jr || 0)), 'joueurs du quiz aujourd\'hui']]
+        .map(function (x) { return '<div class="kpi"><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join('');
+      $('jours').innerHTML = '<tr><th>Jour</th><th>Appareils</th><th>dont nouveaux</th><th>Joueurs quiz</th><th>Votes Votez</th></tr>' + J.slice().reverse().map(function (r) {
+        var j = new Date(r.d + 'T12:00:00Z').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+        return '<tr><td>' + j + '</td><td>' + (r.d < '2026-10-30' ? '–' : nf(r.app)) + '</td><td>' + (r.d < '2026-11-06' ? '–' : nf(r.nouv)) + '</td><td>' + (r.d < '2026-10-31' ? '–' : nf((r.jn || 0) + (r.jr || 0))) + '</td><td>' + nf(r.votes) + '</td></tr>'; }).join('');
+      $('pages').innerHTML = '<tr><th>Page</th><th>Visites</th>' + Q.map(function (q) { return '<th>' + q[1] + '</th>'; }).join('') + '</tr>' + P.map(function (r) { return '<tr><td>' + NOMS[r.p] + '</td><td><b>' + nf(r.vis) + '</b></td>' + Q.map(function (q) { return '<td>' + nf(r[q[0]]) + '</td>'; }).join('') + '</tr>'; }).join('');
+      $('entrees').innerHTML = barres(E, E.length ? E[0][1] : 1) + '<p class="note">Sur ' + nf(ent) + ' arrivées sur le site.</p>';
+      var D = [['au moins 10 s', V[0]], ['au moins 30 s', V[1]], ['au moins 1 min', V[2]], ['au moins 3 min', V[3]], ['au moins 10 min', V[4]], ['au moins 2 pages', V[5]], ['au moins 3 pages', V[6]], ['au moins 5 pages', V[7]], ['au moins 10 pages', V[8]]];
+      $('visites').innerHTML = barres(D, ent) + '<p class="note">Visites qui ont duré ou vu au moins autant, sur ' + nf(ent) + ' visites.</p>';
+      $('contenu').hidden = false;
+      $('etat').textContent = 'Lu au compteur à ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + ' · actualisé toutes les 2 minutes.';
+    });
+  }
+  $('maj').addEventListener('click', charger); charger(); setInterval(function () { if (document.visibilityState === 'visible') charger(); }, 120000);
+})();
+</script>
+</body>
+</html>
