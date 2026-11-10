@@ -41,6 +41,16 @@ for k in range(96):
             if P.trouve(t2, R):
                 cite_dom[d][c] += 1
                 if len(ex[d]) < 2: ex[d].append(titre[:110])
+actifs = {d for d, v in panel.items() if v[1]}
+CLES = ['lemonde.fr','lepoint.fr','liberation.fr','lejdd.fr','cnews.fr','europe1.fr','marianne.net','mediapart.fr','lesechos.fr','letelegramme.fr','lamontagne.fr','rtl.fr','laprovence.com','corsematin.com','m6info.fr','franceantilles.fr','lesinrocks.com','lenouveleconomiste.fr','franceinter.fr','francetvinfo.fr','franceinfo.fr','ici.fr','bfmtv.com','lci.fr','tf1info.fr','arte.tv','courrier-picard.fr','lavoixdunord.fr','leprogres.fr','ouest-france.fr','actu.fr','lunion.fr','paris-normandie.fr','lyonne.fr','larep.fr','lepopulaire.fr','lejdc.fr','courrierdelouest.fr','lemainelibre.fr','presseocean.fr','nordeclair.fr','lequotidien.re','charliehebdo.fr','brut.media','i24news.tv','blast-info.fr']
+print('\n=== MÉDIAS CLÉS : présence dans GDELT (24 h, articles en français) ===')
+for d in CLES:
+    etat = 'ACTIF dans nos 104' if d in actifs else ('EXCLU de nos 104' if d in panel else 'absent du panel')
+    print('  %-22s %-20s articles %4d | citant un candidat : %3d %s' % (d, etat, par_dom.get(d, 0), sum(cite_dom[d].values()), dict(cite_dom[d].most_common(5))))
+print('\n=== TOUS LES .fr HORS de nos médias ACTIFS, triés par articles (24 h) ===')
+for d, n in par_dom.most_common():
+    if d.endswith('.fr') and d not in actifs:
+        print('  %-26s %-8s %4d articles | candidats %3d %s' % (d, 'EXCLU' if d in panel else '', n, sum(cite_dom[d].values()), dict(cite_dom[d].most_common(3))))
 print('Fichiers lus : %d / 96 (erreurs %d) ; articles en français distincts : %d ; titres avec accents : %d / %d' % (lus, err, len(vus), accents[0], accents[1]))
 fr = [d for d in par_dom if d.endswith('.fr')]
 print('Domaines distincts : %d (dont .fr : %d)' % (len(par_dom), len(fr)))
