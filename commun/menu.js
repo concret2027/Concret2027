@@ -493,6 +493,14 @@
   var VUES = 'https://compteur.square-brook-9d65.workers.dev/hit?n=1&i=0&k=', vuesFaites = {};
   var pageNom = (location.pathname.replace(/index\.html$/, '').replace(/^\/|\/$/g, '') || 'accueil').replace(/[^a-z0-9-]+/g, '-');
   if (/^budget(-quinquennat-html)?$/.test(pageNom)) pageNom = 'budget'; // le jeu, à son adresse courte ou longue
+  // Page rouverte longtemps après son chargement (onglet gardé en mémoire par le téléphone) : rechargée, pour montrer la dernière
+  // mise à jour. Pas sur le Quiz, Votez ni le jeu, pour ne pas couper une partie en cours.
+  (function () {
+    if (/^(quiz|votez|budget|audience)$/.test(pageNom)) return;
+    var charge = Date.now(), vieux = function () { return Date.now() - charge > 30 * 60000; };
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && vieux()) location.reload(); });
+    addEventListener('pageshow', function (e) { if (e.persisted && vieux()) location.reload(); });
+  })();
   // Les appareils de l'éditeur ne sont pas comptés : concret2027.fr/?moi=1 les retire une fois pour toutes (ici et dans GoatCounter),
   // ?moi=0 les compte de nouveau.
   var editeur = false;
