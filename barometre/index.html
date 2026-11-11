@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="22cc9bf707de">
+<meta name="concret-version" content="3ff96f517b37">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -274,6 +274,8 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 .bx-lastbar .fl { height: 100%; border-radius: 6px; }
 .bx-lastbar .pv { text-align: right; }
 .bx-lastbar.ec { grid-template-columns: 96px minmax(0, 1fr) 48px 60px; }
+.bx-lastbar.ec.ec2 { grid-template-columns: 88px minmax(0, 1fr) 44px 56px 56px; gap: 6px; }
+.bx-lastbar.tete .ev { white-space: normal; line-height: 1.15; }
 .bx-lastbar .ev { text-align: right; color: var(--color-fg-muted); white-space: nowrap; }
 .bx-lastbar .ev.bx-up { color: var(--color-up, var(--color-ok)); } .bx-lastbar .ev.bx-down { color: var(--color-bad); }
 .bx-lastbar.tete { font-size: 11px; color: var(--color-fg-muted); margin-bottom: -2px; }
@@ -931,12 +933,20 @@ dash.calc('duels_recents', {
     Object.keys(av).forEach(function (c) { av[c] = BX.fen(av[c]).map(function (q) { return q.v; }); });
     var nAv = Math.min(BX.FEN, Object.keys(nbp).length), ecart = nAv > 0, sansMoy = [], ex = null;
     var nf1 = function (x) { return x.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); };
+    // Deuxième écart : avec la vague précédente du même institut (terrain fini dans les 60 jours précédents), sans l'effet propre à chaque institut.
+    var inst = P.every(function (q) { return q.institut === P[0].institut; }) ? P[0].institut : null, prevI = null, vI = {};
+    if (inst) {
+      var debI = new Date(Date.parse(fin) - 60 * 864e5).toISOString().slice(0, 10), TI = ((dash.data('sondages_t1') || {}).data || []).filter(function (r) { return r.institut === inst && r.date < fin && r.date >= debI; });
+      TI.forEach(function (r) { if (!prevI || r.date > prevI) prevI = r.date; });
+      TI.forEach(function (r) { if (r.date === prevI) vI[r.candidat] = +r.score; });
+    }
+    var ec2 = ecart && !!inst, sansI = [];
     if (ecart) {
-      var t = document.createElement('div'); t.className = 'bx-lastbar ec tete'; t.setAttribute('aria-hidden', 'true');
-      t.innerHTML = '<div></div><div></div><div class="pv">Score</div><div class="ev">Écart</div>'; box.appendChild(t);
+      var t = document.createElement('div'); t.className = 'bx-lastbar ec tete' + (ec2 ? ' ec2' : ''); t.setAttribute('aria-hidden', 'true');
+      t.innerHTML = '<div></div><div></div><div class="pv">Score</div><div class="ev">' + (ec2 ? 'Écart 30 jours' : 'Écart') + '</div>' + (ec2 ? '<div class="ev">Écart ' + esc(inst) + '</div>' : ''); box.appendChild(t);
     }
     rows.filter(function (r) { return r.score >= 1; }).forEach(function (r) {
-      var l = document.createElement('div'); l.className = 'bx-lastbar' + (ecart ? ' ec' : '');
+      var l = document.createElement('div'); l.className = 'bx-lastbar' + (ecart ? ' ec' : '') + (ec2 ? ' ec2' : '');
       var n = document.createElement('div'); n.textContent = r.candidat + (r.n < P.length ? ' *' : ''); l.appendChild(n);
       var tr = document.createElement('div'); tr.className = 'tr'; var fl = document.createElement('div'); fl.className = 'fl';
       fl.style.width = (r.score / max * 100) + '%'; fl.style.background = colorOf(r.candidat);
@@ -953,8 +963,17 @@ dash.calc('duels_recents', {
             ex = { c: r.candidat, s: r.score, m: m, d: d, avec: Math.round(avec.reduce(function (x, y) { return x + y; }, 0) / avec.length * 10) / 10 };
           }
           e.setAttribute('aria-label', d === 0 ? 'égal à la moyenne des sondages précédents' : (d > 0 ? 'plus ' : 'moins ') + nf1(Math.abs(d)) + ' point par rapport à la moyenne des sondages précédents (' + nf1(m) + ' %)');
-        } else { e.textContent = 'non compté'; sansMoy.push(r.candidat); }
+        } else { e.textContent = ec2 ? '—' : 'non compté'; sansMoy.push(r.candidat); }
         l.appendChild(e);
+        if (ec2) {
+          var e2 = document.createElement('div'); e2.className = 'ev';
+          if (prevI && vI[r.candidat] != null) {
+            var d2 = Math.round((r.score - vI[r.candidat]) * 10) / 10;
+            e2.textContent = d2 === 0 ? '=' : (d2 > 0 ? '▲ +' : '▼ −') + nf1(Math.abs(d2)); if (d2) e2.className += d2 > 0 ? ' bx-up' : ' bx-down';
+            e2.setAttribute('aria-label', (d2 === 0 ? 'égal' : (d2 > 0 ? 'plus ' : 'moins ') + nf1(Math.abs(d2)) + ' point') + ' par rapport au sondage ' + inst + ' précédent (' + nf1(vI[r.candidat]) + ' %)');
+          } else { e2.textContent = '—'; sansI.push(r.candidat); }
+          l.appendChild(e2);
+        }
       }
       box.appendChild(l);
     });
@@ -963,7 +982,7 @@ dash.calc('duels_recents', {
       // Replié : la première phrase (et ce qui n'est pas compté, toujours visible) ; « Voir le détail » ouvre la méthode et l'exemple.
       var en = document.createElement('p'); en.className = 'bx-note';
       var court = document.createElement('span');
-      court.textContent = 'Écart, en points : avec la moyenne des ' + nAv + ' sondage' + (nAv > 1 ? 's' : '') + (nAv >= BX.FEN ? ' les plus récents' : ' des 30 jours précédents') + '.' + (sansMoy.length ? ' ' + et(sansMoy) + ' : non compté, ' + (sansMoy.length > 1 ? 'pas testés' : 'pas testé') + ' dans ces sondages.' : '') + ' ';
+      court.textContent = 'Écart, en points : avec la moyenne des ' + nAv + ' sondage' + (nAv > 1 ? 's' : '') + (nAv >= BX.FEN ? ' les plus récents' : ' des 30 jours précédents') + (ec2 ? (prevI ? ', et avec le sondage ' + inst + ' précédent (terrain fini le ' + j(prevI) + ')' : ' ; pas de sondage ' + inst + ' dans les 60 jours précédents, donc pas d\'écart avec le même institut') : '') + '.' + (sansMoy.length ? ' ' + et(sansMoy) + ' : non compté' + (ec2 ? ' (—)' : '') + ', ' + (sansMoy.length > 1 ? 'pas testés' : 'pas testé') + ' dans ces sondages.' : '') + (function () { var o = ec2 && prevI ? sansI.filter(function (c) { return sansMoy.indexOf(c) < 0; }) : []; return o.length ? ' ' + et(o) + ' : pas ' + (o.length > 1 ? 'testés' : 'testé') + ' au sondage ' + inst + ' précédent (—).' : ''; })() + (ec2 ? ' Chaque institut mesure à sa façon : l\'écart avec le même institut enlève cette différence.' : '') + ' ';
       var plus = document.createElement('span'); plus.hidden = true;
       plus.textContent = 'Terrains finis entre le ' + j(deb) + ' et le ' + j(new Date(Date.parse(fin) - 864e5).toISOString().slice(0, 10)) + ', pour chacun la moyenne de ses hypothèses. Les instituts ne posent pas tous les mêmes hypothèses : l\'écart compare des enquêtes différentes.' +
         (ex ? ' Par exemple, ' + ex.c + ' : ' + nf1(ex.m) + ' % en moyenne avant ce sondage, ' + nf1(ex.s) + ' % dans ce sondage (écart ' + (ex.d > 0 ? '+' : ex.d < 0 ? '−' : '') + nf1(Math.abs(ex.d)) + '), ' + nf1(ex.avec) + ' % en moyenne en l\'incluant, le chiffre de « L\'essentiel » et de la fin de la courbe.' : '') + ' ';
