@@ -240,7 +240,7 @@ def main():
             if rap:
                 # Notice pas encore en ligne : les mentions lues dans le rapport de l'institut, en attendant.
                 out.append({'date': p['date'], 'institut': p['institut'], 'terrain': rap.get('terrain') or p['terrain'], 'echantillon': rap.get('echantillon') or p['echantillon'],
-                            'commanditaire': rap.get('commanditaire', ''), 'marge': rap.get('marge', ''), 'notice': '', 'url': rap.get('url', ''), 'statut': 'rapport'})
+                            'commanditaire': rap.get('commanditaire', ''), 'marge': rap.get('marge', ''), 'notice': '', 'url': rap.get('url', ''), 'statut': rap.get('statut', 'rapport')})
                 print('%s %-11s notice pas encore en ligne : mentions du rapport (%s)' % (p['date'], p['institut'], rap.get('url', '')))
                 continue
             manque.append(p); continue
