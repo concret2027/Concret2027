@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="3ff96f517b37">
+<meta name="concret-version" content="da85daaf4a67">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -285,6 +285,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
 .bx-duel-b { display: flex; height: 12px; border-radius: 6px; overflow: hidden; gap: 2px; }
 .bx-duel-b i { display: block; height: 100%; }
 #last2 { gap: 12px; }
+.bx-duel-e { font-size: 12px; color: var(--color-fg-muted); } .bx-duel-e .bx-up { color: var(--color-up, var(--color-ok)); } .bx-duel-e .bx-down { color: var(--color-bad); }
 #chart-pm1, #chart-pm { max-width: 680px; }
 .bx-thermo { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--cds-gap-md); }
 .bx-th { display: grid; gap: 4px; align-content: start; padding: var(--cds-pad-md); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); min-width: 0; }
@@ -1004,6 +1005,14 @@ dash.calc('duels_recents', {
     document.getElementById('last2-title').textContent = 'Second tour : ' + (P.length > 1 ? 'les derniers sondages (' : 'le dernier sondage (') + et(P.map(function (p) { return p.institut; })) + ')';
     document.getElementById('last2-note').innerHTML = (P.length > 1 ? 'Moyenne des ' + P.length + ' sondages dont le terrain finit le ' + esc(jour) + '. ' : '') + 'Score de chaque candidat dans chaque duel testé, en % des voix exprimées.';
     var src = document.getElementById('last2-src'); src.hidden = P.length !== 1; src.innerHTML = P.length === 1 ? mention(P[0]) : '';
+    // Écarts du score de Le Pen dans chaque duel, comme au premier tour : avec la moyenne des sondages des 30 jours précédents
+    // (les 15 plus récents au plus), et avec la vague précédente du même institut (terrain fini dans les 60 jours précédents).
+    var T2 = (dash.data('sondages_t2') || {}).data || [], fin = rows[0].date, deb30 = new Date(Date.parse(fin) - 30 * 864e5).toISOString().slice(0, 10), deb60 = new Date(Date.parse(fin) - 60 * 864e5).toISOString().slice(0, 10);
+    var inst = P.length === 1 ? P[0].institut : null, prevI = null;
+    if (inst) T2.forEach(function (q) { if (q.institut === inst && q.date < fin && q.date >= deb60 && (!prevI || q.date > prevI)) prevI = q.date; });
+    var nf1 = function (x) { return x.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); };
+    var fl = function (d) { return d === 0 ? '=' : '<span class="' + (d > 0 ? 'bx-up' : 'bx-down') + '">' + (d > 0 ? '▲ +' : '▼ −') + nf1(Math.abs(d)) + '</span>'; };
+    var sans2 = [], sansI2 = [], jf = function (x) { return new Date(x + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); };
     rows.forEach(function (r) {
       var l = document.createElement('div'); l.className = 'bx-duel';
       var t = document.createElement('div'); t.className = 'bx-duel-t';
@@ -1011,8 +1020,19 @@ dash.calc('duels_recents', {
       var tr = document.createElement('div'); tr.className = 'bx-duel-b';
       var a = document.createElement('i'); a.style.width = r.score_rn + '%'; a.style.background = colorOf(r.candidat_rn);
       var b = document.createElement('i'); b.style.width = r.score_adversaire + '%'; b.style.background = colorOf(r.adversaire);
-      tr.appendChild(a); tr.appendChild(b); l.appendChild(t); l.appendChild(tr); box.appendChild(l);
+      tr.appendChild(a); tr.appendChild(b); l.appendChild(t); l.appendChild(tr);
+      var meme = function (q) { return q.candidat_rn === r.candidat_rn && q.adversaire === r.adversaire; }, nom = r.candidat_rn + '–' + r.adversaire;
+      var av = BX.fen(T2.filter(function (q) { return meme(q) && q.date < fin && q.date >= deb30; }).map(function (q) { return { date: q.date, v: +q.score_rn }; })).map(function (q) { return q.v; });
+      var pi = inst && prevI ? T2.filter(function (q) { return meme(q) && q.institut === inst && q.date === prevI; })[0] : null;
+      var ec = document.createElement('div'); ec.className = 'bx-duel-e'; var h = [];
+      if (av.length) { var m = av.reduce(function (x, y) { return x + y; }, 0) / av.length; h.push('30 jours ' + fl(Math.round((+r.score_rn - m) * 10) / 10)); } else { h.push('30 jours —'); sans2.push(nom); }
+      if (inst) { if (pi) h.push(esc(inst) + ' ' + fl(Math.round((+r.score_rn - +pi.score_rn) * 10) / 10)); else { h.push(esc(inst) + ' —'); if (prevI) sansI2.push(nom); } }
+      ec.innerHTML = 'Écart ' + esc(r.candidat_rn) + ' : ' + h.join(' · '); l.appendChild(ec);
+      box.appendChild(l);
     });
+    var en2 = document.createElement('p'); en2.className = 'bx-note';
+    en2.textContent = 'Écart du score de ' + rows[0].candidat_rn + ', en points : avec la moyenne des sondages des 30 jours précédents' + (inst ? (prevI ? ', et avec le sondage ' + inst + ' précédent (terrain fini le ' + jf(prevI) + ')' : ' ; pas de sondage ' + inst + ' dans les 60 jours précédents, donc pas d\'écart avec le même institut') : '') + '.' + (sans2.length ? ' ' + et(sans2) + ' : duel pas testé dans les 30 jours précédents (—).' : '') + (sansI2.length ? ' ' + et(sansI2) + ' : pas testé au sondage ' + inst + ' précédent (—).' : '') + (inst ? ' Chaque institut mesure à sa façon : l\'écart avec le même institut enlève cette différence.' : '');
+    box.appendChild(en2);
     var part = rows.filter(function (r) { return r.n < P.length; });
     if (part.length) { var w = document.createElement('p'); w.className = 'bx-note'; w.textContent = '* ' + et(part.map(function (r) { return r.candidat_rn + '–' + r.adversaire + ' (' + r.n + ' sur ' + P.length + ')'; })) + ' : duel testé dans une partie de ces sondages seulement ; moyenne des sondages où il figure.'; box.appendChild(w); }
     if (P.length > 1) { var ul = document.createElement('ul'); ul.className = 'bx-note bx-lastsrc'; ul.innerHTML = P.map(function (p) { return '<li>' + mentionCourte(p) + '</li>'; }).join(''); box.appendChild(ul); var cs = document.createElement('p'); cs.className = 'bx-note mentions'; cs.textContent = 'Notices consultables à la Commission des sondages (marge d\'erreur selon le score).'; box.appendChild(cs); }
