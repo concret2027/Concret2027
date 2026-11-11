@@ -47,13 +47,18 @@ def texte(s):
 
 
 def candidats_sondages(aujourdhui):
-    """Toutes les personnes testées dans au moins un sondage de premier tour des 30 derniers jours."""
+    """Les personnes testées dans un sondage de premier tour des JOURS_SONDAGES derniers jours, et les candidats déclarés (donnees/candidats_declares.json)."""
     rows = json.load(open(DATA, encoding='utf-8'))['datasets'].get('sondages_t1', [])
     debut = (aujourdhui - dt.timedelta(days=JOURS_SONDAGES)).isoformat()
     L = []
     for r in sorted(rows, key=lambda r: r['date']):
         if r['date'] >= debut and r['candidat'] not in L:
             L.append(r['candidat'])
+    try:
+        dec = json.load(open(os.path.join(os.path.dirname(DATA), 'donnees', 'candidats_declares.json'), encoding='utf-8'))['candidats']
+    except (OSError, ValueError, KeyError):
+        dec = []
+    L += [c['nom'] for c in dec if c.get('date', '9') <= aujourdhui.isoformat() and c['nom'] not in L]
     return L + [c for c in TOUJOURS if c not in L]
 
 
@@ -428,7 +433,7 @@ def agreger(archive, sources, noms_cfg, regs, sans, noms=None):
         'source': 'Flux RSS publics de %d médias français (%d flux ; titres et chapeaux), et titres de %d médias sans flux utilisable relevés via GDELT, toutes les 30 minutes par outils/presse.py' % (len(med_act) - len({s['name'] for s in actifs if s.get('gdelt')}), len([s for s in actifs if not s.get('gdelt')]), len({s['name'] for s in actifs if s.get('gdelt')})),
         'methode': noms_cfg['regle'] + ' Chaque jour (heure de Paris, date de publication du flux) : le nombre d\'articles distincts qui citent chaque candidat, tous médias ensemble ; un même article repris dans deux flux compte une fois. Les articles publiés avant le premier relevé ne comptent pas.',
         'noms': {c: r.get('note', '') for c, r in regs.items()},
-        'candidats': 'Suivies : toutes les personnes testées dans au moins un sondage de premier tour publié ces %d derniers jours (on entre quand un institut teste la personne, on sort quand plus aucun ne l\'a testée depuis %d jours). À la publication de la liste officielle des candidats par le Conseil constitutionnel, seuls ceux-là seront suivis.' % (JOURS_SONDAGES, JOURS_SONDAGES),
+        'candidats': 'Suivies : toutes les personnes testées dans au moins un sondage de premier tour publié ces %d derniers jours (on entre quand un institut teste la personne, on sort quand plus aucun ne l\'a testée depuis %d jours), et les candidats déclarés (annonce publique datée, avec sa source). À la publication de la liste officielle des candidats par le Conseil constitutionnel, seuls ceux-là seront suivis.' % (JOURS_SONDAGES, JOURS_SONDAGES),
         'suivis': {c: (debut if noms is not None else suivis.get(c, debut)) for c in cands},
         'chapeaux_depuis': {c: suivis[c] for c in cands if noms is not None and len(suivis.get(c, '')) > 10},
         'sans_regle': sans,
