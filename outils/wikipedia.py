@@ -26,7 +26,8 @@ PAGES = {'Le Pen': 'Marine Le Pen', 'Bardella': 'Jordan Bardella', 'Mélenchon':
          'Glucksmann': 'Raphaël Glucksmann', 'Attal': 'Gabriel Attal', 'Retailleau': 'Bruno Retailleau', 'Lisnard': 'David Lisnard',
          'Zemmour': 'Éric Zemmour', 'Hollande': 'François Hollande', 'Roussel': 'Fabien Roussel', 'Tondelier': 'Marine Tondelier',
          'Dupont-Aignan': 'Nicolas Dupont-Aignan', 'Arthaud': 'Nathalie Arthaud', 'Knafo': 'Sarah Knafo', 'Ruffin': 'François Ruffin',
-         'Villepin': 'Dominique de Villepin', 'Faure': 'Olivier Faure', 'Bertrand': 'Xavier Bertrand', 'Royal': 'Ségolène Royal'}
+         'Villepin': 'Dominique de Villepin', 'Faure': 'Olivier Faure', 'Bertrand': 'Xavier Bertrand', 'Royal': 'Ségolène Royal',
+         'Lagarde': 'Christine Lagarde', 'Asselineau': 'François Asselineau', 'Polony': 'Natacha Polony', 'Riner': 'Teddy Riner'}
 
 
 def candidats(D):
