@@ -972,6 +972,7 @@ function decimateBourse2(points, target) {
   window.IIAB = {
     RECAPTCHA_KEY: '6LdSZ5YsAAAAABylwv4O-CMfzR50DGgiQlLzJUKn',
     variant: function(){ return v; },
+    variantFor: function(place){ var f = window.II_NL_FORCE; return (f && (f[place]==='A' || f[place]==='B')) ? f[place] : v; },
 
     // État "déjà inscrit", PARTAGÉ par les 3 bannières (popup, bloc,
     // latéral). Chaque bannière a son propre formulaire et son propre
@@ -985,7 +986,7 @@ function decimateBourse2(points, target) {
     impression: function(place){
       if (sent[place]) return; sent[place] = 1;
       try {
-        var body = JSON.stringify({ variant: v, placement: place });
+        var body = JSON.stringify({ variant: IIAB.variantFor(place), placement: place });
         if (navigator.sendBeacon) {
           navigator.sendBeacon('/nl_track.php', new Blob([body], {type:'application/json'}));
         } else {
