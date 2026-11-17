@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="484ad9bfd853">
+<meta name="concret-version" content="2865ed0eb315">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1918,14 +1918,16 @@ window.addEventListener('baro:data', function () {
       var totJ = function (d) { return Object.keys((P.jours[d] || {})).reduce(function (s, c) { return s + nm(d, c); }, 0); };
       if (g === 'part') J.forEach(function (d) { var T = totJ(d); if (!T) return; top.forEach(function (c) { if (!plein(c, d) && d !== J[0]) return; H.push({ candidat: c, date: d, probabilite: 100 * nm(d, c) / T }); }); });
       else if (g === 'lisse') finL.forEach(function (d, i) { if (i < 6) return; var w = finL.slice(i - 6, i + 1); top.forEach(function (c) { if (!plein(c, w[0])) return; H.push({ candidat: c, date: d, probabilite: w.reduce(function (s, x) { var T = totJ(x); return s + (T ? 100 * nm(x, c) / T : 0); }, 0) / 7 }); }); });
+      // Jour en cours, en pointillé : les 6 derniers jours complets et la part d'aujourd'hui jusqu'au dernier relevé.
+      if (g === 'lisse' && auj === ajd && finL.length >= 6 && finL[finL.length - 1] !== auj) { var w6 = finL.slice(-6).concat([auj]); top.forEach(function (c) { if (!plein(c, w6[0])) return; H.push({ candidat: c, date: auj, probabilite: w6.reduce(function (s, x) { var T = totJ(x); return s + (T ? 100 * nm(x, c) / T : 0); }, 0) / 7 }); }); }
       else J.forEach(function (d) { top.forEach(function (c) { if (!plein(c, d) && d !== J[0]) return; var n = nm(d, c); if (g === 'intensite') { if (n) H.push({ candidat: c, date: d, probabilite: na(d, c) / n }); } else H.push({ candidat: c, date: d, probabilite: n }); }); });
       var f1 = function (v) { return (Math.round(v * 10) / 10).toLocaleString('fr-FR'); };
-      BX.lignes('chart-presse', H, top.map(function (c) { return { short: c, name: BX.full(c) }; }), g === 'intensite' ? 'Articles par média' : g === 'part' || g === 'lisse' ? 'Part' : 'Médias', { n: 8, mR: 128, jours: true, partiel: g !== 'lisse' && auj === ajd, pas: g === 'intensite' ? 1 : 10,
+      BX.lignes('chart-presse', H, top.map(function (c) { return { short: c, name: BX.full(c) }; }), g === 'intensite' ? 'Articles par média' : g === 'part' || g === 'lisse' ? 'Part' : 'Médias', { n: 8, mR: 128, jours: true, partiel: auj === ajd, pas: g === 'intensite' ? 1 : 10,
         fmt: g === 'medias' ? function (v) { return String(Math.round(v)); } : g === 'part' || g === 'lisse' ? function (v) { return f1(v) + ' %'; } : f1, tick: g === 'part' || g === 'lisse' ? function (v) { return v + ' %'; } : String,
         aria: { part: 'Part de chaque candidat dans les médias qui citent les candidats, chaque jour', medias: 'Nombre de médias qui citent chaque candidat, chaque jour', intensite: 'Articles par média qui cite chaque candidat, chaque jour', lisse: 'Part du jour de chaque candidat, en moyenne sur 7 jours' }[g],
         tete: function (d) { return g === 'lisse' ? '7 jours jusqu\'au ' + BX.fmtDay(d) + ' · médias par jour' : BX.fmtDay(d) + (g === 'intensite' ? ' · articles par média' : g === 'part' ? ' · part du jour' : ' · médias'); } });
       el('presse-g-titre').textContent = { part: 'Chaque jour : part de chaque candidat', medias: 'Chaque jour : médias qui citent chaque candidat', intensite: 'Chaque jour : articles par média qui cite le candidat', lisse: 'Part de chaque candidat, en moyenne sur 7 jours' }[g];
-      var part = (J[0] === '2026-11-07' ? ' 7 nov. : dès 18 h.' : '') + (auj === ajd && g !== 'lisse' ? ' Pointillé : journée en cours.' : '');
+      var part = (J[0] === '2026-11-07' ? ' 7 nov. : dès 18 h.' : '') + (auj === ajd ? (g === 'lisse' ? ' Pointillé : avec la journée en cours (6 jours complets et aujourd\'hui jusqu\'au dernier relevé).' : ' Pointillé : journée en cours.') : '');
       el('presse-courbe').textContent = { part: 'Sur 100 : part des médias qui citent chaque candidat, chaque jour.', medias: 'Médias, sur ' + actifs.length + ', qui citent le candidat dans la journée.',
         intensite: 'Articles divisés par médias : plus c\'est haut, plus les médias qui en parlent y reviennent.',
         lisse: 'Part du jour, en moyenne sur 7 jours complets (moyenne des 7 parts du jour).' + (finL.length === 7 ? ' Un seul point pour l\'instant (du ' + jour(finL[0]) + ' au ' + jour(finL[6]) + ') : la courbe se dessine à partir du jour suivant.' : '') }[g] + part;
