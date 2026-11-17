@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="a8cfd2b1cacc">
+<meta name="concret-version" content="484ad9bfd853">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -458,7 +458,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
         <h3 id="presse-titre" data-pt-h>Articles de presse : médias français</h3>
         <div class="bx-presse pt-hors" id="presse-g" hidden data-src="Médias français, titres et chapeaux, relevé toutes les 30 minutes">
           <h3 id="presse-g-titre" data-pt-h>Chaque jour : part de chaque candidat</h3>
-          <div class="bx-cmp-c pt-hors" id="presse-gmode" role="group" aria-label="Courbe affichée"><button type="button" data-g="part" aria-pressed="true">Part du jour</button><button type="button" data-g="medias" aria-pressed="false">Médias par jour</button><button type="button" data-g="intensite" aria-pressed="false">Articles par média</button><button type="button" data-g="lisse" aria-pressed="false" hidden>Moyenne sur 7 jours</button></div>
+          <div class="bx-cmp-c pt-hors" id="presse-gmode" role="group" aria-label="Courbe affichée"><button type="button" data-g="lisse" aria-pressed="true" hidden>Moyenne sur 7 jours</button><button type="button" data-g="part" aria-pressed="false">Part du jour</button><button type="button" data-g="medias" aria-pressed="false">Médias par jour</button><button type="button" data-g="intensite" aria-pressed="false">Articles par média</button></div>
           <div class="bx-chart" id="chart-presse"></div>
           <p class="bx-note" id="presse-courbe"></p>
           <button type="button" class="share pt-share pt-hors" id="presse-g-share" style="margin-top:10px">Partager</button>
@@ -1839,7 +1839,7 @@ window.addEventListener('baro:data', function () {
   // Le relevé le plus récent (branche donnees-presse), par deux adresses ; sinon la copie publiée avec le site (une fois par jour), et c'est dit.
   var secours = false, chargeA = 0;
   // Choix du lecteur : période des barres (b) et courbe affichée (g) ; gardés quand le relevé est relu.
-  var PR = { b: 'jour', g: 'part' };
+  var PR = { b: 'jour', g: 'lisse' };
   el('presse-mode').addEventListener('click', function (e) { var bt = e.target.closest('button'); if (!bt || !PR.barres) return; PR.b = bt.dataset.m; PR.barres(); });
   el('presse-gmode').addEventListener('click', function (e) { var bt = e.target.closest('button'); if (!bt || !PR.graphe) return; PR.g = bt.dataset.g; PR.graphe(); });
   if (!window.BXdessP) addEventListener('resize', function () { if (PR.graphe) PR.graphe(); });
@@ -1912,7 +1912,7 @@ window.addEventListener('baro:data', function () {
       if (J.length < 2 || !MJ || !BX.lignes || !window.d3) { el('presse-g').hidden = true; return; }
       el('presse-g').hidden = false;
       // La moyenne sur 7 jours ne prend que des journées complètes : pas le 7 novembre (relevé commencé à 18 h).
-      var finL = fin.filter(function (d) { return d !== '2026-11-07'; }), lisseOk = finL.length >= 7; if (PR.g === 'lisse' && !lisseOk) PR.g = 'medias';
+      var finL = fin.filter(function (d) { return d !== '2026-11-07'; }), lisseOk = finL.length >= 7; if (PR.g === 'lisse' && !lisseOk) PR.g = 'part';
       var g = PR.g, top = C.slice(0, 8), H = [];
       // Part du jour : médias qui citent le candidat / total, ce jour-là, des médias cités pour tous les candidats (base 100).
       var totJ = function (d) { return Object.keys((P.jours[d] || {})).reduce(function (s, c) { return s + nm(d, c); }, 0); };
