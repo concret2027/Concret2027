@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="c1b8f73c80ca">
+<meta name="concret-version" content="e8d44388d460">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1922,7 +1922,7 @@ window.addEventListener('baro:data', function () {
       else if (g === 'lisse') finL.forEach(function (d, i) { if (i < 6) return; var w = finL.slice(i - 6, i + 1); top.forEach(function (c) { if (!plein(c, w[0])) return; H.push({ candidat: c, date: d, probabilite: w.reduce(function (s, x) { var T = totJ(x); return s + (T ? 100 * nm(x, c) / T : 0); }, 0) / 7 }); }); });
       // Jour en cours, en pointillé : les 6 derniers jours complets et la part d'aujourd'hui jusqu'au dernier relevé.
       if (g === 'lisse' && auj === ajd && finL.length >= 6 && finL[finL.length - 1] !== auj) { var w6 = finL.slice(-6).concat([auj]); top.forEach(function (c) { if (!plein(c, w6[0])) return; H.push({ candidat: c, date: auj, probabilite: w6.reduce(function (s, x) { var T = totJ(x); return s + (T ? 100 * nm(x, c) / T : 0); }, 0) / 7 }); }); }
-      else J.forEach(function (d) { top.forEach(function (c) { if (!plein(c, d) && d !== J[0]) return; var n = nm(d, c); if (g === 'intensite') { if (n) H.push({ candidat: c, date: d, probabilite: na(d, c) / n }); } else H.push({ candidat: c, date: d, probabilite: n }); }); });
+      if (g === 'medias' || g === 'intensite') J.forEach(function (d) { top.forEach(function (c) { if (!plein(c, d) && d !== J[0]) return; var n = nm(d, c); if (g === 'intensite') { if (n) H.push({ candidat: c, date: d, probabilite: na(d, c) / n }); } else H.push({ candidat: c, date: d, probabilite: n }); }); });
       var f1 = function (v) { return (Math.round(v * 10) / 10).toLocaleString('fr-FR'); };
       BX.lignes('chart-presse', H, top.map(function (c) { return { short: c, name: BX.full(c) }; }), g === 'intensite' ? 'Articles par média' : g === 'part' || g === 'lisse' ? 'Part' : 'Médias', { n: 8, mR: 128, jours: true, partiel: auj === ajd, pas: g === 'intensite' ? 1 : 10,
         fmt: g === 'medias' ? function (v) { return String(Math.round(v)); } : g === 'part' || g === 'lisse' ? function (v) { return f1(v) + ' %'; } : f1, tick: g === 'part' || g === 'lisse' ? function (v) { return v + ' %'; } : String,
