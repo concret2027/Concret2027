@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="2865ed0eb315">
+<meta name="concret-version" content="c1b8f73c80ca">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -564,6 +564,8 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
   BX.NAMES = { 'Le Pen': 'Marine Le Pen', 'Bardella': 'Jordan Bardella', 'Mélenchon': 'Jean-Luc Mélenchon', 'Philippe': 'Édouard Philippe', 'Glucksmann': 'Raphaël Glucksmann', 'Attal': 'Gabriel Attal', 'Retailleau': 'Bruno Retailleau', 'Lisnard': 'David Lisnard', 'Zemmour': 'Éric Zemmour', 'Knafo': 'Sarah Knafo', 'Hollande': 'François Hollande', 'Ruffin': 'François Ruffin', 'Roussel': 'Fabien Roussel', 'Tondelier': 'Marine Tondelier', 'Darmanin': 'Gérald Darmanin', 'Villepin': 'Dominique de Villepin', 'Lecornu': 'Sébastien Lecornu', 'Le Maire': 'Bruno Le Maire', 'Dupont-Aignan': 'Nicolas Dupont-Aignan', 'Arthaud': 'Nathalie Arthaud', 'Faure': 'Olivier Faure', 'Royal': 'Ségolène Royal', 'Guedj': 'Jérôme Guedj', 'Maurel': 'Emmanuel Maurel' };
   BX.short = function (full) { for (var k in BX.NAMES) if (BX.NAMES[k] === full) return k; var p = String(full).split(' '); return p[p.length - 1]; };
   BX.full = function (s) { return BX.NAMES[s] || s; };
+  // Sondage repris en attendant le rapport et la notice : sa source, et ce qui manque (une seule hypothèse publiée…).
+  BX.repTxt = function (n) { return 'reprise ' + (n && n.reprise_de ? n.reprise_de : 'de Wikipédia') + ', en attendant le rapport de l\'institut et la notice' + (n && n.partiel ? ' ; ' + n.partiel : ''); };
   var FIXED = { 'Le Pen': 0, 'Bardella': 0, 'Philippe': 1, 'Mélenchon': 2, 'Glucksmann': 3, 'Retailleau': 4, 'Attal': 5, 'Zemmour': 7 };
   // Chaque candidat souvent testé a sa couleur, loin des autres (pas deux orangés, pas deux verts-bleus) ; les autres prennent les couleurs de réserve.
   var FIXE2 = { 'Hollande': '#27272a', 'Tondelier': '#0369a1', 'Dupont-Aignan': '#64748b', 'Roussel': '#881337', 'Ruffin': '#64748b', 'Villepin': '#1e3a8a', 'Knafo': '#be185d', 'Lagarde': '#0e7490', 'Riner': '#475569', 'Lisnard': '#946503' };
@@ -898,7 +900,7 @@ dash.calc('duels_recents', {
     if (terrain) L.push(esc(mois(terrain)));
     if (ech) L.push(nb.format(ech) + ' personnes interrogées');
     if (N && N.marge) L.push('marge d\'erreur ± ' + esc(N.marge) + ' pt');
-    if (N) L.push(N.statut === 'reprise' ? '<a href="' + esc(N.url) + '" target="_blank" rel="noopener">' + 'reprise de Wikipédia, en attendant le rapport de l\'institut et la notice' + '</a>' : N.statut === 'rapport' ? '<a href="' + esc(N.url) + '" target="_blank" rel="noopener">rapport de l\'institut</a> (notice pas encore publiée)' : '<a href="' + esc(N.url) + '" target="_blank" rel="noopener">notice n° ' + esc(N.notice) + '</a>');
+    if (N) L.push(N.statut === 'reprise' ? '<a href="' + esc(N.url) + '" target="_blank" rel="noopener">' + BX.repTxt(N) + '</a>' : N.statut === 'rapport' ? '<a href="' + esc(N.url) + '" target="_blank" rel="noopener">rapport de l\'institut</a> (notice pas encore publiée)' : '<a href="' + esc(N.url) + '" target="_blank" rel="noopener">notice n° ' + esc(N.notice) + '</a>');
     return '<b>' + (N && N.commanditaire ? esc(p.institut) + ' pour ' + esc(N.commanditaire) : esc(p.institut)) + '</b>' + (L.length ? ' · ' + L.join(' · ') : '');
   }
   function mention(p) {
@@ -906,7 +908,7 @@ dash.calc('duels_recents', {
     var N = (dash.data('sondages_notices').data || []).filter(function (n) { return cle(n.date, n.institut) === cle(p.date, p.institut); })[0];
     var terrain = p.terrain || (N && N.terrain), ech = p.echantillon || (N && +N.echantillon);
     return (N && N.commanditaire ? esc(p.institut) + ' pour ' + esc(N.commanditaire) : esc(p.institut)) + (terrain ? ', terrain du ' + esc(terrain) : '') + (ech ? ', ' + nb.format(ech) + ' personnes interrogées' : '') + (N && N.marge ? ', marge d\'erreur ± ' + esc(N.marge) + ' points selon le score' : '') +
-      (N ? (N.statut === 'reprise' ? ' (<a href="' + esc(N.url) + '" target="_blank" rel="noopener">' + 'reprise de Wikipédia, en attendant le rapport de l\'institut et la notice' + '</a>)' : N.statut === 'rapport' ? ' (<a href="' + esc(N.url) + '" target="_blank" rel="noopener">rapport de l\'institut</a> ; notice pas encore publiée par la Commission des sondages)' : ' (<a href="' + esc(N.url) + '" target="_blank" rel="noopener">notice n° ' + esc(N.notice) + '</a>, Commission des sondages)') : '') + '.';
+      (N ? (N.statut === 'reprise' ? ' (<a href="' + esc(N.url) + '" target="_blank" rel="noopener">' + BX.repTxt(N) + '</a>)' : N.statut === 'rapport' ? ' (<a href="' + esc(N.url) + '" target="_blank" rel="noopener">rapport de l\'institut</a> ; notice pas encore publiée par la Commission des sondages)' : ' (<a href="' + esc(N.url) + '" target="_blank" rel="noopener">notice n° ' + esc(N.notice) + '</a>, Commission des sondages)') : '') + '.';
   }
   function drawLast(rows) {
     var box = document.getElementById('last'); box.textContent = '';
@@ -1586,7 +1588,7 @@ window.addEventListener('baro:data', function () {
     return '<li><span class="d">' + esc2(d) + '</span><span><b>' + esc2(n.institut) + '</b>' + (n.commanditaire ? ' pour ' + esc2(n.commanditaire) : '') +
       (n.terrain ? ' · terrain du ' + esc2(n.terrain) : '') + (n.echantillon ? ' · ' + new Intl.NumberFormat('fr-FR').format(+n.echantillon) + ' personnes interrogées' : '') +
       (n.marge ? ' · marge d\'erreur ± ' + esc2(n.marge) + ' points selon le score' : '') +
-      (n.statut === 'reprise' ? ' · <a href="' + esc2(n.url) + '" target="_blank" rel="noopener">' + 'reprise de Wikipédia, en attendant le rapport de l\'institut et la notice' + '</a>' : n.statut === 'rapport' ? ' · <a href="' + esc2(n.url) + '" target="_blank" rel="noopener">rapport de l\'institut</a> (notice pas encore publiée par la Commission des sondages)' : ' · <a href="' + esc2(n.url) + '" target="_blank" rel="noopener">notice n° ' + esc2(n.notice) + '</a>') + '</span></li>';
+      (n.statut === 'reprise' ? ' · <a href="' + esc2(n.url) + '" target="_blank" rel="noopener">' + BX.repTxt(n) + '</a>' : n.statut === 'rapport' ? ' · <a href="' + esc2(n.url) + '" target="_blank" rel="noopener">rapport de l\'institut</a> (notice pas encore publiée par la Commission des sondages)' : ' · <a href="' + esc2(n.url) + '" target="_blank" rel="noopener">notice n° ' + esc2(n.notice) + '</a>') + '</span></li>';
   }).join('') || '<li>Chargement…</li>';
 });
 window.addEventListener('baro:data', function () {
@@ -1667,7 +1669,7 @@ window.addEventListener('baro:data', function () {
     L.forEach(function (n) { (n.marge || '').split(' à ').forEach(function (v) { var x = parseFloat(v.replace(',', '.')); if (!isNaN(x)) ms.push(x); }); });
     var fx = function (v) { return String(v).replace('.', ','); };
     var inst = Array.from(new Set(L.map(function (n) { return n.institut; })));
-    return ['Dernier sondage représenté : ' + z.institut + ' pour ' + z.commanditaire + (z.terrain ? ', terrain du ' + z.terrain : ', publié le ' + fd(z.date)) + (z.echantillon ? ', ' + nb(z.echantillon) + ' personnes interrogées' : '') + (z.marge ? ', marge d\'erreur ± ' + z.marge + ' points' : ', marge d\'erreur pas encore publiée') + ' (' + (z.statut === 'reprise' ? 'reprise de Wikipédia, en attendant le rapport de l\'institut et la notice' : z.statut === 'rapport' ? 'rapport de l\'institut ; notice pas encore publiée par la Commission des sondages' : 'notice n° ' + z.notice) + ').',
+    return ['Dernier sondage représenté : ' + z.institut + ' pour ' + z.commanditaire + (z.terrain ? ', terrain du ' + z.terrain : ', publié le ' + fd(z.date)) + (z.echantillon ? ', ' + nb(z.echantillon) + ' personnes interrogées' : '') + (z.marge ? ', marge d\'erreur ± ' + z.marge + ' points' : ', marge d\'erreur pas encore publiée') + ' (' + (z.statut === 'reprise' ? BX.repTxt(z) : z.statut === 'rapport' ? 'rapport de l\'institut ; notice pas encore publiée par la Commission des sondages' : 'notice n° ' + z.notice) + ').',
       L.length + ' sondages représentés, du ' + fd(L[0].date) + ' au ' + fd(z.date) + ' (' + inst.join(', ') + '), marges d\'erreur de ± ' + fx(Math.min.apply(null, ms)) + ' à ± ' + fx(Math.max.apply(null, ms)) + ' points. Commanditaire, dates et nombre de personnes interrogées de chacun : concret2027.fr/barometre, « Les sondages, notice par notice » ; notices sur commission-des-sondages.fr. Tout sondage est affecté de marges d\'erreur.'];
   }
   // Partage : le graphique est redessiné en grand format (740 px de large, agrandi dans l'image) le temps de la capture, quel que soit l'écran,
