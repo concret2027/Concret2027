@@ -120,6 +120,9 @@ def commanditaire(t, titre):
                     c = c + ' ' + lignes[k + 1]
                 if re.search(r"\b(?:et|de|du|la|le)$", c, re.I) and k + 1 < len(lignes):
                     c = (c + ' ' + coupe(lignes[k + 1]).split('  ')[0]).strip()
+                # Nom coupé en fin de ligne (« … et Sud » / « Radio ») : la ligne suivante n'est qu'un mot à majuscule.
+                elif k + 1 < len(lignes) and re.fullmatch(r"[A-ZÉ][a-zéèêàç'’-]{1,15}", lignes[k + 1].strip()):
+                    c = c + ' ' + lignes[k + 1].strip()
                 if 1 < len(c) < 80 and not re.match(r"(?i)(?:la commission|les sondages|une valeur|les remercier|d['’]un)", c):
                     trouves.append(c)
     if not trouves:
