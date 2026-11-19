@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="903c0d65f78d">
+<meta name="concret-version" content="64aefd3e106e">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -151,6 +151,11 @@ details.bx-method[open] summary { margin-bottom: 10px; }
 .bx-group { grid-column: 1 / -1; margin: var(--cds-gap-md) 0 0; padding-top: var(--cds-gap-md); border-top: 1px solid var(--color-border-line); display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
 .bx-group h2 { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); }
 .bx-grouplinks { display: flex; flex-wrap: wrap; gap: 6px; }
+.proj-b { border: 1px solid var(--color-border-line); border-radius: 8px; padding: 6px 10px; margin: 8px 0; display: grid; gap: 4px; }
+.proj-b legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
+.proj-b label { display: grid; grid-template-columns: 6.5em 1fr 2.5em; align-items: center; gap: 8px; font-size: 14px; }
+.proj-b input { width: 100%; min-height: 28px; }
+.proj-b output { text-align: right; font-variant-numeric: tabular-nums; }
 .bx-cmp-c { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; }
 .bx-cmp-c button { flex: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--color-fg); padding: 3px 10px; min-height: 30px; border-radius: 8px; border: 1px solid var(--color-border-line); background: var(--color-bg); cursor: pointer; }
 .bx-cmp-c button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-panel); border-color: var(--color-fg); }
@@ -420,6 +425,14 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <div class="bx-cmp-c bx-per" role="group" aria-label="Période affichée"><button type="button" data-p="tout" aria-pressed="true">Tout</button><button type="button" data-p="1an" aria-pressed="false">1 an</button><button type="button" data-p="6mois" aria-pressed="false">6 mois</button><button type="button" data-p="3mois" aria-pressed="false">3 mois</button></div>
       <div class="bx-chart small" id="chart-t2" data-source="sondages_t2"></div>
       <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
+    </section>
+
+    <section class="bx-card" id="projection">
+      <h2>Et si Mélenchon affrontait Le Pen ? Projection à partir des élections passées</h2>
+      <p class="bx-note"><b>Ce n'est pas un sondage.</b> Score de Jean-Luc Mélenchon au second tour face à Marine Le Pen, calculé à partir du premier tour des sondages et des reports de voix observés aux législatives de 2022 et de 2024, comparé aux sondages qui testent ce duel (points gris).</p>
+      <div class="bx-chart" id="proj-chart"></div>
+      <div id="proj-ctrl"></div>
+      <details class="pt-hors"><summary>Les quatre scénarios et la méthode</summary><div id="proj-notes"></div></details>
     </section>
 
     <div class="bx-group" id="parieurs"><h2>Les parieurs</h2><nav class="bx-grouplinks" aria-label="Parieurs"><a href="#parieurs-t1">Premier tour ↓</a><a href="#polymarket">Second tour ↓</a></nav></div>
@@ -2146,5 +2159,6 @@ window.addEventListener('baro:data', function () {
   });
 })();
 </script>
+<script src="projection.js?v=1"></script>
 </body>
 </html>
