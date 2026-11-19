@@ -968,6 +968,13 @@ function decimateBourse2(points, target) {
   if (location.search.indexOf('abforce=A')!==-1){ v='A'; }   // override debug
   if (location.search.indexOf('abforce=B')!==-1){ v='B'; }
   var sent = {};
+  // 2026-11-19 (brief NL, § 2) : arrivée depuis la lettre → lecteur inscrit (même durée
+  // qu'après une inscription). Coupe les encarts de la lettre ; galteron.js fait de même.
+  if (/[?&]utm_source=newsletter(&|$)/.test(location.search)) sc('ii_nl_sub', '1', 365);
+  // Encarts du test A/B ; les autres (leaderboard, square, home_modal) : variante vide.
+  var TEST = { popup:1, bloc:1, lateral:1 };
+  // Appareil (même règle que Galteron) : mobile sous 768 px ; au-delà le relais tranche par l'user-agent.
+  function app(){ var w = document.documentElement.clientWidth || window.innerWidth; return w < 768 ? 'mobile' : ''; }
 
   window.IIAB = {
     RECAPTCHA_KEY: '6LdSZ5YsAAAAABylwv4O-CMfzR50DGgiQlLzJUKn',
@@ -983,10 +990,14 @@ function decimateBourse2(points, target) {
     subscribed:     function(){ return gc('ii_nl_sub') === '1'; },
     markSubscribed: function(){ sc('ii_nl_sub', '1', 365); },
 
-    impression: function(place){
+    // variante : celle réellement affichée ; '' = hors test ; omise = règle par défaut (TEST).
+    // Envoyée dans tous les cas (le back compte tous les affichages, § 3) ; nl_track.php
+    // ne compte pour le test A/B que les variantes A|B.
+    impression: function(place, variante){
       if (sent[place]) return; sent[place] = 1;
       try {
-        var body = JSON.stringify({ variant: IIAB.variantFor(place), placement: place });
+        if (variante === undefined) variante = TEST[place] ? IIAB.variantFor(place) : '';
+        var body = JSON.stringify({ variant: variante, placement: place, page: location.pathname, appareil: app() });
         if (navigator.sendBeacon) {
           navigator.sendBeacon('/nl_track.php', new Blob([body], {type:'application/json'}));
         } else {
@@ -1002,6 +1013,8 @@ function decimateBourse2(points, target) {
       opts = opts || {};
       var lang = opts.lang || 'fr';
       var sentVariant = opts.variant || v;
+      // Variante pour la mesure par page : vide hors test (opts.test === false ou encart hors test).
+      var mesVariant = (opts.test === false || !TEST[source]) ? '' : sentVariant;
       var form   = rootEl.querySelector('.js-form'),
           email  = rootEl.querySelector('.js-email'),
           btn    = rootEl.querySelector('.js-btn'),
@@ -1033,7 +1046,8 @@ function decimateBourse2(points, target) {
           grecaptcha.execute(IIAB.RECAPTCHA_KEY, { action:'newsletter_subscribe' }).then(function(tk){
             return fetch('/subscribe.php', {
               method:'POST', headers:{'Content-Type':'application/json'},
-              body: JSON.stringify({ email:em, recaptcha:tk, page_url:location.href, source:source, variant: sentVariant, lang: lang })
+              body: JSON.stringify({ email:em, recaptcha:tk, page_url:location.href, source:source, variant: sentVariant, lang: lang,
+                                     page: location.pathname, variante: mesVariant, appareil: app() })
             });
           }).then(function(r){ return r.json(); }).then(function(d){
             if (d.success) {
@@ -1300,12 +1314,12 @@ function decimateBourse2(points, target) {
   if (V === 'B' && B) { A.style.display = 'none'; B.style.display = 'block'; root = B; }
   else { root = A; if (B && B.parentNode) B.parentNode.removeChild(B); }
 
-  if (window.IIAB) IIAB.wire(root, 'lateral', null, { lang: LANG, variant: V });
+  if (window.IIAB) IIAB.wire(root, 'lateral', null, { lang: LANG, variant: V, test: inTest });
 
   var io = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
       if (e.isIntersecting) {
-        if (inTest && window.IIAB) IIAB.impression('lateral');
+        if (window.IIAB) IIAB.impression('lateral', inTest ? V : '');   // 19/11 : tout affichage, variante vide hors test
         e.target.querySelectorAll('.iib-line, .iib-fillpath, .iib-dotpt').forEach(function(el) { el.classList.add('go'); });
         io.unobserve(e.target);
       }
