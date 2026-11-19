@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="fd303a5804fc">
+<meta name="concret-version" content="8d972d7fbb9b">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -427,7 +427,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <p class="bx-note">Chaque point est un sondage (moyenne de ses hypothèses) ; la ligne suit la moyenne des sondages des 30 jours précédents (les 15 plus récents au plus, quand ils sont plus nombreux), la même que dans « L'essentiel ». Courbes des 8 premiers candidats des sondages. En juillet 2026, Marine Le Pen remplace Jordan Bardella comme candidate du RN.</p>
       <!-- Pas de légende : le nom de chaque candidat est écrit au bout de sa courbe. -->
       <div class="bx-legend" id="legend-t1" hidden></div>
-      <div class="bx-cmp-c bx-per" role="group" aria-label="Période affichée"><button type="button" data-p="tout" aria-pressed="true">Tout</button><button type="button" data-p="1an" aria-pressed="false">1 an</button><button type="button" data-p="6mois" aria-pressed="false">6 mois</button><button type="button" data-p="3mois" aria-pressed="false">3 mois</button></div>
+      <div class="bx-cmp-c bx-per" role="group" aria-label="Période affichée"><button type="button" data-p="tout" aria-pressed="false">Tout</button><button type="button" data-p="1an" aria-pressed="false">1 an</button><button type="button" data-p="6mois" aria-pressed="false">6 mois</button><button type="button" data-p="3mois" aria-pressed="true">3 mois</button></div>
       <div class="bx-chart" id="chart-t1" data-source="sondages_t1 tendance_t1 evenements"></div>
       <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
       <ol class="bx-events replie" id="events-list" data-source="evenements" data-n="0" data-voir="Voir les {n} événements numérotés sur la courbe"></ol>
@@ -474,7 +474,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <h2>Second tour : l'évolution, Marine Le Pen selon son adversaire</h2>
       <p class="bx-note">Score de Marine Le Pen, en % des voix exprimées, dans chaque duel testé en 2026 (Concret suit les duels testés avec le candidat du RN). Sous 50 %, elle perd.</p>
       <div class="bx-legend" id="legend-t2"></div>
-      <div class="bx-cmp-c bx-per" role="group" aria-label="Période affichée"><button type="button" data-p="tout" aria-pressed="true">Tout</button><button type="button" data-p="1an" aria-pressed="false">1 an</button><button type="button" data-p="6mois" aria-pressed="false">6 mois</button><button type="button" data-p="3mois" aria-pressed="false">3 mois</button></div>
+      <div class="bx-cmp-c bx-per" role="group" aria-label="Période affichée"><button type="button" data-p="tout" aria-pressed="false">Tout</button><button type="button" data-p="1an" aria-pressed="false">1 an</button><button type="button" data-p="6mois" aria-pressed="false">6 mois</button><button type="button" data-p="3mois" aria-pressed="true">3 mois</button></div>
       <div class="bx-chart small" id="chart-t2" data-source="sondages_t2"></div>
       <p class="bx-note mentions"><a href="#notices">Institut, commanditaire, dates, nombre de personnes interrogées et marge d'erreur de chaque sondage</a>.</p>
     </section>
@@ -675,8 +675,8 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
   BX.mois = function (x, largeur) { var d = x.domain(), n = Math.max(1, d3.utcMonth.count(d[0], d[1])), k = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(largeur / 90)))); return d3.utcMonth.every(k); };
   // Moyenne des sondages : ceux des 30 derniers jours, limités aux 15 plus récents (en fin de campagne, ils sont plusieurs par jour :
   // la moyenne suit alors la dernière semaine au lieu de garder trois semaines de retard). l : liste triée ou non, avec une date.
-  // Période affichée sur les courbes d'évolution : tout, 1 an, 3 mois (avant le dernier sondage).
-  BX.PER = 'tout';
+  // Période affichée sur les courbes d'évolution (3 mois par défaut, choix de l'éditeur du 19 novembre 2026) : tout, 1 an, 6 mois, 3 mois (avant le dernier sondage).
+  BX.PER = '3mois';
   BX.JOURS = { '1an': 365, '6mois': 182, '3mois': 91 };
   BX.borne = function (rows, per) { var last = rows.reduce(function (m, r) { return r.date > m ? r.date : m; }, ''); return new Date(Date.parse(last) - BX.JOURS[per] * 864e5).toISOString().slice(0, 10); };
   BX.coupe = function (rows) { if (BX.PER === 'tout' || !rows.length) return ''; return BX.borne(rows, BX.PER); };
