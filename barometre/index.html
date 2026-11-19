@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="b681dbe9af9e">
+<meta name="concret-version" content="d1e99fa76da5">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -446,6 +446,7 @@ details.bx-fold[open] .bx-fold-hint { display: none; }
       <h2>Premier tour : comparé à 2012, 2017 et 2022</h2>
       <div class="bx-cmp-c" id="cmp-cands" role="group" aria-label="Choisir un candidat"></div>
       <p class="bx-note bx-cmp-qui">Candidats testés en 2026-2027 et lors d'au moins une des trois campagnes précédentes.</p>
+      <div class="bx-cmp-c" id="cmp-per" role="group" aria-label="Période affichée"><button type="button" data-j="540" aria-pressed="true">18 mois</button><button type="button" data-j="360" aria-pressed="false">12 mois</button><button type="button" data-j="180" aria-pressed="false">6 mois</button></div>
       <div class="bx-chart" id="chart-cmp"></div>
       <div class="bx-cmp-t" id="cmp-table"></div>
       <p class="bx-note mentions" id="cmp-exc" hidden></p>
@@ -1280,8 +1281,11 @@ dash.calc('duels_recents', {
     tb.setAttribute('aria-label', nom + ', au premier tour : ' + S.map(function (s) { var a = A[s.an]; return CMP_LAB[s.an] + ' ' + (a ? BX.pct(a.v) : 'non mesuré') + (s.res != null ? ', résultat ' + nf2(s.res) : ''); }).join(' ; '));
 
     // Graphique.
-    var W = box.clientWidth || 600, tel = W < 480, H = tel ? 330 : 360, J0 = -540, T0 = 26, B0 = H - 40;
-    var maxV = d3.max(vis, function (s) { return d3.max(s.pts.concat(s.res != null ? [{ v: s.res }] : []), function (p) { return p.v; }); }) || 10;
+    // Période : depuis 18, 12 ou 6 mois avant le premier tour (zoom).
+    var pb = document.getElementById('cmp-per');
+    if (pb && !pb.dataset.ok) { pb.dataset.ok = '1'; pb.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { CMP.J0 = -(+b.dataset.j); pb.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); drawCmp(rows2027); }); }); }
+    var W = box.clientWidth || 600, tel = W < 480, H = tel ? 330 : 360, J0 = CMP.J0 || -540, T0 = 26, B0 = H - 40;
+    var maxV = d3.max(vis, function (s) { return d3.max(s.pts.filter(function (p) { return p.j >= J0; }).concat(s.res != null ? [{ v: s.res }] : []), function (p) { return p.v; }); }) || 10;
     // L'axe vertical se resserre autour des courbes (il ne part pas forcément de 0) pour qu'on les distingue.
     var minV = d3.min(vis, function (s) { return d3.min(s.tr.filter(function (p) { return p.j >= J0; }).concat(s.res != null ? [{ v: s.res }] : []), function (p) { return p.v; }); });
     var lo = Math.max(0, Math.floor(((minV == null ? 0 : minV) - 3) / 5) * 5);
@@ -1292,8 +1296,8 @@ dash.calc('duels_recents', {
     gy.attr('transform', 'translate(' + mL + ',0)'); gy.selectAll('.domain').remove();
     var x = d3.scaleLinear([J0, 0], [mL, W - mR]);
     svg.insert('g', ':first-child').selectAll('line').data(y.ticks(5)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
-    var ticks = tel ? [-540, -360, -180, -90, 0] : [-540, -450, -360, -270, -180, -90, 0];
-    var gx = svg.append('g').attr('transform', 'translate(0,' + B0 + ')').call(d3.axisBottom(x).tickValues(ticks).tickFormat(function (t) { return t === 0 ? '1er tour' : t === -540 ? '18 mois' : String(Math.round(-t / 30)); }).tickSizeOuter(0)); styleAxis(gx);
+    var ticks = J0 === -180 ? (tel ? [-180, -120, -60, 0] : [-180, -150, -120, -90, -60, -30, 0]) : J0 === -360 ? (tel ? [-360, -240, -120, 0] : [-360, -300, -240, -180, -120, -60, 0]) : (tel ? [-540, -360, -180, -90, 0] : [-540, -450, -360, -270, -180, -90, 0]);
+    var gx = svg.append('g').attr('transform', 'translate(0,' + B0 + ')').call(d3.axisBottom(x).tickValues(ticks).tickFormat(function (t) { return t === 0 ? '1er tour' : t === J0 ? Math.round(-t / 30) + ' mois' : String(Math.round(-t / 30)); }).tickSizeOuter(0)); styleAxis(gx);
     svg.append('text').attr('x', (mL + W - mR) / 2).attr('y', H - 6).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg-muted)').style('font-size', '11px').text('mois avant le premier tour');
     svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', T0).attr('y2', B0).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '3 3');
     // Colonne « Résultat » à droite du jour du vote.
