@@ -147,6 +147,8 @@
     if (moy.length > 1) svg.append('path').datum(moy).attr('fill', 'none').attr('stroke', 'var(--color-fg)').attr('stroke-width', 2.5).attr('d', line);
     if (moy.length) { var lm = moy[moy.length - 1]; var dT = T2.reduce(function (m, r) { return +r.d > +m ? r.d : m; }, T2[0].d), vieux = +C[0].pts[C[0].pts.length - 1].d - +dT > 45 * 864e5; labs.push({ y: y(lm.v), col: 'var(--color-fg)', t: 'Sondages' + (vieux ? ' (' + dT.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }) + ')' : ''), v: nf1(lm.v) + ' %' }); }
     C.forEach(function (c) { if (c.perso && c.pts.length) svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 3.5).attr('stroke-linejoin', 'round').attr('d', line); });
+    var pv = C.filter(function (c) { return !c.perso && c.pts.length; }).map(function (c) { return c.pts[c.pts.length - 1].v; });
+    box.dataset.resume = (moy.length ? 'Dans les sondages : ' + nf1(moy[moy.length - 1].v) + ' %. ' : '') + 'D\'après les élections passées : de ' + nf1(Math.min.apply(null, pv)) + ' à ' + nf1(Math.max.apply(null, pv)) + ' %. Il faut 50 % pour l\'emporter.';
     labs.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 28) labs[i].y = labs[i - 1].y + 28;
     if (labs.length) { labs[labs.length - 1].y = Math.min(labs[labs.length - 1].y, H - 24); for (var k2 = labs.length - 2; k2 >= 0; k2--) labs[k2].y = Math.min(labs[k2].y, labs[k2 + 1].y - 28); }

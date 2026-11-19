@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="concret-version" content="b4e00348822d">
+<meta name="concret-version" content="75bd7c34b9d1">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="/donnees/icone/icone-32.png">
@@ -1761,7 +1761,7 @@ window.addEventListener('baro:data', function () {
       x.globalAlpha = 1; x.font = '400 62px Newsreader, Georgia, serif';
       var cmp = card.id === 'comparaison', bp = cmp && card.querySelector('.bx-cmp-c [aria-pressed="true"]');
       if (cmp) x.font = '400 50px Newsreader, Georgia, serif';
-      var y = wrap(x, cmp ? (bp ? BX.full(bp.textContent) + ' · ' : '') + 'premier tour, comparé à 2012, 2017 et 2022' : (card.id === 'projection' ? card.querySelector('#proj-titre').textContent : card.querySelector('h2').textContent), 70, cmp ? 172 : 190, W - 140, cmp ? 58 : 72);
+      var y = wrap(x, cmp ? (bp ? BX.full(bp.textContent) + ' · ' : '') + 'premier tour, comparé à 2012, 2017 et 2022' : (card.id === 'projection' ? 'Et si ' + card.querySelector('#proj-titre').textContent.split(' face à')[0] + ' affrontait Marine Le Pen au second tour ?' : card.querySelector('h2').textContent), 70, cmp ? 172 : 190, W - 140, cmp ? 58 : 72);
       var note = cmp ? null : card.querySelector('.bx-note');
       // Comparaison : l'image montre le graphique seul (choix de l'éditeur, 5 novembre 2026) : chaque courbe y porte son année
       // et ses chiffres ; le tableau reste sur la page.
@@ -1781,9 +1781,9 @@ window.addEventListener('baro:data', function () {
         if (exc && !exc.hidden && exc.textContent) { x.globalAlpha = .7; x.fillStyle = fg; x.font = '400 21px "Inter Tight", system-ui, sans-serif'; y = wrap(x, exc.textContent.replace(/(^|\. )([123]) /g, function (m, a, n) { return a + { 1: '¹', 2: '²', 3: '³' }[n] + ' '; }), 70, y + 10, W - 140, 28); x.globalAlpha = 1; }
       }
       if (chart) { note = null; for (var pv = chart.previousElementSibling; pv; pv = pv.previousElementSibling) if (pv.classList.contains('bx-note')) { note = pv; break; } }
-      if (note) { x.globalAlpha = .7; x.font = (cmp ? '400 25px' : '400 28px') + ' "Inter Tight", system-ui, sans-serif'; y = wrap(x, cmp ? note.textContent : (card.id === 'projection' ? 'Projection d\'après les élections passées : ce n\'est pas un sondage. Points : les sondages.' : note.textContent.split('. ')[0].replace(/\.$/, '') + '.'), 70, y + 4, W - 140, cmp ? 33 : 38); x.globalAlpha = 1; }
+      if (note) { x.globalAlpha = .7; x.font = (cmp ? '400 25px' : '400 28px') + ' "Inter Tight", system-ui, sans-serif'; y = wrap(x, cmp ? note.textContent : (card.id === 'projection' ? 'Ce n\'est pas un sondage. Chaque courbe en tirets donne son score si les électeurs des candidats éliminés votaient comme lors d\'une élection passée. Trait noir et points : les vrais sondages. ' + (document.getElementById('proj-chart').dataset.resume || '') : note.textContent.split('. ')[0].replace(/\.$/, '') + '.'), 70, y + 4, W - 140, cmp ? 33 : 38); x.globalAlpha = 1; }
       // Mentions légales des sondages, en bas de l'image : on mesure leur hauteur avant de placer les graphiques.
-      var ML = mentions(card), mh = 0;
+      var ML = card.id === 'projection' ? [].concat(Array.prototype.filter.call(card.querySelectorAll('#proj-leg li'), function (li) { return !li.classList.contains('proj-leg-h') && !/Sondages|Votre courbe/.test(li.textContent); }).map(function (li) { return '— ' + li.textContent.trim(); })) : mentions(card), mh = 0;
       if (ML.length) { x.font = '400 22px "Inter Tight", system-ui, sans-serif'; var mc = document.createElement('canvas').getContext('2d'); mc.font = x.font; ML.forEach(function (t) { var line = '', n = 1; t.split(' ').forEach(function (w) { var u = line ? line + ' ' + w : w; if (mc.measureText(u).width > W - 140 && line) { n++; line = w; } else line = u; }); mh += n * 29 + 8; }); mh += 16; }
       if (LEG.length) { x.font = '500 26px "Inter Tight", system-ui, sans-serif'; var lx = 70, ly = y + 14; LEG.forEach(function (g) { var w = 30 + x.measureText(g.t).width + 30; if (lx + w > W - 70) { lx = 70; ly += 40; } x.fillStyle = g.c; x.beginPath(); x.arc(lx + 10, ly - 9, 10, 0, 7); x.fill(); x.fillStyle = fg; x.fillText(g.t, lx + 28, ly); lx += w; }); y = ly + 22; }
       // Comparaison : la rangée des candidats sous la courbe (celui de l'image surligné), pour montrer qu'on peut en choisir un autre sur le site.
@@ -2213,6 +2213,6 @@ window.addEventListener('baro:data', function () {
   });
 })();
 </script>
-<script src="projection.js?v=22"></script>
+<script src="projection.js?v=23"></script>
 </body>
 </html>
