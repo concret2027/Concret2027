@@ -71,11 +71,7 @@
     }
     function controls(Q, P, duel) {
       var G = B.filter(function (b) { return b !== Q.bloc && b !== 'NE' && b !== 'ED'; });
-      $('proj-ctrl').innerHTML = '<p class="bx-note">Les courbes de couleur viennent des élections passées : elles ne changent pas. Vous pouvez ajouter <b>la vôtre</b>, en pointillés noirs sur le graphique.</p>' +
-        '<ol class="bx-note proj-etapes"><li>Choisissez un point de départ : les chiffres d\'une des élections passées, déjà remplis ci-dessous (au départ, ceux des ' + esc(Q.precedents[0].nom.replace(/^Comme (aux |à la )?/, '')) + ').</li>' +
-        '<li>Bougez un curseur, ou plusieurs : sur 100 électeurs de chaque groupe, combien voteraient ' + esc(duel) + ', combien Le Pen, combien s\'abstiendraient (le total reste à 100).</li>' +
-        '<li>Votre courbe apparaît sur le graphique et se recalcule à chaque changement.</li></ol>' +
-        '<p class="bx-note">Point de départ :</p>' +
+      $('proj-ctrl').innerHTML = '<p class="bx-note">Les courbes de couleur ne bougent pas. Bougez un curseur : <b>votre courbe</b> apparaît en pointillés noirs. Point de départ :</p>' +
         '<div class="bx-cmp-c" role="group" aria-label="Copier les chiffres d\'une élection passée">' + Q.precedents.map(function (p, i) { return '<button type="button" data-p="' + i + '" aria-pressed="false">' + esc(p.nom.replace(/^Comme (aux |à la )?/, '').replace('un candidat PS ou écologiste en 2024', 'si vu comme PS (2024)').replace(/^./, function (c) { return c.toUpperCase(); })) + '</button>'; }).join('') + '</div>' +
         G.map(function (b) {
           return '<fieldset class="proj-b"><legend>Sur 100 ' + esc(P.noms_blocs[b]) + '</legend>' +
