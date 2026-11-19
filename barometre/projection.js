@@ -30,13 +30,13 @@
       return { d: new Date(d), x: x };
     }).filter(Boolean);
     var proj = function (R, x) { var m = 0, l = 0; B.forEach(function (b) { m += x[b] * R[b][0]; l += x[b] * R[b][1]; }); return 100 * m / (m + l); };
-    var noms = Object.keys(P.duels), duel = noms[0], U = null;
+    var noms = Object.keys(P.duels), duel = noms[0], U = null, perso = false;
     var tabs = $('proj-duels');
     tabs.innerHTML = noms.map(function (n) { return '<button type="button" data-d="' + esc(n) + '">' + esc(n) + '</button>'; }).join('');
     var data = function () {
       var Q = P.duels[duel];
       var lines = Q.precedents.map(function (p) { return { nom: p.nom, col: p.couleur, pts: X.map(function (q) { return { d: q.d, v: proj(p.reports, q.x) }; }) }; });
-      lines.push({ nom: 'Votre courbe', col: 'var(--color-fg)', dash: '6 4', pts: X.map(function (q) { return { d: q.d, v: proj(U, q.x) }; }) });
+      if (perso) lines.push({ nom: 'Votre courbe', col: 'var(--color-fg)', dash: '6 4', pts: X.map(function (q) { return { d: q.d, v: proj(U, q.x) }; }) });
       var T2 = D.sondages_t2.filter(function (r) { return r.candidat_rn === 'Le Pen' && P.duels[duel].adversaires.indexOf(r.adversaire) >= 0 && r.date >= debut; }).map(function (r) { return { d: new Date(r.date), v: +r.score_adversaire, i: r.institut + (P.duels[duel].adversaires.length > 1 ? ' (' + r.adversaire + ')' : '') }; });
       var moy = X.map(function (q) { var L = T2.filter(function (s) { return +s.d <= +q.d && +s.d > +q.d - 30 * J; }); return L.length ? { d: q.d, v: L.reduce(function (t, s) { return t + s.v; }, 0) / L.length } : null; }).filter(Boolean);
       draw(lines, T2, moy, duel);
@@ -49,7 +49,7 @@
       data(); table(Q, P, duel); controls(Q, P, duel);
       $('proj-meth').textContent = P.methode + ' Premier tour : chaque semaine, moyenne des sondages des 30 jours précédents ; dans chaque sondage, un candidat compte pour sa moyenne sur toutes les hypothèses (0 là où il n\'est pas testé). ' + P.participation_t1.texte + '.';
     };
-    tabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { duel = b.dataset.d; U = null; show(); } });
+    tabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { duel = b.dataset.d; U = null; perso = false; show(); } });
     show();
     window.addEventListener('resize', function () { clearTimeout(data.t); data.t = setTimeout(data, 150); });
     // Réglages : trois curseurs liés par groupe (le total fait toujours 100).
@@ -58,21 +58,25 @@
       var r = U[i.dataset.b], k = +i.dataset.k, v = +i.value / 100, o = [0, 1, 2].filter(function (j) { return j !== k; }), rest = r[o[0]] + r[o[1]];
       r[k] = v; if (rest > 0) { r[o[0]] = (1 - v) * r[o[0]] / rest; r[o[1]] = (1 - v) * r[o[1]] / rest; } else { r[o[0]] = r[o[1]] = (1 - v) / 2; }
       $('proj-ctrl').querySelectorAll('.bx-cmp-c button').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
-      syncCtrl(); data();
+      perso = true; syncCtrl(); data();
     });
     $('proj-ctrl').addEventListener('click', function (e) {
       var b = e.target.closest('.bx-cmp-c button'); if (!b) return;
       U = JSON.parse(JSON.stringify(P.duels[duel].precedents[+b.dataset.p].reports));
       $('proj-ctrl').querySelectorAll('.bx-cmp-c button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
-      syncCtrl(); data();
+      perso = true; syncCtrl(); data();
     });
     function syncCtrl() {
       $('proj-ctrl').querySelectorAll('input').forEach(function (i) { var v = Math.round(U[i.dataset.b][+i.dataset.k] * 100); i.value = v; i.nextElementSibling.value = v; i.setAttribute('aria-valuetext', v + ' sur 100'); });
     }
     function controls(Q, P, duel) {
       var G = B.filter(function (b) { return b !== Q.bloc && b !== 'NE' && b !== 'ED'; });
-      $('proj-ctrl').innerHTML = '<p class="bx-note">Les courbes des élections passées ne bougent pas. Ici, vous tracez <b>votre courbe</b> (pointillés noirs sur le graphique) : pour chaque groupe d\'électeurs du premier tour, sur 100, combien voteraient ' + esc(duel) + ', combien Le Pen, combien s\'abstiendraient ou voteraient blanc (le total reste à 100). Elle part des chiffres des ' + esc(Q.precedents[0].nom.replace('Comme aux ', '').replace('Comme à la ', '')) + ' ; pour repartir des chiffres d\'une autre élection :</p>' +
-        '<div class="bx-cmp-c" role="group" aria-label="Copier les chiffres d\'une élection passée">' + Q.precedents.map(function (p, i) { return '<button type="button" data-p="' + i + '" aria-pressed="' + (i === 0) + '">' + esc(p.nom.replace(/^Comme (aux |à la )?/, '').replace('un candidat PS ou écologiste en 2024', 'si vu comme PS (2024)').replace(/^./, function (c) { return c.toUpperCase(); })) + '</button>'; }).join('') + '</div>' +
+      $('proj-ctrl').innerHTML = '<p class="bx-note">Les courbes de couleur viennent des élections passées : elles ne changent pas. Vous pouvez ajouter <b>la vôtre</b>, en pointillés noirs sur le graphique.</p>' +
+        '<ol class="bx-note proj-etapes"><li>Choisissez un point de départ : les chiffres d\'une des élections passées, déjà remplis ci-dessous (au départ, ceux des ' + esc(Q.precedents[0].nom.replace(/^Comme (aux |à la )?/, '')) + ').</li>' +
+        '<li>Bougez un curseur, ou plusieurs : sur 100 électeurs de chaque groupe, combien voteraient ' + esc(duel) + ', combien Le Pen, combien s\'abstiendraient (le total reste à 100).</li>' +
+        '<li>Votre courbe apparaît sur le graphique et se recalcule à chaque changement.</li></ol>' +
+        '<p class="bx-note">Point de départ :</p>' +
+        '<div class="bx-cmp-c" role="group" aria-label="Copier les chiffres d\'une élection passée">' + Q.precedents.map(function (p, i) { return '<button type="button" data-p="' + i + '" aria-pressed="false">' + esc(p.nom.replace(/^Comme (aux |à la )?/, '').replace('un candidat PS ou écologiste en 2024', 'si vu comme PS (2024)').replace(/^./, function (c) { return c.toUpperCase(); })) + '</button>'; }).join('') + '</div>' +
         G.map(function (b) {
           return '<fieldset class="proj-b"><legend>Sur 100 ' + esc(P.noms_blocs[b]) + '</legend>' +
             [[0, esc(duel)], [1, 'Le Pen'], [2, 'Abstention ou blanc']].map(function (k) { return '<label>' + k[1] + ' <input type="range" min="0" max="100" step="1" data-b="' + b + '" data-k="' + k[0] + '"><output></output></label>'; }).join('') + '</fieldset>';
