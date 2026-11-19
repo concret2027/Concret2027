@@ -29,6 +29,34 @@
       var e = P.participation_t1.v, x = {}; Object.keys(s).forEach(function (b) { x[b] = s[b] / tot * e; }); x.NE = 1 - e;
       return { d: new Date(d), x: x };
     }).filter(Boolean);
+    // « Premier tour : les blocs » : la même moyenne, regroupée en quatre blocs.
+    var bb = document.getElementById('blocs-chart');
+    if (bb) {
+      var BL = [{ k: ['FI', 'AG'], nom: 'Gauche', col: '#c0392b' }, { k: ['C'], nom: 'Centre', col: '#d39e00' }, { k: ['D'], nom: 'Droite', col: '#2f6db5' }, { k: ['ED', 'XD'], nom: 'Extrême droite', col: '#1d2a5c' }];
+      var e0 = P.participation_t1.v, SB = BL.map(function (g) { return { nom: g.nom, col: g.col, pts: X.map(function (q) { return { d: q.d, v: g.k.reduce(function (t, b) { return t + q.x[b]; }, 0) / e0 * 100 }; }) }; });
+      var lfi = X.map(function (q) { return { d: q.d, v: q.x.FI / e0 * 100 }; });
+      var dessine = function () {
+        bb.querySelectorAll('svg').forEach(function (n) { n.remove(); });
+        var W = bb.clientWidth || 600, H = 280, mL = 40, mR = 120, all = [].concat.apply([], SB.map(function (c) { return c.pts; }));
+        var x = d3.scaleUtc(d3.extent(all, function (r) { return r.d; }), [mL, W - mR]), y = d3.scaleLinear([0, Math.ceil(d3.max(all, function (r) { return r.v; }) / 10) * 10], [H - 28, 12]);
+        var svg = d3.select(bb).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Part de chaque bloc au premier tour, moyenne des sondages');
+        svg.append('g').selectAll('line').data(y.ticks(5)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
+        var gy = svg.append('g').attr('transform', 'translate(' + mL + ',0)').call(d3.axisLeft(y).ticks(5).tickFormat(function (v) { return v + ' %'; }).tickSize(0)); gy.select('.domain').remove(); gy.selectAll('text').style('font-size', 'var(--cds-font-size-caption)');
+        var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 28) + ')').call(d3.axisBottom(x).ticks(d3.utcMonth.every((W - mL - mR) < 300 ? 4 : 2)).tickFormat((window.BX && BX.fmtMonth) || d3.utcFormat('%m/%Y')).tickSizeOuter(0));
+        gx.selectAll('text').style('font-size', 'var(--cds-font-size-caption)'); gx.select('.domain').attr('stroke', 'var(--cds-chart-axis)'); gx.selectAll('line').attr('stroke', 'var(--cds-chart-axis)');
+        var line = d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); }), labs = [];
+        SB.forEach(function (c) { svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2.2).attr('d', line); var l = c.pts[c.pts.length - 1]; labs.push({ y: y(l.v), col: c.col, t: c.nom, v: nf1(l.v) + ' %' }); });
+        svg.append('path').datum(lfi).attr('fill', 'none').attr('stroke', '#c0392b').attr('stroke-width', 1.4).attr('stroke-dasharray', '4 3').attr('d', line);
+        var ll = lfi[lfi.length - 1]; labs.push({ y: y(ll.v), col: '#c0392b', t: 'dont Mélenchon', v: nf1(ll.v) + ' %' });
+        labs.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 28) labs[i].y = labs[i - 1].y + 28;
+        if (labs.length) { labs[labs.length - 1].y = Math.min(labs[labs.length - 1].y, H - 24); for (var k2 = labs.length - 2; k2 >= 0; k2--) labs[k2].y = Math.min(labs[k2].y, labs[k2 + 1].y - 28); }
+        svg.append('g').selectAll('text').data(labs).join('text').attr('x', W - mR + 6).attr('y', function (l) { return l.y + 4; }).attr('fill', function (l) { return l.col; }).style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).each(function (l) { var t = d3.select(this); t.append('tspan').text(l.t); t.append('tspan').attr('x', W - mR + 6).attr('dy', '1.15em').style('font-weight', 700).text(l.v); });
+        if (window.BX && BX.xhair) { var dates = SB[0].pts.map(function (q) { return q.d; }); BX.xhair(svg, bb, W, 12, H - 28, function (sx) { var d = dates[d3.bisector(function (q) { return q; }).center(dates, x.invert(sx))]; var rows = SB.map(function (c) { var q = c.pts.filter(function (p) { return +p.d === +d; })[0]; return { c: c.col, n: c.nom, v: q.v, py: y(q.v), s: nf1(q.v) + ' %' }; }); var f = lfi.filter(function (p) { return +p.d === +d; })[0]; rows.push({ c: '#c0392b', n: 'dont Mélenchon', v: f.v, py: y(f.v), s: nf1(f.v) + ' %' }); rows.sort(function (a, b) { return b.v - a.v; }); return { px: x(d), head: 'Semaine du ' + d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }), rows: rows }; }); }
+      };
+      dessine(); window.addEventListener('resize', function () { clearTimeout(dessine.t); dessine.t = setTimeout(dessine, 150); });
+      var nm = function (b) { return P.blocs[b].filter(function (n) { return T1.some(function (r) { return r.c === n; }); }).join(', '); };
+      document.getElementById('blocs-def').textContent = 'Gauche : ' + nm('FI') + ', ' + nm('AG') + '. Centre : ' + nm('C') + '. Droite : ' + nm('D') + '. Extrême droite : ' + nm('ED') + ', ' + nm('XD') + '. Classement de Concret, le même que pour les projections du second tour.';
+    }
     var proj = function (R, x) { var m = 0, l = 0; B.forEach(function (b) { m += x[b] * R[b][0]; l += x[b] * R[b][1]; }); return 100 * m / (m + l); };
     var noms = Object.keys(P.duels), duel = noms[0], U = null, perso = false, touche = false;
     var tabs = $('proj-duels');
@@ -54,6 +82,7 @@
       $('proj-lead').textContent = 'Au-dessus de la ligne grise (50 %), ' + duel + ' l\'emporte.';
       data(); table(Q, P, duel);
       leg();
+      if (P.reperes) { $('proj-rep').textContent = P.reperes.ligne; $('proj-test').innerHTML = P.reperes.detail.map(function (t) { return '<p class="bx-note">' + esc(t) + '</p>'; }).join('') + '<p class="bx-note">' + P.reperes.sources.map(function (x) { return '<a href="' + esc(x.u) + '" target="_blank" rel="noopener">' + esc(x.t) + '</a>'; }).join(' · ') + '</p>'; }
       $('proj-meth').textContent = P.methode + ' Premier tour : chaque semaine, moyenne des sondages des 30 jours précédents ; dans chaque sondage, un candidat compte pour sa moyenne sur toutes les hypothèses (0 là où il n\'est pas testé). Participation supposée : celle du premier tour de 2022, où ' + (P.participation_t1.v * 100).toFixed(2).replace('.', ',') + ' % des inscrits avaient voté pour un candidat ; les autres inscrits forment le groupe « n\'ont pas voté au 1er tour ».';
     };
     var add = $('proj-add'), panel = $('proj-ctrl');
