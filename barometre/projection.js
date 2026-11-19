@@ -56,7 +56,7 @@
       };
       dessine(); window.addEventListener('resize', function () { clearTimeout(dessine.t); dessine.t = setTimeout(dessine, 150); });
       var nm = function (b) { return P.blocs[b].filter(function (n) { return T1.some(function (r) { return r.c === n; }); }).join(', '); };
-      document.getElementById('blocs-def').textContent = 'Gauche, y compris l\'extrême gauche : ' + nm('FI') + ', ' + nm('AG') + '. Centre : ' + nm('C') + '. Droite, y compris l\'extrême droite : ' + nm('D') + ', ' + nm('ED') + ', ' + nm('XD') + '. En pointillé, Mélenchon et Le Pen seuls. Classement de Concret, le même que pour les projections du second tour.';
+      document.getElementById('blocs-def').innerHTML = '<ul class="proj-prec"><li><b style="color:#c0392b">Gauche, y compris l\'extrême gauche</b> : ' + esc(nm('FI')) + ' (en pointillé), ' + esc(nm('AG')) + '.</li><li><b style="color:#d39e00">Centre</b> : ' + esc(nm('C')) + '.</li><li><b style="color:#2f4fa8">Droite, y compris l\'extrême droite</b> : ' + esc(nm('ED')) + ' (en pointillé, « dont Le Pen »), ' + esc(nm('D')) + ', ' + esc(nm('XD')) + '.</li></ul><p class="bx-note">Seuls les candidats testés dans les sondages apparaissent. Classement de Concret, le même que pour les projections du second tour ; un candidat sans étiquette (Riner) est rangé au centre.</p>';
     }
     var proj = function (R, x) { var m = 0, l = 0; B.forEach(function (b) { m += x[b] * R[b][0]; l += x[b] * R[b][1]; }); return 100 * m / (m + l); };
     var noms = Object.keys(P.duels), duel = noms[0], U = null, perso = false, touche = false;
