@@ -36,7 +36,7 @@
     var data = function () {
       var Q = P.duels[duel];
       var lines = Q.precedents.map(function (p) { return { nom: p.nom, court: p.court, col: p.couleur, pts: X.map(function (q) { return { d: q.d, v: proj(p.reports, q.x) }; }) }; });
-      if (perso) lines.push({ nom: 'Votre courbe', col: 'var(--color-fg)', dash: '6 4', pts: X.map(function (q) { return { d: q.d, v: proj(U, q.x) }; }) });
+      if (perso) lines.push({ nom: 'Vos reports', col: '#8a2be2', dash: '2 3', pts: X.map(function (q) { return { d: q.d, v: proj(U, q.x) }; }) });
       var T2 = D.sondages_t2.filter(function (r) { return r.candidat_rn === 'Le Pen' && P.duels[duel].adversaires.indexOf(r.adversaire) >= 0 && r.date >= debut; }).map(function (r) { return { d: new Date(r.date), v: +r.score_adversaire, i: r.institut + (P.duels[duel].adversaires.length > 1 ? ' (' + r.adversaire + ')' : '') }; });
       var moy = X.map(function (q) { var L = T2.filter(function (s) { return +s.d <= +q.d && +s.d > +q.d - 30 * J; }); return L.length ? { d: q.d, v: L.reduce(function (t, s) { return t + s.v; }, 0) / L.length } : null; }).filter(Boolean);
       draw(lines, T2, moy, duel);
@@ -46,9 +46,10 @@
       var Q = P.duels[duel];
       tabs.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.d === duel ? 'true' : 'false'); });
       if (!U) U = JSON.parse(JSON.stringify(Q.precedents[0].reports));
-      $('proj-titre').textContent = duel + ' face à Marine Le Pen : score de ' + duel + ' au second tour, en % des voix. La ligne grise marque 50 % : au-dessus, ' + duel + ' l\'emporte.';
+      $('proj-titre').textContent = duel + ' face à Marine Le Pen' + ' : score projeté de ' + duel + ' au second tour, en % des voix';
+      $('proj-lead').innerHTML = '<b>Chaque courbe = premier tour des sondages actuels + reports de voix d\'un scrutin passé.</b> Ce n\'est pas le résultat de ce scrutin. Au-dessus de la ligne grise (50 %), ' + esc(duel) + ' l\'emporte.';
       data(); table(Q, P, duel);
-      $('proj-leg').innerHTML = Q.precedents.map(function (p) { return '<li><i style="background:' + p.couleur + '"></i><b style="color:' + p.couleur + '">' + esc(p.court) + '</b> : ' + esc(p.legende) + '</li>'; }).join('') + '<li><i class="pt"></i><b>Points gris</b> : les sondages qui testent ce duel</li>';
+      $('proj-leg').innerHTML = '<li class="proj-leg-h">Projections, pas des résultats passés :</li>' + Q.precedents.map(function (p) { return '<li><i style="background:' + p.couleur + '"></i><b style="color:' + p.couleur + '">' + esc(p.court) + '</b> : ' + esc(p.legende) + '</li>'; }).join('') + '<li><i class="pt"></i><b>Sondages</b> (trait plein et points gris) : les vrais sondages qui testent ce duel, et leur moyenne</li>';
       $('proj-meth').textContent = P.methode + ' Premier tour : chaque semaine, moyenne des sondages des 30 jours précédents ; dans chaque sondage, un candidat compte pour sa moyenne sur toutes les hypothèses (0 là où il n\'est pas testé). ' + P.participation_t1.texte + '.';
     };
     var add = $('proj-add'), panel = $('proj-ctrl');
@@ -120,16 +121,16 @@
     var line = d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); }), labs = [];
     C.forEach(function (c) {
       if (!c.pts.length) return;
-      svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2).attr('stroke-dasharray', c.dash || null).attr('d', line);
-      var l = c.pts[c.pts.length - 1]; labs.push({ y: y(l.v), col: c.col, t: (c.court || c.nom) + ' ' + nf1(l.v) + ' %' });
+      svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', c.dash ? 2 : 1.6).attr('stroke-dasharray', c.dash || '5 3').attr('d', line);
+      var l = c.pts[c.pts.length - 1]; labs.push({ y: y(l.v), col: c.col, t: c.court || c.nom, v: nf1(l.v) + ' %' });
     });
     svg.append('g').selectAll('circle').data(T2).join('circle').attr('cx', function (r) { return x(r.d); }).attr('cy', function (r) { return y(r.v); }).attr('r', 3.5).attr('fill', 'var(--cds-chart-muted)').attr('stroke', 'var(--color-fg)')
       .append('title').text(function (r) { return r.i + ', ' + r.d.toLocaleDateString('fr-FR') + ' : ' + duel + ' ' + nf1(r.v) + ' %'; });
-    if (moy.length > 1) svg.append('path').datum(moy).attr('fill', 'none').attr('stroke', 'var(--color-fg)').attr('stroke-width', 1.5).attr('stroke-dasharray', '1 3').attr('d', line);
-    if (moy.length) { var lm = moy[moy.length - 1]; var dT = T2.reduce(function (m, r) { return +r.d > +m ? r.d : m; }, T2[0].d), vieux = +C[0].pts[C[0].pts.length - 1].d - +dT > 45 * 864e5; labs.push({ y: y(lm.v), col: 'var(--color-fg)', t: 'Sondages ' + nf1(lm.v) + ' %' + (vieux ? ' (dernier : ' + dT.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }) + ')' : '') }); }
+    if (moy.length > 1) svg.append('path').datum(moy).attr('fill', 'none').attr('stroke', 'var(--color-fg)').attr('stroke-width', 2.5).attr('d', line);
+    if (moy.length) { var lm = moy[moy.length - 1]; var dT = T2.reduce(function (m, r) { return +r.d > +m ? r.d : m; }, T2[0].d), vieux = +C[0].pts[C[0].pts.length - 1].d - +dT > 45 * 864e5; labs.push({ y: y(lm.v), col: 'var(--color-fg)', t: 'Sondages' + (vieux ? ' (' + dT.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }) + ')' : ''), v: nf1(lm.v) + ' %' }); }
     labs.sort(function (a, b) { return a.y - b.y; });
-    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 14) labs[i].y = labs[i - 1].y + 14;
+    for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 28) labs[i].y = labs[i - 1].y + 28;
     svg.append('g').selectAll('text').data(labs).join('text').attr('x', W - mR + 6).attr('y', function (l) { return l.y + 4; }).attr('fill', function (l) { return l.col; })
-      .style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).text(function (l) { return l.t; });
+      .style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).each(function (l) { var t = d3.select(this); t.append('tspan').text(l.t); t.append('tspan').attr('x', W - mR + 6).attr('dy', '1.15em').style('font-weight', 700).text(l.v); });
   }
 })();
