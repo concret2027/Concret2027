@@ -32,9 +32,9 @@
     // « Premier tour : les blocs » : la même moyenne, regroupée en quatre blocs.
     var bb = document.getElementById('blocs-chart');
     if (bb) {
-      var BL = [{ k: ['FI', 'AG'], nom: 'Gauche', col: '#c0392b' }, { k: ['C'], nom: 'Centre', col: '#d39e00' }, { k: ['D'], nom: 'Droite', col: '#2f6db5' }, { k: ['ED', 'XD'], nom: 'Extrême droite', col: '#1d2a5c' }];
+      var BL = [{ k: ['FI', 'AG'], nom: 'Gauche', col: '#c0392b' }, { k: ['C'], nom: 'Centre', col: '#d39e00' }, { k: ['D', 'ED', 'XD'], nom: 'Droite', col: '#2f4fa8' }];
       var e0 = P.participation_t1.v, SB = BL.map(function (g) { return { nom: g.nom, col: g.col, pts: X.map(function (q) { return { d: q.d, v: g.k.reduce(function (t, b) { return t + q.x[b]; }, 0) / e0 * 100 }; }) }; });
-      var lfi = X.map(function (q) { return { d: q.d, v: q.x.FI / e0 * 100 }; });
+      var lfi = X.map(function (q) { return { d: q.d, v: q.x.FI / e0 * 100 }; }), rn = X.map(function (q) { return { d: q.d, v: q.x.ED / e0 * 100 }; });
       var dessine = function () {
         bb.querySelectorAll('svg').forEach(function (n) { n.remove(); });
         var W = bb.clientWidth || 600, H = 280, mL = 40, mR = 120, all = [].concat.apply([], SB.map(function (c) { return c.pts; }));
@@ -48,14 +48,15 @@
         SB.forEach(function (c) { svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2.2).attr('d', line); var l = c.pts[c.pts.length - 1]; labs.push({ y: y(l.v), col: c.col, t: c.nom, v: nf1(l.v) + ' %' }); });
         svg.append('path').datum(lfi).attr('fill', 'none').attr('stroke', '#c0392b').attr('stroke-width', 1.4).attr('stroke-dasharray', '4 3').attr('d', line);
         var ll = lfi[lfi.length - 1]; labs.push({ y: y(ll.v), col: '#c0392b', t: 'dont Mélenchon', v: nf1(ll.v) + ' %' });
+        svg.append('path').datum(rn).attr('fill', 'none').attr('stroke', '#2f4fa8').attr('stroke-width', 1.4).attr('stroke-dasharray', '4 3').attr('d', line); var lr = rn[rn.length - 1]; labs.push({ y: y(lr.v), col: '#2f4fa8', t: 'dont Le Pen', v: nf1(lr.v) + ' %' });
         labs.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 28) labs[i].y = labs[i - 1].y + 28;
         if (labs.length) { labs[labs.length - 1].y = Math.min(labs[labs.length - 1].y, H - 24); for (var k2 = labs.length - 2; k2 >= 0; k2--) labs[k2].y = Math.min(labs[k2].y, labs[k2 + 1].y - 28); }
         svg.append('g').selectAll('text').data(labs).join('text').attr('x', W - mR + 6).attr('y', function (l) { return l.y + 4; }).attr('fill', function (l) { return l.col; }).style('font-size', 'var(--cds-font-size-caption)').style('font-weight', 600).each(function (l) { var t = d3.select(this); t.append('tspan').text(l.t); t.append('tspan').attr('x', W - mR + 6).attr('dy', '1.15em').style('font-weight', 700).text(l.v); });
-        if (window.BX && BX.xhair) { var dates = SB[0].pts.map(function (q) { return q.d; }); BX.xhair(svg, bb, W, 12, H - 28, function (sx) { var d = dates[d3.bisector(function (q) { return q; }).center(dates, x.invert(sx))]; var rows = SB.map(function (c) { var q = c.pts.filter(function (p) { return +p.d === +d; })[0]; return { c: c.col, n: c.nom, v: q.v, py: y(q.v), s: nf1(q.v) + ' %' }; }); var f = lfi.filter(function (p) { return +p.d === +d; })[0]; rows.push({ c: '#c0392b', n: 'dont Mélenchon', v: f.v, py: y(f.v), s: nf1(f.v) + ' %' }); rows.sort(function (a, b) { return b.v - a.v; }); return { px: x(d), head: 'Semaine du ' + d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }), rows: rows }; }); }
+        if (window.BX && BX.xhair) { var dates = SB[0].pts.map(function (q) { return q.d; }); BX.xhair(svg, bb, W, 12, H - 28, function (sx) { var d = dates[d3.bisector(function (q) { return q; }).center(dates, x.invert(sx))]; var rows = SB.map(function (c) { var q = c.pts.filter(function (p) { return +p.d === +d; })[0]; return { c: c.col, n: c.nom, v: q.v, py: y(q.v), s: nf1(q.v) + ' %' }; }); var f = lfi.filter(function (p) { return +p.d === +d; })[0]; rows.push({ c: '#c0392b', n: 'dont Mélenchon', v: f.v, py: y(f.v), s: nf1(f.v) + ' %' }); var g = rn.filter(function (p) { return +p.d === +d; })[0]; rows.push({ c: '#2f4fa8', n: 'dont Le Pen', v: g.v, py: y(g.v), s: nf1(g.v) + ' %' }); rows.sort(function (a, b) { return b.v - a.v; }); return { px: x(d), head: 'Semaine du ' + d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }), rows: rows }; }); }
       };
       dessine(); window.addEventListener('resize', function () { clearTimeout(dessine.t); dessine.t = setTimeout(dessine, 150); });
       var nm = function (b) { return P.blocs[b].filter(function (n) { return T1.some(function (r) { return r.c === n; }); }).join(', '); };
-      document.getElementById('blocs-def').textContent = 'Gauche : ' + nm('FI') + ', ' + nm('AG') + '. Centre : ' + nm('C') + '. Droite : ' + nm('D') + '. Extrême droite : ' + nm('ED') + ', ' + nm('XD') + '. Classement de Concret, le même que pour les projections du second tour.';
+      document.getElementById('blocs-def').textContent = 'Gauche, y compris l\'extrême gauche : ' + nm('FI') + ', ' + nm('AG') + '. Centre : ' + nm('C') + '. Droite, y compris l\'extrême droite : ' + nm('D') + ', ' + nm('ED') + ', ' + nm('XD') + '. En pointillé, Mélenchon et Le Pen seuls. Classement de Concret, le même que pour les projections du second tour.';
     }
     var proj = function (R, x) { var m = 0, l = 0; B.forEach(function (b) { m += x[b] * R[b][0]; l += x[b] * R[b][1]; }); return 100 * m / (m + l); };
     var noms = Object.keys(P.duels), duel = noms[0], U = null, perso = false, touche = false;
