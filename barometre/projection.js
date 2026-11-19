@@ -48,6 +48,7 @@
       if (!U) U = JSON.parse(JSON.stringify(Q.precedents[0].reports));
       $('proj-titre').textContent = duel + ' face à Marine Le Pen : score de ' + duel + ' au second tour, en % des voix. La ligne grise marque 50 % : au-dessus, ' + duel + ' l\'emporte.';
       data(); table(Q, P, duel);
+      $('proj-leg').innerHTML = Q.precedents.map(function (p) { return '<li><i style="background:' + p.couleur + '"></i><b style="color:' + p.couleur + '">' + esc(p.court) + '</b> : ' + esc(p.legende) + '</li>'; }).join('') + '<li><i class="pt"></i><b>Points gris</b> : les sondages qui testent ce duel</li>';
       $('proj-meth').textContent = P.methode + ' Premier tour : chaque semaine, moyenne des sondages des 30 jours précédents ; dans chaque sondage, un candidat compte pour sa moyenne sur toutes les hypothèses (0 là où il n\'est pas testé). ' + P.participation_t1.texte + '.';
     };
     var add = $('proj-add'), panel = $('proj-ctrl');
