@@ -149,6 +149,18 @@
     C.forEach(function (c) { if (c.perso && c.pts.length) svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 3.5).attr('stroke-linejoin', 'round').attr('d', line); });
     var pv = C.filter(function (c) { return !c.perso && c.pts.length; }).map(function (c) { return c.pts[c.pts.length - 1].v; });
     box.dataset.resume = (moy.length ? 'Dans les sondages : ' + nf1(moy[moy.length - 1].v) + ' %. ' : '') + 'D\'après les élections passées : de ' + nf1(Math.min.apply(null, pv)) + ' à ' + nf1(Math.max.apply(null, pv)) + ' %. Il faut 50 % pour l\'emporter.';
+    // Au toucher : la semaine touchée, la valeur de chaque courbe et la moyenne des sondages.
+    if (window.BX && BX.xhair) {
+      var dates = C.length ? C[0].pts.map(function (q) { return q.d; }) : [];
+      BX.xhair(svg, box, W, 12, H - 28, function (sx) {
+        if (!dates.length) return null;
+        var d = dates[d3.bisector(function (q) { return q; }).center(dates, x.invert(sx))];
+        var rows = C.filter(function (c) { return c.pts.length; }).map(function (c) { var q = c.pts.filter(function (p) { return +p.d === +d; })[0]; return q ? { c: c.col, n: c.court || c.nom, v: q.v, py: y(q.v), s: nf1(q.v) + ' %' } : null; }).filter(Boolean);
+        var m = moy.filter(function (q) { return +q.d === +d; })[0]; if (m) rows.push({ c: 'var(--color-fg)', n: 'Sondages (moyenne 30 jours)', v: m.v, py: y(m.v), s: nf1(m.v) + ' %' });
+        rows.sort(function (a, b) { return b.v - a.v; });
+        return { px: x(d), head: 'Semaine du ' + d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) + ' · score de ' + duel, rows: rows, note: 'Projections d\'après les élections passées : pas un sondage.' };
+      });
+    }
     labs.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 28) labs[i].y = labs[i - 1].y + 28;
     if (labs.length) { labs[labs.length - 1].y = Math.min(labs[labs.length - 1].y, H - 24); for (var k2 = labs.length - 2; k2 >= 0; k2--) labs[k2].y = Math.min(labs[k2].y, labs[k2 + 1].y - 28); }
