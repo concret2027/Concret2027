@@ -35,14 +35,19 @@
       var BL = [{ k: ['FI', 'AG'], nom: 'Gauche', col: '#c0392b' }, { k: ['C'], nom: 'Centre', col: '#d39e00' }, { k: ['D', 'ED', 'XD'], nom: 'Droite', col: '#2f4fa8' }];
       var e0 = P.participation_t1.v, SB = BL.map(function (g) { return { nom: g.nom, col: g.col, pts: X.map(function (q) { return { d: q.d, v: g.k.reduce(function (t, b) { return t + q.x[b]; }, 0) / e0 * 100 }; }) }; });
       var lfi = X.map(function (q) { return { d: q.d, v: q.x.FI / e0 * 100 }; }), rn = X.map(function (q) { return { d: q.d, v: q.x.ED / e0 * 100 }; });
+      // Période affichée (3 mois par défaut, choix de l'éditeur du 19 novembre 2026).
+      var PERB = '3', SB0 = SB, lfi0 = lfi, rn0 = rn;
+      document.querySelectorAll('#blocs-per button').forEach(function (b) { b.addEventListener('click', function () { PERB = b.dataset.p; document.querySelectorAll('#blocs-per button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); dessine(); }); });
       var dessine = function () {
         bb.querySelectorAll('svg').forEach(function (n) { n.remove(); });
+        var dl = SB0[0].pts[SB0[0].pts.length - 1].d, cut = PERB === 'tout' ? null : d3.utcMonth.offset(dl, -(+PERB)), garde = function (l) { return cut ? l.filter(function (q) { return q.d >= cut; }) : l; };
+        var SB = SB0.map(function (c) { return { nom: c.nom, col: c.col, pts: garde(c.pts) }; }), lfi = garde(lfi0), rn = garde(rn0);
         var W = bb.clientWidth || 600, H = 280, mL = 40, mR = 120, all = [].concat.apply([], SB.map(function (c) { return c.pts; }));
         var x = d3.scaleUtc(d3.extent(all, function (r) { return r.d; }), [mL, W - mR]), y = d3.scaleLinear([0, Math.ceil(d3.max(all, function (r) { return r.v; }) / 10) * 10], [H - 28, 12]);
         var svg = d3.select(bb).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H).attr('role', 'img').attr('aria-label', 'Part de chaque bloc au premier tour, moyenne des sondages');
         svg.append('g').selectAll('line').data(y.ticks(5)).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
         var gy = svg.append('g').attr('transform', 'translate(' + mL + ',0)').call(d3.axisLeft(y).ticks(5).tickFormat(function (v) { return v + ' %'; }).tickSize(0)); gy.select('.domain').remove(); gy.selectAll('text').style('font-size', 'var(--cds-font-size-caption)');
-        var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 28) + ')').call(d3.axisBottom(x).ticks(d3.utcMonth.every((W - mL - mR) < 300 ? 4 : 2)).tickFormat((window.BX && BX.fmtMonth) || d3.utcFormat('%m/%Y')).tickSizeOuter(0));
+        var gx = svg.append('g').attr('transform', 'translate(0,' + (H - 28) + ')').call(d3.axisBottom(x).ticks(d3.utcMonth.every(PERB === '3' ? 1 : (W - mL - mR) < 300 ? (PERB === '6' ? 2 : 4) : (PERB === '6' ? 1 : 2))).tickFormat((window.BX && BX.fmtMonth) || d3.utcFormat('%m/%Y')).tickSizeOuter(0));
         gx.selectAll('text').style('font-size', 'var(--cds-font-size-caption)'); gx.select('.domain').attr('stroke', 'var(--cds-chart-axis)'); gx.selectAll('line').attr('stroke', 'var(--cds-chart-axis)');
         var line = d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); }), labs = [];
         SB.forEach(function (c) { svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2.2).attr('d', line); var l = c.pts[c.pts.length - 1]; labs.push({ y: y(l.v), col: c.col, t: c.nom, v: nf1(l.v) + ' %' }); });
