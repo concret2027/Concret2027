@@ -1,5 +1,5 @@
 import json,collections
-BL={'MÉLENCHON':'FI','ARTHAUD':'AG','ROUSSEL':'AG','HIDALGO':'AG','JADOT':'AG','POUTOU':'AG','MACRON':'OWN','PÉCRESSE':'D','LASSALLE':'D','DUPONT-AIGNAN':'ED','LE PEN':'ED','ZEMMOUR':'ED'}
+BL={'MÉLENCHON':'FI','ARTHAUD':'AG','ROUSSEL':'AG','HIDALGO':'AG','JADOT':'AG','POUTOU':'AG','MACRON':'OWN','PÉCRESSE':'D','LASSALLE':'D','DUPONT-AIGNAN':'XD','LE PEN':'ED','ZEMMOUR':'XD'}
 def rd(f):
     o={}
     for l in open(f,encoding='latin1').read().splitlines()[1:]:

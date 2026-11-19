@@ -5,8 +5,8 @@
   var box = document.getElementById('proj-chart'); if (!box || !window.d3) return;
   var nf1 = function (v) { return (Math.round(v * 10) / 10).toLocaleString('fr-FR'); };
   var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
-  var J = 864e5, B = ['FI', 'AG', 'C', 'D', 'ED', 'NE'], $ = function (id) { return document.getElementById(id); };
-  var COL = { x: '#2f6db5', lp: '#1d2a5c', ab: '#b9bcc4' };
+  var J = 864e5, B = ['FI', 'AG', 'C', 'D', 'ED', 'XD', 'NE'], $ = function (id) { return document.getElementById(id); };
+  var COL = { x: '#e07b1f', lp: '#1d2a5c', ab: '#b9bcc4' };
   Promise.all([fetch('../data.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }), fetch('../donnees/projection_t2.json', { cache: 'no-cache' }).then(function (r) { return r.json(); })])
     .then(function (a) { init(a[0].datasets, a[1]); })
     .catch(function () { box.textContent = 'La projection n\'a pas pu être chargée.'; });
@@ -23,9 +23,9 @@
       T1.forEach(function (r) { if (r.d > from && r.d <= d) (polls[r.k] = polls[r.k] || { d: r.d, L: [] }).L.push(r); });
       var K = Object.keys(polls).sort(function (a, b) { return polls[a].d < polls[b].d ? -1 : 1; }).slice(-15);
       if (K.length < 2) return null;
-      var s = { FI: 0, AG: 0, C: 0, D: 0, ED: 0 };
+      var s = { FI: 0, AG: 0, C: 0, D: 0, ED: 0, XD: 0 };
       K.forEach(function (k) { polls[k].L.forEach(function (r) { if (blocOf[r.c]) s[blocOf[r.c]] += r.v / K.length; }); });
-      var tot = s.FI + s.AG + s.C + s.D + s.ED; if (!tot) return null;
+      var tot = s.FI + s.AG + s.C + s.D + s.ED + s.XD; if (!tot) return null;
       var e = P.participation_t1.v, x = {}; Object.keys(s).forEach(function (b) { x[b] = s[b] / tot * e; }); x.NE = 1 - e;
       return { d: new Date(d), x: x };
     }).filter(Boolean);
@@ -70,7 +70,7 @@
       $('proj-ctrl').querySelectorAll('input').forEach(function (i) { var v = Math.round(U[i.dataset.b][+i.dataset.k] * 100); i.value = v; i.nextElementSibling.value = v; i.setAttribute('aria-valuetext', v + ' sur 100'); });
     }
     function controls(Q, P, duel) {
-      var G = B.filter(function (b) { return b !== Q.bloc && b !== 'NE'; });
+      var G = B.filter(function (b) { return b !== Q.bloc && b !== 'NE' && b !== 'ED'; });
       $('proj-ctrl').innerHTML = '<p class="bx-note">Les courbes des élections passées ne bougent pas. Ici, vous tracez <b>votre courbe</b> (pointillés noirs sur le graphique) : pour chaque groupe d\'électeurs du premier tour, sur 100, combien voteraient ' + esc(duel) + ', combien Le Pen, combien s\'abstiendraient ou voteraient blanc (le total reste à 100). Elle part des chiffres des ' + esc(Q.precedents[0].nom.replace('Comme aux ', '').replace('Comme à la ', '')) + ' ; pour repartir des chiffres d\'une autre élection :</p>' +
         '<div class="bx-cmp-c" role="group" aria-label="Copier les chiffres d\'une élection passée">' + Q.precedents.map(function (p, i) { return '<button type="button" data-p="' + i + '" aria-pressed="' + (i === 0) + '">' + esc(p.nom.replace(/^Comme (aux |à la )?/, '').replace('un candidat PS ou écologiste en 2024', 'si vu comme PS (2024)').replace(/^./, function (c) { return c.toUpperCase(); })) + '</button>'; }).join('') + '</div>' +
         G.map(function (b) {
@@ -90,7 +90,7 @@
     var G = B.filter(function (b) { return b !== Q.bloc && b !== 'ED'; });
     $('proj-src').innerHTML =
       '<ul class="proj-prec">' + Q.precedents.map(function (p) { return '<li><b style="color:' + p.couleur + '">' + esc(p.nom) + '</b> : ' + esc(p.phrase) + '. <a href="' + esc(p.url) + '" target="_blank" rel="noopener">Résultats officiels</a>.</li>'; }).join('') + '</ul>' +
-      '<p class="bx-note">Ce que chaque précédent suppose, sur 100 électeurs de chaque groupe : <b style="color:' + COL.x + '">votent ' + esc(duel) + '</b> · <b style="color:' + COL.lp + '">votent Le Pen</b> · <b>s\'abstiennent ou votent blanc</b>. Partout, les électeurs de ' + esc(duel) + (Q.bloc === 'C' ? ' et de son camp' : '') + ' votent pour lui, ceux de Le Pen, Zemmour et Dupont-Aignan pour elle.</p>' +
+      '<p class="bx-note">Ce que chaque précédent suppose, sur 100 électeurs de chaque groupe : <b style="color:' + COL.x + '">votent ' + esc(duel) + '</b> · <b style="color:' + COL.lp + '">votent Le Pen</b> · <b>s\'abstiennent ou votent blanc</b>. Partout, les électeurs de ' + esc(duel) + (Q.bloc === 'C' ? ' et de son camp' : '') + ' votent pour lui, ceux de Le Pen pour elle.</p>' +
       '<div class="proj-tw"><table class="proj-t"><thead><tr><th></th>' + Q.precedents.map(function (p) { return '<th style="color:' + p.couleur + '">' + esc(p.nom.replace('Comme ', '')) + '</th>'; }).join('') + '</tr></thead><tbody>' +
       G.map(function (b) { var nc = P.noms_courts[b]; return '<tr><th>' + esc(nc[0]) + (nc[1] ? '<small>' + esc(nc[1]) + '</small>' : '') + (b === 'FI' && Q.bloc === 'AG' ? '<small>non mesuré : comme les autres électeurs de gauche</small>' : '') + '</th>' + Q.precedents.map(function (p) { return '<td>' + bar(p.reports[b]) + '</td>'; }).join('') + '</tr>'; }).join('') +
       '</tbody></table></div>';

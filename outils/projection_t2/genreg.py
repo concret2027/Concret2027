@@ -1,6 +1,6 @@
 import json,numpy as np,collections
 from scipy.optimize import minimize
-G=json.load(open('gen.json')); B=['OWN','FI','AG','C','D','ED','NE']; k=len(B)
+G=json.load(open('gen.json')); B=['OWN','FI','AG','C','D','ED','XD','NE']; k=len(B)
 def mats(S):
     X=np.array([[o['x'].get(b,0)/o['ins1'] for b in B] for o in S]); Y=np.array([np.array(o['y'])/o['ins2'] for o in S]); w=np.array([o['ins1'] for o in S],float); return X,Y,w/w.sum()
 def fit(X,Y,w):

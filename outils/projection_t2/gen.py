@@ -11,7 +11,7 @@ def party(dep,nom,pre):
     L=ugp.get(nn(dep),[]); full=n(pre+' '+nom)
     h=[p for nm,p in L if nm==full or (n(nom) in nm and n(pre).split()[0] in nm)]
     return h[0] if h else None
-B24={'DVG':'AG','ECO':'AG','EXG':'AG','REG':'AG','DIV':'AG','ENS':'C','DVC':'C','UDI':'C','HOR':'C','LR':'D','DVD':'D','RN':'ED','UXD':'ED','EXD':'ED','REC':'ED','DSV':'ED'}
+B24={'DVG':'AG','ECO':'AG','EXG':'AG','REG':'AG','DIV':'AG','ENS':'C','DVC':'C','UDI':'C','HOR':'C','LR':'D','DVD':'D','RN':'ED','UXD':'ED','EXD':'XD','REC':'XD','DSV':'XD'}
 CENTRE={'ENS','DVC','UDI','HOR'}
 def rows24(f):
     R=csv.reader(open('dl/'+f,encoding='utf-8'),delimiter=';'); next(R)
@@ -41,7 +41,7 @@ for k,dep,ins2,exp2,c in rows24('t2_bv.csv'):
 P={}
 for r in csv.DictReader(open('l22/codage.csv',encoding='utf-8')):
     P[(r['DEP'].lstrip('0').upper(),r['NCIRCO'].lstrip('0'),n(r['Nom_candidat']),n(r['Prénom_candidat']))]=r['CODAGE_LEGIS2022']
-B22={'DVG':'AG','ECO':'AG','DXG':'AG','RDG':'AG','REG':'AG','DIV':'AG','ENS':'C','DVC':'C','UDI':'C','LR':'D','DVD':'D','RN':'ED','REC':'ED','DSV':'ED','DXD':'ED'}
+B22={'DVG':'AG','ECO':'AG','DXG':'AG','RDG':'AG','REG':'AG','DIV':'AG','ENS':'C','DVC':'C','UDI':'C','LR':'D','DVD':'D','RN':'ED','REC':'XD','DSV':'XD','DXD':'XD'}
 def rows22(f):
     for l in open('l22/'+f,encoding='latin1').read().splitlines()[1:]:
         r=l.split(';'); c=[]
