@@ -30,33 +30,36 @@
       return { d: new Date(d), x: x };
     }).filter(Boolean);
     var proj = function (R, x) { var m = 0, l = 0; B.forEach(function (b) { m += x[b] * R[b][0]; l += x[b] * R[b][1]; }); return 100 * m / (m + l); };
-    var noms = Object.keys(P.duels), duel = noms[0], U = null, perso = false;
+    var noms = Object.keys(P.duels), duel = noms[0], U = null, perso = false, touche = false;
     var tabs = $('proj-duels');
     tabs.innerHTML = noms.map(function (n) { return '<button type="button" data-d="' + esc(n) + '">' + esc(n) + '</button>'; }).join('');
     var data = function () {
       var Q = P.duels[duel];
       var lines = Q.precedents.map(function (p) { return { nom: p.nom, court: p.court, col: p.couleur, pts: X.map(function (q) { return { d: q.d, v: proj(p.reports, q.x) }; }) }; });
-      if (perso) lines.push({ nom: 'Vos reports', col: '#8a2be2', dash: '2 3', pts: X.map(function (q) { return { d: q.d, v: proj(U, q.x) }; }) });
+      if (perso && touche) lines.push({ nom: 'Votre courbe', col: '#8a2be2', perso: true, pts: X.map(function (q) { return { d: q.d, v: proj(U, q.x) }; }) });
       var T2 = D.sondages_t2.filter(function (r) { return r.candidat_rn === 'Le Pen' && P.duels[duel].adversaires.indexOf(r.adversaire) >= 0 && r.date >= debut; }).map(function (r) { return { d: new Date(r.date), v: +r.score_adversaire, i: r.institut + (P.duels[duel].adversaires.length > 1 ? ' (' + r.adversaire + ')' : '') }; });
       var moy = X.map(function (q) { var L = T2.filter(function (s) { return +s.d <= +q.d && +s.d > +q.d - 30 * J; }); return L.length ? { d: q.d, v: L.reduce(function (t, s) { return t + s.v; }, 0) / L.length } : null; }).filter(Boolean);
       draw(lines, T2, moy, duel);
-      var lv = $('proj-live'); if (lv && perso) { var v = lines[lines.length - 1].pts; lv.innerHTML = 'Votre courbe : <b>' + nf1(v[v.length - 1].v) + ' %</b>' + (moy.length ? ' · sondages ' + nf1(moy[moy.length - 1].v) + ' %' : '') + ' · 50 % pour l\'emporter <a href="#proj-titre" class="proj-voir">Voir le graphique ↑</a>'; }
+      var lv = $('proj-live'); if (lv && perso) { if (!touche) lv.textContent = 'Bougez un curseur pour tracer votre courbe (en violet sur le graphique).'; else { var v = lines[lines.length - 1].pts; lv.innerHTML = 'Votre courbe <b>' + nf1(v[v.length - 1].v) + ' %</b>' + (moy.length ? ' · Sondages ' + nf1(moy[moy.length - 1].v) + ' %' : '') + ' (50 % pour l\'emporter)<br><a href="#proj-chart" class="proj-voir">Voir le graphique ↑</a>'; } }
     };
+    var leg = function () { var Q = P.duels[duel]; $('proj-leg').innerHTML = '<li class="proj-leg-h">Projections, pas des résultats passés :</li>' + Q.precedents.map(function (p) { return '<li><i style="background:' + p.couleur + '"></i><b style="color:' + p.couleur + '">' + esc(p.court) + '</b> : ' + esc(p.legende) + '</li>'; }).join('') + (perso && touche ? '<li><i style="background:#8a2be2;height:4px"></i><b style="color:#8a2be2">Votre courbe</b> : vos réglages, pour ce duel</li>' : '') + '<li><i class="pt"></i><b>Sondages</b> (trait plein et points gris) : les vrais sondages qui testent ce duel, et leur moyenne</li>'; };
     var show = function () {
       var Q = P.duels[duel];
       tabs.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.d === duel ? 'true' : 'false'); });
       if (!U) U = JSON.parse(JSON.stringify(Q.precedents[0].reports));
-      $('proj-titre').textContent = duel + ' face à Marine Le Pen' + ' : score projeté de ' + duel + ' au second tour, en % des voix';
-      $('proj-lead').innerHTML = '<b>Chaque courbe = premier tour des sondages actuels + reports de voix d\'un scrutin passé.</b> Ce n\'est pas le résultat de ce scrutin. Au-dessus de la ligne grise (50 %), ' + esc(duel) + ' l\'emporte.';
+      $('proj-titre').textContent = duel + ' face à Marine Le Pen : score projeté de ' + duel + ', en % des voix';
+      $('proj-lead').textContent = 'Au-dessus de la ligne grise (50 %), ' + duel + ' l\'emporte.';
       data(); table(Q, P, duel);
-      $('proj-leg').innerHTML = '<li class="proj-leg-h">Projections, pas des résultats passés :</li>' + Q.precedents.map(function (p) { return '<li><i style="background:' + p.couleur + '"></i><b style="color:' + p.couleur + '">' + esc(p.court) + '</b> : ' + esc(p.legende) + '</li>'; }).join('') + '<li><i class="pt"></i><b>Sondages</b> (trait plein et points gris) : les vrais sondages qui testent ce duel, et leur moyenne</li>';
+      leg();
       $('proj-meth').textContent = P.methode + ' Premier tour : chaque semaine, moyenne des sondages des 30 jours précédents ; dans chaque sondage, un candidat compte pour sa moyenne sur toutes les hypothèses (0 là où il n\'est pas testé). ' + P.participation_t1.texte + '.';
     };
     var add = $('proj-add'), panel = $('proj-ctrl');
-    var ouvrir = function (on) { perso = on; panel.hidden = !on; add.setAttribute('aria-expanded', on ? 'true' : 'false'); add.textContent = on ? 'Votre courbe ▴' : '+ Tracer votre courbe'; if (on) { U = JSON.parse(JSON.stringify(P.duels[duel].precedents[0].reports)); controls(P.duels[duel], P, duel); } data(); };
+    var ouvrir = function (on) { perso = on; touche = false; panel.hidden = !on; add.setAttribute('aria-expanded', on ? 'true' : 'false'); add.textContent = on ? 'Masquer les curseurs ▴' : '+ Tracer votre courbe'; if (on) { U = JSON.parse(JSON.stringify(P.duels[duel].precedents[0].reports)); controls(P.duels[duel], P, duel); } data(); leg(); };
     add.addEventListener('click', function () { ouvrir(!perso); });
-    panel.addEventListener('click', function (e) { if (e.target.closest('.proj-fin')) { ouvrir(false); add.focus(); } else if (e.target.closest('.proj-act .proj-voir')) { panel.hidden = true; add.setAttribute('aria-expanded', 'false'); add.textContent = 'Votre courbe ▾'; } });
-    add.addEventListener('click', function (e) { if (perso && panel.hidden) { e.stopImmediatePropagation(); panel.hidden = false; add.setAttribute('aria-expanded', 'true'); add.textContent = 'Votre courbe ▴'; } }, true);
+    var voir = function () { var c = $('proj-titre'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 140, behavior: 'smooth' }); };
+    $('projection').addEventListener('click', function (e) { var a = e.target.closest('.proj-voir'); if (a) { e.preventDefault(); voir(); } });
+    panel.addEventListener('click', function (e) { if (e.target.closest('.proj-fin')) { ouvrir(false); add.focus(); } else if (e.target.closest('.proj-act .proj-voir')) { panel.hidden = true; add.setAttribute('aria-expanded', 'false'); add.textContent = 'Afficher les curseurs ▾'; } });
+    add.addEventListener('click', function (e) { if (perso && panel.hidden) { e.stopImmediatePropagation(); panel.hidden = false; add.setAttribute('aria-expanded', 'true'); add.textContent = 'Masquer les curseurs ▴'; } }, true);
     tabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { duel = b.dataset.d; U = null; show(); if (perso) ouvrir(true); } });
     show();
     window.addEventListener('resize', function () { clearTimeout(data.t); data.t = setTimeout(data, 150); });
@@ -66,21 +69,21 @@
       var r = U[i.dataset.b], k = +i.dataset.k, v = +i.value / 100, o = [0, 1, 2].filter(function (j) { return j !== k; }), rest = r[o[0]] + r[o[1]];
       r[k] = v; if (rest > 0) { r[o[0]] = (1 - v) * r[o[0]] / rest; r[o[1]] = (1 - v) * r[o[1]] / rest; } else { r[o[0]] = r[o[1]] = (1 - v) / 2; }
       $('proj-ctrl').querySelectorAll('.bx-cmp-c button').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
-      perso = true; syncCtrl(); data();
+      perso = true; touche = true; syncCtrl(); data(); leg();
     });
     $('proj-ctrl').addEventListener('click', function (e) {
       var b = e.target.closest('.bx-cmp-c button'); if (!b) return;
       U = JSON.parse(JSON.stringify(P.duels[duel].precedents[+b.dataset.p].reports));
       $('proj-ctrl').querySelectorAll('.bx-cmp-c button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
-      perso = true; syncCtrl(); data();
+      perso = true; touche = true; syncCtrl(); data(); leg();
     });
     function syncCtrl() {
       $('proj-ctrl').querySelectorAll('input').forEach(function (i) { var v = Math.round(U[i.dataset.b][+i.dataset.k] * 100); i.value = v; i.nextElementSibling.value = v; i.setAttribute('aria-valuetext', v + ' sur 100'); });
     }
     function controls(Q, P, duel) {
       var G = B.filter(function (b) { return b !== Q.bloc && b !== 'NE' && b !== 'ED'; });
-      $('proj-ctrl').innerHTML = '<p class="bx-note">Sur 100 électeurs de chaque groupe, combien voteraient ' + esc(duel) + ', combien Le Pen, combien s\'abstiendraient ? Les trois chiffres font toujours 100 : quand vous en montez un, les deux autres baissent. Votre courbe, en pointillés noirs, change sur le graphique ; les autres courbes ne bougent pas.</p><p class="bx-note">Partir des chiffres de :</p>' +
-        '<div class="bx-cmp-c" role="group" aria-label="Copier les chiffres d\'une élection passée">' + Q.precedents.map(function (p, i) { return '<button type="button" data-p="' + i + '" aria-pressed="' + (i === 0) + '">' + esc(p.nom) + '</button>'; }).join('') + '</div>' +
+      $('proj-ctrl').innerHTML = '<p class="bx-note">Sur 100 électeurs de chaque groupe : combien votent ' + esc(duel) + ', Le Pen, ou s\'abstiennent. Quand vous montez un chiffre, les deux autres baissent pour garder 100.</p><p class="proj-dep">Point de départ :</p>' +
+        '<div class="bx-cmp-c" role="group" aria-label="Copier les chiffres d\'une élection passée">' + Q.precedents.map(function (p, i) { return '<button type="button" data-p="' + i + '" aria-pressed="' + (i === 0) + '">' + esc(p.court) + '</button>'; }).join('') + '</div>' +
         G.map(function (b) {
           return '<fieldset class="proj-b"><legend>Sur 100 ' + esc(P.noms_blocs[b]) + '</legend>' +
             [[0, esc(duel)], [1, 'Le Pen'], [2, 'Abstention ou blanc']].map(function (k) { return '<label>' + k[1] + ' <input type="range" min="0" max="100" step="1" data-b="' + b + '" data-k="' + k[0] + '"><output></output></label>'; }).join('') + '</fieldset>';
@@ -106,7 +109,7 @@
 
   function draw(C, T2, moy, duel) {
     box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
-    var W = box.clientWidth || 600, H = 320, mL = 40, mR = W < 500 ? 150 : 170;
+    var W = box.clientWidth || 600, H = W < 500 ? 260 : 320, mL = 40, mR = W < 500 ? 132 : 170;
     var all = [].concat.apply([], C.map(function (c) { return c.pts; })).concat(T2);
     var x = d3.scaleUtc(d3.extent(all, function (r) { return r.d; }), [mL, W - mR]);
     var lo = Math.min(30, Math.floor(d3.min(all, function (r) { return r.v; }) / 5) * 5), hi = Math.max(55, Math.ceil(d3.max(all, function (r) { return r.v; }) / 5) * 5);
@@ -121,13 +124,15 @@
     var line = d3.line().x(function (r) { return x(r.d); }).y(function (r) { return y(r.v); }), labs = [];
     C.forEach(function (c) {
       if (!c.pts.length) return;
-      svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', c.dash ? 2 : 1.6).attr('stroke-dasharray', c.dash || '5 3').attr('d', line);
+      if (c.perso) { var l0 = c.pts[c.pts.length - 1]; labs.push({ y: y(l0.v), col: c.col, t: c.court || c.nom, v: nf1(l0.v) + ' %' }); return; }
+      svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 1.6).attr('stroke-dasharray', '5 3').attr('d', line);
       var l = c.pts[c.pts.length - 1]; labs.push({ y: y(l.v), col: c.col, t: c.court || c.nom, v: nf1(l.v) + ' %' });
     });
     svg.append('g').selectAll('circle').data(T2).join('circle').attr('cx', function (r) { return x(r.d); }).attr('cy', function (r) { return y(r.v); }).attr('r', 3.5).attr('fill', 'var(--cds-chart-muted)').attr('stroke', 'var(--color-fg)')
       .append('title').text(function (r) { return r.i + ', ' + r.d.toLocaleDateString('fr-FR') + ' : ' + duel + ' ' + nf1(r.v) + ' %'; });
     if (moy.length > 1) svg.append('path').datum(moy).attr('fill', 'none').attr('stroke', 'var(--color-fg)').attr('stroke-width', 2.5).attr('d', line);
     if (moy.length) { var lm = moy[moy.length - 1]; var dT = T2.reduce(function (m, r) { return +r.d > +m ? r.d : m; }, T2[0].d), vieux = +C[0].pts[C[0].pts.length - 1].d - +dT > 45 * 864e5; labs.push({ y: y(lm.v), col: 'var(--color-fg)', t: 'Sondages' + (vieux ? ' (' + dT.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }) + ')' : ''), v: nf1(lm.v) + ' %' }); }
+    C.forEach(function (c) { if (c.perso && c.pts.length) svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 3.5).attr('stroke-linejoin', 'round').attr('d', line); });
     labs.sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 28) labs[i].y = labs[i - 1].y + 28;
     svg.append('g').selectAll('text').data(labs).join('text').attr('x', W - mR + 6).attr('y', function (l) { return l.y + 4; }).attr('fill', function (l) { return l.col; })
