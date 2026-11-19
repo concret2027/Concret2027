@@ -29,7 +29,7 @@ for k,dep,ins2,exp2,c in rows24('t2_bv.csv'):
     if len(c)!=2 or k not in T1: continue
     e=[x for x in c if x[0] in ('RN','UXD')]; o=[x for x in c if x[0] not in ('RN','UXD')]
     if len(e)!=1 or len(o)!=1: continue
-    o=o[0]; typ=('LFI' if party(dep,o[1],o[2])=='LFI' else 'AG') if o[0]=='UG' else ('C' if o[0] in CENTRE else None)
+    o=o[0]; typ=('LFI' if party(dep,o[1],o[2])=='LFI' else 'AG') if o[0]=='UG' else ('C' if o[0] in CENTRE else ('D' if o[0] in ('LR','DVD') else None))
     if not typ: continue
     ins,exp,_,c1=T1[k]; x=collections.Counter()
     for nu,nom,pre,v in c1:
@@ -55,7 +55,7 @@ for k,ins2,exp2,c in rows22('t2.txt'):
     e=[x for x in c if x[0]=='RN']; o=[x for x in c if x[0]!='RN']
     if len(e)!=1 or len(o)!=1: continue
     o=o[0]; pp=P.get((k[0],k[1],n(o[1]),n(o[2])),'')
-    typ=('LFI' if pp=='NUPES-LFI' else 'AG') if o[0]=='NUP' else ('C' if o[0] in ('ENS','DVC','UDI') else None)
+    typ=('LFI' if pp=='NUPES-LFI' else 'AG') if o[0]=='NUP' else ('C' if o[0] in ('ENS','DVC','UDI') else ('D' if o[0] in ('LR','DVD') else None))
     if not typ: continue
     ins,exp,c1=T1[k]; x=collections.Counter()
     for nu,nom,pre,v in c1:
@@ -66,4 +66,4 @@ for k,ins2,exp2,c in rows22('t2.txt'):
     x['NE']=ins-exp
     out['2022-'+typ].append(dict(circ=k[0]+'-'+k[1],ins1=ins,x=dict(x),ins2=ins2,y=[o[3],e[0][3],ins2-exp2]))
 print({k:(len(v),len({o['circ'] for o in v})) for k,v in out.items()})
-json.dump(out,open('gen.json','w'))
+G=json.load(open('gen.json')); G.update(out); json.dump(G,open('gen.json','w'))
