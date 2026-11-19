@@ -35,21 +35,27 @@
     tabs.innerHTML = noms.map(function (n) { return '<button type="button" data-d="' + esc(n) + '">' + esc(n) + '</button>'; }).join('');
     var data = function () {
       var Q = P.duels[duel];
-      var lines = Q.precedents.map(function (p) { return { nom: p.nom, col: p.couleur, pts: X.map(function (q) { return { d: q.d, v: proj(p.reports, q.x) }; }) }; });
+      var lines = Q.precedents.map(function (p) { return { nom: p.nom, court: p.court, col: p.couleur, pts: X.map(function (q) { return { d: q.d, v: proj(p.reports, q.x) }; }) }; });
       if (perso) lines.push({ nom: 'Votre courbe', col: 'var(--color-fg)', dash: '6 4', pts: X.map(function (q) { return { d: q.d, v: proj(U, q.x) }; }) });
       var T2 = D.sondages_t2.filter(function (r) { return r.candidat_rn === 'Le Pen' && P.duels[duel].adversaires.indexOf(r.adversaire) >= 0 && r.date >= debut; }).map(function (r) { return { d: new Date(r.date), v: +r.score_adversaire, i: r.institut + (P.duels[duel].adversaires.length > 1 ? ' (' + r.adversaire + ')' : '') }; });
       var moy = X.map(function (q) { var L = T2.filter(function (s) { return +s.d <= +q.d && +s.d > +q.d - 30 * J; }); return L.length ? { d: q.d, v: L.reduce(function (t, s) { return t + s.v; }, 0) / L.length } : null; }).filter(Boolean);
       draw(lines, T2, moy, duel);
+      var lv = $('proj-live'); if (lv && perso) { var v = lines[lines.length - 1].pts; lv.innerHTML = 'Votre courbe : <b>' + nf1(v[v.length - 1].v) + ' %</b>' + (moy.length ? ' · sondages ' + nf1(moy[moy.length - 1].v) + ' %' : '') + ' · 50 % pour l\'emporter <a href="#proj-titre" class="proj-voir">Voir le graphique ↑</a>'; }
     };
     var show = function () {
       var Q = P.duels[duel];
       tabs.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.d === duel ? 'true' : 'false'); });
       if (!U) U = JSON.parse(JSON.stringify(Q.precedents[0].reports));
-      $('proj-titre').textContent = duel + ' face à Marine Le Pen : score de ' + duel + ' au second tour, en % des voix (trait épais : 50 %, au-dessus il l\'emporte)';
-      data(); table(Q, P, duel); controls(Q, P, duel);
+      $('proj-titre').textContent = duel + ' face à Marine Le Pen : score de ' + duel + ' au second tour, en % des voix. La ligne grise marque 50 % : au-dessus, ' + duel + ' l\'emporte.';
+      data(); table(Q, P, duel);
       $('proj-meth').textContent = P.methode + ' Premier tour : chaque semaine, moyenne des sondages des 30 jours précédents ; dans chaque sondage, un candidat compte pour sa moyenne sur toutes les hypothèses (0 là où il n\'est pas testé). ' + P.participation_t1.texte + '.';
     };
-    tabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { duel = b.dataset.d; U = null; perso = false; show(); } });
+    var add = $('proj-add'), panel = $('proj-ctrl');
+    var ouvrir = function (on) { perso = on; panel.hidden = !on; add.setAttribute('aria-expanded', on ? 'true' : 'false'); add.textContent = on ? 'Votre courbe ▴' : '+ Tracer votre courbe'; if (on) { U = JSON.parse(JSON.stringify(P.duels[duel].precedents[0].reports)); controls(P.duels[duel], P, duel); } data(); };
+    add.addEventListener('click', function () { ouvrir(!perso); });
+    panel.addEventListener('click', function (e) { if (e.target.closest('.proj-fin')) { ouvrir(false); add.focus(); } else if (e.target.closest('.proj-act .proj-voir')) { panel.hidden = true; add.setAttribute('aria-expanded', 'false'); add.textContent = 'Votre courbe ▾'; } });
+    add.addEventListener('click', function (e) { if (perso && panel.hidden) { e.stopImmediatePropagation(); panel.hidden = false; add.setAttribute('aria-expanded', 'true'); add.textContent = 'Votre courbe ▴'; } }, true);
+    tabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { duel = b.dataset.d; U = null; show(); if (perso) ouvrir(true); } });
     show();
     window.addEventListener('resize', function () { clearTimeout(data.t); data.t = setTimeout(data, 150); });
     // Réglages : trois curseurs liés par groupe (le total fait toujours 100).
@@ -71,12 +77,12 @@
     }
     function controls(Q, P, duel) {
       var G = B.filter(function (b) { return b !== Q.bloc && b !== 'NE' && b !== 'ED'; });
-      $('proj-ctrl').innerHTML = '<p class="bx-note">Les courbes de couleur ne bougent pas. Bougez un curseur : <b>votre courbe</b> apparaît en pointillés noirs. Point de départ :</p>' +
-        '<div class="bx-cmp-c" role="group" aria-label="Copier les chiffres d\'une élection passée">' + Q.precedents.map(function (p, i) { return '<button type="button" data-p="' + i + '" aria-pressed="false">' + esc(p.nom.replace(/^Comme (aux |à la )?/, '').replace('un candidat PS ou écologiste en 2024', 'si vu comme PS (2024)').replace(/^./, function (c) { return c.toUpperCase(); })) + '</button>'; }).join('') + '</div>' +
+      $('proj-ctrl').innerHTML = '<p class="bx-note">Sur 100 électeurs de chaque groupe, combien voteraient ' + esc(duel) + ', combien Le Pen, combien s\'abstiendraient ? Les trois chiffres font toujours 100 : quand vous en montez un, les deux autres baissent. Votre courbe, en pointillés noirs, change sur le graphique ; les autres courbes ne bougent pas.</p><p class="bx-note">Partir des chiffres de :</p>' +
+        '<div class="bx-cmp-c" role="group" aria-label="Copier les chiffres d\'une élection passée">' + Q.precedents.map(function (p, i) { return '<button type="button" data-p="' + i + '" aria-pressed="' + (i === 0) + '">' + esc(p.nom) + '</button>'; }).join('') + '</div>' +
         G.map(function (b) {
           return '<fieldset class="proj-b"><legend>Sur 100 ' + esc(P.noms_blocs[b]) + '</legend>' +
             [[0, esc(duel)], [1, 'Le Pen'], [2, 'Abstention ou blanc']].map(function (k) { return '<label>' + k[1] + ' <input type="range" min="0" max="100" step="1" data-b="' + b + '" data-k="' + k[0] + '"><output></output></label>'; }).join('') + '</fieldset>';
-        }).join('');
+        }).join('') + '<p class="bx-note">Dans tous les cas, les électeurs de ' + esc(duel) + ' votent pour lui, ceux de Le Pen pour elle.</p><div class="proj-act"><a href="#proj-titre" class="proj-voir">Fermer et voir le graphique ↑</a><button type="button" class="proj-fin">Retirer votre courbe</button></div><p class="proj-live" id="proj-live" aria-live="polite"></p>';
       syncCtrl();
     }
   }
@@ -90,15 +96,15 @@
     var G = B.filter(function (b) { return b !== Q.bloc && b !== 'ED'; });
     $('proj-src').innerHTML =
       '<ul class="proj-prec">' + Q.precedents.map(function (p) { return '<li><b style="color:' + p.couleur + '">' + esc(p.nom) + '</b> : ' + esc(p.phrase) + '. <a href="' + esc(p.url) + '" target="_blank" rel="noopener">Résultats officiels</a>.</li>'; }).join('') + '</ul>' +
-      '<p class="bx-note">Ce que chaque précédent suppose, sur 100 électeurs de chaque groupe : <b style="color:' + COL.x + '">votent ' + esc(duel) + '</b> · <b style="color:' + COL.lp + '">votent Le Pen</b> · <b>s\'abstiennent ou votent blanc</b>. Partout, les électeurs de ' + esc(duel) + (Q.bloc === 'C' || Q.bloc === 'D' ? ' et de son camp' : '') + ' votent pour lui, ceux de Le Pen pour elle.</p>' +
-      '<div class="proj-tw"><table class="proj-t"><thead><tr><th></th>' + Q.precedents.map(function (p) { return '<th style="color:' + p.couleur + '">' + esc(p.nom.replace('Comme ', '')) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      '<p class="bx-note">Ce que chaque précédent suppose, sur 100 électeurs de chaque groupe : <b style="color:' + COL.x + '">votent ' + esc(duel) + '</b> · <b style="color:' + COL.lp + '">votent Le Pen</b> · <b>s\'abstiennent ou votent blanc</b> (dans cet ordre, sous chaque barre). Partout, les électeurs de ' + esc(duel) + (Q.bloc === 'C' || Q.bloc === 'D' ? ' et de son camp' : '') + ' votent pour lui, ceux de Le Pen pour elle.</p>' +
+      '<div class="proj-tw"><table class="proj-t"><thead><tr><th></th>' + Q.precedents.map(function (p) { return '<th style="color:' + p.couleur + '">' + esc(p.court) + '</th>'; }).join('') + '</tr></thead><tbody>' +
       G.map(function (b) { var nc = P.noms_courts[b]; return '<tr><th>' + esc(nc[0]) + (nc[1] ? '<small>' + esc(nc[1]) + '</small>' : '') + (b === 'FI' && Q.bloc === 'AG' ? '<small>non mesuré : comme les autres électeurs de gauche</small>' : '') + '</th>' + Q.precedents.map(function (p) { return '<td>' + bar(p.reports[b]) + '</td>'; }).join('') + '</tr>'; }).join('') +
       '</tbody></table></div>';
   }
 
   function draw(C, T2, moy, duel) {
     box.querySelectorAll('svg').forEach(function (n) { n.remove(); });
-    var W = box.clientWidth || 600, H = 320, mL = 40, mR = 150;
+    var W = box.clientWidth || 600, H = 320, mL = 40, mR = W < 500 ? 150 : 170;
     var all = [].concat.apply([], C.map(function (c) { return c.pts; })).concat(T2);
     var x = d3.scaleUtc(d3.extent(all, function (r) { return r.d; }), [mL, W - mR]);
     var lo = Math.min(30, Math.floor(d3.min(all, function (r) { return r.v; }) / 5) * 5), hi = Math.max(55, Math.ceil(d3.max(all, function (r) { return r.v; }) / 5) * 5);
@@ -114,7 +120,7 @@
     C.forEach(function (c) {
       if (!c.pts.length) return;
       svg.append('path').datum(c.pts).attr('fill', 'none').attr('stroke', c.col).attr('stroke-width', 2).attr('stroke-dasharray', c.dash || null).attr('d', line);
-      var l = c.pts[c.pts.length - 1]; labs.push({ y: y(l.v), col: c.col, t: c.nom.replace('Comme ', '').replace('aux législatives', 'législ.').replace('à la présidentielle', 'présid.').replace('un candidat PS ou écologiste en 2024', 'vu comme PS') + ' ' + nf1(l.v) + ' %' });
+      var l = c.pts[c.pts.length - 1]; labs.push({ y: y(l.v), col: c.col, t: (c.court || c.nom) + ' ' + nf1(l.v) + ' %' });
     });
     svg.append('g').selectAll('circle').data(T2).join('circle').attr('cx', function (r) { return x(r.d); }).attr('cy', function (r) { return y(r.v); }).attr('r', 3.5).attr('fill', 'var(--cds-chart-muted)').attr('stroke', 'var(--color-fg)')
       .append('title').text(function (r) { return r.i + ', ' + r.d.toLocaleDateString('fr-FR') + ' : ' + duel + ' ' + nf1(r.v) + ' %'; });
