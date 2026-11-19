@@ -58,7 +58,7 @@
     };
     var add = $('proj-add'), panel = $('proj-ctrl');
     var ouvrir = function (on) { perso = on; touche = false; panel.hidden = !on; add.setAttribute('aria-expanded', on ? 'true' : 'false'); add.textContent = on ? 'Masquer les curseurs ▴' : '+ Tracer votre courbe'; if (on) { U = JSON.parse(JSON.stringify(P.duels[duel].precedents[0].reports)); controls(P.duels[duel], P, duel); } data(); leg(); };
-    add.addEventListener('click', function () { ouvrir(!perso); });
+    add.addEventListener('click', function () { if (perso && touche && !panel.hidden) { panel.hidden = true; add.setAttribute('aria-expanded', 'false'); add.textContent = 'Afficher les curseurs ▾'; data(); return; } ouvrir(!perso); });
     var voir = function () { var c = $('proj-titre'); window.scrollTo({ top: c.getBoundingClientRect().top + window.scrollY - 140, behavior: 'smooth' }); };
     $('projection').addEventListener('click', function (e) { var a = e.target.closest('.proj-voir'); if (a) { e.preventDefault(); voir(); } });
     panel.addEventListener('click', function (e) { if (e.target.closest('.proj-fin')) { ouvrir(false); add.focus(); } else if (e.target.closest('.proj-act .proj-voir')) { panel.hidden = true; add.setAttribute('aria-expanded', 'false'); add.textContent = 'Afficher les curseurs ▾'; data(); } });
