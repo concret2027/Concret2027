@@ -230,6 +230,10 @@ def main():
             # La notice doit porter le même nombre de personnes interrogées (quand on le connaît).
             if p['echantillon'] and not chiffre(p['echantillon']).search(t):
                 continue
+            # La notice doit porter sur des intentions de vote : une même enquête sert parfois à d'autres questions,
+            # publiées sous une autre notice (Ifop, 2-4 novembre 2026 : participation pour Franc-Tireur, intentions pour Sud Radio).
+            if not re.search(r'intentions? de vote', t, re.I):
+                continue
             # Une notice ne vaut que pour un sondage ; et ses interviews doivent finir le dernier jour du terrain
             # (l'institut publie parfois deux sondages de suite, avec le même nombre de personnes interrogées).
             if n['titre'].split()[0] in prises:
