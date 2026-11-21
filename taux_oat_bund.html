@@ -165,7 +165,7 @@
 </style>
 <a class="gal-acces gal-acces--ordi" rel="nofollow" href="https://galteron.com/connexion?source=ideal-investisseur&amp;campagne=menu-galteron&amp;appareil=ordi" aria-label="Connexion à Galteron"><svg class="gal-acces-picto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 9.4" aria-hidden="true" focusable="false"><g fill="#C2A35A"><rect x="1.2" y="5.6" width="1.6" height="3.0" rx="0.42"/><rect x="3.7" y="3.6" width="1.6" height="5.0" rx="0.42"/><rect x="6.2" y="2.0" width="1.6" height="6.6" rx="0.42"/><rect x="8.7" y="3.6" width="1.6" height="5.0" rx="0.42"/><rect x="11.2" y="5.6" width="1.6" height="3.0" rx="0.42"/></g><line x1="0.8" y1="8.62" x2="13.2" y2="8.62" stroke="#C2A35A" stroke-width="0.22" opacity=".55"/></svg><span>Connexion</span></a>
 <a class="gal-acces gal-acces--mobile" rel="nofollow" href="https://galteron.com/connexion?source=ideal-investisseur&amp;campagne=menu-galteron&amp;appareil=mobile" aria-label="Connexion à Galteron"><svg class="gal-acces-picto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 9.4" aria-hidden="true" focusable="false"><g fill="#C2A35A"><rect x="1.2" y="5.6" width="1.6" height="3.0" rx="0.42"/><rect x="3.7" y="3.6" width="1.6" height="5.0" rx="0.42"/><rect x="6.2" y="2.0" width="1.6" height="6.6" rx="0.42"/><rect x="8.7" y="3.6" width="1.6" height="5.0" rx="0.42"/><rect x="11.2" y="5.6" width="1.6" height="3.0" rx="0.42"/></g><line x1="0.8" y1="8.62" x2="13.2" y2="8.62" stroke="#C2A35A" stroke-width="0.22" opacity=".55"/></svg><span>Connexion</span></a>
-
+        <script>(function(){if(window.__lraP)return;window.__lraP=1;var AP=0,SRV="",EMPL="autre",w=window,d=document;if(navigator.webdriver)return;function ck(n){var m=d.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"));return m?m[1]:""}var v=AP?"":ck("ii_lra");if(v!=="A"&&v!=="B"){v=SRV||(Math.random()<0.5?"A":"B");d.cookie="ii_lra="+v+"; max-age=2592000; path=/; SameSite=Lax"+(location.protocol==="https:"?"; Secure":"")}w.II_LRA=v;var dl=w.dataLayer=w.dataLayer||[];dl.push({experiment_variant:v,event:"lra_variante"});var ss=null;try{ss=w.sessionStorage}catch(e){}var r=1,en="autre",ge=EMPL;try{r=(parseInt(ss.getItem("ii_lra_rang")||"0",10)||0)+1;ss.setItem("ii_lra_rang",String(r));if(r===1){var rf=d.referrer||"";en=rf.indexOf("android-app://com.google.android.googlequicksearchbox")===0?"discover":(/^https?:\/\/([^\/]+\.)?google\./i.test(rf)?"recherche":"autre");ss.setItem("ii_lra_entree",en);ss.setItem("ii_lra_gab",EMPL)}else{en=ss.getItem("ii_lra_entree")||"autre";ge=ss.getItem("ii_lra_gab")||"autre"}}catch(e){}var o={type:"page",variante:v,rang:Math.min(r,5),entree:en,emplacement:EMPL,gabarit_entree:ge,appareil:(w.innerWidth||1200)<768?"mobile":"ordi"};if(AP){try{console.debug("[lra] aperçu, non transmis",o)}catch(e){}return}var b=JSON.stringify(o);try{if(navigator.sendBeacon&&navigator.sendBeacon("/rebond_track.php",new Blob([b],{type:"application/json"})))return}catch(e){}try{fetch("/rebond_track.php",{method:"POST",headers:{"Content-Type":"application/json"},body:b,keepalive:true})}catch(e){}})();</script>
 
 
 
@@ -1247,7 +1247,34 @@ function decimateBourse2(points, target) {
   io.observe(root);
 })();
 </script>
-                </div>
+
+<script>(function(){if(window.__nlCol)return;window.__nlCol=1;
+var D=document,E=D.documentElement;function etat(s){E.setAttribute("data-nlcol",s)}
+function vis(n){return n&&n.nodeType===1&&n.offsetHeight>0&&getComputedStyle(n).display!=="none"}
+function go(){
+ var R=D.getElementById("ii-v-A");if(!vis(R))R=D.getElementById("ii-v-B");if(!vis(R)){etat("nocol");return}
+ for(var a=R;a&&a!==D.body;a=a.parentElement){var p=getComputedStyle(a).position;if(p==="sticky"||p==="fixed"){etat("deja");return}}
+ var col=null,row=null;
+ for(var a=R.parentElement;a&&a!==D.body;a=a.parentElement){var pp=a.parentElement;if(!pp||pp===D.body)break;
+  if(/flex|grid/.test(getComputedStyle(pp).display)&&pp.children.length>1&&pp.offsetWidth>a.offsetWidth*1.5){col=a;row=pp;break}}
+ if(!col){etat("nocol");return}
+ // Contenu visible après la bannière dans sa colonne ?
+ var apres=0;for(var a=R;a&&a!==col;a=a.parentElement){for(var s=a.nextElementSibling;s;s=s.nextElementSibling){if(vis(s)&&s.tagName!=="SCRIPT"&&s.tagName!=="STYLE")apres+=s.offsetHeight}}
+ if(apres>20){etat("suite");return}
+ var H=D.querySelector(".entete-menu-unifie"),dy=0,raf=0;
+ R.style.willChange="transform";R.style.position=R.style.position||"relative";R.style.zIndex=R.style.zIndex||"2";
+ function maj(){raf=0;
+  if(innerWidth<861||innerHeight<740){if(dy){dy=0;R.style.transform=""}etat("petit");return}
+  etat("actif");
+  var r=R.getBoundingClientRect(),nat=r.top-dy,h=R.offsetHeight;
+  var hb=H?Math.max(0,H.getBoundingClientRect().bottom):0,T=hb+14;
+  if(h+T>innerHeight){if(dy){dy=0;R.style.transform=""}return}
+  var lim=row.getBoundingClientRect().bottom-(nat+h)-20;
+  var v=Math.max(0,Math.min(T-nat,lim));
+  if(Math.abs(v-dy)>0.5){dy=v;R.style.transform=dy?"translateY("+dy+"px)":""}}
+ function pl(){if(!raf)raf=requestAnimationFrame(maj)}
+ addEventListener("scroll",pl,{passive:true});addEventListener("resize",pl);addEventListener("load",pl);maj()}
+if(D.readyState==="loading")D.addEventListener("DOMContentLoaded",go);else go()})();</script>                </div>
             </div>
         </div>
     </div>
