@@ -154,7 +154,6 @@
   .entete-menu-unifie .gal-acces--mobile{display:inline-flex;flex-direction:column;justify-content:center;gap:3px;min-width:44px;min-height:44px;margin:0;padding:2px 4px;border:0;border-radius:6px;font-size:10px;font-weight:600;letter-spacing:.2px;position:relative;z-index:1003}
   .entete-menu-unifie .gal-acces--mobile .gal-acces-picto{width:24px}
 }
-/* Petits écrans : le logo centré (28 px) touchait l'icône -> logo réduit, icône collée au bord. */
 @media (max-width:440px){
   .entete-menu-unifie .logo_menu{font-size:23px !important}
   .entete-menu-unifie .gal-acces--mobile{margin-right:-8px}
@@ -275,7 +274,6 @@
             </a></div></div></div>
 
 <script>
-
 function getEasterSunday(year) {
     const a = year % 19, b = Math.floor(year/100), c = year % 100;
     const d = Math.floor(b/4), e = b % 4, f = Math.floor((b+8)/25);
@@ -333,7 +331,6 @@ function updateMarketStatus() {
 }
 updateMarketStatus();
 setInterval(updateMarketStatus, 60000);
-
 document.addEventListener("DOMContentLoaded", function() {
     const observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
@@ -341,11 +338,9 @@ document.addEventListener("DOMContentLoaded", function() {
             observer.disconnect();
         }
     }, { threshold: 0.3 });
-
     const chartElement = document.getElementById("chartIntra");
     if (chartElement) observer.observe(chartElement);
 });
-
 function loadBourse2ChartScripts() {
     if (typeof Chart !== 'undefined') {
         initBourse2Chart();
@@ -354,7 +349,6 @@ function loadBourse2ChartScripts() {
     const scripts = [
         "https://cdn.jsdelivr.net/npm/chart.js"
     ];
-
     let loadedScripts = 0;
     scripts.forEach((src) => {
         const script = document.createElement("script");
@@ -367,14 +361,10 @@ function loadBourse2ChartScripts() {
         document.body.appendChild(script);
     });
 }
-    
 function initBourse2Chart() {
     const ctx = document.getElementById("chartIntra");
     if (!ctx) return;
-
 fetch("/INCLUDE/api/cac40_intraday.php")
-
-
     .then(response => {
         if (!response.ok) {
             throw new Error(`Erreur HTTP ! Statut : ${response.status}`);
@@ -387,16 +377,12 @@ fetch("/INCLUDE/api/cac40_intraday.php")
             ctx.parentElement.innerHTML = "<p style='color: white;'>Données intraday indisponibles.</p>";
             return;
         }
-
         const reduced = decimateBourse2(points, 200);
-
         const labels = reduced.map(pt => {
             const timePart = pt.time.split('-')[1]; 
             return timePart ? timePart.substring(0, 5) : ""; 
         });
-
         const values = reduced.map(pt => parseFloat(pt.beginPx));
-
         new Chart(ctx, {
             type: "line",
             data: {
@@ -479,15 +465,11 @@ fetch("/INCLUDE/api/cac40_intraday.php")
         ctx.parentElement.innerHTML = `<p style='color: white;'>Erreur de chargement des données : ${error.message}</p>`;
     });
 }
-
 function decimateBourse2(points, target) {
     if (!points || points.length <= target) return points || [];
     const factor = Math.ceil(points.length / target);
     return points.filter((_, i) => i % factor === 0);
 }
-    
-
-
 </script>
             </div>
 
@@ -810,7 +792,6 @@ function decimateBourse2(points, target) {
             <div class="cadre-droit-actu-news-blanc" style="position:sticky; top:50px">
                 <div class="onlydesktop">
                     <style>
-/* ===== Design VARIANTE B (test A/B) — préfixe .iib- ===== */
 .iib * { box-sizing: border-box; margin: 0; padding: 0; }
 .iib {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
@@ -834,13 +815,11 @@ function decimateBourse2(points, target) {
 .iib-btn { display:flex; align-items:center; justify-content:center; gap:7px; width:100%; background:var(--gold); color:#1a1a18; text-align:center; padding:13px; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; }
 .iib-btn:hover { opacity:.9; }
 .iib-legal { font-size:10.5px; color:var(--txt-dim); text-align:center; margin-top:10px; line-height:1.5; }
-/* États succès / erreur / spinner */
 .iib-ok { flex-direction:column; gap:5px; padding:11px 14px; border-radius:8px; background:rgba(29,158,117,.12); border:1px solid rgba(29,158,117,.35); margin-bottom:4px; }
 .iib-ok-title { display:flex; align-items:center; gap:7px; color:var(--green); font-size:14px; font-weight:600; }
 .iib-ok-desc { font-size:12.5px; color:var(--txt-mute); line-height:1.5; }
 .iib-err { display:flex; align-items:center; gap:7px; padding:9px 12px; border-radius:8px; background:rgba(255,107,107,.1); border:1px solid rgba(255,107,107,.3); color:#ff8a8a; font-size:12px; margin-bottom:8px; }
 .iib-spinner { display:none; width:14px; height:14px; border:2px solid rgba(26,26,24,.25); border-top-color:#1a1a18; border-radius:50%; animation:iib-spin .7s linear infinite; }
-/* Animation de la courbe */
 @keyframes iib-draw { from { stroke-dashoffset:600; } to { stroke-dashoffset:0; } }
 @keyframes iib-fill { from { opacity:0; } to { opacity:1; } }
 @keyframes iib-dot  { 0%,60% { opacity:0; transform:scale(0); } 100% { opacity:1; transform:scale(1); } }
@@ -851,7 +830,6 @@ function decimateBourse2(points, target) {
 .iib-fillpath.go { animation:iib-fill 1.2s ease-out 1s forwards; }
 .iib-dotpt { opacity:0; transform-origin:center; }
 .iib-dotpt.go { animation:iib-dot 2.4s ease-out forwards; }
-/* Popup overlay (variante B) */
 .iib-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:1.5rem; z-index:99999; }
 .iib-overlay.show { display:flex; }
 .iib-close { position:absolute; top:12px; right:14px; font-size:22px; color:var(--txt-dim); cursor:pointer; line-height:1; background:none; border:none; }
@@ -866,21 +844,14 @@ function decimateBourse2(points, target) {
   function sc(n,v,d){var t=new Date();t.setTime(t.getTime()+d*864e5);document.cookie=n+'='+v+';expires='+t.toUTCString()+';path=/;SameSite=Lax';}
   var v = gc('ii_ab_nl');
   if (v!=='A' && v!=='B'){ v = (Math.random()<0.5 ? 'A' : 'B'); sc('ii_ab_nl', v, 90); }
-  if (location.search.indexOf('abforce=A')!==-1){ v='A'; }   // override debug
+  if (location.search.indexOf('abforce=A')!==-1){ v='A'; }   
   if (location.search.indexOf('abforce=B')!==-1){ v='B'; }
   var sent = {};
-  // 2026-11-19 (brief NL, § 2) : arrivée depuis la lettre → lecteur inscrit (même durée
-  // qu'après une inscription). Coupe les encarts de la lettre ; galteron.js fait de même.
   if (/[?&]utm_source=newsletter(&|$)/.test(location.search)) sc('ii_nl_sub', '1', 365);
-  // Encarts du test A/B ; les autres (leaderboard, square, home_modal) : variante vide.
   var TEST = { popup:1, bloc:1, lateral:1 };
-  // Appareil (même règle que Galteron) : mobile sous 768 px ; au-delà le relais tranche par l'user-agent.
   function app(){ var w = document.documentElement.clientWidth || window.innerWidth; return w < 768 ? 'mobile' : ''; }
-
   window.IIAB = {
     RECAPTCHA_KEY: '6LdSZ5YsAAAAABylwv4O-CMfzR50DGgiQlLzJUKn',
-    // Charge reCAPTCHA une seule fois (mode différé) puis appelle cb quand grecaptcha est prêt.
-    // Sans mode différé : le script est déjà dans la page, on attend seulement qu'il soit là.
     rc: function(cb){
       var q = (IIAB._rcq = IIAB._rcq || []);
       if (cb) q.push(cb);
@@ -897,19 +868,8 @@ function decimateBourse2(points, target) {
     },
     variant: function(){ return v; },
     variantFor: function(place){ var f = window.II_NL_FORCE; return (f && (f[place]==='A' || f[place]==='B')) ? f[place] : v; },
-
-    // État "déjà inscrit", PARTAGÉ par les 3 bannières (popup, bloc,
-    // latéral). Chaque bannière a son propre formulaire et son propre
-    // bouton : le bouton désactivé empêchait de doubler sur le MÊME
-    // formulaire, mais pas de re-saisir son adresse dans la bannière
-    // d'à côté. C'était l'origine de tous les doublons observés
-    // (ex. popup 21:37:55 puis bloc 21:39:20, même personne).
     subscribed:     function(){ return gc('ii_nl_sub') === '1'; },
     markSubscribed: function(){ sc('ii_nl_sub', '1', 365); },
-
-    // variante : celle réellement affichée ; '' = hors test ; omise = règle par défaut (TEST).
-    // Envoyée dans tous les cas (le back compte tous les affichages, § 3) ; nl_track.php
-    // ne compte pour le test A/B que les variantes A|B.
     impression: function(place, variante){
       if (sent[place]) return; sent[place] = 1;
       try {
@@ -922,15 +882,10 @@ function decimateBourse2(points, target) {
         }
       } catch(e){}
     },
-
-    // Branche le formulaire contenu dans rootEl (classes .js-*).
-    // opts = { lang:'fr', variant:'A'|'B' } (variant = celui réellement affiché,
-    // utile pour les pages _ml où le FR seul participe à l'A/B).
     wire: function(rootEl, source, onSuccess, opts){
       opts = opts || {};
       var lang = opts.lang || 'fr';
       var sentVariant = opts.variant || v;
-      // Variante pour la mesure par page : vide hors test (opts.test === false ou encart hors test).
       var mesVariant = (opts.test === false || !TEST[source]) ? '' : sentVariant;
       var form   = rootEl.querySelector('.js-form'),
           email  = rootEl.querySelector('.js-email'),
@@ -941,17 +896,11 @@ function decimateBourse2(points, target) {
           err    = rootEl.querySelector('.js-err'),
           errTxt = rootEl.querySelector('.js-errtxt');
       if (!form) return;
-
-      // Déjà inscrit sur ce navigateur : on affiche l'état de succès et on
-      // ne branche rien. Plus de 2e soumission possible depuis une autre
-      // bannière de la même page.
       if (IIAB.subscribed()) {
         form.style.display = 'none';
         if (ok){ ok.style.display = 'flex'; ok.style.flexDirection = 'column'; }
         return;
       }
-
-      // Mode différé : reCAPTCHA arrive dès que le lecteur touche au formulaire (bien avant l'envoi).
       if (window.II_RC_DIFFERE) ['focusin','pointerdown','input'].forEach(function(t){ form.addEventListener(t, function(){ IIAB.rc(); }, { once:true, passive:true }); });
       form.addEventListener('submit', function(e){
         e.preventDefault();
@@ -996,7 +945,6 @@ function decimateBourse2(points, target) {
 </script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
 
-<!-- ════ VARIANTE A — latéral multilingue actuel ════ -->
 <div id="ii-v-A" class="ii-v-wrap">
 
   <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(212,170,85,.7),transparent);flex-shrink:0"></div>
@@ -1125,9 +1073,7 @@ function decimateBourse2(points, target) {
     Automated analysis · No human intervention · ideal-investisseur.fr  </div>
 
 </div>
-<!-- ════ FIN VARIANTE A ════ -->
 
-<!-- ════ VARIANTE B — latéral nouveau design (.iib-, FR uniquement) ════ -->
 <div id="ii-v-B" class="iib" style="display:none;width:100%;max-width:300px;box-sizing:border-box;">  <div class="iib-card" style="width:100%;box-sizing:border-box;">
     <div style="padding:1.3rem 1.3rem 0.5rem;">
       <div class="iib-badge"><span class="dot"></span><span class="lbl">Gratuit · chaque matin</span></div>
@@ -1169,7 +1115,6 @@ function decimateBourse2(points, target) {
     </div>
   </div>
 </div>
-<!-- ════ FIN VARIANTE B ════ -->
 
 <style>
 .ii-v-wrap{font-family:'DM Sans',sans-serif;width:100%;max-width:300px;box-sizing:border-box;background:#111118;border-radius:12px;overflow:hidden;position:relative;display:flex;flex-direction:column;border:2px solid #d4aa55;box-shadow:0 0 20px rgba(212,170,85,.5),0 0 50px rgba(212,170,85,.25),0 0 80px rgba(212,170,85,.1)}
@@ -1232,13 +1177,11 @@ function decimateBourse2(points, target) {
   var root;
   if (V === 'B' && B) { A.style.display = 'none'; B.style.display = 'block'; root = B; }
   else { root = A; if (B && B.parentNode) B.parentNode.removeChild(B); }
-
   if (window.IIAB) IIAB.wire(root, 'lateral', null, { lang: LANG, variant: V, test: inTest });
-
   var io = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
       if (e.isIntersecting) {
-        if (window.IIAB) IIAB.impression('lateral', inTest ? V : '');   // 19/11 : tout affichage, variante vide hors test
+        if (window.IIAB) IIAB.impression('lateral', inTest ? V : '');   
         e.target.querySelectorAll('.iib-line, .iib-fillpath, .iib-dotpt').forEach(function(el) { el.classList.add('go'); });
         io.unobserve(e.target);
       }
@@ -1258,7 +1201,6 @@ function go(){
  for(var a=R.parentElement;a&&a!==D.body;a=a.parentElement){var pp=a.parentElement;if(!pp||pp===D.body)break;
   if(/flex|grid/.test(getComputedStyle(pp).display)&&pp.children.length>1&&pp.offsetWidth>a.offsetWidth*1.5){col=a;row=pp;break}}
  if(!col){etat("nocol");return}
- // Contenu visible après la bannière dans sa colonne ?
  var apres=0;for(var a=R;a&&a!==col;a=a.parentElement){for(var s=a.nextElementSibling;s;s=s.nextElementSibling){if(vis(s)&&s.tagName!=="SCRIPT"&&s.tagName!=="STYLE")apres+=s.offsetHeight}}
  if(apres>20){etat("suite");return}
  var H=D.querySelector(".entete-menu-unifie"),dy=0,raf=0;
@@ -1331,19 +1273,16 @@ document.addEventListener("DOMContentLoaded", function() {
   var searchField = document.getElementById("search-field");
   if (!searchField) return;
   var resultsContainer = document.getElementById("search-results");
-
   function showResults(results) {
     resultsContainer.innerHTML = "";
     if (!results || results.length === 0) {
       resultsContainer.style.display = "none";
       return;
     }
-
     results.forEach(function(result) {
       var nom = result.Nom_cac || "";
       var link = document.createElement("a");
       if (result.url) {
-        // Crypto (ou tout résultat fournissant une URL absolue prête à l'emploi)
         link.href = result.url.indexOf("http") === 0 ? result.url : "https://www.ideal-investisseur.fr" + result.url;
         link.textContent = nom;
       } else {
@@ -1356,23 +1295,18 @@ document.addEventListener("DOMContentLoaded", function() {
       link.style.padding = "8px";
       link.style.color = "#333";
       link.style.textDecoration = "none";
-
       link.addEventListener("mouseover", function() { this.style.backgroundColor = "#f0f0f0"; });
       link.addEventListener("mouseout", function() { this.style.backgroundColor = ""; });
-
       resultsContainer.appendChild(link);
     });
-
     resultsContainer.style.display = results.length > 0 ? "block" : "none";
   }
-
   searchField.addEventListener("input", function() {
     var term = this.value.trim();
     if (term.length < 2) {
       resultsContainer.style.display = "none";
       return;
     }
-
     fetch("https://www.ideal-investisseur.fr/2026/search.php?term=" + encodeURIComponent(term))
       .then(function(response) {
         if (!response.ok) throw new Error("HTTP Error: " + response.status);
@@ -1384,7 +1318,6 @@ document.addEventListener("DOMContentLoaded", function() {
         resultsContainer.style.display = "none";
       });
   });
-
   document.addEventListener("click", function(event) {
     if (event.target !== searchField) resultsContainer.style.display = "none";
   });
